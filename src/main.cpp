@@ -21,6 +21,7 @@
 #include <boot/limine_headers.h>
 #include <boot/limine_vga.h>
 #include <drivers/serial_port.h>
+#include "gdt.h"
 
 
 /**
@@ -152,6 +153,8 @@ extern "C" void kmain(void)
     kRenderer.framebuffer.pitch = framebuffer->pitch;
     kRenderer.framebuffer.pixelsPerScanLine = framebuffer->pitch / 4;
     SerialWriteString(COM1_PORT, "kernel renderer set\n");
+
+    InitGDT();
 
     ClearScreen(BLACK, true);
 
