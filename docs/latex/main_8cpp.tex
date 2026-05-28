@@ -1,0 +1,113 @@
+\doxysection{src/\+main.cpp File Reference}
+\hypertarget{main_8cpp}{}\label{main_8cpp}\index{src/main.cpp@{src/main.cpp}}
+
+
+Core kernel initialization engine and execution entry point.  
+
+
+{\ttfamily \+\#include $<$stdint.\+h$>$}\newline
+{\ttfamily \+\#include $<$stddef.\+h$>$}\newline
+{\ttfamily \+\#include $<$boot/\+limine\+\_\+headers.\+h$>$}\newline
+{\ttfamily \+\#include $<$boot/\+limine\+\_\+vga.\+h$>$}\newline
+{\ttfamily \+\#include $<$drivers/\+serial\+\_\+port.\+h$>$}\newline
+\doxysubsubsection*{Functions}
+\begin{DoxyCompactItemize}
+\item 
+static void \doxymbox{\hyperlink{main_8cpp_a5ea6f67f659b71a427d3cb59a0e6984d}{Call\+Global\+Constructors}} ()
+\begin{DoxyCompactList}\small\item\em Executes initialization loops across early C++ static and global object constructors. \end{DoxyCompactList}\item 
+static void \doxymbox{\hyperlink{main_8cpp_aedf4780efccd3a32bf75b0d9f08b2f47}{hcf}} (void)
+\begin{DoxyCompactList}\small\item\em Halts the CPU infinitely. \end{DoxyCompactList}\item 
+void \doxymbox{\hyperlink{main_8cpp_a6e587ce4fcbc05633f6cdcc21d36e941}{Kernel\+Panic}} (const char \texorpdfstring{$\ast$}{*}str)
+\begin{DoxyCompactList}\small\item\em Triggers a critical system breakdown state, piping messages across diagnostic outputs. \end{DoxyCompactList}\item 
+void \doxymbox{\hyperlink{main_8cpp_a406c20548822065e144564476378f8a1}{kmain}} (void)
+\begin{DoxyCompactList}\small\item\em Main entry threshold for kernel runtime operations (called natively by Limine). \end{DoxyCompactList}\end{DoxyCompactItemize}
+\doxysubsubsection*{Variables}
+\begin{Indent}\textbf{ C++ Initialization Pointers}\par
+{\em Linker script markers indicating the physical memory bounds of global constructor tables. }\begin{DoxyCompactItemize}
+\item 
+void(\texorpdfstring{$\ast$}{*} \doxymbox{\hyperlink{main_8cpp_a2fc4fa56d81ff50efe7470c23374d7f8}{\+\_\+\+\_\+init\+\_\+array\+\_\+end}} \+[$\,$]\+)()
+\item 
+void(\texorpdfstring{$\ast$}{*} \doxymbox{\hyperlink{main_8cpp_aa4df8c323f4aad16af77cda48ce48f3d}{\+\_\+\+\_\+init\+\_\+array\+\_\+start}} \+[$\,$]\+)()
+\end{DoxyCompactItemize}
+\end{Indent}
+
+
+\doxysubsection{Detailed Description}
+Core kernel initialization engine and execution entry point. 
+
+\begin{DoxyCopyright}{Copyright}
+Copyright (c) 2026, Nicocchi @license Licensed under the GPL2 License
+\end{DoxyCopyright}
+\begin{DoxyAuthor}{Author}
+Nicocchi 
+\end{DoxyAuthor}
+\begin{DoxyDate}{Date}
+May 28, 2026
+\end{DoxyDate}
+Orchestrates early bare-\/metal platform bootstrapping over the Limine Boot Protocol. Manages the parsing of hardware tracking structs, initializes primitive debugging communication subsystems, bootstraps C++ global runtimes, structures font tables, and passes control off to the internal terminal environment. 
+
+\label{doc-func-members}
+\Hypertarget{main_8cpp_doc-func-members}
+\doxysubsection{Function Documentation}
+\Hypertarget{main_8cpp_a5ea6f67f659b71a427d3cb59a0e6984d}\index{main.cpp@{main.cpp}!CallGlobalConstructors@{CallGlobalConstructors}}
+\index{CallGlobalConstructors@{CallGlobalConstructors}!main.cpp@{main.cpp}}
+\doxysubsubsection{\texorpdfstring{CallGlobalConstructors()}{CallGlobalConstructors()}}
+{\footnotesize\ttfamily \label{main_8cpp_a5ea6f67f659b71a427d3cb59a0e6984d} 
+void Call\+Global\+Constructors (\begin{DoxyParamCaption}{}{}\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [static]}}
+
+
+
+Executes initialization loops across early C++ static and global object constructors. 
+
+Iterates through the {\ttfamily .init\+\_\+array} section populated by the compiler toolchain, safely calling each constructor function pointer sequentially before {\ttfamily \doxylink{main_8cpp_a406c20548822065e144564476378f8a1}{kmain}} triggers object interactions. \Hypertarget{main_8cpp_aedf4780efccd3a32bf75b0d9f08b2f47}\index{main.cpp@{main.cpp}!hcf@{hcf}}
+\index{hcf@{hcf}!main.cpp@{main.cpp}}
+\doxysubsubsection{\texorpdfstring{hcf()}{hcf()}}
+{\footnotesize\ttfamily \label{main_8cpp_aedf4780efccd3a32bf75b0d9f08b2f47} 
+void hcf (\begin{DoxyParamCaption}\item[{void}]{}{}\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [static]}}
+
+
+
+Halts the CPU infinitely. 
+
+Issues the x86 {\ttfamily hlt} instruction to suspend execution until the next non-\/maskable or external hardware interrupt occurs. Wrapped inside an infinite fallback loop to prevent processor runaways. \Hypertarget{main_8cpp_a6e587ce4fcbc05633f6cdcc21d36e941}\index{main.cpp@{main.cpp}!KernelPanic@{KernelPanic}}
+\index{KernelPanic@{KernelPanic}!main.cpp@{main.cpp}}
+\doxysubsubsection{\texorpdfstring{KernelPanic()}{KernelPanic()}}
+{\footnotesize\ttfamily \label{main_8cpp_a6e587ce4fcbc05633f6cdcc21d36e941} 
+void Kernel\+Panic (\begin{DoxyParamCaption}\item[{const char \texorpdfstring{$\ast$}{*}}]{str}{}\end{DoxyParamCaption})}
+
+
+
+Triggers a critical system breakdown state, piping messages across diagnostic outputs. 
+
+Simultaneously dumps failure summaries across the serial COM1 port interface and onto the active linear graphical display before hanging the CPU execution chain. 
+\begin{DoxyParams}[1]{Parameters}
+\doxymbox{\texttt{in}}  & {\em str} & Null-\/terminated ASCII error diagnostic summary string describing the system failure. \\
+\hline
+\end{DoxyParams}
+\Hypertarget{main_8cpp_a406c20548822065e144564476378f8a1}\index{main.cpp@{main.cpp}!kmain@{kmain}}
+\index{kmain@{kmain}!main.cpp@{main.cpp}}
+\doxysubsubsection{\texorpdfstring{kmain()}{kmain()}}
+{\footnotesize\ttfamily \label{main_8cpp_a406c20548822065e144564476378f8a1} 
+void kmain (\begin{DoxyParamCaption}\item[{void}]{}{}\end{DoxyParamCaption})}
+
+
+
+Main entry threshold for kernel runtime operations (called natively by Limine). 
+
+Performs early structural checks on bootloader response elements, initialises the primary 16550 UART serial connection, maps direct font rendering buffers, and draws text output routines onto the linear graphical display workspace. 
+
+\label{doc-var-members}
+\Hypertarget{main_8cpp_doc-var-members}
+\doxysubsection{Variable Documentation}
+\Hypertarget{main_8cpp_a2fc4fa56d81ff50efe7470c23374d7f8}\index{main.cpp@{main.cpp}!\_\_init\_array\_end@{\_\_init\_array\_end}}
+\index{\_\_init\_array\_end@{\_\_init\_array\_end}!main.cpp@{main.cpp}}
+\doxysubsubsection{\texorpdfstring{\_\_init\_array\_end}{\_\_init\_array\_end}}
+{\footnotesize\ttfamily \label{main_8cpp_a2fc4fa56d81ff50efe7470c23374d7f8} 
+void(\texorpdfstring{$\ast$}{*} \+\_\+\+\_\+init\+\_\+array\+\_\+end\+[$\,$]\+)() (\begin{DoxyParamCaption}{}{}\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [extern]}}
+
+\Hypertarget{main_8cpp_aa4df8c323f4aad16af77cda48ce48f3d}\index{main.cpp@{main.cpp}!\_\_init\_array\_start@{\_\_init\_array\_start}}
+\index{\_\_init\_array\_start@{\_\_init\_array\_start}!main.cpp@{main.cpp}}
+\doxysubsubsection{\texorpdfstring{\_\_init\_array\_start}{\_\_init\_array\_start}}
+{\footnotesize\ttfamily \label{main_8cpp_aa4df8c323f4aad16af77cda48ce48f3d} 
+void(\texorpdfstring{$\ast$}{*} \+\_\+\+\_\+init\+\_\+array\+\_\+start\+[$\,$]\+)() (\begin{DoxyParamCaption}{}{}\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [extern]}}
+
