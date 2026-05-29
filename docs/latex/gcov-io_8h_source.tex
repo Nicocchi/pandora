@@ -1,0 +1,403 @@
+\doxysection{gcov-\/io.h}
+\hypertarget{gcov-io_8h_source}{}\label{gcov-io_8h_source}\index{toolchain/x86\_64-\/elf/lib/gcc/x86\_64-\/elf/14.2.0/plugin/include/gcov-\/io.h@{toolchain/x86\_64-\/elf/lib/gcc/x86\_64-\/elf/14.2.0/plugin/include/gcov-\/io.h}}
+\doxymbox{\hyperlink{gcov-io_8h}{Go to the documentation of this file.}}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001\ \textcolor{comment}{/*\ File\ format\ for\ coverage\ information}}
+\DoxyCodeLine{00002\ \textcolor{comment}{\ \ \ Copyright\ (C)\ 1996-\/2024\ Free\ Software\ Foundation,\ Inc.}}
+\DoxyCodeLine{00003\ \textcolor{comment}{\ \ \ Contributed\ by\ Bob\ Manson\ <manson@cygnus.com>.}}
+\DoxyCodeLine{00004\ \textcolor{comment}{\ \ \ Completely\ remangled\ by\ Nathan\ Sidwell\ <nathan@codesourcery.com>.}}
+\DoxyCodeLine{00005\ \textcolor{comment}{}}
+\DoxyCodeLine{00006\ \textcolor{comment}{This\ file\ is\ part\ of\ GCC.}}
+\DoxyCodeLine{00007\ \textcolor{comment}{}}
+\DoxyCodeLine{00008\ \textcolor{comment}{GCC\ is\ free\ software;\ you\ can\ redistribute\ it\ and/or\ modify\ it\ under}}
+\DoxyCodeLine{00009\ \textcolor{comment}{the\ terms\ of\ the\ GNU\ General\ Public\ License\ as\ published\ by\ the\ Free}}
+\DoxyCodeLine{00010\ \textcolor{comment}{Software\ Foundation;\ either\ version\ 3,\ or\ (at\ your\ option)\ any\ later}}
+\DoxyCodeLine{00011\ \textcolor{comment}{version.}}
+\DoxyCodeLine{00012\ \textcolor{comment}{}}
+\DoxyCodeLine{00013\ \textcolor{comment}{GCC\ is\ distributed\ in\ the\ hope\ that\ it\ will\ be\ useful,\ but\ WITHOUT\ ANY}}
+\DoxyCodeLine{00014\ \textcolor{comment}{WARRANTY;\ without\ even\ the\ implied\ warranty\ of\ MERCHANTABILITY\ or}}
+\DoxyCodeLine{00015\ \textcolor{comment}{FITNESS\ FOR\ A\ PARTICULAR\ PURPOSE.\ \ See\ the\ GNU\ General\ Public\ License}}
+\DoxyCodeLine{00016\ \textcolor{comment}{for\ more\ details.}}
+\DoxyCodeLine{00017\ \textcolor{comment}{}}
+\DoxyCodeLine{00018\ \textcolor{comment}{Under\ Section\ 7\ of\ GPL\ version\ 3,\ you\ are\ granted\ additional}}
+\DoxyCodeLine{00019\ \textcolor{comment}{permissions\ described\ in\ the\ GCC\ Runtime\ Library\ Exception,\ version}}
+\DoxyCodeLine{00020\ \textcolor{comment}{3.1,\ as\ published\ by\ the\ Free\ Software\ Foundation.}}
+\DoxyCodeLine{00021\ \textcolor{comment}{}}
+\DoxyCodeLine{00022\ \textcolor{comment}{You\ should\ have\ received\ a\ copy\ of\ the\ GNU\ General\ Public\ License\ and}}
+\DoxyCodeLine{00023\ \textcolor{comment}{a\ copy\ of\ the\ GCC\ Runtime\ Library\ Exception\ along\ with\ this\ program;}}
+\DoxyCodeLine{00024\ \textcolor{comment}{see\ the\ files\ COPYING3\ and\ COPYING.RUNTIME\ respectively.\ \ If\ not,\ see}}
+\DoxyCodeLine{00025\ \textcolor{comment}{<http://www.gnu.org/licenses/>.\ \ */}}
+\DoxyCodeLine{00026\ }
+\DoxyCodeLine{00027\ }
+\DoxyCodeLine{00028\ \textcolor{comment}{/*\ CAVEAT:\ Coverage\ information\ files\ should\ not\ be\ parsed\ directly,}}
+\DoxyCodeLine{00029\ \textcolor{comment}{\ \ \ instead\ use\ \`{}gcov\ -\/-\/json-\/format`,\ which\ provides}}
+\DoxyCodeLine{00030\ \textcolor{comment}{\ \ \ machine-\/readable\ coverage\ information.}}
+\DoxyCodeLine{00031\ \textcolor{comment}{}}
+\DoxyCodeLine{00032\ \textcolor{comment}{\ \ \ Note\ that\ the\ following\ file\ format\ documentation\ might\ be\ outdated.}}
+\DoxyCodeLine{00033\ \textcolor{comment}{}}
+\DoxyCodeLine{00034\ \textcolor{comment}{\ \ \ Coverage\ information\ is\ held\ in\ two\ files.\ \ A\ notes\ file,\ which\ is}}
+\DoxyCodeLine{00035\ \textcolor{comment}{\ \ \ generated\ by\ the\ compiler,\ and\ a\ data\ file,\ which\ is\ generated\ by}}
+\DoxyCodeLine{00036\ \textcolor{comment}{\ \ \ the\ program\ under\ test.\ \ Both\ files\ use\ a\ similar\ structure.\ \ We\ do}}
+\DoxyCodeLine{00037\ \textcolor{comment}{\ \ \ not\ attempt\ to\ make\ these\ files\ backwards\ compatible\ with\ previous}}
+\DoxyCodeLine{00038\ \textcolor{comment}{\ \ \ versions,\ as\ you\ only\ need\ coverage\ information\ when\ developing\ a}}
+\DoxyCodeLine{00039\ \textcolor{comment}{\ \ \ program.\ \ We\ do\ hold\ version\ information,\ so\ that\ mismatches\ can\ be}}
+\DoxyCodeLine{00040\ \textcolor{comment}{\ \ \ detected,\ and\ we\ use\ a\ format\ that\ allows\ tools\ to\ skip\ information}}
+\DoxyCodeLine{00041\ \textcolor{comment}{\ \ \ they\ do\ not\ understand\ or\ are\ not\ interested\ in.}}
+\DoxyCodeLine{00042\ \textcolor{comment}{}}
+\DoxyCodeLine{00043\ \textcolor{comment}{\ \ \ Numbers\ are\ recorded\ in\ the\ 32\ bit\ unsigned\ binary\ form\ of\ the}}
+\DoxyCodeLine{00044\ \textcolor{comment}{\ \ \ endianness\ of\ the\ machine\ generating\ the\ file.\ 64\ bit\ numbers\ are}}
+\DoxyCodeLine{00045\ \textcolor{comment}{\ \ \ stored\ as\ two\ 32\ bit\ numbers,\ the\ low\ part\ first.}}
+\DoxyCodeLine{00046\ \textcolor{comment}{\ \ \ The\ number\ of\ bytes\ is\ stored,\ followed\ by\ the}}
+\DoxyCodeLine{00047\ \textcolor{comment}{\ \ \ string.\ Zero\ length\ and\ NULL\ strings\ are\ simply\ stored\ as\ a\ length}}
+\DoxyCodeLine{00048\ \textcolor{comment}{\ \ \ of\ zero\ (they\ have\ no\ trailing\ NUL).}}
+\DoxyCodeLine{00049\ \textcolor{comment}{}}
+\DoxyCodeLine{00050\ \textcolor{comment}{\ \ \ \ int32:\ \ byte3\ byte2\ byte1\ byte0\ |\ byte0\ byte1\ byte2\ byte3}}
+\DoxyCodeLine{00051\ \textcolor{comment}{\ \ \ \ int64:\ \ int32:low\ int32:high}}
+\DoxyCodeLine{00052\ \textcolor{comment}{\ \ \ \ string:\ int32:0\ |\ int32:length\ char*\ char:0}}
+\DoxyCodeLine{00053\ \textcolor{comment}{\ \ \ \ item:\ int32\ |\ int64\ |\ string}}
+\DoxyCodeLine{00054\ \textcolor{comment}{}}
+\DoxyCodeLine{00055\ \textcolor{comment}{\ \ \ The\ basic\ format\ of\ the\ notes\ file\ is}}
+\DoxyCodeLine{00056\ \textcolor{comment}{}}
+\DoxyCodeLine{00057\ \textcolor{comment}{\ \ \ \ file\ :\ int32:magic\ int32:version\ int32:stamp\ int32:support\_unexecuted\_blocks\ record*}}
+\DoxyCodeLine{00058\ \textcolor{comment}{}}
+\DoxyCodeLine{00059\ \textcolor{comment}{\ \ \ The\ basic\ format\ of\ the\ data\ file\ is}}
+\DoxyCodeLine{00060\ \textcolor{comment}{}}
+\DoxyCodeLine{00061\ \textcolor{comment}{\ \ \ \ file\ :\ int32:magic\ int32:version\ int32:stamp\ record*}}
+\DoxyCodeLine{00062\ \textcolor{comment}{}}
+\DoxyCodeLine{00063\ \textcolor{comment}{\ \ \ A\ filename\ header\ may\ be\ used\ to\ provide\ a\ filename\ for\ the\ data\ in}}
+\DoxyCodeLine{00064\ \textcolor{comment}{\ \ \ a\ stream\ of\ data\ to\ support\ gcov\ in\ freestanding\ environments.\ \ This}}
+\DoxyCodeLine{00065\ \textcolor{comment}{\ \ \ header\ is\ used\ by\ the\ merge-\/stream\ subcommand\ of\ the\ gcov-\/tool.\ \ The}}
+\DoxyCodeLine{00066\ \textcolor{comment}{\ \ \ format\ of\ the\ filename\ header\ is}}
+\DoxyCodeLine{00067\ \textcolor{comment}{}}
+\DoxyCodeLine{00068\ \textcolor{comment}{\ \ \ \ filename-\/header\ :\ int32:magic\ int32:version\ string}}
+\DoxyCodeLine{00069\ \textcolor{comment}{}}
+\DoxyCodeLine{00070\ \textcolor{comment}{\ \ \ The\ magic\ ident\ is\ different\ for\ the\ notes\ and\ the\ data\ files\ as}}
+\DoxyCodeLine{00071\ \textcolor{comment}{\ \ \ well\ as\ the\ filename\ header.\ \ The\ magic\ ident\ is\ used\ to\ determine}}
+\DoxyCodeLine{00072\ \textcolor{comment}{\ \ \ the\ endianness\ of\ the\ file,\ when\ reading.\ \ The\ version\ is\ the\ same}}
+\DoxyCodeLine{00073\ \textcolor{comment}{\ \ \ for\ both\ files\ and\ is\ derived\ from\ gcc's\ version\ number.\ The\ stamp}}
+\DoxyCodeLine{00074\ \textcolor{comment}{\ \ \ value\ is\ used\ to\ synchronize\ note\ and\ data\ files\ and\ to\ synchronize}}
+\DoxyCodeLine{00075\ \textcolor{comment}{\ \ \ merging\ within\ a\ data\ file.\ It\ need\ not\ be\ an\ absolute\ time\ stamp,}}
+\DoxyCodeLine{00076\ \textcolor{comment}{\ \ \ merely\ a\ ticker\ that\ increments\ fast\ enough\ and\ cycles\ slow\ enough}}
+\DoxyCodeLine{00077\ \textcolor{comment}{\ \ \ to\ distinguish\ different\ compile/run/compile\ cycles.}}
+\DoxyCodeLine{00078\ \textcolor{comment}{}}
+\DoxyCodeLine{00079\ \textcolor{comment}{\ \ \ Although\ the\ ident\ and\ version\ are\ formally\ 32\ bit\ numbers,\ they}}
+\DoxyCodeLine{00080\ \textcolor{comment}{\ \ \ are\ derived\ from\ 4\ character\ ASCII\ strings.\ \ The\ version\ number}}
+\DoxyCodeLine{00081\ \textcolor{comment}{\ \ \ consists\ of\ a\ two\ character\ major\ version\ number}}
+\DoxyCodeLine{00082\ \textcolor{comment}{\ \ \ (first\ digit\ starts\ from\ 'A'\ letter\ to\ not\ to\ clash\ with\ the\ older}}
+\DoxyCodeLine{00083\ \textcolor{comment}{\ \ \ numbering\ scheme),\ the\ single\ character\ minor\ version\ number,}}
+\DoxyCodeLine{00084\ \textcolor{comment}{\ \ \ and\ a\ single\ character\ indicating\ the\ status\ of\ the\ release.}}
+\DoxyCodeLine{00085\ \textcolor{comment}{\ \ \ That\ will\ be\ 'e'\ experimental,\ 'p'\ prerelease\ and\ 'r'\ for\ release.}}
+\DoxyCodeLine{00086\ \textcolor{comment}{\ \ \ Because,\ by\ good\ fortune,\ these\ are\ in\ alphabetical\ order,\ string}}
+\DoxyCodeLine{00087\ \textcolor{comment}{\ \ \ collating\ can\ be\ used\ to\ compare\ version\ strings.\ \ Be\ aware\ that}}
+\DoxyCodeLine{00088\ \textcolor{comment}{\ \ \ the\ 'e'\ designation\ will\ (naturally)\ be\ unstable\ and\ might\ be}}
+\DoxyCodeLine{00089\ \textcolor{comment}{\ \ \ incompatible\ with\ itself.\ \ For\ gcc\ 17.0\ experimental,\ it\ would\ be}}
+\DoxyCodeLine{00090\ \textcolor{comment}{\ \ \ 'B70e'\ (0x42373065).\ \ As\ we\ currently\ do\ not\ release\ more\ than\ 5\ minor}}
+\DoxyCodeLine{00091\ \textcolor{comment}{\ \ \ releases,\ the\ single\ character\ should\ be\ always\ fine.\ \ Major\ number}}
+\DoxyCodeLine{00092\ \textcolor{comment}{\ \ \ is\ currently\ changed\ roughly\ every\ year,\ which\ gives\ us\ space}}
+\DoxyCodeLine{00093\ \textcolor{comment}{\ \ \ for\ next\ 250\ years\ (maximum\ allowed\ number\ would\ be\ 259.9).}}
+\DoxyCodeLine{00094\ \textcolor{comment}{}}
+\DoxyCodeLine{00095\ \textcolor{comment}{\ \ \ A\ record\ has\ a\ tag,\ length\ and\ variable\ amount\ of\ data.}}
+\DoxyCodeLine{00096\ \textcolor{comment}{}}
+\DoxyCodeLine{00097\ \textcolor{comment}{\ \ \ \ record:\ header\ data}}
+\DoxyCodeLine{00098\ \textcolor{comment}{\ \ \ \ header:\ int32:tag\ int32:length}}
+\DoxyCodeLine{00099\ \textcolor{comment}{\ \ \ \ data:\ item*}}
+\DoxyCodeLine{00100\ \textcolor{comment}{}}
+\DoxyCodeLine{00101\ \textcolor{comment}{\ \ \ Records\ are\ not\ nested,\ but\ there\ is\ a\ record\ hierarchy.\ \ Tag}}
+\DoxyCodeLine{00102\ \textcolor{comment}{\ \ \ numbers\ reflect\ this\ hierarchy.\ \ Tags\ are\ unique\ across\ note\ and}}
+\DoxyCodeLine{00103\ \textcolor{comment}{\ \ \ data\ files.\ \ Some\ record\ types\ have\ a\ varying\ amount\ of\ data.\ \ The}}
+\DoxyCodeLine{00104\ \textcolor{comment}{\ \ \ LENGTH\ is\ the\ number\ of\ bytes\ that\ follow\ and\ is\ usually\ used\ to}}
+\DoxyCodeLine{00105\ \textcolor{comment}{\ \ \ determine\ how\ much\ data.\ \ The\ tag\ value\ is\ split\ into\ 4\ 8-\/bit}}
+\DoxyCodeLine{00106\ \textcolor{comment}{\ \ \ fields,\ one\ for\ each\ of\ four\ possible\ levels.\ \ The\ most\ significant}}
+\DoxyCodeLine{00107\ \textcolor{comment}{\ \ \ is\ allocated\ first.\ \ Unused\ levels\ are\ zero.\ \ Active\ levels\ are}}
+\DoxyCodeLine{00108\ \textcolor{comment}{\ \ \ odd-\/valued,\ so\ that\ the\ LSB\ of\ the\ level\ is\ one.\ \ A\ sub-\/level}}
+\DoxyCodeLine{00109\ \textcolor{comment}{\ \ \ incorporates\ the\ values\ of\ its\ superlevels.\ \ This\ formatting\ allows}}
+\DoxyCodeLine{00110\ \textcolor{comment}{\ \ \ you\ to\ determine\ the\ tag\ hierarchy,\ without\ understanding\ the\ tags}}
+\DoxyCodeLine{00111\ \textcolor{comment}{\ \ \ themselves,\ and\ is\ similar\ to\ the\ standard\ section\ numbering\ used}}
+\DoxyCodeLine{00112\ \textcolor{comment}{\ \ \ in\ technical\ documents.\ \ Level\ values\ [1..3f]\ are\ used\ for\ common}}
+\DoxyCodeLine{00113\ \textcolor{comment}{\ \ \ tags,\ values\ [41..9f]\ for\ the\ notes\ file\ and\ [a1..ff]\ for\ the\ data}}
+\DoxyCodeLine{00114\ \textcolor{comment}{\ \ \ file.}}
+\DoxyCodeLine{00115\ \textcolor{comment}{}}
+\DoxyCodeLine{00116\ \textcolor{comment}{\ \ \ The\ notes\ file\ contains\ the\ following\ records}}
+\DoxyCodeLine{00117\ \textcolor{comment}{\ \ \ \ note:\ unit\ function-\/graph*}}
+\DoxyCodeLine{00118\ \textcolor{comment}{\ \ \ \ unit:\ header\ int32:checksum\ string:source}}
+\DoxyCodeLine{00119\ \textcolor{comment}{\ \ \ \ function-\/graph:\ announce\_function\ basic\_blocks\ \{arcs\ |\ lines\}*}}
+\DoxyCodeLine{00120\ \textcolor{comment}{\ \ \ \ announce\_function:\ header\ int32:ident}}
+\DoxyCodeLine{00121\ \textcolor{comment}{\ \ \ \ \ \ \ \ int32:lineno\_checksum\ int32:cfg\_checksum}}
+\DoxyCodeLine{00122\ \textcolor{comment}{\ \ \ \ \ \ \ \ string:name\ string:source\ int32:start\_lineno\ int32:start\_column\ int32:end\_lineno}}
+\DoxyCodeLine{00123\ \textcolor{comment}{\ \ \ \ basic\_block:\ header\ int32:flags*}}
+\DoxyCodeLine{00124\ \textcolor{comment}{\ \ \ \ arcs:\ header\ int32:block\_no\ arc*}}
+\DoxyCodeLine{00125\ \textcolor{comment}{\ \ \ \ arc:\ \ int32:dest\_block\ int32:flags}}
+\DoxyCodeLine{00126\ \textcolor{comment}{\ \ \ \ \ \ \ \ lines:\ header\ int32:block\_no\ line*}}
+\DoxyCodeLine{00127\ \textcolor{comment}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ int32:0\ string:NULL}}
+\DoxyCodeLine{00128\ \textcolor{comment}{\ \ \ \ line:\ \ int32:line\_no\ |\ int32:0\ string:filename}}
+\DoxyCodeLine{00129\ \textcolor{comment}{}}
+\DoxyCodeLine{00130\ \textcolor{comment}{\ \ \ The\ BASIC\_BLOCK\ record\ holds\ per-\/bb\ flags.\ \ The\ number\ of\ blocks}}
+\DoxyCodeLine{00131\ \textcolor{comment}{\ \ \ can\ be\ inferred\ from\ its\ data\ length.\ \ There\ is\ one\ ARCS\ record\ per}}
+\DoxyCodeLine{00132\ \textcolor{comment}{\ \ \ basic\ block.\ \ The\ number\ of\ arcs\ from\ a\ bb\ is\ implicit\ from\ the}}
+\DoxyCodeLine{00133\ \textcolor{comment}{\ \ \ data\ length.\ \ It\ enumerates\ the\ destination\ bb\ and\ per-\/arc\ flags.}}
+\DoxyCodeLine{00134\ \textcolor{comment}{\ \ \ There\ is\ one\ LINES\ record\ per\ basic\ block,\ it\ enumerates\ the\ source}}
+\DoxyCodeLine{00135\ \textcolor{comment}{\ \ \ lines\ which\ belong\ to\ that\ basic\ block.\ \ Source\ file\ names\ are}}
+\DoxyCodeLine{00136\ \textcolor{comment}{\ \ \ introduced\ by\ a\ line\ number\ of\ 0,\ following\ lines\ are\ from\ the\ new}}
+\DoxyCodeLine{00137\ \textcolor{comment}{\ \ \ source\ file.\ \ The\ initial\ source\ file\ for\ the\ function\ is\ NULL,\ but}}
+\DoxyCodeLine{00138\ \textcolor{comment}{\ \ \ the\ current\ source\ file\ should\ be\ remembered\ from\ one\ LINES\ record}}
+\DoxyCodeLine{00139\ \textcolor{comment}{\ \ \ to\ the\ next.\ \ The\ end\ of\ a\ block\ is\ indicated\ by\ an\ empty\ filename}}
+\DoxyCodeLine{00140\ \textcolor{comment}{\ \ \ -\/\ this\ does\ not\ reset\ the\ current\ source\ file.\ \ Note\ there\ is\ no}}
+\DoxyCodeLine{00141\ \textcolor{comment}{\ \ \ ordering\ of\ the\ ARCS\ and\ LINES\ records:\ they\ may\ be\ in\ any\ order,}}
+\DoxyCodeLine{00142\ \textcolor{comment}{\ \ \ interleaved\ in\ any\ manner.\ \ The\ current\ filename\ follows\ the\ order}}
+\DoxyCodeLine{00143\ \textcolor{comment}{\ \ \ the\ LINES\ records\ are\ stored\ in\ the\ file,\ *not*\ the\ ordering\ of\ the}}
+\DoxyCodeLine{00144\ \textcolor{comment}{\ \ \ blocks\ they\ are\ for.}}
+\DoxyCodeLine{00145\ \textcolor{comment}{}}
+\DoxyCodeLine{00146\ \textcolor{comment}{\ \ \ The\ data\ file\ contains\ the\ following\ records.}}
+\DoxyCodeLine{00147\ \textcolor{comment}{\ \ \ \ data:\ \{unit\ summary:object\ function-\/data*\}*}}
+\DoxyCodeLine{00148\ \textcolor{comment}{\ \ \ \ unit:\ header\ int32:checksum}}
+\DoxyCodeLine{00149\ \textcolor{comment}{\ \ \ \ function-\/data:\ \ announce\_function\ present\ counts}}
+\DoxyCodeLine{00150\ \textcolor{comment}{\ \ \ \ announce\_function:\ header\ int32:ident}}
+\DoxyCodeLine{00151\ \textcolor{comment}{\ \ \ \ \ \ \ \ int32:lineno\_checksum\ int32:cfg\_checksum}}
+\DoxyCodeLine{00152\ \textcolor{comment}{\ \ \ \ present:\ header\ int32:present}}
+\DoxyCodeLine{00153\ \textcolor{comment}{\ \ \ \ counts:\ header\ int64:count*}}
+\DoxyCodeLine{00154\ \textcolor{comment}{\ \ \ \ summary:\ int32:checksum\ int32:runs\ int32:sum\_max}}
+\DoxyCodeLine{00155\ \textcolor{comment}{}}
+\DoxyCodeLine{00156\ \textcolor{comment}{\ \ \ The\ ANNOUNCE\_FUNCTION\ record\ is\ the\ same\ as\ that\ in\ the\ note\ file,}}
+\DoxyCodeLine{00157\ \textcolor{comment}{\ \ \ but\ without\ the\ source\ location.\ \ The\ COUNTS\ gives\ the}}
+\DoxyCodeLine{00158\ \textcolor{comment}{\ \ \ counter\ values\ for\ instrumented\ features.\ \ The\ about\ the\ whole}}
+\DoxyCodeLine{00159\ \textcolor{comment}{\ \ \ program.\ \ The\ checksum\ is\ used\ for\ whole\ program\ summaries,\ and}}
+\DoxyCodeLine{00160\ \textcolor{comment}{\ \ \ disambiguates\ different\ programs\ which\ include\ the\ same}}
+\DoxyCodeLine{00161\ \textcolor{comment}{\ \ \ instrumented\ object\ file.\ \ There\ may\ be\ several\ program\ summaries,}}
+\DoxyCodeLine{00162\ \textcolor{comment}{\ \ \ each\ with\ a\ unique\ checksum.\ \ The\ object\ summary's\ checksum\ is}}
+\DoxyCodeLine{00163\ \textcolor{comment}{\ \ \ zero.\ \ Note\ that\ the\ data\ file\ might\ contain\ information\ from}}
+\DoxyCodeLine{00164\ \textcolor{comment}{\ \ \ several\ runs\ concatenated,\ or\ the\ data\ might\ be\ merged.}}
+\DoxyCodeLine{00165\ \textcolor{comment}{}}
+\DoxyCodeLine{00166\ \textcolor{comment}{\ \ \ This\ file\ is\ included\ by\ both\ the\ compiler,\ gcov\ tools\ and\ the}}
+\DoxyCodeLine{00167\ \textcolor{comment}{\ \ \ runtime\ support\ library\ libgcov.\ IN\_LIBGCOV\ and\ IN\_GCOV\ are\ used\ to}}
+\DoxyCodeLine{00168\ \textcolor{comment}{\ \ \ distinguish\ which\ case\ is\ which.\ \ If\ IN\_LIBGCOV\ is\ nonzero,}}
+\DoxyCodeLine{00169\ \textcolor{comment}{\ \ \ libgcov\ is\ being\ built.\ If\ IN\_GCOV\ is\ nonzero,\ the\ gcov\ tools\ are}}
+\DoxyCodeLine{00170\ \textcolor{comment}{\ \ \ being\ built.\ Otherwise\ the\ compiler\ is\ being\ built.\ IN\_GCOV\ may\ be}}
+\DoxyCodeLine{00171\ \textcolor{comment}{\ \ \ positive\ or\ negative.\ If\ positive,\ we\ are\ compiling\ a\ tool\ that}}
+\DoxyCodeLine{00172\ \textcolor{comment}{\ \ \ requires\ additional\ functions\ (see\ the\ code\ for\ knowledge\ of\ what}}
+\DoxyCodeLine{00173\ \textcolor{comment}{\ \ \ those\ functions\ are).\ \ */}}
+\DoxyCodeLine{00174\ }
+\DoxyCodeLine{00175\ \textcolor{preprocessor}{\#ifndef\ GCC\_GCOV\_IO\_H}}
+\DoxyCodeLine{00176\ \textcolor{preprocessor}{\#define\ GCC\_GCOV\_IO\_H}}
+\DoxyCodeLine{00177\ }
+\DoxyCodeLine{00178\ \textcolor{comment}{/*\ GCOV\ key-\/value\ pair\ linked\ list\ type.\ \ */}}
+\DoxyCodeLine{00179\ }
+\DoxyCodeLine{00180\ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{structgcov__kvp}{gcov\_kvp}};}
+\DoxyCodeLine{00181\ }
+\DoxyCodeLine{00182\ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{structgcov__kvp}{gcov\_kvp}}}
+\DoxyCodeLine{00183\ \{}
+\DoxyCodeLine{00184\ \ \ \doxymbox{\hyperlink{coretypes_8h_ae8c03cc266a69e9635893ee0772d12e8}{gcov\_type}}\ \doxymbox{\hyperlink{structgcov__kvp_a3519a486d815fa6d7ccf79e29482d45f}{value}};}
+\DoxyCodeLine{00185\ \ \ \doxymbox{\hyperlink{coretypes_8h_ae8c03cc266a69e9635893ee0772d12e8}{gcov\_type}}\ \doxymbox{\hyperlink{structgcov__kvp_a7735bf9ee12cdfb28d6778279902a553}{count}};}
+\DoxyCodeLine{00186\ \ \ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{structgcov__kvp}{gcov\_kvp}}\ *\doxymbox{\hyperlink{structgcov__kvp_a0fe79690a03724d6462139c82eaa0251}{next}};}
+\DoxyCodeLine{00187\ \};}
+\DoxyCodeLine{00188\ }
+\DoxyCodeLine{00189\ \textcolor{preprocessor}{\#ifndef\ IN\_LIBGCOV}}
+\DoxyCodeLine{00190\ \textcolor{comment}{/*\ About\ the\ host\ */}}
+\DoxyCodeLine{00191\ }
+\DoxyCodeLine{00192\ \textcolor{keyword}{typedef}\ \textcolor{keywordtype}{unsigned}\ \doxymbox{\hyperlink{gcov-io_8h_a24ed026c93b1ac8b1dfab2d6e82716f8}{gcov\_unsigned\_t}};}
+\DoxyCodeLine{00193\ \textcolor{keyword}{typedef}\ \textcolor{keywordtype}{unsigned}\ \doxymbox{\hyperlink{gcov-io_8h_ac85be4576deec04967cdf96f10149316}{gcov\_position\_t}};}
+\DoxyCodeLine{00194\ \textcolor{comment}{/*\ gcov\_type\ is\ typedef'd\ elsewhere\ for\ the\ compiler\ */}}
+\DoxyCodeLine{00195\ \textcolor{preprocessor}{\#if\ IN\_GCOV}}
+\DoxyCodeLine{00196\ \textcolor{preprocessor}{\#define\ GCOV\_LINKAGE\ static}}
+\DoxyCodeLine{00197\ \textcolor{keyword}{typedef}\ int64\_t\ \doxymbox{\hyperlink{coretypes_8h_ae8c03cc266a69e9635893ee0772d12e8}{gcov\_type}};}
+\DoxyCodeLine{00198\ \textcolor{keyword}{typedef}\ uint64\_t\ \doxymbox{\hyperlink{coretypes_8h_a7447961921052fb248d137d32e60fe4b}{gcov\_type\_unsigned}};}
+\DoxyCodeLine{00199\ \textcolor{preprocessor}{\#if\ IN\_GCOV\ >\ 0}}
+\DoxyCodeLine{00200\ \textcolor{preprocessor}{\#include\ <sys/types.h>}}
+\DoxyCodeLine{00201\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00202\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00203\ }
+\DoxyCodeLine{00204\ \textcolor{preprocessor}{\#if\ defined\ (HOST\_HAS\_F\_SETLKW)}}
+\DoxyCodeLine{00205\ \textcolor{preprocessor}{\#define\ GCOV\_LOCKED\ 1}}
+\DoxyCodeLine{00206\ \textcolor{preprocessor}{\#else}}
+\DoxyCodeLine{00207\ \textcolor{preprocessor}{\#define\ GCOV\_LOCKED\ 0}}
+\DoxyCodeLine{00208\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00209\ }
+\DoxyCodeLine{00210\ \textcolor{preprocessor}{\#if\ defined\ (HOST\_HAS\_LK\_LOCK)}}
+\DoxyCodeLine{00211\ \textcolor{preprocessor}{\#define\ GCOV\_LOCKED\_WITH\_LOCKING\ 1}}
+\DoxyCodeLine{00212\ \textcolor{preprocessor}{\#else}}
+\DoxyCodeLine{00213\ \textcolor{preprocessor}{\#define\ GCOV\_LOCKED\_WITH\_LOCKING\ 0}}
+\DoxyCodeLine{00214\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00215\ }
+\DoxyCodeLine{00216\ \textcolor{preprocessor}{\#define\ ATTRIBUTE\_HIDDEN}}
+\DoxyCodeLine{00217\ }
+\DoxyCodeLine{00218\ \textcolor{preprocessor}{\#endif\ }\textcolor{comment}{/*\ !IN\_LIBGCOV\ */}\textcolor{preprocessor}{}}
+\DoxyCodeLine{00219\ }
+\DoxyCodeLine{00220\ \textcolor{preprocessor}{\#ifndef\ GCOV\_LINKAGE}}
+\DoxyCodeLine{00221\ \textcolor{preprocessor}{\#define\ GCOV\_LINKAGE\ extern}}
+\DoxyCodeLine{00222\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00223\ }
+\DoxyCodeLine{00224\ \textcolor{preprocessor}{\#if\ IN\_LIBGCOV}}
+\DoxyCodeLine{00225\ \textcolor{preprocessor}{\#define\ gcov\_nonruntime\_assert(EXPR)\ ((void)(0\ \&\&\ (EXPR)))}}
+\DoxyCodeLine{00226\ \textcolor{preprocessor}{\#else}}
+\DoxyCodeLine{00227\ \textcolor{preprocessor}{\#define\ gcov\_nonruntime\_assert(EXPR)\ gcc\_assert\ (EXPR)}}
+\DoxyCodeLine{00228\ \textcolor{preprocessor}{\#define\ gcov\_error(...)\ fatal\_error\ (input\_location,\ \_\_VA\_ARGS\_\_)}}
+\DoxyCodeLine{00229\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00230\ }
+\DoxyCodeLine{00231\ \textcolor{comment}{/*\ File\ suffixes.\ \ */}}
+\DoxyCodeLine{00232\ \textcolor{preprocessor}{\#define\ GCOV\_DATA\_SUFFIX\ "{}.gcda"{}}}
+\DoxyCodeLine{00233\ \textcolor{preprocessor}{\#define\ GCOV\_NOTE\_SUFFIX\ "{}.gcno"{}}}
+\DoxyCodeLine{00234\ }
+\DoxyCodeLine{00235\ \textcolor{comment}{/*\ File\ magic.\ Must\ not\ be\ palindromes.\ \ */}}
+\DoxyCodeLine{00236\ \textcolor{preprocessor}{\#define\ GCOV\_DATA\_MAGIC\ ((gcov\_unsigned\_t)0x67636461)\ }\textcolor{comment}{/*\ "{}gcda"{}\ */}\textcolor{preprocessor}{}}
+\DoxyCodeLine{00237\ \textcolor{preprocessor}{\#define\ GCOV\_NOTE\_MAGIC\ ((gcov\_unsigned\_t)0x67636e6f)\ }\textcolor{comment}{/*\ "{}gcno"{}\ */}\textcolor{preprocessor}{}}
+\DoxyCodeLine{00238\ \textcolor{preprocessor}{\#define\ GCOV\_FILENAME\_MAGIC\ ((gcov\_unsigned\_t)0x6763666e)\ }\textcolor{comment}{/*\ "{}gcfn"{}\ */}\textcolor{preprocessor}{}}
+\DoxyCodeLine{00239\ }
+\DoxyCodeLine{00240\ \textcolor{preprocessor}{\#include\ "{}\doxymbox{\hyperlink{version_8h}{version.h}}"{}}}
+\DoxyCodeLine{00241\ }
+\DoxyCodeLine{00242\ \textcolor{comment}{/*\ Convert\ a\ magic\ or\ version\ number\ to\ a\ 4\ character\ string.\ \ */}}
+\DoxyCodeLine{00243\ \textcolor{preprocessor}{\#define\ GCOV\_UNSIGNED2STRING(ARRAY,VALUE)\ \ \ \(\backslash\)}}
+\DoxyCodeLine{00244\ \textcolor{preprocessor}{\ \ ((ARRAY)[0]\ =\ (char)((VALUE)\ >>\ 24),\ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00245\ \textcolor{preprocessor}{\ \ \ (ARRAY)[1]\ =\ (char)((VALUE)\ >>\ 16),\ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00246\ \textcolor{preprocessor}{\ \ \ (ARRAY)[2]\ =\ (char)((VALUE)\ >>\ 8),\ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00247\ \textcolor{preprocessor}{\ \ \ (ARRAY)[3]\ =\ (char)((VALUE)\ >>\ 0))}}
+\DoxyCodeLine{00248\ }
+\DoxyCodeLine{00249\ \textcolor{comment}{/*\ The\ record\ tags.\ \ Values\ [1..3f]\ are\ for\ tags\ which\ may\ be\ in\ either}}
+\DoxyCodeLine{00250\ \textcolor{comment}{\ \ \ file.\ \ Values\ [41..9f]\ for\ those\ in\ the\ note\ file\ and\ [a1..ff]\ for}}
+\DoxyCodeLine{00251\ \textcolor{comment}{\ \ \ the\ data\ file.\ \ The\ tag\ value\ zero\ is\ used\ as\ an\ explicit\ end\ of}}
+\DoxyCodeLine{00252\ \textcolor{comment}{\ \ \ file\ marker\ -\/-\/\ it\ is\ not\ required\ to\ be\ present.}}
+\DoxyCodeLine{00253\ \textcolor{comment}{\ \ \ All\ length\ values\ are\ in\ bytes.\ \ */}}
+\DoxyCodeLine{00254\ }
+\DoxyCodeLine{00255\ \textcolor{preprocessor}{\#define\ GCOV\_WORD\_SIZE\ \ \ \ \ \ 4}}
+\DoxyCodeLine{00256\ }
+\DoxyCodeLine{00257\ \textcolor{preprocessor}{\#define\ GCOV\_TAG\_FUNCTION\ \ \ \ ((gcov\_unsigned\_t)0x01000000)}}
+\DoxyCodeLine{00258\ \textcolor{preprocessor}{\#define\ GCOV\_TAG\_FUNCTION\_LENGTH\ (3\ *\ GCOV\_WORD\_SIZE)}}
+\DoxyCodeLine{00259\ \textcolor{preprocessor}{\#define\ GCOV\_TAG\_BLOCKS\ \ \ \ \ \ ((gcov\_unsigned\_t)0x01410000)}}
+\DoxyCodeLine{00260\ \textcolor{preprocessor}{\#define\ GCOV\_TAG\_BLOCKS\_LENGTH(NUM)\ (NUM)}}
+\DoxyCodeLine{00261\ \textcolor{preprocessor}{\#define\ GCOV\_TAG\_ARCS\ \ \ \ \ \ \ \ ((gcov\_unsigned\_t)0x01430000)}}
+\DoxyCodeLine{00262\ \textcolor{preprocessor}{\#define\ GCOV\_TAG\_ARCS\_LENGTH(NUM)\ \ (1\ +\ (NUM)\ *\ 2\ *\ GCOV\_WORD\_SIZE)}}
+\DoxyCodeLine{00263\ \textcolor{preprocessor}{\#define\ GCOV\_TAG\_ARCS\_NUM(LENGTH)\ \ (((LENGTH\ /\ GCOV\_WORD\_SIZE)\ -\/\ 1)\ /\ 2)}}
+\DoxyCodeLine{00264\ \textcolor{preprocessor}{\#define\ GCOV\_TAG\_CONDS\ \ \ \ \ \ \ \ \ ((gcov\_unsigned\_t)0x01470000)}}
+\DoxyCodeLine{00265\ \textcolor{preprocessor}{\#define\ GCOV\_TAG\_CONDS\_LENGTH(NUM)\ ((NUM)\ *\ 2\ *\ GCOV\_WORD\_SIZE)}}
+\DoxyCodeLine{00266\ \textcolor{preprocessor}{\#define\ GCOV\_TAG\_CONDS\_NUM(LENGTH)\ (((LENGTH)\ /\ GCOV\_WORD\_SIZE)\ /\ 2)}}
+\DoxyCodeLine{00267\ \textcolor{preprocessor}{\#define\ GCOV\_TAG\_LINES\ \ \ \ \ \ \ ((gcov\_unsigned\_t)0x01450000)}}
+\DoxyCodeLine{00268\ \textcolor{preprocessor}{\#define\ GCOV\_TAG\_COUNTER\_BASE\ \ \ \ ((gcov\_unsigned\_t)0x01a10000)}}
+\DoxyCodeLine{00269\ \textcolor{preprocessor}{\#define\ GCOV\_TAG\_COUNTER\_LENGTH(NUM)\ ((NUM)\ *\ 2\ *\ GCOV\_WORD\_SIZE)}}
+\DoxyCodeLine{00270\ \textcolor{preprocessor}{\#define\ GCOV\_TAG\_COUNTER\_NUM(LENGTH)\ ((LENGTH\ /\ GCOV\_WORD\_SIZE)\ /\ 2)}}
+\DoxyCodeLine{00271\ \textcolor{preprocessor}{\#define\ GCOV\_TAG\_OBJECT\_SUMMARY\ \ ((gcov\_unsigned\_t)0xa1000000)}}
+\DoxyCodeLine{00272\ \textcolor{preprocessor}{\#define\ GCOV\_TAG\_OBJECT\_SUMMARY\_LENGTH\ (2\ *\ GCOV\_WORD\_SIZE)}}
+\DoxyCodeLine{00273\ \textcolor{preprocessor}{\#define\ GCOV\_TAG\_PROGRAM\_SUMMARY\ ((gcov\_unsigned\_t)0xa3000000)\ }\textcolor{comment}{/*\ Obsolete\ */}\textcolor{preprocessor}{}}
+\DoxyCodeLine{00274\ \textcolor{preprocessor}{\#define\ GCOV\_TAG\_AFDO\_FILE\_NAMES\ ((gcov\_unsigned\_t)0xaa000000)}}
+\DoxyCodeLine{00275\ \textcolor{preprocessor}{\#define\ GCOV\_TAG\_AFDO\_FUNCTION\ ((gcov\_unsigned\_t)0xac000000)}}
+\DoxyCodeLine{00276\ \textcolor{preprocessor}{\#define\ GCOV\_TAG\_AFDO\_WORKING\_SET\ ((gcov\_unsigned\_t)0xaf000000)}}
+\DoxyCodeLine{00277\ }
+\DoxyCodeLine{00278\ }
+\DoxyCodeLine{00279\ \textcolor{comment}{/*\ Counters\ that\ are\ collected.\ \ */}}
+\DoxyCodeLine{00280\ }
+\DoxyCodeLine{00281\ \textcolor{preprocessor}{\#define\ DEF\_GCOV\_COUNTER(COUNTER,\ NAME,\ MERGE\_FN)\ COUNTER,}}
+\DoxyCodeLine{00282\ \textcolor{keyword}{enum}\ \{}
+\DoxyCodeLine{00283\ \textcolor{preprocessor}{\#include\ "{}gcov-\/counter.def"{}}}
+\DoxyCodeLine{00284\ \doxymbox{\hyperlink{gcov-io_8h_abcf26fb972317961b78c405c70f7ca9faa88456a9e99bce4efb36287d43ba7e12}{GCOV\_COUNTERS}}}
+\DoxyCodeLine{00285\ \};}
+\DoxyCodeLine{00286\ \textcolor{preprocessor}{\#undef\ DEF\_GCOV\_COUNTER}}
+\DoxyCodeLine{00287\ }
+\DoxyCodeLine{00288\ \textcolor{comment}{/*\ The\ first\ of\ counters\ used\ for\ value\ profiling.\ \ They\ must\ form\ a}}
+\DoxyCodeLine{00289\ \textcolor{comment}{\ \ \ consecutive\ interval\ and\ their\ order\ must\ match\ the\ order\ of}}
+\DoxyCodeLine{00290\ \textcolor{comment}{\ \ \ HIST\_TYPEs\ in\ value-\/prof.h.\ \ */}}
+\DoxyCodeLine{00291\ \textcolor{preprocessor}{\#define\ GCOV\_FIRST\_VALUE\_COUNTER\ GCOV\_COUNTER\_V\_INTERVAL}}
+\DoxyCodeLine{00292\ }
+\DoxyCodeLine{00293\ \textcolor{comment}{/*\ The\ last\ of\ counters\ used\ for\ value\ profiling.\ \ */}}
+\DoxyCodeLine{00294\ \textcolor{preprocessor}{\#define\ GCOV\_LAST\_VALUE\_COUNTER\ (GCOV\_COUNTERS\ -\/\ 1)}}
+\DoxyCodeLine{00295\ }
+\DoxyCodeLine{00296\ \textcolor{comment}{/*\ Number\ of\ counters\ used\ for\ value\ profiling.\ \ */}}
+\DoxyCodeLine{00297\ \textcolor{preprocessor}{\#define\ GCOV\_N\_VALUE\_COUNTERS\ \(\backslash\)}}
+\DoxyCodeLine{00298\ \textcolor{preprocessor}{\ \ (GCOV\_LAST\_VALUE\_COUNTER\ -\/\ GCOV\_FIRST\_VALUE\_COUNTER\ +\ 1)}}
+\DoxyCodeLine{00299\ }
+\DoxyCodeLine{00300\ \textcolor{comment}{/*\ Number\ of\ top\ N\ counters\ when\ being\ in\ memory.\ \ */}}
+\DoxyCodeLine{00301\ \textcolor{preprocessor}{\#define\ GCOV\_TOPN\_MEM\_COUNTERS\ 3}}
+\DoxyCodeLine{00302\ }
+\DoxyCodeLine{00303\ \textcolor{comment}{/*\ Number\ of\ top\ N\ counters\ in\ disk\ representation.\ \ */}}
+\DoxyCodeLine{00304\ \textcolor{preprocessor}{\#define\ GCOV\_TOPN\_DISK\_COUNTERS\ 2}}
+\DoxyCodeLine{00305\ }
+\DoxyCodeLine{00306\ \textcolor{comment}{/*\ Maximum\ number\ of\ tracked\ TOP\ N\ value\ profiles.\ \ */}}
+\DoxyCodeLine{00307\ \textcolor{preprocessor}{\#define\ GCOV\_TOPN\_MAXIMUM\_TRACKED\_VALUES\ 32}}
+\DoxyCodeLine{00308\ }
+\DoxyCodeLine{00309\ \textcolor{comment}{/*\ Convert\ a\ counter\ index\ to\ a\ tag.\ \ */}}
+\DoxyCodeLine{00310\ \textcolor{preprocessor}{\#define\ GCOV\_TAG\_FOR\_COUNTER(COUNT)\ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00311\ \textcolor{preprocessor}{\ \ \ \ (GCOV\_TAG\_COUNTER\_BASE\ +\ ((gcov\_unsigned\_t)(COUNT)\ <<\ 17))}}
+\DoxyCodeLine{00312\ \textcolor{comment}{/*\ Convert\ a\ tag\ to\ a\ counter.\ \ */}}
+\DoxyCodeLine{00313\ \textcolor{preprocessor}{\#define\ GCOV\_COUNTER\_FOR\_TAG(TAG)\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00314\ \textcolor{preprocessor}{\ \ \ \ ((unsigned)(((TAG)\ -\/\ GCOV\_TAG\_COUNTER\_BASE)\ >>\ 17))}}
+\DoxyCodeLine{00315\ \textcolor{comment}{/*\ Check\ whether\ a\ tag\ is\ a\ counter\ tag.\ \ */}}
+\DoxyCodeLine{00316\ \textcolor{preprocessor}{\#define\ GCOV\_TAG\_IS\_COUNTER(TAG)\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00317\ \textcolor{preprocessor}{\ \ \ \ (!((TAG)\ \&\ 0xFFFF)\ \&\&\ GCOV\_COUNTER\_FOR\_TAG\ (TAG)\ <\ GCOV\_COUNTERS)}}
+\DoxyCodeLine{00318\ }
+\DoxyCodeLine{00319\ \textcolor{comment}{/*\ The\ tag\ level\ mask\ has\ 1's\ in\ the\ position\ of\ the\ inner\ levels,\ \&}}
+\DoxyCodeLine{00320\ \textcolor{comment}{\ \ \ the\ lsb\ of\ the\ current\ level,\ and\ zero\ on\ the\ current\ and\ outer}}
+\DoxyCodeLine{00321\ \textcolor{comment}{\ \ \ levels.\ \ */}}
+\DoxyCodeLine{00322\ \textcolor{preprocessor}{\#define\ GCOV\_TAG\_MASK(TAG)\ (((TAG)\ -\/\ 1)\ \string^\ (TAG))}}
+\DoxyCodeLine{00323\ }
+\DoxyCodeLine{00324\ \textcolor{comment}{/*\ Return\ nonzero\ if\ SUB\ is\ an\ immediate\ subtag\ of\ TAG.\ \ */}}
+\DoxyCodeLine{00325\ \textcolor{preprocessor}{\#define\ GCOV\_TAG\_IS\_SUBTAG(TAG,SUB)\ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00326\ \textcolor{preprocessor}{\ \ \ \ (GCOV\_TAG\_MASK\ (TAG)\ >>\ 8\ ==\ GCOV\_TAG\_MASK\ (SUB)\ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00327\ \textcolor{preprocessor}{\ \ \ \ \ \&\&\ !(((SUB)\ \string^\ (TAG))\ \&\ \string~GCOV\_TAG\_MASK\ (TAG)))}}
+\DoxyCodeLine{00328\ }
+\DoxyCodeLine{00329\ \textcolor{comment}{/*\ Return\ nonzero\ if\ SUB\ is\ at\ a\ sublevel\ to\ TAG.\ \ */}}
+\DoxyCodeLine{00330\ \textcolor{preprocessor}{\#define\ GCOV\_TAG\_IS\_SUBLEVEL(TAG,SUB)\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00331\ \textcolor{preprocessor}{\ \ \ \ \ \ \ \ (GCOV\_TAG\_MASK\ (TAG)\ >\ GCOV\_TAG\_MASK\ (SUB))}}
+\DoxyCodeLine{00332\ }
+\DoxyCodeLine{00333\ \textcolor{comment}{/*\ Basic\ block\ flags.\ \ */}}
+\DoxyCodeLine{00334\ \textcolor{preprocessor}{\#define\ GCOV\_BLOCK\_UNEXPECTED\ \ \ (1\ <<\ 1)}}
+\DoxyCodeLine{00335\ }
+\DoxyCodeLine{00336\ \textcolor{comment}{/*\ Arc\ flags.\ \ */}}
+\DoxyCodeLine{00337\ \textcolor{preprocessor}{\#define\ GCOV\_ARC\_ON\_TREE\ \ \ \ (1\ <<\ 0)}}
+\DoxyCodeLine{00338\ \textcolor{preprocessor}{\#define\ GCOV\_ARC\_FAKE\ \ \ \ \ \ \ (1\ <<\ 1)}}
+\DoxyCodeLine{00339\ \textcolor{preprocessor}{\#define\ GCOV\_ARC\_FALLTHROUGH\ \ \ \ (1\ <<\ 2)}}
+\DoxyCodeLine{00340\ }
+\DoxyCodeLine{00341\ \textcolor{comment}{/*\ Object\ \&\ program\ summary\ record.\ \ */}}
+\DoxyCodeLine{00342\ }
+\DoxyCodeLine{00343\ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{structgcov__summary}{gcov\_summary}}}
+\DoxyCodeLine{00344\ \{}
+\DoxyCodeLine{00345\ \ \ \doxymbox{\hyperlink{gcov-io_8h_a24ed026c93b1ac8b1dfab2d6e82716f8}{gcov\_unsigned\_t}}\ \doxymbox{\hyperlink{structgcov__summary_abf9e1987a701dc254467c938fdf578a0}{runs}};\ \ \ \ \ \textcolor{comment}{/*\ Number\ of\ program\ runs.\ \ */}}
+\DoxyCodeLine{00346\ \ \ \doxymbox{\hyperlink{coretypes_8h_ae8c03cc266a69e9635893ee0772d12e8}{gcov\_type}}\ \doxymbox{\hyperlink{structgcov__summary_a22e23ef529c071a7a5b80064c466ce32}{sum\_max}};\ \ \ \ \ \ \ \ \textcolor{comment}{/*\ Sum\ of\ individual\ run\ max\ values.\ \ */}}
+\DoxyCodeLine{00347\ \};}
+\DoxyCodeLine{00348\ }
+\DoxyCodeLine{00349\ \textcolor{preprocessor}{\#if\ !defined(inhibit\_libc)}}
+\DoxyCodeLine{00350\ }
+\DoxyCodeLine{00351\ \textcolor{comment}{/*\ Functions\ for\ reading\ and\ writing\ gcov\ files.\ In\ libgcov\ you\ can}}
+\DoxyCodeLine{00352\ \textcolor{comment}{\ \ \ open\ the\ file\ for\ reading\ then\ writing.\ Elsewhere\ you\ can\ open\ the}}
+\DoxyCodeLine{00353\ \textcolor{comment}{\ \ \ file\ either\ for\ reading\ or\ for\ writing.\ When\ reading\ a\ file\ you\ may}}
+\DoxyCodeLine{00354\ \textcolor{comment}{\ \ \ use\ the\ gcov\_read\_*\ functions,\ gcov\_sync,\ gcov\_position,\ and}}
+\DoxyCodeLine{00355\ \textcolor{comment}{\ \ \ gcov\_error.\ When\ writing\ a\ file\ you\ may\ use\ the\ gcov\_write*}}
+\DoxyCodeLine{00356\ \textcolor{comment}{\ \ \ functions\ and\ gcov\_error.\ When\ a\ file\ is\ to\ be\ rewritten}}
+\DoxyCodeLine{00357\ \textcolor{comment}{\ \ \ you\ use\ the\ functions\ for\ reading,\ then\ gcov\_rewrite\ then\ the}}
+\DoxyCodeLine{00358\ \textcolor{comment}{\ \ \ functions\ for\ writing.\ \ Your\ file\ may\ become\ corrupted\ if\ you\ break}}
+\DoxyCodeLine{00359\ \textcolor{comment}{\ \ \ these\ invariants.\ \ */}}
+\DoxyCodeLine{00360\ }
+\DoxyCodeLine{00361\ \textcolor{preprocessor}{\#if\ !IN\_LIBGCOV\ ||\ defined\ (IN\_GCOV\_TOOL)}}
+\DoxyCodeLine{00362\ \doxymbox{\hyperlink{gcov-io_8h_a4910885d1249f2e8be9fda63b63eee69}{GCOV\_LINKAGE}}\ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{gcov-io_8h_af3844171f9121bdb465f23462e07ad0b}{gcov\_magic}}\ (\doxymbox{\hyperlink{gcov-io_8h_a24ed026c93b1ac8b1dfab2d6e82716f8}{gcov\_unsigned\_t}},\ \doxymbox{\hyperlink{gcov-io_8h_a24ed026c93b1ac8b1dfab2d6e82716f8}{gcov\_unsigned\_t}});}
+\DoxyCodeLine{00363\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00364\ }
+\DoxyCodeLine{00365\ \textcolor{comment}{/*\ Available\ everywhere.\ \ */}}
+\DoxyCodeLine{00366\ \doxymbox{\hyperlink{gcov-io_8h_a4910885d1249f2e8be9fda63b63eee69}{GCOV\_LINKAGE}}\ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{gcov-io_8h_ad850c23f3c6587f79e30a4f6e17fc902}{gcov\_open}}\ (\textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *,\ \textcolor{keywordtype}{int})\ \doxymbox{\hyperlink{gcov-io_8h_aa7a089bf511ade20514a44f369be8459}{ATTRIBUTE\_HIDDEN}};}
+\DoxyCodeLine{00367\ \doxymbox{\hyperlink{gcov-io_8h_a4910885d1249f2e8be9fda63b63eee69}{GCOV\_LINKAGE}}\ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{gcov-io_8h_a977867e7c1bb68171815b00e0ccab114}{gcov\_close}}\ (\textcolor{keywordtype}{void})\ \doxymbox{\hyperlink{gcov-io_8h_aa7a089bf511ade20514a44f369be8459}{ATTRIBUTE\_HIDDEN}};}
+\DoxyCodeLine{00368\ \doxymbox{\hyperlink{gcov-io_8h_a4910885d1249f2e8be9fda63b63eee69}{GCOV\_LINKAGE}}\ \doxymbox{\hyperlink{gcov-io_8h_a24ed026c93b1ac8b1dfab2d6e82716f8}{gcov\_unsigned\_t}}\ \doxymbox{\hyperlink{gcov-io_8h_abb9d2bc5e1446df3f23a0fb75ec46fa5}{gcov\_read\_unsigned}}\ (\textcolor{keywordtype}{void})\ \doxymbox{\hyperlink{gcov-io_8h_aa7a089bf511ade20514a44f369be8459}{ATTRIBUTE\_HIDDEN}};}
+\DoxyCodeLine{00369\ \doxymbox{\hyperlink{gcov-io_8h_a4910885d1249f2e8be9fda63b63eee69}{GCOV\_LINKAGE}}\ \doxymbox{\hyperlink{coretypes_8h_ae8c03cc266a69e9635893ee0772d12e8}{gcov\_type}}\ \doxymbox{\hyperlink{gcov-io_8h_a7a83c9aa810b1447de6e1ac8030dd3dc}{gcov\_read\_counter}}\ (\textcolor{keywordtype}{void})\ \doxymbox{\hyperlink{gcov-io_8h_aa7a089bf511ade20514a44f369be8459}{ATTRIBUTE\_HIDDEN}};}
+\DoxyCodeLine{00370\ \doxymbox{\hyperlink{gcov-io_8h_a4910885d1249f2e8be9fda63b63eee69}{GCOV\_LINKAGE}}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{gcov-io_8h_a71b79f41a272e89ec32ddc88ede8719e}{gcov\_read\_summary}}\ (\textcolor{keyword}{struct}\ \doxymbox{\hyperlink{structgcov__summary}{gcov\_summary}}\ *)\ \doxymbox{\hyperlink{gcov-io_8h_aa7a089bf511ade20514a44f369be8459}{ATTRIBUTE\_HIDDEN}};}
+\DoxyCodeLine{00371\ \doxymbox{\hyperlink{gcov-io_8h_a4910885d1249f2e8be9fda63b63eee69}{GCOV\_LINKAGE}}\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *\doxymbox{\hyperlink{gcov-io_8h_afbd651d9aba3975d52903256861ac72e}{gcov\_read\_string}}\ (\textcolor{keywordtype}{void});}
+\DoxyCodeLine{00372\ \doxymbox{\hyperlink{gcov-io_8h_a4910885d1249f2e8be9fda63b63eee69}{GCOV\_LINKAGE}}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{gcov-io_8h_acc05a6619ffd6655eb21cd86aa4a83e5}{gcov\_sync}}\ (\doxymbox{\hyperlink{gcov-io_8h_ac85be4576deec04967cdf96f10149316}{gcov\_position\_t}}\ \textcolor{comment}{/*base*/},}
+\DoxyCodeLine{00373\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{gcov-io_8h_a24ed026c93b1ac8b1dfab2d6e82716f8}{gcov\_unsigned\_t}}\ \textcolor{comment}{/*length\ */});}
+\DoxyCodeLine{00374\ \textcolor{keywordtype}{char}\ *\doxymbox{\hyperlink{gcov-io_8h_a27a62dbc5cab18c569a7e45cbc397e7b}{mangle\_path}}\ (\textcolor{keywordtype}{char}\ \textcolor{keyword}{const}\ *base);}
+\DoxyCodeLine{00375\ }
+\DoxyCodeLine{00376\ \textcolor{preprocessor}{\#if\ !IN\_GCOV}}
+\DoxyCodeLine{00377\ \textcolor{comment}{/*\ Available\ outside\ gcov\ */}}
+\DoxyCodeLine{00378\ \doxymbox{\hyperlink{gcov-io_8h_a4910885d1249f2e8be9fda63b63eee69}{GCOV\_LINKAGE}}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{gcov-io_8h_ae86675c2b244133f430dded0c3b1bf05}{gcov\_write}}\ (\textcolor{keyword}{const}\ \textcolor{keywordtype}{void}\ *,\ \textcolor{keywordtype}{unsigned})\ \doxymbox{\hyperlink{gcov-io_8h_aa7a089bf511ade20514a44f369be8459}{ATTRIBUTE\_HIDDEN}};}
+\DoxyCodeLine{00379\ \doxymbox{\hyperlink{gcov-io_8h_a4910885d1249f2e8be9fda63b63eee69}{GCOV\_LINKAGE}}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{gcov-io_8h_a5cfbed6aa1274655f7dd75c77479583b}{gcov\_write\_unsigned}}\ (\doxymbox{\hyperlink{gcov-io_8h_a24ed026c93b1ac8b1dfab2d6e82716f8}{gcov\_unsigned\_t}})\ \doxymbox{\hyperlink{gcov-io_8h_aa7a089bf511ade20514a44f369be8459}{ATTRIBUTE\_HIDDEN}};}
+\DoxyCodeLine{00380\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00381\ }
+\DoxyCodeLine{00382\ \textcolor{preprocessor}{\#if\ !IN\_GCOV\ \&\&\ !IN\_LIBGCOV}}
+\DoxyCodeLine{00383\ \textcolor{comment}{/*\ Available\ only\ in\ compiler\ */}}
+\DoxyCodeLine{00384\ \doxymbox{\hyperlink{gcov-io_8h_a4910885d1249f2e8be9fda63b63eee69}{GCOV\_LINKAGE}}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{gcov-io_8h_aaccf0cab9b47bcc58aac4653c0042b89}{gcov\_write\_string}}\ (\textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *);}
+\DoxyCodeLine{00385\ \doxymbox{\hyperlink{gcov-io_8h_a4910885d1249f2e8be9fda63b63eee69}{GCOV\_LINKAGE}}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{gcov-io_8h_a2a96e21c20bdb379ae4153573928a0d1}{gcov\_write\_filename}}\ (\textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *);}
+\DoxyCodeLine{00386\ \doxymbox{\hyperlink{gcov-io_8h_a4910885d1249f2e8be9fda63b63eee69}{GCOV\_LINKAGE}}\ \doxymbox{\hyperlink{gcov-io_8h_ac85be4576deec04967cdf96f10149316}{gcov\_position\_t}}\ \doxymbox{\hyperlink{gcov-io_8h_a464782e6fb619a0be4c36d751970c72c}{gcov\_write\_tag}}\ (\doxymbox{\hyperlink{gcov-io_8h_a24ed026c93b1ac8b1dfab2d6e82716f8}{gcov\_unsigned\_t}});}
+\DoxyCodeLine{00387\ \doxymbox{\hyperlink{gcov-io_8h_a4910885d1249f2e8be9fda63b63eee69}{GCOV\_LINKAGE}}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{gcov-io_8h_af336c682ba3fb5f812ab19b101ec049e}{gcov\_write\_length}}\ (\doxymbox{\hyperlink{gcov-io_8h_ac85be4576deec04967cdf96f10149316}{gcov\_position\_t}}\ \textcolor{comment}{/*position*/});}
+\DoxyCodeLine{00388\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00389\ }
+\DoxyCodeLine{00390\ \textcolor{preprocessor}{\#if\ IN\_GCOV\ >\ 0}}
+\DoxyCodeLine{00391\ \textcolor{comment}{/*\ Available\ in\ gcov\ */}}
+\DoxyCodeLine{00392\ \doxymbox{\hyperlink{gcov-io_8h_a4910885d1249f2e8be9fda63b63eee69}{GCOV\_LINKAGE}}\ time\_t\ gcov\_time\ (\textcolor{keywordtype}{void});}
+\DoxyCodeLine{00393\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00394\ }
+\DoxyCodeLine{00395\ \textcolor{preprocessor}{\#endif\ }\textcolor{comment}{/*\ !inhibit\_libc\ \ */}\textcolor{preprocessor}{}}
+\DoxyCodeLine{00396\ }
+\DoxyCodeLine{00397\ \textcolor{preprocessor}{\#endif\ }\textcolor{comment}{/*\ GCC\_GCOV\_IO\_H\ */}\textcolor{preprocessor}{}}
+
+\end{DoxyCode}

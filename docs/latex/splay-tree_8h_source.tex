@@ -1,0 +1,171 @@
+\doxysection{splay-\/tree.h}
+\hypertarget{splay-tree_8h_source}{}\label{splay-tree_8h_source}\index{toolchain/x86\_64-\/elf/lib/gcc/x86\_64-\/elf/14.2.0/plugin/include/splay-\/tree.h@{toolchain/x86\_64-\/elf/lib/gcc/x86\_64-\/elf/14.2.0/plugin/include/splay-\/tree.h}}
+\doxymbox{\hyperlink{splay-tree_8h}{Go to the documentation of this file.}}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001\ \textcolor{comment}{/*\ A\ splay-\/tree\ datatype.\ \ }}
+\DoxyCodeLine{00002\ \textcolor{comment}{\ \ \ Copyright\ (C)\ 1998-\/2024\ Free\ Software\ Foundation,\ Inc.}}
+\DoxyCodeLine{00003\ \textcolor{comment}{\ \ \ Contributed\ by\ Mark\ Mitchell\ (mark@markmitchell.com).}}
+\DoxyCodeLine{00004\ \textcolor{comment}{}}
+\DoxyCodeLine{00005\ \textcolor{comment}{\ \ \ This\ file\ is\ part\ of\ GCC.}}
+\DoxyCodeLine{00006\ \textcolor{comment}{\ \ \ }}
+\DoxyCodeLine{00007\ \textcolor{comment}{\ \ \ GCC\ is\ free\ software;\ you\ can\ redistribute\ it\ and/or\ modify\ it}}
+\DoxyCodeLine{00008\ \textcolor{comment}{\ \ \ under\ the\ terms\ of\ the\ GNU\ General\ Public\ License\ as\ published\ by}}
+\DoxyCodeLine{00009\ \textcolor{comment}{\ \ \ the\ Free\ Software\ Foundation;\ either\ version\ 2,\ or\ (at\ your\ option)}}
+\DoxyCodeLine{00010\ \textcolor{comment}{\ \ \ any\ later\ version.}}
+\DoxyCodeLine{00011\ \textcolor{comment}{}}
+\DoxyCodeLine{00012\ \textcolor{comment}{\ \ \ GCC\ is\ distributed\ in\ the\ hope\ that\ it\ will\ be\ useful,\ but}}
+\DoxyCodeLine{00013\ \textcolor{comment}{\ \ \ WITHOUT\ ANY\ WARRANTY;\ without\ even\ the\ implied\ warranty\ of}}
+\DoxyCodeLine{00014\ \textcolor{comment}{\ \ \ MERCHANTABILITY\ or\ FITNESS\ FOR\ A\ PARTICULAR\ PURPOSE.\ \ See\ the\ GNU}}
+\DoxyCodeLine{00015\ \textcolor{comment}{\ \ \ General\ Public\ License\ for\ more\ details.}}
+\DoxyCodeLine{00016\ \textcolor{comment}{}}
+\DoxyCodeLine{00017\ \textcolor{comment}{\ \ \ You\ should\ have\ received\ a\ copy\ of\ the\ GNU\ General\ Public\ License}}
+\DoxyCodeLine{00018\ \textcolor{comment}{\ \ \ along\ with\ GCC;\ see\ the\ file\ COPYING.\ \ If\ not,\ write\ to}}
+\DoxyCodeLine{00019\ \textcolor{comment}{\ \ \ the\ Free\ Software\ Foundation,\ 51\ Franklin\ Street\ -\/\ Fifth\ Floor,}}
+\DoxyCodeLine{00020\ \textcolor{comment}{\ \ \ Boston,\ MA\ 02110-\/1301,\ USA.\ \ */}}
+\DoxyCodeLine{00021\ }
+\DoxyCodeLine{00022\ \textcolor{comment}{/*\ For\ an\ easily\ readable\ description\ of\ splay-\/trees,\ see:}}
+\DoxyCodeLine{00023\ \textcolor{comment}{}}
+\DoxyCodeLine{00024\ \textcolor{comment}{\ \ \ \ \ Lewis,\ Harry\ R.\ and\ Denenberg,\ Larry.\ \ Data\ Structures\ and\ Their}}
+\DoxyCodeLine{00025\ \textcolor{comment}{\ \ \ \ \ Algorithms.\ \ Harper-\/Collins,\ Inc.\ \ 1991.\ \ }}
+\DoxyCodeLine{00026\ \textcolor{comment}{}}
+\DoxyCodeLine{00027\ \textcolor{comment}{\ \ \ The\ major\ feature\ of\ splay\ trees\ is\ that\ all\ basic\ tree\ operations}}
+\DoxyCodeLine{00028\ \textcolor{comment}{\ \ \ are\ amortized\ O(log\ n)\ time\ for\ a\ tree\ with\ n\ nodes.\ \ */}}
+\DoxyCodeLine{00029\ }
+\DoxyCodeLine{00030\ \textcolor{preprocessor}{\#ifndef\ \_SPLAY\_TREE\_H}}
+\DoxyCodeLine{00031\ \textcolor{preprocessor}{\#define\ \_SPLAY\_TREE\_H}}
+\DoxyCodeLine{00032\ }
+\DoxyCodeLine{00033\ \textcolor{preprocessor}{\#ifdef\ \_\_cplusplus}}
+\DoxyCodeLine{00034\ \textcolor{keyword}{extern}\ \textcolor{stringliteral}{"{}C"{}}\ \{}
+\DoxyCodeLine{00035\ \textcolor{preprocessor}{\#endif\ }\textcolor{comment}{/*\ \_\_cplusplus\ */}\textcolor{preprocessor}{}}
+\DoxyCodeLine{00036\ }
+\DoxyCodeLine{00037\ \textcolor{preprocessor}{\#include\ "{}\doxymbox{\hyperlink{ansidecl_8h}{ansidecl.h}}"{}}}
+\DoxyCodeLine{00038\ }
+\DoxyCodeLine{00039\ \textcolor{preprocessor}{\#ifdef\ HAVE\_STDINT\_H}}
+\DoxyCodeLine{00040\ \textcolor{preprocessor}{\#include\ <\doxymbox{\hyperlink{stdint_8h}{stdint.h}}>}}
+\DoxyCodeLine{00041\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00042\ \textcolor{preprocessor}{\#ifdef\ HAVE\_INTTYPES\_H}}
+\DoxyCodeLine{00043\ \textcolor{preprocessor}{\#include\ <inttypes.h>}}
+\DoxyCodeLine{00044\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00045\ }
+\DoxyCodeLine{00046\ \textcolor{comment}{/*\ Use\ typedefs\ for\ the\ key\ and\ data\ types\ to\ facilitate\ changing}}
+\DoxyCodeLine{00047\ \textcolor{comment}{\ \ \ these\ types,\ if\ necessary.\ \ These\ types\ should\ be\ sufficiently\ wide}}
+\DoxyCodeLine{00048\ \textcolor{comment}{\ \ \ that\ any\ pointer\ or\ scalar\ can\ be\ cast\ to\ these\ types,\ and\ then}}
+\DoxyCodeLine{00049\ \textcolor{comment}{\ \ \ cast\ back,\ without\ loss\ of\ precision.\ \ */}}
+\DoxyCodeLine{00050\ \textcolor{keyword}{typedef}\ uintptr\_t\ \doxymbox{\hyperlink{splay-tree_8h_a3bdd9617e2def6f7e952b50837933216}{splay\_tree\_key}};}
+\DoxyCodeLine{00051\ \textcolor{keyword}{typedef}\ uintptr\_t\ \doxymbox{\hyperlink{splay-tree_8h_a0e99041f1ebe697980764ec421973e96}{splay\_tree\_value}};}
+\DoxyCodeLine{00052\ }
+\DoxyCodeLine{00053\ \textcolor{comment}{/*\ Forward\ declaration\ for\ a\ node\ in\ the\ tree.\ \ */}}
+\DoxyCodeLine{00054\ \textcolor{keyword}{typedef}\ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{structsplay__tree__node__s}{splay\_tree\_node\_s}}\ *\doxymbox{\hyperlink{classsplay__tree__node}{splay\_tree\_node}};}
+\DoxyCodeLine{00055\ }
+\DoxyCodeLine{00056\ \textcolor{comment}{/*\ The\ type\ of\ a\ function\ which\ compares\ two\ splay-\/tree\ keys.\ \ The}}
+\DoxyCodeLine{00057\ \textcolor{comment}{\ \ \ function\ should\ return\ values\ as\ for\ qsort.\ \ */}}
+\DoxyCodeLine{00058\ \textcolor{keyword}{typedef}\ int\ (*\doxymbox{\hyperlink{splay-tree_8h_a81a9cdfcde017c49056e2a0538320742}{splay\_tree\_compare\_fn}})\ (\doxymbox{\hyperlink{splay-tree_8h_a3bdd9617e2def6f7e952b50837933216}{splay\_tree\_key}},\ \doxymbox{\hyperlink{splay-tree_8h_a3bdd9617e2def6f7e952b50837933216}{splay\_tree\_key}});}
+\DoxyCodeLine{00059\ }
+\DoxyCodeLine{00060\ \textcolor{comment}{/*\ The\ type\ of\ a\ function\ used\ to\ deallocate\ any\ resources\ associated}}
+\DoxyCodeLine{00061\ \textcolor{comment}{\ \ \ with\ the\ key.\ \ If\ you\ provide\ this\ function,\ the\ splay\ tree}}
+\DoxyCodeLine{00062\ \textcolor{comment}{\ \ \ will\ take\ the\ ownership\ of\ the\ memory\ of\ the\ splay\_tree\_key\ arg}}
+\DoxyCodeLine{00063\ \textcolor{comment}{\ \ \ of\ splay\_tree\_insert.\ \ This\ function\ is\ called\ to\ release\ the\ keys}}
+\DoxyCodeLine{00064\ \textcolor{comment}{\ \ \ present\ in\ the\ tree\ when\ calling\ splay\_tree\_delete\ or\ splay\_tree\_remove.}}
+\DoxyCodeLine{00065\ \textcolor{comment}{\ \ \ If\ splay\_tree\_insert\ is\ called\ with\ a\ key\ equal\ to\ a\ key\ already}}
+\DoxyCodeLine{00066\ \textcolor{comment}{\ \ \ present\ in\ the\ tree,\ the\ old\ key\ and\ old\ value\ will\ be\ released.\ \ */}}
+\DoxyCodeLine{00067\ \textcolor{keyword}{typedef}\ void\ (*\doxymbox{\hyperlink{splay-tree_8h_abd27461d84f7c6bc05de78c62f30bfa3}{splay\_tree\_delete\_key\_fn}})\ (\doxymbox{\hyperlink{splay-tree_8h_a3bdd9617e2def6f7e952b50837933216}{splay\_tree\_key}});}
+\DoxyCodeLine{00068\ }
+\DoxyCodeLine{00069\ \textcolor{comment}{/*\ The\ type\ of\ a\ function\ used\ to\ deallocate\ any\ resources\ associated}}
+\DoxyCodeLine{00070\ \textcolor{comment}{\ \ \ with\ the\ value.\ \ If\ you\ provide\ this\ function,\ the\ memory\ of\ the}}
+\DoxyCodeLine{00071\ \textcolor{comment}{\ \ \ splay\_tree\_value\ arg\ of\ splay\_tree\_insert\ is\ managed\ similarly\ to}}
+\DoxyCodeLine{00072\ \textcolor{comment}{\ \ \ the\ splay\_tree\_key\ memory:\ see\ splay\_tree\_delete\_key\_fn.\ \ */}}
+\DoxyCodeLine{00073\ \textcolor{keyword}{typedef}\ void\ (*\doxymbox{\hyperlink{splay-tree_8h_a8e9e0dd5ca3719e04f4afcfa05a06709}{splay\_tree\_delete\_value\_fn}})\ (\doxymbox{\hyperlink{splay-tree_8h_a0e99041f1ebe697980764ec421973e96}{splay\_tree\_value}});}
+\DoxyCodeLine{00074\ }
+\DoxyCodeLine{00075\ \textcolor{comment}{/*\ The\ type\ of\ a\ function\ used\ to\ iterate\ over\ the\ tree.\ \ */}}
+\DoxyCodeLine{00076\ \textcolor{keyword}{typedef}\ int\ (*\doxymbox{\hyperlink{splay-tree_8h_a8c9d287dd8d07d3075c4f5281b6fb250}{splay\_tree\_foreach\_fn}})\ (\doxymbox{\hyperlink{classsplay__tree__node}{splay\_tree\_node}},\ \textcolor{keywordtype}{void}*);}
+\DoxyCodeLine{00077\ }
+\DoxyCodeLine{00078\ \textcolor{comment}{/*\ The\ type\ of\ a\ function\ used\ to\ allocate\ memory\ for\ tree\ root\ and}}
+\DoxyCodeLine{00079\ \textcolor{comment}{\ \ \ node\ structures.\ \ The\ first\ argument\ is\ the\ number\ of\ bytes\ needed;}}
+\DoxyCodeLine{00080\ \textcolor{comment}{\ \ \ the\ second\ is\ a\ data\ pointer\ the\ splay\ tree\ functions\ pass\ through}}
+\DoxyCodeLine{00081\ \textcolor{comment}{\ \ \ to\ the\ allocator.\ \ This\ function\ must\ never\ return\ zero.\ \ */}}
+\DoxyCodeLine{00082\ \textcolor{keyword}{typedef}\ \textcolor{keywordtype}{void}\ *(*splay\_tree\_allocate\_fn)\ (int,\ \textcolor{keywordtype}{void}\ *);}
+\DoxyCodeLine{00083\ }
+\DoxyCodeLine{00084\ \textcolor{comment}{/*\ The\ type\ of\ a\ function\ used\ to\ free\ memory\ allocated\ using\ the}}
+\DoxyCodeLine{00085\ \textcolor{comment}{\ \ \ corresponding\ splay\_tree\_allocate\_fn.\ \ The\ first\ argument\ is\ the}}
+\DoxyCodeLine{00086\ \textcolor{comment}{\ \ \ memory\ to\ be\ freed;\ the\ latter\ is\ a\ data\ pointer\ the\ splay\ tree}}
+\DoxyCodeLine{00087\ \textcolor{comment}{\ \ \ functions\ pass\ through\ to\ the\ freer.\ \ */}}
+\DoxyCodeLine{00088\ \textcolor{keyword}{typedef}\ void\ (*\doxymbox{\hyperlink{splay-tree_8h_a97ca4df62ca69f0cf76573087b58e277}{splay\_tree\_deallocate\_fn}})\ (\textcolor{keywordtype}{void}\ *,\ \textcolor{keywordtype}{void}\ *);}
+\DoxyCodeLine{00089\ }
+\DoxyCodeLine{00090\ \textcolor{comment}{/*\ The\ nodes\ in\ the\ splay\ tree.\ \ */}}
+\DoxyCodeLine{00091\ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{structsplay__tree__node__s}{splay\_tree\_node\_s}}\ \{}
+\DoxyCodeLine{00092\ \ \ \textcolor{comment}{/*\ The\ key.\ \ */}}
+\DoxyCodeLine{00093\ \ \ \doxymbox{\hyperlink{splay-tree_8h_a3bdd9617e2def6f7e952b50837933216}{splay\_tree\_key}}\ \doxymbox{\hyperlink{structsplay__tree__node__s_a6d155b3c39e82db77ca155bb203f590e}{key}};}
+\DoxyCodeLine{00094\ }
+\DoxyCodeLine{00095\ \ \ \textcolor{comment}{/*\ The\ value.\ \ */}}
+\DoxyCodeLine{00096\ \ \ \doxymbox{\hyperlink{splay-tree_8h_a0e99041f1ebe697980764ec421973e96}{splay\_tree\_value}}\ \doxymbox{\hyperlink{structsplay__tree__node__s_aea41da43820523e2f8c928000e420abe}{value}};}
+\DoxyCodeLine{00097\ }
+\DoxyCodeLine{00098\ \ \ \textcolor{comment}{/*\ The\ left\ and\ right\ children,\ respectively.\ \ */}}
+\DoxyCodeLine{00099\ \ \ \doxymbox{\hyperlink{splay-tree_8h_a392a68720acbdf289983a625206dc1bb}{splay\_tree\_node}}\ \doxymbox{\hyperlink{structsplay__tree__node__s_a51a6c651386b5e44bbe63afdb6ab7120}{left}};}
+\DoxyCodeLine{00100\ \ \ \doxymbox{\hyperlink{splay-tree_8h_a392a68720acbdf289983a625206dc1bb}{splay\_tree\_node}}\ \doxymbox{\hyperlink{structsplay__tree__node__s_a98e69ac5eafd0ecbe2013b30a8a69a0e}{right}};}
+\DoxyCodeLine{00101\ \};}
+\DoxyCodeLine{00102\ }
+\DoxyCodeLine{00103\ \textcolor{comment}{/*\ The\ splay\ tree\ itself.\ \ */}}
+\DoxyCodeLine{00104\ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{structsplay__tree__s}{splay\_tree\_s}}\ \{}
+\DoxyCodeLine{00105\ \ \ \textcolor{comment}{/*\ The\ root\ of\ the\ tree.\ \ */}}
+\DoxyCodeLine{00106\ \ \ \doxymbox{\hyperlink{splay-tree_8h_a392a68720acbdf289983a625206dc1bb}{splay\_tree\_node}}\ \doxymbox{\hyperlink{structsplay__tree__s_a0aeca30f0f79eb11ef6cb4b7225465dd}{root}};}
+\DoxyCodeLine{00107\ }
+\DoxyCodeLine{00108\ \ \ \textcolor{comment}{/*\ The\ comparision\ function.\ \ */}}
+\DoxyCodeLine{00109\ \ \ \doxymbox{\hyperlink{splay-tree_8h_a81a9cdfcde017c49056e2a0538320742}{splay\_tree\_compare\_fn}}\ \doxymbox{\hyperlink{structsplay__tree__s_a6be228a28b1672de349135ccd2810972}{comp}};}
+\DoxyCodeLine{00110\ }
+\DoxyCodeLine{00111\ \ \ \textcolor{comment}{/*\ The\ deallocate-\/key\ function.\ \ NULL\ if\ no\ cleanup\ is\ necessary.\ \ */}}
+\DoxyCodeLine{00112\ \ \ \doxymbox{\hyperlink{splay-tree_8h_abd27461d84f7c6bc05de78c62f30bfa3}{splay\_tree\_delete\_key\_fn}}\ \doxymbox{\hyperlink{structsplay__tree__s_a022d9dd5a28955c108b32358e6378582}{delete\_key}};}
+\DoxyCodeLine{00113\ }
+\DoxyCodeLine{00114\ \ \ \textcolor{comment}{/*\ The\ deallocate-\/value\ function.\ \ NULL\ if\ no\ cleanup\ is\ necessary.\ \ */}}
+\DoxyCodeLine{00115\ \ \ \doxymbox{\hyperlink{splay-tree_8h_a8e9e0dd5ca3719e04f4afcfa05a06709}{splay\_tree\_delete\_value\_fn}}\ \doxymbox{\hyperlink{structsplay__tree__s_ad2d0b3b42e1fc9b9f9f46f0182983876}{delete\_value}};}
+\DoxyCodeLine{00116\ }
+\DoxyCodeLine{00117\ \ \ \textcolor{comment}{/*\ Node\ allocate\ function.\ \ Takes\ allocate\_data\ as\ a\ parameter.\ */}}
+\DoxyCodeLine{00118\ \ \ \doxymbox{\hyperlink{splay-tree_8h_af1c3548e28714d2a015904c4fe982e45}{splay\_tree\_allocate\_fn}}\ \doxymbox{\hyperlink{structsplay__tree__s_a5dfb44f128e6163df7c9fb55ef59f236}{allocate}};}
+\DoxyCodeLine{00119\ }
+\DoxyCodeLine{00120\ \ \ \textcolor{comment}{/*\ Free\ function\ for\ nodes\ and\ trees.\ \ Takes\ allocate\_data\ as\ a\ parameter.\ \ */}}
+\DoxyCodeLine{00121\ \ \ \doxymbox{\hyperlink{splay-tree_8h_a97ca4df62ca69f0cf76573087b58e277}{splay\_tree\_deallocate\_fn}}\ \doxymbox{\hyperlink{structsplay__tree__s_a0b2e15f7971e5962f31b9b4b6acf6136}{deallocate}};}
+\DoxyCodeLine{00122\ }
+\DoxyCodeLine{00123\ \ \ \textcolor{comment}{/*\ Parameter\ for\ allocate/free\ functions.\ \ */}}
+\DoxyCodeLine{00124\ \ \ \textcolor{keywordtype}{void}\ *\doxymbox{\hyperlink{structsplay__tree__s_aec1456da3dcad797b00284d8b2184fa2}{allocate\_data}};}
+\DoxyCodeLine{00125\ \};}
+\DoxyCodeLine{00126\ }
+\DoxyCodeLine{00127\ \textcolor{keyword}{typedef}\ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{structsplay__tree__s}{splay\_tree\_s}}\ *\doxymbox{\hyperlink{splay-tree-utils_8h_adfbbf064f1bcd2b1c3261dcb118c8ace}{splay\_tree}};}
+\DoxyCodeLine{00128\ }
+\DoxyCodeLine{00129\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{splay-tree-utils_8h_adfbbf064f1bcd2b1c3261dcb118c8ace}{splay\_tree}}\ \doxymbox{\hyperlink{splay-tree_8h_a6eca30ca96c738a019febe514b411dab}{splay\_tree\_new}}\ (\doxymbox{\hyperlink{splay-tree_8h_a81a9cdfcde017c49056e2a0538320742}{splay\_tree\_compare\_fn}},}
+\DoxyCodeLine{00130\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{splay-tree_8h_abd27461d84f7c6bc05de78c62f30bfa3}{splay\_tree\_delete\_key\_fn}},}
+\DoxyCodeLine{00131\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{splay-tree_8h_a8e9e0dd5ca3719e04f4afcfa05a06709}{splay\_tree\_delete\_value\_fn}});}
+\DoxyCodeLine{00132\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{splay-tree-utils_8h_adfbbf064f1bcd2b1c3261dcb118c8ace}{splay\_tree}}\ \doxymbox{\hyperlink{splay-tree_8h_aa30f37de44122686a3504396dc709c34}{splay\_tree\_new\_with\_allocator}}\ (\doxymbox{\hyperlink{splay-tree_8h_a81a9cdfcde017c49056e2a0538320742}{splay\_tree\_compare\_fn}},}
+\DoxyCodeLine{00133\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{splay-tree_8h_abd27461d84f7c6bc05de78c62f30bfa3}{splay\_tree\_delete\_key\_fn}},}
+\DoxyCodeLine{00134\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{splay-tree_8h_a8e9e0dd5ca3719e04f4afcfa05a06709}{splay\_tree\_delete\_value\_fn}},}
+\DoxyCodeLine{00135\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{splay-tree_8h_af1c3548e28714d2a015904c4fe982e45}{splay\_tree\_allocate\_fn}},}
+\DoxyCodeLine{00136\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{splay-tree_8h_a97ca4df62ca69f0cf76573087b58e277}{splay\_tree\_deallocate\_fn}},}
+\DoxyCodeLine{00137\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{void}\ *);}
+\DoxyCodeLine{00138\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{splay-tree-utils_8h_adfbbf064f1bcd2b1c3261dcb118c8ace}{splay\_tree}}\ \doxymbox{\hyperlink{splay-tree_8h_afd62771365d27c8c3b41db0fb327cf46}{splay\_tree\_new\_typed\_alloc}}\ (\doxymbox{\hyperlink{splay-tree_8h_a81a9cdfcde017c49056e2a0538320742}{splay\_tree\_compare\_fn}},}
+\DoxyCodeLine{00139\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{splay-tree_8h_abd27461d84f7c6bc05de78c62f30bfa3}{splay\_tree\_delete\_key\_fn}},}
+\DoxyCodeLine{00140\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{splay-tree_8h_a8e9e0dd5ca3719e04f4afcfa05a06709}{splay\_tree\_delete\_value\_fn}},}
+\DoxyCodeLine{00141\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{splay-tree_8h_af1c3548e28714d2a015904c4fe982e45}{splay\_tree\_allocate\_fn}},}
+\DoxyCodeLine{00142\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{splay-tree_8h_af1c3548e28714d2a015904c4fe982e45}{splay\_tree\_allocate\_fn}},}
+\DoxyCodeLine{00143\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{splay-tree_8h_a97ca4df62ca69f0cf76573087b58e277}{splay\_tree\_deallocate\_fn}},}
+\DoxyCodeLine{00144\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{void}\ *);}
+\DoxyCodeLine{00145\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{splay-tree_8h_a02ff51c31cfb5fa0b6df3f44efa1bcef}{splay\_tree\_delete}}\ (\doxymbox{\hyperlink{splay-tree-utils_8h_adfbbf064f1bcd2b1c3261dcb118c8ace}{splay\_tree}});}
+\DoxyCodeLine{00146\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{classsplay__tree__node}{splay\_tree\_node}}\ \doxymbox{\hyperlink{splay-tree_8h_abd7e9b5da0b4ac99d1c4b8463f355966}{splay\_tree\_insert}}\ (\doxymbox{\hyperlink{splay-tree-utils_8h_adfbbf064f1bcd2b1c3261dcb118c8ace}{splay\_tree}},}
+\DoxyCodeLine{00147\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{splay-tree_8h_a3bdd9617e2def6f7e952b50837933216}{splay\_tree\_key}},}
+\DoxyCodeLine{00148\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{splay-tree_8h_a0e99041f1ebe697980764ec421973e96}{splay\_tree\_value}});}
+\DoxyCodeLine{00149\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{splay-tree_8h_a25349ea6ec42a6de8b4732f4dcffbc2f}{splay\_tree\_remove}}\ \ \ (\doxymbox{\hyperlink{splay-tree-utils_8h_adfbbf064f1bcd2b1c3261dcb118c8ace}{splay\_tree}},\ \doxymbox{\hyperlink{splay-tree_8h_a3bdd9617e2def6f7e952b50837933216}{splay\_tree\_key}});}
+\DoxyCodeLine{00150\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{classsplay__tree__node}{splay\_tree\_node}}\ \doxymbox{\hyperlink{splay-tree_8h_ac18d443c7abdf58bb40bca5e4a39c1b5}{splay\_tree\_lookup}}\ (\doxymbox{\hyperlink{splay-tree-utils_8h_adfbbf064f1bcd2b1c3261dcb118c8ace}{splay\_tree}},\ \doxymbox{\hyperlink{splay-tree_8h_a3bdd9617e2def6f7e952b50837933216}{splay\_tree\_key}});}
+\DoxyCodeLine{00151\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{classsplay__tree__node}{splay\_tree\_node}}\ \doxymbox{\hyperlink{splay-tree_8h_abc0b05b65fdc3362746be2fefca503ed}{splay\_tree\_predecessor}}\ (\doxymbox{\hyperlink{splay-tree-utils_8h_adfbbf064f1bcd2b1c3261dcb118c8ace}{splay\_tree}},\ \doxymbox{\hyperlink{splay-tree_8h_a3bdd9617e2def6f7e952b50837933216}{splay\_tree\_key}});}
+\DoxyCodeLine{00152\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{classsplay__tree__node}{splay\_tree\_node}}\ \doxymbox{\hyperlink{splay-tree_8h_a556ad7d382fa04ef453da3c2c1460ab0}{splay\_tree\_successor}}\ (\doxymbox{\hyperlink{splay-tree-utils_8h_adfbbf064f1bcd2b1c3261dcb118c8ace}{splay\_tree}},\ \doxymbox{\hyperlink{splay-tree_8h_a3bdd9617e2def6f7e952b50837933216}{splay\_tree\_key}});}
+\DoxyCodeLine{00153\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{classsplay__tree__node}{splay\_tree\_node}}\ \doxymbox{\hyperlink{splay-tree_8h_ab8e2babeb1206fa1279938a0cda330a4}{splay\_tree\_max}}\ (\doxymbox{\hyperlink{splay-tree-utils_8h_adfbbf064f1bcd2b1c3261dcb118c8ace}{splay\_tree}});}
+\DoxyCodeLine{00154\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{classsplay__tree__node}{splay\_tree\_node}}\ \doxymbox{\hyperlink{splay-tree_8h_a10f1b62f37263cae41058dae6df6d19b}{splay\_tree\_min}}\ (\doxymbox{\hyperlink{splay-tree-utils_8h_adfbbf064f1bcd2b1c3261dcb118c8ace}{splay\_tree}});}
+\DoxyCodeLine{00155\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{splay-tree_8h_a3f70d1c89c38a4adc76fd34d4c08c87e}{splay\_tree\_foreach}}\ (\doxymbox{\hyperlink{splay-tree-utils_8h_adfbbf064f1bcd2b1c3261dcb118c8ace}{splay\_tree}},\ \doxymbox{\hyperlink{splay-tree_8h_a8c9d287dd8d07d3075c4f5281b6fb250}{splay\_tree\_foreach\_fn}},\ \textcolor{keywordtype}{void}*);}
+\DoxyCodeLine{00156\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{splay-tree_8h_ace545c05672510bfe125f8e29a6b4b01}{splay\_tree\_compare\_ints}}\ (\doxymbox{\hyperlink{splay-tree_8h_a3bdd9617e2def6f7e952b50837933216}{splay\_tree\_key}},\ \doxymbox{\hyperlink{splay-tree_8h_a3bdd9617e2def6f7e952b50837933216}{splay\_tree\_key}});}
+\DoxyCodeLine{00157\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{splay-tree_8h_afb555dd5793fe852086d3cc85c0447ae}{splay\_tree\_compare\_pointers}}\ (\doxymbox{\hyperlink{splay-tree_8h_a3bdd9617e2def6f7e952b50837933216}{splay\_tree\_key}},\ \doxymbox{\hyperlink{splay-tree_8h_a3bdd9617e2def6f7e952b50837933216}{splay\_tree\_key}});}
+\DoxyCodeLine{00158\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{splay-tree_8h_aee0b933ff8842c6aa7c88c99cb545616}{splay\_tree\_compare\_strings}}\ (\doxymbox{\hyperlink{splay-tree_8h_a3bdd9617e2def6f7e952b50837933216}{splay\_tree\_key}},\ \doxymbox{\hyperlink{splay-tree_8h_a3bdd9617e2def6f7e952b50837933216}{splay\_tree\_key}});}
+\DoxyCodeLine{00159\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{splay-tree_8h_a10e42aa4f48f7d30f2024fde0cd767bf}{splay\_tree\_delete\_pointers}}\ (\doxymbox{\hyperlink{splay-tree_8h_a0e99041f1ebe697980764ec421973e96}{splay\_tree\_value}});}
+\DoxyCodeLine{00160\ }
+\DoxyCodeLine{00161\ \textcolor{preprocessor}{\#ifdef\ \_\_cplusplus}}
+\DoxyCodeLine{00162\ \}}
+\DoxyCodeLine{00163\ \textcolor{preprocessor}{\#endif\ }\textcolor{comment}{/*\ \_\_cplusplus\ */}\textcolor{preprocessor}{}}
+\DoxyCodeLine{00164\ }
+\DoxyCodeLine{00165\ \textcolor{preprocessor}{\#endif\ }\textcolor{comment}{/*\ \_SPLAY\_TREE\_H\ */}\textcolor{preprocessor}{}}
+
+\end{DoxyCode}

@@ -1,0 +1,275 @@
+\doxysection{CPU Segmentation \& Task State Management }
+\hypertarget{group__CPU__SEGMENTATION}{}\label{group__CPU__SEGMENTATION}\index{CPU Segmentation \& Task State Management@{CPU Segmentation \& Task State Management}}
+
+
+x86\+\_\+64 Global Descriptor Table (GDT) and Task State Segment (TSS) management.  
+
+
+\doxysubsubsection*{Files}
+\begin{DoxyCompactItemize}
+\item 
+file \doxymbox{\hyperlink{gdt_8cpp}{gdt.\+cpp}}
+\begin{DoxyCompactList}\small\item\em Global Descriptor Table (GDT) and Task State Segment (TSS) initialization routines. \end{DoxyCompactList}\end{DoxyCompactItemize}
+\doxysubsubsection*{Data Structures}
+\begin{DoxyCompactItemize}
+\item 
+struct \doxymbox{\hyperlink{structGDTDescriptor}{GDTDescriptor}}
+\item 
+struct \doxymbox{\hyperlink{structSegmentDescriptor}{Segment\+Descriptor}}
+\item 
+struct \doxymbox{\hyperlink{structTSSDescriptor}{TSSDescriptor}}
+\item 
+struct \doxymbox{\hyperlink{structTSSEntry}{TSSEntry}}
+\end{DoxyCompactItemize}
+\doxysubsubsection*{Typedefs}
+\begin{DoxyCompactItemize}
+\item 
+typedef struct GDTDescriptor \doxymbox{\hyperlink{group__CPU__SEGMENTATION_ga8020f3ec5aad9a97eb42b321250dd1e9}{GDTDescriptor}}
+\begin{DoxyCompactList}\small\item\em GDTR Register Layout Structure. \end{DoxyCompactList}\item 
+typedef struct Segment\+Descriptor \doxymbox{\hyperlink{group__CPU__SEGMENTATION_gadd097d11ea7951126b5d05bd3d8243db}{Segment\+Descriptor}}
+\begin{DoxyCompactList}\small\item\em Standard 64-\/bit GDT segment descriptor. \end{DoxyCompactList}\item 
+typedef struct TSSDescriptor \doxymbox{\hyperlink{group__CPU__SEGMENTATION_gacbe48610c5e872e75b3b50de9c9cf38a}{TSSDescriptor}}
+\begin{DoxyCompactList}\small\item\em 64-\/bit Task State Segment GDT descriptor \end{DoxyCompactList}\item 
+typedef struct TSSEntry \doxymbox{\hyperlink{group__CPU__SEGMENTATION_ga93e93abf00bffe42a08dd8900623b501}{TSSEntry}}
+\begin{DoxyCompactList}\small\item\em x86\+\_\+64 Task State Segment structure \end{DoxyCompactList}\end{DoxyCompactItemize}
+\doxysubsubsection*{Functions}
+\begin{DoxyCompactItemize}
+\item 
+void \doxymbox{\hyperlink{group__CPU__SEGMENTATION_gac5010ffc8865bbe4f0a3d4284a6dfeae}{Init\+GDT}} ()
+\begin{DoxyCompactList}\small\item\em Initializes the Global Descriptor Table and Task State Segment. \end{DoxyCompactList}\item 
+void \doxymbox{\hyperlink{group__CPU__SEGMENTATION_gacdff8480eac089719fa81ea30634e697}{Set\+GDTEntry}} (int index, uint32\+\_\+t base, uint32\+\_\+t limit, uint8\+\_\+t access, uint8\+\_\+t flags)
+\begin{DoxyCompactList}\small\item\em Creates a standard 64-\/bit GDT segment descriptor. \end{DoxyCompactList}\end{DoxyCompactItemize}
+
+
+\doxysubsection{Detailed Description}
+x86\+\_\+64 Global Descriptor Table (GDT) and Task State Segment (TSS) management. 
+
+Provides structures, descriptor encoders, and initialization routines for x86\+\_\+64 segmentation infrastructure used by the kernel.
+
+This subsystem configures:\+
+\begin{DoxyItemize}
+\item Global Descriptor Table (GDT)
+\item Kernel and user privilege segments
+\item Task State Segment (TSS)
+\item Ring transition stack switching
+\item Interrupt Stack Table (IST) support
+\end{DoxyItemize}
+
+Although segmentation is largely disabled in x86\+\_\+64 long mode, valid descriptor tables remain mandatory for:\+
+\begin{DoxyItemize}
+\item Privilege level enforcement
+\item System descriptors
+\item Interrupt/\+syscall transitions
+\item Task register management 
+\end{DoxyItemize}
+
+\label{doc-typedef-members}
+\Hypertarget{group__CPU__SEGMENTATION_doc-typedef-members}
+\doxysubsection{Typedef Documentation}
+\Hypertarget{group__CPU__SEGMENTATION_ga8020f3ec5aad9a97eb42b321250dd1e9}\index{CPU Segmentation \& Task State Management@{CPU Segmentation \& Task State Management}!GDTDescriptor@{GDTDescriptor}}
+\index{GDTDescriptor@{GDTDescriptor}!CPU Segmentation \& Task State Management@{CPU Segmentation \& Task State Management}}
+\doxysubsubsection{\texorpdfstring{GDTDescriptor}{GDTDescriptor}}
+{\footnotesize\ttfamily \label{group__CPU__SEGMENTATION_ga8020f3ec5aad9a97eb42b321250dd1e9} 
+typedef struct GDTDescriptor GDTDescriptor}
+
+
+
+{\ttfamily \+\#include "{}\doxymbox{\hyperlink{gdt_8h}{gdt.\+h}}"{}}
+
+
+
+GDTR Register Layout Structure. 
+
+This structure maps directly to the hardware format required by the {\ttfamily lgdt} assembly instruction. It tells the CPU where the GDT array resides and how large it is. \Hypertarget{group__CPU__SEGMENTATION_gadd097d11ea7951126b5d05bd3d8243db}\index{CPU Segmentation \& Task State Management@{CPU Segmentation \& Task State Management}!SegmentDescriptor@{SegmentDescriptor}}
+\index{SegmentDescriptor@{SegmentDescriptor}!CPU Segmentation \& Task State Management@{CPU Segmentation \& Task State Management}}
+\doxysubsubsection{\texorpdfstring{SegmentDescriptor}{SegmentDescriptor}}
+{\footnotesize\ttfamily \label{group__CPU__SEGMENTATION_gadd097d11ea7951126b5d05bd3d8243db} 
+typedef struct Segment\+Descriptor Segment\+Descriptor}
+
+
+
+{\ttfamily \+\#include "{}\doxymbox{\hyperlink{gdt_8h}{gdt.\+h}}"{}}
+
+
+
+Standard 64-\/bit GDT segment descriptor. 
+
+Represents the legacy 8-\/byte segment descriptor format used by the x86 processor family. Even though segmentation is largely disabled in x86\+\_\+64 long mode, valid descriptors are still required for:\+
+
+
+\begin{DoxyItemize}
+\item Kernel and user privilege levels
+\item Code segment execution metadata
+\item System descriptors such as the TSS
+\item Compatibility with interrupt/\+syscall transitions
+\end{DoxyItemize}
+
+The descriptor layout is defined by Intel hardware and split into multiple packed bitfields. The CPU reconstructs the final descriptor values internally when the GDT is loaded.
+
+In long mod:\+
+\begin{DoxyItemize}
+\item Base addresses are ignored for normal code/\+data segments
+\item Segment limits are ignored
+\item The L-\/bit inside the granularity field enables 64-\/bit code execution
+\end{DoxyItemize}
+
+Descriptor Layout:\+ 
+\begin{DoxyCode}{0}
+\DoxyCodeLine{\ 63\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ 32\ 31\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ 0}
+\DoxyCodeLine{+-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/+-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/+}
+\DoxyCodeLine{|\ Base\ 31:24\ |\ Flags\ |\ Limit19:16|\ Access\ |\ Base23:16\ \ \ \ \ \ \ |}
+\DoxyCodeLine{+-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/+-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/+}
+\DoxyCodeLine{|\ Base15:0\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ |\ Limit15:0\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ |}
+\DoxyCodeLine{+-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/+}
+
+\end{DoxyCode}
+
+
+Common Access Values:\+
+\begin{DoxyItemize}
+\item 0x9A :\+ Kernel code segment
+\item 0x92 :\+ Kernel data segment
+\item 0x\+FA :\+ User code segment
+\item 0x\+F2 :\+ User data segment
+\end{DoxyItemize}
+
+Common Flag Values:\+
+\begin{DoxyItemize}
+\item 0x20 :\+ 64-\/bit code segment (L-\/bit set)
+\item 0x00 :\+ Standard data segment 
+\end{DoxyItemize}\Hypertarget{group__CPU__SEGMENTATION_gacbe48610c5e872e75b3b50de9c9cf38a}\index{CPU Segmentation \& Task State Management@{CPU Segmentation \& Task State Management}!TSSDescriptor@{TSSDescriptor}}
+\index{TSSDescriptor@{TSSDescriptor}!CPU Segmentation \& Task State Management@{CPU Segmentation \& Task State Management}}
+\doxysubsubsection{\texorpdfstring{TSSDescriptor}{TSSDescriptor}}
+{\footnotesize\ttfamily \label{group__CPU__SEGMENTATION_gacbe48610c5e872e75b3b50de9c9cf38a} 
+typedef struct TSSDescriptor TSSDescriptor}
+
+
+
+{\ttfamily \+\#include "{}\doxymbox{\hyperlink{gdt_8h}{gdt.\+h}}"{}}
+
+
+
+64-\/bit Task State Segment GDT descriptor 
+
+Represents the special 16-\/bit system descriptor used to reference an x86\+\_\+64 Task State Segment from the GDT.
+
+Unlike normal segment descriptors, TSS descriptors occupy TWO consecutive GDT entries (16 bytes total).
+
+The descriptor stores:\+
+\begin{DoxyItemize}
+\item Full 64-\/bits TSS base address
+\item TSS structure size
+\item Descriptor type metadata
+\end{DoxyItemize}
+
+The descriptor is loaded into the Task Register (TR) using the {\ttfamily ltr} instruction. \Hypertarget{group__CPU__SEGMENTATION_ga93e93abf00bffe42a08dd8900623b501}\index{CPU Segmentation \& Task State Management@{CPU Segmentation \& Task State Management}!TSSEntry@{TSSEntry}}
+\index{TSSEntry@{TSSEntry}!CPU Segmentation \& Task State Management@{CPU Segmentation \& Task State Management}}
+\doxysubsubsection{\texorpdfstring{TSSEntry}{TSSEntry}}
+{\footnotesize\ttfamily \label{group__CPU__SEGMENTATION_ga93e93abf00bffe42a08dd8900623b501} 
+typedef struct TSSEntry TSSEntry}
+
+
+
+{\ttfamily \+\#include "{}\doxymbox{\hyperlink{gdt_8h}{gdt.\+h}}"{}}
+
+
+
+x86\+\_\+64 Task State Segment structure 
+
+Defines the hardware Task State Segment (TSS) used by the CPU in x86\+\_\+64 long mode.
+
+TSS is primarly responsible for:\+
+
+
+\begin{DoxyItemize}
+\item Ring 3 -\/\texorpdfstring{$>$}{>} Ring 0 stack switching
+\item Interrupt Stack Table (IST) support
+\item Dedicated exception recovery stacks
+\item Syscall and interrupt privilege transitions
+\end{DoxyItemize}
+
+rsp0 field specifies the kernel stack pointer the CPU loads whenever execution transitions from user mode into kernel mode.
+
+The Interrupt Stack Table (IST) allows specific interrupts to automatically switch to dedicated emergency stacks. This is commonly used for:\+
+
+
+\begin{DoxyItemize}
+\item Double faults
+\item Non-\/maskable interrupts
+\item Critical exception recovery
+\end{DoxyItemize}
+
+This structure layout is defined by Intel and must remain packed. 
+
+\label{doc-func-members}
+\Hypertarget{group__CPU__SEGMENTATION_doc-func-members}
+\doxysubsection{Function Documentation}
+\Hypertarget{group__CPU__SEGMENTATION_gac5010ffc8865bbe4f0a3d4284a6dfeae}\index{CPU Segmentation \& Task State Management@{CPU Segmentation \& Task State Management}!InitGDT@{InitGDT}}
+\index{InitGDT@{InitGDT}!CPU Segmentation \& Task State Management@{CPU Segmentation \& Task State Management}}
+\doxysubsubsection{\texorpdfstring{InitGDT()}{InitGDT()}}
+{\footnotesize\ttfamily \label{group__CPU__SEGMENTATION_gac5010ffc8865bbe4f0a3d4284a6dfeae} 
+void Init\+GDT (\begin{DoxyParamCaption}{}{}\end{DoxyParamCaption})}
+
+
+
+{\ttfamily \+\#include "{}\doxymbox{\hyperlink{gdt_8h}{gdt.\+h}}"{}}
+
+
+
+Initializes the Global Descriptor Table and Task State Segment. 
+
+Builds the kernel\textquotesingle{}s primary GDT containing:\+
+
+
+\begin{DoxyItemize}
+\item Null descriptor
+\item Kernel code segment
+\item Kernel data segment
+\item User data segment
+\item User code segment
+\item 64-\/bit TSS descriptor
+\end{DoxyItemize}
+
+After construction:\+
+\begin{DoxyItemize}
+\item The GDTR register is loaded via {\ttfamily lgdt}
+\item Segment registers are reloaded
+\item The Task Register (TR) is loded using {\ttfamily ltr}
+\end{DoxyItemize}
+
+This function finalizes the CPU segmentation environment used by the kernel after bootloader handoff. \Hypertarget{group__CPU__SEGMENTATION_gacdff8480eac089719fa81ea30634e697}\index{CPU Segmentation \& Task State Management@{CPU Segmentation \& Task State Management}!SetGDTEntry@{SetGDTEntry}}
+\index{SetGDTEntry@{SetGDTEntry}!CPU Segmentation \& Task State Management@{CPU Segmentation \& Task State Management}}
+\doxysubsubsection{\texorpdfstring{SetGDTEntry()}{SetGDTEntry()}}
+{\footnotesize\ttfamily \label{group__CPU__SEGMENTATION_gacdff8480eac089719fa81ea30634e697} 
+void Set\+GDTEntry (\begin{DoxyParamCaption}\item[{int}]{index}{, }\item[{uint32\+\_\+t}]{base}{, }\item[{uint32\+\_\+t}]{limit}{, }\item[{uint8\+\_\+t}]{access}{, }\item[{uint8\+\_\+t}]{flags}{}\end{DoxyParamCaption})}
+
+
+
+{\ttfamily \+\#include "{}\doxymbox{\hyperlink{gdt_8h}{gdt.\+h}}"{}}
+
+
+
+Creates a standard 64-\/bit GDT segment descriptor. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em index} & GDT entry index \\
+\hline
+{\em base} & Segment base address \\
+\hline
+{\em limit} & Segment size limit \\
+\hline
+{\em access} & Descriptor access byte \\
+\hline
+{\em flags} & Descriptor flag bits\\
+\hline
+\end{DoxyParams}
+Encodes a legacy 8-\/byte segment descriptor directly into the kernel GDT.
+
+In long mode:\+
+\begin{DoxyItemize}
+\item Base and limit are largely ignored
+\item The access byte and L-\/bit remain important
+\end{DoxyItemize}
+
+This function is used for normal code and data descriptors 

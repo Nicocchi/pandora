@@ -1,0 +1,750 @@
+\doxysection{function.\+h}
+\hypertarget{function_8h_source}{}\label{function_8h_source}\index{toolchain/x86\_64-\/elf/lib/gcc/x86\_64-\/elf/14.2.0/plugin/include/function.h@{toolchain/x86\_64-\/elf/lib/gcc/x86\_64-\/elf/14.2.0/plugin/include/function.h}}
+\doxymbox{\hyperlink{function_8h}{Go to the documentation of this file.}}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001\ \textcolor{comment}{/*\ Structure\ for\ saving\ state\ for\ a\ nested\ function.}}
+\DoxyCodeLine{00002\ \textcolor{comment}{\ \ \ Copyright\ (C)\ 1989-\/2024\ Free\ Software\ Foundation,\ Inc.}}
+\DoxyCodeLine{00003\ \textcolor{comment}{}}
+\DoxyCodeLine{00004\ \textcolor{comment}{This\ file\ is\ part\ of\ GCC.}}
+\DoxyCodeLine{00005\ \textcolor{comment}{}}
+\DoxyCodeLine{00006\ \textcolor{comment}{GCC\ is\ free\ software;\ you\ can\ redistribute\ it\ and/or\ modify\ it\ under}}
+\DoxyCodeLine{00007\ \textcolor{comment}{the\ terms\ of\ the\ GNU\ General\ Public\ License\ as\ published\ by\ the\ Free}}
+\DoxyCodeLine{00008\ \textcolor{comment}{Software\ Foundation;\ either\ version\ 3,\ or\ (at\ your\ option)\ any\ later}}
+\DoxyCodeLine{00009\ \textcolor{comment}{version.}}
+\DoxyCodeLine{00010\ \textcolor{comment}{}}
+\DoxyCodeLine{00011\ \textcolor{comment}{GCC\ is\ distributed\ in\ the\ hope\ that\ it\ will\ be\ useful,\ but\ WITHOUT\ ANY}}
+\DoxyCodeLine{00012\ \textcolor{comment}{WARRANTY;\ without\ even\ the\ implied\ warranty\ of\ MERCHANTABILITY\ or}}
+\DoxyCodeLine{00013\ \textcolor{comment}{FITNESS\ FOR\ A\ PARTICULAR\ PURPOSE.\ \ See\ the\ GNU\ General\ Public\ License}}
+\DoxyCodeLine{00014\ \textcolor{comment}{for\ more\ details.}}
+\DoxyCodeLine{00015\ \textcolor{comment}{}}
+\DoxyCodeLine{00016\ \textcolor{comment}{You\ should\ have\ received\ a\ copy\ of\ the\ GNU\ General\ Public\ License}}
+\DoxyCodeLine{00017\ \textcolor{comment}{along\ with\ GCC;\ see\ the\ file\ COPYING3.\ \ If\ not\ see}}
+\DoxyCodeLine{00018\ \textcolor{comment}{<http://www.gnu.org/licenses/>.\ \ */}}
+\DoxyCodeLine{00019\ }
+\DoxyCodeLine{00020\ \textcolor{preprocessor}{\#ifndef\ GCC\_FUNCTION\_H}}
+\DoxyCodeLine{00021\ \textcolor{preprocessor}{\#define\ GCC\_FUNCTION\_H}}
+\DoxyCodeLine{00022\ }
+\DoxyCodeLine{00023\ }
+\DoxyCodeLine{00024\ \textcolor{comment}{/*\ Stack\ of\ pending\ (incomplete)\ sequences\ saved\ by\ \`{}start\_sequence'.}}
+\DoxyCodeLine{00025\ \textcolor{comment}{\ \ \ Each\ element\ describes\ one\ pending\ sequence.}}
+\DoxyCodeLine{00026\ \textcolor{comment}{\ \ \ The\ main\ insn-\/chain\ is\ saved\ in\ the\ last\ element\ of\ the\ chain,}}
+\DoxyCodeLine{00027\ \textcolor{comment}{\ \ \ unless\ the\ chain\ is\ empty.\ \ */}}
+\DoxyCodeLine{00028\ }
+\DoxyCodeLine{00029\ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{coretypes_8h_ae5708c4d4b300570eebe0bc0c78facbc}{GTY}}(())\ sequence\_stack\ \{}
+\DoxyCodeLine{00030\ \ \ \textcolor{comment}{/*\ First\ and\ last\ insns\ in\ the\ chain\ of\ the\ saved\ sequence.\ \ */}}
+\DoxyCodeLine{00031\ \ \ rtx\_insn\ *first;}
+\DoxyCodeLine{00032\ \ \ rtx\_insn\ *\doxymbox{\hyperlink{vec_8h_aae5075fc0b723bf2be806aeb89bea805}{last}};}
+\DoxyCodeLine{00033\ \ \ \textcolor{keyword}{struct\ }sequence\_stack\ *next;}
+\DoxyCodeLine{00034\ \};}
+\DoxyCodeLine{00035\ }
+\DoxyCodeLine{00036\ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{coretypes_8h_ae5708c4d4b300570eebe0bc0c78facbc}{GTY}}(())\ emit\_status\ \{}
+\DoxyCodeLine{00037\ \ \ \textcolor{keywordtype}{void}\ ensure\_regno\_capacity\ ();}
+\DoxyCodeLine{00038\ }
+\DoxyCodeLine{00039\ \ \ \textcolor{comment}{/*\ This\ is\ reset\ to\ LAST\_VIRTUAL\_REGISTER\ +\ 1\ at\ the\ start\ of\ each\ function.}}
+\DoxyCodeLine{00040\ \textcolor{comment}{\ \ \ \ \ After\ rtl\ generation,\ it\ is\ 1\ plus\ the\ largest\ register\ number\ used.\ \ */}}
+\DoxyCodeLine{00041\ \ \ \textcolor{keywordtype}{int}\ x\_reg\_rtx\_no;}
+\DoxyCodeLine{00042\ }
+\DoxyCodeLine{00043\ \ \ \textcolor{comment}{/*\ Lowest\ label\ number\ in\ current\ function.\ \ */}}
+\DoxyCodeLine{00044\ \ \ \textcolor{keywordtype}{int}\ x\_first\_label\_num;}
+\DoxyCodeLine{00045\ }
+\DoxyCodeLine{00046\ \ \ \textcolor{comment}{/*\ seq.first\ and\ seq.last\ are\ the\ ends\ of\ the\ doubly-\/linked\ chain\ of}}
+\DoxyCodeLine{00047\ \textcolor{comment}{\ \ \ \ \ rtl\ for\ the\ current\ function.\ \ Both\ are\ reset\ to\ null\ at\ the}}
+\DoxyCodeLine{00048\ \textcolor{comment}{\ \ \ \ \ start\ of\ rtl\ generation\ for\ the\ function.\ }}
+\DoxyCodeLine{00049\ \textcolor{comment}{}}
+\DoxyCodeLine{00050\ \textcolor{comment}{\ \ \ \ \ start\_sequence\ saves\ both\ of\ these\ on\ seq.next\ and\ then\ starts}}
+\DoxyCodeLine{00051\ \textcolor{comment}{\ \ \ \ \ a\ new,\ nested\ sequence\ of\ insns.}}
+\DoxyCodeLine{00052\ \textcolor{comment}{}}
+\DoxyCodeLine{00053\ \textcolor{comment}{\ \ \ \ \ seq.next\ is\ a\ stack\ of\ pending\ (incomplete)\ sequences\ saved\ by}}
+\DoxyCodeLine{00054\ \textcolor{comment}{\ \ \ \ \ start\_sequence.\ \ Each\ element\ describes\ one\ pending\ sequence.}}
+\DoxyCodeLine{00055\ \textcolor{comment}{\ \ \ \ \ The\ main\ insn-\/chain\ is\ the\ last\ element\ of\ the\ chain.\ \ */}}
+\DoxyCodeLine{00056\ \ \ \textcolor{keyword}{struct\ }sequence\_stack\ seq;}
+\DoxyCodeLine{00057\ }
+\DoxyCodeLine{00058\ \ \ \textcolor{comment}{/*\ INSN\_UID\ for\ next\ insn\ emitted.}}
+\DoxyCodeLine{00059\ \textcolor{comment}{\ \ \ \ \ Reset\ to\ 1\ for\ each\ function\ compiled.\ \ */}}
+\DoxyCodeLine{00060\ \ \ \textcolor{keywordtype}{int}\ x\_cur\_insn\_uid;}
+\DoxyCodeLine{00061\ }
+\DoxyCodeLine{00062\ \ \ \textcolor{comment}{/*\ INSN\_UID\ for\ next\ debug\ insn\ emitted.\ \ Only\ used\ if}}
+\DoxyCodeLine{00063\ \textcolor{comment}{\ \ \ \ \ -\/-\/param\ min-\/nondebug-\/insn-\/uid=<value>\ is\ given\ with\ nonzero\ value.\ \ */}}
+\DoxyCodeLine{00064\ \ \ \textcolor{keywordtype}{int}\ x\_cur\_debug\_insn\_uid;}
+\DoxyCodeLine{00065\ }
+\DoxyCodeLine{00066\ \ \ \textcolor{comment}{/*\ The\ length\ of\ the\ regno\_pointer\_align,\ regno\_decl,\ and\ x\_regno\_reg\_rtx}}
+\DoxyCodeLine{00067\ \textcolor{comment}{\ \ \ \ \ vectors.\ \ Since\ these\ vectors\ are\ needed\ during\ the\ expansion\ phase\ when}}
+\DoxyCodeLine{00068\ \textcolor{comment}{\ \ \ \ \ the\ total\ number\ of\ registers\ in\ the\ function\ is\ not\ yet\ known,\ the}}
+\DoxyCodeLine{00069\ \textcolor{comment}{\ \ \ \ \ vectors\ are\ copied\ and\ made\ bigger\ when\ necessary.\ \ */}}
+\DoxyCodeLine{00070\ \ \ \textcolor{keywordtype}{int}\ regno\_pointer\_align\_length;}
+\DoxyCodeLine{00071\ }
+\DoxyCodeLine{00072\ \ \ \textcolor{comment}{/*\ Indexed\ by\ pseudo\ register\ number,\ if\ nonzero\ gives\ the\ known\ alignment}}
+\DoxyCodeLine{00073\ \textcolor{comment}{\ \ \ \ \ for\ that\ pseudo\ (if\ REG\_POINTER\ is\ set\ in\ x\_regno\_reg\_rtx).}}
+\DoxyCodeLine{00074\ \textcolor{comment}{\ \ \ \ \ Allocated\ in\ parallel\ with\ x\_regno\_reg\_rtx.\ \ */}}
+\DoxyCodeLine{00075\ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{char}\ *\ \doxymbox{\hyperlink{coretypes_8h_ae5708c4d4b300570eebe0bc0c78facbc}{GTY}}((skip))\ regno\_pointer\_align;}
+\DoxyCodeLine{00076\ \};}
+\DoxyCodeLine{00077\ }
+\DoxyCodeLine{00078\ }
+\DoxyCodeLine{00079\ \textcolor{comment}{/*\ Indexed\ by\ register\ number,\ gives\ an\ rtx\ for\ that\ register\ (and\ only}}
+\DoxyCodeLine{00080\ \textcolor{comment}{\ \ \ that\ register).\ \ For\ pseudo\ registers,\ it\ is\ the\ unique\ rtx\ for}}
+\DoxyCodeLine{00081\ \textcolor{comment}{\ \ \ that\ pseudo.\ \ For\ hard\ registers,\ it\ is\ an\ rtx\ of\ the\ mode\ specified}}
+\DoxyCodeLine{00082\ \textcolor{comment}{\ \ \ by\ reg\_raw\_mode.}}
+\DoxyCodeLine{00083\ \textcolor{comment}{}}
+\DoxyCodeLine{00084\ \textcolor{comment}{\ \ \ FIXME:\ We\ could\ put\ it\ into\ emit\_status\ struct,\ but\ gengtype\ is\ not}}
+\DoxyCodeLine{00085\ \textcolor{comment}{\ \ \ able\ to\ deal\ with\ length\ attribute\ nested\ in\ top\ level\ structures.\ \ */}}
+\DoxyCodeLine{00086\ }
+\DoxyCodeLine{00087\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{coretypes_8h_ae5708c4d4b300570eebe0bc0c78facbc}{GTY}}\ ((length\ (\textcolor{stringliteral}{"{}crtl-\/>emit.x\_reg\_rtx\_no"{}})))\ \doxymbox{\hyperlink{coretypes_8h_a20e671ce9e7827268658cff844f4281c}{rtx}}\ *\ regno\_reg\_rtx;}
+\DoxyCodeLine{00088\ }
+\DoxyCodeLine{00089\ \textcolor{comment}{/*\ For\ backward\ compatibility...\ eventually\ these\ should\ all\ go\ away.\ \ */}}
+\DoxyCodeLine{00090\ \textcolor{preprocessor}{\#define\ reg\_rtx\_no\ (crtl-\/>emit.x\_reg\_rtx\_no)}}
+\DoxyCodeLine{00091\ }
+\DoxyCodeLine{00092\ \textcolor{preprocessor}{\#define\ REGNO\_POINTER\_ALIGN(REGNO)\ (crtl-\/>emit.regno\_pointer\_align[REGNO])}}
+\DoxyCodeLine{00093\ }
+\DoxyCodeLine{00094\ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{coretypes_8h_ae5708c4d4b300570eebe0bc0c78facbc}{GTY}}(())\ expr\_status\ \{}
+\DoxyCodeLine{00095\ \ \ \textcolor{comment}{/*\ Number\ of\ units\ that\ we\ should\ eventually\ pop\ off\ the\ stack.}}
+\DoxyCodeLine{00096\ \textcolor{comment}{\ \ \ \ \ These\ are\ the\ arguments\ to\ function\ calls\ that\ have\ already\ returned.\ \ */}}
+\DoxyCodeLine{00097\ \ \ \doxymbox{\hyperlink{poly-int-types_8h_af5255601feb5e9a21f3193d378a55845}{poly\_int64}}\ x\_pending\_stack\_adjust;}
+\DoxyCodeLine{00098\ }
+\DoxyCodeLine{00099\ \ \ \textcolor{comment}{/*\ Under\ some\ ABIs,\ it\ is\ the\ caller's\ responsibility\ to\ pop\ arguments}}
+\DoxyCodeLine{00100\ \textcolor{comment}{\ \ \ \ \ pushed\ for\ function\ calls.\ \ A\ naive\ implementation\ would\ simply\ pop}}
+\DoxyCodeLine{00101\ \textcolor{comment}{\ \ \ \ \ the\ arguments\ immediately\ after\ each\ call.\ \ However,\ if\ several}}
+\DoxyCodeLine{00102\ \textcolor{comment}{\ \ \ \ \ function\ calls\ are\ made\ in\ a\ row,\ it\ is\ typically\ cheaper\ to\ pop}}
+\DoxyCodeLine{00103\ \textcolor{comment}{\ \ \ \ \ all\ the\ arguments\ after\ all\ of\ the\ calls\ are\ complete\ since\ a}}
+\DoxyCodeLine{00104\ \textcolor{comment}{\ \ \ \ \ single\ pop\ instruction\ can\ be\ used.\ \ Therefore,\ GCC\ attempts\ to}}
+\DoxyCodeLine{00105\ \textcolor{comment}{\ \ \ \ \ defer\ popping\ the\ arguments\ until\ absolutely\ necessary.\ \ (For}}
+\DoxyCodeLine{00106\ \textcolor{comment}{\ \ \ \ \ example,\ at\ the\ end\ of\ a\ conditional,\ the\ arguments\ must\ be\ popped,}}
+\DoxyCodeLine{00107\ \textcolor{comment}{\ \ \ \ \ since\ code\ outside\ the\ conditional\ won't\ know\ whether\ or\ not\ the}}
+\DoxyCodeLine{00108\ \textcolor{comment}{\ \ \ \ \ arguments\ need\ to\ be\ popped.)}}
+\DoxyCodeLine{00109\ \textcolor{comment}{}}
+\DoxyCodeLine{00110\ \textcolor{comment}{\ \ \ \ \ When\ INHIBIT\_DEFER\_POP\ is\ nonzero,\ however,\ the\ compiler\ does\ not}}
+\DoxyCodeLine{00111\ \textcolor{comment}{\ \ \ \ \ attempt\ to\ defer\ pops.\ \ Instead,\ the\ stack\ is\ popped\ immediately}}
+\DoxyCodeLine{00112\ \textcolor{comment}{\ \ \ \ \ after\ each\ call.\ \ Rather\ then\ setting\ this\ variable\ directly,\ use}}
+\DoxyCodeLine{00113\ \textcolor{comment}{\ \ \ \ \ NO\_DEFER\_POP\ and\ OK\_DEFER\_POP.\ \ */}}
+\DoxyCodeLine{00114\ \ \ \textcolor{keywordtype}{int}\ x\_inhibit\_defer\_pop;}
+\DoxyCodeLine{00115\ }
+\DoxyCodeLine{00116\ \ \ \textcolor{comment}{/*\ If\ PREFERRED\_STACK\_BOUNDARY\ and\ PUSH\_ROUNDING\ are\ defined,\ the\ stack}}
+\DoxyCodeLine{00117\ \textcolor{comment}{\ \ \ \ \ boundary\ can\ be\ momentarily\ unaligned\ while\ pushing\ the\ arguments.}}
+\DoxyCodeLine{00118\ \textcolor{comment}{\ \ \ \ \ Record\ the\ delta\ since\ last\ aligned\ boundary\ here\ in\ order\ to\ get}}
+\DoxyCodeLine{00119\ \textcolor{comment}{\ \ \ \ \ stack\ alignment\ in\ the\ nested\ function\ calls\ working\ right.\ \ */}}
+\DoxyCodeLine{00120\ \ \ \doxymbox{\hyperlink{poly-int-types_8h_af5255601feb5e9a21f3193d378a55845}{poly\_int64}}\ x\_stack\_pointer\_delta;}
+\DoxyCodeLine{00121\ }
+\DoxyCodeLine{00122\ \ \ \textcolor{comment}{/*\ Nonzero\ means\ \_\_builtin\_saveregs\ has\ already\ been\ done\ in\ this\ function.}}
+\DoxyCodeLine{00123\ \textcolor{comment}{\ \ \ \ \ The\ value\ is\ the\ pseudoreg\ containing\ the\ value\ \_\_builtin\_saveregs}}
+\DoxyCodeLine{00124\ \textcolor{comment}{\ \ \ \ \ returned.\ \ */}}
+\DoxyCodeLine{00125\ \ \ \doxymbox{\hyperlink{coretypes_8h_a20e671ce9e7827268658cff844f4281c}{rtx}}\ x\_saveregs\_value;}
+\DoxyCodeLine{00126\ }
+\DoxyCodeLine{00127\ \ \ \textcolor{comment}{/*\ Similarly\ for\ \_\_builtin\_apply\_args.\ \ */}}
+\DoxyCodeLine{00128\ \ \ \doxymbox{\hyperlink{coretypes_8h_a20e671ce9e7827268658cff844f4281c}{rtx}}\ x\_apply\_args\_value;}
+\DoxyCodeLine{00129\ }
+\DoxyCodeLine{00130\ \ \ \textcolor{comment}{/*\ List\ of\ labels\ that\ must\ never\ be\ deleted.\ \ */}}
+\DoxyCodeLine{00131\ \ \ \doxymbox{\hyperlink{structvec}{vec<rtx\_insn\ *,\ va\_gc>}}\ *x\_forced\_labels;}
+\DoxyCodeLine{00132\ \};}
+\DoxyCodeLine{00133\ }
+\DoxyCodeLine{00134\ \textcolor{keyword}{typedef}\ \textcolor{keyword}{struct\ }call\_site\_record\_d\ *\doxymbox{\hyperlink{function_8h_abd060123b1395677b0261de9a4140396}{call\_site\_record}};}
+\DoxyCodeLine{00135\ }
+\DoxyCodeLine{00136\ \textcolor{comment}{/*\ RTL\ representation\ of\ exception\ handling.\ \ */}}
+\DoxyCodeLine{00137\ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{coretypes_8h_ae5708c4d4b300570eebe0bc0c78facbc}{GTY}}(())\ rtl\_eh\ \{}
+\DoxyCodeLine{00138\ \ \ \doxymbox{\hyperlink{coretypes_8h_a20e671ce9e7827268658cff844f4281c}{rtx}}\ ehr\_stackadj;}
+\DoxyCodeLine{00139\ \ \ \doxymbox{\hyperlink{coretypes_8h_a20e671ce9e7827268658cff844f4281c}{rtx}}\ ehr\_handler;}
+\DoxyCodeLine{00140\ \ \ rtx\_code\_label\ *ehr\_label;}
+\DoxyCodeLine{00141\ }
+\DoxyCodeLine{00142\ \ \ \doxymbox{\hyperlink{coretypes_8h_a20e671ce9e7827268658cff844f4281c}{rtx}}\ sjlj\_fc;}
+\DoxyCodeLine{00143\ \ \ rtx\_insn\ *sjlj\_exit\_after;}
+\DoxyCodeLine{00144\ }
+\DoxyCodeLine{00145\ \ \ \doxymbox{\hyperlink{structvec}{vec<uchar,\ va\_gc>}}\ *action\_record\_data;}
+\DoxyCodeLine{00146\ }
+\DoxyCodeLine{00147\ \ \ \doxymbox{\hyperlink{structvec}{vec<call\_site\_record,\ va\_gc>}}\ *call\_site\_record\_v[2];}
+\DoxyCodeLine{00148\ \};}
+\DoxyCodeLine{00149\ }
+\DoxyCodeLine{00150\ \textcolor{preprocessor}{\#define\ pending\_stack\_adjust\ (crtl-\/>expr.x\_pending\_stack\_adjust)}}
+\DoxyCodeLine{00151\ \textcolor{preprocessor}{\#define\ inhibit\_defer\_pop\ (crtl-\/>expr.x\_inhibit\_defer\_pop)}}
+\DoxyCodeLine{00152\ \textcolor{preprocessor}{\#define\ saveregs\_value\ (crtl-\/>expr.x\_saveregs\_value)}}
+\DoxyCodeLine{00153\ \textcolor{preprocessor}{\#define\ apply\_args\_value\ (crtl-\/>expr.x\_apply\_args\_value)}}
+\DoxyCodeLine{00154\ \textcolor{preprocessor}{\#define\ forced\_labels\ (crtl-\/>expr.x\_forced\_labels)}}
+\DoxyCodeLine{00155\ \textcolor{preprocessor}{\#define\ stack\_pointer\_delta\ (crtl-\/>expr.x\_stack\_pointer\_delta)}}
+\DoxyCodeLine{00156\ }
+\DoxyCodeLine{00157\ \textcolor{keyword}{struct\ }gimple\_df;}
+\DoxyCodeLine{00158\ \textcolor{keyword}{struct\ }call\_site\_record\_d;}
+\DoxyCodeLine{00159\ \textcolor{keyword}{struct\ }dw\_fde\_node;}
+\DoxyCodeLine{00160\ \textcolor{keyword}{class\ }\doxymbox{\hyperlink{classrange__query}{range\_query}};}
+\DoxyCodeLine{00161\ }
+\DoxyCodeLine{00162\ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{coretypes_8h_ae5708c4d4b300570eebe0bc0c78facbc}{GTY}}(())\ varasm\_status\ \{}
+\DoxyCodeLine{00163\ \ \ \textcolor{comment}{/*\ If\ we're\ using\ a\ per-\/function\ constant\ pool,\ this\ is\ it.\ \ */}}
+\DoxyCodeLine{00164\ \ \ \textcolor{keyword}{struct\ }rtx\_constant\_pool\ *pool;}
+\DoxyCodeLine{00165\ }
+\DoxyCodeLine{00166\ \ \ \textcolor{comment}{/*\ Number\ of\ tree-\/constants\ deferred\ during\ the\ expansion\ of\ this}}
+\DoxyCodeLine{00167\ \textcolor{comment}{\ \ \ \ \ function.\ \ */}}
+\DoxyCodeLine{00168\ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ deferred\_constants;}
+\DoxyCodeLine{00169\ \};}
+\DoxyCodeLine{00170\ }
+\DoxyCodeLine{00171\ }
+\DoxyCodeLine{00172\ \textcolor{comment}{/*\ Data\ for\ function\ partitioning.\ \ */}}
+\DoxyCodeLine{00173\ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{coretypes_8h_ae5708c4d4b300570eebe0bc0c78facbc}{GTY}}(())\ function\_subsections\ \{}
+\DoxyCodeLine{00174\ \ \ \textcolor{comment}{/*\ Assembly\ labels\ for\ the\ hot\ and\ cold\ text\ sections,\ to}}
+\DoxyCodeLine{00175\ \textcolor{comment}{\ \ \ \ \ be\ used\ by\ debugger\ functions\ for\ determining\ the\ size\ of\ text}}
+\DoxyCodeLine{00176\ \textcolor{comment}{\ \ \ \ \ sections.\ \ */}}
+\DoxyCodeLine{00177\ }
+\DoxyCodeLine{00178\ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *hot\_section\_label;}
+\DoxyCodeLine{00179\ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *cold\_section\_label;}
+\DoxyCodeLine{00180\ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *hot\_section\_end\_label;}
+\DoxyCodeLine{00181\ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *cold\_section\_end\_label;}
+\DoxyCodeLine{00182\ \};}
+\DoxyCodeLine{00183\ }
+\DoxyCodeLine{00184\ \textcolor{comment}{/*\ Describe\ an\ empty\ area\ of\ space\ in\ the\ stack\ frame.\ \ These\ can\ be\ chained}}
+\DoxyCodeLine{00185\ \textcolor{comment}{\ \ \ into\ a\ list;\ this\ is\ used\ to\ keep\ track\ of\ space\ wasted\ for\ alignment}}
+\DoxyCodeLine{00186\ \textcolor{comment}{\ \ \ reasons.\ \ */}}
+\DoxyCodeLine{00187\ \textcolor{keyword}{class\ }\doxymbox{\hyperlink{coretypes_8h_ae5708c4d4b300570eebe0bc0c78facbc}{GTY}}(())\ frame\_space}
+\DoxyCodeLine{00188\ \{}
+\DoxyCodeLine{00189\ \textcolor{keyword}{public}:}
+\DoxyCodeLine{00190\ \ \ \textcolor{keyword}{class\ }frame\_space\ *next;}
+\DoxyCodeLine{00191\ }
+\DoxyCodeLine{00192\ \ \ \doxymbox{\hyperlink{poly-int-types_8h_af5255601feb5e9a21f3193d378a55845}{poly\_int64}}\ \doxymbox{\hyperlink{namespacemode__iterator_ae2af1c865e977ad464caea5716501964}{start}};}
+\DoxyCodeLine{00193\ \ \ \doxymbox{\hyperlink{poly-int-types_8h_af5255601feb5e9a21f3193d378a55845}{poly\_int64}}\ length;}
+\DoxyCodeLine{00194\ \};}
+\DoxyCodeLine{00195\ }
+\DoxyCodeLine{00196\ \textcolor{comment}{/*\ Describe\ emitted\ calls\ for\ -\/fcallgraph-\/info.\ \ */}}
+\DoxyCodeLine{00197\ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{coretypes_8h_ae5708c4d4b300570eebe0bc0c78facbc}{GTY}}(())\ callinfo\_callee}
+\DoxyCodeLine{00198\ \{}
+\DoxyCodeLine{00199\ \ \ \doxymbox{\hyperlink{line-map_8h_aedf25620511d64e43327f1a229906a96}{location\_t}}\ location;}
+\DoxyCodeLine{00200\ \ \ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ decl;}
+\DoxyCodeLine{00201\ \};}
+\DoxyCodeLine{00202\ }
+\DoxyCodeLine{00203\ \textcolor{comment}{/*\ Describe\ dynamic\ allocation\ for\ -\/fcallgraph-\/info=da.\ \ */}}
+\DoxyCodeLine{00204\ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{coretypes_8h_ae5708c4d4b300570eebe0bc0c78facbc}{GTY}}(())\ callinfo\_dalloc}
+\DoxyCodeLine{00205\ \{}
+\DoxyCodeLine{00206\ \ \ \doxymbox{\hyperlink{line-map_8h_aedf25620511d64e43327f1a229906a96}{location\_t}}\ location;}
+\DoxyCodeLine{00207\ \ \ \textcolor{keywordtype}{char}\ \textcolor{keyword}{const}\ *\doxymbox{\hyperlink{configargs_8h_a8f8f80d37794cde9472343e4487ba3eb}{name}};}
+\DoxyCodeLine{00208\ \};}
+\DoxyCodeLine{00209\ }
+\DoxyCodeLine{00210\ \textcolor{keyword}{class\ }\doxymbox{\hyperlink{coretypes_8h_ae5708c4d4b300570eebe0bc0c78facbc}{GTY}}(())\ stack\_usage}
+\DoxyCodeLine{00211\ \{}
+\DoxyCodeLine{00212\ \textcolor{keyword}{public}:}
+\DoxyCodeLine{00213\ \ \ \textcolor{comment}{/*\ \#\ of\ bytes\ of\ static\ stack\ space\ allocated\ by\ the\ function.\ \ */}}
+\DoxyCodeLine{00214\ \ \ HOST\_WIDE\_INT\ static\_stack\_size;}
+\DoxyCodeLine{00215\ }
+\DoxyCodeLine{00216\ \ \ \textcolor{comment}{/*\ \#\ of\ bytes\ of\ dynamic\ stack\ space\ allocated\ by\ the\ function.\ \ This\ is}}
+\DoxyCodeLine{00217\ \textcolor{comment}{\ \ \ \ \ meaningful\ only\ if\ has\_unbounded\_dynamic\_stack\_size\ is\ zero.\ \ */}}
+\DoxyCodeLine{00218\ \ \ HOST\_WIDE\_INT\ dynamic\_stack\_size;}
+\DoxyCodeLine{00219\ }
+\DoxyCodeLine{00220\ \ \ \textcolor{comment}{/*\ Upper\ bound\ on\ the\ number\ of\ bytes\ pushed\ onto\ the\ stack\ after\ the}}
+\DoxyCodeLine{00221\ \textcolor{comment}{\ \ \ \ \ prologue.\ \ If\ !ACCUMULATE\_OUTGOING\_ARGS,\ it\ contains\ the\ outgoing}}
+\DoxyCodeLine{00222\ \textcolor{comment}{\ \ \ \ \ arguments.\ \ */}}
+\DoxyCodeLine{00223\ \ \ \doxymbox{\hyperlink{poly-int-types_8h_af5255601feb5e9a21f3193d378a55845}{poly\_int64}}\ pushed\_stack\_size;}
+\DoxyCodeLine{00224\ }
+\DoxyCodeLine{00225\ \ \ \textcolor{comment}{/*\ Nonzero\ if\ the\ amount\ of\ stack\ space\ allocated\ dynamically\ cannot}}
+\DoxyCodeLine{00226\ \textcolor{comment}{\ \ \ \ \ be\ bounded\ at\ compile-\/time.\ \ */}}
+\DoxyCodeLine{00227\ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ has\_unbounded\_dynamic\_stack\_size\ :\ 1;}
+\DoxyCodeLine{00228\ }
+\DoxyCodeLine{00229\ \ \ \textcolor{comment}{/*\ Functions\ called\ within\ the\ function,\ if\ callgraph\ is\ enabled.\ \ */}}
+\DoxyCodeLine{00230\ \ \ \doxymbox{\hyperlink{vec_8h_ac6299229087b122e17686611255dfa27}{vec<callinfo\_callee,\ va\_gc>}}\ *callees;}
+\DoxyCodeLine{00231\ }
+\DoxyCodeLine{00232\ \ \ \textcolor{comment}{/*\ Dynamic\ allocations\ encountered\ within\ the\ function,\ if\ callgraph}}
+\DoxyCodeLine{00233\ \textcolor{comment}{\ \ \ \ \ da\ is\ enabled.\ \ */}}
+\DoxyCodeLine{00234\ \ \ \doxymbox{\hyperlink{vec_8h_ac6299229087b122e17686611255dfa27}{vec<callinfo\_dalloc,\ va\_gc>}}\ *dallocs;}
+\DoxyCodeLine{00235\ \};}
+\DoxyCodeLine{00236\ }
+\DoxyCodeLine{00237\ \textcolor{preprocessor}{\#define\ current\_function\_static\_stack\_size\ (cfun-\/>su-\/>static\_stack\_size)}}
+\DoxyCodeLine{00238\ \textcolor{preprocessor}{\#define\ current\_function\_dynamic\_stack\_size\ (cfun-\/>su-\/>dynamic\_stack\_size)}}
+\DoxyCodeLine{00239\ \textcolor{preprocessor}{\#define\ current\_function\_pushed\_stack\_size\ (cfun-\/>su-\/>pushed\_stack\_size)}}
+\DoxyCodeLine{00240\ \textcolor{preprocessor}{\#define\ current\_function\_has\_unbounded\_dynamic\_stack\_size\ \(\backslash\)}}
+\DoxyCodeLine{00241\ \textcolor{preprocessor}{\ \ (cfun-\/>su-\/>has\_unbounded\_dynamic\_stack\_size)}}
+\DoxyCodeLine{00242\ \textcolor{preprocessor}{\#define\ current\_function\_allocates\_dynamic\_stack\_space\ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00243\ \textcolor{preprocessor}{\ \ (current\_function\_dynamic\_stack\_size\ !=\ 0\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00244\ \textcolor{preprocessor}{\ \ \ ||\ current\_function\_has\_unbounded\_dynamic\_stack\_size)}}
+\DoxyCodeLine{00245\ }
+\DoxyCodeLine{00246\ \textcolor{comment}{/*\ This\ structure\ can\ save\ all\ the\ important\ global\ and\ static\ variables}}
+\DoxyCodeLine{00247\ \textcolor{comment}{\ \ \ describing\ the\ status\ of\ the\ current\ function.\ \ */}}
+\DoxyCodeLine{00248\ }
+\DoxyCodeLine{00249\ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{coretypes_8h_ae5708c4d4b300570eebe0bc0c78facbc}{GTY}}(())\ function\ \{}
+\DoxyCodeLine{00250\ \ \ \textcolor{keyword}{struct\ }eh\_status\ *eh;}
+\DoxyCodeLine{00251\ }
+\DoxyCodeLine{00252\ \ \ \textcolor{comment}{/*\ The\ control\ flow\ graph\ for\ this\ function.\ \ */}}
+\DoxyCodeLine{00253\ \ \ \textcolor{keyword}{struct\ }control\_flow\_graph\ *cfg;}
+\DoxyCodeLine{00254\ }
+\DoxyCodeLine{00255\ \ \ \textcolor{comment}{/*\ GIMPLE\ body\ for\ this\ function.\ \ */}}
+\DoxyCodeLine{00256\ \ \ \doxymbox{\hyperlink{coretypes_8h_a4b4e58d1e0dada604ccfc7965bb9a3df}{gimple\_seq}}\ \doxymbox{\hyperlink{gimple-expr_8h_afd51005867218f848951b76403b4597e}{gimple\_body}};}
+\DoxyCodeLine{00257\ }
+\DoxyCodeLine{00258\ \ \ \textcolor{comment}{/*\ SSA\ and\ dataflow\ information.\ \ */}}
+\DoxyCodeLine{00259\ \ \ \textcolor{keyword}{struct\ }gimple\_df\ *gimple\_df;}
+\DoxyCodeLine{00260\ }
+\DoxyCodeLine{00261\ \ \ \textcolor{comment}{/*\ The\ loops\ in\ this\ function.\ \ */}}
+\DoxyCodeLine{00262\ \ \ \textcolor{keyword}{struct\ }loops\ *x\_current\_loops;}
+\DoxyCodeLine{00263\ }
+\DoxyCodeLine{00264\ \ \ \textcolor{comment}{/*\ Filled\ by\ the\ GIMPLE\ and\ RTL\ FEs,\ pass\ to\ start\ compilation\ with.\ \ */}}
+\DoxyCodeLine{00265\ \ \ \textcolor{keywordtype}{char}\ *pass\_startwith;}
+\DoxyCodeLine{00266\ }
+\DoxyCodeLine{00267\ \ \ \textcolor{comment}{/*\ The\ stack\ usage\ of\ this\ function.\ \ */}}
+\DoxyCodeLine{00268\ \ \ \textcolor{keyword}{class\ }stack\_usage\ *su;}
+\DoxyCodeLine{00269\ }
+\DoxyCodeLine{00270\ \ \ \textcolor{comment}{/*\ Value\ histograms\ attached\ to\ particular\ statements.\ \ */}}
+\DoxyCodeLine{00271\ \ \ \doxymbox{\hyperlink{hashtab_8h_aa3847a9bffeefab8f9895fc38007118a}{htab\_t}}\ \doxymbox{\hyperlink{coretypes_8h_ae5708c4d4b300570eebe0bc0c78facbc}{GTY}}((skip))\ value\_histograms;}
+\DoxyCodeLine{00272\ }
+\DoxyCodeLine{00273\ \ \ \textcolor{comment}{/*\ Annotated\ gconds\ so\ that\ basic\ conditions\ in\ the\ same\ expression\ map\ to}}
+\DoxyCodeLine{00274\ \textcolor{comment}{\ \ \ \ \ the\ same\ uid.\ \ This\ is\ used\ for\ condition\ coverage.\ \ */}}
+\DoxyCodeLine{00275\ \ \ hash\_map\ <gcond*,\ unsigned>\ *\doxymbox{\hyperlink{coretypes_8h_ae5708c4d4b300570eebe0bc0c78facbc}{GTY}}((skip))\ cond\_uids;}
+\DoxyCodeLine{00276\ }
+\DoxyCodeLine{00277\ \ \ \textcolor{comment}{/*\ For\ function.cc.\ \ */}}
+\DoxyCodeLine{00278\ }
+\DoxyCodeLine{00279\ \ \ \textcolor{comment}{/*\ Points\ to\ the\ FUNCTION\_DECL\ of\ this\ function.\ \ */}}
+\DoxyCodeLine{00280\ \ \ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ decl;}
+\DoxyCodeLine{00281\ }
+\DoxyCodeLine{00282\ \ \ \textcolor{comment}{/*\ A\ PARM\_DECL\ that\ should\ contain\ the\ static\ chain\ for\ this\ function.}}
+\DoxyCodeLine{00283\ \textcolor{comment}{\ \ \ \ \ It\ will\ be\ initialized\ at\ the\ beginning\ of\ the\ function.\ \ */}}
+\DoxyCodeLine{00284\ \ \ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ static\_chain\_decl;}
+\DoxyCodeLine{00285\ }
+\DoxyCodeLine{00286\ \ \ \textcolor{comment}{/*\ An\ expression\ that\ contains\ the\ non-\/local\ goto\ save\ area.\ \ The\ first}}
+\DoxyCodeLine{00287\ \textcolor{comment}{\ \ \ \ \ word\ is\ the\ saved\ frame\ pointer\ and\ the\ second\ is\ the\ saved\ stack}}
+\DoxyCodeLine{00288\ \textcolor{comment}{\ \ \ \ \ pointer.\ \ */}}
+\DoxyCodeLine{00289\ \ \ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ nonlocal\_goto\_save\_area;}
+\DoxyCodeLine{00290\ }
+\DoxyCodeLine{00291\ \ \ \textcolor{comment}{/*\ Vector\ of\ function\ local\ variables,\ functions,\ types\ and\ constants.\ \ */}}
+\DoxyCodeLine{00292\ \ \ \doxymbox{\hyperlink{structvec}{vec<tree,\ va\_gc>}}\ *local\_decls;}
+\DoxyCodeLine{00293\ }
+\DoxyCodeLine{00294\ \ \ \textcolor{comment}{/*\ For\ md\ files.\ \ */}}
+\DoxyCodeLine{00295\ }
+\DoxyCodeLine{00296\ \ \ \textcolor{comment}{/*\ tm.h\ can\ use\ this\ to\ store\ whatever\ it\ likes.\ \ */}}
+\DoxyCodeLine{00297\ \ \ \textcolor{keyword}{struct\ }machine\_function\ *\ \doxymbox{\hyperlink{coretypes_8h_ae5708c4d4b300570eebe0bc0c78facbc}{GTY}}\ ((maybe\_undef))\ machine;}
+\DoxyCodeLine{00298\ }
+\DoxyCodeLine{00299\ \ \ \textcolor{comment}{/*\ Language-\/specific\ code\ can\ use\ this\ to\ store\ whatever\ it\ likes.\ \ */}}
+\DoxyCodeLine{00300\ \ \ \textcolor{keyword}{struct\ }language\_function\ *\ language;}
+\DoxyCodeLine{00301\ }
+\DoxyCodeLine{00302\ \ \ \textcolor{comment}{/*\ Used\ types\ hash\ table.\ \ */}}
+\DoxyCodeLine{00303\ \ \ \doxymbox{\hyperlink{classhash__set}{hash\_set<tree>}}\ *\doxymbox{\hyperlink{coretypes_8h_ae5708c4d4b300570eebe0bc0c78facbc}{GTY}}\ (())\ used\_types\_hash;}
+\DoxyCodeLine{00304\ }
+\DoxyCodeLine{00305\ \ \ \textcolor{comment}{/*\ Dwarf2\ Frame\ Description\ Entry,\ containing\ the\ Call\ Frame\ Instructions}}
+\DoxyCodeLine{00306\ \textcolor{comment}{\ \ \ \ \ used\ for\ unwinding.\ \ Only\ set\ when\ either\ dwarf2\ unwinding\ or\ dwarf2}}
+\DoxyCodeLine{00307\ \textcolor{comment}{\ \ \ \ \ debugging\ is\ enabled.\ \ */}}
+\DoxyCodeLine{00308\ \ \ \textcolor{keyword}{struct\ }dw\_fde\_node\ *fde;}
+\DoxyCodeLine{00309\ }
+\DoxyCodeLine{00310\ \ \ \textcolor{comment}{/*\ Range\ query\ mechanism\ for\ functions.\ \ The\ default\ is\ to\ pick\ up}}
+\DoxyCodeLine{00311\ \textcolor{comment}{\ \ \ \ \ global\ ranges.\ \ If\ a\ pass\ wants\ on-\/demand\ ranges\ OTOH,\ it\ must}}
+\DoxyCodeLine{00312\ \textcolor{comment}{\ \ \ \ \ call\ enable/disable\_ranger().\ \ The\ pointer\ is\ never\ null.\ \ It}}
+\DoxyCodeLine{00313\ \textcolor{comment}{\ \ \ \ \ should\ be\ queried\ by\ calling\ get\_range\_query().\ \ */}}
+\DoxyCodeLine{00314\ \ \ \doxymbox{\hyperlink{classrange__query}{range\_query}}\ *\ \doxymbox{\hyperlink{coretypes_8h_ae5708c4d4b300570eebe0bc0c78facbc}{GTY}}\ ((skip))\ x\_range\_query;}
+\DoxyCodeLine{00315\ }
+\DoxyCodeLine{00316\ \ \ \textcolor{comment}{/*\ Last\ statement\ uid.\ \ */}}
+\DoxyCodeLine{00317\ \ \ \textcolor{keywordtype}{int}\ last\_stmt\_uid;}
+\DoxyCodeLine{00318\ }
+\DoxyCodeLine{00319\ \ \ \textcolor{comment}{/*\ Debug\ marker\ counter.\ \ Count\ begin\ stmt\ markers.\ \ We\ don't\ have}}
+\DoxyCodeLine{00320\ \textcolor{comment}{\ \ \ \ \ to\ keep\ it\ exact,\ it's\ more\ of\ a\ rough\ estimate\ to\ enable\ us\ to}}
+\DoxyCodeLine{00321\ \textcolor{comment}{\ \ \ \ \ decide\ whether\ they\ are\ too\ many\ to\ copy\ during\ inlining,\ or\ when}}
+\DoxyCodeLine{00322\ \textcolor{comment}{\ \ \ \ \ expanding\ to\ RTL.\ \ */}}
+\DoxyCodeLine{00323\ \ \ \textcolor{keywordtype}{int}\ debug\_marker\_count;}
+\DoxyCodeLine{00324\ }
+\DoxyCodeLine{00325\ \ \ \textcolor{comment}{/*\ Function\ sequence\ number\ for\ profiling,\ debugging,\ etc.\ \ */}}
+\DoxyCodeLine{00326\ \ \ \textcolor{keywordtype}{int}\ funcdef\_no;}
+\DoxyCodeLine{00327\ }
+\DoxyCodeLine{00328\ \ \ \textcolor{comment}{/*\ Line\ number\ of\ the\ start\ of\ the\ function\ for\ debugging\ purposes.\ \ */}}
+\DoxyCodeLine{00329\ \ \ \doxymbox{\hyperlink{line-map_8h_aedf25620511d64e43327f1a229906a96}{location\_t}}\ function\_start\_locus;}
+\DoxyCodeLine{00330\ }
+\DoxyCodeLine{00331\ \ \ \textcolor{comment}{/*\ Line\ number\ of\ the\ end\ of\ the\ function.\ \ */}}
+\DoxyCodeLine{00332\ \ \ \doxymbox{\hyperlink{line-map_8h_aedf25620511d64e43327f1a229906a96}{location\_t}}\ function\_end\_locus;}
+\DoxyCodeLine{00333\ }
+\DoxyCodeLine{00334\ \ \ \textcolor{comment}{/*\ Properties\ used\ by\ the\ pass\ manager.\ \ */}}
+\DoxyCodeLine{00335\ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ curr\_properties;}
+\DoxyCodeLine{00336\ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ last\_verified;}
+\DoxyCodeLine{00337\ }
+\DoxyCodeLine{00338\ \ \ \textcolor{comment}{/*\ Different\ from\ normal\ TODO\_flags\ which\ are\ handled\ right\ at\ the}}
+\DoxyCodeLine{00339\ \textcolor{comment}{\ \ \ \ \ beginning\ or\ the\ end\ of\ one\ pass\ execution,\ the\ pending\_TODOs}}
+\DoxyCodeLine{00340\ \textcolor{comment}{\ \ \ \ \ are\ passed\ down\ in\ the\ pipeline\ until\ one\ of\ its\ consumers\ can}}
+\DoxyCodeLine{00341\ \textcolor{comment}{\ \ \ \ \ perform\ the\ requested\ action.\ \ Consumers\ should\ then\ clear\ the}}
+\DoxyCodeLine{00342\ \textcolor{comment}{\ \ \ \ \ flags\ for\ the\ actions\ that\ they\ have\ taken.\ \ */}}
+\DoxyCodeLine{00343\ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ pending\_TODOs;}
+\DoxyCodeLine{00344\ }
+\DoxyCodeLine{00345\ \ \ \textcolor{comment}{/*\ Non-\/null\ if\ the\ function\ does\ something\ that\ would\ prevent\ it\ from}}
+\DoxyCodeLine{00346\ \textcolor{comment}{\ \ \ \ \ being\ copied;\ this\ applies\ to\ both\ versioning\ and\ inlining.\ \ Set\ to}}
+\DoxyCodeLine{00347\ \textcolor{comment}{\ \ \ \ \ a\ string\ describing\ the\ reason\ for\ failure.\ \ */}}
+\DoxyCodeLine{00348\ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *\ \doxymbox{\hyperlink{coretypes_8h_ae5708c4d4b300570eebe0bc0c78facbc}{GTY}}((skip))\ cannot\_be\_copied\_reason;}
+\DoxyCodeLine{00349\ }
+\DoxyCodeLine{00350\ \ \ \textcolor{comment}{/*\ Last\ assigned\ dependence\ info\ clique.\ \ */}}
+\DoxyCodeLine{00351\ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{short}\ last\_clique;}
+\DoxyCodeLine{00352\ }
+\DoxyCodeLine{00353\ \ \ \textcolor{comment}{/*\ Collected\ bit\ flags.\ \ */}}
+\DoxyCodeLine{00354\ }
+\DoxyCodeLine{00355\ \ \ \textcolor{comment}{/*\ Number\ of\ units\ of\ general\ registers\ that\ need\ saving\ in\ stdarg}}
+\DoxyCodeLine{00356\ \textcolor{comment}{\ \ \ \ \ function.\ \ What\ unit\ is\ depends\ on\ the\ backend,\ either\ it\ is\ number}}
+\DoxyCodeLine{00357\ \textcolor{comment}{\ \ \ \ \ of\ bytes,\ or\ it\ can\ be\ number\ of\ registers.\ \ */}}
+\DoxyCodeLine{00358\ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ va\_list\_gpr\_size\ :\ 8;}
+\DoxyCodeLine{00359\ }
+\DoxyCodeLine{00360\ \ \ \textcolor{comment}{/*\ Number\ of\ units\ of\ floating\ point\ registers\ that\ need\ saving\ in\ stdarg}}
+\DoxyCodeLine{00361\ \textcolor{comment}{\ \ \ \ \ function.\ \ */}}
+\DoxyCodeLine{00362\ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ va\_list\_fpr\_size\ :\ 8;}
+\DoxyCodeLine{00363\ }
+\DoxyCodeLine{00364\ \ \ \textcolor{comment}{/*\ Nonzero\ if\ function\ being\ compiled\ can\ call\ setjmp.\ \ */}}
+\DoxyCodeLine{00365\ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ calls\_setjmp\ :\ 1;}
+\DoxyCodeLine{00366\ }
+\DoxyCodeLine{00367\ \ \ \textcolor{comment}{/*\ Nonzero\ if\ function\ being\ compiled\ can\ call\ alloca,}}
+\DoxyCodeLine{00368\ \textcolor{comment}{\ \ \ \ \ either\ as\ a\ subroutine\ or\ builtin.\ \ */}}
+\DoxyCodeLine{00369\ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ calls\_alloca\ :\ 1;}
+\DoxyCodeLine{00370\ }
+\DoxyCodeLine{00371\ \ \ \textcolor{comment}{/*\ Nonzero\ if\ function\ being\ compiled\ can\ call\ \_\_builtin\_eh\_return.\ \ */}}
+\DoxyCodeLine{00372\ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ calls\_eh\_return\ :\ 1;}
+\DoxyCodeLine{00373\ }
+\DoxyCodeLine{00374\ \ \ \textcolor{comment}{/*\ Nonzero\ if\ function\ being\ compiled\ receives\ nonlocal\ gotos}}
+\DoxyCodeLine{00375\ \textcolor{comment}{\ \ \ \ \ from\ nested\ functions.\ \ */}}
+\DoxyCodeLine{00376\ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ has\_nonlocal\_label\ :\ 1;}
+\DoxyCodeLine{00377\ }
+\DoxyCodeLine{00378\ \ \ \textcolor{comment}{/*\ Nonzero\ if\ function\ being\ compiled\ has\ a\ forced\ label}}
+\DoxyCodeLine{00379\ \textcolor{comment}{\ \ \ \ \ placed\ into\ static\ storage.\ \ */}}
+\DoxyCodeLine{00380\ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ has\_forced\_label\_in\_static\ :\ 1;}
+\DoxyCodeLine{00381\ }
+\DoxyCodeLine{00382\ \ \ \textcolor{comment}{/*\ Nonzero\ if\ we've\ set\ cannot\_be\_copied\_reason.\ \ I.e.\ if}}
+\DoxyCodeLine{00383\ \textcolor{comment}{\ \ \ \ \ (cannot\_be\_copied\_set\ \&\&\ !cannot\_be\_copied\_reason),\ the\ function}}
+\DoxyCodeLine{00384\ \textcolor{comment}{\ \ \ \ \ can\ in\ fact\ be\ copied.\ \ */}}
+\DoxyCodeLine{00385\ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ cannot\_be\_copied\_set\ :\ 1;}
+\DoxyCodeLine{00386\ }
+\DoxyCodeLine{00387\ \ \ \textcolor{comment}{/*\ Nonzero\ if\ current\ function\ uses\ stdarg.h\ or\ equivalent.\ \ */}}
+\DoxyCodeLine{00388\ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ stdarg\ :\ 1;}
+\DoxyCodeLine{00389\ }
+\DoxyCodeLine{00390\ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ after\_inlining\ :\ 1;}
+\DoxyCodeLine{00391\ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ always\_inline\_functions\_inlined\ :\ 1;}
+\DoxyCodeLine{00392\ }
+\DoxyCodeLine{00393\ \ \ \textcolor{comment}{/*\ Nonzero\ if\ function\ being\ compiled\ can\ throw\ synchronous\ non-\/call}}
+\DoxyCodeLine{00394\ \textcolor{comment}{\ \ \ \ \ exceptions.\ \ */}}
+\DoxyCodeLine{00395\ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ can\_throw\_non\_call\_exceptions\ :\ 1;}
+\DoxyCodeLine{00396\ }
+\DoxyCodeLine{00397\ \ \ \textcolor{comment}{/*\ Nonzero\ if\ instructions\ that\ may\ throw\ exceptions\ but\ don't\ otherwise}}
+\DoxyCodeLine{00398\ \textcolor{comment}{\ \ \ \ \ contribute\ to\ the\ execution\ of\ the\ program\ can\ be\ deleted.\ \ */}}
+\DoxyCodeLine{00399\ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ can\_delete\_dead\_exceptions\ :\ 1;}
+\DoxyCodeLine{00400\ }
+\DoxyCodeLine{00401\ \ \ \textcolor{comment}{/*\ Fields\ below\ this\ point\ are\ not\ set\ for\ abstract\ functions;\ see}}
+\DoxyCodeLine{00402\ \textcolor{comment}{\ \ \ \ \ allocate\_struct\_function.\ \ */}}
+\DoxyCodeLine{00403\ }
+\DoxyCodeLine{00404\ \ \ \textcolor{comment}{/*\ Nonzero\ if\ function\ being\ compiled\ needs\ to\ be\ given\ an\ address}}
+\DoxyCodeLine{00405\ \textcolor{comment}{\ \ \ \ \ where\ the\ value\ should\ be\ stored.\ \ */}}
+\DoxyCodeLine{00406\ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ returns\_struct\ :\ 1;}
+\DoxyCodeLine{00407\ }
+\DoxyCodeLine{00408\ \ \ \textcolor{comment}{/*\ Nonzero\ if\ function\ being\ compiled\ needs\ to}}
+\DoxyCodeLine{00409\ \textcolor{comment}{\ \ \ \ \ return\ the\ address\ of\ where\ it\ has\ put\ a\ structure\ value.\ \ */}}
+\DoxyCodeLine{00410\ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ returns\_pcc\_struct\ :\ 1;}
+\DoxyCodeLine{00411\ }
+\DoxyCodeLine{00412\ \ \ \textcolor{comment}{/*\ Nonzero\ if\ this\ function\ has\ local\ DECL\_HARD\_REGISTER\ variables.}}
+\DoxyCodeLine{00413\ \textcolor{comment}{\ \ \ \ \ In\ this\ case\ code\ motion\ has\ to\ be\ done\ more\ carefully.\ \ */}}
+\DoxyCodeLine{00414\ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ has\_local\_explicit\_reg\_vars\ :\ 1;}
+\DoxyCodeLine{00415\ }
+\DoxyCodeLine{00416\ \ \ \textcolor{comment}{/*\ Nonzero\ if\ the\ current\ function\ is\ a\ thunk,\ i.e.,\ a\ lightweight}}
+\DoxyCodeLine{00417\ \textcolor{comment}{\ \ \ \ \ function\ implemented\ by\ the\ output\_mi\_thunk\ hook)\ that\ just}}
+\DoxyCodeLine{00418\ \textcolor{comment}{\ \ \ \ \ adjusts\ one\ of\ its\ arguments\ and\ forwards\ to\ another}}
+\DoxyCodeLine{00419\ \textcolor{comment}{\ \ \ \ \ function.\ \ */}}
+\DoxyCodeLine{00420\ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ is\_thunk\ :\ 1;}
+\DoxyCodeLine{00421\ }
+\DoxyCodeLine{00422\ \ \ \textcolor{comment}{/*\ Nonzero\ if\ the\ current\ function\ contains\ any\ loops\ with}}
+\DoxyCodeLine{00423\ \textcolor{comment}{\ \ \ \ \ loop-\/>force\_vectorize\ set.\ \ */}}
+\DoxyCodeLine{00424\ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ has\_force\_vectorize\_loops\ :\ 1;}
+\DoxyCodeLine{00425\ }
+\DoxyCodeLine{00426\ \ \ \textcolor{comment}{/*\ Nonzero\ if\ the\ current\ function\ contains\ any\ loops\ with}}
+\DoxyCodeLine{00427\ \textcolor{comment}{\ \ \ \ \ nonzero\ value\ in\ loop-\/>simduid.\ \ */}}
+\DoxyCodeLine{00428\ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ has\_simduid\_loops\ :\ 1;}
+\DoxyCodeLine{00429\ }
+\DoxyCodeLine{00430\ \ \ \textcolor{comment}{/*\ Nonzero\ when\ the\ tail\ call\ has\ been\ identified.\ \ */}}
+\DoxyCodeLine{00431\ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ tail\_call\_marked\ :\ 1;}
+\DoxyCodeLine{00432\ }
+\DoxyCodeLine{00433\ \ \ \textcolor{comment}{/*\ Nonzero\ if\ the\ current\ function\ contains\ a\ \#pragma\ GCC\ unroll.\ \ */}}
+\DoxyCodeLine{00434\ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ has\_unroll\ :\ 1;}
+\DoxyCodeLine{00435\ }
+\DoxyCodeLine{00436\ \ \ \textcolor{comment}{/*\ Set\ when\ the\ function\ was\ compiled\ with\ generation\ of\ debug}}
+\DoxyCodeLine{00437\ \textcolor{comment}{\ \ \ \ \ (begin\ stmt,\ inline\ entry,\ ...)\ markers\ enabled.\ \ */}}
+\DoxyCodeLine{00438\ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ debug\_nonbind\_markers\ :\ 1;}
+\DoxyCodeLine{00439\ }
+\DoxyCodeLine{00440\ \ \ \textcolor{comment}{/*\ Set\ if\ this\ is\ a\ coroutine-\/related\ function.\ \ */}}
+\DoxyCodeLine{00441\ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ coroutine\_component\ :\ 1;}
+\DoxyCodeLine{00442\ }
+\DoxyCodeLine{00443\ \ \ \textcolor{comment}{/*\ Set\ if\ there\ are\ any\ OMP\_TARGET\ regions\ in\ the\ function.\ \ */}}
+\DoxyCodeLine{00444\ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ has\_omp\_target\ :\ 1;}
+\DoxyCodeLine{00445\ }
+\DoxyCodeLine{00446\ \ \ \textcolor{comment}{/*\ Set\ for\ artificial\ function\ created\ for\ [[assume\ (cond)]].}}
+\DoxyCodeLine{00447\ \textcolor{comment}{\ \ \ \ \ These\ should\ be\ GIMPLE\ optimized,\ but\ not\ expanded\ to\ RTL.\ \ */}}
+\DoxyCodeLine{00448\ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ assume\_function\ :\ 1;}
+\DoxyCodeLine{00449\ \};}
+\DoxyCodeLine{00450\ }
+\DoxyCodeLine{00451\ \textcolor{comment}{/*\ Add\ the\ decl\ D\ to\ the\ local\_decls\ list\ of\ FUN.\ \ */}}
+\DoxyCodeLine{00452\ }
+\DoxyCodeLine{00453\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{function_8h_a49f8ca88130288c776019f04714278e2}{add\_local\_decl}}\ (\textcolor{keyword}{struct}\ function\ *fun,\ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ d);}
+\DoxyCodeLine{00454\ }
+\DoxyCodeLine{00455\ \textcolor{preprocessor}{\#define\ FOR\_EACH\_LOCAL\_DECL(FUN,\ I,\ D)\ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00456\ \textcolor{preprocessor}{\ \ FOR\_EACH\_VEC\_SAFE\_ELT\_REVERSE\ ((FUN)-\/>local\_decls,\ I,\ D)}}
+\DoxyCodeLine{00457\ }
+\DoxyCodeLine{00458\ \textcolor{comment}{/*\ Record\ a\ final\ call\ to\ CALLEE\ at\ LOCATION.\ \ */}}
+\DoxyCodeLine{00459\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{function_8h_af966c139dfd53d9da3b09c1668867ff4}{record\_final\_call}}\ (\doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ callee,\ \doxymbox{\hyperlink{line-map_8h_aedf25620511d64e43327f1a229906a96}{location\_t}}\ location);}
+\DoxyCodeLine{00460\ }
+\DoxyCodeLine{00461\ \textcolor{comment}{/*\ Record\ a\ dynamic\ allocation\ made\ for\ DECL\_OR\_EXP.\ \ */}}
+\DoxyCodeLine{00462\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{function_8h_a6b07467182ae1fc99901af913d91a8a1}{record\_dynamic\_alloc}}\ (\doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ decl\_or\_exp);}
+\DoxyCodeLine{00463\ }
+\DoxyCodeLine{00464\ \textcolor{comment}{/*\ If\ va\_list\_[gf]pr\_size\ is\ set\ to\ this,\ it\ means\ we\ don't\ know\ how}}
+\DoxyCodeLine{00465\ \textcolor{comment}{\ \ \ many\ units\ need\ to\ be\ saved.\ \ */}}
+\DoxyCodeLine{00466\ \textcolor{preprocessor}{\#define\ VA\_LIST\_MAX\_GPR\_SIZE\ \ \ \ 255}}
+\DoxyCodeLine{00467\ \textcolor{preprocessor}{\#define\ VA\_LIST\_MAX\_FPR\_SIZE\ \ \ \ 255}}
+\DoxyCodeLine{00468\ }
+\DoxyCodeLine{00469\ \textcolor{comment}{/*\ The\ function\ currently\ being\ compiled.\ \ */}}
+\DoxyCodeLine{00470\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{coretypes_8h_ae5708c4d4b300570eebe0bc0c78facbc}{GTY}}(())\ struct\ function\ *\doxymbox{\hyperlink{function_8h_ae364f850fb87e59780f10d5890501251}{cfun}};}
+\DoxyCodeLine{00471\ }
+\DoxyCodeLine{00472\ \textcolor{comment}{/*\ In\ order\ to\ ensure\ that\ cfun\ is\ not\ set\ directly,\ we\ redefine\ it\ so}}
+\DoxyCodeLine{00473\ \textcolor{comment}{\ \ \ that\ it\ is\ not\ an\ lvalue.\ \ Rather\ than\ assign\ to\ cfun,\ use}}
+\DoxyCodeLine{00474\ \textcolor{comment}{\ \ \ push\_cfun\ or\ set\_cfun.\ \ */}}
+\DoxyCodeLine{00475\ \textcolor{preprocessor}{\#define\ cfun\ (cfun\ +\ 0)}}
+\DoxyCodeLine{00476\ }
+\DoxyCodeLine{00477\ \textcolor{comment}{/*\ Nonzero\ if\ we've\ already\ converted\ virtual\ regs\ to\ hard\ regs.\ \ */}}
+\DoxyCodeLine{00478\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{function_8h_a7ad147b19364036bbff1ee16d8b4c7cb}{virtuals\_instantiated}};}
+\DoxyCodeLine{00479\ }
+\DoxyCodeLine{00480\ \textcolor{comment}{/*\ Nonzero\ if\ at\ least\ one\ trampoline\ has\ been\ created.\ \ */}}
+\DoxyCodeLine{00481\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{function_8h_a5fc60e228713795d4ce36e14350bbf04}{trampolines\_created}};}
+\DoxyCodeLine{00482\ }
+\DoxyCodeLine{00483\ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{coretypes_8h_ae5708c4d4b300570eebe0bc0c78facbc}{GTY}}((for\_user))\ types\_used\_by\_vars\_entry\ \{}
+\DoxyCodeLine{00484\ \ \ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ \doxymbox{\hyperlink{structtype}{type}};}
+\DoxyCodeLine{00485\ \ \ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ var\_decl;}
+\DoxyCodeLine{00486\ \};}
+\DoxyCodeLine{00487\ }
+\DoxyCodeLine{00488\ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{structused__type__hasher}{used\_type\_hasher}}\ :\ \doxymbox{\hyperlink{structggc__ptr__hash}{ggc\_ptr\_hash}}<types\_used\_by\_vars\_entry>}
+\DoxyCodeLine{00489\ \{}
+\DoxyCodeLine{00490\ \ \ \textcolor{keyword}{static}\ \doxymbox{\hyperlink{hashtab_8h_a2d05e5049721cf3117dd6b34e20d4f65}{hashval\_t}}\ \doxymbox{\hyperlink{structused__type__hasher_aae27e667ce432bffbc711a112ee689f4}{hash}}\ (types\_used\_by\_vars\_entry\ *);}
+\DoxyCodeLine{00491\ \ \ \textcolor{keyword}{static}\ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{structused__type__hasher_a2131b0f5eefbe509946cbd4e816491a7}{equal}}\ (types\_used\_by\_vars\_entry\ *,\ types\_used\_by\_vars\_entry\ *);}
+\DoxyCodeLine{00492\ \};}
+\DoxyCodeLine{00493\ }
+\DoxyCodeLine{00494\ \textcolor{comment}{/*\ Hash\ table\ making\ the\ relationship\ between\ a\ global\ variable}}
+\DoxyCodeLine{00495\ \textcolor{comment}{\ \ \ and\ the\ types\ it\ references\ in\ its\ initializer.\ The\ key\ of\ the}}
+\DoxyCodeLine{00496\ \textcolor{comment}{\ \ \ entry\ is\ a\ referenced\ type,\ and\ the\ value\ is\ the\ DECL\ of\ the\ global}}
+\DoxyCodeLine{00497\ \textcolor{comment}{\ \ \ variable.\ types\_use\_by\_vars\_do\_hash\ and\ types\_used\_by\_vars\_eq\ below\ are}}
+\DoxyCodeLine{00498\ \textcolor{comment}{\ \ \ the\ hash\ and\ equality\ functions\ to\ use\ for\ this\ hash\ table.\ \ */}}
+\DoxyCodeLine{00499\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{coretypes_8h_ae5708c4d4b300570eebe0bc0c78facbc}{GTY}}(())\ \doxymbox{\hyperlink{classhash__table}{hash\_table}}<\doxymbox{\hyperlink{structused__type__hasher}{used\_type\_hasher}}>\ *types\_used\_by\_vars\_hash;}
+\DoxyCodeLine{00500\ }
+\DoxyCodeLine{00501\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{function_8h_af29eaf4aa216faf5b644046383f82028}{types\_used\_by\_var\_decl\_insert}}\ (\doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ \doxymbox{\hyperlink{structtype}{type}},\ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ var\_decl);}
+\DoxyCodeLine{00502\ }
+\DoxyCodeLine{00503\ \textcolor{comment}{/*\ During\ parsing\ of\ a\ global\ variable,\ this\ vector\ contains\ the\ types}}
+\DoxyCodeLine{00504\ \textcolor{comment}{\ \ \ referenced\ by\ the\ global\ variable.\ \ */}}
+\DoxyCodeLine{00505\ extern\ \doxymbox{\hyperlink{coretypes_8h_ae5708c4d4b300570eebe0bc0c78facbc}{GTY}}(())\ \doxymbox{\hyperlink{structvec}{vec}}<\doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}},\ \doxymbox{\hyperlink{structva__gc}{va\_gc}}>\ *\doxymbox{\hyperlink{function_8h_a9a1feca5def901c3df1077831ecc4d9f}{types\_used\_by\_cur\_var\_decl}};}
+\DoxyCodeLine{00506\ }
+\DoxyCodeLine{00507\ }
+\DoxyCodeLine{00508\ \textcolor{comment}{/*\ Return\ the\ loop\ tree\ of\ FN.\ \ */}}
+\DoxyCodeLine{00509\ }
+\DoxyCodeLine{00510\ \doxymbox{\hyperlink{ansidecl_8h_a00d24c7231be28dbaf71f5408f30e44c}{inline}}\ struct\ loops\ *}
+\DoxyCodeLine{00511\ \doxymbox{\hyperlink{function_8h_a61b8fbc34a2e8d6f64bfd9d0d8f8bdef}{loops\_for\_fn}}\ (struct\ function\ *fn)}
+\DoxyCodeLine{00512\ \{}
+\DoxyCodeLine{00513\ \ \ \textcolor{keywordflow}{return}\ fn-\/>x\_current\_loops;}
+\DoxyCodeLine{00514\ \}}
+\DoxyCodeLine{00515\ }
+\DoxyCodeLine{00516\ \textcolor{comment}{/*\ Set\ the\ loop\ tree\ of\ FN\ to\ LOOPS.\ \ */}}
+\DoxyCodeLine{00517\ }
+\DoxyCodeLine{00518\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{void}}
+\DoxyCodeLine{00519\ \doxymbox{\hyperlink{function_8h_acc05191afaced318958c52df43023167}{set\_loops\_for\_fn}}\ (\textcolor{keyword}{struct}\ function\ *fn,\ \textcolor{keyword}{struct}\ loops\ *loops)}
+\DoxyCodeLine{00520\ \{}
+\DoxyCodeLine{00521\ \ \ \doxymbox{\hyperlink{system_8h_aff447899dc74d54931b2bc2d47de9423}{gcc\_checking\_assert}}\ (fn-\/>x\_current\_loops\ ==\ \doxymbox{\hyperlink{stddef_8h_a070d2ce7b6bb7e5c05602aa8c308d0c4}{NULL}}\ ||\ loops\ ==\ \doxymbox{\hyperlink{stddef_8h_a070d2ce7b6bb7e5c05602aa8c308d0c4}{NULL}});}
+\DoxyCodeLine{00522\ \ \ fn-\/>x\_current\_loops\ =\ loops;}
+\DoxyCodeLine{00523\ \}}
+\DoxyCodeLine{00524\ }
+\DoxyCodeLine{00525\ \textcolor{comment}{/*\ Get\ a\ new\ unique\ dependence\ clique\ or\ zero\ if\ none\ is\ left.\ \ */}}
+\DoxyCodeLine{00526\ }
+\DoxyCodeLine{00527\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{short}}
+\DoxyCodeLine{00528\ \doxymbox{\hyperlink{function_8h_a7a0eafc8f9cc44c619c564a24ed5f867}{get\_new\_clique}}\ (function\ *fn)}
+\DoxyCodeLine{00529\ \{}
+\DoxyCodeLine{00530\ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{short}\ clique\ =\ fn-\/>last\_clique\ +\ 1;}
+\DoxyCodeLine{00531\ \ \ \textcolor{keywordflow}{if}\ (clique\ !=\ 0)}
+\DoxyCodeLine{00532\ \ \ \ \ fn-\/>last\_clique\ =\ clique;}
+\DoxyCodeLine{00533\ \ \ \textcolor{keywordflow}{return}\ clique;}
+\DoxyCodeLine{00534\ \}}
+\DoxyCodeLine{00535\ }
+\DoxyCodeLine{00536\ \textcolor{comment}{/*\ For\ backward\ compatibility...\ eventually\ these\ should\ all\ go\ away.\ \ */}}
+\DoxyCodeLine{00537\ \textcolor{preprocessor}{\#define\ current\_function\_funcdef\_no\ (cfun-\/>funcdef\_no)}}
+\DoxyCodeLine{00538\ }
+\DoxyCodeLine{00539\ \textcolor{preprocessor}{\#define\ current\_loops\ (cfun-\/>x\_current\_loops)}}
+\DoxyCodeLine{00540\ \textcolor{preprocessor}{\#define\ dom\_computed\ (cfun-\/>cfg-\/>x\_dom\_computed)}}
+\DoxyCodeLine{00541\ \textcolor{preprocessor}{\#define\ n\_bbs\_in\_dom\_tree\ (cfun-\/>cfg-\/>x\_n\_bbs\_in\_dom\_tree)}}
+\DoxyCodeLine{00542\ \textcolor{preprocessor}{\#define\ VALUE\_HISTOGRAMS(fun)\ (fun)-\/>value\_histograms}}
+\DoxyCodeLine{00543\ }
+\DoxyCodeLine{00544\ \textcolor{comment}{/*\ A\ pointer\ to\ a\ function\ to\ create\ target\ specific,\ per-\/function}}
+\DoxyCodeLine{00545\ \textcolor{comment}{\ \ \ data\ structures.\ \ */}}
+\DoxyCodeLine{00546\ \textcolor{keyword}{extern}\ \textcolor{keyword}{struct\ }machine\_function\ *\ (*init\_machine\_status)\ (void);}
+\DoxyCodeLine{00547\ }
+\DoxyCodeLine{00548\ \textcolor{comment}{/*\ Structure\ to\ record\ the\ size\ of\ a\ sequence\ of\ arguments}}
+\DoxyCodeLine{00549\ \textcolor{comment}{\ \ \ as\ the\ sum\ of\ a\ tree-\/expression\ and\ a\ constant.\ \ This\ structure\ is}}
+\DoxyCodeLine{00550\ \textcolor{comment}{\ \ \ also\ used\ to\ store\ offsets\ from\ the\ stack,\ which\ might\ be\ negative,}}
+\DoxyCodeLine{00551\ \textcolor{comment}{\ \ \ so\ the\ variable\ part\ must\ be\ ssizetype,\ not\ sizetype.\ \ */}}
+\DoxyCodeLine{00552\ }
+\DoxyCodeLine{00553\ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{structargs__size}{args\_size}}}
+\DoxyCodeLine{00554\ \{}
+\DoxyCodeLine{00555\ \ \ \doxymbox{\hyperlink{poly-int-types_8h_af5255601feb5e9a21f3193d378a55845}{poly\_int64}}\ \doxymbox{\hyperlink{structargs__size_a688fa41d2332456afa28154929261ea0}{constant}};}
+\DoxyCodeLine{00556\ \ \ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ \doxymbox{\hyperlink{structargs__size_a76e5476cb4a6601c2e480453ffeb458c}{var}};}
+\DoxyCodeLine{00557\ \};}
+\DoxyCodeLine{00558\ }
+\DoxyCodeLine{00559\ \textcolor{comment}{/*\ Package\ up\ various\ arg\ related\ fields\ of\ struct\ args\ for}}
+\DoxyCodeLine{00560\ \textcolor{comment}{\ \ \ locate\_and\_pad\_parm.\ \ */}}
+\DoxyCodeLine{00561\ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{structlocate__and__pad__arg__data}{locate\_and\_pad\_arg\_data}}}
+\DoxyCodeLine{00562\ \{}
+\DoxyCodeLine{00563\ \ \ \textcolor{comment}{/*\ Size\ of\ this\ argument\ on\ the\ stack,\ rounded\ up\ for\ any\ padding\ it}}
+\DoxyCodeLine{00564\ \textcolor{comment}{\ \ \ \ \ gets.\ \ If\ REG\_PARM\_STACK\_SPACE\ is\ defined,\ then\ register\ parms\ are}}
+\DoxyCodeLine{00565\ \textcolor{comment}{\ \ \ \ \ counted\ here,\ otherwise\ they\ aren't.\ \ */}}
+\DoxyCodeLine{00566\ \ \ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{structargs__size}{args\_size}}\ \doxymbox{\hyperlink{structlocate__and__pad__arg__data_a034f4846404b33e6c3422b49c78ce8a8}{size}};}
+\DoxyCodeLine{00567\ \ \ \textcolor{comment}{/*\ Offset\ of\ this\ argument\ from\ beginning\ of\ stack-\/args.\ \ */}}
+\DoxyCodeLine{00568\ \ \ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{structargs__size}{args\_size}}\ \doxymbox{\hyperlink{structlocate__and__pad__arg__data_a10c429c667ee774ba97007ee3c9a6d4b}{offset}};}
+\DoxyCodeLine{00569\ \ \ \textcolor{comment}{/*\ Offset\ to\ the\ start\ of\ the\ stack\ slot.\ \ Different\ from\ OFFSET}}
+\DoxyCodeLine{00570\ \textcolor{comment}{\ \ \ \ \ if\ this\ arg\ pads\ downward.\ \ */}}
+\DoxyCodeLine{00571\ \ \ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{structargs__size}{args\_size}}\ \doxymbox{\hyperlink{structlocate__and__pad__arg__data_a54a2695ac67984d0cd0b28984ca7ebda}{slot\_offset}};}
+\DoxyCodeLine{00572\ \ \ \textcolor{comment}{/*\ The\ amount\ that\ the\ stack\ pointer\ needs\ to\ be\ adjusted\ to}}
+\DoxyCodeLine{00573\ \textcolor{comment}{\ \ \ \ \ force\ alignment\ for\ the\ next\ argument.\ \ */}}
+\DoxyCodeLine{00574\ \ \ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{structargs__size}{args\_size}}\ \doxymbox{\hyperlink{structlocate__and__pad__arg__data_ad8c5ba9c0878188c98627ca3665a6c40}{alignment\_pad}};}
+\DoxyCodeLine{00575\ \ \ \textcolor{comment}{/*\ Which\ way\ we\ should\ pad\ this\ arg.\ \ */}}
+\DoxyCodeLine{00576\ \ \ \doxymbox{\hyperlink{coretypes_8h_ab81256454f845c011915274260d7bb9c}{pad\_direction}}\ \doxymbox{\hyperlink{structlocate__and__pad__arg__data_a7e457e68e0f2bba091bfa9f2e5598add}{where\_pad}};}
+\DoxyCodeLine{00577\ \ \ \textcolor{comment}{/*\ slot\_offset\ is\ at\ least\ this\ aligned.\ \ */}}
+\DoxyCodeLine{00578\ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{structlocate__and__pad__arg__data_a113c9e5587ee22107717dfc409b4f5b3}{boundary}};}
+\DoxyCodeLine{00579\ \};}
+\DoxyCodeLine{00580\ }
+\DoxyCodeLine{00581\ \textcolor{comment}{/*\ Add\ the\ value\ of\ the\ tree\ INC\ to\ the\ \`{}struct\ args\_size'\ TO.\ \ */}}
+\DoxyCodeLine{00582\ }
+\DoxyCodeLine{00583\ \textcolor{preprocessor}{\#define\ ADD\_PARM\_SIZE(TO,\ INC)\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00584\ \textcolor{preprocessor}{do\ \{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00585\ \textcolor{preprocessor}{\ \ tree\ inc\ =\ (INC);\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00586\ \textcolor{preprocessor}{\ \ if\ (tree\_fits\_shwi\_p\ (inc))\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00587\ \textcolor{preprocessor}{\ \ \ \ (TO).constant\ +=\ tree\_to\_shwi\ (inc);\ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00588\ \textcolor{preprocessor}{\ \ else\ if\ ((TO).var\ ==\ 0)\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00589\ \textcolor{preprocessor}{\ \ \ \ (TO).var\ =\ fold\_convert\ (ssizetype,\ inc);\ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00590\ \textcolor{preprocessor}{\ \ else\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00591\ \textcolor{preprocessor}{\ \ \ \ (TO).var\ =\ size\_binop\ (PLUS\_EXPR,\ (TO).var,\ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00592\ \textcolor{preprocessor}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ fold\_convert\ (ssizetype,\ inc));\ \ \(\backslash\)}}
+\DoxyCodeLine{00593\ \textcolor{preprocessor}{\}\ while\ (0)}}
+\DoxyCodeLine{00594\ }
+\DoxyCodeLine{00595\ \textcolor{preprocessor}{\#define\ SUB\_PARM\_SIZE(TO,\ DEC)\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00596\ \textcolor{preprocessor}{do\ \{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00597\ \textcolor{preprocessor}{\ \ tree\ dec\ =\ (DEC);\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00598\ \textcolor{preprocessor}{\ \ if\ (tree\_fits\_shwi\_p\ (dec))\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00599\ \textcolor{preprocessor}{\ \ \ \ (TO).constant\ -\/=\ tree\_to\_shwi\ (dec);\ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00600\ \textcolor{preprocessor}{\ \ else\ if\ ((TO).var\ ==\ 0)\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00601\ \textcolor{preprocessor}{\ \ \ \ (TO).var\ =\ size\_binop\ (MINUS\_EXPR,\ ssize\_int\ (0),\ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00602\ \textcolor{preprocessor}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ fold\_convert\ (ssizetype,\ dec));\ \ \(\backslash\)}}
+\DoxyCodeLine{00603\ \textcolor{preprocessor}{\ \ else\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00604\ \textcolor{preprocessor}{\ \ \ \ (TO).var\ =\ size\_binop\ (MINUS\_EXPR,\ (TO).var,\ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00605\ \textcolor{preprocessor}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ fold\_convert\ (ssizetype,\ dec));\ \ \(\backslash\)}}
+\DoxyCodeLine{00606\ \textcolor{preprocessor}{\}\ while\ (0)}}
+\DoxyCodeLine{00607\ }
+\DoxyCodeLine{00608\ \textcolor{comment}{/*\ Convert\ the\ implicit\ sum\ in\ a\ \`{}struct\ args\_size'\ into\ a\ tree}}
+\DoxyCodeLine{00609\ \textcolor{comment}{\ \ \ of\ type\ ssizetype.\ \ */}}
+\DoxyCodeLine{00610\ \textcolor{preprocessor}{\#define\ ARGS\_SIZE\_TREE(SIZE)\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00611\ \textcolor{preprocessor}{((SIZE).var\ ==\ 0\ ?\ ssize\_int\ ((SIZE).constant)\ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00612\ \textcolor{preprocessor}{\ :\ size\_binop\ (PLUS\_EXPR,\ fold\_convert\ (ssizetype,\ (SIZE).var),\ \(\backslash\)}}
+\DoxyCodeLine{00613\ \textcolor{preprocessor}{\ \ \ \ \ \ \ \ \ \ \ ssize\_int\ ((SIZE).constant)))}}
+\DoxyCodeLine{00614\ }
+\DoxyCodeLine{00615\ \textcolor{comment}{/*\ Convert\ the\ implicit\ sum\ in\ a\ \`{}struct\ args\_size'\ into\ an\ rtx.\ \ */}}
+\DoxyCodeLine{00616\ \textcolor{preprocessor}{\#define\ ARGS\_SIZE\_RTX(SIZE)\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00617\ \textcolor{preprocessor}{((SIZE).var\ ==\ 0\ ?\ gen\_int\_mode\ ((SIZE).constant,\ Pmode)\ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00618\ \textcolor{preprocessor}{\ :\ expand\_normal\ (ARGS\_SIZE\_TREE\ (SIZE)))}}
+\DoxyCodeLine{00619\ }
+\DoxyCodeLine{00620\ \textcolor{preprocessor}{\#define\ ASLK\_REDUCE\_ALIGN\ 1}}
+\DoxyCodeLine{00621\ \textcolor{preprocessor}{\#define\ ASLK\_RECORD\_PAD\ 2}}
+\DoxyCodeLine{00622\ }
+\DoxyCodeLine{00623\ \textcolor{comment}{/*\ If\ pointers\ to\ member\ functions\ use\ the\ least\ significant\ bit\ to}}
+\DoxyCodeLine{00624\ \textcolor{comment}{\ \ \ indicate\ whether\ a\ function\ is\ virtual,\ ensure\ a\ pointer}}
+\DoxyCodeLine{00625\ \textcolor{comment}{\ \ \ to\ this\ function\ will\ have\ that\ bit\ clear.\ \ */}}
+\DoxyCodeLine{00626\ \textcolor{preprocessor}{\#define\ MINIMUM\_METHOD\_BOUNDARY\ \(\backslash\)}}
+\DoxyCodeLine{00627\ \textcolor{preprocessor}{\ \ ((TARGET\_PTRMEMFUNC\_VBIT\_LOCATION\ ==\ ptrmemfunc\_vbit\_in\_pfn)\ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00628\ \textcolor{preprocessor}{\ \ \ ?\ MAX\ (FUNCTION\_BOUNDARY,\ 2\ *\ BITS\_PER\_UNIT)\ :\ FUNCTION\_BOUNDARY)}}
+\DoxyCodeLine{00629\ }
+\DoxyCodeLine{00630\ \textcolor{keyword}{enum}\ \doxymbox{\hyperlink{function_8h_a12eaac50e73b612eb7bf473d1a411646}{stack\_clash\_probes}}\ \{}
+\DoxyCodeLine{00631\ \ \ \doxymbox{\hyperlink{function_8h_a12eaac50e73b612eb7bf473d1a411646a299a2f385abc63e1e3499bb45495bf26}{NO\_PROBE\_NO\_FRAME}},}
+\DoxyCodeLine{00632\ \ \ \doxymbox{\hyperlink{function_8h_a12eaac50e73b612eb7bf473d1a411646a5301146526d8d60722237c351e38644d}{NO\_PROBE\_SMALL\_FRAME}},}
+\DoxyCodeLine{00633\ \ \ \doxymbox{\hyperlink{function_8h_a12eaac50e73b612eb7bf473d1a411646a310ac4037769bda0e3eb0cee95ee7a59}{PROBE\_INLINE}},}
+\DoxyCodeLine{00634\ \ \ \doxymbox{\hyperlink{function_8h_a12eaac50e73b612eb7bf473d1a411646a89b27313500f57a2a3cd86b99c1b1dc2}{PROBE\_LOOP}}}
+\DoxyCodeLine{00635\ \};}
+\DoxyCodeLine{00636\ }
+\DoxyCodeLine{00637\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{function_8h_a3683515298a9c07ef7b5b6c01a972ba3}{dump\_stack\_clash\_frame\_info}}\ (\textcolor{keyword}{enum}\ \doxymbox{\hyperlink{function_8h_a12eaac50e73b612eb7bf473d1a411646}{stack\_clash\_probes}},\ \textcolor{keywordtype}{bool});}
+\DoxyCodeLine{00638\ }
+\DoxyCodeLine{00639\ }
+\DoxyCodeLine{00640\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{function_8h_a1168913395398689fb504dcf019587bf}{push\_function\_context}}\ (\textcolor{keywordtype}{void});}
+\DoxyCodeLine{00641\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{function_8h_abf7f71936642025cf7bd549f34b69b32}{pop\_function\_context}}\ (\textcolor{keywordtype}{void});}
+\DoxyCodeLine{00642\ }
+\DoxyCodeLine{00643\ \textcolor{comment}{/*\ Save\ and\ restore\ status\ information\ for\ a\ nested\ function.\ \ */}}
+\DoxyCodeLine{00644\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{function_8h_ad7dd92be14913cf4edf4153988124788}{free\_after\_parsing}}\ (\textcolor{keyword}{struct}\ function\ *);}
+\DoxyCodeLine{00645\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{function_8h_ab65f96ed1193739c007e75a266e28a80}{free\_after\_compilation}}\ (\textcolor{keyword}{struct}\ function\ *);}
+\DoxyCodeLine{00646\ }
+\DoxyCodeLine{00647\ \textcolor{comment}{/*\ Return\ size\ needed\ for\ stack\ frame\ based\ on\ slots\ so\ far\ allocated.}}
+\DoxyCodeLine{00648\ \textcolor{comment}{\ \ \ This\ size\ counts\ from\ zero.\ \ It\ is\ not\ rounded\ to\ STACK\_BOUNDARY;}}
+\DoxyCodeLine{00649\ \textcolor{comment}{\ \ \ the\ caller\ may\ have\ to\ do\ that.\ \ */}}
+\DoxyCodeLine{00650\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{poly-int-types_8h_af5255601feb5e9a21f3193d378a55845}{poly\_int64}}\ \doxymbox{\hyperlink{function_8h_aa71c9910aa958ead56220b133607594b}{get\_frame\_size}}\ (\textcolor{keywordtype}{void});}
+\DoxyCodeLine{00651\ }
+\DoxyCodeLine{00652\ \textcolor{comment}{/*\ Issue\ an\ error\ message\ and\ return\ TRUE\ if\ frame\ OFFSET\ overflows\ in}}
+\DoxyCodeLine{00653\ \textcolor{comment}{\ \ \ the\ signed\ target\ pointer\ arithmetics\ for\ function\ FUNC.\ \ Otherwise}}
+\DoxyCodeLine{00654\ \textcolor{comment}{\ \ \ return\ FALSE.\ \ */}}
+\DoxyCodeLine{00655\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{function_8h_a21f82b26406178b236f41967c7900a38}{frame\_offset\_overflow}}\ (\doxymbox{\hyperlink{poly-int-types_8h_af5255601feb5e9a21f3193d378a55845}{poly\_int64}},\ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}});}
+\DoxyCodeLine{00656\ }
+\DoxyCodeLine{00657\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{function_8h_a102014b9394de745f017720bafa87f8d}{spill\_slot\_alignment}}\ (\doxymbox{\hyperlink{insn-modes_8h_a3c592bc51c57098d62602b12c9468e92}{machine\_mode}});}
+\DoxyCodeLine{00658\ }
+\DoxyCodeLine{00659\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{coretypes_8h_a20e671ce9e7827268658cff844f4281c}{rtx}}\ \doxymbox{\hyperlink{function_8h_a2e48898815de70842875da6b38ba2e53}{assign\_stack\_local\_1}}\ (\doxymbox{\hyperlink{insn-modes_8h_a3c592bc51c57098d62602b12c9468e92}{machine\_mode}},\ \doxymbox{\hyperlink{poly-int-types_8h_af5255601feb5e9a21f3193d378a55845}{poly\_int64}},\ \textcolor{keywordtype}{int},\ \textcolor{keywordtype}{int});}
+\DoxyCodeLine{00660\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{coretypes_8h_a20e671ce9e7827268658cff844f4281c}{rtx}}\ \doxymbox{\hyperlink{function_8h_ae6e968cb97a01671bab58f4df34ad894}{assign\_stack\_local}}\ (\doxymbox{\hyperlink{insn-modes_8h_a3c592bc51c57098d62602b12c9468e92}{machine\_mode}},\ \doxymbox{\hyperlink{poly-int-types_8h_af5255601feb5e9a21f3193d378a55845}{poly\_int64}},\ \textcolor{keywordtype}{int});}
+\DoxyCodeLine{00661\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{coretypes_8h_a20e671ce9e7827268658cff844f4281c}{rtx}}\ \doxymbox{\hyperlink{function_8h_a578883d250847b9799a9fa7bb8d51966}{assign\_stack\_temp\_for\_type}}\ (\doxymbox{\hyperlink{insn-modes_8h_a3c592bc51c57098d62602b12c9468e92}{machine\_mode}},\ \doxymbox{\hyperlink{poly-int-types_8h_af5255601feb5e9a21f3193d378a55845}{poly\_int64}},\ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}});}
+\DoxyCodeLine{00662\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{coretypes_8h_a20e671ce9e7827268658cff844f4281c}{rtx}}\ \doxymbox{\hyperlink{function_8h_a1d9d6cc84b4804a17667bfcdeda8f6e5}{assign\_stack\_temp}}\ (\doxymbox{\hyperlink{insn-modes_8h_a3c592bc51c57098d62602b12c9468e92}{machine\_mode}},\ \doxymbox{\hyperlink{poly-int-types_8h_af5255601feb5e9a21f3193d378a55845}{poly\_int64}});}
+\DoxyCodeLine{00663\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{coretypes_8h_a20e671ce9e7827268658cff844f4281c}{rtx}}\ \doxymbox{\hyperlink{function_8h_af5b2ad72fe96410ba7a98fc33efbdd3c}{assign\_temp}}\ (\doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}},\ \textcolor{keywordtype}{int},\ \textcolor{keywordtype}{int});}
+\DoxyCodeLine{00664\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{function_8h_a7c385bd587c145b9e4334934badddfed}{update\_temp\_slot\_address}}\ (\doxymbox{\hyperlink{coretypes_8h_a20e671ce9e7827268658cff844f4281c}{rtx}},\ \doxymbox{\hyperlink{coretypes_8h_a20e671ce9e7827268658cff844f4281c}{rtx}});}
+\DoxyCodeLine{00665\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{function_8h_a2a5ba0ef5a85bdd29196e06caf18a703}{preserve\_temp\_slots}}\ (\doxymbox{\hyperlink{coretypes_8h_a20e671ce9e7827268658cff844f4281c}{rtx}});}
+\DoxyCodeLine{00666\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{function_8h_af35e717d6ca0101cf55f8b19dafc651d}{free\_temp\_slots}}\ (\textcolor{keywordtype}{void});}
+\DoxyCodeLine{00667\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{function_8h_ad2917b0e1882aff3a129f5e67ae7c613}{push\_temp\_slots}}\ (\textcolor{keywordtype}{void});}
+\DoxyCodeLine{00668\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{function_8h_a5127cf0b3d55057a1dfe5e95bbd0c904}{pop\_temp\_slots}}\ (\textcolor{keywordtype}{void});}
+\DoxyCodeLine{00669\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{function_8h_ad350bd23842f73cd344e4e090f0791f8}{init\_temp\_slots}}\ (\textcolor{keywordtype}{void});}
+\DoxyCodeLine{00670\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{coretypes_8h_a20e671ce9e7827268658cff844f4281c}{rtx}}\ \doxymbox{\hyperlink{function_8h_a12cc0c32cab5304aad8a236b77c2eb32}{get\_hard\_reg\_initial\_reg}}\ (\doxymbox{\hyperlink{coretypes_8h_a20e671ce9e7827268658cff844f4281c}{rtx}});}
+\DoxyCodeLine{00671\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{coretypes_8h_a20e671ce9e7827268658cff844f4281c}{rtx}}\ \doxymbox{\hyperlink{function_8h_aa5d34bfd4761c6dc00678bc18a118a93}{get\_hard\_reg\_initial\_val}}\ (\doxymbox{\hyperlink{insn-modes_8h_a3c592bc51c57098d62602b12c9468e92}{machine\_mode}},\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int});}
+\DoxyCodeLine{00672\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{coretypes_8h_a20e671ce9e7827268658cff844f4281c}{rtx}}\ \doxymbox{\hyperlink{function_8h_af3285208fb5e6eb570c9aff9c6632736}{has\_hard\_reg\_initial\_val}}\ (\doxymbox{\hyperlink{insn-modes_8h_a3c592bc51c57098d62602b12c9468e92}{machine\_mode}},\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int});}
+\DoxyCodeLine{00673\ }
+\DoxyCodeLine{00674\ \textcolor{comment}{/*\ Called\ from\ gimple\_expand\_cfg.\ \ */}}
+\DoxyCodeLine{00675\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{function_8h_a136e85f4b4a9902938921df73917d716}{emit\_initial\_value\_sets}}\ (\textcolor{keywordtype}{void});}
+\DoxyCodeLine{00676\ }
+\DoxyCodeLine{00677\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{function_8h_abb0d5f46c2fc5ef0baef55b1da7389af}{initial\_value\_entry}}\ (\textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{poly-int_8h_a7e98b8a17c0aad30ba64d47b74e2a6c1}{i}},\ \doxymbox{\hyperlink{coretypes_8h_a20e671ce9e7827268658cff844f4281c}{rtx}}\ *,\ \doxymbox{\hyperlink{coretypes_8h_a20e671ce9e7827268658cff844f4281c}{rtx}}\ *);}
+\DoxyCodeLine{00678\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{function_8h_aeefc96ba5ce8fe4ed33a1d400cc56c0e}{instantiate\_decl\_rtl}}\ (\doxymbox{\hyperlink{coretypes_8h_a20e671ce9e7827268658cff844f4281c}{rtx}}\ x);}
+\DoxyCodeLine{00679\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{function_8h_af9ed81d1b7cdca952d1ad64e19dd5e0b}{aggregate\_value\_p}}\ (\doxymbox{\hyperlink{coretypes_8h_ad41eb6a6028ff5b3fd00b1ee9f35ed46}{const\_tree}},\ \doxymbox{\hyperlink{coretypes_8h_ad41eb6a6028ff5b3fd00b1ee9f35ed46}{const\_tree}});}
+\DoxyCodeLine{00680\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{function_8h_a5d9f6d76a092fec47699bc08b5d29733}{use\_register\_for\_decl}}\ (\doxymbox{\hyperlink{coretypes_8h_ad41eb6a6028ff5b3fd00b1ee9f35ed46}{const\_tree}});}
+\DoxyCodeLine{00681\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{coretypes_8h_a4b4e58d1e0dada604ccfc7965bb9a3df}{gimple\_seq}}\ \doxymbox{\hyperlink{function_8h_ac58a64aee3d787124ff411c5918de98c}{gimplify\_parameters}}\ (\doxymbox{\hyperlink{coretypes_8h_a4b4e58d1e0dada604ccfc7965bb9a3df}{gimple\_seq}}\ *);}
+\DoxyCodeLine{00682\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{function_8h_a62e06b68c525c24f9de783a3e25aea96}{locate\_and\_pad\_parm}}\ (\doxymbox{\hyperlink{insn-modes_8h_a3c592bc51c57098d62602b12c9468e92}{machine\_mode}},\ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}},\ \textcolor{keywordtype}{int},\ \textcolor{keywordtype}{int},\ \textcolor{keywordtype}{int},}
+\DoxyCodeLine{00683\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}},\ \textcolor{keyword}{struct}\ \doxymbox{\hyperlink{structargs__size}{args\_size}}\ *,}
+\DoxyCodeLine{00684\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{struct}\ \doxymbox{\hyperlink{structlocate__and__pad__arg__data}{locate\_and\_pad\_arg\_data}}\ *);}
+\DoxyCodeLine{00685\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{function_8h_aaa0504fecad300ecfda018562d34bc3b}{generate\_setjmp\_warnings}}\ (\textcolor{keywordtype}{void});}
+\DoxyCodeLine{00686\ }
+\DoxyCodeLine{00687\ \textcolor{comment}{/*\ Identify\ BLOCKs\ referenced\ by\ more\ than\ one\ NOTE\_INSN\_BLOCK\_\{BEG,END\},}}
+\DoxyCodeLine{00688\ \textcolor{comment}{\ \ \ and\ create\ duplicate\ blocks.\ \ */}}
+\DoxyCodeLine{00689\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{function_8h_af6a8d61a1f59d8cda5277e830f8509e5}{reorder\_blocks}}\ (\textcolor{keywordtype}{void});}
+\DoxyCodeLine{00690\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{function_8h_a9213367c95da2c65979f013a661fef00}{clear\_block\_marks}}\ (\doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}});}
+\DoxyCodeLine{00691\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ \doxymbox{\hyperlink{function_8h_ac803ce5ad051224f557fe493ca31e0df}{blocks\_nreverse}}\ (\doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}});}
+\DoxyCodeLine{00692\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ \doxymbox{\hyperlink{function_8h_a6154f681b0a1c69b8d1efbb9319572b7}{block\_chainon}}\ (\doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}},\ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}});}
+\DoxyCodeLine{00693\ }
+\DoxyCodeLine{00694\ \textcolor{comment}{/*\ Set\ BLOCK\_NUMBER\ for\ all\ the\ blocks\ in\ FN.\ \ */}}
+\DoxyCodeLine{00695\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{function_8h_a23a533e3cabc43530b9541a9e8ef809b}{number\_blocks}}\ (\doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}});}
+\DoxyCodeLine{00696\ }
+\DoxyCodeLine{00697\ \textcolor{comment}{/*\ cfun\ shouldn't\ be\ set\ directly;\ use\ one\ of\ these\ functions\ instead.\ \ */}}
+\DoxyCodeLine{00698\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{function_8h_a450d27904fcfc2e9819a9fc711b076bb}{set\_cfun}}\ (\textcolor{keyword}{struct}\ function\ *new\_cfun,\ \textcolor{keywordtype}{bool}\ force\ =\ \textcolor{keyword}{false});}
+\DoxyCodeLine{00699\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{function_8h_a40de2d399be8eed0ca46f159c3ed31f6}{push\_cfun}}\ (\textcolor{keyword}{struct}\ function\ *new\_cfun);}
+\DoxyCodeLine{00700\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{function_8h_ae55e4f9f01ed30af6d989d73b8c16ffc}{pop\_cfun}}\ (\textcolor{keywordtype}{void});}
+\DoxyCodeLine{00701\ }
+\DoxyCodeLine{00702\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{function_8h_aa5d5086e2b4de6047ebd2a46e27c1672}{get\_next\_funcdef\_no}}\ (\textcolor{keywordtype}{void});}
+\DoxyCodeLine{00703\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{function_8h_ab80ea94dba6a1140497bc9433f8a6e6c}{get\_last\_funcdef\_no}}\ (\textcolor{keywordtype}{void});}
+\DoxyCodeLine{00704\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{function_8h_a55af18bcb0258e21c9f493f345d9ea37}{allocate\_struct\_function}}\ (\doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}},\ \textcolor{keywordtype}{bool});}
+\DoxyCodeLine{00705\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{function_8h_aa15be7f7581a39e0058e92db8f74bcb8}{push\_struct\_function}}\ (\doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ fndecl,\ \textcolor{keywordtype}{bool}\ =\ \textcolor{keyword}{false});}
+\DoxyCodeLine{00706\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{function_8h_a35841b7ac7565583ae9bbd5d916d7fbd}{push\_dummy\_function}}\ (\textcolor{keywordtype}{bool});}
+\DoxyCodeLine{00707\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{function_8h_a641ce3a8669ea269849a1be7423c9288}{pop\_dummy\_function}}\ (\textcolor{keywordtype}{void});}
+\DoxyCodeLine{00708\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{function_8h_a89e2ac9b61e6069219e004b4c12285fb}{init\_dummy\_function\_start}}\ (\textcolor{keywordtype}{void});}
+\DoxyCodeLine{00709\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{function_8h_a79e9ae406b518d86b4e58969c455162f}{init\_function\_start}}\ (\doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}});}
+\DoxyCodeLine{00710\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{function_8h_a0fcebebcd1d912e4967c15020d411dbd}{stack\_protect\_epilogue}}\ (\textcolor{keywordtype}{void});}
+\DoxyCodeLine{00711\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{function_8h_a430a1b165fb3ffcfadfbc6e1c38a4262}{expand\_function\_start}}\ (\doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}});}
+\DoxyCodeLine{00712\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{function_8h_afde469a745d86b5d7595d70a41e25055}{expand\_dummy\_function\_end}}\ (\textcolor{keywordtype}{void});}
+\DoxyCodeLine{00713\ }
+\DoxyCodeLine{00714\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{function_8h_a35523313cd369b52b2aa2344460f9bac}{thread\_prologue\_and\_epilogue\_insns}}\ (\textcolor{keywordtype}{void});}
+\DoxyCodeLine{00715\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{function_8h_a712f55c77f1ef546c6ae09a449e7f071}{diddle\_return\_value}}\ (\textcolor{keywordtype}{void}\ (*)(\doxymbox{\hyperlink{coretypes_8h_a20e671ce9e7827268658cff844f4281c}{rtx}},\ \textcolor{keywordtype}{void}*),\ \textcolor{keywordtype}{void}*);}
+\DoxyCodeLine{00716\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{function_8h_a23e23cba9396769dd1b3c1acf06bb250}{clobber\_return\_register}}\ (\textcolor{keywordtype}{void});}
+\DoxyCodeLine{00717\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{function_8h_a5d6120c801c3081d2d8e896191213679}{expand\_function\_end}}\ (\textcolor{keywordtype}{void});}
+\DoxyCodeLine{00718\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{coretypes_8h_a20e671ce9e7827268658cff844f4281c}{rtx}}\ \doxymbox{\hyperlink{function_8h_a0b8c75bb4a11e56c69ad3ff5a9ce6156}{get\_arg\_pointer\_save\_area}}\ (\textcolor{keywordtype}{void});}
+\DoxyCodeLine{00719\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{function_8h_ab0c983cdce8e0e81a4bb12b25b18866a}{maybe\_copy\_prologue\_epilogue\_insn}}\ (\doxymbox{\hyperlink{coretypes_8h_a20e671ce9e7827268658cff844f4281c}{rtx}},\ \doxymbox{\hyperlink{coretypes_8h_a20e671ce9e7827268658cff844f4281c}{rtx}});}
+\DoxyCodeLine{00720\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{function_8h_a5da75d87c0590831eb20a479aacc7d5e}{prologue\_contains}}\ (\textcolor{keyword}{const}\ rtx\_insn\ *);}
+\DoxyCodeLine{00721\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{function_8h_a3bdc3e5e91b7a50ee24808591c17cfaa}{epilogue\_contains}}\ (\textcolor{keyword}{const}\ rtx\_insn\ *);}
+\DoxyCodeLine{00722\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{function_8h_a3b4fedf4c111130f8b4abf20547e01d5}{prologue\_epilogue\_contains}}\ (\textcolor{keyword}{const}\ rtx\_insn\ *);}
+\DoxyCodeLine{00723\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{function_8h_aa8c1c45cf610d22b3bae74a2680599d5}{record\_prologue\_seq}}\ (rtx\_insn\ *);}
+\DoxyCodeLine{00724\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{function_8h_a8c487e802052c0e191cf73b861bac735}{record\_epilogue\_seq}}\ (rtx\_insn\ *);}
+\DoxyCodeLine{00725\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{function_8h_a62c982de2c1d333e2c55efd461b1ea86}{emit\_return\_into\_block}}\ (\textcolor{keywordtype}{bool}\ simple\_p,\ \doxymbox{\hyperlink{coretypes_8h_a0469df20b471a4cd7c81fbdce5027487}{basic\_block}}\ bb);}
+\DoxyCodeLine{00726\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{function_8h_a78342b4d6e5d02e29c16f727f9374769}{set\_return\_jump\_label}}\ (rtx\_insn\ *);}
+\DoxyCodeLine{00727\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{function_8h_a393ea417b2ea95a6309df13d9e58b32e}{active\_insn\_between}}\ (rtx\_insn\ *head,\ rtx\_insn\ *tail);}
+\DoxyCodeLine{00728\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{structvec}{vec<edge>}}\ \doxymbox{\hyperlink{function_8h_a3805f6368f96395ce2dc7dcd6617ca0b}{convert\_jumps\_to\_returns}}\ (\doxymbox{\hyperlink{coretypes_8h_a0469df20b471a4cd7c81fbdce5027487}{basic\_block}}\ last\_bb,\ \textcolor{keywordtype}{bool}\ simple\_p,}
+\DoxyCodeLine{00729\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{structvec}{vec<edge>}}\ unconverted);}
+\DoxyCodeLine{00730\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{coretypes_8h_a0469df20b471a4cd7c81fbdce5027487}{basic\_block}}\ \doxymbox{\hyperlink{function_8h_aa18aaf0711bd3f50905f42e7f18280fa}{emit\_return\_for\_exit}}\ (\doxymbox{\hyperlink{coretypes_8h_a44ae11f0c90646aa6208ad4bf486490b}{edge}}\ exit\_fallthru\_edge,}
+\DoxyCodeLine{00731\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{bool}\ simple\_p);}
+\DoxyCodeLine{00732\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{function_8h_ad6611b1f14c28136bac21aaf87035757}{reposition\_prologue\_and\_epilogue\_notes}}\ (\textcolor{keywordtype}{void});}
+\DoxyCodeLine{00733\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{poly-int-types_8h_af5255601feb5e9a21f3193d378a55845}{poly\_int64}}\ \doxymbox{\hyperlink{function_8h_a7f7fed26526a4fe4c02e1cd96594fcde}{get\_stack\_dynamic\_offset}}\ ();}
+\DoxyCodeLine{00734\ }
+\DoxyCodeLine{00735\ \textcolor{comment}{/*\ Returns\ the\ name\ of\ the\ current\ function.\ \ */}}
+\DoxyCodeLine{00736\ \textcolor{keyword}{extern}\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *\doxymbox{\hyperlink{function_8h_a1552b0d9c42c8b428d1ee7cb4e136677}{fndecl\_name}}\ (\doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}});}
+\DoxyCodeLine{00737\ \textcolor{keyword}{extern}\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *\doxymbox{\hyperlink{function_8h_ac141e5cea9e505857c44e7b50282e153}{function\_name}}\ (\textcolor{keyword}{const}\ function\ *);}
+\DoxyCodeLine{00738\ \textcolor{keyword}{extern}\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *\doxymbox{\hyperlink{function_8h_a580a9c428fecb5b538b80b7843ed6d00}{current\_function\_name}}\ (\textcolor{keywordtype}{void});}
+\DoxyCodeLine{00739\ }
+\DoxyCodeLine{00740\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{function_8h_ab0ddc124b28591c824ff31465ff0e516}{used\_types\_insert}}\ (\doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}});}
+\DoxyCodeLine{00741\ }
+\DoxyCodeLine{00742\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{function_8h_abc42badf8708e860a90186a95b9e7c92}{currently\_expanding\_function\_start}};}
+\DoxyCodeLine{00743\ }
+\DoxyCodeLine{00744\ \textcolor{preprocessor}{\#endif\ \ }\textcolor{comment}{/*\ GCC\_FUNCTION\_H\ */}\textcolor{preprocessor}{}}
+
+\end{DoxyCode}

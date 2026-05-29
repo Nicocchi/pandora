@@ -1,0 +1,1697 @@
+\doxysection{sched-\/int.h}
+\hypertarget{sched-int_8h_source}{}\label{sched-int_8h_source}\index{toolchain/x86\_64-\/elf/lib/gcc/x86\_64-\/elf/14.2.0/plugin/include/sched-\/int.h@{toolchain/x86\_64-\/elf/lib/gcc/x86\_64-\/elf/14.2.0/plugin/include/sched-\/int.h}}
+\doxymbox{\hyperlink{sched-int_8h}{Go to the documentation of this file.}}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001\ \textcolor{comment}{/*\ Instruction\ scheduling\ pass.\ \ This\ file\ contains\ definitions\ used}}
+\DoxyCodeLine{00002\ \textcolor{comment}{\ \ \ internally\ in\ the\ scheduler.}}
+\DoxyCodeLine{00003\ \textcolor{comment}{\ \ \ Copyright\ (C)\ 1992-\/2024\ Free\ Software\ Foundation,\ Inc.}}
+\DoxyCodeLine{00004\ \textcolor{comment}{}}
+\DoxyCodeLine{00005\ \textcolor{comment}{This\ file\ is\ part\ of\ GCC.}}
+\DoxyCodeLine{00006\ \textcolor{comment}{}}
+\DoxyCodeLine{00007\ \textcolor{comment}{GCC\ is\ free\ software;\ you\ can\ redistribute\ it\ and/or\ modify\ it\ under}}
+\DoxyCodeLine{00008\ \textcolor{comment}{the\ terms\ of\ the\ GNU\ General\ Public\ License\ as\ published\ by\ the\ Free}}
+\DoxyCodeLine{00009\ \textcolor{comment}{Software\ Foundation;\ either\ version\ 3,\ or\ (at\ your\ option)\ any\ later}}
+\DoxyCodeLine{00010\ \textcolor{comment}{version.}}
+\DoxyCodeLine{00011\ \textcolor{comment}{}}
+\DoxyCodeLine{00012\ \textcolor{comment}{GCC\ is\ distributed\ in\ the\ hope\ that\ it\ will\ be\ useful,\ but\ WITHOUT\ ANY}}
+\DoxyCodeLine{00013\ \textcolor{comment}{WARRANTY;\ without\ even\ the\ implied\ warranty\ of\ MERCHANTABILITY\ or}}
+\DoxyCodeLine{00014\ \textcolor{comment}{FITNESS\ FOR\ A\ PARTICULAR\ PURPOSE.\ \ See\ the\ GNU\ General\ Public\ License}}
+\DoxyCodeLine{00015\ \textcolor{comment}{for\ more\ details.}}
+\DoxyCodeLine{00016\ \textcolor{comment}{}}
+\DoxyCodeLine{00017\ \textcolor{comment}{You\ should\ have\ received\ a\ copy\ of\ the\ GNU\ General\ Public\ License}}
+\DoxyCodeLine{00018\ \textcolor{comment}{along\ with\ GCC;\ see\ the\ file\ COPYING3.\ \ If\ not\ see}}
+\DoxyCodeLine{00019\ \textcolor{comment}{<http://www.gnu.org/licenses/>.\ \ */}}
+\DoxyCodeLine{00020\ }
+\DoxyCodeLine{00021\ \textcolor{preprocessor}{\#ifndef\ GCC\_SCHED\_INT\_H}}
+\DoxyCodeLine{00022\ \textcolor{preprocessor}{\#define\ GCC\_SCHED\_INT\_H}}
+\DoxyCodeLine{00023\ }
+\DoxyCodeLine{00024\ \textcolor{preprocessor}{\#ifdef\ INSN\_SCHEDULING}}
+\DoxyCodeLine{00025\ }
+\DoxyCodeLine{00026\ \textcolor{comment}{/*\ Identificator\ of\ a\ scheduler\ pass.\ \ */}}
+\DoxyCodeLine{00027\ \textcolor{keyword}{enum}\ sched\_pass\_id\_t\ \{\ SCHED\_PASS\_UNKNOWN,\ SCHED\_RGN\_PASS,\ SCHED\_EBB\_PASS,}
+\DoxyCodeLine{00028\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ SCHED\_SMS\_PASS,\ SCHED\_SEL\_PASS\ \};}
+\DoxyCodeLine{00029\ }
+\DoxyCodeLine{00030\ \textcolor{comment}{/*\ The\ algorithm\ used\ to\ implement\ -\/fsched-\/pressure.\ \ */}}
+\DoxyCodeLine{00031\ \textcolor{keyword}{enum}\ sched\_pressure\_algorithm}
+\DoxyCodeLine{00032\ \{}
+\DoxyCodeLine{00033\ \ \ SCHED\_PRESSURE\_NONE,}
+\DoxyCodeLine{00034\ \ \ SCHED\_PRESSURE\_WEIGHTED,}
+\DoxyCodeLine{00035\ \ \ SCHED\_PRESSURE\_MODEL}
+\DoxyCodeLine{00036\ \};}
+\DoxyCodeLine{00037\ }
+\DoxyCodeLine{00038\ \textcolor{keyword}{typedef}\ \doxymbox{\hyperlink{structvec}{vec<basic\_block>}}\ bb\_vec\_t;}
+\DoxyCodeLine{00039\ \textcolor{keyword}{typedef}\ \doxymbox{\hyperlink{structvec}{vec<rtx\_insn\ *>}}\ insn\_vec\_t;}
+\DoxyCodeLine{00040\ \textcolor{keyword}{typedef}\ \doxymbox{\hyperlink{structvec}{vec<rtx\_insn\ *>}}\ rtx\_vec\_t;}
+\DoxyCodeLine{00041\ }
+\DoxyCodeLine{00042\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ sched\_init\_bbs\ (\textcolor{keywordtype}{void});}
+\DoxyCodeLine{00043\ }
+\DoxyCodeLine{00044\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ sched\_extend\_luids\ (\textcolor{keywordtype}{void});}
+\DoxyCodeLine{00045\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ sched\_init\_insn\_luid\ (rtx\_insn\ *);}
+\DoxyCodeLine{00046\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ sched\_init\_luids\ (\textcolor{keyword}{const}\ bb\_vec\_t\ \&);}
+\DoxyCodeLine{00047\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ sched\_finish\_luids\ (\textcolor{keywordtype}{void});}
+\DoxyCodeLine{00048\ }
+\DoxyCodeLine{00049\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ sched\_extend\_target\ (\textcolor{keywordtype}{void});}
+\DoxyCodeLine{00050\ }
+\DoxyCodeLine{00051\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ haifa\_init\_h\_i\_d\ (\textcolor{keyword}{const}\ bb\_vec\_t\ \&);}
+\DoxyCodeLine{00052\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ haifa\_finish\_h\_i\_d\ (\textcolor{keywordtype}{void});}
+\DoxyCodeLine{00053\ }
+\DoxyCodeLine{00054\ \textcolor{comment}{/*\ Hooks\ that\ are\ common\ to\ all\ the\ schedulers.\ \ */}}
+\DoxyCodeLine{00055\ \textcolor{keyword}{struct\ }common\_sched\_info\_def}
+\DoxyCodeLine{00056\ \{}
+\DoxyCodeLine{00057\ \ \ \textcolor{comment}{/*\ Called\ after\ blocks\ were\ rearranged\ due\ to\ movement\ of\ jump\ instruction.}}
+\DoxyCodeLine{00058\ \textcolor{comment}{\ \ \ \ \ The\ first\ parameter\ -\/\ index\ of\ basic\ block,\ in\ which\ jump\ currently\ is.}}
+\DoxyCodeLine{00059\ \textcolor{comment}{\ \ \ \ \ The\ second\ parameter\ -\/\ index\ of\ basic\ block,\ in\ which\ jump\ used}}
+\DoxyCodeLine{00060\ \textcolor{comment}{\ \ \ \ \ to\ be.}}
+\DoxyCodeLine{00061\ \textcolor{comment}{\ \ \ \ \ The\ third\ parameter\ -\/\ index\ of\ basic\ block,\ that\ follows\ the\ second}}
+\DoxyCodeLine{00062\ \textcolor{comment}{\ \ \ \ \ parameter.\ \ */}}
+\DoxyCodeLine{00063\ \ \ void\ (*fix\_recovery\_cfg)\ (int,\ int,\ int);}
+\DoxyCodeLine{00064\ }
+\DoxyCodeLine{00065\ \ \ \textcolor{comment}{/*\ Called\ to\ notify\ frontend,\ that\ new\ basic\ block\ is\ being\ added.}}
+\DoxyCodeLine{00066\ \textcolor{comment}{\ \ \ \ \ The\ first\ parameter\ -\/\ new\ basic\ block.}}
+\DoxyCodeLine{00067\ \textcolor{comment}{\ \ \ \ \ The\ second\ parameter\ -\/\ block,\ after\ which\ new\ basic\ block\ is\ being\ added,}}
+\DoxyCodeLine{00068\ \textcolor{comment}{\ \ \ \ \ or\ the\ exit\ block,\ if\ recovery\ block\ is\ being\ added,}}
+\DoxyCodeLine{00069\ \textcolor{comment}{\ \ \ \ \ or\ NULL,\ if\ standalone\ block\ is\ being\ added.\ \ */}}
+\DoxyCodeLine{00070\ \ \ void\ (*add\_block)\ (\doxymbox{\hyperlink{coretypes_8h_a0469df20b471a4cd7c81fbdce5027487}{basic\_block}},\ \doxymbox{\hyperlink{coretypes_8h_a0469df20b471a4cd7c81fbdce5027487}{basic\_block}});}
+\DoxyCodeLine{00071\ }
+\DoxyCodeLine{00072\ \ \ \textcolor{comment}{/*\ Estimate\ number\ of\ insns\ in\ the\ basic\ block.\ \ */}}
+\DoxyCodeLine{00073\ \ \ int\ (*estimate\_number\_of\_insns)\ (\doxymbox{\hyperlink{coretypes_8h_a0469df20b471a4cd7c81fbdce5027487}{basic\_block}});}
+\DoxyCodeLine{00074\ }
+\DoxyCodeLine{00075\ \ \ \textcolor{comment}{/*\ Given\ a\ non-\/insn\ (!INSN\_P\ (x))\ return}}
+\DoxyCodeLine{00076\ \textcolor{comment}{\ \ \ \ \ -\/1\ -\/\ if\ this\ rtx\ don't\ need\ a\ luid.}}
+\DoxyCodeLine{00077\ \textcolor{comment}{\ \ \ \ \ 0\ -\/\ if\ it\ should\ have\ the\ same\ luid\ as\ the\ previous\ insn.}}
+\DoxyCodeLine{00078\ \textcolor{comment}{\ \ \ \ \ 1\ -\/\ if\ it\ needs\ a\ separate\ luid.\ \ */}}
+\DoxyCodeLine{00079\ \ \ int\ (*luid\_for\_non\_insn)\ (\doxymbox{\hyperlink{coretypes_8h_a20e671ce9e7827268658cff844f4281c}{rtx}});}
+\DoxyCodeLine{00080\ }
+\DoxyCodeLine{00081\ \ \ \textcolor{comment}{/*\ Scheduler\ pass\ identifier.\ \ It\ is\ preferably\ used\ in\ assertions.\ \ */}}
+\DoxyCodeLine{00082\ \ \ \textcolor{keyword}{enum}\ sched\_pass\_id\_t\ sched\_pass\_id;}
+\DoxyCodeLine{00083\ \};}
+\DoxyCodeLine{00084\ }
+\DoxyCodeLine{00085\ \textcolor{keyword}{extern}\ \textcolor{keyword}{struct\ }common\_sched\_info\_def\ *common\_sched\_info;}
+\DoxyCodeLine{00086\ }
+\DoxyCodeLine{00087\ \textcolor{keyword}{extern}\ \textcolor{keyword}{const}\ \textcolor{keyword}{struct\ }common\_sched\_info\_def\ haifa\_common\_sched\_info;}
+\DoxyCodeLine{00088\ }
+\DoxyCodeLine{00089\ \textcolor{comment}{/*\ Return\ true\ if\ selective\ scheduling\ pass\ is\ working.\ \ */}}
+\DoxyCodeLine{00090\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{bool}}
+\DoxyCodeLine{00091\ sel\_sched\_p\ (\textcolor{keywordtype}{void})}
+\DoxyCodeLine{00092\ \{}
+\DoxyCodeLine{00093\ \ \ \textcolor{keywordflow}{return}\ common\_sched\_info-\/>sched\_pass\_id\ ==\ SCHED\_SEL\_PASS;}
+\DoxyCodeLine{00094\ \}}
+\DoxyCodeLine{00095\ }
+\DoxyCodeLine{00096\ \textcolor{comment}{/*\ Returns\ maximum\ priority\ that\ an\ insn\ was\ assigned\ to.\ \ */}}
+\DoxyCodeLine{00097\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{int}\ get\_rgn\_sched\_max\_insns\_priority\ (\textcolor{keywordtype}{void});}
+\DoxyCodeLine{00098\ }
+\DoxyCodeLine{00099\ \textcolor{comment}{/*\ Increases\ effective\ priority\ for\ INSN\ by\ AMOUNT.\ \ */}}
+\DoxyCodeLine{00100\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ sel\_add\_to\_insn\_priority\ (\doxymbox{\hyperlink{coretypes_8h_a20e671ce9e7827268658cff844f4281c}{rtx}},\ \textcolor{keywordtype}{int});}
+\DoxyCodeLine{00101\ }
+\DoxyCodeLine{00102\ \textcolor{comment}{/*\ True\ if\ during\ selective\ scheduling\ we\ need\ to\ emulate\ some\ of\ haifa}}
+\DoxyCodeLine{00103\ \textcolor{comment}{\ \ \ scheduler\ behavior.\ \ */}}
+\DoxyCodeLine{00104\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{int}\ sched\_emulate\_haifa\_p;}
+\DoxyCodeLine{00105\ }
+\DoxyCodeLine{00106\ \textcolor{comment}{/*\ Mapping\ from\ INSN\_UID\ to\ INSN\_LUID.\ \ In\ the\ end\ all\ other\ per\ insn\ data}}
+\DoxyCodeLine{00107\ \textcolor{comment}{\ \ \ structures\ should\ be\ indexed\ by\ luid.\ \ */}}
+\DoxyCodeLine{00108\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{structvec}{vec<int>}}\ sched\_luids;}
+\DoxyCodeLine{00109\ \textcolor{preprocessor}{\#define\ INSN\_LUID(INSN)\ (sched\_luids[INSN\_UID\ (INSN)])}}
+\DoxyCodeLine{00110\ \textcolor{preprocessor}{\#define\ LUID\_BY\_UID(UID)\ (sched\_luids[UID])}}
+\DoxyCodeLine{00111\ }
+\DoxyCodeLine{00112\ \textcolor{preprocessor}{\#define\ SET\_INSN\_LUID(INSN,\ LUID)\ \(\backslash\)}}
+\DoxyCodeLine{00113\ \textcolor{preprocessor}{(sched\_luids[INSN\_UID\ (INSN)]\ =\ (LUID))}}
+\DoxyCodeLine{00114\ }
+\DoxyCodeLine{00115\ \textcolor{comment}{/*\ The\ highest\ INSN\_LUID.\ \ */}}
+\DoxyCodeLine{00116\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{int}\ sched\_max\_luid;}
+\DoxyCodeLine{00117\ }
+\DoxyCodeLine{00118\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{int}\ insn\_luid\ (\doxymbox{\hyperlink{coretypes_8h_a20e671ce9e7827268658cff844f4281c}{rtx}});}
+\DoxyCodeLine{00119\ }
+\DoxyCodeLine{00120\ \textcolor{comment}{/*\ This\ list\ holds\ ripped\ off\ notes\ from\ the\ current\ block.\ \ These\ notes\ will}}
+\DoxyCodeLine{00121\ \textcolor{comment}{\ \ \ be\ attached\ to\ the\ beginning\ of\ the\ block\ when\ its\ scheduling\ is}}
+\DoxyCodeLine{00122\ \textcolor{comment}{\ \ \ finished.\ \ */}}
+\DoxyCodeLine{00123\ \textcolor{keyword}{extern}\ rtx\_insn\ *note\_list;}
+\DoxyCodeLine{00124\ }
+\DoxyCodeLine{00125\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ remove\_notes\ (rtx\_insn\ *,\ rtx\_insn\ *);}
+\DoxyCodeLine{00126\ \textcolor{keyword}{extern}\ rtx\_insn\ *restore\_other\_notes\ (rtx\_insn\ *,\ \doxymbox{\hyperlink{coretypes_8h_a0469df20b471a4cd7c81fbdce5027487}{basic\_block}});}
+\DoxyCodeLine{00127\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ sched\_insns\_init\ (\doxymbox{\hyperlink{coretypes_8h_a20e671ce9e7827268658cff844f4281c}{rtx}});}
+\DoxyCodeLine{00128\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ sched\_insns\_finish\ (\textcolor{keywordtype}{void});}
+\DoxyCodeLine{00129\ }
+\DoxyCodeLine{00130\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ *xrecalloc\ (\textcolor{keywordtype}{void}\ *,\ \textcolor{keywordtype}{size\_t},\ \textcolor{keywordtype}{size\_t},\ \textcolor{keywordtype}{size\_t});}
+\DoxyCodeLine{00131\ }
+\DoxyCodeLine{00132\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ reemit\_notes\ (rtx\_insn\ *);}
+\DoxyCodeLine{00133\ }
+\DoxyCodeLine{00134\ \textcolor{comment}{/*\ Functions\ in\ haifa-\/sched.cc.\ \ */}}
+\DoxyCodeLine{00135\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{int}\ haifa\_classify\_insn\ (\doxymbox{\hyperlink{coretypes_8h_a666eef3d91a58b950bf402bd0489e7e0}{const\_rtx}});}
+\DoxyCodeLine{00136\ }
+\DoxyCodeLine{00137\ \textcolor{comment}{/*\ Functions\ in\ sel-\/sched-\/ir.cc.\ \ */}}
+\DoxyCodeLine{00138\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ sel\_find\_rgns\ (\textcolor{keywordtype}{void});}
+\DoxyCodeLine{00139\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ sel\_mark\_hard\_insn\ (\doxymbox{\hyperlink{coretypes_8h_a20e671ce9e7827268658cff844f4281c}{rtx}});}
+\DoxyCodeLine{00140\ }
+\DoxyCodeLine{00141\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{size\_t}\ dfa\_state\_size;}
+\DoxyCodeLine{00142\ }
+\DoxyCodeLine{00143\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ advance\_state\ (\doxymbox{\hyperlink{insn-attr_8h_a917fe45c2b53fe07c80256f347773fac}{state\_t}});}
+\DoxyCodeLine{00144\ }
+\DoxyCodeLine{00145\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ setup\_sched\_dump\ (\textcolor{keywordtype}{void});}
+\DoxyCodeLine{00146\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ sched\_init\ (\textcolor{keywordtype}{void});}
+\DoxyCodeLine{00147\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ sched\_finish\ (\textcolor{keywordtype}{void});}
+\DoxyCodeLine{00148\ }
+\DoxyCodeLine{00149\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{bool}\ sel\_insn\_is\_speculation\_check\ (\doxymbox{\hyperlink{coretypes_8h_a20e671ce9e7827268658cff844f4281c}{rtx}});}
+\DoxyCodeLine{00150\ }
+\DoxyCodeLine{00151\ \textcolor{comment}{/*\ Describe\ the\ ready\ list\ of\ the\ scheduler.}}
+\DoxyCodeLine{00152\ \textcolor{comment}{\ \ \ VEC\ holds\ space\ enough\ for\ all\ insns\ in\ the\ current\ region.\ \ VECLEN}}
+\DoxyCodeLine{00153\ \textcolor{comment}{\ \ \ says\ how\ many\ exactly.}}
+\DoxyCodeLine{00154\ \textcolor{comment}{\ \ \ FIRST\ is\ the\ index\ of\ the\ element\ with\ the\ highest\ priority;\ i.e.\ the}}
+\DoxyCodeLine{00155\ \textcolor{comment}{\ \ \ last\ one\ in\ the\ ready\ list,\ since\ elements\ are\ ordered\ by\ ascending}}
+\DoxyCodeLine{00156\ \textcolor{comment}{\ \ \ priority.}}
+\DoxyCodeLine{00157\ \textcolor{comment}{\ \ \ N\_READY\ determines\ how\ many\ insns\ are\ on\ the\ ready\ list.}}
+\DoxyCodeLine{00158\ \textcolor{comment}{\ \ \ N\_DEBUG\ determines\ how\ many\ debug\ insns\ are\ on\ the\ ready\ list.\ \ */}}
+\DoxyCodeLine{00159\ \textcolor{keyword}{struct\ }ready\_list}
+\DoxyCodeLine{00160\ \{}
+\DoxyCodeLine{00161\ \ \ rtx\_insn\ **\doxymbox{\hyperlink{vec_8h_ac6299229087b122e17686611255dfa27}{vec}};}
+\DoxyCodeLine{00162\ \ \ \textcolor{keywordtype}{int}\ veclen;}
+\DoxyCodeLine{00163\ \ \ \textcolor{keywordtype}{int}\ first;}
+\DoxyCodeLine{00164\ \ \ \textcolor{keywordtype}{int}\ n\_ready;}
+\DoxyCodeLine{00165\ \ \ \textcolor{keywordtype}{int}\ n\_debug;}
+\DoxyCodeLine{00166\ \};}
+\DoxyCodeLine{00167\ }
+\DoxyCodeLine{00168\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{signed}\ \textcolor{keywordtype}{char}\ *ready\_try;}
+\DoxyCodeLine{00169\ \textcolor{keyword}{extern}\ \textcolor{keyword}{struct\ }ready\_list\ ready;}
+\DoxyCodeLine{00170\ }
+\DoxyCodeLine{00171\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{int}\ max\_issue\ (\textcolor{keyword}{struct}\ ready\_list\ *,\ \textcolor{keywordtype}{int},\ \doxymbox{\hyperlink{insn-attr_8h_a917fe45c2b53fe07c80256f347773fac}{state\_t}},\ \textcolor{keywordtype}{bool},\ \textcolor{keywordtype}{int}\ *);}
+\DoxyCodeLine{00172\ }
+\DoxyCodeLine{00173\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ ebb\_compute\_jump\_reg\_dependencies\ (\doxymbox{\hyperlink{coretypes_8h_a20e671ce9e7827268658cff844f4281c}{rtx}},\ \doxymbox{\hyperlink{regset_8h_a1e655e49d778df881b7c96f82f84e3c7}{regset}});}
+\DoxyCodeLine{00174\ }
+\DoxyCodeLine{00175\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{coretypes_8h_a44ae11f0c90646aa6208ad4bf486490b}{edge}}\ find\_fallthru\_edge\_from\ (\doxymbox{\hyperlink{coretypes_8h_a0469df20b471a4cd7c81fbdce5027487}{basic\_block}});}
+\DoxyCodeLine{00176\ }
+\DoxyCodeLine{00177\ \textcolor{keyword}{extern}\ void\ (*\ sched\_init\_only\_bb)\ (\doxymbox{\hyperlink{coretypes_8h_a0469df20b471a4cd7c81fbdce5027487}{basic\_block}},\ \doxymbox{\hyperlink{coretypes_8h_a0469df20b471a4cd7c81fbdce5027487}{basic\_block}});}
+\DoxyCodeLine{00178\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{coretypes_8h_a0469df20b471a4cd7c81fbdce5027487}{basic\_block}}\ (*\ sched\_split\_block)\ (\doxymbox{\hyperlink{coretypes_8h_a0469df20b471a4cd7c81fbdce5027487}{basic\_block}},\ \doxymbox{\hyperlink{coretypes_8h_a20e671ce9e7827268658cff844f4281c}{rtx}});}
+\DoxyCodeLine{00179\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{coretypes_8h_a0469df20b471a4cd7c81fbdce5027487}{basic\_block}}\ sched\_split\_block\_1\ (\doxymbox{\hyperlink{coretypes_8h_a0469df20b471a4cd7c81fbdce5027487}{basic\_block}},\ \doxymbox{\hyperlink{coretypes_8h_a20e671ce9e7827268658cff844f4281c}{rtx}});}
+\DoxyCodeLine{00180\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{coretypes_8h_a0469df20b471a4cd7c81fbdce5027487}{basic\_block}}\ (*\ sched\_create\_empty\_bb)\ (\doxymbox{\hyperlink{coretypes_8h_a0469df20b471a4cd7c81fbdce5027487}{basic\_block}});}
+\DoxyCodeLine{00181\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{coretypes_8h_a0469df20b471a4cd7c81fbdce5027487}{basic\_block}}\ sched\_create\_empty\_bb\_1\ (\doxymbox{\hyperlink{coretypes_8h_a0469df20b471a4cd7c81fbdce5027487}{basic\_block}});}
+\DoxyCodeLine{00182\ }
+\DoxyCodeLine{00183\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{coretypes_8h_a0469df20b471a4cd7c81fbdce5027487}{basic\_block}}\ sched\_create\_recovery\_block\ (\doxymbox{\hyperlink{coretypes_8h_a0469df20b471a4cd7c81fbdce5027487}{basic\_block}}\ *);}
+\DoxyCodeLine{00184\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ sched\_create\_recovery\_edges\ (\doxymbox{\hyperlink{coretypes_8h_a0469df20b471a4cd7c81fbdce5027487}{basic\_block}},\ \doxymbox{\hyperlink{coretypes_8h_a0469df20b471a4cd7c81fbdce5027487}{basic\_block}},}
+\DoxyCodeLine{00185\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{coretypes_8h_a0469df20b471a4cd7c81fbdce5027487}{basic\_block}});}
+\DoxyCodeLine{00186\ }
+\DoxyCodeLine{00187\ \textcolor{comment}{/*\ Pointer\ to\ data\ describing\ the\ current\ DFA\ state.\ \ */}}
+\DoxyCodeLine{00188\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{insn-attr_8h_a917fe45c2b53fe07c80256f347773fac}{state\_t}}\ curr\_state;}
+\DoxyCodeLine{00189\ }
+\DoxyCodeLine{00190\ \textcolor{comment}{/*\ Type\ to\ represent\ status\ of\ a\ dependence.\ \ */}}
+\DoxyCodeLine{00191\ \textcolor{keyword}{typedef}\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ ds\_t;}
+\DoxyCodeLine{00192\ \textcolor{preprocessor}{\#define\ BITS\_PER\_DEP\_STATUS\ HOST\_BITS\_PER\_INT}}
+\DoxyCodeLine{00193\ }
+\DoxyCodeLine{00194\ \textcolor{comment}{/*\ Type\ to\ represent\ weakness\ of\ speculative\ dependence.\ \ */}}
+\DoxyCodeLine{00195\ \textcolor{keyword}{typedef}\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ dw\_t;}
+\DoxyCodeLine{00196\ }
+\DoxyCodeLine{00197\ \textcolor{keyword}{extern}\ \textcolor{keyword}{enum}\ \doxymbox{\hyperlink{rtl_8h_a5d8ac0cdf8765c34eb3f3fdacfc51ffd}{reg\_note}}\ ds\_to\_dk\ (ds\_t);}
+\DoxyCodeLine{00198\ \textcolor{keyword}{extern}\ ds\_t\ dk\_to\_ds\ (\textcolor{keyword}{enum}\ \doxymbox{\hyperlink{rtl_8h_a5d8ac0cdf8765c34eb3f3fdacfc51ffd}{reg\_note}});}
+\DoxyCodeLine{00199\ }
+\DoxyCodeLine{00200\ \textcolor{comment}{/*\ Describe\ a\ dependency\ that\ can\ be\ broken\ by\ making\ a\ replacement}}
+\DoxyCodeLine{00201\ \textcolor{comment}{\ \ \ in\ one\ of\ the\ patterns.\ \ LOC\ is\ the\ location,\ ORIG\ and\ NEWVAL\ the}}
+\DoxyCodeLine{00202\ \textcolor{comment}{\ \ \ two\ alternative\ contents,\ and\ INSN\ the\ instruction\ that\ must\ be}}
+\DoxyCodeLine{00203\ \textcolor{comment}{\ \ \ changed.\ \ */}}
+\DoxyCodeLine{00204\ \textcolor{keyword}{struct\ }dep\_replacement}
+\DoxyCodeLine{00205\ \{}
+\DoxyCodeLine{00206\ \ \ \doxymbox{\hyperlink{coretypes_8h_a20e671ce9e7827268658cff844f4281c}{rtx}}\ *loc;}
+\DoxyCodeLine{00207\ \ \ \doxymbox{\hyperlink{coretypes_8h_a20e671ce9e7827268658cff844f4281c}{rtx}}\ orig;}
+\DoxyCodeLine{00208\ \ \ \doxymbox{\hyperlink{coretypes_8h_a20e671ce9e7827268658cff844f4281c}{rtx}}\ newval;}
+\DoxyCodeLine{00209\ \ \ rtx\_insn\ *insn;}
+\DoxyCodeLine{00210\ \};}
+\DoxyCodeLine{00211\ }
+\DoxyCodeLine{00212\ \textcolor{comment}{/*\ Information\ about\ the\ dependency.\ \ */}}
+\DoxyCodeLine{00213\ \textcolor{keyword}{struct\ }\_dep}
+\DoxyCodeLine{00214\ \{}
+\DoxyCodeLine{00215\ \ \ \textcolor{comment}{/*\ Producer.\ \ */}}
+\DoxyCodeLine{00216\ \ \ rtx\_insn\ *pro;}
+\DoxyCodeLine{00217\ }
+\DoxyCodeLine{00218\ \ \ \textcolor{comment}{/*\ Consumer.\ \ */}}
+\DoxyCodeLine{00219\ \ \ rtx\_insn\ *con;}
+\DoxyCodeLine{00220\ }
+\DoxyCodeLine{00221\ \ \ \textcolor{comment}{/*\ If\ nonnull,\ holds\ a\ pointer\ to\ information\ about\ how\ to\ break\ the}}
+\DoxyCodeLine{00222\ \textcolor{comment}{\ \ \ \ \ dependency\ by\ making\ a\ replacement\ in\ one\ of\ the\ insns.\ \ There\ is}}
+\DoxyCodeLine{00223\ \textcolor{comment}{\ \ \ \ \ only\ one\ such\ dependency\ for\ each\ insn\ that\ must\ be\ modified\ in}}
+\DoxyCodeLine{00224\ \textcolor{comment}{\ \ \ \ \ order\ to\ break\ such\ a\ dependency.\ \ */}}
+\DoxyCodeLine{00225\ \ \ \textcolor{keyword}{struct\ }dep\_replacement\ *replace;}
+\DoxyCodeLine{00226\ }
+\DoxyCodeLine{00227\ \ \ \textcolor{comment}{/*\ Dependency\ status.\ \ This\ field\ holds\ all\ dependency\ types\ and\ additional}}
+\DoxyCodeLine{00228\ \textcolor{comment}{\ \ \ \ \ information\ for\ speculative\ dependencies.\ \ */}}
+\DoxyCodeLine{00229\ \ \ ds\_t\ status;}
+\DoxyCodeLine{00230\ }
+\DoxyCodeLine{00231\ \ \ \textcolor{comment}{/*\ Dependency\ major\ type.\ \ This\ field\ is\ superseded\ by\ STATUS\ above.}}
+\DoxyCodeLine{00232\ \textcolor{comment}{\ \ \ \ \ Though,\ it\ is\ still\ in\ place\ because\ some\ targets\ use\ it.\ \ */}}
+\DoxyCodeLine{00233\ \ \ \doxymbox{\hyperlink{ansidecl_8h_a2934559f672ebd88a0459d0fe40faff2}{ENUM\_BITFIELD}}(\doxymbox{\hyperlink{rtl_8h_a5d8ac0cdf8765c34eb3f3fdacfc51ffd}{reg\_note}})\ type:6;}
+\DoxyCodeLine{00234\ }
+\DoxyCodeLine{00235\ \ \ \textcolor{keywordtype}{unsigned}\ nonreg:1;}
+\DoxyCodeLine{00236\ \ \ \textcolor{keywordtype}{unsigned}\ multiple:1;}
+\DoxyCodeLine{00237\ }
+\DoxyCodeLine{00238\ \ \ \textcolor{comment}{/*\ Cached\ cost\ of\ the\ dependency.\ \ Make\ sure\ to\ update\ UNKNOWN\_DEP\_COST}}
+\DoxyCodeLine{00239\ \textcolor{comment}{\ \ \ \ \ when\ changing\ the\ size\ of\ this\ field.\ \ */}}
+\DoxyCodeLine{00240\ \ \ \textcolor{keywordtype}{int}\ cost:20;}
+\DoxyCodeLine{00241\ }
+\DoxyCodeLine{00242\ \ \ \textcolor{keywordtype}{unsigned}\ unused:4;}
+\DoxyCodeLine{00243\ \};}
+\DoxyCodeLine{00244\ }
+\DoxyCodeLine{00245\ \textcolor{preprocessor}{\#define\ UNKNOWN\_DEP\_COST\ ((int)\ ((unsigned\ int)\ -\/1\ <<\ 19))}}
+\DoxyCodeLine{00246\ }
+\DoxyCodeLine{00247\ \textcolor{keyword}{typedef}\ \textcolor{keyword}{struct\ }\_dep\ dep\_def;}
+\DoxyCodeLine{00248\ \textcolor{keyword}{typedef}\ dep\_def\ *dep\_t;}
+\DoxyCodeLine{00249\ }
+\DoxyCodeLine{00250\ \textcolor{preprocessor}{\#define\ DEP\_PRO(D)\ ((D)-\/>pro)}}
+\DoxyCodeLine{00251\ \textcolor{preprocessor}{\#define\ DEP\_CON(D)\ ((D)-\/>con)}}
+\DoxyCodeLine{00252\ \textcolor{preprocessor}{\#define\ DEP\_TYPE(D)\ ((D)-\/>type)}}
+\DoxyCodeLine{00253\ \textcolor{preprocessor}{\#define\ DEP\_STATUS(D)\ ((D)-\/>status)}}
+\DoxyCodeLine{00254\ \textcolor{preprocessor}{\#define\ DEP\_COST(D)\ ((D)-\/>cost)}}
+\DoxyCodeLine{00255\ \textcolor{preprocessor}{\#define\ DEP\_NONREG(D)\ ((D)-\/>nonreg)}}
+\DoxyCodeLine{00256\ \textcolor{preprocessor}{\#define\ DEP\_MULTIPLE(D)\ ((D)-\/>multiple)}}
+\DoxyCodeLine{00257\ \textcolor{preprocessor}{\#define\ DEP\_REPLACE(D)\ ((D)-\/>replace)}}
+\DoxyCodeLine{00258\ }
+\DoxyCodeLine{00259\ \textcolor{comment}{/*\ Functions\ to\ work\ with\ dep.\ \ */}}
+\DoxyCodeLine{00260\ }
+\DoxyCodeLine{00261\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ init\_dep\_1\ (dep\_t,\ rtx\_insn\ *,\ rtx\_insn\ *,\ \textcolor{keyword}{enum}\ \doxymbox{\hyperlink{rtl_8h_a5d8ac0cdf8765c34eb3f3fdacfc51ffd}{reg\_note}},\ ds\_t);}
+\DoxyCodeLine{00262\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ init\_dep\ (dep\_t,\ rtx\_insn\ *,\ rtx\_insn\ *,\ \textcolor{keyword}{enum}\ \doxymbox{\hyperlink{rtl_8h_a5d8ac0cdf8765c34eb3f3fdacfc51ffd}{reg\_note}});}
+\DoxyCodeLine{00263\ }
+\DoxyCodeLine{00264\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ sd\_debug\_dep\ (dep\_t);}
+\DoxyCodeLine{00265\ }
+\DoxyCodeLine{00266\ \textcolor{comment}{/*\ Definition\ of\ this\ struct\ resides\ below.\ \ */}}
+\DoxyCodeLine{00267\ \textcolor{keyword}{struct\ }\_dep\_node;}
+\DoxyCodeLine{00268\ \textcolor{keyword}{typedef}\ \textcolor{keyword}{struct\ }\_dep\_node\ *dep\_node\_t;}
+\DoxyCodeLine{00269\ }
+\DoxyCodeLine{00270\ \textcolor{comment}{/*\ A\ link\ in\ the\ dependency\ list.\ \ This\ is\ essentially\ an\ equivalent\ of\ a}}
+\DoxyCodeLine{00271\ \textcolor{comment}{\ \ \ single\ \{INSN,\ DEPS\}\_LIST\ rtx.\ \ */}}
+\DoxyCodeLine{00272\ \textcolor{keyword}{struct\ }\_dep\_link}
+\DoxyCodeLine{00273\ \{}
+\DoxyCodeLine{00274\ \ \ \textcolor{comment}{/*\ Dep\ node\ with\ all\ the\ data.\ \ */}}
+\DoxyCodeLine{00275\ \ \ dep\_node\_t\ node;}
+\DoxyCodeLine{00276\ }
+\DoxyCodeLine{00277\ \ \ \textcolor{comment}{/*\ Next\ link\ in\ the\ list.\ For\ the\ last\ one\ it\ is\ NULL.\ \ */}}
+\DoxyCodeLine{00278\ \ \ \textcolor{keyword}{struct\ }\_dep\_link\ *next;}
+\DoxyCodeLine{00279\ }
+\DoxyCodeLine{00280\ \ \ \textcolor{comment}{/*\ Pointer\ to\ the\ next\ field\ of\ the\ previous\ link\ in\ the\ list.}}
+\DoxyCodeLine{00281\ \textcolor{comment}{\ \ \ \ \ For\ the\ first\ link\ this\ points\ to\ the\ deps\_list-\/>first.}}
+\DoxyCodeLine{00282\ \textcolor{comment}{}}
+\DoxyCodeLine{00283\ \textcolor{comment}{\ \ \ \ \ With\ help\ of\ this\ field\ it\ is\ easy\ to\ remove\ and\ insert\ links\ to\ the}}
+\DoxyCodeLine{00284\ \textcolor{comment}{\ \ \ \ \ list.\ \ */}}
+\DoxyCodeLine{00285\ \ \ \textcolor{keyword}{struct\ }\_dep\_link\ **prev\_nextp;}
+\DoxyCodeLine{00286\ \};}
+\DoxyCodeLine{00287\ \textcolor{keyword}{typedef}\ \textcolor{keyword}{struct\ }\_dep\_link\ *dep\_link\_t;}
+\DoxyCodeLine{00288\ }
+\DoxyCodeLine{00289\ \textcolor{preprocessor}{\#define\ DEP\_LINK\_NODE(N)\ ((N)-\/>node)}}
+\DoxyCodeLine{00290\ \textcolor{preprocessor}{\#define\ DEP\_LINK\_NEXT(N)\ ((N)-\/>next)}}
+\DoxyCodeLine{00291\ \textcolor{preprocessor}{\#define\ DEP\_LINK\_PREV\_NEXTP(N)\ ((N)-\/>prev\_nextp)}}
+\DoxyCodeLine{00292\ }
+\DoxyCodeLine{00293\ \textcolor{comment}{/*\ Macros\ to\ work\ dep\_link.\ \ For\ most\ usecases\ only\ part\ of\ the\ dependency}}
+\DoxyCodeLine{00294\ \textcolor{comment}{\ \ \ information\ is\ need.\ \ These\ macros\ conveniently\ provide\ that\ piece\ of}}
+\DoxyCodeLine{00295\ \textcolor{comment}{\ \ \ information.\ \ */}}
+\DoxyCodeLine{00296\ }
+\DoxyCodeLine{00297\ \textcolor{preprocessor}{\#define\ DEP\_LINK\_DEP(N)\ (DEP\_NODE\_DEP\ (DEP\_LINK\_NODE\ (N)))}}
+\DoxyCodeLine{00298\ \textcolor{preprocessor}{\#define\ DEP\_LINK\_PRO(N)\ (DEP\_PRO\ (DEP\_LINK\_DEP\ (N)))}}
+\DoxyCodeLine{00299\ \textcolor{preprocessor}{\#define\ DEP\_LINK\_CON(N)\ (DEP\_CON\ (DEP\_LINK\_DEP\ (N)))}}
+\DoxyCodeLine{00300\ \textcolor{preprocessor}{\#define\ DEP\_LINK\_TYPE(N)\ (DEP\_TYPE\ (DEP\_LINK\_DEP\ (N)))}}
+\DoxyCodeLine{00301\ \textcolor{preprocessor}{\#define\ DEP\_LINK\_STATUS(N)\ (DEP\_STATUS\ (DEP\_LINK\_DEP\ (N)))}}
+\DoxyCodeLine{00302\ }
+\DoxyCodeLine{00303\ \textcolor{comment}{/*\ A\ list\ of\ dep\_links.\ \ */}}
+\DoxyCodeLine{00304\ \textcolor{keyword}{struct\ }\_deps\_list}
+\DoxyCodeLine{00305\ \{}
+\DoxyCodeLine{00306\ \ \ \textcolor{comment}{/*\ First\ element.\ \ */}}
+\DoxyCodeLine{00307\ \ \ dep\_link\_t\ first;}
+\DoxyCodeLine{00308\ }
+\DoxyCodeLine{00309\ \ \ \textcolor{comment}{/*\ Total\ number\ of\ elements\ in\ the\ list.\ \ */}}
+\DoxyCodeLine{00310\ \ \ \textcolor{keywordtype}{int}\ n\_links;}
+\DoxyCodeLine{00311\ \};}
+\DoxyCodeLine{00312\ \textcolor{keyword}{typedef}\ \textcolor{keyword}{struct\ }\_deps\_list\ *deps\_list\_t;}
+\DoxyCodeLine{00313\ }
+\DoxyCodeLine{00314\ \textcolor{preprocessor}{\#define\ DEPS\_LIST\_FIRST(L)\ ((L)-\/>first)}}
+\DoxyCodeLine{00315\ \textcolor{preprocessor}{\#define\ DEPS\_LIST\_N\_LINKS(L)\ ((L)-\/>n\_links)}}
+\DoxyCodeLine{00316\ }
+\DoxyCodeLine{00317\ \textcolor{comment}{/*\ Suppose\ we\ have\ a\ dependence\ Y\ between\ insn\ pro1\ and\ con1,\ where\ pro1\ has}}
+\DoxyCodeLine{00318\ \textcolor{comment}{\ \ \ additional\ dependents\ con0\ and\ con2,\ and\ con1\ is\ dependent\ on\ additional}}
+\DoxyCodeLine{00319\ \textcolor{comment}{\ \ \ insns\ pro0\ and\ pro1:}}
+\DoxyCodeLine{00320\ \textcolor{comment}{}}
+\DoxyCodeLine{00321\ \textcolor{comment}{\ \ \ .con0\ \ \ \ \ \ pro0}}
+\DoxyCodeLine{00322\ \textcolor{comment}{\ \ \ .\ \string^\ \ \ \ \ \ \ \ \ |}}
+\DoxyCodeLine{00323\ \textcolor{comment}{\ \ \ .\ |\ \ \ \ \ \ \ \ \ |}}
+\DoxyCodeLine{00324\ \textcolor{comment}{\ \ \ .\ |\ \ \ \ \ \ \ \ \ |}}
+\DoxyCodeLine{00325\ \textcolor{comment}{\ \ \ .\ X\ \ \ \ \ \ \ \ \ A}}
+\DoxyCodeLine{00326\ \textcolor{comment}{\ \ \ .\ |\ \ \ \ \ \ \ \ \ |}}
+\DoxyCodeLine{00327\ \textcolor{comment}{\ \ \ .\ |\ \ \ \ \ \ \ \ \ |}}
+\DoxyCodeLine{00328\ \textcolor{comment}{\ \ \ .\ |\ \ \ \ \ \ \ \ \ V}}
+\DoxyCodeLine{00329\ \textcolor{comment}{\ \ \ .pro1-\/-\/Y-\/-\/>con1}}
+\DoxyCodeLine{00330\ \textcolor{comment}{\ \ \ .\ |\ \ \ \ \ \ \ \ \ \string^}}
+\DoxyCodeLine{00331\ \textcolor{comment}{\ \ \ .\ |\ \ \ \ \ \ \ \ \ |}}
+\DoxyCodeLine{00332\ \textcolor{comment}{\ \ \ .\ |\ \ \ \ \ \ \ \ \ |}}
+\DoxyCodeLine{00333\ \textcolor{comment}{\ \ \ .\ Z\ \ \ \ \ \ \ \ \ B}}
+\DoxyCodeLine{00334\ \textcolor{comment}{\ \ \ .\ |\ \ \ \ \ \ \ \ \ |}}
+\DoxyCodeLine{00335\ \textcolor{comment}{\ \ \ .\ |\ \ \ \ \ \ \ \ \ |}}
+\DoxyCodeLine{00336\ \textcolor{comment}{\ \ \ .\ V\ \ \ \ \ \ \ \ \ |}}
+\DoxyCodeLine{00337\ \textcolor{comment}{\ \ \ .con2\ \ \ \ \ \ pro2}}
+\DoxyCodeLine{00338\ \textcolor{comment}{}}
+\DoxyCodeLine{00339\ \textcolor{comment}{\ \ \ This\ is\ represented\ using\ a\ "{}dep\_node"{}\ for\ each\ dependence\ arc,\ which\ are}}
+\DoxyCodeLine{00340\ \textcolor{comment}{\ \ \ connected\ as\ follows\ (diagram\ is\ centered\ around\ Y\ which\ is\ fully\ shown;}}
+\DoxyCodeLine{00341\ \textcolor{comment}{\ \ \ other\ dep\_nodes\ shown\ partially):}}
+\DoxyCodeLine{00342\ \textcolor{comment}{}}
+\DoxyCodeLine{00343\ \textcolor{comment}{\ \ \ .\ \ \ \ \ \ \ \ \ \ +-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/+\ \ \ \ +-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/+\ \ \ \ +-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/+}}
+\DoxyCodeLine{00344\ \textcolor{comment}{\ \ \ .\ \ \ \ \ \ \ \ \ \ :\ dep\_node\ X\ :\ \ \ \ |\ \ dep\_node\ Y\ \ |\ \ \ \ :\ dep\_node\ Z\ :}}
+\DoxyCodeLine{00345\ \textcolor{comment}{\ \ \ .\ \ \ \ \ \ \ \ \ \ :\ \ \ \ \ \ \ \ \ \ \ \ :\ \ \ \ |\ \ \ \ \ \ \ \ \ \ \ \ \ \ |\ \ \ \ :\ \ \ \ \ \ \ \ \ \ \ \ :}}
+\DoxyCodeLine{00346\ \textcolor{comment}{\ \ \ .\ \ \ \ \ \ \ \ \ \ :\ \ \ \ \ \ \ \ \ \ \ \ :\ \ \ \ |\ \ \ \ \ \ \ \ \ \ \ \ \ \ |\ \ \ \ :\ \ \ \ \ \ \ \ \ \ \ \ :}}
+\DoxyCodeLine{00347\ \textcolor{comment}{\ \ \ .\ \ \ \ \ \ \ \ \ \ :\ forw\ \ \ \ \ \ \ :\ \ \ \ |\ \ forw\ \ \ \ \ \ \ \ |\ \ \ \ :\ forw\ \ \ \ \ \ \ :}}
+\DoxyCodeLine{00348\ \textcolor{comment}{\ \ \ .\ \ \ \ \ \ \ \ \ \ :\ +-\/-\/-\/-\/-\/-\/-\/-\/+\ :\ \ \ \ |\ \ +-\/-\/-\/-\/-\/-\/-\/-\/+\ \ |\ \ \ \ :\ +-\/-\/-\/-\/-\/-\/-\/-\/+\ :}}
+\DoxyCodeLine{00349\ \textcolor{comment}{\ \ \ forw\_deps\ \ :\ |dep\_link|\ :\ \ \ \ |\ \ |dep\_link|\ \ |\ \ \ \ :\ |dep\_link|\ :}}
+\DoxyCodeLine{00350\ \textcolor{comment}{\ \ \ +-\/-\/-\/-\/-\/+\ \ \ \ :\ |\ +-\/-\/-\/-\/+\ |\ :\ \ \ \ |\ \ |\ +-\/-\/-\/-\/+\ |\ \ |\ \ \ \ :\ |\ +-\/-\/-\/-\/+\ |\ :}}
+\DoxyCodeLine{00351\ \textcolor{comment}{\ \ \ |first|-\/-\/-\/-\/-\/>|\ |next|-\/+-\/-\/-\/-\/-\/-\/+-\/>|\ |next|-\/+-\/-\/+-\/-\/-\/-\/-\/>|\ |next|-\/+-\/-\/-\/>NULL}}
+\DoxyCodeLine{00352\ \textcolor{comment}{\ \ \ +-\/-\/-\/-\/-\/+\ \ \ \ :\ |\ +-\/-\/-\/-\/+\ |\ :\ \ \ \ |\ \ |\ +-\/-\/-\/-\/+\ |\ \ |\ \ \ \ :\ |\ +-\/-\/-\/-\/+\ |\ :}}
+\DoxyCodeLine{00353\ \textcolor{comment}{\ \ \ .\ \string^\ \ \string^\ \ \ \ \ :\ |\ \ \ \ \ \string^\ \ |\ :\ \ \ \ |\ \ |\ \ \ \ \ \string^\ \ |\ \ |\ \ \ \ :\ |\ \ \ \ \ \ \ \ |\ :}}
+\DoxyCodeLine{00354\ \textcolor{comment}{\ \ \ .\ |\ \ |\ \ \ \ \ :\ |\ \ \ \ \ |\ \ |\ :\ \ \ \ |\ \ |\ \ \ \ \ |\ \ |\ \ |\ \ \ \ :\ |\ \ \ \ \ \ \ \ |\ :}}
+\DoxyCodeLine{00355\ \textcolor{comment}{\ \ \ .\ |\ \ +-\/-\/<-\/-\/-\/-\/+-\/-\/+\ \ +-\/-\/+-\/-\/-\/<-\/-\/+-\/-\/+-\/-\/+\ \ +-\/-\/+-\/-\/+-\/-\/<-\/-\/-\/+-\/-\/+\ \ \ \ \ |\ :}}
+\DoxyCodeLine{00356\ \textcolor{comment}{\ \ \ .\ |\ \ \ \ \ \ \ \ :\ |\ \ |\ \ \ \ \ |\ :\ \ \ \ |\ \ |\ \ |\ \ \ \ \ |\ \ |\ \ \ \ :\ |\ \ |\ \ \ \ \ |\ :}}
+\DoxyCodeLine{00357\ \textcolor{comment}{\ \ \ .\ |\ \ \ \ \ \ \ \ :\ |\ +-\/-\/-\/-\/+\ |\ :\ \ \ \ |\ \ |\ +-\/-\/-\/-\/+\ |\ \ |\ \ \ \ :\ |\ +-\/-\/-\/-\/+\ |\ :}}
+\DoxyCodeLine{00358\ \textcolor{comment}{\ \ \ .\ |\ \ \ \ \ \ \ \ :\ |\ |prev|\ |\ :\ \ \ \ |\ \ |\ |prev|\ |\ \ |\ \ \ \ :\ |\ |prev|\ |\ :}}
+\DoxyCodeLine{00359\ \textcolor{comment}{\ \ \ .\ |\ \ \ \ \ \ \ \ :\ |\ |next|\ |\ :\ \ \ \ |\ \ |\ |next|\ |\ \ |\ \ \ \ :\ |\ |next|\ |\ :}}
+\DoxyCodeLine{00360\ \textcolor{comment}{\ \ \ .\ |\ \ \ \ \ \ \ \ :\ |\ +-\/-\/-\/-\/+\ |\ :\ \ \ \ |\ \ |\ +-\/-\/-\/-\/+\ |\ \ |\ \ \ \ :\ |\ +-\/-\/-\/-\/+\ |\ :}}
+\DoxyCodeLine{00361\ \textcolor{comment}{\ \ \ .\ |\ \ \ \ \ \ \ \ :\ |\ \ \ \ \ \ \ \ |\ :<-\/+\ |\ \ |\ \ \ \ \ \ \ \ |\ \ |<-\/+\ :\ |\ \ \ \ \ \ \ \ |\ :<-\/+}}
+\DoxyCodeLine{00362\ \textcolor{comment}{\ \ \ .\ |\ \ \ \ \ \ \ \ :\ |\ +-\/-\/-\/-\/+\ |\ :\ \ |\ |\ \ |\ +-\/-\/-\/-\/+\ |\ \ |\ \ |\ :\ |\ +-\/-\/-\/-\/+\ |\ :\ \ |}}
+\DoxyCodeLine{00363\ \textcolor{comment}{\ \ \ .\ |\ \ \ \ \ \ \ \ :\ |\ |node|-\/+-\/-\/-\/-\/+\ |\ \ |\ |node|-\/+-\/-\/+-\/-\/+\ :\ |\ |node|-\/+-\/-\/-\/-\/+}}
+\DoxyCodeLine{00364\ \textcolor{comment}{\ \ \ .\ |\ \ \ \ \ \ \ \ :\ |\ +-\/-\/-\/-\/+\ |\ :\ \ \ \ |\ \ |\ +-\/-\/-\/-\/+\ |\ \ |\ \ \ \ :\ |\ +-\/-\/-\/-\/+\ |\ :}}
+\DoxyCodeLine{00365\ \textcolor{comment}{\ \ \ .\ |\ \ \ \ \ \ \ \ :\ |\ \ \ \ \ \ \ \ |\ :\ \ \ \ |\ \ |\ \ \ \ \ \ \ \ |\ \ |\ \ \ \ :\ |\ \ \ \ \ \ \ \ |\ :}}
+\DoxyCodeLine{00366\ \textcolor{comment}{\ \ \ .\ |\ \ \ \ \ \ \ \ :\ +-\/-\/-\/-\/-\/-\/-\/-\/+\ :\ \ \ \ |\ \ +-\/-\/-\/-\/-\/-\/-\/-\/+\ \ |\ \ \ \ :\ +-\/-\/-\/-\/-\/-\/-\/-\/+\ :}}
+\DoxyCodeLine{00367\ \textcolor{comment}{\ \ \ .\ |\ \ \ \ \ \ \ \ :\ \ \ \ \ \ \ \ \ \ \ \ :\ \ \ \ |\ \ \ \ \ \ \ \ \ \ \ \ \ \ |\ \ \ \ :\ \ \ \ \ \ \ \ \ \ \ \ :}}
+\DoxyCodeLine{00368\ \textcolor{comment}{\ \ \ .\ |\ \ \ \ \ \ \ \ :\ \ SAME\ pro1\ :\ \ \ \ |\ \ +-\/-\/-\/-\/-\/-\/-\/-\/+\ \ |\ \ \ \ :\ \ SAME\ pro1\ :}}
+\DoxyCodeLine{00369\ \textcolor{comment}{\ \ \ .\ |\ \ \ \ \ \ \ \ :\ \ DIFF\ con0\ :\ \ \ \ |\ \ |dep\ \ \ \ \ |\ \ |\ \ \ \ :\ \ DIFF\ con2\ :}}
+\DoxyCodeLine{00370\ \textcolor{comment}{\ \ \ .\ |\ \ \ \ \ \ \ \ :\ \ \ \ \ \ \ \ \ \ \ \ :\ \ \ \ |\ \ |\ \ \ \ \ \ \ \ |\ \ |\ \ \ \ :\ \ \ \ \ \ \ \ \ \ \ \ :}}
+\DoxyCodeLine{00371\ \textcolor{comment}{\ \ \ .\ |\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ |\ \ |\ +-\/-\/-\/-\/+\ |\ \ |}}
+\DoxyCodeLine{00372\ \textcolor{comment}{\ \ \ .RTX<-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/+-\/-\/+-\/|pro1|\ |\ \ |}}
+\DoxyCodeLine{00373\ \textcolor{comment}{\ \ \ .pro1\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ |\ \ |\ +-\/-\/-\/-\/+\ |\ \ |}}
+\DoxyCodeLine{00374\ \textcolor{comment}{\ \ \ .\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ |\ \ |\ \ \ \ \ \ \ \ |\ \ |}}
+\DoxyCodeLine{00375\ \textcolor{comment}{\ \ \ .\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ |\ \ |\ +-\/-\/-\/-\/+\ |\ \ |}}
+\DoxyCodeLine{00376\ \textcolor{comment}{\ \ \ .RTX<-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/+-\/-\/+-\/|con1|\ |\ \ |}}
+\DoxyCodeLine{00377\ \textcolor{comment}{\ \ \ .con1\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ |\ \ |\ +-\/-\/-\/-\/+\ |\ \ |}}
+\DoxyCodeLine{00378\ \textcolor{comment}{\ \ \ .\ |\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ |\ \ |\ \ \ \ \ \ \ \ |\ \ |}}
+\DoxyCodeLine{00379\ \textcolor{comment}{\ \ \ .\ |\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ |\ \ |\ +-\/-\/-\/-\/+\ |\ \ |}}
+\DoxyCodeLine{00380\ \textcolor{comment}{\ \ \ .\ |\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ |\ \ |\ |kind|\ |\ \ |}}
+\DoxyCodeLine{00381\ \textcolor{comment}{\ \ \ .\ |\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ |\ \ |\ +-\/-\/-\/-\/+\ |\ \ |}}
+\DoxyCodeLine{00382\ \textcolor{comment}{\ \ \ .\ |\ \ \ \ \ \ \ \ :\ \ \ \ \ \ \ \ \ \ \ \ :\ \ \ \ |\ \ |\ |stat|\ |\ \ |\ \ \ \ :\ \ \ \ \ \ \ \ \ \ \ \ :}}
+\DoxyCodeLine{00383\ \textcolor{comment}{\ \ \ .\ |\ \ \ \ \ \ \ \ :\ \ DIFF\ pro0\ :\ \ \ \ |\ \ |\ +-\/-\/-\/-\/+\ |\ \ |\ \ \ \ :\ \ DIFF\ pro2\ :}}
+\DoxyCodeLine{00384\ \textcolor{comment}{\ \ \ .\ |\ \ \ \ \ \ \ \ :\ \ SAME\ con1\ :\ \ \ \ |\ \ |\ \ \ \ \ \ \ \ |\ \ |\ \ \ \ :\ \ SAME\ con1\ :}}
+\DoxyCodeLine{00385\ \textcolor{comment}{\ \ \ .\ |\ \ \ \ \ \ \ \ :\ \ \ \ \ \ \ \ \ \ \ \ :\ \ \ \ |\ \ +-\/-\/-\/-\/-\/-\/-\/-\/+\ \ |\ \ \ \ :\ \ \ \ \ \ \ \ \ \ \ \ :}}
+\DoxyCodeLine{00386\ \textcolor{comment}{\ \ \ .\ |\ \ \ \ \ \ \ \ :\ \ \ \ \ \ \ \ \ \ \ \ :\ \ \ \ |\ \ \ \ \ \ \ \ \ \ \ \ \ \ |\ \ \ \ :\ \ \ \ \ \ \ \ \ \ \ \ :}}
+\DoxyCodeLine{00387\ \textcolor{comment}{\ \ \ .\ |\ \ \ \ \ \ \ \ :\ back\ \ \ \ \ \ \ :\ \ \ \ |\ \ back\ \ \ \ \ \ \ \ |\ \ \ \ :\ back\ \ \ \ \ \ \ :}}
+\DoxyCodeLine{00388\ \textcolor{comment}{\ \ \ .\ v\ \ \ \ \ \ \ \ :\ +-\/-\/-\/-\/-\/-\/-\/-\/+\ :\ \ \ \ |\ \ +-\/-\/-\/-\/-\/-\/-\/-\/+\ \ |\ \ \ \ :\ +-\/-\/-\/-\/-\/-\/-\/-\/+\ :}}
+\DoxyCodeLine{00389\ \textcolor{comment}{\ \ \ back\_deps\ \ :\ |dep\_link|\ :\ \ \ \ |\ \ |dep\_link|\ \ |\ \ \ \ :\ |dep\_link|\ :}}
+\DoxyCodeLine{00390\ \textcolor{comment}{\ \ \ +-\/-\/-\/-\/-\/+\ \ \ \ :\ |\ +-\/-\/-\/-\/+\ |\ :\ \ \ \ |\ \ |\ +-\/-\/-\/-\/+\ |\ \ |\ \ \ \ :\ |\ +-\/-\/-\/-\/+\ |\ :}}
+\DoxyCodeLine{00391\ \textcolor{comment}{\ \ \ |first|-\/-\/-\/-\/-\/>|\ |next|-\/+-\/-\/-\/-\/-\/-\/+-\/>|\ |next|-\/+-\/-\/+-\/-\/-\/-\/-\/>|\ |next|-\/+-\/-\/-\/>NULL}}
+\DoxyCodeLine{00392\ \textcolor{comment}{\ \ \ +-\/-\/-\/-\/-\/+\ \ \ \ :\ |\ +-\/-\/-\/-\/+\ |\ :\ \ \ \ |\ \ |\ +-\/-\/-\/-\/+\ |\ \ |\ \ \ \ :\ |\ +-\/-\/-\/-\/+\ |\ :}}
+\DoxyCodeLine{00393\ \textcolor{comment}{\ \ \ .\ \ \ \ \string^\ \ \ \ \ :\ |\ \ \ \ \ \string^\ \ |\ :\ \ \ \ |\ \ |\ \ \ \ \ \string^\ \ |\ \ |\ \ \ \ :\ |\ \ \ \ \ \ \ \ |\ :}}
+\DoxyCodeLine{00394\ \textcolor{comment}{\ \ \ .\ \ \ \ |\ \ \ \ \ :\ |\ \ \ \ \ |\ \ |\ :\ \ \ \ |\ \ |\ \ \ \ \ |\ \ |\ \ |\ \ \ \ :\ |\ \ \ \ \ \ \ \ |\ :}}
+\DoxyCodeLine{00395\ \textcolor{comment}{\ \ \ .\ \ \ \ +-\/-\/<-\/-\/-\/-\/+-\/-\/+\ \ +-\/-\/+-\/-\/-\/<-\/-\/+-\/-\/+-\/-\/+\ \ +-\/-\/+-\/-\/+-\/-\/<-\/-\/-\/+-\/-\/+\ \ \ \ \ |\ :}}
+\DoxyCodeLine{00396\ \textcolor{comment}{\ \ \ .\ \ \ \ \ \ \ \ \ \ :\ |\ \ |\ \ \ \ \ |\ :\ \ \ \ |\ \ |\ \ |\ \ \ \ \ |\ \ |\ \ \ \ :\ |\ \ |\ \ \ \ \ |\ :}}
+\DoxyCodeLine{00397\ \textcolor{comment}{\ \ \ .\ \ \ \ \ \ \ \ \ \ :\ |\ +-\/-\/-\/-\/+\ |\ :\ \ \ \ |\ \ |\ +-\/-\/-\/-\/+\ |\ \ |\ \ \ \ :\ |\ +-\/-\/-\/-\/+\ |\ :}}
+\DoxyCodeLine{00398\ \textcolor{comment}{\ \ \ .\ \ \ \ \ \ \ \ \ \ :\ |\ |prev|\ |\ :\ \ \ \ |\ \ |\ |prev|\ |\ \ |\ \ \ \ :\ |\ |prev|\ |\ :}}
+\DoxyCodeLine{00399\ \textcolor{comment}{\ \ \ .\ \ \ \ \ \ \ \ \ \ :\ |\ |next|\ |\ :\ \ \ \ |\ \ |\ |next|\ |\ \ |\ \ \ \ :\ |\ |next|\ |\ :}}
+\DoxyCodeLine{00400\ \textcolor{comment}{\ \ \ .\ \ \ \ \ \ \ \ \ \ :\ |\ +-\/-\/-\/-\/+\ |\ :\ \ \ \ |\ \ |\ +-\/-\/-\/-\/+\ |\ \ |\ \ \ \ :\ |\ +-\/-\/-\/-\/+\ |\ :}}
+\DoxyCodeLine{00401\ \textcolor{comment}{\ \ \ .\ \ \ \ \ \ \ \ \ \ :\ |\ \ \ \ \ \ \ \ |\ :<-\/+\ |\ \ |\ \ \ \ \ \ \ \ |\ \ |<-\/+\ :\ |\ \ \ \ \ \ \ \ |\ :<-\/+}}
+\DoxyCodeLine{00402\ \textcolor{comment}{\ \ \ .\ \ \ \ \ \ \ \ \ \ :\ |\ +-\/-\/-\/-\/+\ |\ :\ \ |\ |\ \ |\ +-\/-\/-\/-\/+\ |\ \ |\ \ |\ :\ |\ +-\/-\/-\/-\/+\ |\ :\ \ |}}
+\DoxyCodeLine{00403\ \textcolor{comment}{\ \ \ .\ \ \ \ \ \ \ \ \ \ :\ |\ |node|-\/+-\/-\/-\/-\/+\ |\ \ |\ |node|-\/+-\/-\/+-\/-\/+\ :\ |\ |node|-\/+-\/-\/-\/-\/+}}
+\DoxyCodeLine{00404\ \textcolor{comment}{\ \ \ .\ \ \ \ \ \ \ \ \ \ :\ |\ +-\/-\/-\/-\/+\ |\ :\ \ \ \ |\ \ |\ +-\/-\/-\/-\/+\ |\ \ |\ \ \ \ :\ |\ +-\/-\/-\/-\/+\ |\ :}}
+\DoxyCodeLine{00405\ \textcolor{comment}{\ \ \ .\ \ \ \ \ \ \ \ \ \ :\ |\ \ \ \ \ \ \ \ |\ :\ \ \ \ |\ \ |\ \ \ \ \ \ \ \ |\ \ |\ \ \ \ :\ |\ \ \ \ \ \ \ \ |\ :}}
+\DoxyCodeLine{00406\ \textcolor{comment}{\ \ \ .\ \ \ \ \ \ \ \ \ \ :\ +-\/-\/-\/-\/-\/-\/-\/-\/+\ :\ \ \ \ |\ \ +-\/-\/-\/-\/-\/-\/-\/-\/+\ \ |\ \ \ \ :\ +-\/-\/-\/-\/-\/-\/-\/-\/+\ :}}
+\DoxyCodeLine{00407\ \textcolor{comment}{\ \ \ .\ \ \ \ \ \ \ \ \ \ :\ \ \ \ \ \ \ \ \ \ \ \ :\ \ \ \ |\ \ \ \ \ \ \ \ \ \ \ \ \ \ |\ \ \ \ :\ \ \ \ \ \ \ \ \ \ \ \ :}}
+\DoxyCodeLine{00408\ \textcolor{comment}{\ \ \ .\ \ \ \ \ \ \ \ \ \ :\ dep\_node\ A\ :\ \ \ \ |\ \ dep\_node\ Y\ \ |\ \ \ \ :\ dep\_node\ B\ :}}
+\DoxyCodeLine{00409\ \textcolor{comment}{\ \ \ .\ \ \ \ \ \ \ \ \ \ +-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/+\ \ \ \ +-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/+\ \ \ \ +-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/+}}
+\DoxyCodeLine{00410\ \textcolor{comment}{*/}}
+\DoxyCodeLine{00411\ }
+\DoxyCodeLine{00412\ \textcolor{keyword}{struct\ }\_dep\_node}
+\DoxyCodeLine{00413\ \{}
+\DoxyCodeLine{00414\ \ \ \textcolor{comment}{/*\ Backward\ link.\ \ */}}
+\DoxyCodeLine{00415\ \ \ \textcolor{keyword}{struct\ }\_dep\_link\ back;}
+\DoxyCodeLine{00416\ }
+\DoxyCodeLine{00417\ \ \ \textcolor{comment}{/*\ The\ dep.\ \ */}}
+\DoxyCodeLine{00418\ \ \ \textcolor{keyword}{struct\ }\_dep\ dep;}
+\DoxyCodeLine{00419\ }
+\DoxyCodeLine{00420\ \ \ \textcolor{comment}{/*\ Forward\ link.\ \ */}}
+\DoxyCodeLine{00421\ \ \ \textcolor{keyword}{struct\ }\_dep\_link\ forw;}
+\DoxyCodeLine{00422\ \};}
+\DoxyCodeLine{00423\ }
+\DoxyCodeLine{00424\ \textcolor{preprocessor}{\#define\ DEP\_NODE\_BACK(N)\ (\&(N)-\/>back)}}
+\DoxyCodeLine{00425\ \textcolor{preprocessor}{\#define\ DEP\_NODE\_DEP(N)\ (\&(N)-\/>dep)}}
+\DoxyCodeLine{00426\ \textcolor{preprocessor}{\#define\ DEP\_NODE\_FORW(N)\ (\&(N)-\/>forw)}}
+\DoxyCodeLine{00427\ }
+\DoxyCodeLine{00428\ \textcolor{comment}{/*\ The\ following\ enumeration\ values\ tell\ us\ what\ dependencies\ we}}
+\DoxyCodeLine{00429\ \textcolor{comment}{\ \ \ should\ use\ to\ implement\ the\ barrier.\ \ We\ use\ true-\/dependencies\ for}}
+\DoxyCodeLine{00430\ \textcolor{comment}{\ \ \ TRUE\_BARRIER\ and\ anti-\/dependencies\ for\ MOVE\_BARRIER.\ \ */}}
+\DoxyCodeLine{00431\ \textcolor{keyword}{enum}\ reg\_pending\_barrier\_mode}
+\DoxyCodeLine{00432\ \{}
+\DoxyCodeLine{00433\ \ \ NOT\_A\_BARRIER\ =\ 0,}
+\DoxyCodeLine{00434\ \ \ MOVE\_BARRIER,}
+\DoxyCodeLine{00435\ \ \ TRUE\_BARRIER}
+\DoxyCodeLine{00436\ \};}
+\DoxyCodeLine{00437\ }
+\DoxyCodeLine{00438\ \textcolor{comment}{/*\ Whether\ a\ register\ movement\ is\ associated\ with\ a\ call.\ \ */}}
+\DoxyCodeLine{00439\ \textcolor{keyword}{enum}\ post\_call\_group}
+\DoxyCodeLine{00440\ \{}
+\DoxyCodeLine{00441\ \ \ not\_post\_call,}
+\DoxyCodeLine{00442\ \ \ post\_call,}
+\DoxyCodeLine{00443\ \ \ post\_call\_initial}
+\DoxyCodeLine{00444\ \};}
+\DoxyCodeLine{00445\ }
+\DoxyCodeLine{00446\ \textcolor{comment}{/*\ Insns\ which\ affect\ pseudo-\/registers.\ \ */}}
+\DoxyCodeLine{00447\ \textcolor{keyword}{struct\ }deps\_reg}
+\DoxyCodeLine{00448\ \{}
+\DoxyCodeLine{00449\ \ \ rtx\_insn\_list\ *uses;}
+\DoxyCodeLine{00450\ \ \ rtx\_insn\_list\ *sets;}
+\DoxyCodeLine{00451\ \ \ rtx\_insn\_list\ *implicit\_sets;}
+\DoxyCodeLine{00452\ \ \ rtx\_insn\_list\ *control\_uses;}
+\DoxyCodeLine{00453\ \ \ rtx\_insn\_list\ *clobbers;}
+\DoxyCodeLine{00454\ \ \ \textcolor{keywordtype}{int}\ uses\_length;}
+\DoxyCodeLine{00455\ \ \ \textcolor{keywordtype}{int}\ clobbers\_length;}
+\DoxyCodeLine{00456\ \};}
+\DoxyCodeLine{00457\ }
+\DoxyCodeLine{00458\ \textcolor{comment}{/*\ Describe\ state\ of\ dependencies\ used\ during\ sched\_analyze\ phase.\ \ */}}
+\DoxyCodeLine{00459\ \textcolor{keyword}{class\ }deps\_desc}
+\DoxyCodeLine{00460\ \{}
+\DoxyCodeLine{00461\ \textcolor{keyword}{public}:}
+\DoxyCodeLine{00462\ \ \ \textcolor{comment}{/*\ The\ *\_insns\ and\ *\_mems\ are\ paired\ lists.\ \ Each\ pending\ memory\ operation}}
+\DoxyCodeLine{00463\ \textcolor{comment}{\ \ \ \ \ will\ have\ a\ pointer\ to\ the\ MEM\ rtx\ on\ one\ list\ and\ a\ pointer\ to\ the}}
+\DoxyCodeLine{00464\ \textcolor{comment}{\ \ \ \ \ containing\ insn\ on\ the\ other\ list\ in\ the\ same\ place\ in\ the\ list.\ \ */}}
+\DoxyCodeLine{00465\ }
+\DoxyCodeLine{00466\ \ \ \textcolor{comment}{/*\ We\ can't\ use\ add\_dependence\ like\ the\ old\ code\ did,\ because\ a\ single\ insn}}
+\DoxyCodeLine{00467\ \textcolor{comment}{\ \ \ \ \ may\ have\ multiple\ memory\ accesses,\ and\ hence\ needs\ to\ be\ on\ the\ list}}
+\DoxyCodeLine{00468\ \textcolor{comment}{\ \ \ \ \ once\ for\ each\ memory\ access.\ \ Add\_dependence\ won't\ let\ you\ add\ an\ insn}}
+\DoxyCodeLine{00469\ \textcolor{comment}{\ \ \ \ \ to\ a\ list\ more\ than\ once.\ \ */}}
+\DoxyCodeLine{00470\ }
+\DoxyCodeLine{00471\ \ \ \textcolor{comment}{/*\ An\ INSN\_LIST\ containing\ all\ insns\ with\ pending\ read\ operations.\ \ */}}
+\DoxyCodeLine{00472\ \ \ rtx\_insn\_list\ *pending\_read\_insns;}
+\DoxyCodeLine{00473\ }
+\DoxyCodeLine{00474\ \ \ \textcolor{comment}{/*\ An\ EXPR\_LIST\ containing\ all\ MEM\ rtx's\ which\ are\ pending\ reads.\ \ The\ list}}
+\DoxyCodeLine{00475\ \textcolor{comment}{\ \ \ \ \ can\ contain\ stack\ pointer\ instead\ of\ memory.\ \ This\ is\ a\ special\ case\ (see}}
+\DoxyCodeLine{00476\ \textcolor{comment}{\ \ \ \ \ sched-\/deps.cc::sched\_analyze\_1).\ \ */}}
+\DoxyCodeLine{00477\ \ \ rtx\_expr\_list\ *pending\_read\_mems;}
+\DoxyCodeLine{00478\ }
+\DoxyCodeLine{00479\ \ \ \textcolor{comment}{/*\ An\ INSN\_LIST\ containing\ all\ insns\ with\ pending\ write\ operations.\ \ */}}
+\DoxyCodeLine{00480\ \ \ rtx\_insn\_list\ *pending\_write\_insns;}
+\DoxyCodeLine{00481\ }
+\DoxyCodeLine{00482\ \ \ \textcolor{comment}{/*\ An\ EXPR\_LIST\ containing\ all\ MEM\ rtx's\ which\ are\ pending\ writes.\ \ */}}
+\DoxyCodeLine{00483\ \ \ rtx\_expr\_list\ *pending\_write\_mems;}
+\DoxyCodeLine{00484\ }
+\DoxyCodeLine{00485\ \ \ \textcolor{comment}{/*\ An\ INSN\_LIST\ containing\ all\ jump\ insns.\ \ */}}
+\DoxyCodeLine{00486\ \ \ rtx\_insn\_list\ *pending\_jump\_insns;}
+\DoxyCodeLine{00487\ }
+\DoxyCodeLine{00488\ \ \ \textcolor{comment}{/*\ We\ must\ prevent\ the\ above\ lists\ from\ ever\ growing\ too\ large\ since}}
+\DoxyCodeLine{00489\ \textcolor{comment}{\ \ \ \ \ the\ number\ of\ dependencies\ produced\ is\ at\ least\ O(N*N),}}
+\DoxyCodeLine{00490\ \textcolor{comment}{\ \ \ \ \ and\ execution\ time\ is\ at\ least\ O(4*N*N),\ as\ a\ function\ of\ the}}
+\DoxyCodeLine{00491\ \textcolor{comment}{\ \ \ \ \ length\ of\ these\ pending\ lists.\ \ */}}
+\DoxyCodeLine{00492\ }
+\DoxyCodeLine{00493\ \ \ \textcolor{comment}{/*\ Indicates\ the\ length\ of\ the\ pending\_read\ list.\ \ */}}
+\DoxyCodeLine{00494\ \ \ \textcolor{keywordtype}{int}\ pending\_read\_list\_length;}
+\DoxyCodeLine{00495\ }
+\DoxyCodeLine{00496\ \ \ \textcolor{comment}{/*\ Indicates\ the\ length\ of\ the\ pending\_write\ list.\ \ */}}
+\DoxyCodeLine{00497\ \ \ \textcolor{keywordtype}{int}\ pending\_write\_list\_length;}
+\DoxyCodeLine{00498\ }
+\DoxyCodeLine{00499\ \ \ \textcolor{comment}{/*\ Length\ of\ the\ pending\ memory\ flush\ list\ plus\ the\ length\ of\ the\ pending}}
+\DoxyCodeLine{00500\ \textcolor{comment}{\ \ \ \ \ jump\ insn\ list.\ \ Large\ functions\ with\ no\ calls\ may\ build\ up\ extremely}}
+\DoxyCodeLine{00501\ \textcolor{comment}{\ \ \ \ \ large\ lists.\ \ */}}
+\DoxyCodeLine{00502\ \ \ \textcolor{keywordtype}{int}\ pending\_flush\_length;}
+\DoxyCodeLine{00503\ }
+\DoxyCodeLine{00504\ \ \ \textcolor{comment}{/*\ The\ last\ insn\ upon\ which\ all\ memory\ references\ must\ depend.}}
+\DoxyCodeLine{00505\ \textcolor{comment}{\ \ \ \ \ This\ is\ an\ insn\ which\ flushed\ the\ pending\ lists,\ creating\ a\ dependency}}
+\DoxyCodeLine{00506\ \textcolor{comment}{\ \ \ \ \ between\ it\ and\ all\ previously\ pending\ memory\ references.\ \ This\ creates}}
+\DoxyCodeLine{00507\ \textcolor{comment}{\ \ \ \ \ a\ barrier\ (or\ a\ checkpoint)\ which\ no\ memory\ reference\ is\ allowed\ to\ cross.}}
+\DoxyCodeLine{00508\ \textcolor{comment}{}}
+\DoxyCodeLine{00509\ \textcolor{comment}{\ \ \ \ \ This\ includes\ all\ non\ constant\ CALL\_INSNs.\ \ When\ we\ do\ interprocedural}}
+\DoxyCodeLine{00510\ \textcolor{comment}{\ \ \ \ \ alias\ analysis,\ this\ restriction\ can\ be\ relaxed.}}
+\DoxyCodeLine{00511\ \textcolor{comment}{\ \ \ \ \ This\ may\ also\ be\ an\ INSN\ that\ writes\ memory\ if\ the\ pending\ lists\ grow}}
+\DoxyCodeLine{00512\ \textcolor{comment}{\ \ \ \ \ too\ large.\ \ */}}
+\DoxyCodeLine{00513\ \ \ rtx\_insn\_list\ *last\_pending\_memory\_flush;}
+\DoxyCodeLine{00514\ }
+\DoxyCodeLine{00515\ \ \ \textcolor{comment}{/*\ A\ list\ of\ the\ last\ function\ calls\ we\ have\ seen.\ \ We\ use\ a\ list\ to}}
+\DoxyCodeLine{00516\ \textcolor{comment}{\ \ \ \ \ represent\ last\ function\ calls\ from\ multiple\ predecessor\ blocks.}}
+\DoxyCodeLine{00517\ \textcolor{comment}{\ \ \ \ \ Used\ to\ prevent\ register\ lifetimes\ from\ expanding\ unnecessarily.\ \ */}}
+\DoxyCodeLine{00518\ \ \ rtx\_insn\_list\ *last\_function\_call;}
+\DoxyCodeLine{00519\ }
+\DoxyCodeLine{00520\ \ \ \textcolor{comment}{/*\ A\ list\ of\ the\ last\ function\ calls\ that\ may\ not\ return\ normally}}
+\DoxyCodeLine{00521\ \textcolor{comment}{\ \ \ \ \ we\ have\ seen.\ \ We\ use\ a\ list\ to\ represent\ last\ function\ calls\ from}}
+\DoxyCodeLine{00522\ \textcolor{comment}{\ \ \ \ \ multiple\ predecessor\ blocks.\ \ Used\ to\ prevent\ moving\ trapping\ insns}}
+\DoxyCodeLine{00523\ \textcolor{comment}{\ \ \ \ \ across\ such\ calls.\ \ */}}
+\DoxyCodeLine{00524\ \ \ rtx\_insn\_list\ *last\_function\_call\_may\_noreturn;}
+\DoxyCodeLine{00525\ }
+\DoxyCodeLine{00526\ \ \ \textcolor{comment}{/*\ A\ list\ of\ insns\ which\ use\ a\ pseudo\ register\ that\ does\ not\ already}}
+\DoxyCodeLine{00527\ \textcolor{comment}{\ \ \ \ \ cross\ a\ call.\ \ We\ create\ dependencies\ between\ each\ of\ those\ insn}}
+\DoxyCodeLine{00528\ \textcolor{comment}{\ \ \ \ \ and\ the\ next\ call\ insn,\ to\ ensure\ that\ they\ won't\ cross\ a\ call\ after}}
+\DoxyCodeLine{00529\ \textcolor{comment}{\ \ \ \ \ scheduling\ is\ done.\ \ */}}
+\DoxyCodeLine{00530\ \ \ rtx\_insn\_list\ *sched\_before\_next\_call;}
+\DoxyCodeLine{00531\ }
+\DoxyCodeLine{00532\ \ \ \textcolor{comment}{/*\ Similarly,\ a\ list\ of\ insns\ which\ should\ not\ cross\ a\ branch.\ \ */}}
+\DoxyCodeLine{00533\ \ \ rtx\_insn\_list\ *sched\_before\_next\_jump;}
+\DoxyCodeLine{00534\ }
+\DoxyCodeLine{00535\ \ \ \textcolor{comment}{/*\ Used\ to\ keep\ post-\/call\ pseudo/hard\ reg\ movements\ together\ with}}
+\DoxyCodeLine{00536\ \textcolor{comment}{\ \ \ \ \ the\ call.\ \ */}}
+\DoxyCodeLine{00537\ \ \ \textcolor{keyword}{enum}\ post\_call\_group\ in\_post\_call\_group\_p;}
+\DoxyCodeLine{00538\ }
+\DoxyCodeLine{00539\ \ \ \textcolor{comment}{/*\ The\ last\ debug\ insn\ we've\ seen.\ \ */}}
+\DoxyCodeLine{00540\ \ \ rtx\_insn\ *last\_debug\_insn;}
+\DoxyCodeLine{00541\ }
+\DoxyCodeLine{00542\ \ \ \textcolor{comment}{/*\ The\ last\ insn\ bearing\ REG\_ARGS\_SIZE\ that\ we've\ seen.\ \ */}}
+\DoxyCodeLine{00543\ \ \ rtx\_insn\ *last\_args\_size;}
+\DoxyCodeLine{00544\ }
+\DoxyCodeLine{00545\ \ \ \textcolor{comment}{/*\ A\ list\ of\ all\ prologue\ insns\ we\ have\ seen\ without\ intervening\ epilogue}}
+\DoxyCodeLine{00546\ \textcolor{comment}{\ \ \ \ \ insns,\ and\ one\ of\ all\ epilogue\ insns\ we\ have\ seen\ without\ intervening}}
+\DoxyCodeLine{00547\ \textcolor{comment}{\ \ \ \ \ prologue\ insns.\ \ This\ is\ used\ to\ prevent\ mixing\ prologue\ and\ epilogue}}
+\DoxyCodeLine{00548\ \textcolor{comment}{\ \ \ \ \ insns.\ \ See\ PR78029.\ \ */}}
+\DoxyCodeLine{00549\ \ \ rtx\_insn\_list\ *last\_prologue;}
+\DoxyCodeLine{00550\ \ \ rtx\_insn\_list\ *last\_epilogue;}
+\DoxyCodeLine{00551\ }
+\DoxyCodeLine{00552\ \ \ \textcolor{comment}{/*\ Whether\ the\ last\ *logue\ insn\ was\ an\ epilogue\ insn\ or\ a\ prologue\ insn}}
+\DoxyCodeLine{00553\ \textcolor{comment}{\ \ \ \ \ instead.\ \ */}}
+\DoxyCodeLine{00554\ \ \ \textcolor{keywordtype}{bool}\ last\_logue\_was\_epilogue;}
+\DoxyCodeLine{00555\ }
+\DoxyCodeLine{00556\ \ \ \textcolor{comment}{/*\ The\ maximum\ register\ number\ for\ the\ following\ arrays.\ \ Before\ reload}}
+\DoxyCodeLine{00557\ \textcolor{comment}{\ \ \ \ \ this\ is\ max\_reg\_num;\ after\ reload\ it\ is\ FIRST\_PSEUDO\_REGISTER.\ \ */}}
+\DoxyCodeLine{00558\ \ \ \textcolor{keywordtype}{int}\ max\_reg;}
+\DoxyCodeLine{00559\ }
+\DoxyCodeLine{00560\ \ \ \textcolor{comment}{/*\ Element\ N\ is\ the\ next\ insn\ that\ sets\ (hard\ or\ pseudo)\ register}}
+\DoxyCodeLine{00561\ \textcolor{comment}{\ \ \ \ \ N\ within\ the\ current\ basic\ block;\ or\ zero,\ if\ there\ is\ no}}
+\DoxyCodeLine{00562\ \textcolor{comment}{\ \ \ \ \ such\ insn.\ \ Needed\ for\ new\ registers\ which\ may\ be\ introduced}}
+\DoxyCodeLine{00563\ \textcolor{comment}{\ \ \ \ \ by\ splitting\ insns.\ \ */}}
+\DoxyCodeLine{00564\ \ \ \textcolor{keyword}{struct\ }deps\_reg\ *reg\_last;}
+\DoxyCodeLine{00565\ }
+\DoxyCodeLine{00566\ \ \ \textcolor{comment}{/*\ Element\ N\ is\ set\ for\ each\ register\ that\ has\ any\ nonzero\ element}}
+\DoxyCodeLine{00567\ \textcolor{comment}{\ \ \ \ \ in\ reg\_last[N].\{uses,sets,clobbers\}.\ \ */}}
+\DoxyCodeLine{00568\ \ \ \doxymbox{\hyperlink{regset_8h_a0ea6961fdbe562c5472ff2050b84e52e}{regset\_head}}\ reg\_last\_in\_use;}
+\DoxyCodeLine{00569\ }
+\DoxyCodeLine{00570\ \ \ \textcolor{comment}{/*\ Shows\ the\ last\ value\ of\ reg\_pending\_barrier\ associated\ with\ the\ insn.\ \ */}}
+\DoxyCodeLine{00571\ \ \ \textcolor{keyword}{enum}\ reg\_pending\_barrier\_mode\ last\_reg\_pending\_barrier;}
+\DoxyCodeLine{00572\ }
+\DoxyCodeLine{00573\ \ \ \textcolor{comment}{/*\ True\ when\ this\ context\ should\ be\ treated\ as\ a\ readonly\ by}}
+\DoxyCodeLine{00574\ \textcolor{comment}{\ \ \ \ \ the\ analysis.\ \ */}}
+\DoxyCodeLine{00575\ \ \ \doxymbox{\hyperlink{system_8h_a4e2bfb0cb3835aa91a62a553a53e9763}{BOOL\_BITFIELD}}\ readonly\ :\ 1;}
+\DoxyCodeLine{00576\ \};}
+\DoxyCodeLine{00577\ }
+\DoxyCodeLine{00578\ \textcolor{keyword}{typedef}\ \textcolor{keyword}{class\ }deps\_desc\ *deps\_t;}
+\DoxyCodeLine{00579\ }
+\DoxyCodeLine{00580\ \textcolor{comment}{/*\ This\ structure\ holds\ some\ state\ of\ the\ current\ scheduling\ pass,\ and}}
+\DoxyCodeLine{00581\ \textcolor{comment}{\ \ \ contains\ some\ function\ pointers\ that\ abstract\ out\ some\ of\ the\ non-\/generic}}
+\DoxyCodeLine{00582\ \textcolor{comment}{\ \ \ functionality\ from\ functions\ such\ as\ schedule\_block\ or\ schedule\_insn.}}
+\DoxyCodeLine{00583\ \textcolor{comment}{\ \ \ There\ is\ one\ global\ variable,\ current\_sched\_info,\ which\ points\ to\ the}}
+\DoxyCodeLine{00584\ \textcolor{comment}{\ \ \ sched\_info\ structure\ currently\ in\ use.\ \ */}}
+\DoxyCodeLine{00585\ \textcolor{keyword}{struct\ }haifa\_sched\_info}
+\DoxyCodeLine{00586\ \{}
+\DoxyCodeLine{00587\ \ \ \textcolor{comment}{/*\ Add\ all\ insns\ that\ are\ initially\ ready\ to\ the\ ready\ list.\ \ Called\ once}}
+\DoxyCodeLine{00588\ \textcolor{comment}{\ \ \ \ \ before\ scheduling\ a\ set\ of\ insns.\ \ */}}
+\DoxyCodeLine{00589\ \ \ void\ (*init\_ready\_list)\ (void);}
+\DoxyCodeLine{00590\ \ \ \textcolor{comment}{/*\ Called\ after\ taking\ an\ insn\ from\ the\ ready\ list.\ \ Returns\ true\ if}}
+\DoxyCodeLine{00591\ \textcolor{comment}{\ \ \ \ \ this\ insn\ can\ be\ scheduled,\ false\ if\ we\ should\ silently\ discard\ it.\ \ */}}
+\DoxyCodeLine{00592\ \ \ \doxymbox{\hyperlink{stdbool_8h_abb452686968e48b67397da5f97445f5b}{bool}}\ (*can\_schedule\_ready\_p)\ (rtx\_insn\ *);}
+\DoxyCodeLine{00593\ \ \ \textcolor{comment}{/*\ Return\ true\ if\ there\ are\ more\ insns\ that\ should\ be\ scheduled.\ \ */}}
+\DoxyCodeLine{00594\ \ \ \doxymbox{\hyperlink{stdbool_8h_abb452686968e48b67397da5f97445f5b}{bool}}\ (*schedule\_more\_p)\ (void);}
+\DoxyCodeLine{00595\ \ \ \textcolor{comment}{/*\ Called\ after\ an\ insn\ has\ all\ its\ hard\ dependencies\ resolved.}}
+\DoxyCodeLine{00596\ \textcolor{comment}{\ \ \ \ \ Adjusts\ status\ of\ instruction\ (which\ is\ passed\ through\ second\ parameter)}}
+\DoxyCodeLine{00597\ \textcolor{comment}{\ \ \ \ \ to\ indicate\ if\ instruction\ should\ be\ moved\ to\ the\ ready\ list\ or\ the}}
+\DoxyCodeLine{00598\ \textcolor{comment}{\ \ \ \ \ queue,\ or\ if\ it\ should\ silently\ discard\ it\ (until\ next\ resolved}}
+\DoxyCodeLine{00599\ \textcolor{comment}{\ \ \ \ \ dependence).\ \ */}}
+\DoxyCodeLine{00600\ \ \ ds\_t\ (*new\_ready)\ (rtx\_insn\ *,\ ds\_t);}
+\DoxyCodeLine{00601\ \ \ \textcolor{comment}{/*\ Compare\ priority\ of\ two\ insns.\ \ Return\ a\ positive\ number\ if\ the\ second}}
+\DoxyCodeLine{00602\ \textcolor{comment}{\ \ \ \ \ insn\ is\ to\ be\ preferred\ for\ scheduling,\ and\ a\ negative\ one\ if\ the\ first}}
+\DoxyCodeLine{00603\ \textcolor{comment}{\ \ \ \ \ is\ to\ be\ preferred.\ \ Zero\ if\ they\ are\ equally\ good.\ \ */}}
+\DoxyCodeLine{00604\ \ \ int\ (*rank)\ (rtx\_insn\ *,\ rtx\_insn\ *);}
+\DoxyCodeLine{00605\ \ \ \textcolor{comment}{/*\ Return\ a\ string\ that\ contains\ the\ insn\ uid\ and\ optionally\ anything\ else}}
+\DoxyCodeLine{00606\ \textcolor{comment}{\ \ \ \ \ necessary\ to\ identify\ this\ insn\ in\ an\ output.\ \ It's\ valid\ to\ use\ a}}
+\DoxyCodeLine{00607\ \textcolor{comment}{\ \ \ \ \ static\ buffer\ for\ this.\ \ The\ ALIGNED\ parameter\ should\ cause\ the\ string}}
+\DoxyCodeLine{00608\ \textcolor{comment}{\ \ \ \ \ to\ be\ formatted\ so\ that\ multiple\ output\ lines\ will\ line\ up\ nicely.\ \ */}}
+\DoxyCodeLine{00609\ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *(*print\_insn)\ (\textcolor{keyword}{const}\ rtx\_insn\ *,\ int);}
+\DoxyCodeLine{00610\ \ \ \textcolor{comment}{/*\ Return\ true\ if\ an\ insn\ should\ be\ included\ in\ priority}}
+\DoxyCodeLine{00611\ \textcolor{comment}{\ \ \ \ \ calculations.\ \ */}}
+\DoxyCodeLine{00612\ \ \ \doxymbox{\hyperlink{stdbool_8h_abb452686968e48b67397da5f97445f5b}{bool}}\ (*contributes\_to\_priority)\ (rtx\_insn\ *,\ rtx\_insn\ *);}
+\DoxyCodeLine{00613\ }
+\DoxyCodeLine{00614\ \ \ \textcolor{comment}{/*\ Return\ true\ if\ scheduling\ insn\ (passed\ as\ the\ parameter)\ will\ trigger}}
+\DoxyCodeLine{00615\ \textcolor{comment}{\ \ \ \ \ finish\ of\ scheduling\ current\ block.\ \ */}}
+\DoxyCodeLine{00616\ \ \ \doxymbox{\hyperlink{stdbool_8h_abb452686968e48b67397da5f97445f5b}{bool}}\ (*insn\_finishes\_block\_p)\ (rtx\_insn\ *);}
+\DoxyCodeLine{00617\ }
+\DoxyCodeLine{00618\ \ \ \textcolor{comment}{/*\ The\ boundaries\ of\ the\ set\ of\ insns\ to\ be\ scheduled.\ \ */}}
+\DoxyCodeLine{00619\ \ \ rtx\_insn\ *prev\_head,\ *next\_tail;}
+\DoxyCodeLine{00620\ }
+\DoxyCodeLine{00621\ \ \ \textcolor{comment}{/*\ Filled\ in\ after\ the\ schedule\ is\ finished;\ the\ first\ and\ last\ scheduled}}
+\DoxyCodeLine{00622\ \textcolor{comment}{\ \ \ \ \ insns.\ \ */}}
+\DoxyCodeLine{00623\ \ \ rtx\_insn\ *head,\ *tail;}
+\DoxyCodeLine{00624\ }
+\DoxyCodeLine{00625\ \ \ \textcolor{comment}{/*\ If\ nonzero,\ enables\ an\ additional\ sanity\ check\ in\ schedule\_block.\ \ */}}
+\DoxyCodeLine{00626\ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ queue\_must\_finish\_empty:1;}
+\DoxyCodeLine{00627\ }
+\DoxyCodeLine{00628\ \ \ \textcolor{comment}{/*\ Maximum\ priority\ that\ has\ been\ assigned\ to\ an\ insn.\ \ */}}
+\DoxyCodeLine{00629\ \ \ \textcolor{keywordtype}{int}\ sched\_max\_insns\_priority;}
+\DoxyCodeLine{00630\ }
+\DoxyCodeLine{00631\ \ \ \textcolor{comment}{/*\ Hooks\ to\ support\ speculative\ scheduling.\ \ */}}
+\DoxyCodeLine{00632\ }
+\DoxyCodeLine{00633\ \ \ \textcolor{comment}{/*\ Called\ to\ notify\ frontend\ that\ instruction\ is\ being\ added\ (second}}
+\DoxyCodeLine{00634\ \textcolor{comment}{\ \ \ \ \ parameter\ ==\ 0)\ or\ removed\ (second\ parameter\ ==\ 1).\ \ */}}
+\DoxyCodeLine{00635\ \ \ void\ (*add\_remove\_insn)\ (rtx\_insn\ *,\ int);}
+\DoxyCodeLine{00636\ }
+\DoxyCodeLine{00637\ \ \ \textcolor{comment}{/*\ Called\ to\ notify\ the\ frontend\ that\ instruction\ INSN\ is\ being}}
+\DoxyCodeLine{00638\ \textcolor{comment}{\ \ \ \ \ scheduled.\ \ */}}
+\DoxyCodeLine{00639\ \ \ void\ (*begin\_schedule\_ready)\ (rtx\_insn\ *insn);}
+\DoxyCodeLine{00640\ }
+\DoxyCodeLine{00641\ \ \ \textcolor{comment}{/*\ Called\ to\ notify\ the\ frontend\ that\ an\ instruction\ INSN\ is\ about\ to\ be}}
+\DoxyCodeLine{00642\ \textcolor{comment}{\ \ \ \ \ moved\ to\ its\ correct\ place\ in\ the\ final\ schedule.\ \ This\ is\ done\ for\ all}}
+\DoxyCodeLine{00643\ \textcolor{comment}{\ \ \ \ \ insns\ in\ order\ of\ the\ schedule.\ \ LAST\ indicates\ the\ last\ scheduled}}
+\DoxyCodeLine{00644\ \textcolor{comment}{\ \ \ \ \ instruction.\ \ */}}
+\DoxyCodeLine{00645\ \ \ void\ (*begin\_move\_insn)\ (rtx\_insn\ *insn,\ rtx\_insn\ *\doxymbox{\hyperlink{vec_8h_aae5075fc0b723bf2be806aeb89bea805}{last}});}
+\DoxyCodeLine{00646\ }
+\DoxyCodeLine{00647\ \ \ \textcolor{comment}{/*\ If\ the\ second\ parameter\ is\ not\ NULL,\ return\ nonnull\ value,\ if\ the}}
+\DoxyCodeLine{00648\ \textcolor{comment}{\ \ \ \ \ basic\ block\ should\ be\ advanced.}}
+\DoxyCodeLine{00649\ \textcolor{comment}{\ \ \ \ \ If\ the\ second\ parameter\ is\ NULL,\ return\ the\ next\ basic\ block\ in\ EBB.}}
+\DoxyCodeLine{00650\ \textcolor{comment}{\ \ \ \ \ The\ first\ parameter\ is\ the\ current\ basic\ block\ in\ EBB.\ \ */}}
+\DoxyCodeLine{00651\ \ \ \doxymbox{\hyperlink{coretypes_8h_a0469df20b471a4cd7c81fbdce5027487}{basic\_block}}\ (*advance\_target\_bb)\ (\doxymbox{\hyperlink{coretypes_8h_a0469df20b471a4cd7c81fbdce5027487}{basic\_block}},\ rtx\_insn\ *);}
+\DoxyCodeLine{00652\ }
+\DoxyCodeLine{00653\ \ \ \textcolor{comment}{/*\ Allocate\ memory,\ store\ the\ frontend\ scheduler\ state\ in\ it,\ and}}
+\DoxyCodeLine{00654\ \textcolor{comment}{\ \ \ \ \ return\ it.\ \ */}}
+\DoxyCodeLine{00655\ \ \ \textcolor{keywordtype}{void}\ *(*save\_state)\ (void);}
+\DoxyCodeLine{00656\ \ \ \textcolor{comment}{/*\ Restore\ frontend\ scheduler\ state\ from\ the\ argument,\ and\ free\ the}}
+\DoxyCodeLine{00657\ \textcolor{comment}{\ \ \ \ \ memory.\ \ */}}
+\DoxyCodeLine{00658\ \ \ void\ (*restore\_state)\ (\textcolor{keywordtype}{void}\ *);}
+\DoxyCodeLine{00659\ }
+\DoxyCodeLine{00660\ \ \ \textcolor{comment}{/*\ ???\ FIXME:\ should\ use\ straight\ bitfields\ inside\ sched\_info\ instead\ of}}
+\DoxyCodeLine{00661\ \textcolor{comment}{\ \ \ \ \ this\ flag\ field.\ \ */}}
+\DoxyCodeLine{00662\ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ flags;}
+\DoxyCodeLine{00663\ \};}
+\DoxyCodeLine{00664\ }
+\DoxyCodeLine{00665\ \textcolor{comment}{/*\ This\ structure\ holds\ description\ of\ the\ properties\ for\ speculative}}
+\DoxyCodeLine{00666\ \textcolor{comment}{\ \ \ scheduling.\ \ */}}
+\DoxyCodeLine{00667\ \textcolor{keyword}{struct\ }spec\_info\_def}
+\DoxyCodeLine{00668\ \{}
+\DoxyCodeLine{00669\ \ \ \textcolor{comment}{/*\ Holds\ types\ of\ allowed\ speculations:\ BEGIN\_\{DATA|CONTROL\},}}
+\DoxyCodeLine{00670\ \textcolor{comment}{\ \ \ \ \ BE\_IN\_\{DATA\_CONTROL\}.\ \ */}}
+\DoxyCodeLine{00671\ \ \ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{namespacewi_a2358a38d67ca9631a68be0df276f8918}{mask}};}
+\DoxyCodeLine{00672\ }
+\DoxyCodeLine{00673\ \ \ \textcolor{comment}{/*\ A\ dump\ file\ for\ additional\ information\ on\ speculative\ scheduling.\ \ */}}
+\DoxyCodeLine{00674\ \ \ FILE\ *dump;}
+\DoxyCodeLine{00675\ }
+\DoxyCodeLine{00676\ \ \ \textcolor{comment}{/*\ Minimal\ cumulative\ weakness\ of\ speculative\ instruction's}}
+\DoxyCodeLine{00677\ \textcolor{comment}{\ \ \ \ \ dependencies,\ so\ that\ insn\ will\ be\ scheduled.\ \ */}}
+\DoxyCodeLine{00678\ \ \ dw\_t\ data\_weakness\_cutoff;}
+\DoxyCodeLine{00679\ }
+\DoxyCodeLine{00680\ \ \ \textcolor{comment}{/*\ Minimal\ usefulness\ of\ speculative\ instruction\ to\ be\ considered\ for}}
+\DoxyCodeLine{00681\ \textcolor{comment}{\ \ \ \ \ scheduling.\ \ */}}
+\DoxyCodeLine{00682\ \ \ \textcolor{keywordtype}{int}\ control\_weakness\_cutoff;}
+\DoxyCodeLine{00683\ }
+\DoxyCodeLine{00684\ \ \ \textcolor{comment}{/*\ Flags\ from\ the\ enum\ SPEC\_SCHED\_FLAGS.\ \ */}}
+\DoxyCodeLine{00685\ \ \ \textcolor{keywordtype}{int}\ flags;}
+\DoxyCodeLine{00686\ \};}
+\DoxyCodeLine{00687\ \textcolor{keyword}{typedef}\ \textcolor{keyword}{struct\ }spec\_info\_def\ *spec\_info\_t;}
+\DoxyCodeLine{00688\ }
+\DoxyCodeLine{00689\ \textcolor{keyword}{extern}\ spec\_info\_t\ spec\_info;}
+\DoxyCodeLine{00690\ }
+\DoxyCodeLine{00691\ \textcolor{keyword}{extern}\ \textcolor{keyword}{struct\ }haifa\_sched\_info\ *current\_sched\_info;}
+\DoxyCodeLine{00692\ }
+\DoxyCodeLine{00693\ \textcolor{comment}{/*\ Do\ register\ pressure\ sensitive\ insn\ scheduling\ if\ the\ flag\ is\ set}}
+\DoxyCodeLine{00694\ \textcolor{comment}{\ \ \ up.\ \ */}}
+\DoxyCodeLine{00695\ \textcolor{keyword}{extern}\ \textcolor{keyword}{enum}\ sched\_pressure\_algorithm\ sched\_pressure;}
+\DoxyCodeLine{00696\ }
+\DoxyCodeLine{00697\ \textcolor{comment}{/*\ Map\ regno\ -\/>\ its\ pressure\ class.\ \ The\ map\ defined\ only\ when}}
+\DoxyCodeLine{00698\ \textcolor{comment}{\ \ \ SCHED\_PRESSURE\_P\ is\ true.\ \ */}}
+\DoxyCodeLine{00699\ \textcolor{keyword}{extern}\ \textcolor{keyword}{enum}\ \doxymbox{\hyperlink{i386_8h_aa0e382e7f20d9b4107a67f134db3f4f2}{reg\_class}}\ *sched\_regno\_pressure\_class;}
+\DoxyCodeLine{00700\ }
+\DoxyCodeLine{00701\ \textcolor{comment}{/*\ Indexed\ by\ INSN\_UID,\ the\ collection\ of\ all\ data\ associated\ with}}
+\DoxyCodeLine{00702\ \textcolor{comment}{\ \ \ a\ single\ instruction.\ \ */}}
+\DoxyCodeLine{00703\ }
+\DoxyCodeLine{00704\ \textcolor{keyword}{struct\ }\_haifa\_deps\_insn\_data}
+\DoxyCodeLine{00705\ \{}
+\DoxyCodeLine{00706\ \ \ \textcolor{comment}{/*\ The\ number\ of\ incoming\ edges\ in\ the\ forward\ dependency\ graph.}}
+\DoxyCodeLine{00707\ \textcolor{comment}{\ \ \ \ \ As\ scheduling\ proceeds,\ counts\ are\ decreased.\ \ An\ insn\ moves\ to}}
+\DoxyCodeLine{00708\ \textcolor{comment}{\ \ \ \ \ the\ ready\ queue\ when\ its\ counter\ reaches\ zero.\ \ */}}
+\DoxyCodeLine{00709\ \ \ \textcolor{keywordtype}{int}\ dep\_count;}
+\DoxyCodeLine{00710\ }
+\DoxyCodeLine{00711\ \ \ \textcolor{comment}{/*\ Nonzero\ if\ instruction\ has\ internal\ dependence}}
+\DoxyCodeLine{00712\ \textcolor{comment}{\ \ \ \ \ (e.g.\ add\_dependence\ was\ invoked\ with\ (insn\ ==\ elem)).\ \ */}}
+\DoxyCodeLine{00713\ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ has\_internal\_dep;}
+\DoxyCodeLine{00714\ }
+\DoxyCodeLine{00715\ \ \ \textcolor{comment}{/*\ NB:\ We\ can't\ place\ 'struct\ \_deps\_list'\ here\ instead\ of\ deps\_list\_t\ into}}
+\DoxyCodeLine{00716\ \textcolor{comment}{\ \ \ \ \ h\_i\_d\ because\ when\ h\_i\_d\ extends,\ addresses\ of\ the\ deps\_list-\/>first}}
+\DoxyCodeLine{00717\ \textcolor{comment}{\ \ \ \ \ change\ without\ updating\ deps\_list-\/>first-\/>next-\/>prev\_nextp.\ \ Thus}}
+\DoxyCodeLine{00718\ \textcolor{comment}{\ \ \ \ \ BACK\_DEPS\ and\ RESOLVED\_BACK\_DEPS\ are\ allocated\ on\ the\ heap\ and\ FORW\_DEPS}}
+\DoxyCodeLine{00719\ \textcolor{comment}{\ \ \ \ \ list\ is\ allocated\ on\ the\ obstack.\ \ */}}
+\DoxyCodeLine{00720\ }
+\DoxyCodeLine{00721\ \ \ \textcolor{comment}{/*\ A\ list\ of\ hard\ backward\ dependencies.\ \ The\ insn\ is\ a\ consumer\ of\ all\ the}}
+\DoxyCodeLine{00722\ \textcolor{comment}{\ \ \ \ \ deps\ mentioned\ here.\ \ */}}
+\DoxyCodeLine{00723\ \ \ deps\_list\_t\ hard\_back\_deps;}
+\DoxyCodeLine{00724\ }
+\DoxyCodeLine{00725\ \ \ \textcolor{comment}{/*\ A\ list\ of\ speculative\ (weak)\ dependencies.\ \ The\ insn\ is\ a\ consumer\ of\ all}}
+\DoxyCodeLine{00726\ \textcolor{comment}{\ \ \ \ \ the\ deps\ mentioned\ here.\ \ */}}
+\DoxyCodeLine{00727\ \ \ deps\_list\_t\ spec\_back\_deps;}
+\DoxyCodeLine{00728\ }
+\DoxyCodeLine{00729\ \ \ \textcolor{comment}{/*\ A\ list\ of\ insns\ which\ depend\ on\ the\ instruction.\ \ Unlike\ 'back\_deps',}}
+\DoxyCodeLine{00730\ \textcolor{comment}{\ \ \ \ \ it\ represents\ forward\ dependencies.\ \ */}}
+\DoxyCodeLine{00731\ \ \ deps\_list\_t\ forw\_deps;}
+\DoxyCodeLine{00732\ }
+\DoxyCodeLine{00733\ \ \ \textcolor{comment}{/*\ A\ list\ of\ scheduled\ producers\ of\ the\ instruction.\ \ Links\ are\ being\ moved}}
+\DoxyCodeLine{00734\ \textcolor{comment}{\ \ \ \ \ from\ 'back\_deps'\ to\ 'resolved\_back\_deps'\ while\ scheduling.\ \ */}}
+\DoxyCodeLine{00735\ \ \ deps\_list\_t\ resolved\_back\_deps;}
+\DoxyCodeLine{00736\ }
+\DoxyCodeLine{00737\ \ \ \textcolor{comment}{/*\ A\ list\ of\ scheduled\ consumers\ of\ the\ instruction.\ \ Links\ are\ being\ moved}}
+\DoxyCodeLine{00738\ \textcolor{comment}{\ \ \ \ \ from\ 'forw\_deps'\ to\ 'resolved\_forw\_deps'\ while\ scheduling\ to\ fasten\ the}}
+\DoxyCodeLine{00739\ \textcolor{comment}{\ \ \ \ \ search\ in\ 'forw\_deps'.\ \ */}}
+\DoxyCodeLine{00740\ \ \ deps\_list\_t\ resolved\_forw\_deps;}
+\DoxyCodeLine{00741\ }
+\DoxyCodeLine{00742\ \ \ \textcolor{comment}{/*\ If\ the\ insn\ is\ conditional\ (either\ through\ COND\_EXEC,\ or\ because}}
+\DoxyCodeLine{00743\ \textcolor{comment}{\ \ \ \ \ it\ is\ a\ conditional\ branch),\ this\ records\ the\ condition.\ \ NULL}}
+\DoxyCodeLine{00744\ \textcolor{comment}{\ \ \ \ \ for\ insns\ that\ haven't\ been\ seen\ yet\ or\ don't\ have\ a\ condition;}}
+\DoxyCodeLine{00745\ \textcolor{comment}{\ \ \ \ \ const\_true\_rtx\ to\ mark\ an\ insn\ without\ a\ condition,\ or\ with\ a}}
+\DoxyCodeLine{00746\ \textcolor{comment}{\ \ \ \ \ condition\ that\ has\ been\ clobbered\ by\ a\ subsequent\ insn.\ \ */}}
+\DoxyCodeLine{00747\ \ \ \doxymbox{\hyperlink{coretypes_8h_a20e671ce9e7827268658cff844f4281c}{rtx}}\ cond;}
+\DoxyCodeLine{00748\ }
+\DoxyCodeLine{00749\ \ \ \textcolor{comment}{/*\ For\ a\ conditional\ insn,\ a\ list\ of\ insns\ that\ could\ set\ the\ condition}}
+\DoxyCodeLine{00750\ \textcolor{comment}{\ \ \ \ \ register.\ \ Used\ when\ generating\ control\ dependencies.\ \ */}}
+\DoxyCodeLine{00751\ \ \ rtx\_insn\_list\ *cond\_deps;}
+\DoxyCodeLine{00752\ }
+\DoxyCodeLine{00753\ \ \ \textcolor{comment}{/*\ True\ if\ the\ condition\ in\ 'cond'\ should\ be\ reversed\ to\ get\ the\ actual}}
+\DoxyCodeLine{00754\ \textcolor{comment}{\ \ \ \ \ condition.\ \ */}}
+\DoxyCodeLine{00755\ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ reverse\_cond\ :\ 1;}
+\DoxyCodeLine{00756\ }
+\DoxyCodeLine{00757\ \ \ \textcolor{comment}{/*\ Some\ insns\ (e.g.\ call)\ are\ not\ allowed\ to\ move\ across\ blocks.\ \ */}}
+\DoxyCodeLine{00758\ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ cant\_move\ :\ 1;}
+\DoxyCodeLine{00759\ \};}
+\DoxyCodeLine{00760\ }
+\DoxyCodeLine{00761\ }
+\DoxyCodeLine{00762\ \textcolor{comment}{/*\ Bits\ used\ for\ storing\ values\ of\ the\ fields\ in\ the\ following}}
+\DoxyCodeLine{00763\ \textcolor{comment}{\ \ \ structure.\ \ */}}
+\DoxyCodeLine{00764\ \textcolor{preprocessor}{\#define\ INCREASE\_BITS\ 8}}
+\DoxyCodeLine{00765\ }
+\DoxyCodeLine{00766\ \textcolor{comment}{/*\ The\ structure\ describes\ how\ the\ corresponding\ insn\ increases\ the}}
+\DoxyCodeLine{00767\ \textcolor{comment}{\ \ \ register\ pressure\ for\ each\ pressure\ class.\ \ */}}
+\DoxyCodeLine{00768\ \textcolor{keyword}{struct\ }reg\_pressure\_data}
+\DoxyCodeLine{00769\ \{}
+\DoxyCodeLine{00770\ \ \ \textcolor{comment}{/*\ Pressure\ increase\ for\ given\ class\ because\ of\ clobber.\ \ */}}
+\DoxyCodeLine{00771\ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ clobber\_increase\ :\ INCREASE\_BITS;}
+\DoxyCodeLine{00772\ \ \ \textcolor{comment}{/*\ Increase\ in\ register\ pressure\ for\ given\ class\ because\ of\ register}}
+\DoxyCodeLine{00773\ \textcolor{comment}{\ \ \ \ \ sets.\ */}}
+\DoxyCodeLine{00774\ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ set\_increase\ :\ INCREASE\_BITS;}
+\DoxyCodeLine{00775\ \ \ \textcolor{comment}{/*\ Pressure\ increase\ for\ given\ class\ because\ of\ unused\ register}}
+\DoxyCodeLine{00776\ \textcolor{comment}{\ \ \ \ \ set.\ \ */}}
+\DoxyCodeLine{00777\ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ unused\_set\_increase\ :\ INCREASE\_BITS;}
+\DoxyCodeLine{00778\ \ \ \textcolor{comment}{/*\ Pressure\ change:\ \#sets\ -\/\ \#deaths.\ \ */}}
+\DoxyCodeLine{00779\ \ \ \textcolor{keywordtype}{int}\ change\ :\ INCREASE\_BITS;}
+\DoxyCodeLine{00780\ \};}
+\DoxyCodeLine{00781\ }
+\DoxyCodeLine{00782\ \textcolor{comment}{/*\ The\ following\ structure\ describes\ usage\ of\ registers\ by\ insns.\ \ */}}
+\DoxyCodeLine{00783\ \textcolor{keyword}{struct\ }reg\_use\_data}
+\DoxyCodeLine{00784\ \{}
+\DoxyCodeLine{00785\ \ \ \textcolor{comment}{/*\ Regno\ used\ in\ the\ insn.\ \ */}}
+\DoxyCodeLine{00786\ \ \ \textcolor{keywordtype}{int}\ regno;}
+\DoxyCodeLine{00787\ \ \ \textcolor{comment}{/*\ Insn\ using\ the\ regno.\ \ */}}
+\DoxyCodeLine{00788\ \ \ rtx\_insn\ *insn;}
+\DoxyCodeLine{00789\ \ \ \textcolor{comment}{/*\ Cyclic\ list\ of\ elements\ with\ the\ same\ regno.\ \ */}}
+\DoxyCodeLine{00790\ \ \ \textcolor{keyword}{struct\ }reg\_use\_data\ *next\_regno\_use;}
+\DoxyCodeLine{00791\ \ \ \textcolor{comment}{/*\ List\ of\ elements\ with\ the\ same\ insn.\ \ */}}
+\DoxyCodeLine{00792\ \ \ \textcolor{keyword}{struct\ }reg\_use\_data\ *next\_insn\_use;}
+\DoxyCodeLine{00793\ \};}
+\DoxyCodeLine{00794\ }
+\DoxyCodeLine{00795\ \textcolor{comment}{/*\ The\ following\ structure\ describes\ used\ sets\ of\ registers\ by\ insns.}}
+\DoxyCodeLine{00796\ \textcolor{comment}{\ \ \ Registers\ are\ pseudos\ whose\ pressure\ class\ is\ not\ NO\_REGS\ or\ hard}}
+\DoxyCodeLine{00797\ \textcolor{comment}{\ \ \ registers\ available\ for\ allocations.\ \ */}}
+\DoxyCodeLine{00798\ \textcolor{keyword}{struct\ }reg\_set\_data}
+\DoxyCodeLine{00799\ \{}
+\DoxyCodeLine{00800\ \ \ \textcolor{comment}{/*\ Regno\ used\ in\ the\ insn.\ \ */}}
+\DoxyCodeLine{00801\ \ \ \textcolor{keywordtype}{int}\ regno;}
+\DoxyCodeLine{00802\ \ \ \textcolor{comment}{/*\ Insn\ setting\ the\ regno.\ \ */}}
+\DoxyCodeLine{00803\ \ \ \doxymbox{\hyperlink{coretypes_8h_a20e671ce9e7827268658cff844f4281c}{rtx}}\ insn;}
+\DoxyCodeLine{00804\ \ \ \textcolor{comment}{/*\ List\ of\ elements\ with\ the\ same\ insn.\ \ */}}
+\DoxyCodeLine{00805\ \ \ \textcolor{keyword}{struct\ }reg\_set\_data\ *next\_insn\_set;}
+\DoxyCodeLine{00806\ \};}
+\DoxyCodeLine{00807\ }
+\DoxyCodeLine{00808\ \textcolor{keyword}{enum}\ autopref\_multipass\_data\_status\ \{}
+\DoxyCodeLine{00809\ \ \ \textcolor{comment}{/*\ Entry\ is\ irrelevant\ for\ auto-\/prefetcher.\ \ */}}
+\DoxyCodeLine{00810\ \ \ AUTOPREF\_MULTIPASS\_DATA\_IRRELEVANT\ =\ -\/2,}
+\DoxyCodeLine{00811\ \ \ \textcolor{comment}{/*\ Entry\ is\ uninitialized.\ \ */}}
+\DoxyCodeLine{00812\ \ \ AUTOPREF\_MULTIPASS\_DATA\_UNINITIALIZED\ =\ -\/1,}
+\DoxyCodeLine{00813\ \ \ \textcolor{comment}{/*\ Entry\ is\ relevant\ for\ auto-\/prefetcher\ and\ insn\ can\ be\ delayed}}
+\DoxyCodeLine{00814\ \textcolor{comment}{\ \ \ \ \ to\ allow\ another\ insn\ through.\ \ */}}
+\DoxyCodeLine{00815\ \ \ AUTOPREF\_MULTIPASS\_DATA\_NORMAL\ =\ 0,}
+\DoxyCodeLine{00816\ \ \ \textcolor{comment}{/*\ Entry\ is\ relevant\ for\ auto-\/prefetcher,\ but\ insn\ should\ not\ be}}
+\DoxyCodeLine{00817\ \textcolor{comment}{\ \ \ \ \ delayed\ as\ that\ will\ break\ scheduling.\ \ */}}
+\DoxyCodeLine{00818\ \ \ AUTOPREF\_MULTIPASS\_DATA\_DONT\_DELAY\ =\ 1}
+\DoxyCodeLine{00819\ \};}
+\DoxyCodeLine{00820\ }
+\DoxyCodeLine{00821\ \textcolor{comment}{/*\ Data\ for\ modeling\ cache\ auto-\/prefetcher.\ \ */}}
+\DoxyCodeLine{00822\ \textcolor{keyword}{struct\ }autopref\_multipass\_data\_}
+\DoxyCodeLine{00823\ \{}
+\DoxyCodeLine{00824\ \ \ \textcolor{comment}{/*\ Base\ part\ of\ memory\ address.\ \ */}}
+\DoxyCodeLine{00825\ \ \ \doxymbox{\hyperlink{coretypes_8h_a20e671ce9e7827268658cff844f4281c}{rtx}}\ base;}
+\DoxyCodeLine{00826\ }
+\DoxyCodeLine{00827\ \ \ \textcolor{comment}{/*\ Memory\ offsets\ from\ the\ base.\ \ */}}
+\DoxyCodeLine{00828\ \ \ \textcolor{keywordtype}{int}\ offset;}
+\DoxyCodeLine{00829\ }
+\DoxyCodeLine{00830\ \ \ \textcolor{comment}{/*\ Entry\ status.\ \ */}}
+\DoxyCodeLine{00831\ \ \ \textcolor{keyword}{enum}\ autopref\_multipass\_data\_status\ status;}
+\DoxyCodeLine{00832\ \};}
+\DoxyCodeLine{00833\ \textcolor{keyword}{typedef}\ \textcolor{keyword}{struct\ }autopref\_multipass\_data\_\ autopref\_multipass\_data\_def;}
+\DoxyCodeLine{00834\ \textcolor{keyword}{typedef}\ autopref\_multipass\_data\_def\ *autopref\_multipass\_data\_t;}
+\DoxyCodeLine{00835\ }
+\DoxyCodeLine{00836\ \textcolor{keyword}{struct\ }\_haifa\_insn\_data}
+\DoxyCodeLine{00837\ \{}
+\DoxyCodeLine{00838\ \ \ \textcolor{comment}{/*\ We\ can't\ place\ 'struct\ \_deps\_list'\ into\ h\_i\_d\ instead\ of\ deps\_list\_t}}
+\DoxyCodeLine{00839\ \textcolor{comment}{\ \ \ \ \ because\ when\ h\_i\_d\ extends,\ addresses\ of\ the\ deps\_list-\/>first}}
+\DoxyCodeLine{00840\ \textcolor{comment}{\ \ \ \ \ change\ without\ updating\ deps\_list-\/>first-\/>next-\/>prev\_nextp.\ \ */}}
+\DoxyCodeLine{00841\ }
+\DoxyCodeLine{00842\ \ \ \textcolor{comment}{/*\ Logical\ uid\ gives\ the\ original\ ordering\ of\ the\ insns.\ \ */}}
+\DoxyCodeLine{00843\ \ \ \textcolor{keywordtype}{int}\ luid;}
+\DoxyCodeLine{00844\ }
+\DoxyCodeLine{00845\ \ \ \textcolor{comment}{/*\ A\ priority\ for\ each\ insn.\ \ */}}
+\DoxyCodeLine{00846\ \ \ \textcolor{keywordtype}{int}\ priority;}
+\DoxyCodeLine{00847\ }
+\DoxyCodeLine{00848\ \ \ \textcolor{comment}{/*\ The\ fusion\ priority\ for\ each\ insn.\ \ */}}
+\DoxyCodeLine{00849\ \ \ \textcolor{keywordtype}{int}\ fusion\_priority;}
+\DoxyCodeLine{00850\ }
+\DoxyCodeLine{00851\ \ \ \textcolor{comment}{/*\ The\ minimum\ clock\ tick\ at\ which\ the\ insn\ becomes\ ready.\ \ This\ is}}
+\DoxyCodeLine{00852\ \textcolor{comment}{\ \ \ \ \ used\ to\ note\ timing\ constraints\ for\ the\ insns\ in\ the\ pending\ list.\ \ */}}
+\DoxyCodeLine{00853\ \ \ \textcolor{keywordtype}{int}\ tick;}
+\DoxyCodeLine{00854\ }
+\DoxyCodeLine{00855\ \ \ \textcolor{comment}{/*\ For\ insns\ that\ are\ scheduled\ at\ a\ fixed\ difference\ from\ another,}}
+\DoxyCodeLine{00856\ \textcolor{comment}{\ \ \ \ \ this\ records\ the\ tick\ in\ which\ they\ must\ be\ ready.\ \ */}}
+\DoxyCodeLine{00857\ \ \ \textcolor{keywordtype}{int}\ exact\_tick;}
+\DoxyCodeLine{00858\ }
+\DoxyCodeLine{00859\ \ \ \textcolor{comment}{/*\ INTER\_TICK\ is\ used\ to\ adjust\ INSN\_TICKs\ of\ instructions\ from\ the}}
+\DoxyCodeLine{00860\ \textcolor{comment}{\ \ \ \ \ subsequent\ blocks\ in\ a\ region.\ \ */}}
+\DoxyCodeLine{00861\ \ \ \textcolor{keywordtype}{int}\ inter\_tick;}
+\DoxyCodeLine{00862\ }
+\DoxyCodeLine{00863\ \ \ \textcolor{comment}{/*\ Used\ temporarily\ to\ estimate\ an\ INSN\_TICK\ value\ for\ an\ insn\ given}}
+\DoxyCodeLine{00864\ \textcolor{comment}{\ \ \ \ \ current\ knowledge.\ \ */}}
+\DoxyCodeLine{00865\ \ \ \textcolor{keywordtype}{int}\ tick\_estimate;}
+\DoxyCodeLine{00866\ }
+\DoxyCodeLine{00867\ \ \ \textcolor{comment}{/*\ See\ comment\ on\ QUEUE\_INDEX\ macro\ in\ haifa-\/sched.cc.\ \ */}}
+\DoxyCodeLine{00868\ \ \ \textcolor{keywordtype}{int}\ queue\_index;}
+\DoxyCodeLine{00869\ }
+\DoxyCodeLine{00870\ \ \ \textcolor{keywordtype}{short}\ cost;}
+\DoxyCodeLine{00871\ }
+\DoxyCodeLine{00872\ \ \ \textcolor{comment}{/*\ '>\ 0'\ if\ priority\ is\ valid,}}
+\DoxyCodeLine{00873\ \textcolor{comment}{\ \ \ \ \ '==\ 0'\ if\ priority\ was\ not\ yet\ computed,}}
+\DoxyCodeLine{00874\ \textcolor{comment}{\ \ \ \ \ '<\ 0'\ if\ priority\ in\ invalid\ and\ should\ be\ recomputed.\ \ */}}
+\DoxyCodeLine{00875\ \ \ \textcolor{keywordtype}{signed}\ \textcolor{keywordtype}{char}\ priority\_status;}
+\DoxyCodeLine{00876\ }
+\DoxyCodeLine{00877\ \ \ \textcolor{comment}{/*\ Set\ if\ there's\ DEF-\/USE\ dependence\ between\ some\ speculatively}}
+\DoxyCodeLine{00878\ \textcolor{comment}{\ \ \ \ \ moved\ load\ insn\ and\ this\ one.\ \ */}}
+\DoxyCodeLine{00879\ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ fed\_by\_spec\_load\ :\ 1;}
+\DoxyCodeLine{00880\ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ is\_load\_insn\ :\ 1;}
+\DoxyCodeLine{00881\ \ \ \textcolor{comment}{/*\ Nonzero\ if\ this\ insn\ has\ negative-\/cost\ forward\ dependencies\ against}}
+\DoxyCodeLine{00882\ \textcolor{comment}{\ \ \ \ \ an\ already\ scheduled\ insn.\ \ */}}
+\DoxyCodeLine{00883\ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ feeds\_backtrack\_insn\ :\ 1;}
+\DoxyCodeLine{00884\ }
+\DoxyCodeLine{00885\ \ \ \textcolor{comment}{/*\ Nonzero\ if\ this\ insn\ is\ a\ shadow\ of\ another,\ scheduled\ after\ a\ fixed}}
+\DoxyCodeLine{00886\ \textcolor{comment}{\ \ \ \ \ delay.\ \ We\ only\ emit\ shadows\ at\ the\ end\ of\ a\ cycle,\ with\ no\ other}}
+\DoxyCodeLine{00887\ \textcolor{comment}{\ \ \ \ \ real\ insns\ following\ them.\ \ */}}
+\DoxyCodeLine{00888\ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ shadow\_p\ :\ 1;}
+\DoxyCodeLine{00889\ }
+\DoxyCodeLine{00890\ \ \ \textcolor{comment}{/*\ Used\ internally\ in\ unschedule\_insns\_until\ to\ mark\ insns\ that\ must\ have}}
+\DoxyCodeLine{00891\ \textcolor{comment}{\ \ \ \ \ their\ TODO\_SPEC\ recomputed.\ \ */}}
+\DoxyCodeLine{00892\ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ must\_recompute\_spec\ :\ 1;}
+\DoxyCodeLine{00893\ }
+\DoxyCodeLine{00894\ \ \ \textcolor{comment}{/*\ What\ speculations\ are\ necessary\ to\ apply\ to\ schedule\ the\ instruction.\ \ */}}
+\DoxyCodeLine{00895\ \ \ ds\_t\ todo\_spec;}
+\DoxyCodeLine{00896\ }
+\DoxyCodeLine{00897\ \ \ \textcolor{comment}{/*\ What\ speculations\ were\ already\ applied.\ \ */}}
+\DoxyCodeLine{00898\ \ \ ds\_t\ done\_spec;}
+\DoxyCodeLine{00899\ }
+\DoxyCodeLine{00900\ \ \ \textcolor{comment}{/*\ What\ speculations\ are\ checked\ by\ this\ instruction.\ \ */}}
+\DoxyCodeLine{00901\ \ \ ds\_t\ check\_spec;}
+\DoxyCodeLine{00902\ }
+\DoxyCodeLine{00903\ \ \ \textcolor{comment}{/*\ Recovery\ block\ for\ speculation\ checks.\ \ */}}
+\DoxyCodeLine{00904\ \ \ \doxymbox{\hyperlink{coretypes_8h_a0469df20b471a4cd7c81fbdce5027487}{basic\_block}}\ recovery\_block;}
+\DoxyCodeLine{00905\ }
+\DoxyCodeLine{00906\ \ \ \textcolor{comment}{/*\ Original\ pattern\ of\ the\ instruction.\ \ */}}
+\DoxyCodeLine{00907\ \ \ \doxymbox{\hyperlink{coretypes_8h_a20e671ce9e7827268658cff844f4281c}{rtx}}\ orig\_pat;}
+\DoxyCodeLine{00908\ }
+\DoxyCodeLine{00909\ \ \ \textcolor{comment}{/*\ For\ insns\ with\ DEP\_CONTROL\ dependencies,\ the\ predicated\ pattern\ if\ it}}
+\DoxyCodeLine{00910\ \textcolor{comment}{\ \ \ \ \ was\ ever\ successfully\ constructed.\ \ */}}
+\DoxyCodeLine{00911\ \ \ \doxymbox{\hyperlink{coretypes_8h_a20e671ce9e7827268658cff844f4281c}{rtx}}\ predicated\_pat;}
+\DoxyCodeLine{00912\ }
+\DoxyCodeLine{00913\ \ \ \textcolor{comment}{/*\ The\ following\ array\ contains\ info\ how\ the\ insn\ increases\ register}}
+\DoxyCodeLine{00914\ \textcolor{comment}{\ \ \ \ \ pressure.\ \ There\ is\ an\ element\ for\ each\ cover\ class\ of\ pseudos}}
+\DoxyCodeLine{00915\ \textcolor{comment}{\ \ \ \ \ referenced\ in\ insns.\ \ */}}
+\DoxyCodeLine{00916\ \ \ \textcolor{keyword}{struct\ }reg\_pressure\_data\ *reg\_pressure;}
+\DoxyCodeLine{00917\ \ \ \textcolor{comment}{/*\ The\ following\ array\ contains\ maximal\ reg\ pressure\ between\ last}}
+\DoxyCodeLine{00918\ \textcolor{comment}{\ \ \ \ \ scheduled\ insn\ and\ given\ insn.\ \ There\ is\ an\ element\ for\ each}}
+\DoxyCodeLine{00919\ \textcolor{comment}{\ \ \ \ \ pressure\ class\ of\ pseudos\ referenced\ in\ insns.\ \ This\ info\ updated}}
+\DoxyCodeLine{00920\ \textcolor{comment}{\ \ \ \ \ after\ scheduling\ each\ insn\ for\ each\ insn\ between\ the\ two}}
+\DoxyCodeLine{00921\ \textcolor{comment}{\ \ \ \ \ mentioned\ insns.\ \ */}}
+\DoxyCodeLine{00922\ \ \ \textcolor{keywordtype}{int}\ *max\_reg\_pressure;}
+\DoxyCodeLine{00923\ \ \ \textcolor{comment}{/*\ The\ following\ list\ contains\ info\ about\ used\ pseudos\ and\ hard}}
+\DoxyCodeLine{00924\ \textcolor{comment}{\ \ \ \ \ registers\ available\ for\ allocation.\ \ */}}
+\DoxyCodeLine{00925\ \ \ \textcolor{keyword}{struct\ }reg\_use\_data\ *reg\_use\_list;}
+\DoxyCodeLine{00926\ \ \ \textcolor{comment}{/*\ The\ following\ list\ contains\ info\ about\ set\ pseudos\ and\ hard}}
+\DoxyCodeLine{00927\ \textcolor{comment}{\ \ \ \ \ registers\ available\ for\ allocation.\ \ */}}
+\DoxyCodeLine{00928\ \ \ \textcolor{keyword}{struct\ }reg\_set\_data\ *reg\_set\_list;}
+\DoxyCodeLine{00929\ \ \ \textcolor{comment}{/*\ Info\ about\ how\ scheduling\ the\ insn\ changes\ cost\ of\ register}}
+\DoxyCodeLine{00930\ \textcolor{comment}{\ \ \ \ \ pressure\ excess\ (between\ source\ and\ target).\ \ */}}
+\DoxyCodeLine{00931\ \ \ \textcolor{keywordtype}{int}\ reg\_pressure\_excess\_cost\_change;}
+\DoxyCodeLine{00932\ \ \ \textcolor{keywordtype}{int}\ model\_index;}
+\DoxyCodeLine{00933\ }
+\DoxyCodeLine{00934\ \ \ \textcolor{comment}{/*\ Original\ order\ of\ insns\ in\ the\ ready\ list.\ \ */}}
+\DoxyCodeLine{00935\ \ \ \textcolor{keywordtype}{int}\ rfs\_debug\_orig\_order;}
+\DoxyCodeLine{00936\ }
+\DoxyCodeLine{00937\ \ \ \textcolor{comment}{/*\ The\ deciding\ reason\ for\ INSN's\ place\ in\ the\ ready\ list.\ \ */}}
+\DoxyCodeLine{00938\ \ \ \textcolor{keywordtype}{int}\ last\_rfs\_win;}
+\DoxyCodeLine{00939\ }
+\DoxyCodeLine{00940\ \ \ \textcolor{comment}{/*\ Two\ entries\ for\ cache\ auto-\/prefetcher\ model:\ one\ for\ mem\ reads,}}
+\DoxyCodeLine{00941\ \textcolor{comment}{\ \ \ \ \ and\ one\ for\ mem\ writes.\ \ */}}
+\DoxyCodeLine{00942\ \ \ autopref\_multipass\_data\_def\ autopref\_multipass\_data[2];}
+\DoxyCodeLine{00943\ \};}
+\DoxyCodeLine{00944\ }
+\DoxyCodeLine{00945\ \textcolor{keyword}{typedef}\ \textcolor{keyword}{struct\ }\_haifa\_insn\_data\ haifa\_insn\_data\_def;}
+\DoxyCodeLine{00946\ \textcolor{keyword}{typedef}\ haifa\_insn\_data\_def\ *haifa\_insn\_data\_t;}
+\DoxyCodeLine{00947\ }
+\DoxyCodeLine{00948\ }
+\DoxyCodeLine{00949\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{structvec}{vec<haifa\_insn\_data\_def>}}\ h\_i\_d;}
+\DoxyCodeLine{00950\ }
+\DoxyCodeLine{00951\ \textcolor{preprocessor}{\#define\ HID(INSN)\ (\&h\_i\_d[INSN\_UID\ (INSN)])}}
+\DoxyCodeLine{00952\ }
+\DoxyCodeLine{00953\ \textcolor{comment}{/*\ Accessor\ macros\ for\ h\_i\_d.\ \ There\ are\ more\ in\ haifa-\/sched.cc\ and}}
+\DoxyCodeLine{00954\ \textcolor{comment}{\ \ \ sched-\/rgn.cc.\ \ */}}
+\DoxyCodeLine{00955\ \textcolor{preprocessor}{\#define\ INSN\_PRIORITY(INSN)\ (HID\ (INSN)-\/>priority)}}
+\DoxyCodeLine{00956\ \textcolor{preprocessor}{\#define\ INSN\_FUSION\_PRIORITY(INSN)\ (HID\ (INSN)-\/>fusion\_priority)}}
+\DoxyCodeLine{00957\ \textcolor{preprocessor}{\#define\ INSN\_REG\_PRESSURE(INSN)\ (HID\ (INSN)-\/>reg\_pressure)}}
+\DoxyCodeLine{00958\ \textcolor{preprocessor}{\#define\ INSN\_MAX\_REG\_PRESSURE(INSN)\ (HID\ (INSN)-\/>max\_reg\_pressure)}}
+\DoxyCodeLine{00959\ \textcolor{preprocessor}{\#define\ INSN\_REG\_USE\_LIST(INSN)\ (HID\ (INSN)-\/>reg\_use\_list)}}
+\DoxyCodeLine{00960\ \textcolor{preprocessor}{\#define\ INSN\_REG\_SET\_LIST(INSN)\ (HID\ (INSN)-\/>reg\_set\_list)}}
+\DoxyCodeLine{00961\ \textcolor{preprocessor}{\#define\ INSN\_REG\_PRESSURE\_EXCESS\_COST\_CHANGE(INSN)\ \(\backslash\)}}
+\DoxyCodeLine{00962\ \textcolor{preprocessor}{\ \ (HID\ (INSN)-\/>reg\_pressure\_excess\_cost\_change)}}
+\DoxyCodeLine{00963\ \textcolor{preprocessor}{\#define\ INSN\_PRIORITY\_STATUS(INSN)\ (HID\ (INSN)-\/>priority\_status)}}
+\DoxyCodeLine{00964\ \textcolor{preprocessor}{\#define\ INSN\_MODEL\_INDEX(INSN)\ (HID\ (INSN)-\/>model\_index)}}
+\DoxyCodeLine{00965\ \textcolor{preprocessor}{\#define\ INSN\_AUTOPREF\_MULTIPASS\_DATA(INSN)\ \(\backslash\)}}
+\DoxyCodeLine{00966\ \textcolor{preprocessor}{\ \ (HID\ (INSN)-\/>autopref\_multipass\_data)}}
+\DoxyCodeLine{00967\ }
+\DoxyCodeLine{00968\ \textcolor{keyword}{typedef}\ \textcolor{keyword}{struct\ }\_haifa\_deps\_insn\_data\ haifa\_deps\_insn\_data\_def;}
+\DoxyCodeLine{00969\ \textcolor{keyword}{typedef}\ haifa\_deps\_insn\_data\_def\ *haifa\_deps\_insn\_data\_t;}
+\DoxyCodeLine{00970\ }
+\DoxyCodeLine{00971\ }
+\DoxyCodeLine{00972\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{structvec}{vec<haifa\_deps\_insn\_data\_def>}}\ h\_d\_i\_d;}
+\DoxyCodeLine{00973\ }
+\DoxyCodeLine{00974\ \textcolor{preprocessor}{\#define\ HDID(INSN)\ (\&h\_d\_i\_d[INSN\_LUID\ (INSN)])}}
+\DoxyCodeLine{00975\ \textcolor{preprocessor}{\#define\ INSN\_DEP\_COUNT(INSN)\ \ \ \ (HDID\ (INSN)-\/>dep\_count)}}
+\DoxyCodeLine{00976\ \textcolor{preprocessor}{\#define\ HAS\_INTERNAL\_DEP(INSN)\ \ (HDID\ (INSN)-\/>has\_internal\_dep)}}
+\DoxyCodeLine{00977\ \textcolor{preprocessor}{\#define\ INSN\_FORW\_DEPS(INSN)\ (HDID\ (INSN)-\/>forw\_deps)}}
+\DoxyCodeLine{00978\ \textcolor{preprocessor}{\#define\ INSN\_RESOLVED\_BACK\_DEPS(INSN)\ (HDID\ (INSN)-\/>resolved\_back\_deps)}}
+\DoxyCodeLine{00979\ \textcolor{preprocessor}{\#define\ INSN\_RESOLVED\_FORW\_DEPS(INSN)\ (HDID\ (INSN)-\/>resolved\_forw\_deps)}}
+\DoxyCodeLine{00980\ \textcolor{preprocessor}{\#define\ INSN\_HARD\_BACK\_DEPS(INSN)\ (HDID\ (INSN)-\/>hard\_back\_deps)}}
+\DoxyCodeLine{00981\ \textcolor{preprocessor}{\#define\ INSN\_SPEC\_BACK\_DEPS(INSN)\ (HDID\ (INSN)-\/>spec\_back\_deps)}}
+\DoxyCodeLine{00982\ \textcolor{preprocessor}{\#define\ INSN\_CACHED\_COND(INSN)\ \ (HDID\ (INSN)-\/>cond)}}
+\DoxyCodeLine{00983\ \textcolor{preprocessor}{\#define\ INSN\_REVERSE\_COND(INSN)\ (HDID\ (INSN)-\/>reverse\_cond)}}
+\DoxyCodeLine{00984\ \textcolor{preprocessor}{\#define\ INSN\_COND\_DEPS(INSN)\ \ \ \ (HDID\ (INSN)-\/>cond\_deps)}}
+\DoxyCodeLine{00985\ \textcolor{preprocessor}{\#define\ CANT\_MOVE(INSN)\ (HDID\ (INSN)-\/>cant\_move)}}
+\DoxyCodeLine{00986\ \textcolor{preprocessor}{\#define\ CANT\_MOVE\_BY\_LUID(LUID)\ (h\_d\_i\_d[LUID].cant\_move)}}
+\DoxyCodeLine{00987\ }
+\DoxyCodeLine{00988\ }
+\DoxyCodeLine{00989\ \textcolor{preprocessor}{\#define\ INSN\_PRIORITY(INSN)\ (HID\ (INSN)-\/>priority)}}
+\DoxyCodeLine{00990\ \textcolor{preprocessor}{\#define\ INSN\_PRIORITY\_STATUS(INSN)\ (HID\ (INSN)-\/>priority\_status)}}
+\DoxyCodeLine{00991\ \textcolor{preprocessor}{\#define\ INSN\_PRIORITY\_KNOWN(INSN)\ (INSN\_PRIORITY\_STATUS\ (INSN)\ >\ 0)}}
+\DoxyCodeLine{00992\ \textcolor{preprocessor}{\#define\ TODO\_SPEC(INSN)\ (HID\ (INSN)-\/>todo\_spec)}}
+\DoxyCodeLine{00993\ \textcolor{preprocessor}{\#define\ DONE\_SPEC(INSN)\ (HID\ (INSN)-\/>done\_spec)}}
+\DoxyCodeLine{00994\ \textcolor{preprocessor}{\#define\ CHECK\_SPEC(INSN)\ (HID\ (INSN)-\/>check\_spec)}}
+\DoxyCodeLine{00995\ \textcolor{preprocessor}{\#define\ RECOVERY\_BLOCK(INSN)\ (HID\ (INSN)-\/>recovery\_block)}}
+\DoxyCodeLine{00996\ \textcolor{preprocessor}{\#define\ ORIG\_PAT(INSN)\ (HID\ (INSN)-\/>orig\_pat)}}
+\DoxyCodeLine{00997\ \textcolor{preprocessor}{\#define\ PREDICATED\_PAT(INSN)\ (HID\ (INSN)-\/>predicated\_pat)}}
+\DoxyCodeLine{00998\ }
+\DoxyCodeLine{00999\ \textcolor{comment}{/*\ INSN\ is\ either\ a\ simple\ or\ a\ branchy\ speculation\ check.\ \ */}}
+\DoxyCodeLine{01000\ \textcolor{preprocessor}{\#define\ IS\_SPECULATION\_CHECK\_P(INSN)\ \(\backslash\)}}
+\DoxyCodeLine{01001\ \textcolor{preprocessor}{\ \ (sel\_sched\_p\ ()\ ?\ sel\_insn\_is\_speculation\_check\ (INSN)\ :\ RECOVERY\_BLOCK\ (INSN)\ !=\ NULL)}}
+\DoxyCodeLine{01002\ }
+\DoxyCodeLine{01003\ \textcolor{comment}{/*\ INSN\ is\ a\ speculation\ check\ that\ will\ simply\ reexecute\ the\ speculatively}}
+\DoxyCodeLine{01004\ \textcolor{comment}{\ \ \ scheduled\ instruction\ if\ the\ speculation\ fails.\ \ */}}
+\DoxyCodeLine{01005\ \textcolor{preprocessor}{\#define\ IS\_SPECULATION\_SIMPLE\_CHECK\_P(INSN)\ \(\backslash\)}}
+\DoxyCodeLine{01006\ \textcolor{preprocessor}{\ \ (RECOVERY\_BLOCK\ (INSN)\ ==\ EXIT\_BLOCK\_PTR\_FOR\_FN\ (cfun))}}
+\DoxyCodeLine{01007\ }
+\DoxyCodeLine{01008\ \textcolor{comment}{/*\ INSN\ is\ a\ speculation\ check\ that\ will\ branch\ to\ RECOVERY\_BLOCK\ if\ the}}
+\DoxyCodeLine{01009\ \textcolor{comment}{\ \ \ speculation\ fails.\ \ Insns\ in\ that\ block\ will\ reexecute\ the\ speculatively}}
+\DoxyCodeLine{01010\ \textcolor{comment}{\ \ \ scheduled\ code\ and\ then\ will\ return\ immediately\ after\ INSN\ thus\ preserving}}
+\DoxyCodeLine{01011\ \textcolor{comment}{\ \ \ semantics\ of\ the\ program.\ \ */}}
+\DoxyCodeLine{01012\ \textcolor{preprocessor}{\#define\ IS\_SPECULATION\_BRANCHY\_CHECK\_P(INSN)\ \(\backslash\)}}
+\DoxyCodeLine{01013\ \textcolor{preprocessor}{\ \ (RECOVERY\_BLOCK\ (INSN)\ !=\ NULL\ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{01014\ \textcolor{preprocessor}{\ \ \ \&\&\ RECOVERY\_BLOCK\ (INSN)\ !=\ EXIT\_BLOCK\_PTR\_FOR\_FN\ (cfun))}}
+\DoxyCodeLine{01015\ }
+\DoxyCodeLine{01016\ }
+\DoxyCodeLine{01017\ \textcolor{comment}{/*\ Dep\ status\ (aka\ ds\_t)\ of\ the\ link\ encapsulates\ all\ information\ for\ a\ given}}
+\DoxyCodeLine{01018\ \textcolor{comment}{\ \ \ dependency,\ including\ everything\ that\ is\ needed\ for\ speculative\ scheduling.}}
+\DoxyCodeLine{01019\ \textcolor{comment}{}}
+\DoxyCodeLine{01020\ \textcolor{comment}{\ \ \ The\ lay-\/out\ of\ a\ ds\_t\ is\ as\ follows:}}
+\DoxyCodeLine{01021\ \textcolor{comment}{}}
+\DoxyCodeLine{01022\ \textcolor{comment}{\ \ \ 1.\ Integers\ corresponding\ to\ the\ probability\ of\ the\ dependence\ to\ *not*}}
+\DoxyCodeLine{01023\ \textcolor{comment}{\ \ \ \ \ \ exist.\ \ This\ is\ the\ probability\ that\ overcoming\ this\ dependence\ will}}
+\DoxyCodeLine{01024\ \textcolor{comment}{\ \ \ \ \ \ not\ be\ followed\ by\ execution\ of\ the\ recovery\ code.\ \ Note\ that\ however}}
+\DoxyCodeLine{01025\ \textcolor{comment}{\ \ \ \ \ \ high\ this\ probability\ is,\ the\ recovery\ code\ should\ still\ always\ be}}
+\DoxyCodeLine{01026\ \textcolor{comment}{\ \ \ \ \ \ generated\ to\ preserve\ semantics\ of\ the\ program.}}
+\DoxyCodeLine{01027\ \textcolor{comment}{}}
+\DoxyCodeLine{01028\ \textcolor{comment}{\ \ \ \ \ \ The\ probability\ values\ can\ be\ set\ or\ retrieved\ using\ the\ functions}}
+\DoxyCodeLine{01029\ \textcolor{comment}{\ \ \ \ \ \ the\ set\_dep\_weak()\ and\ get\_dep\_weak()\ in\ sched-\/deps.cc.\ \ The\ values}}
+\DoxyCodeLine{01030\ \textcolor{comment}{\ \ \ \ \ \ are\ always\ in\ the\ range\ [0,\ MAX\_DEP\_WEAK].}}
+\DoxyCodeLine{01031\ \textcolor{comment}{}}
+\DoxyCodeLine{01032\ \textcolor{comment}{\ \ \ \ BEGIN\_DATA\ \ :\ BITS\_PER\_DEP\_WEAK}}
+\DoxyCodeLine{01033\ \textcolor{comment}{\ \ \ \ BE\_IN\_DATA\ \ :\ BITS\_PER\_DEP\_WEAK}}
+\DoxyCodeLine{01034\ \textcolor{comment}{\ \ \ \ BEGIN\_CONTROL\ \ \ :\ BITS\_PER\_DEP\_WEAK}}
+\DoxyCodeLine{01035\ \textcolor{comment}{\ \ \ \ BE\_IN\_CONTROL\ \ \ :\ BITS\_PER\_DEP\_WEAK}}
+\DoxyCodeLine{01036\ \textcolor{comment}{}}
+\DoxyCodeLine{01037\ \textcolor{comment}{\ \ \ \ \ \ The\ basic\ type\ of\ DS\_T\ is\ a\ host\ int.\ \ For\ a\ 32-\/bits\ int,\ the\ values}}
+\DoxyCodeLine{01038\ \textcolor{comment}{\ \ \ \ \ \ will\ each\ take\ 6\ bits.}}
+\DoxyCodeLine{01039\ \textcolor{comment}{}}
+\DoxyCodeLine{01040\ \textcolor{comment}{\ \ \ 2.\ The\ type\ of\ dependence.\ \ This\ supercedes\ the\ old-\/style\ REG\_NOTE\_KIND}}
+\DoxyCodeLine{01041\ \textcolor{comment}{\ \ \ \ \ \ values.\ \ TODO:\ Use\ this\ field\ instead\ of\ DEP\_TYPE,\ or\ make\ DEP\_TYPE}}
+\DoxyCodeLine{01042\ \textcolor{comment}{\ \ \ \ \ \ extract\ the\ dependence\ type\ from\ here.}}
+\DoxyCodeLine{01043\ \textcolor{comment}{}}
+\DoxyCodeLine{01044\ \textcolor{comment}{\ \ \ \ dep\_type\ \ \ \ :\ \ 4\ =>\ DEP\_\{TRUE|OUTPUT|ANTI|CONTROL\}}}
+\DoxyCodeLine{01045\ \textcolor{comment}{}}
+\DoxyCodeLine{01046\ \textcolor{comment}{\ \ \ 3.\ Various\ flags:}}
+\DoxyCodeLine{01047\ \textcolor{comment}{}}
+\DoxyCodeLine{01048\ \textcolor{comment}{\ \ \ \ HARD\_DEP\ \ \ \ :\ \ 1\ =>\ Set\ if\ an\ instruction\ has\ a\ non-\/speculative}}
+\DoxyCodeLine{01049\ \textcolor{comment}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ dependence.\ \ This\ is\ an\ instruction\ property}}
+\DoxyCodeLine{01050\ \textcolor{comment}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ so\ this\ bit\ can\ only\ appear\ in\ the\ TODO\_SPEC}}
+\DoxyCodeLine{01051\ \textcolor{comment}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ field\ of\ an\ instruction.}}
+\DoxyCodeLine{01052\ \textcolor{comment}{\ \ \ \ DEP\_POSTPONED\ \ \ :\ \ 1\ =>\ Like\ HARD\_DEP,\ but\ the\ hard\ dependence\ may}}
+\DoxyCodeLine{01053\ \textcolor{comment}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ still\ be\ broken\ by\ adjusting\ the\ instruction.}}
+\DoxyCodeLine{01054\ \textcolor{comment}{\ \ \ \ DEP\_CANCELLED\ \ \ :\ \ 1\ =>\ Set\ if\ a\ dependency\ has\ been\ broken\ using}}
+\DoxyCodeLine{01055\ \textcolor{comment}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ some\ form\ of\ speculation.}}
+\DoxyCodeLine{01056\ \textcolor{comment}{\ \ \ \ RESERVED\ \ \ \ :\ \ 1\ =>\ Reserved\ for\ use\ in\ the\ delay\ slot\ scheduler.}}
+\DoxyCodeLine{01057\ \textcolor{comment}{}}
+\DoxyCodeLine{01058\ \textcolor{comment}{\ \ \ See\ also:\ check\_dep\_status\ ()\ in\ sched-\/deps.cc\ .\ \ */}}
+\DoxyCodeLine{01059\ }
+\DoxyCodeLine{01060\ \textcolor{comment}{/*\ The\ number\ of\ bits\ per\ weakness\ probability.\ \ There\ are\ 4\ weakness\ types}}
+\DoxyCodeLine{01061\ \textcolor{comment}{\ \ \ and\ we\ need\ 8\ bits\ for\ other\ data\ in\ a\ DS\_T.\ \ */}}
+\DoxyCodeLine{01062\ \textcolor{preprocessor}{\#define\ BITS\_PER\_DEP\_WEAK\ ((BITS\_PER\_DEP\_STATUS\ -\/\ 8)\ /\ 4)}}
+\DoxyCodeLine{01063\ }
+\DoxyCodeLine{01064\ \textcolor{comment}{/*\ Mask\ of\ speculative\ weakness\ in\ dep\_status.\ \ */}}
+\DoxyCodeLine{01065\ \textcolor{preprocessor}{\#define\ DEP\_WEAK\_MASK\ ((1\ <<\ BITS\_PER\_DEP\_WEAK)\ -\/\ 1)}}
+\DoxyCodeLine{01066\ }
+\DoxyCodeLine{01067\ \textcolor{comment}{/*\ This\ constant\ means\ that\ dependence\ is\ fake\ with\ 99.999...\%\ probability.}}
+\DoxyCodeLine{01068\ \textcolor{comment}{\ \ \ This\ is\ the\ maximum\ value,\ that\ can\ appear\ in\ dep\_status.}}
+\DoxyCodeLine{01069\ \textcolor{comment}{\ \ \ Note,\ that\ we\ don't\ want\ MAX\_DEP\_WEAK\ to\ be\ the\ same\ as\ DEP\_WEAK\_MASK\ for}}
+\DoxyCodeLine{01070\ \textcolor{comment}{\ \ \ debugging\ reasons.\ \ Though,\ it\ can\ be\ set\ to\ DEP\_WEAK\_MASK,\ and,\ when}}
+\DoxyCodeLine{01071\ \textcolor{comment}{\ \ \ done\ so,\ we'll\ get\ fast\ (mul\ for)/(div\ by)\ NO\_DEP\_WEAK.\ \ */}}
+\DoxyCodeLine{01072\ \textcolor{preprocessor}{\#define\ MAX\_DEP\_WEAK\ (DEP\_WEAK\_MASK\ -\/\ 1)}}
+\DoxyCodeLine{01073\ }
+\DoxyCodeLine{01074\ \textcolor{comment}{/*\ This\ constant\ means\ that\ dependence\ is\ 99.999...\%\ real\ and\ it\ is\ a\ really}}
+\DoxyCodeLine{01075\ \textcolor{comment}{\ \ \ bad\ idea\ to\ overcome\ it\ (though\ this\ can\ be\ done,\ preserving\ program}}
+\DoxyCodeLine{01076\ \textcolor{comment}{\ \ \ semantics).\ \ */}}
+\DoxyCodeLine{01077\ \textcolor{preprocessor}{\#define\ MIN\_DEP\_WEAK\ 1}}
+\DoxyCodeLine{01078\ }
+\DoxyCodeLine{01079\ \textcolor{comment}{/*\ This\ constant\ represents\ 100\%\ probability.}}
+\DoxyCodeLine{01080\ \textcolor{comment}{\ \ \ E.g.\ it\ is\ used\ to\ represent\ weakness\ of\ dependence,\ that\ doesn't\ exist.}}
+\DoxyCodeLine{01081\ \textcolor{comment}{\ \ \ This\ value\ never\ appears\ in\ a\ ds\_t,\ it\ is\ only\ used\ for\ computing\ the}}
+\DoxyCodeLine{01082\ \textcolor{comment}{\ \ \ weakness\ of\ a\ dependence.\ \ */}}
+\DoxyCodeLine{01083\ \textcolor{preprocessor}{\#define\ NO\_DEP\_WEAK\ (MAX\_DEP\_WEAK\ +\ MIN\_DEP\_WEAK)}}
+\DoxyCodeLine{01084\ }
+\DoxyCodeLine{01085\ \textcolor{comment}{/*\ Default\ weakness\ of\ speculative\ dependence.\ \ Used\ when\ we\ can't\ say}}
+\DoxyCodeLine{01086\ \textcolor{comment}{\ \ \ neither\ bad\ nor\ good\ about\ the\ dependence.\ \ */}}
+\DoxyCodeLine{01087\ \textcolor{preprocessor}{\#define\ UNCERTAIN\_DEP\_WEAK\ (MAX\_DEP\_WEAK\ -\/\ MAX\_DEP\_WEAK\ /\ 4)}}
+\DoxyCodeLine{01088\ }
+\DoxyCodeLine{01089\ \textcolor{comment}{/*\ Offset\ for\ speculative\ weaknesses\ in\ dep\_status.\ \ */}}
+\DoxyCodeLine{01090\ \textcolor{keyword}{enum}\ SPEC\_TYPES\_OFFSETS\ \{}
+\DoxyCodeLine{01091\ \ \ BEGIN\_DATA\_BITS\_OFFSET\ =\ 0,}
+\DoxyCodeLine{01092\ \ \ BE\_IN\_DATA\_BITS\_OFFSET\ =\ BEGIN\_DATA\_BITS\_OFFSET\ +\ BITS\_PER\_DEP\_WEAK,}
+\DoxyCodeLine{01093\ \ \ BEGIN\_CONTROL\_BITS\_OFFSET\ =\ BE\_IN\_DATA\_BITS\_OFFSET\ +\ BITS\_PER\_DEP\_WEAK,}
+\DoxyCodeLine{01094\ \ \ BE\_IN\_CONTROL\_BITS\_OFFSET\ =\ BEGIN\_CONTROL\_BITS\_OFFSET\ +\ BITS\_PER\_DEP\_WEAK}
+\DoxyCodeLine{01095\ \};}
+\DoxyCodeLine{01096\ }
+\DoxyCodeLine{01097\ \textcolor{comment}{/*\ The\ following\ defines\ provide\ numerous\ constants\ used\ to\ distinguish}}
+\DoxyCodeLine{01098\ \textcolor{comment}{\ \ \ between\ different\ types\ of\ speculative\ dependencies.\ \ They\ are\ also}}
+\DoxyCodeLine{01099\ \textcolor{comment}{\ \ \ used\ as\ masks\ to\ clear/preserve\ the\ bits\ corresponding\ to\ the\ type}}
+\DoxyCodeLine{01100\ \textcolor{comment}{\ \ \ of\ dependency\ weakness.\ \ */}}
+\DoxyCodeLine{01101\ }
+\DoxyCodeLine{01102\ \textcolor{comment}{/*\ Dependence\ can\ be\ overcome\ with\ generation\ of\ new\ data\ speculative}}
+\DoxyCodeLine{01103\ \textcolor{comment}{\ \ \ instruction.\ \ */}}
+\DoxyCodeLine{01104\ \textcolor{preprocessor}{\#define\ BEGIN\_DATA\ (((ds\_t)\ DEP\_WEAK\_MASK)\ <<\ BEGIN\_DATA\_BITS\_OFFSET)}}
+\DoxyCodeLine{01105\ }
+\DoxyCodeLine{01106\ \textcolor{comment}{/*\ This\ dependence\ is\ to\ the\ instruction\ in\ the\ recovery\ block,\ that\ was}}
+\DoxyCodeLine{01107\ \textcolor{comment}{\ \ \ formed\ to\ recover\ after\ data-\/speculation\ failure.}}
+\DoxyCodeLine{01108\ \textcolor{comment}{\ \ \ Thus,\ this\ dependence\ can\ overcome\ with\ generating\ of\ the\ copy\ of}}
+\DoxyCodeLine{01109\ \textcolor{comment}{\ \ \ this\ instruction\ in\ the\ recovery\ block.\ \ */}}
+\DoxyCodeLine{01110\ \textcolor{preprocessor}{\#define\ BE\_IN\_DATA\ (((ds\_t)\ DEP\_WEAK\_MASK)\ <<\ BE\_IN\_DATA\_BITS\_OFFSET)}}
+\DoxyCodeLine{01111\ }
+\DoxyCodeLine{01112\ \textcolor{comment}{/*\ Dependence\ can\ be\ overcome\ with\ generation\ of\ new\ control\ speculative}}
+\DoxyCodeLine{01113\ \textcolor{comment}{\ \ \ instruction.\ \ */}}
+\DoxyCodeLine{01114\ \textcolor{preprocessor}{\#define\ BEGIN\_CONTROL\ (((ds\_t)\ DEP\_WEAK\_MASK)\ <<\ BEGIN\_CONTROL\_BITS\_OFFSET)}}
+\DoxyCodeLine{01115\ }
+\DoxyCodeLine{01116\ \textcolor{comment}{/*\ This\ dependence\ is\ to\ the\ instruction\ in\ the\ recovery\ block,\ that\ was}}
+\DoxyCodeLine{01117\ \textcolor{comment}{\ \ \ formed\ to\ recover\ after\ control-\/speculation\ failure.}}
+\DoxyCodeLine{01118\ \textcolor{comment}{\ \ \ Thus,\ this\ dependence\ can\ be\ overcome\ with\ generating\ of\ the\ copy\ of}}
+\DoxyCodeLine{01119\ \textcolor{comment}{\ \ \ this\ instruction\ in\ the\ recovery\ block.\ \ */}}
+\DoxyCodeLine{01120\ \textcolor{preprocessor}{\#define\ BE\_IN\_CONTROL\ (((ds\_t)\ DEP\_WEAK\_MASK)\ <<\ BE\_IN\_CONTROL\_BITS\_OFFSET)}}
+\DoxyCodeLine{01121\ }
+\DoxyCodeLine{01122\ \textcolor{comment}{/*\ A\ few\ convenient\ combinations.\ \ */}}
+\DoxyCodeLine{01123\ \textcolor{preprocessor}{\#define\ BEGIN\_SPEC\ (BEGIN\_DATA\ |\ BEGIN\_CONTROL)}}
+\DoxyCodeLine{01124\ \textcolor{preprocessor}{\#define\ DATA\_SPEC\ (BEGIN\_DATA\ |\ BE\_IN\_DATA)}}
+\DoxyCodeLine{01125\ \textcolor{preprocessor}{\#define\ CONTROL\_SPEC\ (BEGIN\_CONTROL\ |\ BE\_IN\_CONTROL)}}
+\DoxyCodeLine{01126\ \textcolor{preprocessor}{\#define\ SPECULATIVE\ (DATA\_SPEC\ |\ CONTROL\_SPEC)}}
+\DoxyCodeLine{01127\ \textcolor{preprocessor}{\#define\ BE\_IN\_SPEC\ (BE\_IN\_DATA\ |\ BE\_IN\_CONTROL)}}
+\DoxyCodeLine{01128\ }
+\DoxyCodeLine{01129\ \textcolor{comment}{/*\ Constants,\ that\ are\ helpful\ in\ iterating\ through\ dep\_status.\ \ */}}
+\DoxyCodeLine{01130\ \textcolor{preprocessor}{\#define\ FIRST\_SPEC\_TYPE\ BEGIN\_DATA}}
+\DoxyCodeLine{01131\ \textcolor{preprocessor}{\#define\ LAST\_SPEC\_TYPE\ BE\_IN\_CONTROL}}
+\DoxyCodeLine{01132\ \textcolor{preprocessor}{\#define\ SPEC\_TYPE\_SHIFT\ BITS\_PER\_DEP\_WEAK}}
+\DoxyCodeLine{01133\ }
+\DoxyCodeLine{01134\ \textcolor{comment}{/*\ Dependence\ on\ instruction\ can\ be\ of\ multiple\ types}}
+\DoxyCodeLine{01135\ \textcolor{comment}{\ \ \ (e.g.\ true\ and\ output).\ This\ fields\ enhance\ REG\_NOTE\_KIND\ information}}
+\DoxyCodeLine{01136\ \textcolor{comment}{\ \ \ of\ the\ dependence.\ \ */}}
+\DoxyCodeLine{01137\ \textcolor{preprocessor}{\#define\ DEP\_TRUE\ (((ds\_t)\ 1)\ <<\ (BE\_IN\_CONTROL\_BITS\_OFFSET\ +\ BITS\_PER\_DEP\_WEAK))}}
+\DoxyCodeLine{01138\ \textcolor{preprocessor}{\#define\ DEP\_OUTPUT\ (DEP\_TRUE\ <<\ 1)}}
+\DoxyCodeLine{01139\ \textcolor{preprocessor}{\#define\ DEP\_ANTI\ (DEP\_OUTPUT\ <<\ 1)}}
+\DoxyCodeLine{01140\ \textcolor{preprocessor}{\#define\ DEP\_CONTROL\ (DEP\_ANTI\ <<\ 1)}}
+\DoxyCodeLine{01141\ }
+\DoxyCodeLine{01142\ \textcolor{preprocessor}{\#define\ DEP\_TYPES\ (DEP\_TRUE\ |\ DEP\_OUTPUT\ |\ DEP\_ANTI\ |\ DEP\_CONTROL)}}
+\DoxyCodeLine{01143\ }
+\DoxyCodeLine{01144\ \textcolor{comment}{/*\ Instruction\ has\ non-\/speculative\ dependence.\ \ This\ bit\ represents\ the}}
+\DoxyCodeLine{01145\ \textcolor{comment}{\ \ \ property\ of\ an\ instruction\ -\/\ not\ the\ one\ of\ a\ dependence.}}
+\DoxyCodeLine{01146\ \textcolor{comment}{\ \ \ Therefore,\ it\ can\ appear\ only\ in\ the\ TODO\_SPEC\ field\ of\ an\ instruction.\ \ */}}
+\DoxyCodeLine{01147\ \textcolor{preprocessor}{\#define\ HARD\_DEP\ (DEP\_CONTROL\ <<\ 1)}}
+\DoxyCodeLine{01148\ }
+\DoxyCodeLine{01149\ \textcolor{comment}{/*\ Like\ HARD\_DEP,\ but\ dependencies\ can\ perhaps\ be\ broken\ by\ modifying}}
+\DoxyCodeLine{01150\ \textcolor{comment}{\ \ \ the\ instructions.\ \ This\ is\ used\ for\ example\ to\ change:}}
+\DoxyCodeLine{01151\ \textcolor{comment}{}}
+\DoxyCodeLine{01152\ \textcolor{comment}{\ \ \ rn++\ \ \ \ \ =>\ \ rm=[rn\ +\ 4]}}
+\DoxyCodeLine{01153\ \textcolor{comment}{\ \ \ rm=[rn]\ \ \ \ \ \ rn++}}
+\DoxyCodeLine{01154\ \textcolor{comment}{}}
+\DoxyCodeLine{01155\ \textcolor{comment}{\ \ \ For\ instructions\ that\ have\ this\ bit\ set,\ one\ of\ the\ dependencies\ of}}
+\DoxyCodeLine{01156\ \textcolor{comment}{\ \ \ the\ instructions\ will\ have\ a\ non-\/NULL\ REPLACE\ field\ in\ its\ DEP\_T.}}
+\DoxyCodeLine{01157\ \textcolor{comment}{\ \ \ Just\ like\ HARD\_DEP,\ this\ bit\ is\ only\ ever\ set\ in\ TODO\_SPEC.\ \ */}}
+\DoxyCodeLine{01158\ \textcolor{preprocessor}{\#define\ DEP\_POSTPONED\ (HARD\_DEP\ <<\ 1)}}
+\DoxyCodeLine{01159\ }
+\DoxyCodeLine{01160\ \textcolor{comment}{/*\ Set\ if\ a\ dependency\ is\ cancelled\ via\ speculation.\ \ */}}
+\DoxyCodeLine{01161\ \textcolor{preprocessor}{\#define\ DEP\_CANCELLED\ (DEP\_POSTPONED\ <<\ 1)}}
+\DoxyCodeLine{01162\ }
+\DoxyCodeLine{01163\ }
+\DoxyCodeLine{01164\ \textcolor{comment}{/*\ This\ represents\ the\ results\ of\ calling\ sched-\/deps.cc\ functions,}}
+\DoxyCodeLine{01165\ \textcolor{comment}{\ \ \ which\ modify\ dependencies.\ \ */}}
+\DoxyCodeLine{01166\ \textcolor{keyword}{enum}\ DEPS\_ADJUST\_RESULT\ \{}
+\DoxyCodeLine{01167\ \ \ \textcolor{comment}{/*\ No\ dependence\ needed\ (e.g.\ producer\ ==\ consumer).\ \ */}}
+\DoxyCodeLine{01168\ \ \ DEP\_NODEP,}
+\DoxyCodeLine{01169\ \ \ \textcolor{comment}{/*\ Dependence\ is\ already\ present\ and\ wasn't\ modified.\ \ */}}
+\DoxyCodeLine{01170\ \ \ DEP\_PRESENT,}
+\DoxyCodeLine{01171\ \ \ \textcolor{comment}{/*\ Existing\ dependence\ was\ modified\ to\ include\ additional\ information.\ \ */}}
+\DoxyCodeLine{01172\ \ \ DEP\_CHANGED,}
+\DoxyCodeLine{01173\ \ \ \textcolor{comment}{/*\ New\ dependence\ has\ been\ created.\ \ */}}
+\DoxyCodeLine{01174\ \ \ DEP\_CREATED}
+\DoxyCodeLine{01175\ \};}
+\DoxyCodeLine{01176\ }
+\DoxyCodeLine{01177\ \textcolor{comment}{/*\ Represents\ the\ bits\ that\ can\ be\ set\ in\ the\ flags\ field\ of\ the}}
+\DoxyCodeLine{01178\ \textcolor{comment}{\ \ \ sched\_info\ structure.\ \ */}}
+\DoxyCodeLine{01179\ \textcolor{keyword}{enum}\ SCHED\_FLAGS\ \{}
+\DoxyCodeLine{01180\ \ \ \textcolor{comment}{/*\ If\ set,\ generate\ links\ between\ instruction\ as\ DEPS\_LIST.}}
+\DoxyCodeLine{01181\ \textcolor{comment}{\ \ \ \ \ Otherwise,\ generate\ usual\ INSN\_LIST\ links.\ \ */}}
+\DoxyCodeLine{01182\ \ \ USE\_DEPS\_LIST\ =\ 1,}
+\DoxyCodeLine{01183\ \ \ \textcolor{comment}{/*\ Perform\ data\ or\ control\ (or\ both)\ speculation.}}
+\DoxyCodeLine{01184\ \textcolor{comment}{\ \ \ \ \ Results\ in\ generation\ of\ data\ and\ control\ speculative\ dependencies.}}
+\DoxyCodeLine{01185\ \textcolor{comment}{\ \ \ \ \ Requires\ USE\_DEPS\_LIST\ set.\ \ */}}
+\DoxyCodeLine{01186\ \ \ DO\_SPECULATION\ =\ USE\_DEPS\_LIST\ <<\ 1,}
+\DoxyCodeLine{01187\ \ \ DO\_BACKTRACKING\ =\ DO\_SPECULATION\ <<\ 1,}
+\DoxyCodeLine{01188\ \ \ DO\_PREDICATION\ =\ DO\_BACKTRACKING\ <<\ 1,}
+\DoxyCodeLine{01189\ \ \ DONT\_BREAK\_DEPENDENCIES\ =\ DO\_PREDICATION\ <<\ 1,}
+\DoxyCodeLine{01190\ \ \ SCHED\_RGN\ =\ DONT\_BREAK\_DEPENDENCIES\ <<\ 1,}
+\DoxyCodeLine{01191\ \ \ SCHED\_EBB\ =\ SCHED\_RGN\ <<\ 1,}
+\DoxyCodeLine{01192\ \ \ \textcolor{comment}{/*\ Scheduler\ can\ possibly\ create\ new\ basic\ blocks.\ \ Used\ for\ assertions.\ \ */}}
+\DoxyCodeLine{01193\ \ \ NEW\_BBS\ =\ SCHED\_EBB\ <<\ 1,}
+\DoxyCodeLine{01194\ \ \ SEL\_SCHED\ =\ NEW\_BBS\ <<\ 1}
+\DoxyCodeLine{01195\ \};}
+\DoxyCodeLine{01196\ }
+\DoxyCodeLine{01197\ \textcolor{keyword}{enum}\ SPEC\_SCHED\_FLAGS\ \{}
+\DoxyCodeLine{01198\ \ \ COUNT\_SPEC\_IN\_CRITICAL\_PATH\ =\ 1,}
+\DoxyCodeLine{01199\ \ \ SEL\_SCHED\_SPEC\_DONT\_CHECK\_CONTROL\ =\ COUNT\_SPEC\_IN\_CRITICAL\_PATH\ <<\ 1}
+\DoxyCodeLine{01200\ \};}
+\DoxyCodeLine{01201\ }
+\DoxyCodeLine{01202\ \textcolor{preprocessor}{\#define\ NOTE\_NOT\_BB\_P(NOTE)\ (NOTE\_P\ (NOTE)\ \&\&\ (NOTE\_KIND\ (NOTE)\ \(\backslash\)}}
+\DoxyCodeLine{01203\ \textcolor{preprocessor}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ !=\ NOTE\_INSN\_BASIC\_BLOCK))}}
+\DoxyCodeLine{01204\ }
+\DoxyCodeLine{01205\ \textcolor{keyword}{extern}\ FILE\ *sched\_dump;}
+\DoxyCodeLine{01206\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{int}\ sched\_verbose;}
+\DoxyCodeLine{01207\ }
+\DoxyCodeLine{01208\ \textcolor{keyword}{extern}\ spec\_info\_t\ spec\_info;}
+\DoxyCodeLine{01209\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{bool}\ haifa\_recovery\_bb\_ever\_added\_p;}
+\DoxyCodeLine{01210\ }
+\DoxyCodeLine{01211\ \textcolor{comment}{/*\ Exception\ Free\ Loads:}}
+\DoxyCodeLine{01212\ \textcolor{comment}{}}
+\DoxyCodeLine{01213\ \textcolor{comment}{\ \ \ We\ define\ five\ classes\ of\ speculative\ loads:\ IFREE,\ IRISKY,}}
+\DoxyCodeLine{01214\ \textcolor{comment}{\ \ \ PFREE,\ PRISKY,\ and\ MFREE.}}
+\DoxyCodeLine{01215\ \textcolor{comment}{}}
+\DoxyCodeLine{01216\ \textcolor{comment}{\ \ \ IFREE\ loads\ are\ loads\ that\ are\ proved\ to\ be\ exception-\/free,\ just}}
+\DoxyCodeLine{01217\ \textcolor{comment}{\ \ \ by\ examining\ the\ load\ insn.\ \ Examples\ for\ such\ loads\ are\ loads}}
+\DoxyCodeLine{01218\ \textcolor{comment}{\ \ \ from\ TOC\ and\ loads\ of\ global\ data.}}
+\DoxyCodeLine{01219\ \textcolor{comment}{}}
+\DoxyCodeLine{01220\ \textcolor{comment}{\ \ \ IRISKY\ loads\ are\ loads\ that\ are\ proved\ to\ be\ exception-\/risky,}}
+\DoxyCodeLine{01221\ \textcolor{comment}{\ \ \ just\ by\ examining\ the\ load\ insn.\ \ Examples\ for\ such\ loads\ are}}
+\DoxyCodeLine{01222\ \textcolor{comment}{\ \ \ volatile\ loads\ and\ loads\ from\ shared\ memory.}}
+\DoxyCodeLine{01223\ \textcolor{comment}{}}
+\DoxyCodeLine{01224\ \textcolor{comment}{\ \ \ PFREE\ loads\ are\ loads\ for\ which\ we\ can\ prove,\ by\ examining\ other}}
+\DoxyCodeLine{01225\ \textcolor{comment}{\ \ \ insns,\ that\ they\ are\ exception-\/free.\ \ Currently,\ this\ class\ consists}}
+\DoxyCodeLine{01226\ \textcolor{comment}{\ \ \ of\ loads\ for\ which\ we\ are\ able\ to\ find\ a\ "{}similar\ load"{},\ either\ in}}
+\DoxyCodeLine{01227\ \textcolor{comment}{\ \ \ the\ target\ block,\ or,\ if\ only\ one\ split-\/block\ exists,\ in\ that\ split}}
+\DoxyCodeLine{01228\ \textcolor{comment}{\ \ \ block.\ \ Load2\ is\ similar\ to\ load1\ if\ both\ have\ same\ single\ base}}
+\DoxyCodeLine{01229\ \textcolor{comment}{\ \ \ register.\ \ We\ identify\ only\ part\ of\ the\ similar\ loads,\ by\ finding}}
+\DoxyCodeLine{01230\ \textcolor{comment}{\ \ \ an\ insn\ upon\ which\ both\ load1\ and\ load2\ have\ a\ DEF-\/USE\ dependence.}}
+\DoxyCodeLine{01231\ \textcolor{comment}{}}
+\DoxyCodeLine{01232\ \textcolor{comment}{\ \ \ PRISKY\ loads\ are\ loads\ for\ which\ we\ can\ prove,\ by\ examining\ other}}
+\DoxyCodeLine{01233\ \textcolor{comment}{\ \ \ insns,\ that\ they\ are\ exception-\/risky.\ \ Currently\ we\ have\ two\ proofs\ for}}
+\DoxyCodeLine{01234\ \textcolor{comment}{\ \ \ such\ loads.\ \ The\ first\ proof\ detects\ loads\ that\ are\ probably\ guarded\ by\ a}}
+\DoxyCodeLine{01235\ \textcolor{comment}{\ \ \ test\ on\ the\ memory\ address.\ \ This\ proof\ is\ based\ on\ the}}
+\DoxyCodeLine{01236\ \textcolor{comment}{\ \ \ backward\ and\ forward\ data\ dependence\ information\ for\ the\ region.}}
+\DoxyCodeLine{01237\ \textcolor{comment}{\ \ \ Let\ load-\/insn\ be\ the\ examined\ load.}}
+\DoxyCodeLine{01238\ \textcolor{comment}{\ \ \ Load-\/insn\ is\ PRISKY\ iff\ ALL\ the\ following\ hold:}}
+\DoxyCodeLine{01239\ \textcolor{comment}{}}
+\DoxyCodeLine{01240\ \textcolor{comment}{\ \ \ -\/\ insn1\ is\ not\ in\ the\ same\ block\ as\ load-\/insn}}
+\DoxyCodeLine{01241\ \textcolor{comment}{\ \ \ -\/\ there\ is\ a\ DEF-\/USE\ dependence\ chain\ (insn1,\ ...,\ load-\/insn)}}
+\DoxyCodeLine{01242\ \textcolor{comment}{\ \ \ -\/\ test-\/insn\ is\ either\ a\ compare\ or\ a\ branch,\ not\ in\ the\ same\ block}}
+\DoxyCodeLine{01243\ \textcolor{comment}{\ \ \ \ \ as\ load-\/insn}}
+\DoxyCodeLine{01244\ \textcolor{comment}{\ \ \ -\/\ load-\/insn\ is\ reachable\ from\ test-\/insn}}
+\DoxyCodeLine{01245\ \textcolor{comment}{\ \ \ -\/\ there\ is\ a\ DEF-\/USE\ dependence\ chain\ (insn1,\ ...,\ test-\/insn)}}
+\DoxyCodeLine{01246\ \textcolor{comment}{}}
+\DoxyCodeLine{01247\ \textcolor{comment}{\ \ \ This\ proof\ might\ fail\ when\ the\ compare\ and\ the\ load\ are\ fed}}
+\DoxyCodeLine{01248\ \textcolor{comment}{\ \ \ by\ an\ insn\ not\ in\ the\ region.\ \ To\ solve\ this,\ we\ will\ add\ to\ this}}
+\DoxyCodeLine{01249\ \textcolor{comment}{\ \ \ group\ all\ loads\ that\ have\ no\ input\ DEF-\/USE\ dependence.}}
+\DoxyCodeLine{01250\ \textcolor{comment}{}}
+\DoxyCodeLine{01251\ \textcolor{comment}{\ \ \ The\ second\ proof\ detects\ loads\ that\ are\ directly\ or\ indirectly}}
+\DoxyCodeLine{01252\ \textcolor{comment}{\ \ \ fed\ by\ a\ speculative\ load.\ \ This\ proof\ is\ affected\ by\ the}}
+\DoxyCodeLine{01253\ \textcolor{comment}{\ \ \ scheduling\ process.\ \ We\ will\ use\ the\ flag\ \ fed\_by\_spec\_load.}}
+\DoxyCodeLine{01254\ \textcolor{comment}{\ \ \ Initially,\ all\ insns\ have\ this\ flag\ reset.\ \ After\ a\ speculative}}
+\DoxyCodeLine{01255\ \textcolor{comment}{\ \ \ motion\ of\ an\ insn,\ if\ insn\ is\ either\ a\ load,\ or\ marked\ as}}
+\DoxyCodeLine{01256\ \textcolor{comment}{\ \ \ fed\_by\_spec\_load,\ we\ will\ also\ mark\ as\ fed\_by\_spec\_load\ every}}
+\DoxyCodeLine{01257\ \textcolor{comment}{\ \ \ insn1\ for\ which\ a\ DEF-\/USE\ dependence\ (insn,\ insn1)\ exists.\ \ A}}
+\DoxyCodeLine{01258\ \textcolor{comment}{\ \ \ load\ which\ is\ fed\_by\_spec\_load\ is\ also\ PRISKY.}}
+\DoxyCodeLine{01259\ \textcolor{comment}{}}
+\DoxyCodeLine{01260\ \textcolor{comment}{\ \ \ MFREE\ (maybe-\/free)\ loads\ are\ all\ the\ remaining\ loads.\ They\ may\ be}}
+\DoxyCodeLine{01261\ \textcolor{comment}{\ \ \ exception-\/free,\ but\ we\ cannot\ prove\ it.}}
+\DoxyCodeLine{01262\ \textcolor{comment}{}}
+\DoxyCodeLine{01263\ \textcolor{comment}{\ \ \ Now,\ all\ loads\ in\ IFREE\ and\ PFREE\ classes\ are\ considered}}
+\DoxyCodeLine{01264\ \textcolor{comment}{\ \ \ exception-\/free,\ while\ all\ loads\ in\ IRISKY\ and\ PRISKY\ classes\ are}}
+\DoxyCodeLine{01265\ \textcolor{comment}{\ \ \ considered\ exception-\/risky.\ \ As\ for\ loads\ in\ the\ MFREE\ class,}}
+\DoxyCodeLine{01266\ \textcolor{comment}{\ \ \ these\ are\ considered\ either\ exception-\/free\ or\ exception-\/risky,}}
+\DoxyCodeLine{01267\ \textcolor{comment}{\ \ \ depending\ on\ whether\ we\ are\ pessimistic\ or\ optimistic.\ \ We\ have}}
+\DoxyCodeLine{01268\ \textcolor{comment}{\ \ \ to\ take\ the\ pessimistic\ approach\ to\ assure\ the\ safety\ of}}
+\DoxyCodeLine{01269\ \textcolor{comment}{\ \ \ speculative\ scheduling,\ but\ we\ can\ take\ the\ optimistic\ approach}}
+\DoxyCodeLine{01270\ \textcolor{comment}{\ \ \ by\ invoking\ the\ -\/fsched\_spec\_load\_dangerous\ option.\ \ */}}
+\DoxyCodeLine{01271\ }
+\DoxyCodeLine{01272\ \textcolor{keyword}{enum}\ INSN\_TRAP\_CLASS}
+\DoxyCodeLine{01273\ \{}
+\DoxyCodeLine{01274\ \ \ TRAP\_FREE\ =\ 0,\ IFREE\ =\ 1,\ PFREE\_CANDIDATE\ =\ 2,}
+\DoxyCodeLine{01275\ \ \ PRISKY\_CANDIDATE\ =\ 3,\ IRISKY\ =\ 4,\ TRAP\_RISKY\ =\ 5}
+\DoxyCodeLine{01276\ \};}
+\DoxyCodeLine{01277\ }
+\DoxyCodeLine{01278\ \textcolor{preprocessor}{\#define\ WORST\_CLASS(class1,\ class2)\ \(\backslash\)}}
+\DoxyCodeLine{01279\ \textcolor{preprocessor}{((class1\ >\ class2)\ ?\ class1\ :\ class2)}}
+\DoxyCodeLine{01280\ }
+\DoxyCodeLine{01281\ \textcolor{preprocessor}{\#ifndef\ \_\_GNUC\_\_}}
+\DoxyCodeLine{01282\ \textcolor{preprocessor}{\#define\ \_\_inline}}
+\DoxyCodeLine{01283\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{01284\ }
+\DoxyCodeLine{01285\ \textcolor{preprocessor}{\#ifndef\ HAIFA\_INLINE}}
+\DoxyCodeLine{01286\ \textcolor{preprocessor}{\#define\ HAIFA\_INLINE\ \_\_inline}}
+\DoxyCodeLine{01287\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{01288\ }
+\DoxyCodeLine{01289\ \textcolor{keyword}{struct\ }sched\_deps\_info\_def}
+\DoxyCodeLine{01290\ \{}
+\DoxyCodeLine{01291\ \ \ \textcolor{comment}{/*\ Called\ when\ computing\ dependencies\ for\ a\ JUMP\_INSN.\ \ This\ function}}
+\DoxyCodeLine{01292\ \textcolor{comment}{\ \ \ \ \ should\ store\ the\ set\ of\ registers\ that\ must\ be\ considered\ as\ set\ by}}
+\DoxyCodeLine{01293\ \textcolor{comment}{\ \ \ \ \ the\ jump\ in\ the\ regset.\ \ */}}
+\DoxyCodeLine{01294\ \ \ void\ (*compute\_jump\_reg\_dependencies)\ (\doxymbox{\hyperlink{coretypes_8h_a20e671ce9e7827268658cff844f4281c}{rtx}},\ \doxymbox{\hyperlink{regset_8h_a1e655e49d778df881b7c96f82f84e3c7}{regset}});}
+\DoxyCodeLine{01295\ }
+\DoxyCodeLine{01296\ \ \ \textcolor{comment}{/*\ Start\ analyzing\ insn.\ \ */}}
+\DoxyCodeLine{01297\ \ \ void\ (*start\_insn)\ (rtx\_insn\ *);}
+\DoxyCodeLine{01298\ }
+\DoxyCodeLine{01299\ \ \ \textcolor{comment}{/*\ Finish\ analyzing\ insn.\ \ */}}
+\DoxyCodeLine{01300\ \ \ void\ (*finish\_insn)\ (void);}
+\DoxyCodeLine{01301\ }
+\DoxyCodeLine{01302\ \ \ \textcolor{comment}{/*\ Start\ analyzing\ insn\ LHS\ (Left\ Hand\ Side).\ \ */}}
+\DoxyCodeLine{01303\ \ \ void\ (*start\_lhs)\ (\doxymbox{\hyperlink{coretypes_8h_a20e671ce9e7827268658cff844f4281c}{rtx}});}
+\DoxyCodeLine{01304\ }
+\DoxyCodeLine{01305\ \ \ \textcolor{comment}{/*\ Finish\ analyzing\ insn\ LHS.\ \ */}}
+\DoxyCodeLine{01306\ \ \ void\ (*finish\_lhs)\ (void);}
+\DoxyCodeLine{01307\ }
+\DoxyCodeLine{01308\ \ \ \textcolor{comment}{/*\ Start\ analyzing\ insn\ RHS\ (Right\ Hand\ Side).\ \ */}}
+\DoxyCodeLine{01309\ \ \ void\ (*start\_rhs)\ (\doxymbox{\hyperlink{coretypes_8h_a20e671ce9e7827268658cff844f4281c}{rtx}});}
+\DoxyCodeLine{01310\ }
+\DoxyCodeLine{01311\ \ \ \textcolor{comment}{/*\ Finish\ analyzing\ insn\ RHS.\ \ */}}
+\DoxyCodeLine{01312\ \ \ void\ (*finish\_rhs)\ (void);}
+\DoxyCodeLine{01313\ }
+\DoxyCodeLine{01314\ \ \ \textcolor{comment}{/*\ Note\ set\ of\ the\ register.\ \ */}}
+\DoxyCodeLine{01315\ \ \ void\ (*note\_reg\_set)\ (int);}
+\DoxyCodeLine{01316\ }
+\DoxyCodeLine{01317\ \ \ \textcolor{comment}{/*\ Note\ clobber\ of\ the\ register.\ \ */}}
+\DoxyCodeLine{01318\ \ \ void\ (*note\_reg\_clobber)\ (int);}
+\DoxyCodeLine{01319\ }
+\DoxyCodeLine{01320\ \ \ \textcolor{comment}{/*\ Note\ use\ of\ the\ register.\ \ */}}
+\DoxyCodeLine{01321\ \ \ void\ (*note\_reg\_use)\ (int);}
+\DoxyCodeLine{01322\ }
+\DoxyCodeLine{01323\ \ \ \textcolor{comment}{/*\ Note\ memory\ dependence\ of\ type\ DS\ between\ MEM1\ and\ MEM2\ (which\ is}}
+\DoxyCodeLine{01324\ \textcolor{comment}{\ \ \ \ \ in\ the\ INSN2).\ \ */}}
+\DoxyCodeLine{01325\ \ \ void\ (*note\_mem\_dep)\ (\doxymbox{\hyperlink{coretypes_8h_a20e671ce9e7827268658cff844f4281c}{rtx}}\ mem1,\ \doxymbox{\hyperlink{coretypes_8h_a20e671ce9e7827268658cff844f4281c}{rtx}}\ mem2,\ rtx\_insn\ *insn2,\ ds\_t\ ds);}
+\DoxyCodeLine{01326\ }
+\DoxyCodeLine{01327\ \ \ \textcolor{comment}{/*\ Note\ a\ dependence\ of\ type\ DS\ from\ the\ INSN.\ \ */}}
+\DoxyCodeLine{01328\ \ \ void\ (*note\_dep)\ (rtx\_insn\ *,\ ds\_t\ ds);}
+\DoxyCodeLine{01329\ }
+\DoxyCodeLine{01330\ \ \ \textcolor{comment}{/*\ Nonzero\ if\ we\ should\ use\ cselib\ for\ better\ alias\ analysis.\ \ This}}
+\DoxyCodeLine{01331\ \textcolor{comment}{\ \ \ \ \ must\ be\ 0\ if\ the\ dependency\ information\ is\ used\ after\ sched\_analyze}}
+\DoxyCodeLine{01332\ \textcolor{comment}{\ \ \ \ \ has\ completed,\ e.g.\ if\ we're\ using\ it\ to\ initialize\ state\ for\ successor}}
+\DoxyCodeLine{01333\ \textcolor{comment}{\ \ \ \ \ blocks\ in\ region\ scheduling.\ \ */}}
+\DoxyCodeLine{01334\ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ use\_cselib\ :\ 1;}
+\DoxyCodeLine{01335\ }
+\DoxyCodeLine{01336\ \ \ \textcolor{comment}{/*\ If\ set,\ generate\ links\ between\ instruction\ as\ DEPS\_LIST.}}
+\DoxyCodeLine{01337\ \textcolor{comment}{\ \ \ \ \ Otherwise,\ generate\ usual\ INSN\_LIST\ links.\ \ */}}
+\DoxyCodeLine{01338\ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ use\_deps\_list\ :\ 1;}
+\DoxyCodeLine{01339\ }
+\DoxyCodeLine{01340\ \ \ \textcolor{comment}{/*\ Generate\ data\ and\ control\ speculative\ dependencies.}}
+\DoxyCodeLine{01341\ \textcolor{comment}{\ \ \ \ \ Requires\ USE\_DEPS\_LIST\ set.\ \ */}}
+\DoxyCodeLine{01342\ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ generate\_spec\_deps\ :\ 1;}
+\DoxyCodeLine{01343\ \};}
+\DoxyCodeLine{01344\ }
+\DoxyCodeLine{01345\ \textcolor{keyword}{extern}\ \textcolor{keyword}{struct\ }sched\_deps\_info\_def\ *sched\_deps\_info;}
+\DoxyCodeLine{01346\ }
+\DoxyCodeLine{01347\ }
+\DoxyCodeLine{01348\ \textcolor{comment}{/*\ Functions\ in\ sched-\/deps.cc.\ \ */}}
+\DoxyCodeLine{01349\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{coretypes_8h_a20e671ce9e7827268658cff844f4281c}{rtx}}\ sched\_get\_reverse\_condition\_uncached\ (\textcolor{keyword}{const}\ rtx\_insn\ *);}
+\DoxyCodeLine{01350\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{bool}\ sched\_insns\_conditions\_mutex\_p\ (\textcolor{keyword}{const}\ rtx\_insn\ *,}
+\DoxyCodeLine{01351\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ rtx\_insn\ *);}
+\DoxyCodeLine{01352\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{bool}\ sched\_insn\_is\_legitimate\_for\_speculation\_p\ (\textcolor{keyword}{const}\ rtx\_insn\ *,\ ds\_t);}
+\DoxyCodeLine{01353\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ add\_dependence\ (rtx\_insn\ *,\ rtx\_insn\ *,\ \textcolor{keyword}{enum}\ \doxymbox{\hyperlink{rtl_8h_a5d8ac0cdf8765c34eb3f3fdacfc51ffd}{reg\_note}});}
+\DoxyCodeLine{01354\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ sched\_analyze\ (\textcolor{keyword}{class}\ deps\_desc\ *,\ rtx\_insn\ *,\ rtx\_insn\ *);}
+\DoxyCodeLine{01355\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ init\_deps\ (\textcolor{keyword}{class}\ deps\_desc\ *,\ \textcolor{keywordtype}{bool});}
+\DoxyCodeLine{01356\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ init\_deps\_reg\_last\ (\textcolor{keyword}{class}\ deps\_desc\ *);}
+\DoxyCodeLine{01357\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ free\_deps\ (\textcolor{keyword}{class}\ deps\_desc\ *);}
+\DoxyCodeLine{01358\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ init\_deps\_global\ (\textcolor{keywordtype}{void});}
+\DoxyCodeLine{01359\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ finish\_deps\_global\ (\textcolor{keywordtype}{void});}
+\DoxyCodeLine{01360\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ deps\_analyze\_insn\ (\textcolor{keyword}{class}\ deps\_desc\ *,\ rtx\_insn\ *);}
+\DoxyCodeLine{01361\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ remove\_from\_deps\ (\textcolor{keyword}{class}\ deps\_desc\ *,\ rtx\_insn\ *);}
+\DoxyCodeLine{01362\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ init\_insn\_reg\_pressure\_info\ (rtx\_insn\ *);}
+\DoxyCodeLine{01363\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ get\_implicit\_reg\_pending\_clobbers\ (\doxymbox{\hyperlink{hard-reg-set_8h_a58a1569980de76957f391607c395d443}{HARD\_REG\_SET}}\ *,\ rtx\_insn\ *);}
+\DoxyCodeLine{01364\ }
+\DoxyCodeLine{01365\ \textcolor{keyword}{extern}\ dw\_t\ get\_dep\_weak\ (ds\_t,\ ds\_t);}
+\DoxyCodeLine{01366\ \textcolor{keyword}{extern}\ ds\_t\ set\_dep\_weak\ (ds\_t,\ ds\_t,\ dw\_t);}
+\DoxyCodeLine{01367\ \textcolor{keyword}{extern}\ dw\_t\ estimate\_dep\_weak\ (\doxymbox{\hyperlink{coretypes_8h_a20e671ce9e7827268658cff844f4281c}{rtx}},\ \doxymbox{\hyperlink{coretypes_8h_a20e671ce9e7827268658cff844f4281c}{rtx}});}
+\DoxyCodeLine{01368\ \textcolor{keyword}{extern}\ ds\_t\ ds\_merge\ (ds\_t,\ ds\_t);}
+\DoxyCodeLine{01369\ \textcolor{keyword}{extern}\ ds\_t\ ds\_full\_merge\ (ds\_t,\ ds\_t,\ \doxymbox{\hyperlink{coretypes_8h_a20e671ce9e7827268658cff844f4281c}{rtx}},\ \doxymbox{\hyperlink{coretypes_8h_a20e671ce9e7827268658cff844f4281c}{rtx}});}
+\DoxyCodeLine{01370\ \textcolor{keyword}{extern}\ ds\_t\ ds\_max\_merge\ (ds\_t,\ ds\_t);}
+\DoxyCodeLine{01371\ \textcolor{keyword}{extern}\ dw\_t\ ds\_weak\ (ds\_t);}
+\DoxyCodeLine{01372\ \textcolor{keyword}{extern}\ ds\_t\ ds\_get\_speculation\_types\ (ds\_t);}
+\DoxyCodeLine{01373\ \textcolor{keyword}{extern}\ ds\_t\ ds\_get\_max\_dep\_weak\ (ds\_t);}
+\DoxyCodeLine{01374\ }
+\DoxyCodeLine{01375\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ sched\_deps\_init\ (\textcolor{keywordtype}{bool});}
+\DoxyCodeLine{01376\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ sched\_deps\_finish\ (\textcolor{keywordtype}{void});}
+\DoxyCodeLine{01377\ }
+\DoxyCodeLine{01378\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ haifa\_note\_reg\_set\ (\textcolor{keywordtype}{int});}
+\DoxyCodeLine{01379\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ haifa\_note\_reg\_clobber\ (\textcolor{keywordtype}{int});}
+\DoxyCodeLine{01380\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ haifa\_note\_reg\_use\ (\textcolor{keywordtype}{int});}
+\DoxyCodeLine{01381\ }
+\DoxyCodeLine{01382\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ maybe\_extend\_reg\_info\_p\ (\textcolor{keywordtype}{void});}
+\DoxyCodeLine{01383\ }
+\DoxyCodeLine{01384\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ deps\_start\_bb\ (\textcolor{keyword}{class}\ deps\_desc\ *,\ rtx\_insn\ *);}
+\DoxyCodeLine{01385\ \textcolor{keyword}{extern}\ \textcolor{keyword}{enum}\ \doxymbox{\hyperlink{rtl_8h_a5d8ac0cdf8765c34eb3f3fdacfc51ffd}{reg\_note}}\ ds\_to\_dt\ (ds\_t);}
+\DoxyCodeLine{01386\ }
+\DoxyCodeLine{01387\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{bool}\ deps\_pools\_are\_empty\_p\ (\textcolor{keywordtype}{void});}
+\DoxyCodeLine{01388\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ sched\_free\_deps\ (rtx\_insn\ *,\ rtx\_insn\ *,\ \textcolor{keywordtype}{bool});}
+\DoxyCodeLine{01389\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ extend\_dependency\_caches\ (\textcolor{keywordtype}{int},\ \textcolor{keywordtype}{bool});}
+\DoxyCodeLine{01390\ }
+\DoxyCodeLine{01391\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ debug\_ds\ (ds\_t);}
+\DoxyCodeLine{01392\ }
+\DoxyCodeLine{01393\ }
+\DoxyCodeLine{01394\ \textcolor{comment}{/*\ Functions\ in\ haifa-\/sched.cc.\ \ */}}
+\DoxyCodeLine{01395\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ initialize\_live\_range\_shrinkage\ (\textcolor{keywordtype}{void});}
+\DoxyCodeLine{01396\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ finish\_live\_range\_shrinkage\ (\textcolor{keywordtype}{void});}
+\DoxyCodeLine{01397\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ sched\_init\_region\_reg\_pressure\_info\ (\textcolor{keywordtype}{void});}
+\DoxyCodeLine{01398\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ free\_global\_sched\_pressure\_data\ (\textcolor{keywordtype}{void});}
+\DoxyCodeLine{01399\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{int}\ haifa\_classify\_insn\ (\doxymbox{\hyperlink{coretypes_8h_a666eef3d91a58b950bf402bd0489e7e0}{const\_rtx}});}
+\DoxyCodeLine{01400\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ get\_ebb\_head\_tail\ (\doxymbox{\hyperlink{coretypes_8h_a0469df20b471a4cd7c81fbdce5027487}{basic\_block}},\ \doxymbox{\hyperlink{coretypes_8h_a0469df20b471a4cd7c81fbdce5027487}{basic\_block}},}
+\DoxyCodeLine{01401\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ rtx\_insn\ **,\ rtx\_insn\ **);}
+\DoxyCodeLine{01402\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{bool}\ no\_real\_insns\_p\ (\textcolor{keyword}{const}\ rtx\_insn\ *,\ \textcolor{keyword}{const}\ rtx\_insn\ *);}
+\DoxyCodeLine{01403\ }
+\DoxyCodeLine{01404\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{int}\ insn\_sched\_cost\ (rtx\_insn\ *);}
+\DoxyCodeLine{01405\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{int}\ dep\_cost\_1\ (dep\_t,\ dw\_t);}
+\DoxyCodeLine{01406\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{int}\ dep\_cost\ (dep\_t);}
+\DoxyCodeLine{01407\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{int}\ set\_priorities\ (rtx\_insn\ *,\ rtx\_insn\ *);}
+\DoxyCodeLine{01408\ }
+\DoxyCodeLine{01409\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ sched\_setup\_bb\_reg\_pressure\_info\ (\doxymbox{\hyperlink{coretypes_8h_a0469df20b471a4cd7c81fbdce5027487}{basic\_block}},\ rtx\_insn\ *);}
+\DoxyCodeLine{01410\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{bool}\ schedule\_block\ (\doxymbox{\hyperlink{coretypes_8h_a0469df20b471a4cd7c81fbdce5027487}{basic\_block}}\ *,\ \doxymbox{\hyperlink{insn-attr_8h_a917fe45c2b53fe07c80256f347773fac}{state\_t}});}
+\DoxyCodeLine{01411\ }
+\DoxyCodeLine{01412\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{int}\ cycle\_issued\_insns;}
+\DoxyCodeLine{01413\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{int}\ issue\_rate;}
+\DoxyCodeLine{01414\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{int}\ dfa\_lookahead;}
+\DoxyCodeLine{01415\ }
+\DoxyCodeLine{01416\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{int}\ autopref\_multipass\_dfa\_lookahead\_guard\ (rtx\_insn\ *,\ \textcolor{keywordtype}{int});}
+\DoxyCodeLine{01417\ }
+\DoxyCodeLine{01418\ \textcolor{keyword}{extern}\ rtx\_insn\ *ready\_element\ (\textcolor{keyword}{struct}\ ready\_list\ *,\ \textcolor{keywordtype}{int});}
+\DoxyCodeLine{01419\ \textcolor{keyword}{extern}\ rtx\_insn\ **ready\_lastpos\ (\textcolor{keyword}{struct}\ ready\_list\ *);}
+\DoxyCodeLine{01420\ }
+\DoxyCodeLine{01421\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{int}\ try\_ready\ (rtx\_insn\ *);}
+\DoxyCodeLine{01422\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ sched\_extend\_ready\_list\ (\textcolor{keywordtype}{int});}
+\DoxyCodeLine{01423\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ sched\_finish\_ready\_list\ (\textcolor{keywordtype}{void});}
+\DoxyCodeLine{01424\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ sched\_change\_pattern\ (\doxymbox{\hyperlink{coretypes_8h_a20e671ce9e7827268658cff844f4281c}{rtx}},\ \doxymbox{\hyperlink{coretypes_8h_a20e671ce9e7827268658cff844f4281c}{rtx}});}
+\DoxyCodeLine{01425\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{int}\ sched\_speculate\_insn\ (rtx\_insn\ *,\ ds\_t,\ \doxymbox{\hyperlink{coretypes_8h_a20e671ce9e7827268658cff844f4281c}{rtx}}\ *);}
+\DoxyCodeLine{01426\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ unlink\_bb\_notes\ (\doxymbox{\hyperlink{coretypes_8h_a0469df20b471a4cd7c81fbdce5027487}{basic\_block}},\ \doxymbox{\hyperlink{coretypes_8h_a0469df20b471a4cd7c81fbdce5027487}{basic\_block}});}
+\DoxyCodeLine{01427\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ add\_block\ (\doxymbox{\hyperlink{coretypes_8h_a0469df20b471a4cd7c81fbdce5027487}{basic\_block}},\ \doxymbox{\hyperlink{coretypes_8h_a0469df20b471a4cd7c81fbdce5027487}{basic\_block}});}
+\DoxyCodeLine{01428\ \textcolor{keyword}{extern}\ rtx\_note\ *\doxymbox{\hyperlink{cfgrtl_8h_ae7efec96e2a80dfcd7eaf1a6dba4f993}{bb\_note}}\ (\doxymbox{\hyperlink{coretypes_8h_a0469df20b471a4cd7c81fbdce5027487}{basic\_block}});}
+\DoxyCodeLine{01429\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ concat\_note\_lists\ (rtx\_insn\ *,\ rtx\_insn\ **);}
+\DoxyCodeLine{01430\ \textcolor{keyword}{extern}\ rtx\_insn\ *sched\_emit\_insn\ (\doxymbox{\hyperlink{coretypes_8h_a20e671ce9e7827268658cff844f4281c}{rtx}});}
+\DoxyCodeLine{01431\ \textcolor{keyword}{extern}\ rtx\_insn\ *get\_ready\_element\ (\textcolor{keywordtype}{int});}
+\DoxyCodeLine{01432\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{int}\ number\_in\_ready\ (\textcolor{keywordtype}{void});}
+\DoxyCodeLine{01433\ }
+\DoxyCodeLine{01434\ \textcolor{comment}{/*\ Types\ and\ functions\ in\ sched-\/ebb.cc.\ \ */}}
+\DoxyCodeLine{01435\ }
+\DoxyCodeLine{01436\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{coretypes_8h_a0469df20b471a4cd7c81fbdce5027487}{basic\_block}}\ schedule\_ebb\ (rtx\_insn\ *,\ rtx\_insn\ *,\ \textcolor{keywordtype}{bool});}
+\DoxyCodeLine{01437\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ schedule\_ebbs\_init\ (\textcolor{keywordtype}{void});}
+\DoxyCodeLine{01438\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ schedule\_ebbs\_finish\ (\textcolor{keywordtype}{void});}
+\DoxyCodeLine{01439\ }
+\DoxyCodeLine{01440\ \textcolor{comment}{/*\ Types\ and\ functions\ in\ sched-\/rgn.cc.\ \ */}}
+\DoxyCodeLine{01441\ }
+\DoxyCodeLine{01442\ \textcolor{comment}{/*\ A\ region\ is\ the\ main\ entity\ for\ interblock\ scheduling:\ insns}}
+\DoxyCodeLine{01443\ \textcolor{comment}{\ \ \ are\ allowed\ to\ move\ between\ blocks\ in\ the\ same\ region,\ along}}
+\DoxyCodeLine{01444\ \textcolor{comment}{\ \ \ control\ flow\ graph\ edges,\ in\ the\ 'up'\ direction.\ \ */}}
+\DoxyCodeLine{01445\ \textcolor{keyword}{struct\ }region}
+\DoxyCodeLine{01446\ \{}
+\DoxyCodeLine{01447\ \ \ \textcolor{comment}{/*\ Number\ of\ extended\ basic\ blocks\ in\ region.\ \ */}}
+\DoxyCodeLine{01448\ \ \ \textcolor{keywordtype}{int}\ rgn\_nr\_blocks;}
+\DoxyCodeLine{01449\ \ \ \textcolor{comment}{/*\ cblocks\ in\ the\ region\ (actually\ index\ in\ rgn\_bb\_table).\ \ */}}
+\DoxyCodeLine{01450\ \ \ \textcolor{keywordtype}{int}\ rgn\_blocks;}
+\DoxyCodeLine{01451\ \ \ \textcolor{comment}{/*\ Dependencies\ for\ this\ region\ are\ already\ computed.\ \ Basically,\ indicates,}}
+\DoxyCodeLine{01452\ \textcolor{comment}{\ \ \ \ \ that\ this\ is\ a\ recovery\ block.\ \ */}}
+\DoxyCodeLine{01453\ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ dont\_calc\_deps\ :\ 1;}
+\DoxyCodeLine{01454\ \ \ \textcolor{comment}{/*\ This\ region\ has\ at\ least\ one\ non-\/trivial\ ebb.\ \ */}}
+\DoxyCodeLine{01455\ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ has\_real\_ebb\ :\ 1;}
+\DoxyCodeLine{01456\ \};}
+\DoxyCodeLine{01457\ }
+\DoxyCodeLine{01458\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{int}\ nr\_regions;}
+\DoxyCodeLine{01459\ \textcolor{keyword}{extern}\ region\ *rgn\_table;}
+\DoxyCodeLine{01460\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{int}\ *rgn\_bb\_table;}
+\DoxyCodeLine{01461\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{int}\ *block\_to\_bb;}
+\DoxyCodeLine{01462\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{int}\ *containing\_rgn;}
+\DoxyCodeLine{01463\ }
+\DoxyCodeLine{01464\ \textcolor{comment}{/*\ Often\ used\ short-\/hand\ in\ the\ scheduler.\ \ The\ rest\ of\ the\ compiler\ uses}}
+\DoxyCodeLine{01465\ \textcolor{comment}{\ \ \ BLOCK\_FOR\_INSN(INSN)\ and\ an\ indirect\ reference\ to\ get\ the\ basic\ block}}
+\DoxyCodeLine{01466\ \textcolor{comment}{\ \ \ number\ ("{}index"{}).\ \ For\ historical\ reasons,\ the\ scheduler\ does\ not.\ \ */}}
+\DoxyCodeLine{01467\ \textcolor{preprocessor}{\#define\ BLOCK\_NUM(INSN)\ \ \ \ \ \ \ (BLOCK\_FOR\_INSN\ (INSN)-\/>index\ +\ 0)}}
+\DoxyCodeLine{01468\ }
+\DoxyCodeLine{01469\ \textcolor{preprocessor}{\#define\ RGN\_NR\_BLOCKS(rgn)\ (rgn\_table[rgn].rgn\_nr\_blocks)}}
+\DoxyCodeLine{01470\ \textcolor{preprocessor}{\#define\ RGN\_BLOCKS(rgn)\ (rgn\_table[rgn].rgn\_blocks)}}
+\DoxyCodeLine{01471\ \textcolor{preprocessor}{\#define\ RGN\_DONT\_CALC\_DEPS(rgn)\ (rgn\_table[rgn].dont\_calc\_deps)}}
+\DoxyCodeLine{01472\ \textcolor{preprocessor}{\#define\ RGN\_HAS\_REAL\_EBB(rgn)\ (rgn\_table[rgn].has\_real\_ebb)}}
+\DoxyCodeLine{01473\ \textcolor{preprocessor}{\#define\ BLOCK\_TO\_BB(block)\ (block\_to\_bb[block])}}
+\DoxyCodeLine{01474\ \textcolor{preprocessor}{\#define\ CONTAINING\_RGN(block)\ (containing\_rgn[block])}}
+\DoxyCodeLine{01475\ }
+\DoxyCodeLine{01476\ \textcolor{comment}{/*\ The\ mapping\ from\ ebb\ to\ block.\ \ */}}
+\DoxyCodeLine{01477\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{int}\ *ebb\_head;}
+\DoxyCodeLine{01478\ \textcolor{preprocessor}{\#define\ BB\_TO\_BLOCK(ebb)\ (rgn\_bb\_table[ebb\_head[ebb]])}}
+\DoxyCodeLine{01479\ \textcolor{preprocessor}{\#define\ EBB\_FIRST\_BB(ebb)\ BASIC\_BLOCK\_FOR\_FN\ (cfun,\ BB\_TO\_BLOCK\ (ebb))}}
+\DoxyCodeLine{01480\ \textcolor{preprocessor}{\#define\ EBB\_LAST\_BB(ebb)\ \(\backslash\)}}
+\DoxyCodeLine{01481\ \textcolor{preprocessor}{\ \ BASIC\_BLOCK\_FOR\_FN\ (cfun,\ rgn\_bb\_table[ebb\_head[ebb\ +\ 1]\ -\/\ 1])}}
+\DoxyCodeLine{01482\ \textcolor{preprocessor}{\#define\ INSN\_BB(INSN)\ (BLOCK\_TO\_BB\ (BLOCK\_NUM\ (INSN)))}}
+\DoxyCodeLine{01483\ }
+\DoxyCodeLine{01484\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{int}\ current\_nr\_blocks;}
+\DoxyCodeLine{01485\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{int}\ current\_blocks;}
+\DoxyCodeLine{01486\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{int}\ target\_bb;}
+\DoxyCodeLine{01487\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{bool}\ sched\_no\_dce;}
+\DoxyCodeLine{01488\ }
+\DoxyCodeLine{01489\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ set\_modulo\_params\ (\textcolor{keywordtype}{int},\ \textcolor{keywordtype}{int},\ \textcolor{keywordtype}{int},\ \textcolor{keywordtype}{int});}
+\DoxyCodeLine{01490\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ record\_delay\_slot\_pair\ (rtx\_insn\ *,\ rtx\_insn\ *,\ \textcolor{keywordtype}{int},\ \textcolor{keywordtype}{int});}
+\DoxyCodeLine{01491\ \textcolor{keyword}{extern}\ rtx\_insn\ *real\_insn\_for\_shadow\ (rtx\_insn\ *);}
+\DoxyCodeLine{01492\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ discard\_delay\_pairs\_above\ (\textcolor{keywordtype}{int});}
+\DoxyCodeLine{01493\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ free\_delay\_pairs\ (\textcolor{keywordtype}{void});}
+\DoxyCodeLine{01494\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ add\_delay\_dependencies\ (rtx\_insn\ *);}
+\DoxyCodeLine{01495\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{bool}\ sched\_is\_disabled\_for\_current\_region\_p\ (\textcolor{keywordtype}{void});}
+\DoxyCodeLine{01496\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ sched\_rgn\_init\ (\textcolor{keywordtype}{bool});}
+\DoxyCodeLine{01497\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ sched\_rgn\_finish\ (\textcolor{keywordtype}{void});}
+\DoxyCodeLine{01498\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ rgn\_setup\_region\ (\textcolor{keywordtype}{int});}
+\DoxyCodeLine{01499\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ sched\_rgn\_compute\_dependencies\ (\textcolor{keywordtype}{int});}
+\DoxyCodeLine{01500\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ sched\_rgn\_local\_init\ (\textcolor{keywordtype}{int});}
+\DoxyCodeLine{01501\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ sched\_rgn\_local\_finish\ (\textcolor{keywordtype}{void});}
+\DoxyCodeLine{01502\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ sched\_rgn\_local\_free\ (\textcolor{keywordtype}{void});}
+\DoxyCodeLine{01503\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ extend\_regions\ (\textcolor{keywordtype}{void});}
+\DoxyCodeLine{01504\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ rgn\_make\_new\_region\_out\_of\_new\_block\ (\doxymbox{\hyperlink{coretypes_8h_a0469df20b471a4cd7c81fbdce5027487}{basic\_block}});}
+\DoxyCodeLine{01505\ }
+\DoxyCodeLine{01506\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ compute\_priorities\ (\textcolor{keywordtype}{void});}
+\DoxyCodeLine{01507\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ increase\_insn\_priority\ (rtx\_insn\ *,\ \textcolor{keywordtype}{int});}
+\DoxyCodeLine{01508\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ debug\_rgn\_dependencies\ (\textcolor{keywordtype}{int});}
+\DoxyCodeLine{01509\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ debug\_dependencies\ (rtx\_insn\ *,\ rtx\_insn\ *);}
+\DoxyCodeLine{01510\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ dump\_rgn\_dependencies\_dot\ (FILE\ *);}
+\DoxyCodeLine{01511\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ dump\_rgn\_dependencies\_dot\ (\textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *);}
+\DoxyCodeLine{01512\ }
+\DoxyCodeLine{01513\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ free\_rgn\_deps\ (\textcolor{keywordtype}{void});}
+\DoxyCodeLine{01514\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{bool}\ contributes\_to\_priority\ (rtx\_insn\ *,\ rtx\_insn\ *);}
+\DoxyCodeLine{01515\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ extend\_rgns\ (\textcolor{keywordtype}{int}\ *,\ \textcolor{keywordtype}{int}\ *,\ \doxymbox{\hyperlink{coretypes_8h_a780cd5c6b7453aa0a01cdf1c5b379abd}{sbitmap}},\ \textcolor{keywordtype}{int}\ *);}
+\DoxyCodeLine{01516\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ deps\_join\ (\textcolor{keyword}{class}\ deps\_desc\ *,\ \textcolor{keyword}{class}\ deps\_desc\ *);}
+\DoxyCodeLine{01517\ }
+\DoxyCodeLine{01518\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ rgn\_setup\_common\_sched\_info\ (\textcolor{keywordtype}{void});}
+\DoxyCodeLine{01519\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ rgn\_setup\_sched\_infos\ (\textcolor{keywordtype}{void});}
+\DoxyCodeLine{01520\ }
+\DoxyCodeLine{01521\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ debug\_regions\ (\textcolor{keywordtype}{void});}
+\DoxyCodeLine{01522\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ debug\_region\ (\textcolor{keywordtype}{int});}
+\DoxyCodeLine{01523\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ dump\_region\_dot\ (FILE\ *,\ \textcolor{keywordtype}{int});}
+\DoxyCodeLine{01524\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ dump\_region\_dot\_file\ (\textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *,\ \textcolor{keywordtype}{int});}
+\DoxyCodeLine{01525\ }
+\DoxyCodeLine{01526\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ haifa\_sched\_init\ (\textcolor{keywordtype}{void});}
+\DoxyCodeLine{01527\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ haifa\_sched\_finish\ (\textcolor{keywordtype}{void});}
+\DoxyCodeLine{01528\ }
+\DoxyCodeLine{01529\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ find\_modifiable\_mems\ (rtx\_insn\ *,\ rtx\_insn\ *);}
+\DoxyCodeLine{01530\ }
+\DoxyCodeLine{01531\ \textcolor{comment}{/*\ sched-\/deps.cc\ interface\ to\ walk,\ add,\ search,\ update,\ resolve,\ delete}}
+\DoxyCodeLine{01532\ \textcolor{comment}{\ \ \ and\ debug\ instruction\ dependencies.\ \ */}}
+\DoxyCodeLine{01533\ }
+\DoxyCodeLine{01534\ \textcolor{comment}{/*\ Constants\ defining\ dependences\ lists.\ \ */}}
+\DoxyCodeLine{01535\ }
+\DoxyCodeLine{01536\ \textcolor{comment}{/*\ No\ list.\ \ */}}
+\DoxyCodeLine{01537\ \textcolor{preprocessor}{\#define\ SD\_LIST\_NONE\ (0)}}
+\DoxyCodeLine{01538\ }
+\DoxyCodeLine{01539\ \textcolor{comment}{/*\ hard\_back\_deps.\ \ */}}
+\DoxyCodeLine{01540\ \textcolor{preprocessor}{\#define\ SD\_LIST\_HARD\_BACK\ (1)}}
+\DoxyCodeLine{01541\ }
+\DoxyCodeLine{01542\ \textcolor{comment}{/*\ spec\_back\_deps.\ \ */}}
+\DoxyCodeLine{01543\ \textcolor{preprocessor}{\#define\ SD\_LIST\_SPEC\_BACK\ (2)}}
+\DoxyCodeLine{01544\ }
+\DoxyCodeLine{01545\ \textcolor{comment}{/*\ forw\_deps.\ \ */}}
+\DoxyCodeLine{01546\ \textcolor{preprocessor}{\#define\ SD\_LIST\_FORW\ (4)}}
+\DoxyCodeLine{01547\ }
+\DoxyCodeLine{01548\ \textcolor{comment}{/*\ resolved\_back\_deps.\ \ */}}
+\DoxyCodeLine{01549\ \textcolor{preprocessor}{\#define\ SD\_LIST\_RES\_BACK\ (8)}}
+\DoxyCodeLine{01550\ }
+\DoxyCodeLine{01551\ \textcolor{comment}{/*\ resolved\_forw\_deps.\ \ */}}
+\DoxyCodeLine{01552\ \textcolor{preprocessor}{\#define\ SD\_LIST\_RES\_FORW\ (16)}}
+\DoxyCodeLine{01553\ }
+\DoxyCodeLine{01554\ \textcolor{preprocessor}{\#define\ SD\_LIST\_BACK\ (SD\_LIST\_HARD\_BACK\ |\ SD\_LIST\_SPEC\_BACK)}}
+\DoxyCodeLine{01555\ }
+\DoxyCodeLine{01556\ \textcolor{comment}{/*\ A\ type\ to\ hold\ above\ flags.\ \ */}}
+\DoxyCodeLine{01557\ \textcolor{keyword}{typedef}\ \textcolor{keywordtype}{int}\ sd\_list\_types\_def;}
+\DoxyCodeLine{01558\ }
+\DoxyCodeLine{01559\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ sd\_next\_list\ (\doxymbox{\hyperlink{coretypes_8h_a666eef3d91a58b950bf402bd0489e7e0}{const\_rtx}},\ sd\_list\_types\_def\ *,\ deps\_list\_t\ *,\ \textcolor{keywordtype}{bool}\ *);}
+\DoxyCodeLine{01560\ }
+\DoxyCodeLine{01561\ \textcolor{comment}{/*\ Iterator\ to\ walk\ through,\ resolve\ and\ delete\ dependencies.\ \ */}}
+\DoxyCodeLine{01562\ \textcolor{keyword}{struct\ }\_sd\_iterator}
+\DoxyCodeLine{01563\ \{}
+\DoxyCodeLine{01564\ \ \ \textcolor{comment}{/*\ What\ lists\ to\ walk.\ \ Can\ be\ any\ combination\ of\ SD\_LIST\_*\ flags.\ \ */}}
+\DoxyCodeLine{01565\ \ \ sd\_list\_types\_def\ types;}
+\DoxyCodeLine{01566\ }
+\DoxyCodeLine{01567\ \ \ \textcolor{comment}{/*\ Instruction\ dependencies\ lists\ of\ which\ will\ be\ walked.\ \ */}}
+\DoxyCodeLine{01568\ \ \ \doxymbox{\hyperlink{coretypes_8h_a20e671ce9e7827268658cff844f4281c}{rtx}}\ insn;}
+\DoxyCodeLine{01569\ }
+\DoxyCodeLine{01570\ \ \ \textcolor{comment}{/*\ Pointer\ to\ the\ next\ field\ of\ the\ previous\ element.\ \ This\ is\ not}}
+\DoxyCodeLine{01571\ \textcolor{comment}{\ \ \ \ \ simply\ a\ pointer\ to\ the\ next\ element\ to\ allow\ easy\ deletion\ from\ the}}
+\DoxyCodeLine{01572\ \textcolor{comment}{\ \ \ \ \ list.\ \ When\ a\ dep\ is\ being\ removed\ from\ the\ list\ the\ iterator}}
+\DoxyCodeLine{01573\ \textcolor{comment}{\ \ \ \ \ will\ automatically\ advance\ because\ the\ value\ in\ *linkp\ will\ start}}
+\DoxyCodeLine{01574\ \textcolor{comment}{\ \ \ \ \ referring\ to\ the\ next\ element.\ \ */}}
+\DoxyCodeLine{01575\ \ \ dep\_link\_t\ *linkp;}
+\DoxyCodeLine{01576\ }
+\DoxyCodeLine{01577\ \ \ \textcolor{comment}{/*\ True\ if\ the\ current\ list\ is\ a\ resolved\ one.\ \ */}}
+\DoxyCodeLine{01578\ \ \ \textcolor{keywordtype}{bool}\ resolved\_p;}
+\DoxyCodeLine{01579\ \};}
+\DoxyCodeLine{01580\ }
+\DoxyCodeLine{01581\ \textcolor{keyword}{typedef}\ \textcolor{keyword}{struct\ }\_sd\_iterator\ sd\_iterator\_def;}
+\DoxyCodeLine{01582\ }
+\DoxyCodeLine{01583\ \textcolor{comment}{/*\ ???\ We\ can\ move\ some\ definitions\ that\ are\ used\ in\ below\ inline\ functions}}
+\DoxyCodeLine{01584\ \textcolor{comment}{\ \ \ out\ of\ sched-\/int.h\ to\ sched-\/deps.cc\ provided\ that\ the\ below\ functions\ will}}
+\DoxyCodeLine{01585\ \textcolor{comment}{\ \ \ become\ global\ externals.}}
+\DoxyCodeLine{01586\ \textcolor{comment}{\ \ \ These\ definitions\ include:}}
+\DoxyCodeLine{01587\ \textcolor{comment}{\ \ \ *\ struct\ \_deps\_list:\ opaque\ pointer\ is\ needed\ at\ global\ scope.}}
+\DoxyCodeLine{01588\ \textcolor{comment}{\ \ \ *\ struct\ \_dep\_link:\ opaque\ pointer\ is\ needed\ at\ scope\ of\ sd\_iterator\_def.}}
+\DoxyCodeLine{01589\ \textcolor{comment}{\ \ \ *\ struct\ \_dep\_node:\ opaque\ pointer\ is\ needed\ at\ scope\ of}}
+\DoxyCodeLine{01590\ \textcolor{comment}{\ \ \ struct\ \_deps\_link.\ \ */}}
+\DoxyCodeLine{01591\ }
+\DoxyCodeLine{01592\ \textcolor{comment}{/*\ Return\ initialized\ iterator.\ \ */}}
+\DoxyCodeLine{01593\ \textcolor{keyword}{inline}\ sd\_iterator\_def}
+\DoxyCodeLine{01594\ sd\_iterator\_start\ (\doxymbox{\hyperlink{coretypes_8h_a20e671ce9e7827268658cff844f4281c}{rtx}}\ insn,\ sd\_list\_types\_def\ types)}
+\DoxyCodeLine{01595\ \{}
+\DoxyCodeLine{01596\ \ \ \textcolor{comment}{/*\ Some\ dep\_link\ a\ pointer\ to\ which\ will\ return\ NULL.\ \ */}}
+\DoxyCodeLine{01597\ \ \ \textcolor{keyword}{static}\ dep\_link\_t\ null\_link\ =\ \doxymbox{\hyperlink{stddef_8h_a070d2ce7b6bb7e5c05602aa8c308d0c4}{NULL}};}
+\DoxyCodeLine{01598\ }
+\DoxyCodeLine{01599\ \ \ sd\_iterator\_def\ \doxymbox{\hyperlink{poly-int_8h_a7e98b8a17c0aad30ba64d47b74e2a6c1}{i}};}
+\DoxyCodeLine{01600\ }
+\DoxyCodeLine{01601\ \ \ \doxymbox{\hyperlink{poly-int_8h_a7e98b8a17c0aad30ba64d47b74e2a6c1}{i}}.types\ =\ types;}
+\DoxyCodeLine{01602\ \ \ \doxymbox{\hyperlink{poly-int_8h_a7e98b8a17c0aad30ba64d47b74e2a6c1}{i}}.insn\ =\ insn;}
+\DoxyCodeLine{01603\ \ \ \doxymbox{\hyperlink{poly-int_8h_a7e98b8a17c0aad30ba64d47b74e2a6c1}{i}}.linkp\ =\ \&null\_link;}
+\DoxyCodeLine{01604\ }
+\DoxyCodeLine{01605\ \ \ \textcolor{comment}{/*\ Avoid\ 'uninitialized\ warning'.\ \ */}}
+\DoxyCodeLine{01606\ \ \ \doxymbox{\hyperlink{poly-int_8h_a7e98b8a17c0aad30ba64d47b74e2a6c1}{i}}.resolved\_p\ =\ \textcolor{keyword}{false};}
+\DoxyCodeLine{01607\ }
+\DoxyCodeLine{01608\ \ \ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{poly-int_8h_a7e98b8a17c0aad30ba64d47b74e2a6c1}{i}};}
+\DoxyCodeLine{01609\ \}}
+\DoxyCodeLine{01610\ }
+\DoxyCodeLine{01611\ \textcolor{comment}{/*\ Return\ the\ current\ element.\ \ */}}
+\DoxyCodeLine{01612\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{bool}}
+\DoxyCodeLine{01613\ sd\_iterator\_cond\ (sd\_iterator\_def\ *it\_ptr,\ dep\_t\ *dep\_ptr)}
+\DoxyCodeLine{01614\ \{}
+\DoxyCodeLine{01615\ \ \ \textcolor{keywordflow}{while}\ (\textcolor{keyword}{true})}
+\DoxyCodeLine{01616\ \ \ \ \ \{}
+\DoxyCodeLine{01617\ \ \ \ \ \ \ dep\_link\_t\ link\ =\ *it\_ptr-\/>linkp;}
+\DoxyCodeLine{01618\ }
+\DoxyCodeLine{01619\ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (link\ !=\ \doxymbox{\hyperlink{stddef_8h_a070d2ce7b6bb7e5c05602aa8c308d0c4}{NULL}})}
+\DoxyCodeLine{01620\ \ \ \ \ \{}
+\DoxyCodeLine{01621\ \ \ \ \ \ \ *dep\_ptr\ =\ DEP\_LINK\_DEP\ (link);}
+\DoxyCodeLine{01622\ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ \textcolor{keyword}{true};}
+\DoxyCodeLine{01623\ \ \ \ \ \}}
+\DoxyCodeLine{01624\ \ \ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{01625\ \ \ \ \ \{}
+\DoxyCodeLine{01626\ \ \ \ \ \ \ sd\_list\_types\_def\ types\ =\ it\_ptr-\/>types;}
+\DoxyCodeLine{01627\ }
+\DoxyCodeLine{01628\ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (types\ !=\ SD\_LIST\_NONE)}
+\DoxyCodeLine{01629\ \ \ \ \ \ \ \ \ \textcolor{comment}{/*\ Switch\ to\ next\ list.\ \ */}}
+\DoxyCodeLine{01630\ \ \ \ \ \ \ \ \ \{}
+\DoxyCodeLine{01631\ \ \ \ \ \ \ \ \ \ \ deps\_list\_t\ list;}
+\DoxyCodeLine{01632\ }
+\DoxyCodeLine{01633\ \ \ \ \ \ \ \ \ \ \ sd\_next\_list\ (it\_ptr-\/>insn,}
+\DoxyCodeLine{01634\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&it\_ptr-\/>types,\ \&list,\ \&it\_ptr-\/>resolved\_p);}
+\DoxyCodeLine{01635\ }
+\DoxyCodeLine{01636\ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (list)}
+\DoxyCodeLine{01637\ \ \ \ \ \ \ \ \ \{}
+\DoxyCodeLine{01638\ \ \ \ \ \ \ \ \ \ \ it\_ptr-\/>linkp\ =\ \&DEPS\_LIST\_FIRST\ (list);}
+\DoxyCodeLine{01639\ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{continue};}
+\DoxyCodeLine{01640\ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{01641\ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{01642\ }
+\DoxyCodeLine{01643\ \ \ \ \ \ \ *dep\_ptr\ =\ \doxymbox{\hyperlink{stddef_8h_a070d2ce7b6bb7e5c05602aa8c308d0c4}{NULL}};}
+\DoxyCodeLine{01644\ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ \textcolor{keyword}{false};}
+\DoxyCodeLine{01645\ \ \ \ \ \}}
+\DoxyCodeLine{01646\ \ \ \ \}}
+\DoxyCodeLine{01647\ \}}
+\DoxyCodeLine{01648\ }
+\DoxyCodeLine{01649\ \textcolor{comment}{/*\ Advance\ iterator.\ \ */}}
+\DoxyCodeLine{01650\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{void}}
+\DoxyCodeLine{01651\ sd\_iterator\_next\ (sd\_iterator\_def\ *it\_ptr)}
+\DoxyCodeLine{01652\ \{}
+\DoxyCodeLine{01653\ \ \ it\_ptr-\/>linkp\ =\ \&DEP\_LINK\_NEXT\ (*it\_ptr-\/>linkp);}
+\DoxyCodeLine{01654\ \}}
+\DoxyCodeLine{01655\ }
+\DoxyCodeLine{01656\ \textcolor{comment}{/*\ A\ cycle\ wrapper.\ \ */}}
+\DoxyCodeLine{01657\ \textcolor{preprocessor}{\#define\ FOR\_EACH\_DEP(INSN,\ LIST\_TYPES,\ ITER,\ DEP)\ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{01658\ \textcolor{preprocessor}{\ \ for\ ((ITER)\ =\ sd\_iterator\_start\ ((INSN),\ (LIST\_TYPES));\ \ \ \(\backslash\)}}
+\DoxyCodeLine{01659\ \textcolor{preprocessor}{\ \ \ \ \ \ \ sd\_iterator\_cond\ (\&(ITER),\ \&(DEP));\ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{01660\ \textcolor{preprocessor}{\ \ \ \ \ \ \ sd\_iterator\_next\ (\&(ITER)))}}
+\DoxyCodeLine{01661\ }
+\DoxyCodeLine{01662\ \textcolor{preprocessor}{\#define\ IS\_DISPATCH\_ON\ 1}}
+\DoxyCodeLine{01663\ \textcolor{preprocessor}{\#define\ IS\_CMP\ 2}}
+\DoxyCodeLine{01664\ \textcolor{preprocessor}{\#define\ DISPATCH\_VIOLATION\ 3}}
+\DoxyCodeLine{01665\ \textcolor{preprocessor}{\#define\ FITS\_DISPATCH\_WINDOW\ 4}}
+\DoxyCodeLine{01666\ \textcolor{preprocessor}{\#define\ DISPATCH\_INIT\ 5}}
+\DoxyCodeLine{01667\ \textcolor{preprocessor}{\#define\ ADD\_TO\_DISPATCH\_WINDOW\ 6}}
+\DoxyCodeLine{01668\ }
+\DoxyCodeLine{01669\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{int}\ sd\_lists\_size\ (\doxymbox{\hyperlink{coretypes_8h_a666eef3d91a58b950bf402bd0489e7e0}{const\_rtx}},\ sd\_list\_types\_def);}
+\DoxyCodeLine{01670\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{bool}\ sd\_lists\_empty\_p\ (\doxymbox{\hyperlink{coretypes_8h_a666eef3d91a58b950bf402bd0489e7e0}{const\_rtx}},\ sd\_list\_types\_def);}
+\DoxyCodeLine{01671\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ sd\_init\_insn\ (rtx\_insn\ *);}
+\DoxyCodeLine{01672\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ sd\_finish\_insn\ (rtx\_insn\ *);}
+\DoxyCodeLine{01673\ \textcolor{keyword}{extern}\ dep\_t\ sd\_find\_dep\_between\ (\doxymbox{\hyperlink{coretypes_8h_a20e671ce9e7827268658cff844f4281c}{rtx}},\ \doxymbox{\hyperlink{coretypes_8h_a20e671ce9e7827268658cff844f4281c}{rtx}},\ \textcolor{keywordtype}{bool});}
+\DoxyCodeLine{01674\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ sd\_add\_dep\ (dep\_t,\ \textcolor{keywordtype}{bool});}
+\DoxyCodeLine{01675\ \textcolor{keyword}{extern}\ \textcolor{keyword}{enum}\ DEPS\_ADJUST\_RESULT\ sd\_add\_or\_update\_dep\ (dep\_t,\ \textcolor{keywordtype}{bool});}
+\DoxyCodeLine{01676\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ sd\_resolve\_dep\ (sd\_iterator\_def);}
+\DoxyCodeLine{01677\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ sd\_unresolve\_dep\ (sd\_iterator\_def);}
+\DoxyCodeLine{01678\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ sd\_copy\_back\_deps\ (rtx\_insn\ *,\ rtx\_insn\ *,\ \textcolor{keywordtype}{bool});}
+\DoxyCodeLine{01679\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ sd\_delete\_dep\ (sd\_iterator\_def);}
+\DoxyCodeLine{01680\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ sd\_debug\_lists\ (\doxymbox{\hyperlink{coretypes_8h_a20e671ce9e7827268658cff844f4281c}{rtx}},\ sd\_list\_types\_def);}
+\DoxyCodeLine{01681\ }
+\DoxyCodeLine{01682\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{int}\ dep\_list\_size\ (rtx\_insn\ *,\ sd\_list\_types\_def);}
+\DoxyCodeLine{01683\ }
+\DoxyCodeLine{01684\ \textcolor{comment}{/*\ Macros\ and\ declarations\ for\ scheduling\ fusion.\ \ */}}
+\DoxyCodeLine{01685\ \textcolor{preprocessor}{\#define\ FUSION\_MAX\_PRIORITY\ (INT\_MAX)}}
+\DoxyCodeLine{01686\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{bool}\ sched\_fusion;}
+\DoxyCodeLine{01687\ }
+\DoxyCodeLine{01688\ \textcolor{preprocessor}{\#endif\ }\textcolor{comment}{/*\ INSN\_SCHEDULING\ */}\textcolor{preprocessor}{}}
+\DoxyCodeLine{01689\ }
+\DoxyCodeLine{01690\ \textcolor{preprocessor}{\#endif\ }\textcolor{comment}{/*\ GCC\_SCHED\_INT\_H\ */}\textcolor{preprocessor}{}}
+\DoxyCodeLine{01691\ }
+
+\end{DoxyCode}

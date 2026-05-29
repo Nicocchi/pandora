@@ -1,0 +1,369 @@
+\doxysection{tree-\/ssa-\/live.h}
+\hypertarget{tree-ssa-live_8h_source}{}\label{tree-ssa-live_8h_source}\index{toolchain/x86\_64-\/elf/lib/gcc/x86\_64-\/elf/14.2.0/plugin/include/tree-\/ssa-\/live.h@{toolchain/x86\_64-\/elf/lib/gcc/x86\_64-\/elf/14.2.0/plugin/include/tree-\/ssa-\/live.h}}
+\doxymbox{\hyperlink{tree-ssa-live_8h}{Go to the documentation of this file.}}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001\ \textcolor{comment}{/*\ Routines\ for\ liveness\ in\ SSA\ trees.}}
+\DoxyCodeLine{00002\ \textcolor{comment}{\ \ \ Copyright\ (C)\ 2003-\/2024\ Free\ Software\ Foundation,\ Inc.}}
+\DoxyCodeLine{00003\ \textcolor{comment}{\ \ \ Contributed\ by\ Andrew\ MacLeod\ \ <amacleod@redhat.com>}}
+\DoxyCodeLine{00004\ \textcolor{comment}{}}
+\DoxyCodeLine{00005\ \textcolor{comment}{This\ file\ is\ part\ of\ GCC.}}
+\DoxyCodeLine{00006\ \textcolor{comment}{}}
+\DoxyCodeLine{00007\ \textcolor{comment}{GCC\ is\ free\ software;\ you\ can\ redistribute\ it\ and/or\ modify}}
+\DoxyCodeLine{00008\ \textcolor{comment}{it\ under\ the\ terms\ of\ the\ GNU\ General\ Public\ License\ as\ published\ by}}
+\DoxyCodeLine{00009\ \textcolor{comment}{the\ Free\ Software\ Foundation;\ either\ version\ 3,\ or\ (at\ your\ option)}}
+\DoxyCodeLine{00010\ \textcolor{comment}{any\ later\ version.}}
+\DoxyCodeLine{00011\ \textcolor{comment}{}}
+\DoxyCodeLine{00012\ \textcolor{comment}{GCC\ is\ distributed\ in\ the\ hope\ that\ it\ will\ be\ useful,}}
+\DoxyCodeLine{00013\ \textcolor{comment}{but\ WITHOUT\ ANY\ WARRANTY;\ without\ even\ the\ implied\ warranty\ of}}
+\DoxyCodeLine{00014\ \textcolor{comment}{MERCHANTABILITY\ or\ FITNESS\ FOR\ A\ PARTICULAR\ PURPOSE.\ \ See\ the}}
+\DoxyCodeLine{00015\ \textcolor{comment}{GNU\ General\ Public\ License\ for\ more\ details.}}
+\DoxyCodeLine{00016\ \textcolor{comment}{}}
+\DoxyCodeLine{00017\ \textcolor{comment}{You\ should\ have\ received\ a\ copy\ of\ the\ GNU\ General\ Public\ License}}
+\DoxyCodeLine{00018\ \textcolor{comment}{along\ with\ GCC;\ see\ the\ file\ COPYING3.\ \ If\ not\ see}}
+\DoxyCodeLine{00019\ \textcolor{comment}{<http://www.gnu.org/licenses/>.\ \ */}}
+\DoxyCodeLine{00020\ }
+\DoxyCodeLine{00021\ }
+\DoxyCodeLine{00022\ \textcolor{preprocessor}{\#ifndef\ \_TREE\_SSA\_LIVE\_H}}
+\DoxyCodeLine{00023\ \textcolor{preprocessor}{\#define\ \_TREE\_SSA\_LIVE\_H\ 1}}
+\DoxyCodeLine{00024\ }
+\DoxyCodeLine{00025\ \textcolor{preprocessor}{\#include\ "{}partition.h"{}}}
+\DoxyCodeLine{00026\ }
+\DoxyCodeLine{00027\ \textcolor{comment}{/*\ Used\ to\ create\ the\ variable\ mapping\ when\ we\ go\ out\ of\ SSA\ form.}}
+\DoxyCodeLine{00028\ \textcolor{comment}{}}
+\DoxyCodeLine{00029\ \textcolor{comment}{\ \ \ Mapping\ from\ an\ ssa\_name\ to\ a\ partition\ number\ is\ maintained,\ as\ well\ as}}
+\DoxyCodeLine{00030\ \textcolor{comment}{\ \ \ partition\ number\ back\ to\ ssa\_name.}}
+\DoxyCodeLine{00031\ \textcolor{comment}{}}
+\DoxyCodeLine{00032\ \textcolor{comment}{\ \ \ This\ data\ structure\ also\ supports\ "{}views"{},\ which\ work\ on\ a\ subset\ of\ all}}
+\DoxyCodeLine{00033\ \textcolor{comment}{\ \ \ partitions.\ \ This\ allows\ the\ coalescer\ to\ decide\ what\ partitions\ are}}
+\DoxyCodeLine{00034\ \textcolor{comment}{\ \ \ interesting\ to\ it,\ and\ only\ work\ with\ those\ partitions.\ \ Whenever\ the\ view}}
+\DoxyCodeLine{00035\ \textcolor{comment}{\ \ \ is\ changed,\ the\ partition\ numbers\ change,\ but\ none\ of\ the\ partition\ groupings}}
+\DoxyCodeLine{00036\ \textcolor{comment}{\ \ \ change.\ (ie,\ it\ is\ truly\ a\ view\ since\ it\ doesn't\ change\ anything)}}
+\DoxyCodeLine{00037\ \textcolor{comment}{}}
+\DoxyCodeLine{00038\ \textcolor{comment}{\ \ \ The\ final\ component\ of\ the\ data\ structure\ is\ the\ basevar\ map.\ \ This\ provides}}
+\DoxyCodeLine{00039\ \textcolor{comment}{\ \ \ a\ list\ of\ all\ the\ different\ base\ variables\ which\ occur\ in\ a\ partition\ view,}}
+\DoxyCodeLine{00040\ \textcolor{comment}{\ \ \ and\ a\ unique\ index\ for\ each\ one.\ Routines\ are\ provided\ to\ quickly\ produce}}
+\DoxyCodeLine{00041\ \textcolor{comment}{\ \ \ the\ base\ variable\ of\ a\ partition.}}
+\DoxyCodeLine{00042\ \textcolor{comment}{}}
+\DoxyCodeLine{00043\ \textcolor{comment}{\ \ \ Note\ that\ members\ of\ a\ partition\ MUST\ all\ have\ the\ same\ base\ variable.\ \ */}}
+\DoxyCodeLine{00044\ }
+\DoxyCodeLine{00045\ \textcolor{keyword}{typedef}\ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{struct__var__map}{\_var\_map}}}
+\DoxyCodeLine{00046\ \{}
+\DoxyCodeLine{00047\ \ \ \textcolor{comment}{/*\ The\ partition\ manager\ of\ all\ variables.\ \ */}}
+\DoxyCodeLine{00048\ \ \ partition\ \doxymbox{\hyperlink{struct__var__map_a98ea53b383c4aca80bef27c6f82398ae}{var\_partition}};}
+\DoxyCodeLine{00049\ }
+\DoxyCodeLine{00050\ \ \ \textcolor{comment}{/*\ Vector\ for\ managing\ partitions\ views.\ \ */}}
+\DoxyCodeLine{00051\ \ \ \textcolor{keywordtype}{int}\ *\doxymbox{\hyperlink{struct__var__map_aa729c674b96701e8cd3c710c568ddbb7}{partition\_to\_view}};}
+\DoxyCodeLine{00052\ \ \ \textcolor{keywordtype}{int}\ *\doxymbox{\hyperlink{struct__var__map_accb0474fa8ac3c1d588dcf0251312f5a}{view\_to\_partition}};}
+\DoxyCodeLine{00053\ }
+\DoxyCodeLine{00054\ \ \ \textcolor{comment}{/*\ Current\ number\ of\ partitions\ in\ var\_map\ based\ on\ the\ current\ view.\ \ */}}
+\DoxyCodeLine{00055\ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{struct__var__map_a528e1fbb157d4d8ef4724ac2d43ef61f}{num\_partitions}};}
+\DoxyCodeLine{00056\ }
+\DoxyCodeLine{00057\ \ \ \textcolor{comment}{/*\ Original\ full\ partition\ size.\ \ */}}
+\DoxyCodeLine{00058\ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{struct__var__map_a7a3cba2c7694b2d9a0e5bede60fb67ab}{partition\_size}};}
+\DoxyCodeLine{00059\ }
+\DoxyCodeLine{00060\ \ \ \textcolor{comment}{/*\ Number\ of\ base\ variables\ in\ the\ base\ var\ list.\ \ */}}
+\DoxyCodeLine{00061\ \ \ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{struct__var__map_a8cdf0d59bd091567a551f6db7f82682e}{num\_basevars}};}
+\DoxyCodeLine{00062\ }
+\DoxyCodeLine{00063\ \ \ \textcolor{comment}{/*\ Map\ of\ partitions\ numbers\ to\ base\ variable\ table\ indexes.\ \ */}}
+\DoxyCodeLine{00064\ \ \ \textcolor{keywordtype}{int}\ *\doxymbox{\hyperlink{struct__var__map_aa5d4200140580669f2a125c44b9b0e13}{partition\_to\_base\_index}};}
+\DoxyCodeLine{00065\ }
+\DoxyCodeLine{00066\ \ \ \textcolor{comment}{/*\ Bitmap\ of\ basic\ block.\ \ It\ describes\ the\ region\ within\ which\ the\ analysis}}
+\DoxyCodeLine{00067\ \textcolor{comment}{\ \ \ \ \ is\ done.\ \ Using\ pointer\ avoids\ allocating\ memory\ in\ out-\/of-\/ssa\ case.\ \ */}}
+\DoxyCodeLine{00068\ \ \ \doxymbox{\hyperlink{coretypes_8h_ae7ea3a04cabf8964dc6e8e95a9cde1b8}{bitmap}}\ \doxymbox{\hyperlink{struct__var__map_a3d1afcc1e1d89b516ce142a4a0d19716}{bmp\_bbs}};}
+\DoxyCodeLine{00069\ }
+\DoxyCodeLine{00070\ \ \ \textcolor{comment}{/*\ Vector\ of\ basic\ block\ in\ the\ region.\ \ */}}
+\DoxyCodeLine{00071\ \ \ \doxymbox{\hyperlink{structvec}{vec<basic\_block>}}\ \doxymbox{\hyperlink{struct__var__map_a1a09bc1f2c7ca6102c47b477d6b7c452}{vec\_bbs}};}
+\DoxyCodeLine{00072\ }
+\DoxyCodeLine{00073\ \ \ \textcolor{comment}{/*\ If\ non-\/NULL,\ only\ coalesce\ SSA\_NAMEs\ from\ this\ bitmap,\ and\ try\ harder}}
+\DoxyCodeLine{00074\ \textcolor{comment}{\ \ \ \ \ for\ those\ (for\ bitint\ lowering\ pass).\ \ */}}
+\DoxyCodeLine{00075\ \ \ \doxymbox{\hyperlink{coretypes_8h_ae7ea3a04cabf8964dc6e8e95a9cde1b8}{bitmap}}\ \doxymbox{\hyperlink{struct__var__map_a57a0f4aaebc098a0a49ef66e8a4830d1}{bitint}};}
+\DoxyCodeLine{00076\ }
+\DoxyCodeLine{00077\ \ \ \textcolor{comment}{/*\ True\ if\ this\ map\ is\ for\ out-\/of-\/ssa,\ otherwise\ for\ live\ range}}
+\DoxyCodeLine{00078\ \textcolor{comment}{\ \ \ \ \ computation.\ \ When\ for\ out-\/of-\/ssa,\ it\ also\ means\ the\ var\ map\ is\ computed}}
+\DoxyCodeLine{00079\ \textcolor{comment}{\ \ \ \ \ for\ whole\ current\ function.\ \ */}}
+\DoxyCodeLine{00080\ \ \ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{struct__var__map_a0307a383af84279f97827864b1dfea97}{outofssa\_p}};}
+\DoxyCodeLine{00081\ \}\ *\doxymbox{\hyperlink{tree-ssa-live_8h_a9b3569097e9ad52cb676238efe05ae4d}{var\_map}};}
+\DoxyCodeLine{00082\ }
+\DoxyCodeLine{00083\ }
+\DoxyCodeLine{00084\ \textcolor{comment}{/*\ Value\ used\ to\ represent\ no\ partition\ number.\ \ */}}
+\DoxyCodeLine{00085\ \textcolor{preprocessor}{\#define\ NO\_PARTITION\ \ \ \ \ \ \ \ -\/1}}
+\DoxyCodeLine{00086\ }
+\DoxyCodeLine{00087\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{tree-ssa-live_8h_a9b3569097e9ad52cb676238efe05ae4d}{var\_map}}\ \doxymbox{\hyperlink{tree-ssa-live_8h_afca0a7a7fe4162bab352fc38f6e09ac9}{init\_var\_map}}\ (\textcolor{keywordtype}{int},\ \textcolor{keyword}{class}\ loop\ *\ =\ \doxymbox{\hyperlink{stddef_8h_a070d2ce7b6bb7e5c05602aa8c308d0c4}{NULL}},\ \doxymbox{\hyperlink{coretypes_8h_ae7ea3a04cabf8964dc6e8e95a9cde1b8}{bitmap}}\ =\ \doxymbox{\hyperlink{stddef_8h_a070d2ce7b6bb7e5c05602aa8c308d0c4}{NULL}});}
+\DoxyCodeLine{00088\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{tree-ssa-live_8h_a04f2f34166a6c4b825a135cde7b14364}{delete\_var\_map}}\ (\doxymbox{\hyperlink{tree-ssa-live_8h_a9b3569097e9ad52cb676238efe05ae4d}{var\_map}});}
+\DoxyCodeLine{00089\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{tree-ssa-live_8h_af38c3de03cd260e70fe4da4ad80f18c9}{var\_union}}\ (\doxymbox{\hyperlink{tree-ssa-live_8h_a9b3569097e9ad52cb676238efe05ae4d}{var\_map}},\ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}},\ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}});}
+\DoxyCodeLine{00090\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{tree-ssa-live_8h_a0079c1dd1c6f3c4c91f4356eb92fca0d}{partition\_view\_normal}}\ (\doxymbox{\hyperlink{tree-ssa-live_8h_a9b3569097e9ad52cb676238efe05ae4d}{var\_map}});}
+\DoxyCodeLine{00091\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{tree-ssa-live_8h_a1ff4c544367df4e455b29ef793227a14}{partition\_view\_bitmap}}\ (\doxymbox{\hyperlink{tree-ssa-live_8h_a9b3569097e9ad52cb676238efe05ae4d}{var\_map}},\ \doxymbox{\hyperlink{coretypes_8h_ae7ea3a04cabf8964dc6e8e95a9cde1b8}{bitmap}});}
+\DoxyCodeLine{00092\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{tree-ssa-live_8h_ad293b4a14f169f3d6af23d1dd971cf19}{dump\_scope\_blocks}}\ (FILE\ *,\ \doxymbox{\hyperlink{dumpfile_8h_ae3aeb1ff52915e32d52ac788388fbeef}{dump\_flags\_t}});}
+\DoxyCodeLine{00093\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{tree-ssa-live_8h_a33c76c94ddeb2e630ed366325ad073e6}{debug\_scope\_block}}\ (\doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}},\ \doxymbox{\hyperlink{dumpfile_8h_ae3aeb1ff52915e32d52ac788388fbeef}{dump\_flags\_t}});}
+\DoxyCodeLine{00094\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{tree-ssa-live_8h_a4a3b99a91d07d4b480456129466e05d5}{debug\_scope\_blocks}}\ (\doxymbox{\hyperlink{dumpfile_8h_ae3aeb1ff52915e32d52ac788388fbeef}{dump\_flags\_t}});}
+\DoxyCodeLine{00095\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{tree-ssa-live_8h_a0a0775b1aa1af06b9ada803d765700de}{remove\_unused\_locals}}\ (\textcolor{keywordtype}{void});}
+\DoxyCodeLine{00096\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{tree-ssa-live_8h_a6fc6a6559538af33b2ba628091933d41}{dump\_var\_map}}\ (FILE\ *,\ \doxymbox{\hyperlink{tree-ssa-live_8h_a9b3569097e9ad52cb676238efe05ae4d}{var\_map}});}
+\DoxyCodeLine{00097\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{collect-utils_8h_a398527b3e9e358c345c5047b16871957}{debug}}\ (\doxymbox{\hyperlink{struct__var__map}{\_var\_map}}\ \&ref);}
+\DoxyCodeLine{00098\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{collect-utils_8h_a398527b3e9e358c345c5047b16871957}{debug}}\ (\doxymbox{\hyperlink{struct__var__map}{\_var\_map}}\ *ptr);}
+\DoxyCodeLine{00099\ }
+\DoxyCodeLine{00100\ }
+\DoxyCodeLine{00101\ \textcolor{comment}{/*\ Return\ TRUE\ if\ region\ of\ the\ MAP\ contains\ basic\ block\ BB.\ \ */}}
+\DoxyCodeLine{00102\ }
+\DoxyCodeLine{00103\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{bool}}
+\DoxyCodeLine{00104\ \doxymbox{\hyperlink{tree-ssa-live_8h_ad05184c4c5c0eba8317795c3187ef7e0}{region\_contains\_p}}\ (\doxymbox{\hyperlink{tree-ssa-live_8h_a9b3569097e9ad52cb676238efe05ae4d}{var\_map}}\ map,\ \doxymbox{\hyperlink{coretypes_8h_a0469df20b471a4cd7c81fbdce5027487}{basic\_block}}\ bb)}
+\DoxyCodeLine{00105\ \{}
+\DoxyCodeLine{00106\ \ \ \textcolor{comment}{/*\ It's\ possible\ that\ the\ function\ is\ called\ with\ ENTRY\_BLOCK/EXIT\_BLOCK.\ \ */}}
+\DoxyCodeLine{00107\ \ \ \textcolor{keywordflow}{if}\ (map-\/>\doxymbox{\hyperlink{struct__var__map_a0307a383af84279f97827864b1dfea97}{outofssa\_p}}\ ||\ map-\/>\doxymbox{\hyperlink{struct__var__map_a57a0f4aaebc098a0a49ef66e8a4830d1}{bitint}})}
+\DoxyCodeLine{00108\ \ \ \ \ \textcolor{keywordflow}{return}\ (bb-\/>index\ !=\ \doxymbox{\hyperlink{basic-block_8h_aeb6a4a93acb6f73a36397e8608ce2266}{ENTRY\_BLOCK}}\ \&\&\ bb-\/>index\ !=\ \doxymbox{\hyperlink{basic-block_8h_a91137f5ead70f616e63dd500b06c3091}{EXIT\_BLOCK}});}
+\DoxyCodeLine{00109\ }
+\DoxyCodeLine{00110\ \ \ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{bitmap_8h_a423ed90a8bb6c57224d02bcdc9eae766}{bitmap\_bit\_p}}\ (map-\/>\doxymbox{\hyperlink{struct__var__map_a3d1afcc1e1d89b516ce142a4a0d19716}{bmp\_bbs}},\ bb-\/>index);}
+\DoxyCodeLine{00111\ \}}
+\DoxyCodeLine{00112\ }
+\DoxyCodeLine{00113\ }
+\DoxyCodeLine{00114\ \textcolor{comment}{/*\ Return\ number\ of\ partitions\ in\ MAP.\ \ */}}
+\DoxyCodeLine{00115\ }
+\DoxyCodeLine{00116\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{unsigned}}
+\DoxyCodeLine{00117\ \doxymbox{\hyperlink{tree-ssa-live_8h_afd800b9f98460c7775f88ca2a963709d}{num\_var\_partitions}}\ (\doxymbox{\hyperlink{tree-ssa-live_8h_a9b3569097e9ad52cb676238efe05ae4d}{var\_map}}\ map)}
+\DoxyCodeLine{00118\ \{}
+\DoxyCodeLine{00119\ \ \ \textcolor{keywordflow}{return}\ map-\/>\doxymbox{\hyperlink{struct__var__map_a528e1fbb157d4d8ef4724ac2d43ef61f}{num\_partitions}};}
+\DoxyCodeLine{00120\ \}}
+\DoxyCodeLine{00121\ }
+\DoxyCodeLine{00122\ }
+\DoxyCodeLine{00123\ \textcolor{comment}{/*\ Given\ partition\ index\ I\ from\ MAP,\ return\ the\ variable\ which\ represents\ that}}
+\DoxyCodeLine{00124\ \textcolor{comment}{\ \ \ partition.\ \ */}}
+\DoxyCodeLine{00125\ }
+\DoxyCodeLine{00126\ \textcolor{keyword}{inline}\ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}}
+\DoxyCodeLine{00127\ \doxymbox{\hyperlink{tree-ssa-live_8h_afb11f8ac193e89867709c643efdfd3d5}{partition\_to\_var}}\ (\doxymbox{\hyperlink{tree-ssa-live_8h_a9b3569097e9ad52cb676238efe05ae4d}{var\_map}}\ map,\ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{poly-int_8h_a7e98b8a17c0aad30ba64d47b74e2a6c1}{i}})}
+\DoxyCodeLine{00128\ \{}
+\DoxyCodeLine{00129\ \ \ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ \doxymbox{\hyperlink{configargs_8h_a8f8f80d37794cde9472343e4487ba3eb}{name}};}
+\DoxyCodeLine{00130\ \ \ \textcolor{keywordflow}{if}\ (map-\/>\doxymbox{\hyperlink{struct__var__map_accb0474fa8ac3c1d588dcf0251312f5a}{view\_to\_partition}})}
+\DoxyCodeLine{00131\ \ \ \ \ \doxymbox{\hyperlink{poly-int_8h_a7e98b8a17c0aad30ba64d47b74e2a6c1}{i}}\ =\ map-\/>\doxymbox{\hyperlink{struct__var__map_accb0474fa8ac3c1d588dcf0251312f5a}{view\_to\_partition}}[\doxymbox{\hyperlink{poly-int_8h_a7e98b8a17c0aad30ba64d47b74e2a6c1}{i}}];}
+\DoxyCodeLine{00132\ \ \ \doxymbox{\hyperlink{poly-int_8h_a7e98b8a17c0aad30ba64d47b74e2a6c1}{i}}\ =\ partition\_find\ (map-\/>\doxymbox{\hyperlink{struct__var__map_a98ea53b383c4aca80bef27c6f82398ae}{var\_partition}},\ \doxymbox{\hyperlink{poly-int_8h_a7e98b8a17c0aad30ba64d47b74e2a6c1}{i}});}
+\DoxyCodeLine{00133\ \ \ \doxymbox{\hyperlink{configargs_8h_a8f8f80d37794cde9472343e4487ba3eb}{name}}\ =\ \doxymbox{\hyperlink{tree-ssanames_8h_aadec075ffaa7607611f44d7012c7864a}{ssa\_name}}\ (\doxymbox{\hyperlink{poly-int_8h_a7e98b8a17c0aad30ba64d47b74e2a6c1}{i}});}
+\DoxyCodeLine{00134\ \ \ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{configargs_8h_a8f8f80d37794cde9472343e4487ba3eb}{name}};}
+\DoxyCodeLine{00135\ \}}
+\DoxyCodeLine{00136\ }
+\DoxyCodeLine{00137\ }
+\DoxyCodeLine{00138\ \textcolor{comment}{/*\ Given\ ssa\_name\ VERSION,\ if\ it\ has\ a\ partition\ in\ MAP,\ \ return\ the\ var\ it}}
+\DoxyCodeLine{00139\ \textcolor{comment}{\ \ \ is\ associated\ with.\ \ Otherwise\ return\ NULL.\ \ */}}
+\DoxyCodeLine{00140\ }
+\DoxyCodeLine{00141\ \textcolor{keyword}{inline}\ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}}
+\DoxyCodeLine{00142\ \doxymbox{\hyperlink{tree-ssa-live_8h_ae7f3c11855bae56717697e61248d1c07}{version\_to\_var}}\ (\doxymbox{\hyperlink{tree-ssa-live_8h_a9b3569097e9ad52cb676238efe05ae4d}{var\_map}}\ map,\ \textcolor{keywordtype}{int}\ version)}
+\DoxyCodeLine{00143\ \{}
+\DoxyCodeLine{00144\ \ \ \textcolor{keywordtype}{int}\ part;}
+\DoxyCodeLine{00145\ \ \ part\ =\ partition\_find\ (map-\/>\doxymbox{\hyperlink{struct__var__map_a98ea53b383c4aca80bef27c6f82398ae}{var\_partition}},\ version);}
+\DoxyCodeLine{00146\ \ \ \textcolor{keywordflow}{if}\ (map-\/>\doxymbox{\hyperlink{struct__var__map_aa729c674b96701e8cd3c710c568ddbb7}{partition\_to\_view}})}
+\DoxyCodeLine{00147\ \ \ \ \ part\ =\ map-\/>\doxymbox{\hyperlink{struct__var__map_aa729c674b96701e8cd3c710c568ddbb7}{partition\_to\_view}}[part];}
+\DoxyCodeLine{00148\ \ \ \textcolor{keywordflow}{if}\ (part\ ==\ \doxymbox{\hyperlink{tree-ssa-live_8h_a400324726eff8b2ef901df3cdcbc4f79}{NO\_PARTITION}})}
+\DoxyCodeLine{00149\ \ \ \ \ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{tree_8h_aeda0ce25865d2494883f523217559d1e}{NULL\_TREE}};}
+\DoxyCodeLine{00150\ }
+\DoxyCodeLine{00151\ \ \ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{tree-ssa-live_8h_afb11f8ac193e89867709c643efdfd3d5}{partition\_to\_var}}\ (map,\ part);}
+\DoxyCodeLine{00152\ \}}
+\DoxyCodeLine{00153\ }
+\DoxyCodeLine{00154\ }
+\DoxyCodeLine{00155\ \textcolor{comment}{/*\ Given\ VAR,\ return\ the\ partition\ number\ in\ MAP\ which\ contains\ it.}}
+\DoxyCodeLine{00156\ \textcolor{comment}{\ \ \ NO\_PARTITION\ is\ returned\ if\ it's\ not\ in\ any\ partition.\ \ */}}
+\DoxyCodeLine{00157\ }
+\DoxyCodeLine{00158\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{int}}
+\DoxyCodeLine{00159\ \doxymbox{\hyperlink{tree-ssa-live_8h_ab6b6705fad2bcf0e0a52bb85e4ff4d29}{var\_to\_partition}}\ (\doxymbox{\hyperlink{tree-ssa-live_8h_a9b3569097e9ad52cb676238efe05ae4d}{var\_map}}\ map,\ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ var)}
+\DoxyCodeLine{00160\ \{}
+\DoxyCodeLine{00161\ \ \ \textcolor{keywordtype}{int}\ part;}
+\DoxyCodeLine{00162\ }
+\DoxyCodeLine{00163\ \ \ part\ =\ partition\_find\ (map-\/>\doxymbox{\hyperlink{struct__var__map_a98ea53b383c4aca80bef27c6f82398ae}{var\_partition}},\ \doxymbox{\hyperlink{tree_8h_a7d8f84a45d281572512d855a4501debb}{SSA\_NAME\_VERSION}}\ (var));}
+\DoxyCodeLine{00164\ \ \ \textcolor{keywordflow}{if}\ (map-\/>\doxymbox{\hyperlink{struct__var__map_aa729c674b96701e8cd3c710c568ddbb7}{partition\_to\_view}})}
+\DoxyCodeLine{00165\ \ \ \ \ part\ =\ map-\/>\doxymbox{\hyperlink{struct__var__map_aa729c674b96701e8cd3c710c568ddbb7}{partition\_to\_view}}[part];}
+\DoxyCodeLine{00166\ \ \ \textcolor{keywordflow}{return}\ part;}
+\DoxyCodeLine{00167\ \}}
+\DoxyCodeLine{00168\ }
+\DoxyCodeLine{00169\ }
+\DoxyCodeLine{00170\ \textcolor{comment}{/*\ Given\ VAR,\ return\ the\ variable\ which\ represents\ the\ entire\ partition}}
+\DoxyCodeLine{00171\ \textcolor{comment}{\ \ \ it\ is\ a\ member\ of\ in\ MAP.\ \ NULL\ is\ returned\ if\ it\ is\ not\ in\ a\ partition.\ \ */}}
+\DoxyCodeLine{00172\ }
+\DoxyCodeLine{00173\ \textcolor{keyword}{inline}\ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}}
+\DoxyCodeLine{00174\ \doxymbox{\hyperlink{tree-ssa-live_8h_a56dae1c0fe02d23e5bf5f4556136015a}{var\_to\_partition\_to\_var}}\ (\doxymbox{\hyperlink{tree-ssa-live_8h_a9b3569097e9ad52cb676238efe05ae4d}{var\_map}}\ map,\ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ var)}
+\DoxyCodeLine{00175\ \{}
+\DoxyCodeLine{00176\ \ \ \textcolor{keywordtype}{int}\ part;}
+\DoxyCodeLine{00177\ }
+\DoxyCodeLine{00178\ \ \ part\ =\ \doxymbox{\hyperlink{tree-ssa-live_8h_ab6b6705fad2bcf0e0a52bb85e4ff4d29}{var\_to\_partition}}\ (map,\ var);}
+\DoxyCodeLine{00179\ \ \ \textcolor{keywordflow}{if}\ (part\ ==\ \doxymbox{\hyperlink{tree-ssa-live_8h_a400324726eff8b2ef901df3cdcbc4f79}{NO\_PARTITION}})}
+\DoxyCodeLine{00180\ \ \ \ \ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{tree_8h_aeda0ce25865d2494883f523217559d1e}{NULL\_TREE}};}
+\DoxyCodeLine{00181\ \ \ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{tree-ssa-live_8h_afb11f8ac193e89867709c643efdfd3d5}{partition\_to\_var}}\ (map,\ part);}
+\DoxyCodeLine{00182\ \}}
+\DoxyCodeLine{00183\ }
+\DoxyCodeLine{00184\ }
+\DoxyCodeLine{00185\ \textcolor{comment}{/*\ Return\ the\ index\ into\ the\ basevar\ table\ for\ PARTITION's\ base\ in\ MAP.\ \ */}}
+\DoxyCodeLine{00186\ }
+\DoxyCodeLine{00187\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{int}}
+\DoxyCodeLine{00188\ \doxymbox{\hyperlink{tree-ssa-live_8h_a86605855597226d4ead76b96408e2139}{basevar\_index}}\ (\doxymbox{\hyperlink{tree-ssa-live_8h_a9b3569097e9ad52cb676238efe05ae4d}{var\_map}}\ map,\ \textcolor{keywordtype}{int}\ partition)}
+\DoxyCodeLine{00189\ \{}
+\DoxyCodeLine{00190\ \ \ \doxymbox{\hyperlink{system_8h_aff447899dc74d54931b2bc2d47de9423}{gcc\_checking\_assert}}\ (partition\ >=\ 0}
+\DoxyCodeLine{00191\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&\&\ partition\ <=\ (\textcolor{keywordtype}{int})\ \doxymbox{\hyperlink{tree-ssa-live_8h_afd800b9f98460c7775f88ca2a963709d}{num\_var\_partitions}}\ (map));}
+\DoxyCodeLine{00192\ \ \ \textcolor{keywordflow}{return}\ map-\/>\doxymbox{\hyperlink{struct__var__map_aa5d4200140580669f2a125c44b9b0e13}{partition\_to\_base\_index}}[partition];}
+\DoxyCodeLine{00193\ \}}
+\DoxyCodeLine{00194\ }
+\DoxyCodeLine{00195\ }
+\DoxyCodeLine{00196\ \textcolor{comment}{/*\ Return\ the\ number\ of\ different\ base\ variables\ in\ MAP.\ \ */}}
+\DoxyCodeLine{00197\ }
+\DoxyCodeLine{00198\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{int}}
+\DoxyCodeLine{00199\ \doxymbox{\hyperlink{tree-ssa-live_8h_a2cbd00989f2d8d4b56ea4816e5425b6f}{num\_basevars}}\ (\doxymbox{\hyperlink{tree-ssa-live_8h_a9b3569097e9ad52cb676238efe05ae4d}{var\_map}}\ map)}
+\DoxyCodeLine{00200\ \{}
+\DoxyCodeLine{00201\ \ \ \textcolor{keywordflow}{return}\ map-\/>\doxymbox{\hyperlink{struct__var__map_a8cdf0d59bd091567a551f6db7f82682e}{num\_basevars}};}
+\DoxyCodeLine{00202\ \}}
+\DoxyCodeLine{00203\ }
+\DoxyCodeLine{00204\ }
+\DoxyCodeLine{00205\ \textcolor{comment}{/*\ \ -\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/\ live\ on\ entry/exit\ info\ -\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{00206\ \textcolor{comment}{}}
+\DoxyCodeLine{00207\ \textcolor{comment}{\ \ \ \ This\ structure\ is\ used\ to\ represent\ live\ range\ information\ on\ SSA\ based}}
+\DoxyCodeLine{00208\ \textcolor{comment}{\ \ \ \ trees.\ A\ partition\ map\ must\ be\ provided,\ and\ based\ on\ the\ active\ partitions,}}
+\DoxyCodeLine{00209\ \textcolor{comment}{\ \ \ \ live-\/on-\/entry\ information\ and\ live-\/on-\/exit\ information\ can\ be\ calculated.}}
+\DoxyCodeLine{00210\ \textcolor{comment}{\ \ \ \ As\ well,\ partitions\ are\ marked\ as\ to\ whether\ they\ are\ global\ (live}}
+\DoxyCodeLine{00211\ \textcolor{comment}{\ \ \ \ outside\ the\ basic\ block\ they\ are\ defined\ in).}}
+\DoxyCodeLine{00212\ \textcolor{comment}{}}
+\DoxyCodeLine{00213\ \textcolor{comment}{\ \ \ \ The\ live-\/on-\/entry\ information\ is\ per\ block.\ \ It\ provide\ a\ bitmap\ for}}
+\DoxyCodeLine{00214\ \textcolor{comment}{\ \ \ \ each\ block\ which\ has\ a\ bit\ set\ for\ each\ partition\ that\ is\ live\ on\ entry\ to}}
+\DoxyCodeLine{00215\ \textcolor{comment}{\ \ \ \ that\ block.}}
+\DoxyCodeLine{00216\ \textcolor{comment}{}}
+\DoxyCodeLine{00217\ \textcolor{comment}{\ \ \ \ The\ live-\/on-\/exit\ information\ is\ per\ block.\ \ It\ provides\ a\ bitmap\ for\ each}}
+\DoxyCodeLine{00218\ \textcolor{comment}{\ \ \ \ block\ indicating\ which\ partitions\ are\ live\ on\ exit\ from\ the\ block.}}
+\DoxyCodeLine{00219\ \textcolor{comment}{}}
+\DoxyCodeLine{00220\ \textcolor{comment}{\ \ \ \ For\ the\ purposes\ of\ this\ implementation,\ we\ treat\ the\ elements\ of\ a\ PHI}}
+\DoxyCodeLine{00221\ \textcolor{comment}{\ \ \ \ as\ follows:}}
+\DoxyCodeLine{00222\ \textcolor{comment}{}}
+\DoxyCodeLine{00223\ \textcolor{comment}{\ \ \ \ \ \ \ Uses\ in\ a\ PHI\ are\ considered\ LIVE-\/ON-\/EXIT\ to\ the\ block\ from\ which\ they}}
+\DoxyCodeLine{00224\ \textcolor{comment}{\ \ \ \ \ \ \ originate.\ They\ are\ *NOT*\ considered\ live\ on\ entry\ to\ the\ block}}
+\DoxyCodeLine{00225\ \textcolor{comment}{\ \ \ \ \ \ \ containing\ the\ PHI\ node.}}
+\DoxyCodeLine{00226\ \textcolor{comment}{}}
+\DoxyCodeLine{00227\ \textcolor{comment}{\ \ \ \ \ \ \ The\ Def\ of\ a\ PHI\ node\ is\ *not*\ considered\ live\ on\ entry\ to\ the\ block.}}
+\DoxyCodeLine{00228\ \textcolor{comment}{\ \ \ \ \ \ \ It\ is\ considered\ to\ be\ "{}define\ early"{}\ in\ the\ block.\ Picture\ it\ as\ each}}
+\DoxyCodeLine{00229\ \textcolor{comment}{\ \ \ \ \ \ \ block\ having\ a\ stmt\ (or\ block-\/preheader)\ before\ the\ first\ real\ stmt\ in}}
+\DoxyCodeLine{00230\ \textcolor{comment}{\ \ \ \ \ \ \ the\ block\ which\ defines\ all\ the\ variables\ that\ are\ defined\ by\ PHIs.}}
+\DoxyCodeLine{00231\ \textcolor{comment}{}}
+\DoxyCodeLine{00232\ \textcolor{comment}{\ \ \ \ -\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/\ \ */}}
+\DoxyCodeLine{00233\ }
+\DoxyCodeLine{00234\ }
+\DoxyCodeLine{00235\ \textcolor{keyword}{typedef}\ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{structtree__live__info__d}{tree\_live\_info\_d}}}
+\DoxyCodeLine{00236\ \{}
+\DoxyCodeLine{00237\ \ \ \textcolor{comment}{/*\ Var\ map\ this\ relates\ to.\ \ */}}
+\DoxyCodeLine{00238\ \ \ \doxymbox{\hyperlink{tree-ssa-live_8h_a9b3569097e9ad52cb676238efe05ae4d}{var\_map}}\ \doxymbox{\hyperlink{structtree__live__info__d_a75de907d20e39574c3debf005209dbea}{map}};}
+\DoxyCodeLine{00239\ }
+\DoxyCodeLine{00240\ \ \ \textcolor{comment}{/*\ Bitmap\ indicating\ which\ partitions\ are\ global.\ \ */}}
+\DoxyCodeLine{00241\ \ \ \doxymbox{\hyperlink{coretypes_8h_ae7ea3a04cabf8964dc6e8e95a9cde1b8}{bitmap}}\ \doxymbox{\hyperlink{structtree__live__info__d_ad342036ae9cd67573b6dabb82f2e7dd6}{global}};}
+\DoxyCodeLine{00242\ }
+\DoxyCodeLine{00243\ \ \ \textcolor{comment}{/*\ Bitmaps\ of\ live\ on\ entry\ blocks\ for\ partition\ elements.\ \ */}}
+\DoxyCodeLine{00244\ \ \ bitmap\_head\ *\doxymbox{\hyperlink{structtree__live__info__d_a7d4a27ec70e00e6da4dbccfe21770e8b}{livein}};}
+\DoxyCodeLine{00245\ }
+\DoxyCodeLine{00246\ \ \ \textcolor{comment}{/*\ Bitmaps\ of\ what\ variables\ are\ live\ on\ exit\ for\ a\ basic\ blocks.\ \ */}}
+\DoxyCodeLine{00247\ \ \ bitmap\_head\ *\doxymbox{\hyperlink{structtree__live__info__d_a4633467a52b640dde4a6fa03b4bf4a49}{liveout}};}
+\DoxyCodeLine{00248\ }
+\DoxyCodeLine{00249\ \ \ \textcolor{comment}{/*\ Number\ of\ basic\ blocks\ when\ live\ on\ exit\ calculated.\ \ */}}
+\DoxyCodeLine{00250\ \ \ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{structtree__live__info__d_a897094f18dc48660a367e9060aea9d46}{num\_blocks}};}
+\DoxyCodeLine{00251\ }
+\DoxyCodeLine{00252\ \ \ \textcolor{comment}{/*\ Vector\ used\ when\ creating\ live\ ranges\ as\ a\ visited\ stack.\ \ */}}
+\DoxyCodeLine{00253\ \ \ \textcolor{keywordtype}{int}\ *\doxymbox{\hyperlink{structtree__live__info__d_a15b5789ab5635a14ced79d84c7bfa4ef}{work\_stack}};}
+\DoxyCodeLine{00254\ }
+\DoxyCodeLine{00255\ \ \ \textcolor{comment}{/*\ Top\ of\ workstack.\ \ */}}
+\DoxyCodeLine{00256\ \ \ \textcolor{keywordtype}{int}\ *\doxymbox{\hyperlink{structtree__live__info__d_a07e0b61181153b697341a94a1bd332ad}{stack\_top}};}
+\DoxyCodeLine{00257\ }
+\DoxyCodeLine{00258\ \ \ \textcolor{comment}{/*\ Obstacks\ to\ allocate\ the\ bitmaps\ on.\ \ */}}
+\DoxyCodeLine{00259\ \ \ \doxymbox{\hyperlink{structbitmap__obstack}{bitmap\_obstack}}\ \doxymbox{\hyperlink{structtree__live__info__d_a621fdaccb504d6ee3eb8c2ea21c9aea6}{livein\_obstack}};}
+\DoxyCodeLine{00260\ \ \ \doxymbox{\hyperlink{structbitmap__obstack}{bitmap\_obstack}}\ \doxymbox{\hyperlink{structtree__live__info__d_a9adad87bfe94264ce910fa89c12b0237}{liveout\_obstack}};}
+\DoxyCodeLine{00261\ \}\ *\doxymbox{\hyperlink{tree-ssa-live_8h_a4ec7c56d519c4f8e616863f443dc2d6d}{tree\_live\_info\_p}};}
+\DoxyCodeLine{00262\ }
+\DoxyCodeLine{00263\ }
+\DoxyCodeLine{00264\ \textcolor{preprocessor}{\#define\ LIVEDUMP\_ENTRY\ \ 0x01}}
+\DoxyCodeLine{00265\ \textcolor{preprocessor}{\#define\ LIVEDUMP\_EXIT\ \ \ 0x02}}
+\DoxyCodeLine{00266\ \textcolor{preprocessor}{\#define\ LIVEDUMP\_ALL\ \ \ \ (LIVEDUMP\_ENTRY\ |\ LIVEDUMP\_EXIT)}}
+\DoxyCodeLine{00267\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{tree-ssa-live_8h_a78bd90b630e54bad48ee6f807da3f6e3}{delete\_tree\_live\_info}}\ (\doxymbox{\hyperlink{tree-ssa-live_8h_a4ec7c56d519c4f8e616863f443dc2d6d}{tree\_live\_info\_p}});}
+\DoxyCodeLine{00268\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{tree-ssa-live_8h_a4ec7c56d519c4f8e616863f443dc2d6d}{tree\_live\_info\_p}}\ \doxymbox{\hyperlink{tree-ssa-live_8h_a907a027c147b4b45d75a97f1ae969a24}{calculate\_live\_ranges}}\ (\doxymbox{\hyperlink{tree-ssa-live_8h_a9b3569097e9ad52cb676238efe05ae4d}{var\_map}},\ \textcolor{keywordtype}{bool});}
+\DoxyCodeLine{00269\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{collect-utils_8h_a398527b3e9e358c345c5047b16871957}{debug}}\ (\doxymbox{\hyperlink{structtree__live__info__d}{tree\_live\_info\_d}}\ \&ref);}
+\DoxyCodeLine{00270\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{collect-utils_8h_a398527b3e9e358c345c5047b16871957}{debug}}\ (\doxymbox{\hyperlink{structtree__live__info__d}{tree\_live\_info\_d}}\ *ptr);}
+\DoxyCodeLine{00271\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{tree-ssa-live_8h_a82b9e5442ee46dfdb5c92c7d89a27a60}{dump\_live\_info}}\ (FILE\ *,\ \doxymbox{\hyperlink{tree-ssa-live_8h_a4ec7c56d519c4f8e616863f443dc2d6d}{tree\_live\_info\_p}},\ \textcolor{keywordtype}{int});}
+\DoxyCodeLine{00272\ }
+\DoxyCodeLine{00273\ \textcolor{keyword}{typedef}\ \doxymbox{\hyperlink{classhash__map}{hash\_map}}<\doxymbox{\hyperlink{structint__hash}{int\_hash}}\ <\textcolor{keywordtype}{unsigned}\ int,\ -\/1U>,\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}>\ \doxymbox{\hyperlink{tree-ssa-live_8h_a634638a135a179b76acd579a4c176f6d}{live\_vars\_map}};}
+\DoxyCodeLine{00274\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{structvec}{vec<bitmap\_head>}}\ \doxymbox{\hyperlink{tree-ssa-live_8h_ad5457c2769d767b578949bab2097e938}{compute\_live\_vars}}\ (\textcolor{keyword}{struct}\ function\ *,\ \doxymbox{\hyperlink{tree-ssa-live_8h_a634638a135a179b76acd579a4c176f6d}{live\_vars\_map}}\ *);}
+\DoxyCodeLine{00275\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{coretypes_8h_ae7ea3a04cabf8964dc6e8e95a9cde1b8}{bitmap}}\ \doxymbox{\hyperlink{tree-ssa-live_8h_a70af91ff0888e157f328033dbfb30d56}{live\_vars\_at\_stmt}}\ (\doxymbox{\hyperlink{structvec}{vec<bitmap\_head>}}\ \&,\ \doxymbox{\hyperlink{tree-ssa-live_8h_a634638a135a179b76acd579a4c176f6d}{live\_vars\_map}}\ *,}
+\DoxyCodeLine{00276\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ gimple\ *);}
+\DoxyCodeLine{00277\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{tree-ssa-live_8h_aea62a253b8501c4f4c223e552df9fc46}{destroy\_live\_vars}}\ (\doxymbox{\hyperlink{structvec}{vec<bitmap\_head>}}\ \&);}
+\DoxyCodeLine{00278\ }
+\DoxyCodeLine{00279\ \textcolor{comment}{/*\ \ Return\ TRUE\ if\ P\ is\ marked\ as\ a\ global\ in\ LIVE.\ \ */}}
+\DoxyCodeLine{00280\ }
+\DoxyCodeLine{00281\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{int}}
+\DoxyCodeLine{00282\ \doxymbox{\hyperlink{tree-ssa-live_8h_a16275cd38b9d007f7b146c2ed6924297}{partition\_is\_global}}\ (\doxymbox{\hyperlink{tree-ssa-live_8h_a4ec7c56d519c4f8e616863f443dc2d6d}{tree\_live\_info\_p}}\ live,\ \textcolor{keywordtype}{int}\ p)}
+\DoxyCodeLine{00283\ \{}
+\DoxyCodeLine{00284\ \ \ \doxymbox{\hyperlink{system_8h_aff447899dc74d54931b2bc2d47de9423}{gcc\_checking\_assert}}\ (live-\/>\doxymbox{\hyperlink{structtree__live__info__d_ad342036ae9cd67573b6dabb82f2e7dd6}{global}});}
+\DoxyCodeLine{00285\ \ \ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{bitmap_8h_a423ed90a8bb6c57224d02bcdc9eae766}{bitmap\_bit\_p}}\ (live-\/>\doxymbox{\hyperlink{structtree__live__info__d_ad342036ae9cd67573b6dabb82f2e7dd6}{global}},\ p);}
+\DoxyCodeLine{00286\ \}}
+\DoxyCodeLine{00287\ }
+\DoxyCodeLine{00288\ }
+\DoxyCodeLine{00289\ \textcolor{comment}{/*\ Return\ the\ bitmap\ from\ LIVE\ representing\ the\ live\ on\ entry\ blocks\ for}}
+\DoxyCodeLine{00290\ \textcolor{comment}{\ \ \ partition\ P.\ \ */}}
+\DoxyCodeLine{00291\ }
+\DoxyCodeLine{00292\ \textcolor{keyword}{inline}\ \doxymbox{\hyperlink{coretypes_8h_ae7ea3a04cabf8964dc6e8e95a9cde1b8}{bitmap}}}
+\DoxyCodeLine{00293\ \doxymbox{\hyperlink{tree-ssa-live_8h_ad539240c890ffddc6940cb2438e5ec26}{live\_on\_entry}}\ (\doxymbox{\hyperlink{tree-ssa-live_8h_a4ec7c56d519c4f8e616863f443dc2d6d}{tree\_live\_info\_p}}\ live,\ \doxymbox{\hyperlink{coretypes_8h_a0469df20b471a4cd7c81fbdce5027487}{basic\_block}}\ bb)}
+\DoxyCodeLine{00294\ \{}
+\DoxyCodeLine{00295\ \ \ \doxymbox{\hyperlink{system_8h_aff447899dc74d54931b2bc2d47de9423}{gcc\_checking\_assert}}\ (live-\/>\doxymbox{\hyperlink{structtree__live__info__d_a7d4a27ec70e00e6da4dbccfe21770e8b}{livein}}}
+\DoxyCodeLine{00296\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&\&\ bb\ !=\ \doxymbox{\hyperlink{basic-block_8h_a743c03e2a046a2d900f2bd8c48f145f8}{ENTRY\_BLOCK\_PTR\_FOR\_FN}}\ (\doxymbox{\hyperlink{function_8h_ae364f850fb87e59780f10d5890501251}{cfun}})}
+\DoxyCodeLine{00297\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&\&\ bb\ !=\ \doxymbox{\hyperlink{basic-block_8h_ab0f26045d13e2d49d0006f6af2e12835}{EXIT\_BLOCK\_PTR\_FOR\_FN}}\ (\doxymbox{\hyperlink{function_8h_ae364f850fb87e59780f10d5890501251}{cfun}}));}
+\DoxyCodeLine{00298\ }
+\DoxyCodeLine{00299\ \ \ \textcolor{keywordflow}{return}\ \&live-\/>\doxymbox{\hyperlink{structtree__live__info__d_a7d4a27ec70e00e6da4dbccfe21770e8b}{livein}}[bb-\/>index];}
+\DoxyCodeLine{00300\ \}}
+\DoxyCodeLine{00301\ }
+\DoxyCodeLine{00302\ }
+\DoxyCodeLine{00303\ \textcolor{comment}{/*\ Return\ the\ bitmap\ from\ LIVE\ representing\ the\ live\ on\ exit\ partitions\ from}}
+\DoxyCodeLine{00304\ \textcolor{comment}{\ \ \ block\ BB.\ \ */}}
+\DoxyCodeLine{00305\ }
+\DoxyCodeLine{00306\ \textcolor{keyword}{inline}\ \doxymbox{\hyperlink{coretypes_8h_ae7ea3a04cabf8964dc6e8e95a9cde1b8}{bitmap}}}
+\DoxyCodeLine{00307\ \doxymbox{\hyperlink{tree-ssa-live_8h_a8c9789c33da98f73432d83c0824f32fd}{live\_on\_exit}}\ (\doxymbox{\hyperlink{tree-ssa-live_8h_a4ec7c56d519c4f8e616863f443dc2d6d}{tree\_live\_info\_p}}\ live,\ \doxymbox{\hyperlink{coretypes_8h_a0469df20b471a4cd7c81fbdce5027487}{basic\_block}}\ bb)}
+\DoxyCodeLine{00308\ \{}
+\DoxyCodeLine{00309\ \ \ \doxymbox{\hyperlink{system_8h_aff447899dc74d54931b2bc2d47de9423}{gcc\_checking\_assert}}\ (live-\/>\doxymbox{\hyperlink{structtree__live__info__d_a4633467a52b640dde4a6fa03b4bf4a49}{liveout}}}
+\DoxyCodeLine{00310\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&\&\ bb\ !=\ \doxymbox{\hyperlink{basic-block_8h_a743c03e2a046a2d900f2bd8c48f145f8}{ENTRY\_BLOCK\_PTR\_FOR\_FN}}\ (\doxymbox{\hyperlink{function_8h_ae364f850fb87e59780f10d5890501251}{cfun}})}
+\DoxyCodeLine{00311\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&\&\ bb\ !=\ \doxymbox{\hyperlink{basic-block_8h_ab0f26045d13e2d49d0006f6af2e12835}{EXIT\_BLOCK\_PTR\_FOR\_FN}}\ (\doxymbox{\hyperlink{function_8h_ae364f850fb87e59780f10d5890501251}{cfun}}));}
+\DoxyCodeLine{00312\ }
+\DoxyCodeLine{00313\ \ \ \textcolor{keywordflow}{return}\ \&live-\/>\doxymbox{\hyperlink{structtree__live__info__d_a4633467a52b640dde4a6fa03b4bf4a49}{liveout}}[bb-\/>index];}
+\DoxyCodeLine{00314\ \}}
+\DoxyCodeLine{00315\ }
+\DoxyCodeLine{00316\ }
+\DoxyCodeLine{00317\ \textcolor{comment}{/*\ Return\ the\ partition\ map\ which\ the\ information\ in\ LIVE\ utilizes.\ \ */}}
+\DoxyCodeLine{00318\ }
+\DoxyCodeLine{00319\ \textcolor{keyword}{inline}\ \doxymbox{\hyperlink{tree-ssa-live_8h_a9b3569097e9ad52cb676238efe05ae4d}{var\_map}}}
+\DoxyCodeLine{00320\ \doxymbox{\hyperlink{tree-ssa-live_8h_acb7f76e222d968a4c522a78d7554c2f0}{live\_var\_map}}\ (\doxymbox{\hyperlink{tree-ssa-live_8h_a4ec7c56d519c4f8e616863f443dc2d6d}{tree\_live\_info\_p}}\ live)}
+\DoxyCodeLine{00321\ \{}
+\DoxyCodeLine{00322\ \ \ \textcolor{keywordflow}{return}\ live-\/>\doxymbox{\hyperlink{structtree__live__info__d_a75de907d20e39574c3debf005209dbea}{map}};}
+\DoxyCodeLine{00323\ \}}
+\DoxyCodeLine{00324\ }
+\DoxyCodeLine{00325\ }
+\DoxyCodeLine{00326\ \textcolor{comment}{/*\ Mark\ partition\ P\ as\ live\ on\ entry\ to\ basic\ block\ BB\ in\ LIVE.\ \ */}}
+\DoxyCodeLine{00327\ }
+\DoxyCodeLine{00328\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{void}}
+\DoxyCodeLine{00329\ \doxymbox{\hyperlink{tree-ssa-live_8h_aee4267007ffb88a589d217a649d121f6}{make\_live\_on\_entry}}\ (\doxymbox{\hyperlink{tree-ssa-live_8h_a4ec7c56d519c4f8e616863f443dc2d6d}{tree\_live\_info\_p}}\ live,\ \doxymbox{\hyperlink{coretypes_8h_a0469df20b471a4cd7c81fbdce5027487}{basic\_block}}\ bb\ ,\ \textcolor{keywordtype}{int}\ p)}
+\DoxyCodeLine{00330\ \{}
+\DoxyCodeLine{00331\ \ \ \doxymbox{\hyperlink{bitmap_8h_a1f011ae4cadb98f9a2095419b757f80c}{bitmap\_set\_bit}}\ (\&live-\/>\doxymbox{\hyperlink{structtree__live__info__d_a7d4a27ec70e00e6da4dbccfe21770e8b}{livein}}[bb-\/>index],\ p);}
+\DoxyCodeLine{00332\ \ \ \doxymbox{\hyperlink{bitmap_8h_a1f011ae4cadb98f9a2095419b757f80c}{bitmap\_set\_bit}}\ (live-\/>\doxymbox{\hyperlink{structtree__live__info__d_ad342036ae9cd67573b6dabb82f2e7dd6}{global}},\ p);}
+\DoxyCodeLine{00333\ \}}
+\DoxyCodeLine{00334\ }
+\DoxyCodeLine{00335\ }
+\DoxyCodeLine{00336\ \textcolor{comment}{/*\ On-\/demand\ virtual\ operand\ global\ live\ analysis.\ \ There\ is\ at\ most}}
+\DoxyCodeLine{00337\ \textcolor{comment}{\ \ \ a\ single\ virtual\ operand\ live\ at\ a\ time,\ the\ following\ computes\ and}}
+\DoxyCodeLine{00338\ \textcolor{comment}{\ \ \ caches\ the\ virtual\ operand\ live\ at\ the\ exit\ of\ a\ basic\ block}}
+\DoxyCodeLine{00339\ \textcolor{comment}{\ \ \ supporting\ related\ live-\/in\ and\ live-\/on-\/edge\ queries.\ \ It\ requires}}
+\DoxyCodeLine{00340\ \textcolor{comment}{\ \ \ up-\/to-\/date\ marked\ backedges.\ \ */}}
+\DoxyCodeLine{00341\ }
+\DoxyCodeLine{00342\ \textcolor{keyword}{class\ }\doxymbox{\hyperlink{classvirtual__operand__live_addff120c6a0ece54e693c57ddf2d4eac}{virtual\_operand\_live}}}
+\DoxyCodeLine{00343\ \{}
+\DoxyCodeLine{00344\ \textcolor{keyword}{public}:}
+\DoxyCodeLine{00345\ \ \ \doxymbox{\hyperlink{classvirtual__operand__live_addff120c6a0ece54e693c57ddf2d4eac}{virtual\_operand\_live}}()\ :\ \doxymbox{\hyperlink{classvirtual__operand__live_a52bf22442e7b9c51047da846501d54de}{liveout}}\ (nullptr)\ \{\}}
+\DoxyCodeLine{00346\ \ \ \doxymbox{\hyperlink{classvirtual__operand__live_a17a0f49caa89980eeec77671122808d2}{\string~virtual\_operand\_live}}()}
+\DoxyCodeLine{00347\ \ \ \{}
+\DoxyCodeLine{00348\ \ \ \ \ \textcolor{keywordflow}{if}\ (\doxymbox{\hyperlink{classvirtual__operand__live_a52bf22442e7b9c51047da846501d54de}{liveout}})}
+\DoxyCodeLine{00349\ \ \ \ \ \ \ free\ (\doxymbox{\hyperlink{classvirtual__operand__live_a52bf22442e7b9c51047da846501d54de}{liveout}});}
+\DoxyCodeLine{00350\ \ \ \}}
+\DoxyCodeLine{00351\ }
+\DoxyCodeLine{00352\ \ \ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ \doxymbox{\hyperlink{classvirtual__operand__live_a3acc87755d7fb4ca21e6477d8c73b01a}{get\_live\_in}}\ (\doxymbox{\hyperlink{coretypes_8h_a0469df20b471a4cd7c81fbdce5027487}{basic\_block}}\ bb);}
+\DoxyCodeLine{00353\ \ \ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ \doxymbox{\hyperlink{classvirtual__operand__live_a46f0491cfe4f18a019c5665789382a9e}{get\_live\_out}}\ (\doxymbox{\hyperlink{coretypes_8h_a0469df20b471a4cd7c81fbdce5027487}{basic\_block}}\ bb);}
+\DoxyCodeLine{00354\ \ \ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ \doxymbox{\hyperlink{classvirtual__operand__live_abd48081ea6a6ce7d27e93f2d0196f2f1}{get\_live\_on\_edge}}\ (\doxymbox{\hyperlink{coretypes_8h_a44ae11f0c90646aa6208ad4bf486490b}{edge}}\ e)\ \{\ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{classvirtual__operand__live_a46f0491cfe4f18a019c5665789382a9e}{get\_live\_out}}\ (e-\/>src);\ \}}
+\DoxyCodeLine{00355\ }
+\DoxyCodeLine{00356\ \textcolor{keyword}{private}:}
+\DoxyCodeLine{00357\ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classvirtual__operand__live_a4f69f92f70f70060015f5df580f02f07}{init}}\ ();}
+\DoxyCodeLine{00358\ }
+\DoxyCodeLine{00359\ \ \ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ *\doxymbox{\hyperlink{classvirtual__operand__live_a52bf22442e7b9c51047da846501d54de}{liveout}};}
+\DoxyCodeLine{00360\ \};}
+\DoxyCodeLine{00361\ }
+\DoxyCodeLine{00362\ }
+\DoxyCodeLine{00363\ \textcolor{preprocessor}{\#endif\ }\textcolor{comment}{/*\ \_TREE\_SSA\_LIVE\_H\ \ */}\textcolor{preprocessor}{}}
+
+\end{DoxyCode}

@@ -1,0 +1,230 @@
+\doxysection{feasible-\/graph.h}
+\hypertarget{feasible-graph_8h_source}{}\label{feasible-graph_8h_source}\index{toolchain/x86\_64-\/elf/lib/gcc/x86\_64-\/elf/14.2.0/plugin/include/analyzer/feasible-\/graph.h@{toolchain/x86\_64-\/elf/lib/gcc/x86\_64-\/elf/14.2.0/plugin/include/analyzer/feasible-\/graph.h}}
+\doxymbox{\hyperlink{feasible-graph_8h}{Go to the documentation of this file.}}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001\ \textcolor{comment}{/*\ A\ graph\ for\ exploring\ trees\ of\ feasible\ paths\ through\ the\ egraph.}}
+\DoxyCodeLine{00002\ \textcolor{comment}{\ \ \ Copyright\ (C)\ 2021-\/2024\ Free\ Software\ Foundation,\ Inc.}}
+\DoxyCodeLine{00003\ \textcolor{comment}{\ \ \ Contributed\ by\ David\ Malcolm\ <dmalcolm@redhat.com>.}}
+\DoxyCodeLine{00004\ \textcolor{comment}{}}
+\DoxyCodeLine{00005\ \textcolor{comment}{This\ file\ is\ part\ of\ GCC.}}
+\DoxyCodeLine{00006\ \textcolor{comment}{}}
+\DoxyCodeLine{00007\ \textcolor{comment}{GCC\ is\ free\ software;\ you\ can\ redistribute\ it\ and/or\ modify\ it}}
+\DoxyCodeLine{00008\ \textcolor{comment}{under\ the\ terms\ of\ the\ GNU\ General\ Public\ License\ as\ published\ by}}
+\DoxyCodeLine{00009\ \textcolor{comment}{the\ Free\ Software\ Foundation;\ either\ version\ 3,\ or\ (at\ your\ option)}}
+\DoxyCodeLine{00010\ \textcolor{comment}{any\ later\ version.}}
+\DoxyCodeLine{00011\ \textcolor{comment}{}}
+\DoxyCodeLine{00012\ \textcolor{comment}{GCC\ is\ distributed\ in\ the\ hope\ that\ it\ will\ be\ useful,\ but}}
+\DoxyCodeLine{00013\ \textcolor{comment}{WITHOUT\ ANY\ WARRANTY;\ without\ even\ the\ implied\ warranty\ of}}
+\DoxyCodeLine{00014\ \textcolor{comment}{MERCHANTABILITY\ or\ FITNESS\ FOR\ A\ PARTICULAR\ PURPOSE.\ \ See\ the\ GNU}}
+\DoxyCodeLine{00015\ \textcolor{comment}{General\ Public\ License\ for\ more\ details.}}
+\DoxyCodeLine{00016\ \textcolor{comment}{}}
+\DoxyCodeLine{00017\ \textcolor{comment}{You\ should\ have\ received\ a\ copy\ of\ the\ GNU\ General\ Public\ License}}
+\DoxyCodeLine{00018\ \textcolor{comment}{along\ with\ GCC;\ see\ the\ file\ COPYING3.\ \ If\ not\ see}}
+\DoxyCodeLine{00019\ \textcolor{comment}{<http://www.gnu.org/licenses/>.\ \ */}}
+\DoxyCodeLine{00020\ }
+\DoxyCodeLine{00021\ \textcolor{preprocessor}{\#ifndef\ GCC\_ANALYZER\_FEASIBLE\_GRAPH\_H}}
+\DoxyCodeLine{00022\ \textcolor{preprocessor}{\#define\ GCC\_ANALYZER\_FEASIBLE\_GRAPH\_H}}
+\DoxyCodeLine{00023\ }
+\DoxyCodeLine{00024\ \textcolor{preprocessor}{\#include\ "{}\doxymbox{\hyperlink{exploded-graph_8h}{analyzer/exploded-\/graph.h}}"{}}}
+\DoxyCodeLine{00025\ }
+\DoxyCodeLine{00026\ \textcolor{keyword}{namespace\ }\doxymbox{\hyperlink{namespaceana}{ana}}\ \{}
+\DoxyCodeLine{00027\ }
+\DoxyCodeLine{00028\ \textcolor{comment}{/*\ Forward\ decls.\ \ */}}
+\DoxyCodeLine{00029\ }
+\DoxyCodeLine{00030\ \textcolor{keyword}{class\ }\doxymbox{\hyperlink{classana_1_1base__feasible__node}{base\_feasible\_node}};}
+\DoxyCodeLine{00031\ \ \ \textcolor{keyword}{class\ }\doxymbox{\hyperlink{classana_1_1feasible__node}{feasible\_node}};}
+\DoxyCodeLine{00032\ \ \ \textcolor{keyword}{class\ }\doxymbox{\hyperlink{classana_1_1infeasible__node}{infeasible\_node}};}
+\DoxyCodeLine{00033\ \textcolor{keyword}{class\ }\doxymbox{\hyperlink{classana_1_1base__feasible__edge}{base\_feasible\_edge}};}
+\DoxyCodeLine{00034\ \ \ \textcolor{keyword}{class\ }\doxymbox{\hyperlink{classana_1_1feasible__edge}{feasible\_edge}};}
+\DoxyCodeLine{00035\ \ \ \textcolor{keyword}{class\ }\doxymbox{\hyperlink{classana_1_1infeasible__edge}{infeasible\_edge}};}
+\DoxyCodeLine{00036\ \textcolor{keyword}{class\ }\doxymbox{\hyperlink{classana_1_1feasible__graph}{feasible\_graph}};}
+\DoxyCodeLine{00037\ \textcolor{keyword}{class\ }\doxymbox{\hyperlink{classana_1_1feasible__cluster}{feasible\_cluster}};}
+\DoxyCodeLine{00038\ }
+\DoxyCodeLine{00039\ \textcolor{comment}{/*\ A\ traits\ class\ for\ feasible\_graph.\ \ */}}
+\DoxyCodeLine{00040\ }
+\DoxyCodeLine{00041\ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{structana_1_1fg__traits}{fg\_traits}}}
+\DoxyCodeLine{00042\ \{}
+\DoxyCodeLine{00043\ \ \ \textcolor{keyword}{typedef}\ \doxymbox{\hyperlink{classana_1_1base__feasible__node}{base\_feasible\_node}}\ \doxymbox{\hyperlink{structana_1_1fg__traits_aa93c7c3a5538b3b9aa1ec04d08e10f53}{node\_t}};}
+\DoxyCodeLine{00044\ \ \ \textcolor{keyword}{typedef}\ \doxymbox{\hyperlink{classana_1_1base__feasible__edge}{base\_feasible\_edge}}\ \doxymbox{\hyperlink{structana_1_1fg__traits_a77967de6580338367c87186e598a667c}{edge\_t}};}
+\DoxyCodeLine{00045\ \ \ \textcolor{keyword}{typedef}\ \doxymbox{\hyperlink{classana_1_1feasible__graph}{feasible\_graph}}\ \doxymbox{\hyperlink{structana_1_1fg__traits_ac8fc0834a90ccfa27b37b430893ab262}{graph\_t}};}
+\DoxyCodeLine{00046\ \ \ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{structana_1_1fg__traits_1_1dump__args__t_a286f4b571bcbda7b91ed554e4753e5af}{dump\_args\_t}}}
+\DoxyCodeLine{00047\ \ \ \{}
+\DoxyCodeLine{00048\ \ \ \ \ \textcolor{keyword}{typedef}\ \textcolor{keyword}{typename}\ \doxymbox{\hyperlink{structana_1_1eg__traits_1_1dump__args__t}{eg\_traits::dump\_args\_t}}\ \doxymbox{\hyperlink{structana_1_1fg__traits_1_1dump__args__t_ab14839537282486762d5fd1b40f96068}{inner\_args\_t}};}
+\DoxyCodeLine{00049\ }
+\DoxyCodeLine{00050\ \ \ \ \ \doxymbox{\hyperlink{structana_1_1fg__traits_1_1dump__args__t_a286f4b571bcbda7b91ed554e4753e5af}{dump\_args\_t}}\ (\textcolor{keyword}{const}\ \doxymbox{\hyperlink{structana_1_1fg__traits_1_1dump__args__t_ab14839537282486762d5fd1b40f96068}{inner\_args\_t}}\ \&inner\_args)}
+\DoxyCodeLine{00051\ \ \ \ \ :\ \doxymbox{\hyperlink{structana_1_1fg__traits_1_1dump__args__t_aa4b24b9925accb5139773c1b633770a4}{m\_inner\_args}}\ (inner\_args)}
+\DoxyCodeLine{00052\ \ \ \ \ \{}
+\DoxyCodeLine{00053\ \ \ \ \ \}}
+\DoxyCodeLine{00054\ }
+\DoxyCodeLine{00055\ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{structana_1_1fg__traits_1_1dump__args__t_ab14839537282486762d5fd1b40f96068}{inner\_args\_t}}\ \&\doxymbox{\hyperlink{structana_1_1fg__traits_1_1dump__args__t_aa4b24b9925accb5139773c1b633770a4}{m\_inner\_args}};}
+\DoxyCodeLine{00056\ \ \ \};}
+\DoxyCodeLine{00057\ \ \ \textcolor{keyword}{typedef}\ \doxymbox{\hyperlink{classana_1_1feasible__cluster}{feasible\_cluster}}\ \doxymbox{\hyperlink{structana_1_1fg__traits_a695889e553750e383680172c357a693b}{cluster\_t}};}
+\DoxyCodeLine{00058\ \};}
+\DoxyCodeLine{00059\ }
+\DoxyCodeLine{00060\ \textcolor{comment}{/*\ Base\ class\ of\ node\ within\ a\ feasible\_graph.}}
+\DoxyCodeLine{00061\ \textcolor{comment}{\ \ \ There\ can\ be\ 0\ or\ more\ base\_feasible\_nodes\ per\ exploded\_node.\ \ */}}
+\DoxyCodeLine{00062\ }
+\DoxyCodeLine{00063\ \textcolor{keyword}{class\ }\doxymbox{\hyperlink{classana_1_1base__feasible__node_a3ad7c119505b552d0c804fd9a47366fd}{base\_feasible\_node}}\ :\ \textcolor{keyword}{public}\ \doxymbox{\hyperlink{classdnode}{dnode}}<fg\_traits>}
+\DoxyCodeLine{00064\ \{}
+\DoxyCodeLine{00065\ \ \textcolor{keyword}{public}:}
+\DoxyCodeLine{00066\ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classana_1_1base__feasible__node_a871d5bfa4031dc1c795827b5d6c82206}{dump\_dot\_id}}\ (\doxymbox{\hyperlink{classpretty__printer}{pretty\_printer}}\ *pp)\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00067\ }
+\DoxyCodeLine{00068\ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classana_1_1exploded__node}{exploded\_node}}\ *\doxymbox{\hyperlink{classana_1_1base__feasible__node_acaa1ce4c1323d73115502cf338dce8da}{get\_inner\_node}}\ ()\textcolor{keyword}{\ const\ }\{\ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{classana_1_1base__feasible__node_a1992df0267c240f0bb71b08896f24ec8}{m\_inner\_node}};\ \}}
+\DoxyCodeLine{00069\ \ \ \textcolor{keywordtype}{unsigned}\ \doxymbox{\hyperlink{classana_1_1base__feasible__node_aabb694cc9f7b11d6ebd5446b94baf6a5}{get\_index}}\ ()\textcolor{keyword}{\ const\ }\{\ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{classana_1_1base__feasible__node_aea2e52e18eb5dd89fcd138636b88185b}{m\_index}};\ \}}
+\DoxyCodeLine{00070\ }
+\DoxyCodeLine{00071\ \ \textcolor{keyword}{protected}:}
+\DoxyCodeLine{00072\ \ \ \doxymbox{\hyperlink{classana_1_1base__feasible__node_a3ad7c119505b552d0c804fd9a47366fd}{base\_feasible\_node}}\ (\textcolor{keyword}{const}\ \doxymbox{\hyperlink{classana_1_1exploded__node}{exploded\_node}}\ *inner\_node,\ \textcolor{keywordtype}{unsigned}\ index)}
+\DoxyCodeLine{00073\ \ \ :\ \doxymbox{\hyperlink{classana_1_1base__feasible__node_a1992df0267c240f0bb71b08896f24ec8}{m\_inner\_node}}\ (inner\_node),\ \doxymbox{\hyperlink{classana_1_1base__feasible__node_aea2e52e18eb5dd89fcd138636b88185b}{m\_index}}\ (index)}
+\DoxyCodeLine{00074\ \ \ \{\}}
+\DoxyCodeLine{00075\ }
+\DoxyCodeLine{00076\ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classana_1_1exploded__node}{exploded\_node}}\ *\doxymbox{\hyperlink{classana_1_1base__feasible__node_a1992df0267c240f0bb71b08896f24ec8}{m\_inner\_node}};}
+\DoxyCodeLine{00077\ \ \ \textcolor{keywordtype}{unsigned}\ \doxymbox{\hyperlink{classana_1_1base__feasible__node_aea2e52e18eb5dd89fcd138636b88185b}{m\_index}};}
+\DoxyCodeLine{00078\ \};}
+\DoxyCodeLine{00079\ }
+\DoxyCodeLine{00080\ \textcolor{comment}{/*\ Subclass\ of\ base\_feasible\_node\ for\ a\ node\ that\ is\ reachable\ via\ a}}
+\DoxyCodeLine{00081\ \textcolor{comment}{\ \ \ feasible\ path,\ with\ a\ particular\ state.\ \ */}}
+\DoxyCodeLine{00082\ }
+\DoxyCodeLine{00083\ \textcolor{keyword}{class\ }\doxymbox{\hyperlink{classana_1_1feasible__node_a0487664aca12780d8581562995eba722}{feasible\_node}}\ :\ \textcolor{keyword}{public}\ \doxymbox{\hyperlink{classana_1_1base__feasible__node_a3ad7c119505b552d0c804fd9a47366fd}{base\_feasible\_node}}}
+\DoxyCodeLine{00084\ \{}
+\DoxyCodeLine{00085\ \textcolor{keyword}{public}:}
+\DoxyCodeLine{00086\ \ \ \doxymbox{\hyperlink{classana_1_1feasible__node_a0487664aca12780d8581562995eba722}{feasible\_node}}\ (\textcolor{keyword}{const}\ \doxymbox{\hyperlink{classana_1_1exploded__node}{exploded\_node}}\ *inner\_node,\ \textcolor{keywordtype}{unsigned}\ index,}
+\DoxyCodeLine{00087\ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classana_1_1feasibility__state}{feasibility\_state}}\ \&state,}
+\DoxyCodeLine{00088\ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{unsigned}\ path\_length)}
+\DoxyCodeLine{00089\ \ \ :\ \doxymbox{\hyperlink{classana_1_1base__feasible__node_a3ad7c119505b552d0c804fd9a47366fd}{base\_feasible\_node}}\ (inner\_node,\ index),}
+\DoxyCodeLine{00090\ \ \ \ \ \doxymbox{\hyperlink{classana_1_1feasible__node_a1edf25f3f1ac90871c78a80dfc40d5f4}{m\_state}}\ (state),}
+\DoxyCodeLine{00091\ \ \ \ \ \doxymbox{\hyperlink{classana_1_1feasible__node_ade040e050819514fe2f4aa1798acb52f}{m\_path\_length}}\ (path\_length)}
+\DoxyCodeLine{00092\ \ \ \{}
+\DoxyCodeLine{00093\ \ \ \}}
+\DoxyCodeLine{00094\ }
+\DoxyCodeLine{00095\ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classana_1_1feasible__node_ad946050b9239d83b74a3c32c918f9398}{dump\_dot}}\ (\doxymbox{\hyperlink{classgraphviz__out}{graphviz\_out}}\ *gv,}
+\DoxyCodeLine{00096\ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classdnode_aa3b3f98c829e25922819e271d99308eb}{dump\_args\_t}}\ \&args)\ \textcolor{keyword}{const}\ \textcolor{keyword}{final}\ \textcolor{keyword}{override};}
+\DoxyCodeLine{00097\ }
+\DoxyCodeLine{00098\ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classana_1_1feasibility__state}{feasibility\_state}}\ \&\doxymbox{\hyperlink{classana_1_1feasible__node_a412c49e571c909b9dbf05b9207682b78}{get\_state}}\ ()\textcolor{keyword}{\ const\ }\{\ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{classana_1_1feasible__node_a1edf25f3f1ac90871c78a80dfc40d5f4}{m\_state}};\ \}}
+\DoxyCodeLine{00099\ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classana_1_1region__model}{region\_model}}\ \&\doxymbox{\hyperlink{classana_1_1feasible__node_aa7237c37b476327de924a40022726dde}{get\_model}}\ ()\textcolor{keyword}{\ const\ }\{\ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{classana_1_1feasible__node_a1edf25f3f1ac90871c78a80dfc40d5f4}{m\_state}}.get\_model\ ();\ \}}
+\DoxyCodeLine{00100\ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classauto__sbitmap}{auto\_sbitmap}}\ \&\doxymbox{\hyperlink{classana_1_1feasible__node_ac4e2f3c8fd07347a775f734b0b70b79a}{get\_snodes\_visited}}\ ()\textcolor{keyword}{\ const}}
+\DoxyCodeLine{00101\ \textcolor{keyword}{\ \ }\{}
+\DoxyCodeLine{00102\ \ \ \ \ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{classana_1_1feasible__node_a1edf25f3f1ac90871c78a80dfc40d5f4}{m\_state}}.get\_snodes\_visited\ ();}
+\DoxyCodeLine{00103\ \ \ \}}
+\DoxyCodeLine{00104\ }
+\DoxyCodeLine{00105\ \ \ \textcolor{keywordtype}{unsigned}\ \doxymbox{\hyperlink{classana_1_1feasible__node_a0d29011472e463e0d5a5d8a6acb69707}{get\_path\_length}}\ ()\textcolor{keyword}{\ const\ }\{\ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{classana_1_1feasible__node_ade040e050819514fe2f4aa1798acb52f}{m\_path\_length}};\ \}}
+\DoxyCodeLine{00106\ }
+\DoxyCodeLine{00107\ \ \ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{classana_1_1feasible__node_a2b6fad44a8de59b7a5b5183a4a7040c6}{get\_state\_at\_stmt}}\ (\textcolor{keyword}{const}\ gimple\ *target\_stmt,}
+\DoxyCodeLine{00108\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{classana_1_1region__model}{region\_model}}\ *out)\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00109\ }
+\DoxyCodeLine{00110\ \textcolor{keyword}{private}:}
+\DoxyCodeLine{00111\ \ \ \doxymbox{\hyperlink{classana_1_1feasibility__state}{feasibility\_state}}\ \doxymbox{\hyperlink{classana_1_1feasible__node_a1edf25f3f1ac90871c78a80dfc40d5f4}{m\_state}};}
+\DoxyCodeLine{00112\ \ \ \textcolor{keywordtype}{unsigned}\ \doxymbox{\hyperlink{classana_1_1feasible__node_ade040e050819514fe2f4aa1798acb52f}{m\_path\_length}};}
+\DoxyCodeLine{00113\ \};}
+\DoxyCodeLine{00114\ }
+\DoxyCodeLine{00115\ \textcolor{comment}{/*\ Subclass\ of\ base\_feasible\_node\ for\ a\ node\ that\ requires\ following}}
+\DoxyCodeLine{00116\ \textcolor{comment}{\ \ \ an\ infeasible\ edge\ to\ reach\ (and\ thus\ terminating\ this\ part\ of\ the}}
+\DoxyCodeLine{00117\ \textcolor{comment}{\ \ \ exploration).\ \ */}}
+\DoxyCodeLine{00118\ }
+\DoxyCodeLine{00119\ \textcolor{keyword}{class\ }\doxymbox{\hyperlink{classana_1_1infeasible__node_ab509dae7dbd7b4d00ae805333edff202}{infeasible\_node}}\ :\ \textcolor{keyword}{public}\ \doxymbox{\hyperlink{classana_1_1base__feasible__node_a3ad7c119505b552d0c804fd9a47366fd}{base\_feasible\_node}}}
+\DoxyCodeLine{00120\ \{}
+\DoxyCodeLine{00121\ \textcolor{keyword}{public}:}
+\DoxyCodeLine{00122\ \ \ \doxymbox{\hyperlink{classana_1_1infeasible__node_ab509dae7dbd7b4d00ae805333edff202}{infeasible\_node}}\ (\textcolor{keyword}{const}\ \doxymbox{\hyperlink{classana_1_1exploded__node}{exploded\_node}}\ *inner\_node,\ \textcolor{keywordtype}{unsigned}\ index,}
+\DoxyCodeLine{00123\ \ \ \ \ \ \ \ \ \ \ \ std::unique\_ptr<rejected\_constraint>\ rc)}
+\DoxyCodeLine{00124\ \ \ :\ \doxymbox{\hyperlink{classana_1_1base__feasible__node_a3ad7c119505b552d0c804fd9a47366fd}{base\_feasible\_node}}\ (inner\_node,\ index),}
+\DoxyCodeLine{00125\ \ \ \ \ \doxymbox{\hyperlink{classana_1_1infeasible__node_a9386ae689eb37291d7f7adeff420b7dd}{m\_rc}}\ (std::\doxymbox{\hyperlink{cp-tree_8h_abbc6c7fb94d3f6c0e5add1c5d360a24b}{move}}\ (rc))}
+\DoxyCodeLine{00126\ \ \ \{}
+\DoxyCodeLine{00127\ \ \ \}}
+\DoxyCodeLine{00128\ }
+\DoxyCodeLine{00129\ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classana_1_1infeasible__node_ac208162d0010dcb9710eb1ba22a246c4}{dump\_dot}}\ (\doxymbox{\hyperlink{classgraphviz__out}{graphviz\_out}}\ *gv,}
+\DoxyCodeLine{00130\ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classdnode_aa3b3f98c829e25922819e271d99308eb}{dump\_args\_t}}\ \&args)\ \textcolor{keyword}{const}\ \textcolor{keyword}{final}\ \textcolor{keyword}{override};}
+\DoxyCodeLine{00131\ }
+\DoxyCodeLine{00132\ \textcolor{keyword}{private}:}
+\DoxyCodeLine{00133\ \ \ std::unique\_ptr<rejected\_constraint>\ \doxymbox{\hyperlink{classana_1_1infeasible__node_a9386ae689eb37291d7f7adeff420b7dd}{m\_rc}};}
+\DoxyCodeLine{00134\ \};}
+\DoxyCodeLine{00135\ }
+\DoxyCodeLine{00136\ \textcolor{comment}{/*\ Base\ class\ of\ edge\ within\ a\ feasible\_graph.\ \ */}}
+\DoxyCodeLine{00137\ }
+\DoxyCodeLine{00138\ \textcolor{keyword}{class\ }\doxymbox{\hyperlink{classana_1_1base__feasible__edge_a4606340a92fffea9b2df97704277d31a}{base\_feasible\_edge}}\ :\ \textcolor{keyword}{public}\ \doxymbox{\hyperlink{classdedge_a9d78cc52331ccc4462589f1de0c7bb9d}{dedge}}<fg\_traits>}
+\DoxyCodeLine{00139\ \{}
+\DoxyCodeLine{00140\ \ \textcolor{keyword}{public}:}
+\DoxyCodeLine{00141\ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classana_1_1base__feasible__edge_a3da0384b3f1f7c1a8eca9e68b9316506}{dump\_dot}}\ (\doxymbox{\hyperlink{classgraphviz__out}{graphviz\_out}}\ *gv,}
+\DoxyCodeLine{00142\ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classdedge_ae5ce0463f62eb10b8f70afa2c90527e8}{dump\_args\_t}}\ \&args)\ \textcolor{keyword}{const}\ \textcolor{keyword}{final}\ \textcolor{keyword}{override};}
+\DoxyCodeLine{00143\ }
+\DoxyCodeLine{00144\ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classana_1_1exploded__edge}{exploded\_edge}}\ *\doxymbox{\hyperlink{classana_1_1base__feasible__edge_ae8628930b7df2cb9130c04b2867c5692}{get\_inner\_edge}}\ ()\textcolor{keyword}{\ const\ }\{\ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{classana_1_1base__feasible__edge_a7dc899335445897af1b221d30c993aa2}{m\_inner\_edge}};\ \}}
+\DoxyCodeLine{00145\ }
+\DoxyCodeLine{00146\ \ \textcolor{keyword}{protected}:}
+\DoxyCodeLine{00147\ \ \ \doxymbox{\hyperlink{classana_1_1base__feasible__edge_a4606340a92fffea9b2df97704277d31a}{base\_feasible\_edge}}\ (\doxymbox{\hyperlink{classana_1_1base__feasible__node}{base\_feasible\_node}}\ *src,\ \doxymbox{\hyperlink{classana_1_1base__feasible__node}{base\_feasible\_node}}\ *dest,}
+\DoxyCodeLine{00148\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classana_1_1exploded__edge}{exploded\_edge}}\ *inner\_edge)}
+\DoxyCodeLine{00149\ \ \ :\ \doxymbox{\hyperlink{classdedge_a9d78cc52331ccc4462589f1de0c7bb9d}{dedge}}<\doxymbox{\hyperlink{structana_1_1fg__traits}{fg\_traits}}>\ (src,\ dest),\ \doxymbox{\hyperlink{classana_1_1base__feasible__edge_a7dc899335445897af1b221d30c993aa2}{m\_inner\_edge}}\ (inner\_edge)}
+\DoxyCodeLine{00150\ \ \ \{}
+\DoxyCodeLine{00151\ \ \ \}}
+\DoxyCodeLine{00152\ }
+\DoxyCodeLine{00153\ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classana_1_1exploded__edge}{exploded\_edge}}\ *\doxymbox{\hyperlink{classana_1_1base__feasible__edge_a7dc899335445897af1b221d30c993aa2}{m\_inner\_edge}};}
+\DoxyCodeLine{00154\ \};}
+\DoxyCodeLine{00155\ }
+\DoxyCodeLine{00156\ \textcolor{comment}{/*\ Subclass\ of\ base\_feasible\_edge\ for\ connecting\ two\ feasible\_nodes.\ \ */}}
+\DoxyCodeLine{00157\ }
+\DoxyCodeLine{00158\ \textcolor{keyword}{class\ }\doxymbox{\hyperlink{classana_1_1feasible__edge_ab56388566ea8c1f1a3270f56995dbe76}{feasible\_edge}}\ :\ \textcolor{keyword}{public}\ \doxymbox{\hyperlink{classana_1_1base__feasible__edge_a4606340a92fffea9b2df97704277d31a}{base\_feasible\_edge}}}
+\DoxyCodeLine{00159\ \{}
+\DoxyCodeLine{00160\ \ \textcolor{keyword}{public}:}
+\DoxyCodeLine{00161\ \ \ \doxymbox{\hyperlink{classana_1_1feasible__edge_ab56388566ea8c1f1a3270f56995dbe76}{feasible\_edge}}\ (\doxymbox{\hyperlink{classana_1_1feasible__node}{feasible\_node}}\ *src,\ \doxymbox{\hyperlink{classana_1_1feasible__node}{feasible\_node}}\ *dest,}
+\DoxyCodeLine{00162\ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classana_1_1exploded__edge}{exploded\_edge}}\ *inner\_edge)}
+\DoxyCodeLine{00163\ \ \ :\ \doxymbox{\hyperlink{classana_1_1base__feasible__edge_a4606340a92fffea9b2df97704277d31a}{base\_feasible\_edge}}\ (src,\ dest,\ inner\_edge)}
+\DoxyCodeLine{00164\ \ \ \{}
+\DoxyCodeLine{00165\ \ \ \}}
+\DoxyCodeLine{00166\ \};}
+\DoxyCodeLine{00167\ }
+\DoxyCodeLine{00168\ \textcolor{comment}{/*\ Subclass\ of\ base\_feasible\_edge\ for\ connecting\ a\ feasible\_node}}
+\DoxyCodeLine{00169\ \textcolor{comment}{\ \ \ to\ an\ infeasible\_node\ (and\ thus\ terminating\ this\ part\ of\ the}}
+\DoxyCodeLine{00170\ \textcolor{comment}{\ \ \ exploration).\ \ */}}
+\DoxyCodeLine{00171\ }
+\DoxyCodeLine{00172\ \textcolor{keyword}{class\ }\doxymbox{\hyperlink{classana_1_1infeasible__edge_a83070ae6fd9b8a2da8f44c7474f0a765}{infeasible\_edge}}\ :\ \textcolor{keyword}{public}\ \doxymbox{\hyperlink{classana_1_1base__feasible__edge_a4606340a92fffea9b2df97704277d31a}{base\_feasible\_edge}}}
+\DoxyCodeLine{00173\ \{}
+\DoxyCodeLine{00174\ \ \textcolor{keyword}{public}:}
+\DoxyCodeLine{00175\ \ \ \doxymbox{\hyperlink{classana_1_1infeasible__edge_a83070ae6fd9b8a2da8f44c7474f0a765}{infeasible\_edge}}\ (\doxymbox{\hyperlink{classana_1_1feasible__node}{feasible\_node}}\ *src,\ \doxymbox{\hyperlink{classana_1_1infeasible__node}{infeasible\_node}}\ *dest,}
+\DoxyCodeLine{00176\ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classana_1_1exploded__edge}{exploded\_edge}}\ *inner\_edge)}
+\DoxyCodeLine{00177\ \ \ :\ \doxymbox{\hyperlink{classana_1_1base__feasible__edge_a4606340a92fffea9b2df97704277d31a}{base\_feasible\_edge}}\ (src,\ dest,\ inner\_edge)}
+\DoxyCodeLine{00178\ \ \ \{}
+\DoxyCodeLine{00179\ \ \ \}}
+\DoxyCodeLine{00180\ \};}
+\DoxyCodeLine{00181\ }
+\DoxyCodeLine{00182\ \textcolor{comment}{/*\ A\ digraph\ subclass\ for\ exploring\ trees\ of\ feasible\ paths\ through}}
+\DoxyCodeLine{00183\ \textcolor{comment}{\ \ \ the\ egraph.\ \ This\ is\ actually\ a\ tree.}}
+\DoxyCodeLine{00184\ \textcolor{comment}{}}
+\DoxyCodeLine{00185\ \textcolor{comment}{\ \ \ The\ paths\ within\ the\ graph\ of\ feasible\_nodes\ express\ feasible\ paths}}
+\DoxyCodeLine{00186\ \textcolor{comment}{\ \ \ through\ the\ graph,\ and\ it\ also\ captures\ known\ infeasible\ edges,}}
+\DoxyCodeLine{00187\ \textcolor{comment}{\ \ \ which\ is\ invaluable\ for\ debugging.\ \ */}}
+\DoxyCodeLine{00188\ }
+\DoxyCodeLine{00189\ \textcolor{keyword}{class\ }\doxymbox{\hyperlink{classana_1_1feasible__graph_ac91250fec93a4c54ac1093ac8840150a}{feasible\_graph}}\ :\ \textcolor{keyword}{public}\ \doxymbox{\hyperlink{classdigraph_afad3d6916b2c23500a935a27055605c3}{digraph}}\ <fg\_traits>}
+\DoxyCodeLine{00190\ \{}
+\DoxyCodeLine{00191\ \ \textcolor{keyword}{public}:}
+\DoxyCodeLine{00192\ \ \ \doxymbox{\hyperlink{classana_1_1feasible__graph_ac91250fec93a4c54ac1093ac8840150a}{feasible\_graph}}\ ();}
+\DoxyCodeLine{00193\ }
+\DoxyCodeLine{00194\ \ \ \doxymbox{\hyperlink{classana_1_1feasible__node}{feasible\_node}}\ *\doxymbox{\hyperlink{classana_1_1feasible__graph_accf53a0ea1ff1f1561bbe7520bd0bf84}{add\_node}}\ (\textcolor{keyword}{const}\ \doxymbox{\hyperlink{classana_1_1exploded__node}{exploded\_node}}\ *enode,}
+\DoxyCodeLine{00195\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classana_1_1feasibility__state}{feasibility\_state}}\ \&state,}
+\DoxyCodeLine{00196\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{unsigned}\ path\_length);}
+\DoxyCodeLine{00197\ }
+\DoxyCodeLine{00198\ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classana_1_1feasible__graph_afc0cc72c8098b990769b79e94ddb94b0}{add\_feasibility\_problem}}\ (\doxymbox{\hyperlink{classana_1_1feasible__node}{feasible\_node}}\ *src\_fnode,}
+\DoxyCodeLine{00199\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classana_1_1exploded__edge}{exploded\_edge}}\ *eedge,}
+\DoxyCodeLine{00200\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ std::unique\_ptr<rejected\_constraint>\ rc);}
+\DoxyCodeLine{00201\ }
+\DoxyCodeLine{00202\ \ \ std::unique\_ptr<exploded\_path>\ \doxymbox{\hyperlink{classana_1_1feasible__graph_a626833566b1c8241ef890ce632cb4295}{make\_epath}}\ (\doxymbox{\hyperlink{classana_1_1feasible__node}{feasible\_node}}\ *fnode)\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00203\ }
+\DoxyCodeLine{00204\ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classana_1_1feasible__graph_af70683787b3c80946db4e5131a2c8872}{dump\_feasible\_path}}\ (\textcolor{keyword}{const}\ \doxymbox{\hyperlink{classana_1_1feasible__node}{feasible\_node}}\ \&dst\_fnode,}
+\DoxyCodeLine{00205\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *filename)\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00206\ }
+\DoxyCodeLine{00207\ \ \ \textcolor{keywordtype}{unsigned}\ \doxymbox{\hyperlink{classana_1_1feasible__graph_a257ea9dead7cbbed6a2618ad2530a47a}{get\_num\_infeasible}}\ ()\textcolor{keyword}{\ const\ }\{\ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{classana_1_1feasible__graph_a5b5cf140cf72065ea78c4a2b1ce1b8e0}{m\_num\_infeasible}};\ \}}
+\DoxyCodeLine{00208\ }
+\DoxyCodeLine{00209\ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classana_1_1feasible__graph_a9857255921fb3fdf6612882bf80f9082}{log\_stats}}\ (\doxymbox{\hyperlink{classana_1_1logger}{logger}}\ *\doxymbox{\hyperlink{classana_1_1logger}{logger}})\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00210\ }
+\DoxyCodeLine{00211\ \textcolor{keyword}{private}:}
+\DoxyCodeLine{00212\ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classana_1_1feasible__graph_acc96d8654813cf34d3f0aedf5c215f64}{dump\_feasible\_path}}\ (\textcolor{keyword}{const}\ \doxymbox{\hyperlink{classana_1_1feasible__node}{feasible\_node}}\ \&dst\_fnode,}
+\DoxyCodeLine{00213\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{classpretty__printer}{pretty\_printer}}\ *pp)\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00214\ }
+\DoxyCodeLine{00215\ \ \ \textcolor{keywordtype}{unsigned}\ \doxymbox{\hyperlink{classana_1_1feasible__graph_a5b5cf140cf72065ea78c4a2b1ce1b8e0}{m\_num\_infeasible}};}
+\DoxyCodeLine{00216\ \};}
+\DoxyCodeLine{00217\ }
+\DoxyCodeLine{00218\ \textcolor{keyword}{class\ }\doxymbox{\hyperlink{classana_1_1feasible__cluster}{feasible\_cluster}}\ :\ \textcolor{keyword}{public}\ \doxymbox{\hyperlink{classcluster}{cluster}}\ <fg\_traits>}
+\DoxyCodeLine{00219\ \{}
+\DoxyCodeLine{00220\ \};}
+\DoxyCodeLine{00221\ }
+\DoxyCodeLine{00222\ \}\ \textcolor{comment}{//\ namespace\ ana}}
+\DoxyCodeLine{00223\ }
+\DoxyCodeLine{00224\ \textcolor{preprocessor}{\#endif\ }\textcolor{comment}{/*\ GCC\_ANALYZER\_FEASIBLE\_GRAPH\_H\ */}\textcolor{preprocessor}{}}
+
+\end{DoxyCode}

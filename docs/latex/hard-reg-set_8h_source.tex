@@ -1,0 +1,533 @@
+\doxysection{hard-\/reg-\/set.h}
+\hypertarget{hard-reg-set_8h_source}{}\label{hard-reg-set_8h_source}\index{toolchain/x86\_64-\/elf/lib/gcc/x86\_64-\/elf/14.2.0/plugin/include/hard-\/reg-\/set.h@{toolchain/x86\_64-\/elf/lib/gcc/x86\_64-\/elf/14.2.0/plugin/include/hard-\/reg-\/set.h}}
+\doxymbox{\hyperlink{hard-reg-set_8h}{Go to the documentation of this file.}}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001\ \textcolor{comment}{/*\ Sets\ (bit\ vectors)\ of\ hard\ registers,\ and\ operations\ on\ them.}}
+\DoxyCodeLine{00002\ \textcolor{comment}{\ \ \ Copyright\ (C)\ 1987-\/2024\ Free\ Software\ Foundation,\ Inc.}}
+\DoxyCodeLine{00003\ \textcolor{comment}{}}
+\DoxyCodeLine{00004\ \textcolor{comment}{This\ file\ is\ part\ of\ GCC}}
+\DoxyCodeLine{00005\ \textcolor{comment}{}}
+\DoxyCodeLine{00006\ \textcolor{comment}{GCC\ is\ free\ software;\ you\ can\ redistribute\ it\ and/or\ modify\ it\ under}}
+\DoxyCodeLine{00007\ \textcolor{comment}{the\ terms\ of\ the\ GNU\ General\ Public\ License\ as\ published\ by\ the\ Free}}
+\DoxyCodeLine{00008\ \textcolor{comment}{Software\ Foundation;\ either\ version\ 3,\ or\ (at\ your\ option)\ any\ later}}
+\DoxyCodeLine{00009\ \textcolor{comment}{version.}}
+\DoxyCodeLine{00010\ \textcolor{comment}{}}
+\DoxyCodeLine{00011\ \textcolor{comment}{GCC\ is\ distributed\ in\ the\ hope\ that\ it\ will\ be\ useful,\ but\ WITHOUT\ ANY}}
+\DoxyCodeLine{00012\ \textcolor{comment}{WARRANTY;\ without\ even\ the\ implied\ warranty\ of\ MERCHANTABILITY\ or}}
+\DoxyCodeLine{00013\ \textcolor{comment}{FITNESS\ FOR\ A\ PARTICULAR\ PURPOSE.\ \ See\ the\ GNU\ General\ Public\ License}}
+\DoxyCodeLine{00014\ \textcolor{comment}{for\ more\ details.}}
+\DoxyCodeLine{00015\ \textcolor{comment}{}}
+\DoxyCodeLine{00016\ \textcolor{comment}{You\ should\ have\ received\ a\ copy\ of\ the\ GNU\ General\ Public\ License}}
+\DoxyCodeLine{00017\ \textcolor{comment}{along\ with\ GCC;\ see\ the\ file\ COPYING3.\ \ If\ not\ see}}
+\DoxyCodeLine{00018\ \textcolor{comment}{<http://www.gnu.org/licenses/>.\ \ */}}
+\DoxyCodeLine{00019\ }
+\DoxyCodeLine{00020\ \textcolor{preprocessor}{\#ifndef\ GCC\_HARD\_REG\_SET\_H}}
+\DoxyCodeLine{00021\ \textcolor{preprocessor}{\#define\ GCC\_HARD\_REG\_SET\_H}}
+\DoxyCodeLine{00022\ }
+\DoxyCodeLine{00023\ \textcolor{preprocessor}{\#include\ "{}\doxymbox{\hyperlink{array-traits_8h}{array-\/traits.h}}"{}}}
+\DoxyCodeLine{00024\ }
+\DoxyCodeLine{00025\ \textcolor{comment}{/*\ Define\ the\ type\ of\ a\ set\ of\ hard\ registers.\ \ */}}
+\DoxyCodeLine{00026\ }
+\DoxyCodeLine{00027\ \textcolor{comment}{/*\ HARD\_REG\_ELT\_TYPE\ is\ a\ typedef\ of\ the\ unsigned\ integral\ type\ which}}
+\DoxyCodeLine{00028\ \textcolor{comment}{\ \ \ will\ be\ used\ for\ hard\ reg\ sets,\ either\ alone\ or\ in\ an\ array.}}
+\DoxyCodeLine{00029\ \textcolor{comment}{}}
+\DoxyCodeLine{00030\ \textcolor{comment}{\ \ \ If\ HARD\_REG\_SET\ is\ a\ macro,\ its\ definition\ is\ HARD\_REG\_ELT\_TYPE,}}
+\DoxyCodeLine{00031\ \textcolor{comment}{\ \ \ and\ it\ has\ enough\ bits\ to\ represent\ all\ the\ target\ machine's\ hard}}
+\DoxyCodeLine{00032\ \textcolor{comment}{\ \ \ registers.\ \ Otherwise,\ it\ is\ a\ typedef\ for\ a\ suitably\ sized\ array}}
+\DoxyCodeLine{00033\ \textcolor{comment}{\ \ \ of\ HARD\_REG\_ELT\_TYPEs.\ \ HARD\_REG\_SET\_LONGS\ is\ defined\ as\ how\ many.}}
+\DoxyCodeLine{00034\ \textcolor{comment}{}}
+\DoxyCodeLine{00035\ \textcolor{comment}{\ \ \ Note\ that\ lots\ of\ code\ assumes\ that\ the\ first\ part\ of\ a\ regset\ is}}
+\DoxyCodeLine{00036\ \textcolor{comment}{\ \ \ the\ same\ format\ as\ a\ HARD\_REG\_SET.\ \ To\ help\ make\ sure\ this\ is\ true,}}
+\DoxyCodeLine{00037\ \textcolor{comment}{\ \ \ we\ only\ try\ the\ widest\ fast\ integer\ mode\ (HOST\_WIDEST\_FAST\_INT)}}
+\DoxyCodeLine{00038\ \textcolor{comment}{\ \ \ instead\ of\ all\ the\ smaller\ types.\ \ This\ approach\ loses\ only\ if}}
+\DoxyCodeLine{00039\ \textcolor{comment}{\ \ \ there\ are\ very\ few\ registers\ and\ then\ only\ in\ the\ few\ cases\ where}}
+\DoxyCodeLine{00040\ \textcolor{comment}{\ \ \ we\ have\ an\ array\ of\ HARD\_REG\_SETs,\ so\ it\ needn't\ be\ as\ complex\ as}}
+\DoxyCodeLine{00041\ \textcolor{comment}{\ \ \ it\ used\ to\ be.\ \ */}}
+\DoxyCodeLine{00042\ }
+\DoxyCodeLine{00043\ \textcolor{keyword}{typedef}\ \textcolor{keywordtype}{unsigned}\ \doxymbox{\hyperlink{hwint_8h_aa46f6a2209ce0a9230d98495c1f0ada3}{HOST\_WIDEST\_FAST\_INT}}\ \doxymbox{\hyperlink{hard-reg-set_8h_a1abd996526b415d67ccafc20cf89056d}{HARD\_REG\_ELT\_TYPE}};}
+\DoxyCodeLine{00044\ }
+\DoxyCodeLine{00045\ \textcolor{preprocessor}{\#if\ FIRST\_PSEUDO\_REGISTER\ <=\ HOST\_BITS\_PER\_WIDEST\_FAST\_INT}}
+\DoxyCodeLine{00046\ }
+\DoxyCodeLine{00047\ \textcolor{keyword}{typedef}\ \doxymbox{\hyperlink{hard-reg-set_8h_a1abd996526b415d67ccafc20cf89056d}{HARD\_REG\_ELT\_TYPE}}\ \doxymbox{\hyperlink{hard-reg-set_8h_a58a1569980de76957f391607c395d443}{HARD\_REG\_SET}};}
+\DoxyCodeLine{00048\ \textcolor{keyword}{typedef}\ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{hard-reg-set_8h_a58a1569980de76957f391607c395d443}{HARD\_REG\_SET}}\ \doxymbox{\hyperlink{hard-reg-set_8h_aff29537deb5451d1f7a9aac6dfaf74e6}{const\_hard\_reg\_set}};}
+\DoxyCodeLine{00049\ }
+\DoxyCodeLine{00050\ \textcolor{preprocessor}{\#else}}
+\DoxyCodeLine{00051\ }
+\DoxyCodeLine{00052\ \textcolor{preprocessor}{\#define\ HARD\_REG\_SET\_LONGS\ \(\backslash\)}}
+\DoxyCodeLine{00053\ \textcolor{preprocessor}{\ ((FIRST\_PSEUDO\_REGISTER\ +\ HOST\_BITS\_PER\_WIDEST\_FAST\_INT\ -\/\ 1)\ \ \ \(\backslash\)}}
+\DoxyCodeLine{00054\ \textcolor{preprocessor}{\ \ /\ HOST\_BITS\_PER\_WIDEST\_FAST\_INT)}}
+\DoxyCodeLine{00055\ }
+\DoxyCodeLine{00056\ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{hard-reg-set_8h_a58a1569980de76957f391607c395d443}{HARD\_REG\_SET}}}
+\DoxyCodeLine{00057\ \{}
+\DoxyCodeLine{00058\ \ \ \doxymbox{\hyperlink{hard-reg-set_8h_a58a1569980de76957f391607c395d443}{HARD\_REG\_SET}}}
+\DoxyCodeLine{00059\ \ \ \doxymbox{\hyperlink{dumpfile_8h_ad68bc694bc2854a4c780d2591142f03c}{operator\string~\ }}()\textcolor{keyword}{\ const}}
+\DoxyCodeLine{00060\ \textcolor{keyword}{\ \ }\{}
+\DoxyCodeLine{00061\ \ \ \ \ \doxymbox{\hyperlink{hard-reg-set_8h_a58a1569980de76957f391607c395d443}{HARD\_REG\_SET}}\ res;}
+\DoxyCodeLine{00062\ \ \ \ \ \textcolor{keywordflow}{for}\ (\textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{poly-int_8h_a7e98b8a17c0aad30ba64d47b74e2a6c1}{i}}\ =\ 0;\ \doxymbox{\hyperlink{poly-int_8h_a7e98b8a17c0aad30ba64d47b74e2a6c1}{i}}\ <\ \doxymbox{\hyperlink{libiberty_8h_a25f003de16c08a4888b69f619d70f427}{ARRAY\_SIZE}}\ (elts);\ ++\doxymbox{\hyperlink{poly-int_8h_a7e98b8a17c0aad30ba64d47b74e2a6c1}{i}})}
+\DoxyCodeLine{00063\ \ \ \ \ \ \ res.elts[\doxymbox{\hyperlink{poly-int_8h_a7e98b8a17c0aad30ba64d47b74e2a6c1}{i}}]\ =\ \string~elts[\doxymbox{\hyperlink{poly-int_8h_a7e98b8a17c0aad30ba64d47b74e2a6c1}{i}}];}
+\DoxyCodeLine{00064\ \ \ \ \ \textcolor{keywordflow}{return}\ res;}
+\DoxyCodeLine{00065\ \ \ \}}
+\DoxyCodeLine{00066\ }
+\DoxyCodeLine{00067\ \ \ \doxymbox{\hyperlink{hard-reg-set_8h_a58a1569980de76957f391607c395d443}{HARD\_REG\_SET}}}
+\DoxyCodeLine{00068\ \ \ \doxymbox{\hyperlink{name-lookup_8h_a9119e3811c17ddb64d5e1e86583fd075}{operator\&\ }}(\textcolor{keyword}{const}\ \doxymbox{\hyperlink{hard-reg-set_8h_a58a1569980de76957f391607c395d443}{HARD\_REG\_SET}}\ \&other)\textcolor{keyword}{\ const}}
+\DoxyCodeLine{00069\ \textcolor{keyword}{\ \ }\{}
+\DoxyCodeLine{00070\ \ \ \ \ \doxymbox{\hyperlink{hard-reg-set_8h_a58a1569980de76957f391607c395d443}{HARD\_REG\_SET}}\ res;}
+\DoxyCodeLine{00071\ \ \ \ \ \textcolor{keywordflow}{for}\ (\textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{poly-int_8h_a7e98b8a17c0aad30ba64d47b74e2a6c1}{i}}\ =\ 0;\ \doxymbox{\hyperlink{poly-int_8h_a7e98b8a17c0aad30ba64d47b74e2a6c1}{i}}\ <\ \doxymbox{\hyperlink{libiberty_8h_a25f003de16c08a4888b69f619d70f427}{ARRAY\_SIZE}}\ (elts);\ ++\doxymbox{\hyperlink{poly-int_8h_a7e98b8a17c0aad30ba64d47b74e2a6c1}{i}})}
+\DoxyCodeLine{00072\ \ \ \ \ \ \ res.elts[\doxymbox{\hyperlink{poly-int_8h_a7e98b8a17c0aad30ba64d47b74e2a6c1}{i}}]\ =\ elts[\doxymbox{\hyperlink{poly-int_8h_a7e98b8a17c0aad30ba64d47b74e2a6c1}{i}}]\ \&\ other.elts[\doxymbox{\hyperlink{poly-int_8h_a7e98b8a17c0aad30ba64d47b74e2a6c1}{i}}];}
+\DoxyCodeLine{00073\ \ \ \ \ \textcolor{keywordflow}{return}\ res;}
+\DoxyCodeLine{00074\ \ \ \}}
+\DoxyCodeLine{00075\ }
+\DoxyCodeLine{00076\ \ \ \doxymbox{\hyperlink{hard-reg-set_8h_a58a1569980de76957f391607c395d443}{HARD\_REG\_SET}}\ \&}
+\DoxyCodeLine{00077\ \ \ \doxymbox{\hyperlink{dumpfile_8h_a58cc1b70937a424f69ed6fe26ceaceda}{operator\&=\ }}(\textcolor{keyword}{const}\ \doxymbox{\hyperlink{hard-reg-set_8h_a58a1569980de76957f391607c395d443}{HARD\_REG\_SET}}\ \&other)}
+\DoxyCodeLine{00078\ \ \ \{}
+\DoxyCodeLine{00079\ \ \ \ \ \textcolor{keywordflow}{for}\ (\textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{poly-int_8h_a7e98b8a17c0aad30ba64d47b74e2a6c1}{i}}\ =\ 0;\ \doxymbox{\hyperlink{poly-int_8h_a7e98b8a17c0aad30ba64d47b74e2a6c1}{i}}\ <\ \doxymbox{\hyperlink{libiberty_8h_a25f003de16c08a4888b69f619d70f427}{ARRAY\_SIZE}}\ (elts);\ ++\doxymbox{\hyperlink{poly-int_8h_a7e98b8a17c0aad30ba64d47b74e2a6c1}{i}})}
+\DoxyCodeLine{00080\ \ \ \ \ \ \ elts[\doxymbox{\hyperlink{poly-int_8h_a7e98b8a17c0aad30ba64d47b74e2a6c1}{i}}]\ \&=\ other.elts[\doxymbox{\hyperlink{poly-int_8h_a7e98b8a17c0aad30ba64d47b74e2a6c1}{i}}];}
+\DoxyCodeLine{00081\ \ \ \ \ \textcolor{keywordflow}{return}\ *\textcolor{keyword}{this};}
+\DoxyCodeLine{00082\ \ \ \}}
+\DoxyCodeLine{00083\ }
+\DoxyCodeLine{00084\ \ \ \doxymbox{\hyperlink{hard-reg-set_8h_a58a1569980de76957f391607c395d443}{HARD\_REG\_SET}}}
+\DoxyCodeLine{00085\ \ \ \doxymbox{\hyperlink{name-lookup_8h_a60297299f935d502ac20cb0dfd0f7c16}{operator|\ }}(\textcolor{keyword}{const}\ \doxymbox{\hyperlink{hard-reg-set_8h_a58a1569980de76957f391607c395d443}{HARD\_REG\_SET}}\ \&other)\textcolor{keyword}{\ const}}
+\DoxyCodeLine{00086\ \textcolor{keyword}{\ \ }\{}
+\DoxyCodeLine{00087\ \ \ \ \ \doxymbox{\hyperlink{hard-reg-set_8h_a58a1569980de76957f391607c395d443}{HARD\_REG\_SET}}\ res;}
+\DoxyCodeLine{00088\ \ \ \ \ \textcolor{keywordflow}{for}\ (\textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{poly-int_8h_a7e98b8a17c0aad30ba64d47b74e2a6c1}{i}}\ =\ 0;\ \doxymbox{\hyperlink{poly-int_8h_a7e98b8a17c0aad30ba64d47b74e2a6c1}{i}}\ <\ \doxymbox{\hyperlink{libiberty_8h_a25f003de16c08a4888b69f619d70f427}{ARRAY\_SIZE}}\ (elts);\ ++\doxymbox{\hyperlink{poly-int_8h_a7e98b8a17c0aad30ba64d47b74e2a6c1}{i}})}
+\DoxyCodeLine{00089\ \ \ \ \ \ \ res.elts[\doxymbox{\hyperlink{poly-int_8h_a7e98b8a17c0aad30ba64d47b74e2a6c1}{i}}]\ =\ elts[\doxymbox{\hyperlink{poly-int_8h_a7e98b8a17c0aad30ba64d47b74e2a6c1}{i}}]\ |\ other.elts[\doxymbox{\hyperlink{poly-int_8h_a7e98b8a17c0aad30ba64d47b74e2a6c1}{i}}];}
+\DoxyCodeLine{00090\ \ \ \ \ \textcolor{keywordflow}{return}\ res;}
+\DoxyCodeLine{00091\ \ \ \}}
+\DoxyCodeLine{00092\ }
+\DoxyCodeLine{00093\ \ \ \doxymbox{\hyperlink{hard-reg-set_8h_a58a1569980de76957f391607c395d443}{HARD\_REG\_SET}}\ \&}
+\DoxyCodeLine{00094\ \ \ \doxymbox{\hyperlink{dumpfile_8h_a670c1f2440cfd6b5d4193dcabdad7864}{operator|=\ }}(\textcolor{keyword}{const}\ \doxymbox{\hyperlink{hard-reg-set_8h_a58a1569980de76957f391607c395d443}{HARD\_REG\_SET}}\ \&other)}
+\DoxyCodeLine{00095\ \ \ \{}
+\DoxyCodeLine{00096\ \ \ \ \ \textcolor{keywordflow}{for}\ (\textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{poly-int_8h_a7e98b8a17c0aad30ba64d47b74e2a6c1}{i}}\ =\ 0;\ \doxymbox{\hyperlink{poly-int_8h_a7e98b8a17c0aad30ba64d47b74e2a6c1}{i}}\ <\ \doxymbox{\hyperlink{libiberty_8h_a25f003de16c08a4888b69f619d70f427}{ARRAY\_SIZE}}\ (elts);\ ++\doxymbox{\hyperlink{poly-int_8h_a7e98b8a17c0aad30ba64d47b74e2a6c1}{i}})}
+\DoxyCodeLine{00097\ \ \ \ \ \ \ elts[\doxymbox{\hyperlink{poly-int_8h_a7e98b8a17c0aad30ba64d47b74e2a6c1}{i}}]\ |=\ other.elts[\doxymbox{\hyperlink{poly-int_8h_a7e98b8a17c0aad30ba64d47b74e2a6c1}{i}}];}
+\DoxyCodeLine{00098\ \ \ \ \ \textcolor{keywordflow}{return}\ *\textcolor{keyword}{this};}
+\DoxyCodeLine{00099\ \ \ \}}
+\DoxyCodeLine{00100\ }
+\DoxyCodeLine{00101\ \ \ \textcolor{keywordtype}{bool}}
+\DoxyCodeLine{00102\ \ \ \doxymbox{\hyperlink{cp-tree_8h_a4b9bd7e4e073a2a98d043c78719de59b}{operator==\ }}(\textcolor{keyword}{const}\ \doxymbox{\hyperlink{hard-reg-set_8h_a58a1569980de76957f391607c395d443}{HARD\_REG\_SET}}\ \&other)\textcolor{keyword}{\ const}}
+\DoxyCodeLine{00103\ \textcolor{keyword}{\ \ }\{}
+\DoxyCodeLine{00104\ \ \ \ \ \doxymbox{\hyperlink{hard-reg-set_8h_a1abd996526b415d67ccafc20cf89056d}{HARD\_REG\_ELT\_TYPE}}\ bad\ =\ 0;}
+\DoxyCodeLine{00105\ \ \ \ \ \textcolor{keywordflow}{for}\ (\textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{poly-int_8h_a7e98b8a17c0aad30ba64d47b74e2a6c1}{i}}\ =\ 0;\ \doxymbox{\hyperlink{poly-int_8h_a7e98b8a17c0aad30ba64d47b74e2a6c1}{i}}\ <\ \doxymbox{\hyperlink{libiberty_8h_a25f003de16c08a4888b69f619d70f427}{ARRAY\_SIZE}}\ (elts);\ ++\doxymbox{\hyperlink{poly-int_8h_a7e98b8a17c0aad30ba64d47b74e2a6c1}{i}})}
+\DoxyCodeLine{00106\ \ \ \ \ \ \ bad\ |=\ (elts[\doxymbox{\hyperlink{poly-int_8h_a7e98b8a17c0aad30ba64d47b74e2a6c1}{i}}]\ \string^\ other.elts[\doxymbox{\hyperlink{poly-int_8h_a7e98b8a17c0aad30ba64d47b74e2a6c1}{i}}]);}
+\DoxyCodeLine{00107\ \ \ \ \ \textcolor{keywordflow}{return}\ bad\ ==\ 0;}
+\DoxyCodeLine{00108\ \ \ \}}
+\DoxyCodeLine{00109\ }
+\DoxyCodeLine{00110\ \ \ \textcolor{keywordtype}{bool}}
+\DoxyCodeLine{00111\ \ \ \doxymbox{\hyperlink{diagnostic-spec_8h_a6b5ad3fba66b4c54ae8afbdf1bbebfb7}{operator!=\ }}(\textcolor{keyword}{const}\ \doxymbox{\hyperlink{hard-reg-set_8h_a58a1569980de76957f391607c395d443}{HARD\_REG\_SET}}\ \&other)\textcolor{keyword}{\ const}}
+\DoxyCodeLine{00112\ \textcolor{keyword}{\ \ }\{}
+\DoxyCodeLine{00113\ \ \ \ \ \textcolor{keywordflow}{return}\ !\doxymbox{\hyperlink{cp-tree_8h_a4b9bd7e4e073a2a98d043c78719de59b}{operator==\ }}(other);}
+\DoxyCodeLine{00114\ \ \ \}}
+\DoxyCodeLine{00115\ }
+\DoxyCodeLine{00116\ \ \ \doxymbox{\hyperlink{hard-reg-set_8h_a1abd996526b415d67ccafc20cf89056d}{HARD\_REG\_ELT\_TYPE}}\ elts[HARD\_REG\_SET\_LONGS];}
+\DoxyCodeLine{00117\ \};}
+\DoxyCodeLine{00118\ \textcolor{keyword}{typedef}\ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{hard-reg-set_8h_a58a1569980de76957f391607c395d443}{HARD\_REG\_SET}}\ \&\doxymbox{\hyperlink{hard-reg-set_8h_aff29537deb5451d1f7a9aac6dfaf74e6}{const\_hard\_reg\_set}};}
+\DoxyCodeLine{00119\ }
+\DoxyCodeLine{00120\ \textcolor{keyword}{template}<>}
+\DoxyCodeLine{00121\ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{structarray__traits}{array\_traits}}<\doxymbox{\hyperlink{hard-reg-set_8h_a58a1569980de76957f391607c395d443}{HARD\_REG\_SET}}>}
+\DoxyCodeLine{00122\ \{}
+\DoxyCodeLine{00123\ \ \ \textcolor{keyword}{typedef}\ \doxymbox{\hyperlink{hard-reg-set_8h_a1abd996526b415d67ccafc20cf89056d}{HARD\_REG\_ELT\_TYPE}}\ \doxymbox{\hyperlink{structscalar__array__traits_a77fe13eeb14cdab75c5853af4dd46c1e}{element\_type}};}
+\DoxyCodeLine{00124\ \ \ \textcolor{keyword}{static}\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{structscalar__array__traits_ab2b7ae1ac87ca16b7a42160e2596a009}{has\_constant\_size}}\ =\ \textcolor{keyword}{true};}
+\DoxyCodeLine{00125\ \ \ \textcolor{keyword}{static}\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{size\_t}\ \doxymbox{\hyperlink{structscalar__array__traits_a01205e9b694b66beb3f464ea4d8d6701}{constant\_size}}\ =\ HARD\_REG\_SET\_LONGS;}
+\DoxyCodeLine{00126\ \ \ \textcolor{keyword}{static}\ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{structscalar__array__traits_a77fe13eeb14cdab75c5853af4dd46c1e}{element\_type}}\ *\doxymbox{\hyperlink{structscalar__array__traits_ac590af2a4f4783da8e86f05f4288d699}{base}}\ (\textcolor{keyword}{const}\ \doxymbox{\hyperlink{hard-reg-set_8h_a58a1569980de76957f391607c395d443}{HARD\_REG\_SET}}\ \&x)\ \{\ \textcolor{keywordflow}{return}\ x.elts;\ \}}
+\DoxyCodeLine{00127\ \ \ \textcolor{keyword}{static}\ \textcolor{keywordtype}{size\_t}\ \doxymbox{\hyperlink{structscalar__array__traits_af215f3669f234af3155dfb1a74403924}{size}}\ (\textcolor{keyword}{const}\ \doxymbox{\hyperlink{hard-reg-set_8h_a58a1569980de76957f391607c395d443}{HARD\_REG\_SET}}\ \&)\ \{\ \textcolor{keywordflow}{return}\ HARD\_REG\_SET\_LONGS;\ \}}
+\DoxyCodeLine{00128\ \};}
+\DoxyCodeLine{00129\ }
+\DoxyCodeLine{00130\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00131\ }
+\DoxyCodeLine{00132\ \textcolor{comment}{/*\ HARD\_REG\_SET\ wrapped\ into\ a\ structure,\ to\ make\ it\ possible\ to}}
+\DoxyCodeLine{00133\ \textcolor{comment}{\ \ \ use\ HARD\_REG\_SET\ even\ in\ APIs\ that\ should\ not\ include}}
+\DoxyCodeLine{00134\ \textcolor{comment}{\ \ \ hard-\/reg-\/set.h.\ \ */}}
+\DoxyCodeLine{00135\ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{structhard__reg__set__container}{hard\_reg\_set\_container}}}
+\DoxyCodeLine{00136\ \{}
+\DoxyCodeLine{00137\ \ \ \doxymbox{\hyperlink{hard-reg-set_8h_a58a1569980de76957f391607c395d443}{HARD\_REG\_SET}}\ \doxymbox{\hyperlink{structhard__reg__set__container_a85ebcdc495ff161e21596309175caed5}{set}};}
+\DoxyCodeLine{00138\ \};}
+\DoxyCodeLine{00139\ }
+\DoxyCodeLine{00140\ \textcolor{comment}{/*\ HARD\_CONST\ is\ used\ to\ cast\ a\ constant\ to\ the\ appropriate\ type}}
+\DoxyCodeLine{00141\ \textcolor{comment}{\ \ \ for\ use\ with\ a\ HARD\_REG\_SET.\ \ */}}
+\DoxyCodeLine{00142\ }
+\DoxyCodeLine{00143\ \textcolor{preprocessor}{\#define\ HARD\_CONST(X)\ ((HARD\_REG\_ELT\_TYPE)\ (X))}}
+\DoxyCodeLine{00144\ }
+\DoxyCodeLine{00145\ \textcolor{comment}{/*\ Define\ macros\ SET\_HARD\_REG\_BIT,\ CLEAR\_HARD\_REG\_BIT\ and\ TEST\_HARD\_REG\_BIT}}
+\DoxyCodeLine{00146\ \textcolor{comment}{\ \ \ to\ set,\ clear\ or\ test\ one\ bit\ in\ a\ hard\ reg\ set\ of\ type\ HARD\_REG\_SET.}}
+\DoxyCodeLine{00147\ \textcolor{comment}{\ \ \ All\ three\ take\ two\ arguments:\ the\ set\ and\ the\ register\ number.}}
+\DoxyCodeLine{00148\ \textcolor{comment}{}}
+\DoxyCodeLine{00149\ \textcolor{comment}{\ \ \ In\ the\ case\ where\ sets\ are\ arrays\ of\ longs,\ the\ first\ argument}}
+\DoxyCodeLine{00150\ \textcolor{comment}{\ \ \ is\ actually\ a\ pointer\ to\ a\ long.}}
+\DoxyCodeLine{00151\ \textcolor{comment}{}}
+\DoxyCodeLine{00152\ \textcolor{comment}{\ \ \ Define\ two\ macros\ for\ initializing\ a\ set:}}
+\DoxyCodeLine{00153\ \textcolor{comment}{\ \ \ CLEAR\_HARD\_REG\_SET\ and\ SET\_HARD\_REG\_SET.}}
+\DoxyCodeLine{00154\ \textcolor{comment}{\ \ \ These\ take\ just\ one\ argument.}}
+\DoxyCodeLine{00155\ \textcolor{comment}{}}
+\DoxyCodeLine{00156\ \textcolor{comment}{\ \ \ Also\ define:}}
+\DoxyCodeLine{00157\ \textcolor{comment}{}}
+\DoxyCodeLine{00158\ \textcolor{comment}{\ \ \ hard\_reg\_set\_subset\_p\ (X,\ Y),\ which\ returns\ true\ if\ X\ is\ a\ subset\ of\ Y.}}
+\DoxyCodeLine{00159\ \textcolor{comment}{\ \ \ hard\_reg\_set\_intersect\_p\ (X,\ Y),\ which\ returns\ true\ if\ X\ and\ Y\ intersect.}}
+\DoxyCodeLine{00160\ \textcolor{comment}{\ \ \ hard\_reg\_set\_empty\_p\ (X),\ which\ returns\ true\ if\ X\ is\ empty.\ \ */}}
+\DoxyCodeLine{00161\ }
+\DoxyCodeLine{00162\ \textcolor{preprocessor}{\#define\ UHOST\_BITS\_PER\_WIDE\_INT\ ((unsigned)\ HOST\_BITS\_PER\_WIDEST\_FAST\_INT)}}
+\DoxyCodeLine{00163\ }
+\DoxyCodeLine{00164\ \textcolor{preprocessor}{\#if\ FIRST\_PSEUDO\_REGISTER\ <=\ HOST\_BITS\_PER\_WIDEST\_FAST\_INT}}
+\DoxyCodeLine{00165\ }
+\DoxyCodeLine{00166\ \textcolor{preprocessor}{\#define\ SET\_HARD\_REG\_BIT(SET,\ BIT)\ \ \(\backslash\)}}
+\DoxyCodeLine{00167\ \textcolor{preprocessor}{\ ((SET)\ |=\ HARD\_CONST\ (1)\ <<\ (BIT))}}
+\DoxyCodeLine{00168\ \textcolor{preprocessor}{\#define\ CLEAR\_HARD\_REG\_BIT(SET,\ BIT)\ \ \(\backslash\)}}
+\DoxyCodeLine{00169\ \textcolor{preprocessor}{\ ((SET)\ \&=\ \string~(HARD\_CONST\ (1)\ <<\ (BIT)))}}
+\DoxyCodeLine{00170\ \textcolor{preprocessor}{\#define\ TEST\_HARD\_REG\_BIT(SET,\ BIT)\ \ \(\backslash\)}}
+\DoxyCodeLine{00171\ \textcolor{preprocessor}{\ (!!((SET)\ \&\ (HARD\_CONST\ (1)\ <<\ (BIT))))}}
+\DoxyCodeLine{00172\ }
+\DoxyCodeLine{00173\ \textcolor{preprocessor}{\#define\ CLEAR\_HARD\_REG\_SET(TO)\ ((TO)\ =\ HARD\_CONST\ (0))}}
+\DoxyCodeLine{00174\ \textcolor{preprocessor}{\#define\ SET\_HARD\_REG\_SET(TO)\ ((TO)\ =\ \string~\ HARD\_CONST\ (0))}}
+\DoxyCodeLine{00175\ }
+\DoxyCodeLine{00176\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{bool}}
+\DoxyCodeLine{00177\ \doxymbox{\hyperlink{hard-reg-set_8h_a043e179756fd6e8e043088a61132ce82}{hard\_reg\_set\_subset\_p}}\ (\doxymbox{\hyperlink{hard-reg-set_8h_aff29537deb5451d1f7a9aac6dfaf74e6}{const\_hard\_reg\_set}}\ x,\ \doxymbox{\hyperlink{hard-reg-set_8h_aff29537deb5451d1f7a9aac6dfaf74e6}{const\_hard\_reg\_set}}\ \doxymbox{\hyperlink{wide-int_8h_aa0ab03c091e4ca9ca82306ad42c7dbfb}{y}})}
+\DoxyCodeLine{00178\ \{}
+\DoxyCodeLine{00179\ \ \ \textcolor{keywordflow}{return}\ (x\ \&\ \string~\doxymbox{\hyperlink{wide-int_8h_aa0ab03c091e4ca9ca82306ad42c7dbfb}{y}})\ ==\ \doxymbox{\hyperlink{hard-reg-set_8h_a63c28531a29f8584c837cbd530dcefc6}{HARD\_CONST}}\ (0);}
+\DoxyCodeLine{00180\ \}}
+\DoxyCodeLine{00181\ }
+\DoxyCodeLine{00182\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{bool}}
+\DoxyCodeLine{00183\ \doxymbox{\hyperlink{hard-reg-set_8h_a5feff3d21aef0d40195293f5a51c5e19}{hard\_reg\_set\_intersect\_p}}\ (\doxymbox{\hyperlink{hard-reg-set_8h_aff29537deb5451d1f7a9aac6dfaf74e6}{const\_hard\_reg\_set}}\ x,\ \doxymbox{\hyperlink{hard-reg-set_8h_aff29537deb5451d1f7a9aac6dfaf74e6}{const\_hard\_reg\_set}}\ \doxymbox{\hyperlink{wide-int_8h_aa0ab03c091e4ca9ca82306ad42c7dbfb}{y}})}
+\DoxyCodeLine{00184\ \{}
+\DoxyCodeLine{00185\ \ \ \textcolor{keywordflow}{return}\ (x\ \&\ \doxymbox{\hyperlink{wide-int_8h_aa0ab03c091e4ca9ca82306ad42c7dbfb}{y}})\ !=\ \doxymbox{\hyperlink{hard-reg-set_8h_a63c28531a29f8584c837cbd530dcefc6}{HARD\_CONST}}\ (0);}
+\DoxyCodeLine{00186\ \}}
+\DoxyCodeLine{00187\ }
+\DoxyCodeLine{00188\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{bool}}
+\DoxyCodeLine{00189\ \doxymbox{\hyperlink{hard-reg-set_8h_ae2f5a540a08802fb2ee5851373b9e247}{hard\_reg\_set\_empty\_p}}\ (\doxymbox{\hyperlink{hard-reg-set_8h_aff29537deb5451d1f7a9aac6dfaf74e6}{const\_hard\_reg\_set}}\ x)}
+\DoxyCodeLine{00190\ \{}
+\DoxyCodeLine{00191\ \ \ \textcolor{keywordflow}{return}\ x\ ==\ \doxymbox{\hyperlink{hard-reg-set_8h_a63c28531a29f8584c837cbd530dcefc6}{HARD\_CONST}}\ (0);}
+\DoxyCodeLine{00192\ \}}
+\DoxyCodeLine{00193\ }
+\DoxyCodeLine{00194\ \textcolor{preprocessor}{\#else}}
+\DoxyCodeLine{00195\ }
+\DoxyCodeLine{00196\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{void}}
+\DoxyCodeLine{00197\ \doxymbox{\hyperlink{hard-reg-set_8h_aed4061ff8c92b1dfa009c28f8b088134}{SET\_HARD\_REG\_BIT}}\ (\doxymbox{\hyperlink{hard-reg-set_8h_a58a1569980de76957f391607c395d443}{HARD\_REG\_SET}}\ \&set,\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ bit)}
+\DoxyCodeLine{00198\ \{}
+\DoxyCodeLine{00199\ \ \ set.elts[bit\ /\ \doxymbox{\hyperlink{hard-reg-set_8h_ae9c4bba2425041e814c237eb64618aa5}{UHOST\_BITS\_PER\_WIDE\_INT}}]}
+\DoxyCodeLine{00200\ \ \ \ \ |=\ \doxymbox{\hyperlink{hard-reg-set_8h_a63c28531a29f8584c837cbd530dcefc6}{HARD\_CONST}}\ (1)\ <<\ (bit\ \%\ \doxymbox{\hyperlink{hard-reg-set_8h_ae9c4bba2425041e814c237eb64618aa5}{UHOST\_BITS\_PER\_WIDE\_INT}});}
+\DoxyCodeLine{00201\ \}}
+\DoxyCodeLine{00202\ }
+\DoxyCodeLine{00203\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{void}}
+\DoxyCodeLine{00204\ \doxymbox{\hyperlink{hard-reg-set_8h_a50901b48a06af97ed223d9791ce6fcc0}{CLEAR\_HARD\_REG\_BIT}}\ (\doxymbox{\hyperlink{hard-reg-set_8h_a58a1569980de76957f391607c395d443}{HARD\_REG\_SET}}\ \&set,\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ bit)}
+\DoxyCodeLine{00205\ \{}
+\DoxyCodeLine{00206\ \ \ set.elts[bit\ /\ \doxymbox{\hyperlink{hard-reg-set_8h_ae9c4bba2425041e814c237eb64618aa5}{UHOST\_BITS\_PER\_WIDE\_INT}}]}
+\DoxyCodeLine{00207\ \ \ \ \ \&=\ \string~(\doxymbox{\hyperlink{hard-reg-set_8h_a63c28531a29f8584c837cbd530dcefc6}{HARD\_CONST}}\ (1)\ <<\ (bit\ \%\ \doxymbox{\hyperlink{hard-reg-set_8h_ae9c4bba2425041e814c237eb64618aa5}{UHOST\_BITS\_PER\_WIDE\_INT}}));}
+\DoxyCodeLine{00208\ \}}
+\DoxyCodeLine{00209\ }
+\DoxyCodeLine{00210\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{bool}}
+\DoxyCodeLine{00211\ \doxymbox{\hyperlink{hard-reg-set_8h_a40d0f0e748ff5e9fc878b1a6883838ee}{TEST\_HARD\_REG\_BIT}}\ (\doxymbox{\hyperlink{hard-reg-set_8h_aff29537deb5451d1f7a9aac6dfaf74e6}{const\_hard\_reg\_set}}\ set,\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ bit)}
+\DoxyCodeLine{00212\ \{}
+\DoxyCodeLine{00213\ \ \ \textcolor{keywordflow}{return}\ (set.elts[bit\ /\ \doxymbox{\hyperlink{hard-reg-set_8h_ae9c4bba2425041e814c237eb64618aa5}{UHOST\_BITS\_PER\_WIDE\_INT}}]}
+\DoxyCodeLine{00214\ \ \ \ \ \ \ \&\ (\doxymbox{\hyperlink{hard-reg-set_8h_a63c28531a29f8584c837cbd530dcefc6}{HARD\_CONST}}\ (1)\ <<\ (bit\ \%\ \doxymbox{\hyperlink{hard-reg-set_8h_ae9c4bba2425041e814c237eb64618aa5}{UHOST\_BITS\_PER\_WIDE\_INT}})));}
+\DoxyCodeLine{00215\ \}}
+\DoxyCodeLine{00216\ }
+\DoxyCodeLine{00217\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{void}}
+\DoxyCodeLine{00218\ \doxymbox{\hyperlink{hard-reg-set_8h_ac69c131cc3e2846419a36e6e6b2801a2}{CLEAR\_HARD\_REG\_SET}}\ (\doxymbox{\hyperlink{hard-reg-set_8h_a58a1569980de76957f391607c395d443}{HARD\_REG\_SET}}\ \&set)}
+\DoxyCodeLine{00219\ \{}
+\DoxyCodeLine{00220\ \ \ \textcolor{keywordflow}{for}\ (\textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{poly-int_8h_a7e98b8a17c0aad30ba64d47b74e2a6c1}{i}}\ =\ 0;\ \doxymbox{\hyperlink{poly-int_8h_a7e98b8a17c0aad30ba64d47b74e2a6c1}{i}}\ <\ \doxymbox{\hyperlink{libiberty_8h_a25f003de16c08a4888b69f619d70f427}{ARRAY\_SIZE}}\ (set.elts);\ ++\doxymbox{\hyperlink{poly-int_8h_a7e98b8a17c0aad30ba64d47b74e2a6c1}{i}})}
+\DoxyCodeLine{00221\ \ \ \ \ set.elts[\doxymbox{\hyperlink{poly-int_8h_a7e98b8a17c0aad30ba64d47b74e2a6c1}{i}}]\ =\ 0;}
+\DoxyCodeLine{00222\ \}}
+\DoxyCodeLine{00223\ }
+\DoxyCodeLine{00224\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{void}}
+\DoxyCodeLine{00225\ \doxymbox{\hyperlink{hard-reg-set_8h_a03334b6f8c10e5bd54acac842d1ce5e2}{SET\_HARD\_REG\_SET}}\ (\doxymbox{\hyperlink{hard-reg-set_8h_a58a1569980de76957f391607c395d443}{HARD\_REG\_SET}}\ \&set)}
+\DoxyCodeLine{00226\ \{}
+\DoxyCodeLine{00227\ \ \ \textcolor{keywordflow}{for}\ (\textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{poly-int_8h_a7e98b8a17c0aad30ba64d47b74e2a6c1}{i}}\ =\ 0;\ \doxymbox{\hyperlink{poly-int_8h_a7e98b8a17c0aad30ba64d47b74e2a6c1}{i}}\ <\ \doxymbox{\hyperlink{libiberty_8h_a25f003de16c08a4888b69f619d70f427}{ARRAY\_SIZE}}\ (set.elts);\ ++\doxymbox{\hyperlink{poly-int_8h_a7e98b8a17c0aad30ba64d47b74e2a6c1}{i}})}
+\DoxyCodeLine{00228\ \ \ \ \ set.elts[\doxymbox{\hyperlink{poly-int_8h_a7e98b8a17c0aad30ba64d47b74e2a6c1}{i}}]\ =\ -\/1;}
+\DoxyCodeLine{00229\ \}}
+\DoxyCodeLine{00230\ }
+\DoxyCodeLine{00231\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{bool}}
+\DoxyCodeLine{00232\ \doxymbox{\hyperlink{hard-reg-set_8h_a043e179756fd6e8e043088a61132ce82}{hard\_reg\_set\_subset\_p}}\ (\doxymbox{\hyperlink{hard-reg-set_8h_aff29537deb5451d1f7a9aac6dfaf74e6}{const\_hard\_reg\_set}}\ x,\ \doxymbox{\hyperlink{hard-reg-set_8h_aff29537deb5451d1f7a9aac6dfaf74e6}{const\_hard\_reg\_set}}\ \doxymbox{\hyperlink{wide-int_8h_aa0ab03c091e4ca9ca82306ad42c7dbfb}{y}})}
+\DoxyCodeLine{00233\ \{}
+\DoxyCodeLine{00234\ \ \ \doxymbox{\hyperlink{hard-reg-set_8h_a1abd996526b415d67ccafc20cf89056d}{HARD\_REG\_ELT\_TYPE}}\ bad\ =\ 0;}
+\DoxyCodeLine{00235\ \ \ \textcolor{keywordflow}{for}\ (\textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{poly-int_8h_a7e98b8a17c0aad30ba64d47b74e2a6c1}{i}}\ =\ 0;\ \doxymbox{\hyperlink{poly-int_8h_a7e98b8a17c0aad30ba64d47b74e2a6c1}{i}}\ <\ \doxymbox{\hyperlink{libiberty_8h_a25f003de16c08a4888b69f619d70f427}{ARRAY\_SIZE}}\ (x.elts);\ ++\doxymbox{\hyperlink{poly-int_8h_a7e98b8a17c0aad30ba64d47b74e2a6c1}{i}})}
+\DoxyCodeLine{00236\ \ \ \ \ bad\ |=\ (x.elts[\doxymbox{\hyperlink{poly-int_8h_a7e98b8a17c0aad30ba64d47b74e2a6c1}{i}}]\ \&\ \string~\doxymbox{\hyperlink{wide-int_8h_aa0ab03c091e4ca9ca82306ad42c7dbfb}{y}}.elts[\doxymbox{\hyperlink{poly-int_8h_a7e98b8a17c0aad30ba64d47b74e2a6c1}{i}}]);}
+\DoxyCodeLine{00237\ \ \ \textcolor{keywordflow}{return}\ bad\ ==\ 0;}
+\DoxyCodeLine{00238\ \}}
+\DoxyCodeLine{00239\ }
+\DoxyCodeLine{00240\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{bool}}
+\DoxyCodeLine{00241\ \doxymbox{\hyperlink{hard-reg-set_8h_a5feff3d21aef0d40195293f5a51c5e19}{hard\_reg\_set\_intersect\_p}}\ (\doxymbox{\hyperlink{hard-reg-set_8h_aff29537deb5451d1f7a9aac6dfaf74e6}{const\_hard\_reg\_set}}\ x,\ \doxymbox{\hyperlink{hard-reg-set_8h_aff29537deb5451d1f7a9aac6dfaf74e6}{const\_hard\_reg\_set}}\ \doxymbox{\hyperlink{wide-int_8h_aa0ab03c091e4ca9ca82306ad42c7dbfb}{y}})}
+\DoxyCodeLine{00242\ \{}
+\DoxyCodeLine{00243\ \ \ \doxymbox{\hyperlink{hard-reg-set_8h_a1abd996526b415d67ccafc20cf89056d}{HARD\_REG\_ELT\_TYPE}}\ good\ =\ 0;}
+\DoxyCodeLine{00244\ \ \ \textcolor{keywordflow}{for}\ (\textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{poly-int_8h_a7e98b8a17c0aad30ba64d47b74e2a6c1}{i}}\ =\ 0;\ \doxymbox{\hyperlink{poly-int_8h_a7e98b8a17c0aad30ba64d47b74e2a6c1}{i}}\ <\ \doxymbox{\hyperlink{libiberty_8h_a25f003de16c08a4888b69f619d70f427}{ARRAY\_SIZE}}\ (x.elts);\ ++\doxymbox{\hyperlink{poly-int_8h_a7e98b8a17c0aad30ba64d47b74e2a6c1}{i}})}
+\DoxyCodeLine{00245\ \ \ \ \ good\ |=\ (x.elts[\doxymbox{\hyperlink{poly-int_8h_a7e98b8a17c0aad30ba64d47b74e2a6c1}{i}}]\ \&\ \doxymbox{\hyperlink{wide-int_8h_aa0ab03c091e4ca9ca82306ad42c7dbfb}{y}}.elts[\doxymbox{\hyperlink{poly-int_8h_a7e98b8a17c0aad30ba64d47b74e2a6c1}{i}}]);}
+\DoxyCodeLine{00246\ \ \ \textcolor{keywordflow}{return}\ good\ !=\ 0;}
+\DoxyCodeLine{00247\ \}}
+\DoxyCodeLine{00248\ }
+\DoxyCodeLine{00249\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{bool}}
+\DoxyCodeLine{00250\ \doxymbox{\hyperlink{hard-reg-set_8h_ae2f5a540a08802fb2ee5851373b9e247}{hard\_reg\_set\_empty\_p}}\ (\doxymbox{\hyperlink{hard-reg-set_8h_aff29537deb5451d1f7a9aac6dfaf74e6}{const\_hard\_reg\_set}}\ x)}
+\DoxyCodeLine{00251\ \{}
+\DoxyCodeLine{00252\ \ \ \doxymbox{\hyperlink{hard-reg-set_8h_a1abd996526b415d67ccafc20cf89056d}{HARD\_REG\_ELT\_TYPE}}\ bad\ =\ 0;}
+\DoxyCodeLine{00253\ \ \ \textcolor{keywordflow}{for}\ (\textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{poly-int_8h_a7e98b8a17c0aad30ba64d47b74e2a6c1}{i}}\ =\ 0;\ \doxymbox{\hyperlink{poly-int_8h_a7e98b8a17c0aad30ba64d47b74e2a6c1}{i}}\ <\ \doxymbox{\hyperlink{libiberty_8h_a25f003de16c08a4888b69f619d70f427}{ARRAY\_SIZE}}\ (x.elts);\ ++\doxymbox{\hyperlink{poly-int_8h_a7e98b8a17c0aad30ba64d47b74e2a6c1}{i}})}
+\DoxyCodeLine{00254\ \ \ \ \ bad\ |=\ x.elts[\doxymbox{\hyperlink{poly-int_8h_a7e98b8a17c0aad30ba64d47b74e2a6c1}{i}}];}
+\DoxyCodeLine{00255\ \ \ \textcolor{keywordflow}{return}\ bad\ ==\ 0;}
+\DoxyCodeLine{00256\ \}}
+\DoxyCodeLine{00257\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00258\ }
+\DoxyCodeLine{00259\ \textcolor{comment}{/*\ Iterator\ for\ hard\ register\ sets.\ \ */}}
+\DoxyCodeLine{00260\ }
+\DoxyCodeLine{00261\ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{structhard__reg__set__iterator}{hard\_reg\_set\_iterator}}}
+\DoxyCodeLine{00262\ \{}
+\DoxyCodeLine{00263\ \ \ \textcolor{comment}{/*\ Pointer\ to\ the\ current\ element.\ \ */}}
+\DoxyCodeLine{00264\ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{hard-reg-set_8h_a1abd996526b415d67ccafc20cf89056d}{HARD\_REG\_ELT\_TYPE}}\ *\doxymbox{\hyperlink{structhard__reg__set__iterator_a0d1c21a7176da45d5b1aed4af299e597}{pelt}};}
+\DoxyCodeLine{00265\ }
+\DoxyCodeLine{00266\ \ \ \textcolor{comment}{/*\ The\ length\ of\ the\ set.\ \ */}}
+\DoxyCodeLine{00267\ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{short}\ \doxymbox{\hyperlink{structhard__reg__set__iterator_a0537c3d5da02512287e2919fae464669}{length}};}
+\DoxyCodeLine{00268\ }
+\DoxyCodeLine{00269\ \ \ \textcolor{comment}{/*\ Word\ within\ the\ current\ element.\ \ */}}
+\DoxyCodeLine{00270\ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{short}\ \doxymbox{\hyperlink{structhard__reg__set__iterator_a5b1f44f139e4bc537f91a9f91e559d7a}{word\_no}};}
+\DoxyCodeLine{00271\ }
+\DoxyCodeLine{00272\ \ \ \textcolor{comment}{/*\ Contents\ of\ the\ actually\ processed\ word.\ \ When\ finding\ next\ bit}}
+\DoxyCodeLine{00273\ \textcolor{comment}{\ \ \ \ \ it\ is\ shifted\ right,\ so\ that\ the\ actual\ bit\ is\ always\ the\ least}}
+\DoxyCodeLine{00274\ \textcolor{comment}{\ \ \ \ \ significant\ bit\ of\ ACTUAL.\ \ */}}
+\DoxyCodeLine{00275\ \ \ \doxymbox{\hyperlink{hard-reg-set_8h_a1abd996526b415d67ccafc20cf89056d}{HARD\_REG\_ELT\_TYPE}}\ \doxymbox{\hyperlink{structhard__reg__set__iterator_afe8b34c4ba970673c41d403c046a1d64}{bits}};}
+\DoxyCodeLine{00276\ \};}
+\DoxyCodeLine{00277\ }
+\DoxyCodeLine{00278\ \textcolor{preprocessor}{\#define\ HARD\_REG\_ELT\_BITS\ UHOST\_BITS\_PER\_WIDE\_INT}}
+\DoxyCodeLine{00279\ }
+\DoxyCodeLine{00280\ \textcolor{comment}{/*\ The\ implementation\ of\ the\ iterator\ functions\ is\ fully\ analogous\ to}}
+\DoxyCodeLine{00281\ \textcolor{comment}{\ \ \ the\ bitmap\ iterators.\ \ */}}
+\DoxyCodeLine{00282\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{void}}
+\DoxyCodeLine{00283\ \doxymbox{\hyperlink{hard-reg-set_8h_ad288f846110f68918f385a6b2fd36528}{hard\_reg\_set\_iter\_init}}\ (\doxymbox{\hyperlink{structhard__reg__set__iterator}{hard\_reg\_set\_iterator}}\ *iter,\ \doxymbox{\hyperlink{hard-reg-set_8h_aff29537deb5451d1f7a9aac6dfaf74e6}{const\_hard\_reg\_set}}\ set,}
+\DoxyCodeLine{00284\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{unsigned}\ min,\ \textcolor{keywordtype}{unsigned}\ *regno)}
+\DoxyCodeLine{00285\ \{}
+\DoxyCodeLine{00286\ \textcolor{preprocessor}{\#ifdef\ HARD\_REG\_SET\_LONGS}}
+\DoxyCodeLine{00287\ \ \ iter-\/>\doxymbox{\hyperlink{structhard__reg__set__iterator_a0d1c21a7176da45d5b1aed4af299e597}{pelt}}\ =\ set.elts;}
+\DoxyCodeLine{00288\ \ \ iter-\/>\doxymbox{\hyperlink{structhard__reg__set__iterator_a0537c3d5da02512287e2919fae464669}{length}}\ =\ HARD\_REG\_SET\_LONGS;}
+\DoxyCodeLine{00289\ \textcolor{preprocessor}{\#else}}
+\DoxyCodeLine{00290\ \ \ iter-\/>\doxymbox{\hyperlink{structhard__reg__set__iterator_a0d1c21a7176da45d5b1aed4af299e597}{pelt}}\ =\ \&set;}
+\DoxyCodeLine{00291\ \ \ iter-\/>\doxymbox{\hyperlink{structhard__reg__set__iterator_a0537c3d5da02512287e2919fae464669}{length}}\ =\ 1;}
+\DoxyCodeLine{00292\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00293\ \ \ iter-\/>\doxymbox{\hyperlink{structhard__reg__set__iterator_a5b1f44f139e4bc537f91a9f91e559d7a}{word\_no}}\ =\ min\ /\ \doxymbox{\hyperlink{hard-reg-set_8h_a0a85af57fa546ba3258078830590861f}{HARD\_REG\_ELT\_BITS}};}
+\DoxyCodeLine{00294\ \ \ \textcolor{keywordflow}{if}\ (iter-\/>\doxymbox{\hyperlink{structhard__reg__set__iterator_a5b1f44f139e4bc537f91a9f91e559d7a}{word\_no}}\ <\ iter-\/>\doxymbox{\hyperlink{structhard__reg__set__iterator_a0537c3d5da02512287e2919fae464669}{length}})}
+\DoxyCodeLine{00295\ \ \ \ \ \{}
+\DoxyCodeLine{00296\ \ \ \ \ \ \ iter-\/>\doxymbox{\hyperlink{structhard__reg__set__iterator_afe8b34c4ba970673c41d403c046a1d64}{bits}}\ =\ iter-\/>\doxymbox{\hyperlink{structhard__reg__set__iterator_a0d1c21a7176da45d5b1aed4af299e597}{pelt}}[iter-\/>\doxymbox{\hyperlink{structhard__reg__set__iterator_a5b1f44f139e4bc537f91a9f91e559d7a}{word\_no}}];}
+\DoxyCodeLine{00297\ \ \ \ \ \ \ iter-\/>\doxymbox{\hyperlink{structhard__reg__set__iterator_afe8b34c4ba970673c41d403c046a1d64}{bits}}\ >>=\ min\ \%\ \doxymbox{\hyperlink{hard-reg-set_8h_a0a85af57fa546ba3258078830590861f}{HARD\_REG\_ELT\_BITS}};}
+\DoxyCodeLine{00298\ }
+\DoxyCodeLine{00299\ \ \ \ \ \ \ \textcolor{comment}{/*\ This\ is\ required\ for\ correct\ search\ of\ the\ next\ bit.\ \ */}}
+\DoxyCodeLine{00300\ \ \ \ \ \ \ min\ +=\ !iter-\/>\doxymbox{\hyperlink{structhard__reg__set__iterator_afe8b34c4ba970673c41d403c046a1d64}{bits}};}
+\DoxyCodeLine{00301\ \ \ \ \ \}}
+\DoxyCodeLine{00302\ \ \ *regno\ =\ min;}
+\DoxyCodeLine{00303\ \}}
+\DoxyCodeLine{00304\ }
+\DoxyCodeLine{00305\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{bool}}
+\DoxyCodeLine{00306\ \doxymbox{\hyperlink{hard-reg-set_8h_a3bcd1dca8f18677072b6632b6609baef}{hard\_reg\_set\_iter\_set}}\ (\doxymbox{\hyperlink{structhard__reg__set__iterator}{hard\_reg\_set\_iterator}}\ *iter,\ \textcolor{keywordtype}{unsigned}\ *regno)}
+\DoxyCodeLine{00307\ \{}
+\DoxyCodeLine{00308\ \ \ \textcolor{keywordflow}{while}\ (1)}
+\DoxyCodeLine{00309\ \ \ \ \ \{}
+\DoxyCodeLine{00310\ \ \ \ \ \ \ \textcolor{comment}{/*\ Return\ false\ when\ we're\ advanced\ past\ the\ end\ of\ the\ set.\ \ */}}
+\DoxyCodeLine{00311\ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (iter-\/>\doxymbox{\hyperlink{structhard__reg__set__iterator_a5b1f44f139e4bc537f91a9f91e559d7a}{word\_no}}\ >=\ iter-\/>\doxymbox{\hyperlink{structhard__reg__set__iterator_a0537c3d5da02512287e2919fae464669}{length}})}
+\DoxyCodeLine{00312\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ \textcolor{keyword}{false};}
+\DoxyCodeLine{00313\ }
+\DoxyCodeLine{00314\ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (iter-\/>\doxymbox{\hyperlink{structhard__reg__set__iterator_afe8b34c4ba970673c41d403c046a1d64}{bits}})}
+\DoxyCodeLine{00315\ \ \ \ \ \ \ \ \ \{}
+\DoxyCodeLine{00316\ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{/*\ Find\ the\ correct\ bit\ and\ return\ it.\ \ */}}
+\DoxyCodeLine{00317\ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{while}\ (!(iter-\/>\doxymbox{\hyperlink{structhard__reg__set__iterator_afe8b34c4ba970673c41d403c046a1d64}{bits}}\ \&\ 1))}
+\DoxyCodeLine{00318\ \ \ \ \ \ \ \ \ \ \ \ \ \{}
+\DoxyCodeLine{00319\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ iter-\/>\doxymbox{\hyperlink{structhard__reg__set__iterator_afe8b34c4ba970673c41d403c046a1d64}{bits}}\ >>=\ 1;}
+\DoxyCodeLine{00320\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ *regno\ +=\ 1;}
+\DoxyCodeLine{00321\ \ \ \ \ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00322\ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ (*regno\ <\ \doxymbox{\hyperlink{i386_8h_af49448c4a913325d80c30490033bda4e}{FIRST\_PSEUDO\_REGISTER}});}
+\DoxyCodeLine{00323\ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00324\ }
+\DoxyCodeLine{00325\ \ \ \ \ \ \ \textcolor{comment}{/*\ Round\ to\ the\ beginning\ of\ the\ next\ word.\ \ */}}
+\DoxyCodeLine{00326\ \ \ \ \ \ \ *regno\ =\ (*regno\ +\ \doxymbox{\hyperlink{hard-reg-set_8h_a0a85af57fa546ba3258078830590861f}{HARD\_REG\_ELT\_BITS}}\ -\/\ 1);}
+\DoxyCodeLine{00327\ \ \ \ \ \ \ *regno\ -\/=\ *regno\ \%\ \doxymbox{\hyperlink{hard-reg-set_8h_a0a85af57fa546ba3258078830590861f}{HARD\_REG\_ELT\_BITS}};}
+\DoxyCodeLine{00328\ }
+\DoxyCodeLine{00329\ \ \ \ \ \ \ \textcolor{comment}{/*\ Find\ the\ next\ non-\/zero\ word.\ \ */}}
+\DoxyCodeLine{00330\ \ \ \ \ \ \ \textcolor{keywordflow}{while}\ (++iter-\/>\doxymbox{\hyperlink{structhard__reg__set__iterator_a5b1f44f139e4bc537f91a9f91e559d7a}{word\_no}}\ <\ iter-\/>\doxymbox{\hyperlink{structhard__reg__set__iterator_a0537c3d5da02512287e2919fae464669}{length}})}
+\DoxyCodeLine{00331\ \ \ \ \ \ \ \ \ \{}
+\DoxyCodeLine{00332\ \ \ \ \ \ \ \ \ \ \ iter-\/>\doxymbox{\hyperlink{structhard__reg__set__iterator_afe8b34c4ba970673c41d403c046a1d64}{bits}}\ =\ iter-\/>\doxymbox{\hyperlink{structhard__reg__set__iterator_a0d1c21a7176da45d5b1aed4af299e597}{pelt}}[iter-\/>\doxymbox{\hyperlink{structhard__reg__set__iterator_a5b1f44f139e4bc537f91a9f91e559d7a}{word\_no}}];}
+\DoxyCodeLine{00333\ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (iter-\/>\doxymbox{\hyperlink{structhard__reg__set__iterator_afe8b34c4ba970673c41d403c046a1d64}{bits}})}
+\DoxyCodeLine{00334\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{break};}
+\DoxyCodeLine{00335\ \ \ \ \ \ \ \ \ \ \ *regno\ +=\ \doxymbox{\hyperlink{hard-reg-set_8h_a0a85af57fa546ba3258078830590861f}{HARD\_REG\_ELT\_BITS}};}
+\DoxyCodeLine{00336\ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00337\ \ \ \ \ \}}
+\DoxyCodeLine{00338\ \}}
+\DoxyCodeLine{00339\ }
+\DoxyCodeLine{00340\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{void}}
+\DoxyCodeLine{00341\ \doxymbox{\hyperlink{hard-reg-set_8h_a70d947758fb275871b642f22c7d5f306}{hard\_reg\_set\_iter\_next}}\ (\doxymbox{\hyperlink{structhard__reg__set__iterator}{hard\_reg\_set\_iterator}}\ *iter,\ \textcolor{keywordtype}{unsigned}\ *regno)}
+\DoxyCodeLine{00342\ \{}
+\DoxyCodeLine{00343\ \ \ iter-\/>\doxymbox{\hyperlink{structhard__reg__set__iterator_afe8b34c4ba970673c41d403c046a1d64}{bits}}\ >>=\ 1;}
+\DoxyCodeLine{00344\ \ \ *regno\ +=\ 1;}
+\DoxyCodeLine{00345\ \}}
+\DoxyCodeLine{00346\ }
+\DoxyCodeLine{00347\ \textcolor{preprocessor}{\#define\ EXECUTE\_IF\_SET\_IN\_HARD\_REG\_SET(SET,\ MIN,\ REGNUM,\ ITER)\ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00348\ \textcolor{preprocessor}{\ \ for\ (hard\_reg\_set\_iter\_init\ (\&(ITER),\ (SET),\ (MIN),\ \&(REGNUM));\ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00349\ \textcolor{preprocessor}{\ \ \ \ \ \ \ hard\_reg\_set\_iter\_set\ (\&(ITER),\ \&(REGNUM));\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00350\ \textcolor{preprocessor}{\ \ \ \ \ \ \ hard\_reg\_set\_iter\_next\ (\&(ITER),\ \&(REGNUM)))}}
+\DoxyCodeLine{00351\ }
+\DoxyCodeLine{00352\ }
+\DoxyCodeLine{00353\ \textcolor{comment}{/*\ Define\ some\ standard\ sets\ of\ registers.\ \ */}}
+\DoxyCodeLine{00354\ }
+\DoxyCodeLine{00355\ \textcolor{comment}{/*\ Indexed\ by\ hard\ register\ number,\ contains\ 1\ for\ registers}}
+\DoxyCodeLine{00356\ \textcolor{comment}{\ \ \ that\ are\ being\ used\ for\ global\ register\ decls.}}
+\DoxyCodeLine{00357\ \textcolor{comment}{\ \ \ These\ must\ be\ exempt\ from\ ordinary\ flow\ analysis}}
+\DoxyCodeLine{00358\ \textcolor{comment}{\ \ \ and\ are\ also\ considered\ fixed.\ \ */}}
+\DoxyCodeLine{00359\ }
+\DoxyCodeLine{00360\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{char}\ \doxymbox{\hyperlink{hard-reg-set_8h_a56391f49e6cf71ed2cdd7b19f6acd937}{global\_regs}}[\doxymbox{\hyperlink{i386_8h_af49448c4a913325d80c30490033bda4e}{FIRST\_PSEUDO\_REGISTER}}];}
+\DoxyCodeLine{00361\ }
+\DoxyCodeLine{00362\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{hard-reg-set_8h_a58a1569980de76957f391607c395d443}{HARD\_REG\_SET}}\ \doxymbox{\hyperlink{hard-reg-set_8h_aeaf08707654e8cceadb75b834dc26fea}{global\_reg\_set}};}
+\DoxyCodeLine{00363\ }
+\DoxyCodeLine{00364\ \textcolor{keyword}{class\ }simplifiable\_subreg;}
+\DoxyCodeLine{00365\ \textcolor{keyword}{class\ }\doxymbox{\hyperlink{classsubreg__shape}{subreg\_shape}};}
+\DoxyCodeLine{00366\ }
+\DoxyCodeLine{00367\ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{structsimplifiable__subregs__hasher}{simplifiable\_subregs\_hasher}}\ :\ \doxymbox{\hyperlink{structnofree__ptr__hash}{nofree\_ptr\_hash}}\ <simplifiable\_subreg>}
+\DoxyCodeLine{00368\ \{}
+\DoxyCodeLine{00369\ \ \ \textcolor{keyword}{typedef}\ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classsubreg__shape}{subreg\_shape}}\ *\doxymbox{\hyperlink{structsimplifiable__subregs__hasher_ae71b4db2881f7ef3bb5ef499ba9550f7}{compare\_type}};}
+\DoxyCodeLine{00370\ }
+\DoxyCodeLine{00371\ \ \ \textcolor{keyword}{static}\ \textcolor{keyword}{inline}\ \doxymbox{\hyperlink{hashtab_8h_a2d05e5049721cf3117dd6b34e20d4f65}{hashval\_t}}\ \doxymbox{\hyperlink{structsimplifiable__subregs__hasher_a63fb8c5157518b6c16c4f3f0b070eba0}{hash}}\ (\textcolor{keyword}{const}\ simplifiable\_subreg\ *);}
+\DoxyCodeLine{00372\ \ \ \textcolor{keyword}{static}\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{structsimplifiable__subregs__hasher_a345f2fceab3feb339b6dcf2ea87acebb}{equal}}\ (\textcolor{keyword}{const}\ simplifiable\_subreg\ *,\ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classsubreg__shape}{subreg\_shape}}\ *);}
+\DoxyCodeLine{00373\ \};}
+\DoxyCodeLine{00374\ }
+\DoxyCodeLine{00375\ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{structtarget__hard__regs}{target\_hard\_regs}}\ \{}
+\DoxyCodeLine{00376\ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{structtarget__hard__regs_ae722487ba6ac097ecf216c28039ab3cc}{finalize}}\ ();}
+\DoxyCodeLine{00377\ }
+\DoxyCodeLine{00378\ \ \ \textcolor{comment}{/*\ The\ set\ of\ registers\ that\ actually\ exist\ on\ the\ current\ target.\ \ */}}
+\DoxyCodeLine{00379\ \ \ \doxymbox{\hyperlink{hard-reg-set_8h_a58a1569980de76957f391607c395d443}{HARD\_REG\_SET}}\ \doxymbox{\hyperlink{structtarget__hard__regs_a745a722f3aa5a5002e7b2e1f7adfc371}{x\_accessible\_reg\_set}};}
+\DoxyCodeLine{00380\ }
+\DoxyCodeLine{00381\ \ \ \textcolor{comment}{/*\ The\ set\ of\ registers\ that\ should\ be\ considered\ to\ be\ register}}
+\DoxyCodeLine{00382\ \textcolor{comment}{\ \ \ \ \ operands.\ \ It\ is\ a\ subset\ of\ x\_accessible\_reg\_set.\ \ */}}
+\DoxyCodeLine{00383\ \ \ \doxymbox{\hyperlink{hard-reg-set_8h_a58a1569980de76957f391607c395d443}{HARD\_REG\_SET}}\ \doxymbox{\hyperlink{structtarget__hard__regs_ad50443ef63461c755ec1dcbab79fb2f2}{x\_operand\_reg\_set}};}
+\DoxyCodeLine{00384\ }
+\DoxyCodeLine{00385\ \ \ \textcolor{comment}{/*\ Indexed\ by\ hard\ register\ number,\ contains\ 1\ for\ registers}}
+\DoxyCodeLine{00386\ \textcolor{comment}{\ \ \ \ \ that\ are\ fixed\ use\ (stack\ pointer,\ pc,\ frame\ pointer,\ etc.;.}}
+\DoxyCodeLine{00387\ \textcolor{comment}{\ \ \ \ \ These\ are\ the\ registers\ that\ cannot\ be\ used\ to\ allocate}}
+\DoxyCodeLine{00388\ \textcolor{comment}{\ \ \ \ \ a\ pseudo\ reg\ whose\ life\ does\ not\ cross\ calls.\ \ */}}
+\DoxyCodeLine{00389\ \ \ \textcolor{keywordtype}{char}\ \doxymbox{\hyperlink{structtarget__hard__regs_a374bcdb0225bcf8c68b19f874de2ba63}{x\_fixed\_regs}}[\doxymbox{\hyperlink{i386_8h_af49448c4a913325d80c30490033bda4e}{FIRST\_PSEUDO\_REGISTER}}];}
+\DoxyCodeLine{00390\ }
+\DoxyCodeLine{00391\ \ \ \textcolor{comment}{/*\ The\ same\ info\ as\ a\ HARD\_REG\_SET.\ \ */}}
+\DoxyCodeLine{00392\ \ \ \doxymbox{\hyperlink{hard-reg-set_8h_a58a1569980de76957f391607c395d443}{HARD\_REG\_SET}}\ \doxymbox{\hyperlink{structtarget__hard__regs_ae9d39869084a63df15f076d6a9b2c734}{x\_fixed\_reg\_set}};}
+\DoxyCodeLine{00393\ }
+\DoxyCodeLine{00394\ \ \ \textcolor{comment}{/*\ Indexed\ by\ hard\ register\ number,\ contains\ 1\ for\ registers}}
+\DoxyCodeLine{00395\ \textcolor{comment}{\ \ \ \ \ that\ are\ fixed\ use\ or\ are\ clobbered\ by\ function\ calls.}}
+\DoxyCodeLine{00396\ \textcolor{comment}{\ \ \ \ \ These\ are\ the\ registers\ that\ cannot\ be\ used\ to\ allocate}}
+\DoxyCodeLine{00397\ \textcolor{comment}{\ \ \ \ \ a\ pseudo\ reg\ whose\ life\ crosses\ calls.\ \ */}}
+\DoxyCodeLine{00398\ \ \ \textcolor{keywordtype}{char}\ \doxymbox{\hyperlink{structtarget__hard__regs_a3309b1bfeb48ad825e31445d4fcff27a}{x\_call\_used\_regs}}[\doxymbox{\hyperlink{i386_8h_af49448c4a913325d80c30490033bda4e}{FIRST\_PSEUDO\_REGISTER}}];}
+\DoxyCodeLine{00399\ }
+\DoxyCodeLine{00400\ \ \ \textcolor{comment}{/*\ For\ targets\ that\ use\ reload\ rather\ than\ LRA,\ this\ is\ the\ set}}
+\DoxyCodeLine{00401\ \textcolor{comment}{\ \ \ \ \ of\ registers\ that\ we\ are\ able\ to\ save\ and\ restore\ around\ calls}}
+\DoxyCodeLine{00402\ \textcolor{comment}{\ \ \ \ \ (i.e.\ those\ for\ which\ we\ know\ a\ suitable\ mode\ and\ set\ of}}
+\DoxyCodeLine{00403\ \textcolor{comment}{\ \ \ \ \ load/store\ instructions\ exist).\ \ For\ LRA\ targets\ it\ contains}}
+\DoxyCodeLine{00404\ \textcolor{comment}{\ \ \ \ \ all\ registers.}}
+\DoxyCodeLine{00405\ \textcolor{comment}{}}
+\DoxyCodeLine{00406\ \textcolor{comment}{\ \ \ \ \ This\ is\ legacy\ information\ and\ should\ be\ removed\ if\ all\ targets}}
+\DoxyCodeLine{00407\ \textcolor{comment}{\ \ \ \ \ switch\ to\ LRA.\ \ */}}
+\DoxyCodeLine{00408\ \ \ \doxymbox{\hyperlink{hard-reg-set_8h_a58a1569980de76957f391607c395d443}{HARD\_REG\_SET}}\ \doxymbox{\hyperlink{structtarget__hard__regs_a8efc23c43255caaeb425497fa017633c}{x\_savable\_regs}};}
+\DoxyCodeLine{00409\ }
+\DoxyCodeLine{00410\ \ \ \textcolor{comment}{/*\ Contains\ registers\ that\ are\ fixed\ use\ -\/-\/\ i.e.\ in\ fixed\_reg\_set\ -\/-\/\ but}}
+\DoxyCodeLine{00411\ \textcolor{comment}{\ \ \ \ \ only\ if\ they\ are\ not\ merely\ part\ of\ that\ set\ because\ they\ are\ global}}
+\DoxyCodeLine{00412\ \textcolor{comment}{\ \ \ \ \ regs.\ \ Global\ regs\ that\ are\ not\ otherwise\ fixed\ can\ still\ take\ part}}
+\DoxyCodeLine{00413\ \textcolor{comment}{\ \ \ \ \ in\ register\ allocation.\ \ */}}
+\DoxyCodeLine{00414\ \ \ \doxymbox{\hyperlink{hard-reg-set_8h_a58a1569980de76957f391607c395d443}{HARD\_REG\_SET}}\ \doxymbox{\hyperlink{structtarget__hard__regs_a2ae6769ef2bae1bf077882d1ed0aceba}{x\_fixed\_nonglobal\_reg\_set}};}
+\DoxyCodeLine{00415\ }
+\DoxyCodeLine{00416\ \ \ \textcolor{comment}{/*\ Contains\ 1\ for\ registers\ that\ are\ set\ or\ clobbered\ by\ calls.\ \ */}}
+\DoxyCodeLine{00417\ \ \ \textcolor{comment}{/*\ ???\ Ideally,\ this\ would\ be\ just\ call\_used\_regs\ plus\ global\_regs,\ but}}
+\DoxyCodeLine{00418\ \textcolor{comment}{\ \ \ \ \ for\ someone's\ bright\ idea\ to\ have\ call\_used\_regs\ strictly\ include}}
+\DoxyCodeLine{00419\ \textcolor{comment}{\ \ \ \ \ fixed\_regs.\ \ Which\ leaves\ us\ guessing\ as\ to\ the\ set\ of\ fixed\_regs}}
+\DoxyCodeLine{00420\ \textcolor{comment}{\ \ \ \ \ that\ are\ actually\ preserved.\ \ We\ know\ for\ sure\ that\ those\ associated}}
+\DoxyCodeLine{00421\ \textcolor{comment}{\ \ \ \ \ with\ the\ local\ stack\ frame\ are\ safe,\ but\ scant\ others.\ \ */}}
+\DoxyCodeLine{00422\ \ \ \doxymbox{\hyperlink{hard-reg-set_8h_a58a1569980de76957f391607c395d443}{HARD\_REG\_SET}}\ \doxymbox{\hyperlink{structtarget__hard__regs_af22783c73acfccb2d0d0cd2d4b5ca4e0}{x\_regs\_invalidated\_by\_call}};}
+\DoxyCodeLine{00423\ }
+\DoxyCodeLine{00424\ \ \ \textcolor{comment}{/*\ Table\ of\ register\ numbers\ in\ the\ order\ in\ which\ to\ try\ to\ use\ them.\ \ */}}
+\DoxyCodeLine{00425\ \ \ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{structtarget__hard__regs_a297f337fa393f4cf4af5df5f861a0949}{x\_reg\_alloc\_order}}[\doxymbox{\hyperlink{i386_8h_af49448c4a913325d80c30490033bda4e}{FIRST\_PSEUDO\_REGISTER}}];}
+\DoxyCodeLine{00426\ }
+\DoxyCodeLine{00427\ \ \ \textcolor{comment}{/*\ The\ inverse\ of\ reg\_alloc\_order.\ \ */}}
+\DoxyCodeLine{00428\ \ \ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{structtarget__hard__regs_a3c2f4118fa422bde0353d3ef289b2308}{x\_inv\_reg\_alloc\_order}}[\doxymbox{\hyperlink{i386_8h_af49448c4a913325d80c30490033bda4e}{FIRST\_PSEUDO\_REGISTER}}];}
+\DoxyCodeLine{00429\ }
+\DoxyCodeLine{00430\ \ \ \textcolor{comment}{/*\ For\ each\ reg\ class,\ a\ HARD\_REG\_SET\ saying\ which\ registers\ are\ in\ it.\ \ */}}
+\DoxyCodeLine{00431\ \ \ \doxymbox{\hyperlink{hard-reg-set_8h_a58a1569980de76957f391607c395d443}{HARD\_REG\_SET}}\ \doxymbox{\hyperlink{structtarget__hard__regs_a68be7be953debe8983b4a8c787412e87}{x\_reg\_class\_contents}}[\doxymbox{\hyperlink{i386_8h_a3b8a7bcab4d31261e35c19d5189d3b82}{N\_REG\_CLASSES}}];}
+\DoxyCodeLine{00432\ }
+\DoxyCodeLine{00433\ \ \ \textcolor{comment}{/*\ For\ each\ reg\ class,\ a\ boolean\ saying\ whether\ the\ class\ contains\ only}}
+\DoxyCodeLine{00434\ \textcolor{comment}{\ \ \ \ \ fixed\ registers.\ \ */}}
+\DoxyCodeLine{00435\ \ \ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{structtarget__hard__regs_a5883dccf45d7a9f493f9c7e812f65f35}{x\_class\_only\_fixed\_regs}}[\doxymbox{\hyperlink{i386_8h_a3b8a7bcab4d31261e35c19d5189d3b82}{N\_REG\_CLASSES}}];}
+\DoxyCodeLine{00436\ }
+\DoxyCodeLine{00437\ \ \ \textcolor{comment}{/*\ For\ each\ reg\ class,\ number\ of\ regs\ it\ contains.\ \ */}}
+\DoxyCodeLine{00438\ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{structtarget__hard__regs_a64cd40a96f4ad726cfed805369f04bf0}{x\_reg\_class\_size}}[\doxymbox{\hyperlink{i386_8h_a3b8a7bcab4d31261e35c19d5189d3b82}{N\_REG\_CLASSES}}];}
+\DoxyCodeLine{00439\ }
+\DoxyCodeLine{00440\ \ \ \textcolor{comment}{/*\ For\ each\ reg\ class,\ table\ listing\ all\ the\ classes\ contained\ in\ it.\ \ */}}
+\DoxyCodeLine{00441\ \ \ \textcolor{keyword}{enum}\ \doxymbox{\hyperlink{i386_8h_aa0e382e7f20d9b4107a67f134db3f4f2}{reg\_class}}\ \doxymbox{\hyperlink{structtarget__hard__regs_ad0e1a7bf743ef1e20584d7d8332408ed}{x\_reg\_class\_subclasses}}[\doxymbox{\hyperlink{i386_8h_a3b8a7bcab4d31261e35c19d5189d3b82}{N\_REG\_CLASSES}}][\doxymbox{\hyperlink{i386_8h_a3b8a7bcab4d31261e35c19d5189d3b82}{N\_REG\_CLASSES}}];}
+\DoxyCodeLine{00442\ }
+\DoxyCodeLine{00443\ \ \ \textcolor{comment}{/*\ For\ each\ pair\ of\ reg\ classes,}}
+\DoxyCodeLine{00444\ \textcolor{comment}{\ \ \ \ \ a\ largest\ reg\ class\ contained\ in\ their\ union.\ \ */}}
+\DoxyCodeLine{00445\ \ \ \textcolor{keyword}{enum}\ \doxymbox{\hyperlink{i386_8h_aa0e382e7f20d9b4107a67f134db3f4f2}{reg\_class}}\ \doxymbox{\hyperlink{structtarget__hard__regs_a57cac01d874238df6aa952143ded152c}{x\_reg\_class\_subunion}}[\doxymbox{\hyperlink{i386_8h_a3b8a7bcab4d31261e35c19d5189d3b82}{N\_REG\_CLASSES}}][\doxymbox{\hyperlink{i386_8h_a3b8a7bcab4d31261e35c19d5189d3b82}{N\_REG\_CLASSES}}];}
+\DoxyCodeLine{00446\ }
+\DoxyCodeLine{00447\ \ \ \textcolor{comment}{/*\ For\ each\ pair\ of\ reg\ classes,}}
+\DoxyCodeLine{00448\ \textcolor{comment}{\ \ \ \ \ the\ smallest\ reg\ class\ that\ contains\ their\ union.\ \ */}}
+\DoxyCodeLine{00449\ \ \ \textcolor{keyword}{enum}\ \doxymbox{\hyperlink{i386_8h_aa0e382e7f20d9b4107a67f134db3f4f2}{reg\_class}}\ \doxymbox{\hyperlink{structtarget__hard__regs_ae35ea5703d53e6a813223dd453fcf753}{x\_reg\_class\_superunion}}[\doxymbox{\hyperlink{i386_8h_a3b8a7bcab4d31261e35c19d5189d3b82}{N\_REG\_CLASSES}}][\doxymbox{\hyperlink{i386_8h_a3b8a7bcab4d31261e35c19d5189d3b82}{N\_REG\_CLASSES}}];}
+\DoxyCodeLine{00450\ }
+\DoxyCodeLine{00451\ \ \ \textcolor{comment}{/*\ Vector\ indexed\ by\ hardware\ reg\ giving\ its\ name.\ \ */}}
+\DoxyCodeLine{00452\ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *\doxymbox{\hyperlink{structtarget__hard__regs_a7022e4add8099a43bd9e2760d4dba7f2}{x\_reg\_names}}[\doxymbox{\hyperlink{i386_8h_af49448c4a913325d80c30490033bda4e}{FIRST\_PSEUDO\_REGISTER}}];}
+\DoxyCodeLine{00453\ }
+\DoxyCodeLine{00454\ \ \ \textcolor{comment}{/*\ Records\ which\ registers\ can\ form\ a\ particular\ subreg,\ with\ the\ subreg}}
+\DoxyCodeLine{00455\ \textcolor{comment}{\ \ \ \ \ being\ identified\ by\ its\ outer\ mode,\ inner\ mode\ and\ offset.\ \ */}}
+\DoxyCodeLine{00456\ \ \ hash\_table\ <simplifiable\_subregs\_hasher>\ *\doxymbox{\hyperlink{structtarget__hard__regs_a820a28f722819fa5486a526a5e0cf9f6}{x\_simplifiable\_subregs}};}
+\DoxyCodeLine{00457\ \};}
+\DoxyCodeLine{00458\ }
+\DoxyCodeLine{00459\ \textcolor{keyword}{extern}\ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{structtarget__hard__regs}{target\_hard\_regs}}\ \doxymbox{\hyperlink{hard-reg-set_8h_af18239dd40aacadfd524055f015da324}{default\_target\_hard\_regs}};}
+\DoxyCodeLine{00460\ \textcolor{preprocessor}{\#if\ SWITCHABLE\_TARGET}}
+\DoxyCodeLine{00461\ \textcolor{keyword}{extern}\ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{structtarget__hard__regs}{target\_hard\_regs}}\ *\doxymbox{\hyperlink{hard-reg-set_8h_a1987f749e3e2a50820493327a2f05f40}{this\_target\_hard\_regs}};}
+\DoxyCodeLine{00462\ \textcolor{preprocessor}{\#else}}
+\DoxyCodeLine{00463\ \textcolor{preprocessor}{\#define\ this\_target\_hard\_regs\ (\&default\_target\_hard\_regs)}}
+\DoxyCodeLine{00464\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00465\ }
+\DoxyCodeLine{00466\ \textcolor{preprocessor}{\#define\ accessible\_reg\_set\ \(\backslash\)}}
+\DoxyCodeLine{00467\ \textcolor{preprocessor}{\ \ (this\_target\_hard\_regs-\/>x\_accessible\_reg\_set)}}
+\DoxyCodeLine{00468\ \textcolor{preprocessor}{\#define\ operand\_reg\_set\ \(\backslash\)}}
+\DoxyCodeLine{00469\ \textcolor{preprocessor}{\ \ (this\_target\_hard\_regs-\/>x\_operand\_reg\_set)}}
+\DoxyCodeLine{00470\ \textcolor{preprocessor}{\#define\ fixed\_regs\ \(\backslash\)}}
+\DoxyCodeLine{00471\ \textcolor{preprocessor}{\ \ (this\_target\_hard\_regs-\/>x\_fixed\_regs)}}
+\DoxyCodeLine{00472\ \textcolor{preprocessor}{\#define\ fixed\_reg\_set\ \(\backslash\)}}
+\DoxyCodeLine{00473\ \textcolor{preprocessor}{\ \ (this\_target\_hard\_regs-\/>x\_fixed\_reg\_set)}}
+\DoxyCodeLine{00474\ \textcolor{preprocessor}{\#define\ fixed\_nonglobal\_reg\_set\ \(\backslash\)}}
+\DoxyCodeLine{00475\ \textcolor{preprocessor}{\ \ (this\_target\_hard\_regs-\/>x\_fixed\_nonglobal\_reg\_set)}}
+\DoxyCodeLine{00476\ \textcolor{preprocessor}{\#ifdef\ IN\_TARGET\_CODE}}
+\DoxyCodeLine{00477\ \textcolor{preprocessor}{\#define\ call\_used\_regs\ \(\backslash\)}}
+\DoxyCodeLine{00478\ \textcolor{preprocessor}{\ \ (this\_target\_hard\_regs-\/>x\_call\_used\_regs)}}
+\DoxyCodeLine{00479\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00480\ \textcolor{preprocessor}{\#define\ savable\_regs\ \(\backslash\)}}
+\DoxyCodeLine{00481\ \textcolor{preprocessor}{\ \ (this\_target\_hard\_regs-\/>x\_savable\_regs)}}
+\DoxyCodeLine{00482\ \textcolor{preprocessor}{\#ifdef\ IN\_TARGET\_CODE}}
+\DoxyCodeLine{00483\ \textcolor{preprocessor}{\#define\ regs\_invalidated\_by\_call\ \(\backslash\)}}
+\DoxyCodeLine{00484\ \textcolor{preprocessor}{\ \ (this\_target\_hard\_regs-\/>x\_regs\_invalidated\_by\_call)}}
+\DoxyCodeLine{00485\ \textcolor{preprocessor}{\#define\ call\_used\_or\_fixed\_regs\ \(\backslash\)}}
+\DoxyCodeLine{00486\ \textcolor{preprocessor}{\ \ (regs\_invalidated\_by\_call\ |\ fixed\_reg\_set)}}
+\DoxyCodeLine{00487\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00488\ \textcolor{preprocessor}{\#define\ reg\_alloc\_order\ \(\backslash\)}}
+\DoxyCodeLine{00489\ \textcolor{preprocessor}{\ \ (this\_target\_hard\_regs-\/>x\_reg\_alloc\_order)}}
+\DoxyCodeLine{00490\ \textcolor{preprocessor}{\#define\ inv\_reg\_alloc\_order\ \(\backslash\)}}
+\DoxyCodeLine{00491\ \textcolor{preprocessor}{\ \ (this\_target\_hard\_regs-\/>x\_inv\_reg\_alloc\_order)}}
+\DoxyCodeLine{00492\ \textcolor{preprocessor}{\#define\ reg\_class\_contents\ \(\backslash\)}}
+\DoxyCodeLine{00493\ \textcolor{preprocessor}{\ \ (this\_target\_hard\_regs-\/>x\_reg\_class\_contents)}}
+\DoxyCodeLine{00494\ \textcolor{preprocessor}{\#define\ class\_only\_fixed\_regs\ \(\backslash\)}}
+\DoxyCodeLine{00495\ \textcolor{preprocessor}{\ \ (this\_target\_hard\_regs-\/>x\_class\_only\_fixed\_regs)}}
+\DoxyCodeLine{00496\ \textcolor{preprocessor}{\#define\ reg\_class\_size\ \(\backslash\)}}
+\DoxyCodeLine{00497\ \textcolor{preprocessor}{\ \ (this\_target\_hard\_regs-\/>x\_reg\_class\_size)}}
+\DoxyCodeLine{00498\ \textcolor{preprocessor}{\#define\ reg\_class\_subclasses\ \(\backslash\)}}
+\DoxyCodeLine{00499\ \textcolor{preprocessor}{\ \ (this\_target\_hard\_regs-\/>x\_reg\_class\_subclasses)}}
+\DoxyCodeLine{00500\ \textcolor{preprocessor}{\#define\ reg\_class\_subunion\ \(\backslash\)}}
+\DoxyCodeLine{00501\ \textcolor{preprocessor}{\ \ (this\_target\_hard\_regs-\/>x\_reg\_class\_subunion)}}
+\DoxyCodeLine{00502\ \textcolor{preprocessor}{\#define\ reg\_class\_superunion\ \(\backslash\)}}
+\DoxyCodeLine{00503\ \textcolor{preprocessor}{\ \ (this\_target\_hard\_regs-\/>x\_reg\_class\_superunion)}}
+\DoxyCodeLine{00504\ \textcolor{preprocessor}{\#define\ reg\_names\ \(\backslash\)}}
+\DoxyCodeLine{00505\ \textcolor{preprocessor}{\ \ (this\_target\_hard\_regs-\/>x\_reg\_names)}}
+\DoxyCodeLine{00506\ }
+\DoxyCodeLine{00507\ \textcolor{comment}{/*\ Vector\ indexed\ by\ reg\ class\ giving\ its\ name.\ \ */}}
+\DoxyCodeLine{00508\ }
+\DoxyCodeLine{00509\ \textcolor{keyword}{extern}\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *\ \doxymbox{\hyperlink{hard-reg-set_8h_ad882c2a0e3dc6715f016442d7c54ef0a}{reg\_class\_names}}[];}
+\DoxyCodeLine{00510\ }
+\DoxyCodeLine{00511\ \textcolor{comment}{/*\ Given\ a\ hard\ REGN\ a\ FROM\ mode\ and\ a\ TO\ mode,\ return\ true\ if}}
+\DoxyCodeLine{00512\ \textcolor{comment}{\ \ \ REGN\ can\ change\ from\ mode\ FROM\ to\ mode\ TO.\ \ */}}
+\DoxyCodeLine{00513\ \textcolor{preprocessor}{\#define\ REG\_CAN\_CHANGE\_MODE\_P(REGN,\ FROM,\ TO)\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00514\ \textcolor{preprocessor}{\ \ (targetm.can\_change\_mode\_class\ (FROM,\ TO,\ REGNO\_REG\_CLASS\ (REGN)))}}
+\DoxyCodeLine{00515\ }
+\DoxyCodeLine{00516\ \textcolor{preprocessor}{\#ifdef\ IN\_TARGET\_CODE}}
+\DoxyCodeLine{00517\ \textcolor{comment}{/*\ Return\ true\ if\ register\ REGNO\ is\ either\ fixed\ or\ call-\/used}}
+\DoxyCodeLine{00518\ \textcolor{comment}{\ \ \ (aka\ call-\/clobbered).\ \ */}}
+\DoxyCodeLine{00519\ }
+\DoxyCodeLine{00520\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{bool}}
+\DoxyCodeLine{00521\ call\_used\_or\_fixed\_reg\_p\ (\textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ regno)}
+\DoxyCodeLine{00522\ \{}
+\DoxyCodeLine{00523\ \ \ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{hard-reg-set_8h_a685788a2ba4872d8d7f0a3ec6fbddffc}{fixed\_regs}}[regno]\ ||\ \doxymbox{\hyperlink{hard-reg-set_8h_a1987f749e3e2a50820493327a2f05f40}{this\_target\_hard\_regs}}-\/>x\_call\_used\_regs[regno];}
+\DoxyCodeLine{00524\ \}}
+\DoxyCodeLine{00525\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00526\ }
+\DoxyCodeLine{00527\ \textcolor{preprocessor}{\#endif\ }\textcolor{comment}{/*\ !\ GCC\_HARD\_REG\_SET\_H\ */}\textcolor{preprocessor}{}}
+
+\end{DoxyCode}

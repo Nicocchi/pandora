@@ -1,0 +1,772 @@
+\doxysection{ipa-\/modref-\/tree.h}
+\hypertarget{ipa-modref-tree_8h_source}{}\label{ipa-modref-tree_8h_source}\index{toolchain/x86\_64-\/elf/lib/gcc/x86\_64-\/elf/14.2.0/plugin/include/ipa-\/modref-\/tree.h@{toolchain/x86\_64-\/elf/lib/gcc/x86\_64-\/elf/14.2.0/plugin/include/ipa-\/modref-\/tree.h}}
+\doxymbox{\hyperlink{ipa-modref-tree_8h}{Go to the documentation of this file.}}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001\ \textcolor{comment}{/*\ Data\ structure\ for\ the\ modref\ pass.}}
+\DoxyCodeLine{00002\ \textcolor{comment}{\ \ \ Copyright\ (C)\ 2020-\/2024\ Free\ Software\ Foundation,\ Inc.}}
+\DoxyCodeLine{00003\ \textcolor{comment}{\ \ \ Contributed\ by\ David\ Cepelik\ and\ Jan\ Hubicka}}
+\DoxyCodeLine{00004\ \textcolor{comment}{}}
+\DoxyCodeLine{00005\ \textcolor{comment}{This\ file\ is\ part\ of\ GCC.}}
+\DoxyCodeLine{00006\ \textcolor{comment}{}}
+\DoxyCodeLine{00007\ \textcolor{comment}{GCC\ is\ free\ software;\ you\ can\ redistribute\ it\ and/or\ modify\ it\ under}}
+\DoxyCodeLine{00008\ \textcolor{comment}{the\ terms\ of\ the\ GNU\ General\ Public\ License\ as\ published\ by\ the\ Free}}
+\DoxyCodeLine{00009\ \textcolor{comment}{Software\ Foundation;\ either\ version\ 3,\ or\ (at\ your\ option)\ any\ later}}
+\DoxyCodeLine{00010\ \textcolor{comment}{version.}}
+\DoxyCodeLine{00011\ \textcolor{comment}{}}
+\DoxyCodeLine{00012\ \textcolor{comment}{GCC\ is\ distributed\ in\ the\ hope\ that\ it\ will\ be\ useful,\ but\ WITHOUT\ ANY}}
+\DoxyCodeLine{00013\ \textcolor{comment}{WARRANTY;\ without\ even\ the\ implied\ warranty\ of\ MERCHANTABILITY\ or}}
+\DoxyCodeLine{00014\ \textcolor{comment}{FITNESS\ FOR\ A\ PARTICULAR\ PURPOSE.\ \ See\ the\ GNU\ General\ Public\ License}}
+\DoxyCodeLine{00015\ \textcolor{comment}{for\ more\ details.}}
+\DoxyCodeLine{00016\ \textcolor{comment}{}}
+\DoxyCodeLine{00017\ \textcolor{comment}{You\ should\ have\ received\ a\ copy\ of\ the\ GNU\ General\ Public\ License}}
+\DoxyCodeLine{00018\ \textcolor{comment}{along\ with\ GCC;\ see\ the\ file\ COPYING3.\ \ If\ not\ see}}
+\DoxyCodeLine{00019\ \textcolor{comment}{<http://www.gnu.org/licenses/>.\ \ */}}
+\DoxyCodeLine{00020\ }
+\DoxyCodeLine{00021\ \textcolor{comment}{/*\ modref\_tree\ represent\ a\ decision\ tree\ that\ can\ be\ used\ by\ alias\ analysis}}
+\DoxyCodeLine{00022\ \textcolor{comment}{\ \ \ oracle\ to\ determine\ whether\ given\ memory\ access\ can\ be\ affected\ by\ a\ function}}
+\DoxyCodeLine{00023\ \textcolor{comment}{\ \ \ call.\ \ For\ every\ function\ we\ collect\ two\ trees,\ one\ for\ loads\ and\ other}}
+\DoxyCodeLine{00024\ \textcolor{comment}{\ \ \ for\ stores.\ \ Tree\ consist\ of\ following\ levels:}}
+\DoxyCodeLine{00025\ \textcolor{comment}{}}
+\DoxyCodeLine{00026\ \textcolor{comment}{\ \ \ 1)\ Base:\ this\ level\ represent\ base\ alias\ set\ of\ the\ access\ and\ refers}}
+\DoxyCodeLine{00027\ \textcolor{comment}{\ \ \ \ \ \ to\ sons\ (ref\ nodes).\ Flag\ all\_refs\ means\ that\ all\ possible\ references}}
+\DoxyCodeLine{00028\ \textcolor{comment}{\ \ \ \ \ \ are\ aliasing.}}
+\DoxyCodeLine{00029\ \textcolor{comment}{}}
+\DoxyCodeLine{00030\ \textcolor{comment}{\ \ \ \ \ \ Because\ for\ LTO\ streaming\ we\ need\ to\ stream\ types\ rather\ than\ alias\ sets}}
+\DoxyCodeLine{00031\ \textcolor{comment}{\ \ \ \ \ \ modref\_base\_node\ is\ implemented\ as\ a\ template.}}
+\DoxyCodeLine{00032\ \textcolor{comment}{\ \ \ 2)\ Ref:\ this\ level\ represent\ ref\ alias\ set\ and\ links\ to\ accesses\ unless}}
+\DoxyCodeLine{00033\ \textcolor{comment}{\ \ \ \ \ \ all\_refs\ flag\ is\ set.}}
+\DoxyCodeLine{00034\ \textcolor{comment}{\ \ \ \ \ \ Again\ ref\ is\ an\ template\ to\ allow\ LTO\ streaming.}}
+\DoxyCodeLine{00035\ \textcolor{comment}{\ \ \ 3)\ Access:\ this\ level\ represent\ info\ about\ individual\ accesses.\ \ Presently}}
+\DoxyCodeLine{00036\ \textcolor{comment}{\ \ \ \ \ \ we\ record\ whether\ access\ is\ through\ a\ dereference\ of\ a\ function\ parameter}}
+\DoxyCodeLine{00037\ \textcolor{comment}{\ \ \ \ \ \ and\ if\ so\ we\ record\ the\ access\ range.}}
+\DoxyCodeLine{00038\ \textcolor{comment}{*/}}
+\DoxyCodeLine{00039\ }
+\DoxyCodeLine{00040\ \textcolor{preprocessor}{\#ifndef\ GCC\_MODREF\_TREE\_H}}
+\DoxyCodeLine{00041\ \textcolor{preprocessor}{\#define\ GCC\_MODREF\_TREE\_H}}
+\DoxyCodeLine{00042\ }
+\DoxyCodeLine{00043\ \textcolor{keyword}{struct\ }ipa\_modref\_summary;}
+\DoxyCodeLine{00044\ }
+\DoxyCodeLine{00045\ \textcolor{comment}{/*\ parm\ indexes\ greater\ than\ 0\ are\ normal\ parms.}}
+\DoxyCodeLine{00046\ \textcolor{comment}{\ \ \ Some\ negative\ values\ have\ special\ meaning.\ \ */}}
+\DoxyCodeLine{00047\ \textcolor{keyword}{enum}\ \doxymbox{\hyperlink{ipa-modref-tree_8h_a654ead8e5e1ac4ec467ffc0722e3a261}{modref\_special\_parms}}\ \{}
+\DoxyCodeLine{00048\ \ \ \doxymbox{\hyperlink{ipa-modref-tree_8h_a654ead8e5e1ac4ec467ffc0722e3a261a3ad0d628c8e1c898bd22c7ec638f4589}{MODREF\_UNKNOWN\_PARM}}\ =\ -\/1,}
+\DoxyCodeLine{00049\ \ \ \doxymbox{\hyperlink{ipa-modref-tree_8h_a654ead8e5e1ac4ec467ffc0722e3a261ae7668cd64d0cb58d18b7e525dc0b3a7a}{MODREF\_STATIC\_CHAIN\_PARM}}\ =\ -\/2,}
+\DoxyCodeLine{00050\ \ \ \doxymbox{\hyperlink{ipa-modref-tree_8h_a654ead8e5e1ac4ec467ffc0722e3a261a5d7b15d6cdfc079742ef75a61d3b4a3c}{MODREF\_RETSLOT\_PARM}}\ =\ -\/3,}
+\DoxyCodeLine{00051\ \ \ \textcolor{comment}{/*\ Used\ for\ bases\ that\ points\ to\ memory\ that\ escapes\ from\ function.\ \ */}}
+\DoxyCodeLine{00052\ \ \ \doxymbox{\hyperlink{ipa-modref-tree_8h_a654ead8e5e1ac4ec467ffc0722e3a261a755237ee77cc1cde99028b153003c773}{MODREF\_GLOBAL\_MEMORY\_PARM}}\ =\ -\/4,}
+\DoxyCodeLine{00053\ \ \ \textcolor{comment}{/*\ Used\ in\ modref\_parm\_map\ to\ take\ references\ which\ can\ be\ removed}}
+\DoxyCodeLine{00054\ \textcolor{comment}{\ \ \ \ \ from\ the\ summary\ during\ summary\ update\ since\ they\ now\ points\ to\ local}}
+\DoxyCodeLine{00055\ \textcolor{comment}{\ \ \ \ \ memory.\ \ */}}
+\DoxyCodeLine{00056\ \ \ \doxymbox{\hyperlink{ipa-modref-tree_8h_a654ead8e5e1ac4ec467ffc0722e3a261a7df1ad31f8e6865bb2a426e318fd7b55}{MODREF\_LOCAL\_MEMORY\_PARM}}\ =\ -\/5}
+\DoxyCodeLine{00057\ \};}
+\DoxyCodeLine{00058\ }
+\DoxyCodeLine{00059\ \textcolor{comment}{/*\ Modref\ record\ accesses\ relative\ to\ function\ parameters.}}
+\DoxyCodeLine{00060\ \textcolor{comment}{\ \ \ This\ is\ entry\ for\ single\ access\ specifying\ its\ base\ and\ access\ range.}}
+\DoxyCodeLine{00061\ \textcolor{comment}{}}
+\DoxyCodeLine{00062\ \textcolor{comment}{\ \ \ Accesses\ can\ be\ collected\ to\ boundedly\ sized\ arrays\ using}}
+\DoxyCodeLine{00063\ \textcolor{comment}{\ \ \ modref\_access\_node::insert.\ \ */}}
+\DoxyCodeLine{00064\ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{coretypes_8h_ae5708c4d4b300570eebe0bc0c78facbc}{GTY}}(())\ modref\_access\_node}
+\DoxyCodeLine{00065\ \{}
+\DoxyCodeLine{00066\ \ \ \textcolor{comment}{/*\ Access\ range\ information\ (in\ bits).\ \ */}}
+\DoxyCodeLine{00067\ \ \ \doxymbox{\hyperlink{poly-int-types_8h_af5255601feb5e9a21f3193d378a55845}{poly\_int64}}\ offset;}
+\DoxyCodeLine{00068\ \ \ \doxymbox{\hyperlink{poly-int-types_8h_af5255601feb5e9a21f3193d378a55845}{poly\_int64}}\ size;}
+\DoxyCodeLine{00069\ \ \ \doxymbox{\hyperlink{poly-int-types_8h_af5255601feb5e9a21f3193d378a55845}{poly\_int64}}\ max\_size;}
+\DoxyCodeLine{00070\ }
+\DoxyCodeLine{00071\ \ \ \textcolor{comment}{/*\ Offset\ from\ parameter\ pointer\ to\ the\ base\ of\ the\ access\ (in\ bytes).\ \ */}}
+\DoxyCodeLine{00072\ \ \ \doxymbox{\hyperlink{poly-int-types_8h_af5255601feb5e9a21f3193d378a55845}{poly\_int64}}\ parm\_offset;}
+\DoxyCodeLine{00073\ }
+\DoxyCodeLine{00074\ \ \ \textcolor{comment}{/*\ Index\ of\ parameter\ which\ specifies\ the\ base\ of\ access.\ -\/1\ if\ base\ is\ not}}
+\DoxyCodeLine{00075\ \textcolor{comment}{\ \ \ \ \ a\ function\ parameter.\ \ */}}
+\DoxyCodeLine{00076\ \ \ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{cp-tree_8h_a67b2925902a5573e8d433f1832ff4fe4}{parm\_index}};}
+\DoxyCodeLine{00077\ \ \ \textcolor{keywordtype}{bool}\ parm\_offset\_known;}
+\DoxyCodeLine{00078\ \ \ \textcolor{comment}{/*\ Number\ of\ times\ interval\ was\ extended\ during\ dataflow.}}
+\DoxyCodeLine{00079\ \textcolor{comment}{\ \ \ \ \ This\ has\ to\ be\ limited\ in\ order\ to\ keep\ dataflow\ finite.\ \ */}}
+\DoxyCodeLine{00080\ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{char}\ adjustments;}
+\DoxyCodeLine{00081\ }
+\DoxyCodeLine{00082\ \ \ \textcolor{comment}{/*\ Return\ true\ if\ access\ node\ holds\ some\ useful\ info.\ \ */}}
+\DoxyCodeLine{00083\ \ \ \textcolor{keywordtype}{bool}\ useful\_p\ ()\textcolor{keyword}{\ const}}
+\DoxyCodeLine{00084\ \textcolor{keyword}{\ \ \ \ }\{}
+\DoxyCodeLine{00085\ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{cp-tree_8h_a67b2925902a5573e8d433f1832ff4fe4}{parm\_index}}\ !=\ \doxymbox{\hyperlink{ipa-modref-tree_8h_a654ead8e5e1ac4ec467ffc0722e3a261a3ad0d628c8e1c898bd22c7ec638f4589}{MODREF\_UNKNOWN\_PARM}};}
+\DoxyCodeLine{00086\ \ \ \ \ \}}
+\DoxyCodeLine{00087\ \ \ \textcolor{comment}{/*\ Return\ true\ if\ access\ can\ be\ used\ to\ determine\ a\ kill.\ \ */}}
+\DoxyCodeLine{00088\ \ \ \textcolor{keywordtype}{bool}\ useful\_for\_kill\_p\ ()\textcolor{keyword}{\ const}}
+\DoxyCodeLine{00089\ \textcolor{keyword}{\ \ \ \ }\{}
+\DoxyCodeLine{00090\ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ parm\_offset\_known\ \&\&\ \doxymbox{\hyperlink{cp-tree_8h_a67b2925902a5573e8d433f1832ff4fe4}{parm\_index}}\ !=\ \doxymbox{\hyperlink{ipa-modref-tree_8h_a654ead8e5e1ac4ec467ffc0722e3a261a3ad0d628c8e1c898bd22c7ec638f4589}{MODREF\_UNKNOWN\_PARM}}}
+\DoxyCodeLine{00091\ \ \ \ \ \ \ \ \ \ \&\&\ \doxymbox{\hyperlink{cp-tree_8h_a67b2925902a5573e8d433f1832ff4fe4}{parm\_index}}\ !=\ \doxymbox{\hyperlink{ipa-modref-tree_8h_a654ead8e5e1ac4ec467ffc0722e3a261a755237ee77cc1cde99028b153003c773}{MODREF\_GLOBAL\_MEMORY\_PARM}}}
+\DoxyCodeLine{00092\ \ \ \ \ \ \ \ \ \ \&\&\ \doxymbox{\hyperlink{cp-tree_8h_a67b2925902a5573e8d433f1832ff4fe4}{parm\_index}}\ !=\ \doxymbox{\hyperlink{ipa-modref-tree_8h_a654ead8e5e1ac4ec467ffc0722e3a261a5d7b15d6cdfc079742ef75a61d3b4a3c}{MODREF\_RETSLOT\_PARM}}\ \&\&\ known\_size\_p\ (size)}
+\DoxyCodeLine{00093\ \ \ \ \ \ \ \ \ \ \&\&\ \doxymbox{\hyperlink{poly-int_8h_a11da39675af1f3d7548be9b31569abd0}{known\_eq}}\ (max\_size,\ size)}
+\DoxyCodeLine{00094\ \ \ \ \ \ \ \ \ \ \&\&\ \doxymbox{\hyperlink{poly-int_8h_ae53f3482e1e44cf0097e50dd10e93c2f}{known\_gt}}\ (size,\ 0);}
+\DoxyCodeLine{00095\ \ \ \ \ \}}
+\DoxyCodeLine{00096\ \ \ \textcolor{comment}{/*\ Dump\ range\ to\ debug\ OUT.\ \ */}}
+\DoxyCodeLine{00097\ \ \ \textcolor{keywordtype}{void}\ dump\ (FILE\ *out);}
+\DoxyCodeLine{00098\ \ \ \textcolor{comment}{/*\ Return\ true\ if\ both\ accesses\ are\ the\ same.\ \ */}}
+\DoxyCodeLine{00099\ \ \ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{cp-tree_8h_a4b9bd7e4e073a2a98d043c78719de59b}{operator\ ==\ }}(modref\_access\_node\ \&\doxymbox{\hyperlink{poly-int_8h_af77c881600a14567e276ee17dfb8764f}{a}})\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00100\ \ \ \textcolor{comment}{/*\ Return\ true\ if\ range\ info\ is\ useful.\ \ */}}
+\DoxyCodeLine{00101\ \ \ \textcolor{keywordtype}{bool}\ range\_info\_useful\_p\ ()\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00102\ \ \ \textcolor{comment}{/*\ Return\ tree\ corresponding\ to\ parameter\ of\ the\ range\ in\ STMT.\ \ */}}
+\DoxyCodeLine{00103\ \ \ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ get\_call\_arg\ (\textcolor{keyword}{const}\ gcall\ *stmt)\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00104\ \ \ \textcolor{comment}{/*\ Build\ ao\_ref\ corresponding\ to\ the\ access\ and\ return\ true\ if\ successful.\ \ */}}
+\DoxyCodeLine{00105\ \ \ \textcolor{keywordtype}{bool}\ get\_ao\_ref\ (\textcolor{keyword}{const}\ gcall\ *stmt,\ \textcolor{keyword}{class}\ ao\_ref\ *ref)\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00106\ \ \ \textcolor{comment}{/*\ Stream\ access\ to\ OB.\ \ */}}
+\DoxyCodeLine{00107\ \ \ \textcolor{keywordtype}{void}\ stream\_out\ (\textcolor{keyword}{struct}\ output\_block\ *ob)\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00108\ \ \ \textcolor{comment}{/*\ Stream\ access\ in\ from\ IB.\ \ */}}
+\DoxyCodeLine{00109\ \ \ \textcolor{keyword}{static}\ modref\_access\_node\ stream\_in\ (\textcolor{keyword}{struct}\ lto\_input\_block\ *ib);}
+\DoxyCodeLine{00110\ \ \ \textcolor{comment}{/*\ Insert\ A\ into\ vector\ ACCESSES.\ \ Limit\ size\ of\ vector\ to\ MAX\_ACCESSES\ and}}
+\DoxyCodeLine{00111\ \textcolor{comment}{\ \ \ \ \ if\ RECORD\_ADJUSTMENT\ is\ true\ keep\ track\ of\ adjustment\ counts.}}
+\DoxyCodeLine{00112\ \textcolor{comment}{\ \ \ \ \ Return\ 0\ if\ nothing\ changed,\ 1\ is\ insertion\ succeeded\ and\ -\/1\ if\ failed.\ \ */}}
+\DoxyCodeLine{00113\ \ \ \textcolor{keyword}{static}\ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{namespacewi_aa421202393ff12d6d6cd77590adeef85}{insert}}\ (\doxymbox{\hyperlink{vec_8h_ac6299229087b122e17686611255dfa27}{vec\ <modref\_access\_node,\ va\_gc>}}\ *\&accesses,}
+\DoxyCodeLine{00114\ \ \ \ \ \ \ \ \ \ \ \ \ \ modref\_access\_node\ \doxymbox{\hyperlink{poly-int_8h_af77c881600a14567e276ee17dfb8764f}{a}},\ \textcolor{keywordtype}{size\_t}\ max\_accesses,}
+\DoxyCodeLine{00115\ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{bool}\ record\_adjustments);}
+\DoxyCodeLine{00116\ \ \ \textcolor{comment}{/*\ Same\ as\ insert\ but\ for\ kills\ where\ we\ are\ conservative\ the\ other\ way}}
+\DoxyCodeLine{00117\ \textcolor{comment}{\ \ \ \ \ around:\ if\ information\ is\ lost,\ the\ kill\ is\ lost.\ \ */}}
+\DoxyCodeLine{00118\ \ \ \textcolor{keyword}{static}\ \textcolor{keywordtype}{bool}\ insert\_kill\ (\doxymbox{\hyperlink{vec_8h_ac6299229087b122e17686611255dfa27}{vec<modref\_access\_node>}}\ \&kills,}
+\DoxyCodeLine{00119\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ modref\_access\_node\ \&\doxymbox{\hyperlink{poly-int_8h_af77c881600a14567e276ee17dfb8764f}{a}},\ \textcolor{keywordtype}{bool}\ record\_adjustments);}
+\DoxyCodeLine{00120\ \textcolor{keyword}{private}:}
+\DoxyCodeLine{00121\ \ \ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{vec_8h_a6580033be8ea4ec9a7923ef12b308195}{contains}}\ (\textcolor{keyword}{const}\ modref\_access\_node\ \&)\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00122\ \ \ \textcolor{keywordtype}{bool}\ contains\_for\_kills\ (\textcolor{keyword}{const}\ modref\_access\_node\ \&)\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00123\ \ \ \textcolor{keywordtype}{void}\ update\ (\doxymbox{\hyperlink{poly-int-types_8h_af5255601feb5e9a21f3193d378a55845}{poly\_int64}},\ \doxymbox{\hyperlink{poly-int-types_8h_af5255601feb5e9a21f3193d378a55845}{poly\_int64}},\ \doxymbox{\hyperlink{poly-int-types_8h_af5255601feb5e9a21f3193d378a55845}{poly\_int64}},\ \doxymbox{\hyperlink{poly-int-types_8h_af5255601feb5e9a21f3193d378a55845}{poly\_int64}},\ \textcolor{keywordtype}{bool});}
+\DoxyCodeLine{00124\ \ \ \textcolor{keywordtype}{bool}\ update\_for\_kills\ (\doxymbox{\hyperlink{poly-int-types_8h_af5255601feb5e9a21f3193d378a55845}{poly\_int64}},\ \doxymbox{\hyperlink{poly-int-types_8h_af5255601feb5e9a21f3193d378a55845}{poly\_int64}},\ \doxymbox{\hyperlink{poly-int-types_8h_af5255601feb5e9a21f3193d378a55845}{poly\_int64}},}
+\DoxyCodeLine{00125\ \ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{poly-int-types_8h_af5255601feb5e9a21f3193d378a55845}{poly\_int64}},\ \doxymbox{\hyperlink{poly-int-types_8h_af5255601feb5e9a21f3193d378a55845}{poly\_int64}},\ \textcolor{keywordtype}{bool});}
+\DoxyCodeLine{00126\ \ \ \textcolor{keywordtype}{bool}\ merge\ (\textcolor{keyword}{const}\ modref\_access\_node\ \&,\ \textcolor{keywordtype}{bool});}
+\DoxyCodeLine{00127\ \ \ \textcolor{keywordtype}{bool}\ merge\_for\_kills\ (\textcolor{keyword}{const}\ modref\_access\_node\ \&,\ \textcolor{keywordtype}{bool});}
+\DoxyCodeLine{00128\ \ \ \textcolor{keyword}{static}\ \textcolor{keywordtype}{bool}\ closer\_pair\_p\ (\textcolor{keyword}{const}\ modref\_access\_node\ \&,}
+\DoxyCodeLine{00129\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ modref\_access\_node\ \&,}
+\DoxyCodeLine{00130\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ modref\_access\_node\ \&,}
+\DoxyCodeLine{00131\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ modref\_access\_node\ \&);}
+\DoxyCodeLine{00132\ \ \ \textcolor{keywordtype}{void}\ forced\_merge\ (\textcolor{keyword}{const}\ modref\_access\_node\ \&,\ \textcolor{keywordtype}{bool});}
+\DoxyCodeLine{00133\ \ \ \textcolor{keywordtype}{void}\ update2\ (\doxymbox{\hyperlink{poly-int-types_8h_af5255601feb5e9a21f3193d378a55845}{poly\_int64}},\ \doxymbox{\hyperlink{poly-int-types_8h_af5255601feb5e9a21f3193d378a55845}{poly\_int64}},\ \doxymbox{\hyperlink{poly-int-types_8h_af5255601feb5e9a21f3193d378a55845}{poly\_int64}},\ \doxymbox{\hyperlink{poly-int-types_8h_af5255601feb5e9a21f3193d378a55845}{poly\_int64}},}
+\DoxyCodeLine{00134\ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{poly-int-types_8h_af5255601feb5e9a21f3193d378a55845}{poly\_int64}},\ \doxymbox{\hyperlink{poly-int-types_8h_af5255601feb5e9a21f3193d378a55845}{poly\_int64}},\ \doxymbox{\hyperlink{poly-int-types_8h_af5255601feb5e9a21f3193d378a55845}{poly\_int64}},\ \textcolor{keywordtype}{bool});}
+\DoxyCodeLine{00135\ \ \ \textcolor{keywordtype}{bool}\ combined\_offsets\ (\textcolor{keyword}{const}\ modref\_access\_node\ \&,}
+\DoxyCodeLine{00136\ \ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{poly-int-types_8h_af5255601feb5e9a21f3193d378a55845}{poly\_int64}}\ *,\ \doxymbox{\hyperlink{poly-int-types_8h_af5255601feb5e9a21f3193d378a55845}{poly\_int64}}\ *,\ \doxymbox{\hyperlink{poly-int-types_8h_af5255601feb5e9a21f3193d378a55845}{poly\_int64}}\ *)\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00137\ \ \ \textcolor{keyword}{static}\ \textcolor{keywordtype}{void}\ try\_merge\_with\ (\doxymbox{\hyperlink{vec_8h_ac6299229087b122e17686611255dfa27}{vec\ <modref\_access\_node,\ va\_gc>}}\ *\&,\ \textcolor{keywordtype}{size\_t});}
+\DoxyCodeLine{00138\ \};}
+\DoxyCodeLine{00139\ }
+\DoxyCodeLine{00140\ \textcolor{comment}{/*\ Access\ node\ specifying\ no\ useful\ info.\ \ */}}
+\DoxyCodeLine{00141\ \textcolor{keyword}{const}\ modref\_access\_node\ \doxymbox{\hyperlink{ipa-modref-tree_8h_a346558926944dc3f3f644f19502d4739}{unspecified\_modref\_access\_node}}}
+\DoxyCodeLine{00142\ \ \ \ \ \ \ \ \ \ =\ \{0,\ -\/1,\ -\/1,\ 0,\ \doxymbox{\hyperlink{ipa-modref-tree_8h_a654ead8e5e1ac4ec467ffc0722e3a261a3ad0d628c8e1c898bd22c7ec638f4589}{MODREF\_UNKNOWN\_PARM}},\ \textcolor{keyword}{false},\ 0\};}
+\DoxyCodeLine{00143\ }
+\DoxyCodeLine{00144\ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ T>}
+\DoxyCodeLine{00145\ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{coretypes_8h_ae5708c4d4b300570eebe0bc0c78facbc}{GTY}}((user))\ modref\_ref\_node}
+\DoxyCodeLine{00146\ \{}
+\DoxyCodeLine{00147\ \ \ T\ ref;}
+\DoxyCodeLine{00148\ \ \ \textcolor{keywordtype}{bool}\ every\_access;}
+\DoxyCodeLine{00149\ \ \ \doxymbox{\hyperlink{vec_8h_ac6299229087b122e17686611255dfa27}{vec\ <modref\_access\_node,\ va\_gc>}}\ *accesses;}
+\DoxyCodeLine{00150\ }
+\DoxyCodeLine{00151\ \ \ modref\_ref\_node\ (T\ ref):}
+\DoxyCodeLine{00152\ \ \ \ \ ref\ (ref),}
+\DoxyCodeLine{00153\ \ \ \ \ every\_access\ (\doxymbox{\hyperlink{stdbool_8h_a65e9886d74aaee76545e83dd09011727}{false}}),}
+\DoxyCodeLine{00154\ \ \ \ \ accesses\ (\doxymbox{\hyperlink{stddef_8h_a070d2ce7b6bb7e5c05602aa8c308d0c4}{NULL}})}
+\DoxyCodeLine{00155\ \ \ \{\}}
+\DoxyCodeLine{00156\ }
+\DoxyCodeLine{00157\ \ \ \textcolor{comment}{/*\ Collapse\ the\ tree.\ \ */}}
+\DoxyCodeLine{00158\ \ \ \textcolor{keywordtype}{void}\ collapse\ ()}
+\DoxyCodeLine{00159\ \ \ \{}
+\DoxyCodeLine{00160\ \ \ \ \ \doxymbox{\hyperlink{vec_8h_af8bb304d936dafc1cdef22063073bb63}{vec\_free}}\ (accesses);}
+\DoxyCodeLine{00161\ \ \ \ \ accesses\ =\ \doxymbox{\hyperlink{stddef_8h_a070d2ce7b6bb7e5c05602aa8c308d0c4}{NULL}};}
+\DoxyCodeLine{00162\ \ \ \ \ every\_access\ =\ \textcolor{keyword}{true};}
+\DoxyCodeLine{00163\ \ \ \}}
+\DoxyCodeLine{00164\ }
+\DoxyCodeLine{00165\ \ \ \textcolor{comment}{/*\ Insert\ access\ with\ OFFSET\ and\ SIZE.}}
+\DoxyCodeLine{00166\ \textcolor{comment}{\ \ \ \ \ Collapse\ tree\ if\ it\ has\ more\ than\ MAX\_ACCESSES\ entries.}}
+\DoxyCodeLine{00167\ \textcolor{comment}{\ \ \ \ \ If\ RECORD\_ADJUSTMENTs\ is\ true\ avoid\ too\ many\ interval\ extensions.}}
+\DoxyCodeLine{00168\ \textcolor{comment}{\ \ \ \ \ Return\ true\ if\ record\ was\ changed.\ \ */}}
+\DoxyCodeLine{00169\ \ \ \textcolor{keywordtype}{bool}\ insert\_access\ (modref\_access\_node\ \doxymbox{\hyperlink{poly-int_8h_af77c881600a14567e276ee17dfb8764f}{a}},\ \textcolor{keywordtype}{size\_t}\ max\_accesses,}
+\DoxyCodeLine{00170\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{bool}\ record\_adjustments)}
+\DoxyCodeLine{00171\ \ \ \{}
+\DoxyCodeLine{00172\ \ \ \ \ \textcolor{comment}{/*\ If\ this\ base-\/>ref\ pair\ has\ no\ access\ information,\ bail\ out.\ \ */}}
+\DoxyCodeLine{00173\ \ \ \ \ \textcolor{keywordflow}{if}\ (every\_access)}
+\DoxyCodeLine{00174\ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ \textcolor{keyword}{false};}
+\DoxyCodeLine{00175\ }
+\DoxyCodeLine{00176\ \ \ \ \ \textcolor{comment}{/*\ Only\ the\ following\ kind\ of\ parameters\ needs\ to\ be\ tracked.}}
+\DoxyCodeLine{00177\ \textcolor{comment}{\ \ \ \ \ \ \ We\ do\ not\ track\ return\ slots\ because\ they\ are\ seen\ as\ a\ direct\ store}}
+\DoxyCodeLine{00178\ \textcolor{comment}{\ \ \ \ \ \ \ in\ the\ caller.\ \ */}}
+\DoxyCodeLine{00179\ \ \ \ \ \doxymbox{\hyperlink{system_8h_aff447899dc74d54931b2bc2d47de9423}{gcc\_checking\_assert}}\ (\doxymbox{\hyperlink{poly-int_8h_af77c881600a14567e276ee17dfb8764f}{a}}.parm\_index\ >=\ 0}
+\DoxyCodeLine{00180\ \ \ \ \ \ \ \ \ \ \ \ \ \ ||\ \doxymbox{\hyperlink{poly-int_8h_af77c881600a14567e276ee17dfb8764f}{a}}.parm\_index\ ==\ \doxymbox{\hyperlink{ipa-modref-tree_8h_a654ead8e5e1ac4ec467ffc0722e3a261ae7668cd64d0cb58d18b7e525dc0b3a7a}{MODREF\_STATIC\_CHAIN\_PARM}}}
+\DoxyCodeLine{00181\ \ \ \ \ \ \ \ \ \ \ \ \ \ ||\ \doxymbox{\hyperlink{poly-int_8h_af77c881600a14567e276ee17dfb8764f}{a}}.parm\_index\ ==\ \doxymbox{\hyperlink{ipa-modref-tree_8h_a654ead8e5e1ac4ec467ffc0722e3a261a755237ee77cc1cde99028b153003c773}{MODREF\_GLOBAL\_MEMORY\_PARM}}}
+\DoxyCodeLine{00182\ \ \ \ \ \ \ \ \ \ \ \ \ \ ||\ \doxymbox{\hyperlink{poly-int_8h_af77c881600a14567e276ee17dfb8764f}{a}}.parm\_index\ ==\ \doxymbox{\hyperlink{ipa-modref-tree_8h_a654ead8e5e1ac4ec467ffc0722e3a261a3ad0d628c8e1c898bd22c7ec638f4589}{MODREF\_UNKNOWN\_PARM}});}
+\DoxyCodeLine{00183\ }
+\DoxyCodeLine{00184\ \ \ \ \ \textcolor{keywordflow}{if}\ (!\doxymbox{\hyperlink{poly-int_8h_af77c881600a14567e276ee17dfb8764f}{a}}.useful\_p\ ())}
+\DoxyCodeLine{00185\ \ \ \ \ \ \ \{}
+\DoxyCodeLine{00186\ \ \ \ \ \textcolor{keywordflow}{if}\ (!every\_access)}
+\DoxyCodeLine{00187\ \ \ \ \ \ \ \{}
+\DoxyCodeLine{00188\ \ \ \ \ \ \ \ \ collapse\ ();}
+\DoxyCodeLine{00189\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ \textcolor{keyword}{true};}
+\DoxyCodeLine{00190\ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00191\ \ \ \ \ \textcolor{keywordflow}{return}\ \textcolor{keyword}{false};}
+\DoxyCodeLine{00192\ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00193\ }
+\DoxyCodeLine{00194\ \ \ \ \ \textcolor{keywordtype}{int}\ ret\ =\ modref\_access\_node::insert\ (accesses,\ \doxymbox{\hyperlink{poly-int_8h_af77c881600a14567e276ee17dfb8764f}{a}},\ max\_accesses,}
+\DoxyCodeLine{00195\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ record\_adjustments);}
+\DoxyCodeLine{00196\ \ \ \ \ \textcolor{keywordflow}{if}\ (ret\ ==\ -\/1)}
+\DoxyCodeLine{00197\ \ \ \ \ \ \ \{}
+\DoxyCodeLine{00198\ \ \ \ \ \textcolor{keywordflow}{if}\ (\doxymbox{\hyperlink{dumpfile_8h_ad120f3485ae619a3fd8b645e6fe3d9b9}{dump\_file}})}
+\DoxyCodeLine{00199\ \ \ \ \ \ \ fprintf\ (\doxymbox{\hyperlink{dumpfile_8h_ad120f3485ae619a3fd8b645e6fe3d9b9}{dump\_file}},}
+\DoxyCodeLine{00200\ \ \ \ \ \ \ \ \ \ \ \ \textcolor{stringliteral}{"{}-\/-\/param\ modref-\/max-\/accesses\ limit\ reached;\ collapsing\(\backslash\)n"{}});}
+\DoxyCodeLine{00201\ \ \ \ \ collapse\ ();}
+\DoxyCodeLine{00202\ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00203\ \ \ \ \ \textcolor{keywordflow}{return}\ ret\ !=\ 0;}
+\DoxyCodeLine{00204\ \ \ \}}
+\DoxyCodeLine{00205\ \};}
+\DoxyCodeLine{00206\ }
+\DoxyCodeLine{00207\ \textcolor{comment}{/*\ Base\ of\ an\ access.\ \ */}}
+\DoxyCodeLine{00208\ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ T>}
+\DoxyCodeLine{00209\ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{coretypes_8h_ae5708c4d4b300570eebe0bc0c78facbc}{GTY}}((user))\ modref\_base\_node}
+\DoxyCodeLine{00210\ \{}
+\DoxyCodeLine{00211\ \ \ T\ base;}
+\DoxyCodeLine{00212\ \ \ \doxymbox{\hyperlink{vec_8h_ac6299229087b122e17686611255dfa27}{vec\ <modref\_ref\_node\ <T>}}\ *,\ \doxymbox{\hyperlink{vec_8h_aa164af0ad170e12f150a0fc79dd6d221}{va\_gc}}>\ *refs;}
+\DoxyCodeLine{00213\ \ \ \textcolor{keywordtype}{bool}\ every\_ref;}
+\DoxyCodeLine{00214\ }
+\DoxyCodeLine{00215\ \ \ modref\_base\_node\ (T\ base):}
+\DoxyCodeLine{00216\ \ \ \ \ base\ (base),}
+\DoxyCodeLine{00217\ \ \ \ \ refs\ (\doxymbox{\hyperlink{stddef_8h_a070d2ce7b6bb7e5c05602aa8c308d0c4}{NULL}}),}
+\DoxyCodeLine{00218\ \ \ \ \ every\_ref\ (\doxymbox{\hyperlink{stdbool_8h_a65e9886d74aaee76545e83dd09011727}{false}})\ \{\}}
+\DoxyCodeLine{00219\ }
+\DoxyCodeLine{00220\ \ \ \textcolor{comment}{/*\ Search\ REF;\ return\ NULL\ if\ failed.\ \ */}}
+\DoxyCodeLine{00221\ \ \ modref\_ref\_node\ <T>\ *search\ (T\ ref)}
+\DoxyCodeLine{00222\ \ \ \{}
+\DoxyCodeLine{00223\ \ \ \ \ \textcolor{keywordtype}{size\_t}\ \doxymbox{\hyperlink{poly-int_8h_a7e98b8a17c0aad30ba64d47b74e2a6c1}{i}};}
+\DoxyCodeLine{00224\ \ \ \ \ modref\_ref\_node\ <T>\ *n;}
+\DoxyCodeLine{00225\ \ \ \ \ \doxymbox{\hyperlink{vec_8h_a2ded00ca01beb0905e1551aa46e658d2}{FOR\_EACH\_VEC\_SAFE\_ELT}}\ (refs,\ \doxymbox{\hyperlink{poly-int_8h_a7e98b8a17c0aad30ba64d47b74e2a6c1}{i}},\ n)}
+\DoxyCodeLine{00226\ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (n-\/>ref\ ==\ ref)}
+\DoxyCodeLine{00227\ \ \ \ \ \textcolor{keywordflow}{return}\ n;}
+\DoxyCodeLine{00228\ \ \ \ \ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{stddef_8h_a070d2ce7b6bb7e5c05602aa8c308d0c4}{NULL}};}
+\DoxyCodeLine{00229\ \ \ \}}
+\DoxyCodeLine{00230\ }
+\DoxyCodeLine{00231\ \ \ \textcolor{comment}{/*\ Insert\ REF;\ collapse\ tree\ if\ there\ are\ more\ than\ MAX\_REFS.}}
+\DoxyCodeLine{00232\ \textcolor{comment}{\ \ \ \ \ Return\ inserted\ ref\ and\ if\ CHANGED\ is\ non-\/null\ set\ it\ to\ true\ if}}
+\DoxyCodeLine{00233\ \textcolor{comment}{\ \ \ \ \ something\ changed.\ \ */}}
+\DoxyCodeLine{00234\ \ \ modref\_ref\_node\ <T>\ *insert\_ref\ (T\ ref,\ \textcolor{keywordtype}{size\_t}\ max\_refs,}
+\DoxyCodeLine{00235\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{bool}\ *changed\ =\ \doxymbox{\hyperlink{stddef_8h_a070d2ce7b6bb7e5c05602aa8c308d0c4}{NULL}})}
+\DoxyCodeLine{00236\ \ \ \{}
+\DoxyCodeLine{00237\ \ \ \ \ modref\_ref\_node\ <T>\ *ref\_node;}
+\DoxyCodeLine{00238\ }
+\DoxyCodeLine{00239\ \ \ \ \ \textcolor{comment}{/*\ If\ the\ node\ is\ collapsed,\ don't\ do\ anything.\ \ */}}
+\DoxyCodeLine{00240\ \ \ \ \ \textcolor{keywordflow}{if}\ (every\_ref)}
+\DoxyCodeLine{00241\ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{stddef_8h_a070d2ce7b6bb7e5c05602aa8c308d0c4}{NULL}};}
+\DoxyCodeLine{00242\ }
+\DoxyCodeLine{00243\ \ \ \ \ \textcolor{comment}{/*\ Otherwise,\ insert\ a\ node\ for\ the\ ref\ of\ the\ access\ under\ the\ base.\ \ */}}
+\DoxyCodeLine{00244\ \ \ \ \ ref\_node\ =\ search\ (ref);}
+\DoxyCodeLine{00245\ \ \ \ \ \textcolor{keywordflow}{if}\ (ref\_node)}
+\DoxyCodeLine{00246\ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ ref\_node;}
+\DoxyCodeLine{00247\ }
+\DoxyCodeLine{00248\ \ \ \ \ \textcolor{comment}{/*\ We\ always\ allow\ inserting\ ref\ 0.\ \ For\ non-\/0\ refs\ there\ is\ upper}}
+\DoxyCodeLine{00249\ \textcolor{comment}{\ \ \ \ \ \ \ limit\ on\ number\ of\ entries\ and\ if\ exceeded,}}
+\DoxyCodeLine{00250\ \textcolor{comment}{\ \ \ \ \ \ \ drop\ ref\ conservatively\ to\ 0.\ \ */}}
+\DoxyCodeLine{00251\ \ \ \ \ \textcolor{keywordflow}{if}\ (ref\ \&\&\ refs\ \&\&\ refs-\/>length\ ()\ >=\ max\_refs)}
+\DoxyCodeLine{00252\ \ \ \ \ \ \ \{}
+\DoxyCodeLine{00253\ \ \ \ \ \textcolor{keywordflow}{if}\ (\doxymbox{\hyperlink{dumpfile_8h_ad120f3485ae619a3fd8b645e6fe3d9b9}{dump\_file}})}
+\DoxyCodeLine{00254\ \ \ \ \ \ \ fprintf\ (\doxymbox{\hyperlink{dumpfile_8h_ad120f3485ae619a3fd8b645e6fe3d9b9}{dump\_file}},\ \textcolor{stringliteral}{"{}-\/-\/param\ modref-\/max-\/refs\ limit\ reached;"{}}}
+\DoxyCodeLine{00255\ \ \ \ \ \ \ \ \ \ \ \ \textcolor{stringliteral}{"{}\ using\ 0\(\backslash\)n"{}});}
+\DoxyCodeLine{00256\ \ \ \ \ ref\ =\ 0;}
+\DoxyCodeLine{00257\ \ \ \ \ ref\_node\ =\ search\ (ref);}
+\DoxyCodeLine{00258\ \ \ \ \ \textcolor{keywordflow}{if}\ (ref\_node)}
+\DoxyCodeLine{00259\ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ ref\_node;}
+\DoxyCodeLine{00260\ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00261\ }
+\DoxyCodeLine{00262\ \ \ \ \ \textcolor{keywordflow}{if}\ (changed)}
+\DoxyCodeLine{00263\ \ \ \ \ \ \ *changed\ =\ \textcolor{keyword}{true};}
+\DoxyCodeLine{00264\ }
+\DoxyCodeLine{00265\ \ \ \ \ ref\_node\ =\ \textcolor{keyword}{new}\ (\doxymbox{\hyperlink{ggc_8h_a440b92abfc6b119e45f2b634bf9eed0d}{ggc\_alloc\ <modref\_ref\_node\ <T>}}\ >\ ())modref\_ref\_node\ <T>}
+\DoxyCodeLine{00266\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ (ref);}
+\DoxyCodeLine{00267\ \ \ \ \ \doxymbox{\hyperlink{cp-tree_8h_aa40589bf3a13b62f5c0aaaa004e7bb0c}{vec\_safe\_push}}\ (refs,\ ref\_node);}
+\DoxyCodeLine{00268\ \ \ \ \ \textcolor{keywordflow}{return}\ ref\_node;}
+\DoxyCodeLine{00269\ \ \ \}}
+\DoxyCodeLine{00270\ }
+\DoxyCodeLine{00271\ \ \ \textcolor{keywordtype}{void}\ collapse\ ()}
+\DoxyCodeLine{00272\ \ \ \{}
+\DoxyCodeLine{00273\ \ \ \ \ \textcolor{keywordtype}{size\_t}\ \doxymbox{\hyperlink{poly-int_8h_a7e98b8a17c0aad30ba64d47b74e2a6c1}{i}};}
+\DoxyCodeLine{00274\ \ \ \ \ modref\_ref\_node\ <T>\ *\doxymbox{\hyperlink{poly-int_8h_a3ecac2571dcdc8050989339124f1bd26}{r}};}
+\DoxyCodeLine{00275\ }
+\DoxyCodeLine{00276\ \ \ \ \ \textcolor{keywordflow}{if}\ (refs)}
+\DoxyCodeLine{00277\ \ \ \ \ \ \ \{}
+\DoxyCodeLine{00278\ \ \ \ \ \doxymbox{\hyperlink{vec_8h_a2ded00ca01beb0905e1551aa46e658d2}{FOR\_EACH\_VEC\_SAFE\_ELT}}\ (refs,\ \doxymbox{\hyperlink{poly-int_8h_a7e98b8a17c0aad30ba64d47b74e2a6c1}{i}},\ \doxymbox{\hyperlink{poly-int_8h_a3ecac2571dcdc8050989339124f1bd26}{r}})}
+\DoxyCodeLine{00279\ \ \ \ \ \ \ \{}
+\DoxyCodeLine{00280\ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{poly-int_8h_a3ecac2571dcdc8050989339124f1bd26}{r}}-\/>collapse\ ();}
+\DoxyCodeLine{00281\ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{ggc_8h_a23ebfc22690bd3092c4a72b553af6d58}{ggc\_free}}\ (\doxymbox{\hyperlink{poly-int_8h_a3ecac2571dcdc8050989339124f1bd26}{r}});}
+\DoxyCodeLine{00282\ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00283\ \ \ \ \ \doxymbox{\hyperlink{vec_8h_af8bb304d936dafc1cdef22063073bb63}{vec\_free}}\ (refs);}
+\DoxyCodeLine{00284\ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00285\ \ \ \ \ refs\ =\ \doxymbox{\hyperlink{stddef_8h_a070d2ce7b6bb7e5c05602aa8c308d0c4}{NULL}};}
+\DoxyCodeLine{00286\ \ \ \ \ every\_ref\ =\ \textcolor{keyword}{true};}
+\DoxyCodeLine{00287\ \ \ \}}
+\DoxyCodeLine{00288\ \};}
+\DoxyCodeLine{00289\ }
+\DoxyCodeLine{00290\ \textcolor{comment}{/*\ Map\ translating\ parameters\ across\ function\ call.\ \ */}}
+\DoxyCodeLine{00291\ }
+\DoxyCodeLine{00292\ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{structmodref__parm__map_a2085d80599c5439e5ac012235b44c494}{modref\_parm\_map}}}
+\DoxyCodeLine{00293\ \{}
+\DoxyCodeLine{00294\ \ \ \textcolor{comment}{/*\ Default\ constructor.\ \ */}}
+\DoxyCodeLine{00295\ \ \ \doxymbox{\hyperlink{structmodref__parm__map_a2085d80599c5439e5ac012235b44c494}{modref\_parm\_map}}\ ()}
+\DoxyCodeLine{00296\ \ \ :\ \doxymbox{\hyperlink{structmodref__parm__map_aac11a7c9fa5efa58caed4f591484d4c7}{parm\_index}}\ (\doxymbox{\hyperlink{ipa-modref-tree_8h_a654ead8e5e1ac4ec467ffc0722e3a261a3ad0d628c8e1c898bd22c7ec638f4589}{MODREF\_UNKNOWN\_PARM}}),\ \doxymbox{\hyperlink{structmodref__parm__map_a78a3b04804e0fa0bed4d6816f42dc421}{parm\_offset\_known}}\ (\doxymbox{\hyperlink{stdbool_8h_a65e9886d74aaee76545e83dd09011727}{false}}),\ \doxymbox{\hyperlink{structmodref__parm__map_a5dad9fe9360724b5bef41b362dec988d}{parm\_offset}}\ ()}
+\DoxyCodeLine{00297\ \ \ \{\}}
+\DoxyCodeLine{00298\ }
+\DoxyCodeLine{00299\ \ \ \textcolor{comment}{/*\ Index\ of\ parameter\ we\ translate\ to.}}
+\DoxyCodeLine{00300\ \textcolor{comment}{\ \ \ \ \ Values\ from\ special\_params\ enum\ are\ permitted\ too.\ \ */}}
+\DoxyCodeLine{00301\ \ \ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{structmodref__parm__map_aac11a7c9fa5efa58caed4f591484d4c7}{parm\_index}};}
+\DoxyCodeLine{00302\ \ \ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{structmodref__parm__map_a78a3b04804e0fa0bed4d6816f42dc421}{parm\_offset\_known}};}
+\DoxyCodeLine{00303\ \ \ \doxymbox{\hyperlink{poly-int-types_8h_af5255601feb5e9a21f3193d378a55845}{poly\_int64}}\ \doxymbox{\hyperlink{structmodref__parm__map_a5dad9fe9360724b5bef41b362dec988d}{parm\_offset}};}
+\DoxyCodeLine{00304\ \};}
+\DoxyCodeLine{00305\ }
+\DoxyCodeLine{00306\ \textcolor{comment}{/*\ Access\ tree\ for\ a\ single\ function.\ \ */}}
+\DoxyCodeLine{00307\ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ T>}
+\DoxyCodeLine{00308\ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{coretypes_8h_ae5708c4d4b300570eebe0bc0c78facbc}{GTY}}((user))\ modref\_tree}
+\DoxyCodeLine{00309\ \{}
+\DoxyCodeLine{00310\ \ \ \doxymbox{\hyperlink{vec_8h_ac6299229087b122e17686611255dfa27}{vec\ <modref\_base\_node\ <T>}}\ *,\ \doxymbox{\hyperlink{structva__gc}{va\_gc}}>\ *bases;}
+\DoxyCodeLine{00311\ \ \ \textcolor{keywordtype}{bool}\ every\_base;}
+\DoxyCodeLine{00312\ }
+\DoxyCodeLine{00313\ \ \ modref\_tree\ ():}
+\DoxyCodeLine{00314\ \ \ \ \ bases\ (\doxymbox{\hyperlink{stddef_8h_a070d2ce7b6bb7e5c05602aa8c308d0c4}{NULL}}),}
+\DoxyCodeLine{00315\ \ \ \ \ every\_base\ (\textcolor{keyword}{false})\ \{\}}
+\DoxyCodeLine{00316\ }
+\DoxyCodeLine{00317\ \ \ \textcolor{comment}{/*\ Insert\ BASE;\ collapse\ tree\ if\ there\ are\ more\ than\ MAX\_REFS.}}
+\DoxyCodeLine{00318\ \textcolor{comment}{\ \ \ \ \ Return\ inserted\ base\ and\ if\ CHANGED\ is\ non-\/null\ set\ it\ to\ true\ if}}
+\DoxyCodeLine{00319\ \textcolor{comment}{\ \ \ \ \ something\ changed.}}
+\DoxyCodeLine{00320\ \textcolor{comment}{\ \ \ \ \ If\ table\ gets\ full,\ try\ to\ insert\ REF\ instead.\ \ */}}
+\DoxyCodeLine{00321\ }
+\DoxyCodeLine{00322\ \ \ modref\_base\_node\ <T>\ *insert\_base\ (T\ base,\ T\ ref,}
+\DoxyCodeLine{00323\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ max\_bases,}
+\DoxyCodeLine{00324\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{bool}\ *changed\ =\ \doxymbox{\hyperlink{stddef_8h_a070d2ce7b6bb7e5c05602aa8c308d0c4}{NULL}})}
+\DoxyCodeLine{00325\ \ \ \{}
+\DoxyCodeLine{00326\ \ \ \ \ modref\_base\_node\ <T>\ *base\_node;}
+\DoxyCodeLine{00327\ }
+\DoxyCodeLine{00328\ \ \ \ \ \textcolor{comment}{/*\ If\ the\ node\ is\ collapsed,\ don't\ do\ anything.\ \ */}}
+\DoxyCodeLine{00329\ \ \ \ \ \textcolor{keywordflow}{if}\ (every\_base)}
+\DoxyCodeLine{00330\ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{stddef_8h_a070d2ce7b6bb7e5c05602aa8c308d0c4}{NULL}};}
+\DoxyCodeLine{00331\ }
+\DoxyCodeLine{00332\ \ \ \ \ \textcolor{comment}{/*\ Otherwise,\ insert\ a\ node\ for\ the\ base\ of\ the\ access\ into\ the\ tree.\ \ */}}
+\DoxyCodeLine{00333\ \ \ \ \ base\_node\ =\ search\ (base);}
+\DoxyCodeLine{00334\ \ \ \ \ \textcolor{keywordflow}{if}\ (base\_node)}
+\DoxyCodeLine{00335\ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ base\_node;}
+\DoxyCodeLine{00336\ }
+\DoxyCodeLine{00337\ \ \ \ \ \textcolor{comment}{/*\ We\ always\ allow\ inserting\ base\ 0.\ \ For\ non-\/0\ base\ there\ is\ upper}}
+\DoxyCodeLine{00338\ \textcolor{comment}{\ \ \ \ \ \ \ limit\ on\ number\ of\ entries\ and\ if\ exceeded,}}
+\DoxyCodeLine{00339\ \textcolor{comment}{\ \ \ \ \ \ \ drop\ base\ conservatively\ to\ ref\ and\ if\ it\ still\ does\ not\ fit\ to\ 0.\ \ */}}
+\DoxyCodeLine{00340\ \ \ \ \ \textcolor{keywordflow}{if}\ (base\ \&\&\ bases\ \&\&\ bases-\/>length\ ()\ >=\ max\_bases)}
+\DoxyCodeLine{00341\ \ \ \ \ \ \ \{}
+\DoxyCodeLine{00342\ \ \ \ \ base\_node\ =\ search\ (ref);}
+\DoxyCodeLine{00343\ \ \ \ \ \textcolor{keywordflow}{if}\ (base\_node)}
+\DoxyCodeLine{00344\ \ \ \ \ \ \ \{}
+\DoxyCodeLine{00345\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (\doxymbox{\hyperlink{dumpfile_8h_ad120f3485ae619a3fd8b645e6fe3d9b9}{dump\_file}})}
+\DoxyCodeLine{00346\ \ \ \ \ \ \ \ \ \ \ fprintf\ (\doxymbox{\hyperlink{dumpfile_8h_ad120f3485ae619a3fd8b645e6fe3d9b9}{dump\_file}},\ \textcolor{stringliteral}{"{}-\/-\/param\ modref-\/max-\/bases"{}}}
+\DoxyCodeLine{00347\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{stringliteral}{"{}\ limit\ reached;\ using\ ref\(\backslash\)n"{}});}
+\DoxyCodeLine{00348\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ base\_node;}
+\DoxyCodeLine{00349\ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00350\ \ \ \ \ \textcolor{keywordflow}{if}\ (\doxymbox{\hyperlink{dumpfile_8h_ad120f3485ae619a3fd8b645e6fe3d9b9}{dump\_file}})}
+\DoxyCodeLine{00351\ \ \ \ \ \ \ fprintf\ (\doxymbox{\hyperlink{dumpfile_8h_ad120f3485ae619a3fd8b645e6fe3d9b9}{dump\_file}},\ \textcolor{stringliteral}{"{}-\/-\/param\ modref-\/max-\/bases"{}}}
+\DoxyCodeLine{00352\ \ \ \ \ \ \ \ \ \ \ \ \textcolor{stringliteral}{"{}\ limit\ reached;\ using\ 0\(\backslash\)n"{}});}
+\DoxyCodeLine{00353\ \ \ \ \ base\ =\ 0;}
+\DoxyCodeLine{00354\ \ \ \ \ base\_node\ =\ search\ (base);}
+\DoxyCodeLine{00355\ \ \ \ \ \textcolor{keywordflow}{if}\ (base\_node)}
+\DoxyCodeLine{00356\ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ base\_node;}
+\DoxyCodeLine{00357\ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00358\ }
+\DoxyCodeLine{00359\ \ \ \ \ \textcolor{keywordflow}{if}\ (changed)}
+\DoxyCodeLine{00360\ \ \ \ \ \ \ *changed\ =\ \textcolor{keyword}{true};}
+\DoxyCodeLine{00361\ }
+\DoxyCodeLine{00362\ \ \ \ \ base\_node\ =\ \textcolor{keyword}{new}\ (\doxymbox{\hyperlink{ggc_8h_a440b92abfc6b119e45f2b634bf9eed0d}{ggc\_alloc\ <modref\_base\_node\ <T>}}\ >\ ())}
+\DoxyCodeLine{00363\ \ \ \ \ \ \ \ \ \ \ \ \ \ modref\_base\_node\ <T>\ (base);}
+\DoxyCodeLine{00364\ \ \ \ \ \doxymbox{\hyperlink{cp-tree_8h_aa40589bf3a13b62f5c0aaaa004e7bb0c}{vec\_safe\_push}}\ (bases,\ base\_node);}
+\DoxyCodeLine{00365\ \ \ \ \ \textcolor{keywordflow}{return}\ base\_node;}
+\DoxyCodeLine{00366\ \ \ \}}
+\DoxyCodeLine{00367\ }
+\DoxyCodeLine{00368\ \ \ \textcolor{comment}{/*\ Insert\ memory\ access\ to\ the\ tree.}}
+\DoxyCodeLine{00369\ \textcolor{comment}{\ \ \ \ \ Return\ true\ if\ something\ changed.\ \ */}}
+\DoxyCodeLine{00370\ \ \ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{namespacewi_aa421202393ff12d6d6cd77590adeef85}{insert}}\ (\textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ max\_bases,}
+\DoxyCodeLine{00371\ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ max\_refs,}
+\DoxyCodeLine{00372\ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ max\_accesses,}
+\DoxyCodeLine{00373\ \ \ \ \ \ \ \ \ \ \ \ T\ base,\ T\ ref,\ modref\_access\_node\ \doxymbox{\hyperlink{poly-int_8h_af77c881600a14567e276ee17dfb8764f}{a}},}
+\DoxyCodeLine{00374\ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{bool}\ record\_adjustments)}
+\DoxyCodeLine{00375\ \ \ \{}
+\DoxyCodeLine{00376\ \ \ \ \ \textcolor{keywordflow}{if}\ (every\_base)}
+\DoxyCodeLine{00377\ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ \textcolor{keyword}{false};}
+\DoxyCodeLine{00378\ }
+\DoxyCodeLine{00379\ \ \ \ \ \textcolor{keywordtype}{bool}\ changed\ =\ \textcolor{keyword}{false};}
+\DoxyCodeLine{00380\ }
+\DoxyCodeLine{00381\ \ \ \ \ \textcolor{comment}{/*\ We\ may\ end\ up\ with\ max\_size\ being\ less\ than\ size\ for\ accesses\ past\ the}}
+\DoxyCodeLine{00382\ \textcolor{comment}{\ \ \ \ \ \ \ end\ of\ array.\ \ Those\ are\ undefined\ and\ safe\ to\ ignore.\ \ */}}
+\DoxyCodeLine{00383\ \ \ \ \ \textcolor{keywordflow}{if}\ (\doxymbox{\hyperlink{poly-int_8h_af77c881600a14567e276ee17dfb8764f}{a}}.range\_info\_useful\_p\ ()}
+\DoxyCodeLine{00384\ \ \ \ \ \&\&\ known\_size\_p\ (\doxymbox{\hyperlink{poly-int_8h_af77c881600a14567e276ee17dfb8764f}{a}}.size)\ \&\&\ known\_size\_p\ (\doxymbox{\hyperlink{poly-int_8h_af77c881600a14567e276ee17dfb8764f}{a}}.max\_size)}
+\DoxyCodeLine{00385\ \ \ \ \ \&\&\ \doxymbox{\hyperlink{poly-int_8h_ac15c1009033bc139996934b019ca0252}{known\_lt}}\ (\doxymbox{\hyperlink{poly-int_8h_af77c881600a14567e276ee17dfb8764f}{a}}.max\_size,\ \doxymbox{\hyperlink{poly-int_8h_af77c881600a14567e276ee17dfb8764f}{a}}.size))}
+\DoxyCodeLine{00386\ \ \ \ \ \ \ \{}
+\DoxyCodeLine{00387\ \ \ \ \ \textcolor{keywordflow}{if}\ (\doxymbox{\hyperlink{dumpfile_8h_ad120f3485ae619a3fd8b645e6fe3d9b9}{dump\_file}})}
+\DoxyCodeLine{00388\ \ \ \ \ \ \ fprintf\ (\doxymbox{\hyperlink{dumpfile_8h_ad120f3485ae619a3fd8b645e6fe3d9b9}{dump\_file}},}
+\DoxyCodeLine{00389\ \ \ \ \ \ \ \ \ \ \ \ \textcolor{stringliteral}{"{}\ \ \ -\/\ Paradoxical\ range.\ Ignoring\(\backslash\)n"{}});}
+\DoxyCodeLine{00390\ \ \ \ \ \textcolor{keywordflow}{return}\ \textcolor{keyword}{false};}
+\DoxyCodeLine{00391\ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00392\ \ \ \ \ \textcolor{keywordflow}{if}\ (known\_size\_p\ (\doxymbox{\hyperlink{poly-int_8h_af77c881600a14567e276ee17dfb8764f}{a}}.size)}
+\DoxyCodeLine{00393\ \ \ \ \ \&\&\ \doxymbox{\hyperlink{poly-int_8h_a11da39675af1f3d7548be9b31569abd0}{known\_eq}}\ (\doxymbox{\hyperlink{poly-int_8h_af77c881600a14567e276ee17dfb8764f}{a}}.size,\ 0))}
+\DoxyCodeLine{00394\ \ \ \ \ \ \ \{}
+\DoxyCodeLine{00395\ \ \ \ \ \textcolor{keywordflow}{if}\ (\doxymbox{\hyperlink{dumpfile_8h_ad120f3485ae619a3fd8b645e6fe3d9b9}{dump\_file}})}
+\DoxyCodeLine{00396\ \ \ \ \ \ \ fprintf\ (\doxymbox{\hyperlink{dumpfile_8h_ad120f3485ae619a3fd8b645e6fe3d9b9}{dump\_file}},}
+\DoxyCodeLine{00397\ \ \ \ \ \ \ \ \ \ \ \ \textcolor{stringliteral}{"{}\ \ \ -\/\ Zero\ size.\ Ignoring\(\backslash\)n"{}});}
+\DoxyCodeLine{00398\ \ \ \ \ \textcolor{keywordflow}{return}\ \textcolor{keyword}{false};}
+\DoxyCodeLine{00399\ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00400\ \ \ \ \ \textcolor{keywordflow}{if}\ (known\_size\_p\ (\doxymbox{\hyperlink{poly-int_8h_af77c881600a14567e276ee17dfb8764f}{a}}.max\_size)}
+\DoxyCodeLine{00401\ \ \ \ \ \&\&\ \doxymbox{\hyperlink{poly-int_8h_a11da39675af1f3d7548be9b31569abd0}{known\_eq}}\ (\doxymbox{\hyperlink{poly-int_8h_af77c881600a14567e276ee17dfb8764f}{a}}.max\_size,\ 0))}
+\DoxyCodeLine{00402\ \ \ \ \ \ \ \{}
+\DoxyCodeLine{00403\ \ \ \ \ \textcolor{keywordflow}{if}\ (\doxymbox{\hyperlink{dumpfile_8h_ad120f3485ae619a3fd8b645e6fe3d9b9}{dump\_file}})}
+\DoxyCodeLine{00404\ \ \ \ \ \ \ fprintf\ (\doxymbox{\hyperlink{dumpfile_8h_ad120f3485ae619a3fd8b645e6fe3d9b9}{dump\_file}},}
+\DoxyCodeLine{00405\ \ \ \ \ \ \ \ \ \ \ \ \textcolor{stringliteral}{"{}\ \ \ -\/\ Zero\ max\_size.\ Ignoring\(\backslash\)n"{}});}
+\DoxyCodeLine{00406\ \ \ \ \ \textcolor{keywordflow}{return}\ \textcolor{keyword}{false};}
+\DoxyCodeLine{00407\ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00408\ \ \ \ \ \doxymbox{\hyperlink{system_8h_aff447899dc74d54931b2bc2d47de9423}{gcc\_checking\_assert}}\ (!known\_size\_p\ (\doxymbox{\hyperlink{poly-int_8h_af77c881600a14567e276ee17dfb8764f}{a}}.max\_size)}
+\DoxyCodeLine{00409\ \ \ \ \ \ \ \ \ \ \ \ \ \ ||\ !\doxymbox{\hyperlink{poly-int_8h_aa90cb65a55a2346011eb0582b1b76286}{known\_le}}\ (\doxymbox{\hyperlink{poly-int_8h_af77c881600a14567e276ee17dfb8764f}{a}}.max\_size,\ 0));}
+\DoxyCodeLine{00410\ }
+\DoxyCodeLine{00411\ \ \ \ \ \textcolor{comment}{/*\ No\ useful\ information\ tracked;\ collapse\ everything.\ \ */}}
+\DoxyCodeLine{00412\ \ \ \ \ \textcolor{keywordflow}{if}\ (!base\ \&\&\ !ref\ \&\&\ !\doxymbox{\hyperlink{poly-int_8h_af77c881600a14567e276ee17dfb8764f}{a}}.useful\_p\ ())}
+\DoxyCodeLine{00413\ \ \ \ \ \ \ \{}
+\DoxyCodeLine{00414\ \ \ \ \ collapse\ ();}
+\DoxyCodeLine{00415\ \ \ \ \ \textcolor{keywordflow}{return}\ \textcolor{keyword}{true};}
+\DoxyCodeLine{00416\ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00417\ }
+\DoxyCodeLine{00418\ \ \ \ \ modref\_base\_node\ <T>\ *base\_node}
+\DoxyCodeLine{00419\ \ \ \ \ \ \ =\ insert\_base\ (base,\ ref,\ max\_bases,\ \&changed);}
+\DoxyCodeLine{00420\ \ \ \ \ base\ =\ base\_node-\/>base;}
+\DoxyCodeLine{00421\ \ \ \ \ \textcolor{comment}{/*\ If\ table\ got\ full\ we\ may\ end\ up\ with\ useless\ base.\ \ */}}
+\DoxyCodeLine{00422\ \ \ \ \ \textcolor{keywordflow}{if}\ (!base\ \&\&\ !ref\ \&\&\ !\doxymbox{\hyperlink{poly-int_8h_af77c881600a14567e276ee17dfb8764f}{a}}.useful\_p\ ())}
+\DoxyCodeLine{00423\ \ \ \ \ \ \ \{}
+\DoxyCodeLine{00424\ \ \ \ \ collapse\ ();}
+\DoxyCodeLine{00425\ \ \ \ \ \textcolor{keywordflow}{return}\ \textcolor{keyword}{true};}
+\DoxyCodeLine{00426\ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00427\ \ \ \ \ \textcolor{keywordflow}{if}\ (base\_node-\/>every\_ref)}
+\DoxyCodeLine{00428\ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ changed;}
+\DoxyCodeLine{00429\ \ \ \ \ \doxymbox{\hyperlink{system_8h_aff447899dc74d54931b2bc2d47de9423}{gcc\_checking\_assert}}\ (search\ (base)\ !=\ \doxymbox{\hyperlink{stddef_8h_a070d2ce7b6bb7e5c05602aa8c308d0c4}{NULL}});}
+\DoxyCodeLine{00430\ }
+\DoxyCodeLine{00431\ \ \ \ \ \textcolor{comment}{/*\ No\ useful\ ref\ info\ tracked;\ collapse\ base.\ \ */}}
+\DoxyCodeLine{00432\ \ \ \ \ \textcolor{keywordflow}{if}\ (!ref\ \&\&\ !\doxymbox{\hyperlink{poly-int_8h_af77c881600a14567e276ee17dfb8764f}{a}}.useful\_p\ ())}
+\DoxyCodeLine{00433\ \ \ \ \ \ \ \{}
+\DoxyCodeLine{00434\ \ \ \ \ base\_node-\/>collapse\ ();}
+\DoxyCodeLine{00435\ \ \ \ \ \textcolor{keywordflow}{return}\ \textcolor{keyword}{true};}
+\DoxyCodeLine{00436\ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00437\ }
+\DoxyCodeLine{00438\ \ \ \ \ modref\_ref\_node\ <T>\ *ref\_node}
+\DoxyCodeLine{00439\ \ \ \ \ \ \ \ \ =\ base\_node-\/>insert\_ref\ (ref,\ max\_refs,\ \&changed);}
+\DoxyCodeLine{00440\ \ \ \ \ ref\ =\ ref\_node-\/>ref;}
+\DoxyCodeLine{00441\ }
+\DoxyCodeLine{00442\ \ \ \ \ \textcolor{keywordflow}{if}\ (ref\_node-\/>every\_access)}
+\DoxyCodeLine{00443\ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ changed;}
+\DoxyCodeLine{00444\ \ \ \ \ changed\ |=\ ref\_node-\/>insert\_access\ (\doxymbox{\hyperlink{poly-int_8h_af77c881600a14567e276ee17dfb8764f}{a}},\ max\_accesses,}
+\DoxyCodeLine{00445\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ record\_adjustments);}
+\DoxyCodeLine{00446\ \ \ \ \ \textcolor{comment}{/*\ See\ if\ we\ failed\ to\ add\ useful\ access.\ \ */}}
+\DoxyCodeLine{00447\ \ \ \ \ \textcolor{keywordflow}{if}\ (ref\_node-\/>every\_access)}
+\DoxyCodeLine{00448\ \ \ \ \ \ \ \{}
+\DoxyCodeLine{00449\ \ \ \ \ \textcolor{comment}{/*\ Collapse\ everything\ if\ there\ is\ no\ useful\ base\ and\ ref.\ \ */}}
+\DoxyCodeLine{00450\ \ \ \ \ \textcolor{keywordflow}{if}\ (!base\ \&\&\ !ref)}
+\DoxyCodeLine{00451\ \ \ \ \ \ \ \{}
+\DoxyCodeLine{00452\ \ \ \ \ \ \ \ \ collapse\ ();}
+\DoxyCodeLine{00453\ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{system_8h_aff447899dc74d54931b2bc2d47de9423}{gcc\_checking\_assert}}\ (changed);}
+\DoxyCodeLine{00454\ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00455\ \ \ \ \ \textcolor{comment}{/*\ Collapse\ base\ if\ there\ is\ no\ useful\ ref.\ \ */}}
+\DoxyCodeLine{00456\ \ \ \ \ \textcolor{keywordflow}{else}\ \textcolor{keywordflow}{if}\ (!ref)}
+\DoxyCodeLine{00457\ \ \ \ \ \ \ \{}
+\DoxyCodeLine{00458\ \ \ \ \ \ \ \ \ base\_node-\/>collapse\ ();}
+\DoxyCodeLine{00459\ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{system_8h_aff447899dc74d54931b2bc2d47de9423}{gcc\_checking\_assert}}\ (changed);}
+\DoxyCodeLine{00460\ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00461\ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00462\ \ \ \ \ \textcolor{keywordflow}{return}\ changed;}
+\DoxyCodeLine{00463\ \ \ \}}
+\DoxyCodeLine{00464\ }
+\DoxyCodeLine{00465\ \ \ \textcolor{comment}{/*\ Insert\ memory\ access\ to\ the\ tree.}}
+\DoxyCodeLine{00466\ \textcolor{comment}{\ \ \ \ \ Return\ true\ if\ something\ changed.\ \ */}}
+\DoxyCodeLine{00467\ \ \ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{namespacewi_aa421202393ff12d6d6cd77590adeef85}{insert}}\ (\doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ fndecl,}
+\DoxyCodeLine{00468\ \ \ \ \ \ \ \ \ \ \ \ T\ base,\ T\ ref,\ \textcolor{keyword}{const}\ modref\_access\_node\ \&\doxymbox{\hyperlink{poly-int_8h_af77c881600a14567e276ee17dfb8764f}{a}},}
+\DoxyCodeLine{00469\ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{bool}\ record\_adjustments)}
+\DoxyCodeLine{00470\ \ \ \{}
+\DoxyCodeLine{00471\ \ \ \ \ \ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{namespacewi_aa421202393ff12d6d6cd77590adeef85}{insert}}\ (\doxymbox{\hyperlink{tree_8h_a8cb47e3183be0ea387dbdd61b4e721ad}{opt\_for\_fn}}\ (fndecl,\ \doxymbox{\hyperlink{options_8h_a65f116f77b733de220ec8cab96a1ad48}{param\_modref\_max\_bases}}),}
+\DoxyCodeLine{00472\ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{tree_8h_a8cb47e3183be0ea387dbdd61b4e721ad}{opt\_for\_fn}}\ (fndecl,\ \doxymbox{\hyperlink{options_8h_aeba08f07120b5b41d297beba89937b0f}{param\_modref\_max\_refs}}),}
+\DoxyCodeLine{00473\ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{tree_8h_a8cb47e3183be0ea387dbdd61b4e721ad}{opt\_for\_fn}}\ (fndecl,\ \doxymbox{\hyperlink{options_8h_a778c5cd05ee5964c756c205c6dedd688}{param\_modref\_max\_accesses}}),}
+\DoxyCodeLine{00474\ \ \ \ \ \ \ \ \ \ \ \ \ base,\ ref,\ \doxymbox{\hyperlink{poly-int_8h_af77c881600a14567e276ee17dfb8764f}{a}},\ record\_adjustments);}
+\DoxyCodeLine{00475\ \ \ \}}
+\DoxyCodeLine{00476\ }
+\DoxyCodeLine{00477\ \ \textcolor{comment}{/*\ Remove\ tree\ branches\ that\ are\ not\ useful\ (i.e.\ they\ will\ always\ pass).\ \ */}}
+\DoxyCodeLine{00478\ }
+\DoxyCodeLine{00479\ \ \textcolor{keywordtype}{void}\ cleanup\ ()}
+\DoxyCodeLine{00480\ \ \{}
+\DoxyCodeLine{00481\ \ \ \ \textcolor{keywordtype}{size\_t}\ \doxymbox{\hyperlink{poly-int_8h_a7e98b8a17c0aad30ba64d47b74e2a6c1}{i}},\ j;}
+\DoxyCodeLine{00482\ \ \ \ modref\_base\_node\ <T>\ *base\_node;}
+\DoxyCodeLine{00483\ \ \ \ modref\_ref\_node\ <T>\ *ref\_node;}
+\DoxyCodeLine{00484\ }
+\DoxyCodeLine{00485\ \ \ \ \textcolor{keywordflow}{if}\ (!bases)}
+\DoxyCodeLine{00486\ \ \ \ \ \ \textcolor{keywordflow}{return};}
+\DoxyCodeLine{00487\ }
+\DoxyCodeLine{00488\ \ \ \ \textcolor{keywordflow}{for}\ (\doxymbox{\hyperlink{poly-int_8h_a7e98b8a17c0aad30ba64d47b74e2a6c1}{i}}\ =\ 0;\ \doxymbox{\hyperlink{vec_8h_a0e1eeba9e1681820347aee333601736b}{vec\_safe\_iterate}}\ (bases,\ \doxymbox{\hyperlink{poly-int_8h_a7e98b8a17c0aad30ba64d47b74e2a6c1}{i}},\ \&base\_node);)}
+\DoxyCodeLine{00489\ \ \ \ \ \ \{}
+\DoxyCodeLine{00490\ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (base\_node-\/>refs)}
+\DoxyCodeLine{00491\ \ \ \ \ \ \textcolor{keywordflow}{for}\ (j\ =\ 0;\ \doxymbox{\hyperlink{vec_8h_a0e1eeba9e1681820347aee333601736b}{vec\_safe\_iterate}}\ (base\_node-\/>refs,\ j,\ \&ref\_node);)}
+\DoxyCodeLine{00492\ \ \ \ \ \ \ \ \{}
+\DoxyCodeLine{00493\ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (!ref\_node-\/>every\_access}
+\DoxyCodeLine{00494\ \ \ \ \ \ \ \ \ \ \&\&\ (!ref\_node-\/>accesses}
+\DoxyCodeLine{00495\ \ \ \ \ \ \ \ \ \ \ \ \ \ ||\ !ref\_node-\/>accesses-\/>length\ ()))}
+\DoxyCodeLine{00496\ \ \ \ \ \ \ \ \ \ \ \ \{}
+\DoxyCodeLine{00497\ \ \ \ \ \ \ \ \ \ base\_node-\/>refs-\/>unordered\_remove\ (j);}
+\DoxyCodeLine{00498\ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{vec_8h_af8bb304d936dafc1cdef22063073bb63}{vec\_free}}\ (ref\_node-\/>accesses);}
+\DoxyCodeLine{00499\ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{ggc_8h_a7f2087b08910c42833efa446261ddf1f}{ggc\_delete}}\ (ref\_node);}
+\DoxyCodeLine{00500\ \ \ \ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00501\ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00502\ \ \ \ \ \ \ \ \ \ \ \ j++;}
+\DoxyCodeLine{00503\ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00504\ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (!base\_node-\/>every\_ref}
+\DoxyCodeLine{00505\ \ \ \ \ \ \ \ \&\&\ (!base\_node-\/>refs\ ||\ !base\_node-\/>refs-\/>length\ ()))}
+\DoxyCodeLine{00506\ \ \ \ \ \ \{}
+\DoxyCodeLine{00507\ \ \ \ \ \ \ \ bases-\/>unordered\_remove\ (\doxymbox{\hyperlink{poly-int_8h_a7e98b8a17c0aad30ba64d47b74e2a6c1}{i}});}
+\DoxyCodeLine{00508\ \ \ \ \ \ \ \ \doxymbox{\hyperlink{vec_8h_af8bb304d936dafc1cdef22063073bb63}{vec\_free}}\ (base\_node-\/>refs);}
+\DoxyCodeLine{00509\ \ \ \ \ \ \ \ \doxymbox{\hyperlink{ggc_8h_a7f2087b08910c42833efa446261ddf1f}{ggc\_delete}}\ (base\_node);}
+\DoxyCodeLine{00510\ \ \ \ \ \ \}}
+\DoxyCodeLine{00511\ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00512\ \ \ \ \ \ \doxymbox{\hyperlink{poly-int_8h_a7e98b8a17c0aad30ba64d47b74e2a6c1}{i}}++;}
+\DoxyCodeLine{00513\ \ \ \ \ \ \}}
+\DoxyCodeLine{00514\ \ \ \ \textcolor{keywordflow}{if}\ (bases\ \&\&\ !bases-\/>length\ ())}
+\DoxyCodeLine{00515\ \ \ \ \ \ \{}
+\DoxyCodeLine{00516\ \ \ \ \ \ \ \ \doxymbox{\hyperlink{vec_8h_af8bb304d936dafc1cdef22063073bb63}{vec\_free}}\ (bases);}
+\DoxyCodeLine{00517\ \ \ \ \ \ \ \ bases\ =\ \doxymbox{\hyperlink{stddef_8h_a070d2ce7b6bb7e5c05602aa8c308d0c4}{NULL}};}
+\DoxyCodeLine{00518\ \ \ \ \ \ \}}
+\DoxyCodeLine{00519\ \ \}}
+\DoxyCodeLine{00520\ }
+\DoxyCodeLine{00521\ \ \ \textcolor{comment}{/*\ Merge\ OTHER\ into\ the\ tree.}}
+\DoxyCodeLine{00522\ \textcolor{comment}{\ \ \ \ \ PARM\_MAP,\ if\ non-\/NULL,\ maps\ parm\ indexes\ of\ callee\ to\ caller.}}
+\DoxyCodeLine{00523\ \textcolor{comment}{\ \ \ \ \ Similar\ CHAIN\_MAP,\ if\ non-\/NULL,\ maps\ static\ chain\ of\ callee\ to\ caller.}}
+\DoxyCodeLine{00524\ \textcolor{comment}{\ \ \ \ \ Return\ true\ if\ something\ has\ changed.\ \ */}}
+\DoxyCodeLine{00525\ \ \ \textcolor{keywordtype}{bool}\ merge\ (\textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ max\_bases,}
+\DoxyCodeLine{00526\ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ max\_refs,}
+\DoxyCodeLine{00527\ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ max\_accesses,}
+\DoxyCodeLine{00528\ \ \ \ \ \ \ \ \ \ \ modref\_tree\ <T>\ *other,\ \doxymbox{\hyperlink{vec_8h_ac6299229087b122e17686611255dfa27}{vec\ <modref\_parm\_map>}}\ *parm\_map,}
+\DoxyCodeLine{00529\ \ \ \ \ \ \ \ \ \ \ modref\_parm\_map\ *static\_chain\_map,}
+\DoxyCodeLine{00530\ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{bool}\ record\_accesses,}
+\DoxyCodeLine{00531\ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{bool}\ promote\_unknown\_to\_global\ =\ \textcolor{keyword}{false})}
+\DoxyCodeLine{00532\ \ \ \{}
+\DoxyCodeLine{00533\ \ \ \ \ \textcolor{keywordflow}{if}\ (!other\ ||\ every\_base)}
+\DoxyCodeLine{00534\ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ \textcolor{keyword}{false};}
+\DoxyCodeLine{00535\ \ \ \ \ \textcolor{keywordflow}{if}\ (other-\/>every\_base)}
+\DoxyCodeLine{00536\ \ \ \ \ \ \ \{}
+\DoxyCodeLine{00537\ \ \ \ \ collapse\ ();}
+\DoxyCodeLine{00538\ \ \ \ \ \textcolor{keywordflow}{return}\ \textcolor{keyword}{true};}
+\DoxyCodeLine{00539\ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00540\ }
+\DoxyCodeLine{00541\ \ \ \ \ \textcolor{keywordtype}{bool}\ changed\ =\ \textcolor{keyword}{false};}
+\DoxyCodeLine{00542\ \ \ \ \ \textcolor{keywordtype}{size\_t}\ \doxymbox{\hyperlink{poly-int_8h_a7e98b8a17c0aad30ba64d47b74e2a6c1}{i}},\ j,\ k;}
+\DoxyCodeLine{00543\ \ \ \ \ modref\_base\_node\ <T>\ *base\_node,\ *my\_base\_node;}
+\DoxyCodeLine{00544\ \ \ \ \ modref\_ref\_node\ <T>\ *ref\_node;}
+\DoxyCodeLine{00545\ \ \ \ \ modref\_access\_node\ *access\_node;}
+\DoxyCodeLine{00546\ \ \ \ \ \textcolor{keywordtype}{bool}\ release\ =\ \textcolor{keyword}{false};}
+\DoxyCodeLine{00547\ }
+\DoxyCodeLine{00548\ \ \ \ \ \textcolor{comment}{/*\ For\ self-\/recursive\ functions\ we\ may\ end\ up\ merging\ summary\ into\ itself;}}
+\DoxyCodeLine{00549\ \textcolor{comment}{\ \ \ \ \ \ \ produce\ copy\ first\ so\ we\ do\ not\ modify\ summary\ under\ our\ own\ hands.\ \ */}}
+\DoxyCodeLine{00550\ \ \ \ \ \textcolor{keywordflow}{if}\ (other\ ==\ \textcolor{keyword}{this})}
+\DoxyCodeLine{00551\ \ \ \ \ \ \ \{}
+\DoxyCodeLine{00552\ \ \ \ \ release\ =\ \textcolor{keyword}{true};}
+\DoxyCodeLine{00553\ \ \ \ \ other\ =\ modref\_tree<T>::create\_ggc\ ();}
+\DoxyCodeLine{00554\ \ \ \ \ other-\/>copy\_from\ (\textcolor{keyword}{this});}
+\DoxyCodeLine{00555\ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00556\ }
+\DoxyCodeLine{00557\ \ \ \ \ \doxymbox{\hyperlink{vec_8h_a2ded00ca01beb0905e1551aa46e658d2}{FOR\_EACH\_VEC\_SAFE\_ELT}}\ (other-\/>bases,\ \doxymbox{\hyperlink{poly-int_8h_a7e98b8a17c0aad30ba64d47b74e2a6c1}{i}},\ base\_node)}
+\DoxyCodeLine{00558\ \ \ \ \ \ \ \{}
+\DoxyCodeLine{00559\ \ \ \ \ \textcolor{keywordflow}{if}\ (base\_node-\/>every\_ref)}
+\DoxyCodeLine{00560\ \ \ \ \ \ \ \{}
+\DoxyCodeLine{00561\ \ \ \ \ \ \ \ \ my\_base\_node\ =\ insert\_base\ (base\_node-\/>base,\ 0,}
+\DoxyCodeLine{00562\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ max\_bases,\ \&changed);}
+\DoxyCodeLine{00563\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (my\_base\_node\ \&\&\ !my\_base\_node-\/>every\_ref)}
+\DoxyCodeLine{00564\ \ \ \ \ \ \ \ \ \ \ \{}
+\DoxyCodeLine{00565\ \ \ \ \ \ \ \ \ my\_base\_node-\/>collapse\ ();}
+\DoxyCodeLine{00566\ \ \ \ \ \ \ \ \ cleanup\ ();}
+\DoxyCodeLine{00567\ \ \ \ \ \ \ \ \ changed\ =\ \textcolor{keyword}{true};}
+\DoxyCodeLine{00568\ \ \ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00569\ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00570\ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00571\ \ \ \ \ \ \ \doxymbox{\hyperlink{vec_8h_a2ded00ca01beb0905e1551aa46e658d2}{FOR\_EACH\_VEC\_SAFE\_ELT}}\ (base\_node-\/>refs,\ j,\ ref\_node)}
+\DoxyCodeLine{00572\ \ \ \ \ \ \ \ \ \{}
+\DoxyCodeLine{00573\ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (ref\_node-\/>every\_access)}
+\DoxyCodeLine{00574\ \ \ \ \ \ \ \ \ \{}
+\DoxyCodeLine{00575\ \ \ \ \ \ \ \ \ \ \ changed\ |=\ \doxymbox{\hyperlink{namespacewi_aa421202393ff12d6d6cd77590adeef85}{insert}}\ (max\_bases,\ max\_refs,\ max\_accesses,}
+\DoxyCodeLine{00576\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ base\_node-\/>base,}
+\DoxyCodeLine{00577\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ ref\_node-\/>ref,}
+\DoxyCodeLine{00578\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{ipa-modref-tree_8h_a346558926944dc3f3f644f19502d4739}{unspecified\_modref\_access\_node}},}
+\DoxyCodeLine{00579\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ record\_accesses);}
+\DoxyCodeLine{00580\ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00581\ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00582\ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{vec_8h_a2ded00ca01beb0905e1551aa46e658d2}{FOR\_EACH\_VEC\_SAFE\_ELT}}\ (ref\_node-\/>accesses,\ k,\ access\_node)}
+\DoxyCodeLine{00583\ \ \ \ \ \ \ \ \ \ \ \{}
+\DoxyCodeLine{00584\ \ \ \ \ \ \ \ \ \ \ \ \ modref\_access\_node\ \doxymbox{\hyperlink{poly-int_8h_af77c881600a14567e276ee17dfb8764f}{a}}\ =\ *access\_node;}
+\DoxyCodeLine{00585\ }
+\DoxyCodeLine{00586\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (\doxymbox{\hyperlink{poly-int_8h_af77c881600a14567e276ee17dfb8764f}{a}}.parm\_index\ !=\ \doxymbox{\hyperlink{ipa-modref-tree_8h_a654ead8e5e1ac4ec467ffc0722e3a261a3ad0d628c8e1c898bd22c7ec638f4589}{MODREF\_UNKNOWN\_PARM}}}
+\DoxyCodeLine{00587\ \ \ \ \ \ \ \ \ \ \ \ \ \&\&\ \doxymbox{\hyperlink{poly-int_8h_af77c881600a14567e276ee17dfb8764f}{a}}.parm\_index\ !=\ \doxymbox{\hyperlink{ipa-modref-tree_8h_a654ead8e5e1ac4ec467ffc0722e3a261a755237ee77cc1cde99028b153003c773}{MODREF\_GLOBAL\_MEMORY\_PARM}}}
+\DoxyCodeLine{00588\ \ \ \ \ \ \ \ \ \ \ \ \ \&\&\ parm\_map)}
+\DoxyCodeLine{00589\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \{}
+\DoxyCodeLine{00590\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (\doxymbox{\hyperlink{poly-int_8h_af77c881600a14567e276ee17dfb8764f}{a}}.parm\_index\ >=\ (\textcolor{keywordtype}{int})parm\_map-\/>length\ ())}
+\DoxyCodeLine{00591\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{poly-int_8h_af77c881600a14567e276ee17dfb8764f}{a}}.parm\_index\ =\ \doxymbox{\hyperlink{ipa-modref-tree_8h_a654ead8e5e1ac4ec467ffc0722e3a261a3ad0d628c8e1c898bd22c7ec638f4589}{MODREF\_UNKNOWN\_PARM}};}
+\DoxyCodeLine{00592\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00593\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \{}
+\DoxyCodeLine{00594\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ modref\_parm\_map\ \&m}
+\DoxyCodeLine{00595\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ =\ \doxymbox{\hyperlink{poly-int_8h_af77c881600a14567e276ee17dfb8764f}{a}}.parm\_index\ ==\ \doxymbox{\hyperlink{ipa-modref-tree_8h_a654ead8e5e1ac4ec467ffc0722e3a261ae7668cd64d0cb58d18b7e525dc0b3a7a}{MODREF\_STATIC\_CHAIN\_PARM}}}
+\DoxyCodeLine{00596\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ ?\ *static\_chain\_map}
+\DoxyCodeLine{00597\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ :\ (*parm\_map)\ [\doxymbox{\hyperlink{poly-int_8h_af77c881600a14567e276ee17dfb8764f}{a}}.parm\_index];}
+\DoxyCodeLine{00598\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (m.\doxymbox{\hyperlink{structmodref__parm__map_aac11a7c9fa5efa58caed4f591484d4c7}{parm\_index}}\ ==\ \doxymbox{\hyperlink{ipa-modref-tree_8h_a654ead8e5e1ac4ec467ffc0722e3a261a7df1ad31f8e6865bb2a426e318fd7b55}{MODREF\_LOCAL\_MEMORY\_PARM}})}
+\DoxyCodeLine{00599\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{continue};}
+\DoxyCodeLine{00600\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{poly-int_8h_af77c881600a14567e276ee17dfb8764f}{a}}.\doxymbox{\hyperlink{structmodref__parm__map_a5dad9fe9360724b5bef41b362dec988d}{parm\_offset}}\ +=\ m.\doxymbox{\hyperlink{structmodref__parm__map_a5dad9fe9360724b5bef41b362dec988d}{parm\_offset}};}
+\DoxyCodeLine{00601\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{poly-int_8h_af77c881600a14567e276ee17dfb8764f}{a}}.parm\_offset\_known\ \&=\ m.\doxymbox{\hyperlink{structmodref__parm__map_a78a3b04804e0fa0bed4d6816f42dc421}{parm\_offset\_known}};}
+\DoxyCodeLine{00602\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{poly-int_8h_af77c881600a14567e276ee17dfb8764f}{a}}.parm\_index\ =\ m.\doxymbox{\hyperlink{structmodref__parm__map_aac11a7c9fa5efa58caed4f591484d4c7}{parm\_index}};}
+\DoxyCodeLine{00603\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00604\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00605\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (\doxymbox{\hyperlink{poly-int_8h_af77c881600a14567e276ee17dfb8764f}{a}}.parm\_index\ ==\ \doxymbox{\hyperlink{ipa-modref-tree_8h_a654ead8e5e1ac4ec467ffc0722e3a261a3ad0d628c8e1c898bd22c7ec638f4589}{MODREF\_UNKNOWN\_PARM}}}
+\DoxyCodeLine{00606\ \ \ \ \ \ \ \ \ \ \ \ \ \&\&\ promote\_unknown\_to\_global)}
+\DoxyCodeLine{00607\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{poly-int_8h_af77c881600a14567e276ee17dfb8764f}{a}}.parm\_index\ =\ \doxymbox{\hyperlink{ipa-modref-tree_8h_a654ead8e5e1ac4ec467ffc0722e3a261a755237ee77cc1cde99028b153003c773}{MODREF\_GLOBAL\_MEMORY\_PARM}};}
+\DoxyCodeLine{00608\ \ \ \ \ \ \ \ \ \ \ \ \ changed\ |=\ \doxymbox{\hyperlink{namespacewi_aa421202393ff12d6d6cd77590adeef85}{insert}}\ (max\_bases,\ max\_refs,\ max\_accesses,}
+\DoxyCodeLine{00609\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ base\_node-\/>base,\ ref\_node-\/>ref,}
+\DoxyCodeLine{00610\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{poly-int_8h_af77c881600a14567e276ee17dfb8764f}{a}},\ record\_accesses);}
+\DoxyCodeLine{00611\ \ \ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00612\ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00613\ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00614\ \ \ \ \ \textcolor{keywordflow}{if}\ (release)}
+\DoxyCodeLine{00615\ \ \ \ \ \ \ \doxymbox{\hyperlink{ggc_8h_a7f2087b08910c42833efa446261ddf1f}{ggc\_delete}}\ (other);}
+\DoxyCodeLine{00616\ \ \ \ \ \textcolor{keywordflow}{return}\ changed;}
+\DoxyCodeLine{00617\ \ \ \}}
+\DoxyCodeLine{00618\ }
+\DoxyCodeLine{00619\ \ \ \textcolor{comment}{/*\ Merge\ OTHER\ into\ the\ tree.}}
+\DoxyCodeLine{00620\ \textcolor{comment}{\ \ \ \ \ PARM\_MAP,\ if\ non-\/NULL,\ maps\ parm\ indexes\ of\ callee\ to\ caller.}}
+\DoxyCodeLine{00621\ \textcolor{comment}{\ \ \ \ \ Similar\ CHAIN\_MAP,\ if\ non-\/NULL,\ maps\ static\ chain\ of\ callee\ to\ caller.}}
+\DoxyCodeLine{00622\ \textcolor{comment}{\ \ \ \ \ Return\ true\ if\ something\ has\ changed.\ \ */}}
+\DoxyCodeLine{00623\ \ \ \textcolor{keywordtype}{bool}\ merge\ (\doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ fndecl,}
+\DoxyCodeLine{00624\ \ \ \ \ \ \ \ \ \ \ modref\_tree\ <T>\ *other,\ \doxymbox{\hyperlink{vec_8h_ac6299229087b122e17686611255dfa27}{vec\ <modref\_parm\_map>}}\ *parm\_map,}
+\DoxyCodeLine{00625\ \ \ \ \ \ \ \ \ \ \ modref\_parm\_map\ *static\_chain\_map,}
+\DoxyCodeLine{00626\ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{bool}\ record\_accesses,}
+\DoxyCodeLine{00627\ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{bool}\ promote\_unknown\_to\_global\ =\ \textcolor{keyword}{false})}
+\DoxyCodeLine{00628\ \ \ \{}
+\DoxyCodeLine{00629\ \ \ \ \ \ \textcolor{keywordflow}{return}\ merge\ (\doxymbox{\hyperlink{tree_8h_a8cb47e3183be0ea387dbdd61b4e721ad}{opt\_for\_fn}}\ (fndecl,\ \doxymbox{\hyperlink{options_8h_a65f116f77b733de220ec8cab96a1ad48}{param\_modref\_max\_bases}}),}
+\DoxyCodeLine{00630\ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{tree_8h_a8cb47e3183be0ea387dbdd61b4e721ad}{opt\_for\_fn}}\ (fndecl,\ \doxymbox{\hyperlink{options_8h_aeba08f07120b5b41d297beba89937b0f}{param\_modref\_max\_refs}}),}
+\DoxyCodeLine{00631\ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{tree_8h_a8cb47e3183be0ea387dbdd61b4e721ad}{opt\_for\_fn}}\ (fndecl,\ \doxymbox{\hyperlink{options_8h_a778c5cd05ee5964c756c205c6dedd688}{param\_modref\_max\_accesses}}),}
+\DoxyCodeLine{00632\ \ \ \ \ \ \ \ \ \ \ \ other,\ parm\_map,\ static\_chain\_map,\ record\_accesses,}
+\DoxyCodeLine{00633\ \ \ \ \ \ \ \ \ \ \ \ promote\_unknown\_to\_global);}
+\DoxyCodeLine{00634\ \ \ \}}
+\DoxyCodeLine{00635\ }
+\DoxyCodeLine{00636\ \ \ \textcolor{comment}{/*\ Copy\ OTHER\ to\ THIS.\ \ */}}
+\DoxyCodeLine{00637\ \ \ \textcolor{keywordtype}{void}\ copy\_from\ (modref\_tree\ <T>\ *other)}
+\DoxyCodeLine{00638\ \ \ \{}
+\DoxyCodeLine{00639\ \ \ \ \ merge\ (\doxymbox{\hyperlink{include_2limits_8h_a9ec306f36d50c7375e74f0d1c55a3a67}{INT\_MAX}},\ \doxymbox{\hyperlink{include_2limits_8h_a9ec306f36d50c7375e74f0d1c55a3a67}{INT\_MAX}},\ \doxymbox{\hyperlink{include_2limits_8h_a9ec306f36d50c7375e74f0d1c55a3a67}{INT\_MAX}},\ other,\ \doxymbox{\hyperlink{stddef_8h_a070d2ce7b6bb7e5c05602aa8c308d0c4}{NULL}},\ \doxymbox{\hyperlink{stddef_8h_a070d2ce7b6bb7e5c05602aa8c308d0c4}{NULL}},\ \textcolor{keyword}{false});}
+\DoxyCodeLine{00640\ \ \ \}}
+\DoxyCodeLine{00641\ }
+\DoxyCodeLine{00642\ \ \ \textcolor{comment}{/*\ Search\ BASE\ in\ tree;\ return\ NULL\ if\ failed.\ \ */}}
+\DoxyCodeLine{00643\ \ \ modref\_base\_node\ <T>\ *search\ (T\ base)}
+\DoxyCodeLine{00644\ \ \ \{}
+\DoxyCodeLine{00645\ \ \ \ \ \textcolor{keywordtype}{size\_t}\ \doxymbox{\hyperlink{poly-int_8h_a7e98b8a17c0aad30ba64d47b74e2a6c1}{i}};}
+\DoxyCodeLine{00646\ \ \ \ \ modref\_base\_node\ <T>\ *n;}
+\DoxyCodeLine{00647\ \ \ \ \ \doxymbox{\hyperlink{vec_8h_a2ded00ca01beb0905e1551aa46e658d2}{FOR\_EACH\_VEC\_SAFE\_ELT}}\ (bases,\ \doxymbox{\hyperlink{poly-int_8h_a7e98b8a17c0aad30ba64d47b74e2a6c1}{i}},\ n)}
+\DoxyCodeLine{00648\ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (n-\/>base\ ==\ base)}
+\DoxyCodeLine{00649\ \ \ \ \ \textcolor{keywordflow}{return}\ n;}
+\DoxyCodeLine{00650\ \ \ \ \ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{stddef_8h_a070d2ce7b6bb7e5c05602aa8c308d0c4}{NULL}};}
+\DoxyCodeLine{00651\ \ \ \}}
+\DoxyCodeLine{00652\ }
+\DoxyCodeLine{00653\ \ \ \textcolor{comment}{/*\ Return\ true\ if\ tree\ contains\ access\ to\ global\ memory.\ \ */}}
+\DoxyCodeLine{00654\ \ \ \textcolor{keywordtype}{bool}\ global\_access\_p\ ()}
+\DoxyCodeLine{00655\ \ \ \{}
+\DoxyCodeLine{00656\ \ \ \ \ \textcolor{keywordtype}{size\_t}\ \doxymbox{\hyperlink{poly-int_8h_a7e98b8a17c0aad30ba64d47b74e2a6c1}{i}},\ j,\ k;}
+\DoxyCodeLine{00657\ \ \ \ \ modref\_base\_node\ <T>\ *base\_node;}
+\DoxyCodeLine{00658\ \ \ \ \ modref\_ref\_node\ <T>\ *ref\_node;}
+\DoxyCodeLine{00659\ \ \ \ \ modref\_access\_node\ *access\_node;}
+\DoxyCodeLine{00660\ \ \ \ \ \textcolor{keywordflow}{if}\ (every\_base)}
+\DoxyCodeLine{00661\ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ \textcolor{keyword}{true};}
+\DoxyCodeLine{00662\ \ \ \ \ \doxymbox{\hyperlink{vec_8h_a2ded00ca01beb0905e1551aa46e658d2}{FOR\_EACH\_VEC\_SAFE\_ELT}}\ (bases,\ \doxymbox{\hyperlink{poly-int_8h_a7e98b8a17c0aad30ba64d47b74e2a6c1}{i}},\ base\_node)}
+\DoxyCodeLine{00663\ \ \ \ \ \ \ \{}
+\DoxyCodeLine{00664\ \ \ \ \ \textcolor{keywordflow}{if}\ (base\_node-\/>every\_ref)}
+\DoxyCodeLine{00665\ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ \textcolor{keyword}{true};}
+\DoxyCodeLine{00666\ \ \ \ \ \doxymbox{\hyperlink{vec_8h_a2ded00ca01beb0905e1551aa46e658d2}{FOR\_EACH\_VEC\_SAFE\_ELT}}\ (base\_node-\/>refs,\ j,\ ref\_node)}
+\DoxyCodeLine{00667\ \ \ \ \ \ \ \{}
+\DoxyCodeLine{00668\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (ref\_node-\/>every\_access)}
+\DoxyCodeLine{00669\ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ \textcolor{keyword}{true};}
+\DoxyCodeLine{00670\ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{vec_8h_a2ded00ca01beb0905e1551aa46e658d2}{FOR\_EACH\_VEC\_SAFE\_ELT}}\ (ref\_node-\/>accesses,\ k,\ access\_node)}
+\DoxyCodeLine{00671\ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (access\_node-\/>parm\_index\ ==\ \doxymbox{\hyperlink{ipa-modref-tree_8h_a654ead8e5e1ac4ec467ffc0722e3a261a3ad0d628c8e1c898bd22c7ec638f4589}{MODREF\_UNKNOWN\_PARM}}}
+\DoxyCodeLine{00672\ \ \ \ \ \ \ \ \ \ \ ||\ access\_node-\/>parm\_index\ ==\ \doxymbox{\hyperlink{ipa-modref-tree_8h_a654ead8e5e1ac4ec467ffc0722e3a261a755237ee77cc1cde99028b153003c773}{MODREF\_GLOBAL\_MEMORY\_PARM}})}
+\DoxyCodeLine{00673\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ \textcolor{keyword}{true};}
+\DoxyCodeLine{00674\ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00675\ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00676\ \ \ \ \ \textcolor{keywordflow}{return}\ \textcolor{keyword}{false};}
+\DoxyCodeLine{00677\ \ \ \}}
+\DoxyCodeLine{00678\ }
+\DoxyCodeLine{00679\ \ \ \textcolor{comment}{/*\ Return\ ggc\ allocated\ instance.\ \ We\ explicitly\ call\ destructors\ via}}
+\DoxyCodeLine{00680\ \textcolor{comment}{\ \ \ \ \ ggc\_delete\ and\ do\ not\ want\ finalizers\ to\ be\ registered\ and}}
+\DoxyCodeLine{00681\ \textcolor{comment}{\ \ \ \ \ called\ at\ the\ garbage\ collection\ time.\ \ */}}
+\DoxyCodeLine{00682\ \ \ \textcolor{keyword}{static}\ modref\_tree<T>\ *create\_ggc\ ()}
+\DoxyCodeLine{00683\ \ \ \{}
+\DoxyCodeLine{00684\ \ \ \ \ \textcolor{keywordflow}{return}\ \textcolor{keyword}{new}\ (\doxymbox{\hyperlink{ggc_8h_a446a887d3ee7d1b2afee06860082d798}{ggc\_alloc\_no\_dtor<modref\_tree<T>}}>\ ())}
+\DoxyCodeLine{00685\ \ \ \ \ \ modref\_tree<T>\ ();}
+\DoxyCodeLine{00686\ \ \ \}}
+\DoxyCodeLine{00687\ }
+\DoxyCodeLine{00688\ \ \ \textcolor{comment}{/*\ Remove\ all\ records\ and\ mark\ tree\ to\ alias\ with\ everything.\ \ */}}
+\DoxyCodeLine{00689\ \ \ \textcolor{keywordtype}{void}\ collapse\ ()}
+\DoxyCodeLine{00690\ \ \ \{}
+\DoxyCodeLine{00691\ \ \ \ \ \textcolor{keywordtype}{size\_t}\ \doxymbox{\hyperlink{poly-int_8h_a7e98b8a17c0aad30ba64d47b74e2a6c1}{i}};}
+\DoxyCodeLine{00692\ \ \ \ \ modref\_base\_node\ <T>\ *n;}
+\DoxyCodeLine{00693\ }
+\DoxyCodeLine{00694\ \ \ \ \ \textcolor{keywordflow}{if}\ (bases)}
+\DoxyCodeLine{00695\ \ \ \ \ \ \ \{}
+\DoxyCodeLine{00696\ \ \ \ \ \doxymbox{\hyperlink{vec_8h_a2ded00ca01beb0905e1551aa46e658d2}{FOR\_EACH\_VEC\_SAFE\_ELT}}\ (bases,\ \doxymbox{\hyperlink{poly-int_8h_a7e98b8a17c0aad30ba64d47b74e2a6c1}{i}},\ n)}
+\DoxyCodeLine{00697\ \ \ \ \ \ \ \{}
+\DoxyCodeLine{00698\ \ \ \ \ \ \ \ \ n-\/>collapse\ ();}
+\DoxyCodeLine{00699\ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{ggc_8h_a23ebfc22690bd3092c4a72b553af6d58}{ggc\_free}}\ (n);}
+\DoxyCodeLine{00700\ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00701\ \ \ \ \ \doxymbox{\hyperlink{vec_8h_af8bb304d936dafc1cdef22063073bb63}{vec\_free}}\ (bases);}
+\DoxyCodeLine{00702\ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00703\ \ \ \ \ bases\ =\ \doxymbox{\hyperlink{stddef_8h_a070d2ce7b6bb7e5c05602aa8c308d0c4}{NULL}};}
+\DoxyCodeLine{00704\ \ \ \ \ every\_base\ =\ \textcolor{keyword}{true};}
+\DoxyCodeLine{00705\ \ \ \}}
+\DoxyCodeLine{00706\ }
+\DoxyCodeLine{00707\ \ \ \textcolor{comment}{/*\ Release\ memory.\ \ */}}
+\DoxyCodeLine{00708\ \ \ \string~modref\_tree\ ()}
+\DoxyCodeLine{00709\ \ \ \{}
+\DoxyCodeLine{00710\ \ \ \ \ collapse\ ();}
+\DoxyCodeLine{00711\ \ \ \}}
+\DoxyCodeLine{00712\ }
+\DoxyCodeLine{00713\ \ \ \textcolor{comment}{/*\ Update\ parameter\ indexes\ in\ TT\ according\ to\ MAP.\ \ */}}
+\DoxyCodeLine{00714\ \ \ \textcolor{keywordtype}{void}}
+\DoxyCodeLine{00715\ \ \ remap\_params\ (vec\ <int>\ *map)}
+\DoxyCodeLine{00716\ \ \ \{}
+\DoxyCodeLine{00717\ \ \ \ \ \textcolor{keywordtype}{size\_t}\ \doxymbox{\hyperlink{poly-int_8h_a7e98b8a17c0aad30ba64d47b74e2a6c1}{i}};}
+\DoxyCodeLine{00718\ \ \ \ \ modref\_base\_node\ <T>\ *base\_node;}
+\DoxyCodeLine{00719\ \ \ \ \ \doxymbox{\hyperlink{vec_8h_a2ded00ca01beb0905e1551aa46e658d2}{FOR\_EACH\_VEC\_SAFE\_ELT}}\ (bases,\ \doxymbox{\hyperlink{poly-int_8h_a7e98b8a17c0aad30ba64d47b74e2a6c1}{i}},\ base\_node)}
+\DoxyCodeLine{00720\ \ \ \ \ \ \ \{}
+\DoxyCodeLine{00721\ \ \ \ \ \textcolor{keywordtype}{size\_t}\ j;}
+\DoxyCodeLine{00722\ \ \ \ \ modref\_ref\_node\ <T>\ *ref\_node;}
+\DoxyCodeLine{00723\ \ \ \ \ \doxymbox{\hyperlink{vec_8h_a2ded00ca01beb0905e1551aa46e658d2}{FOR\_EACH\_VEC\_SAFE\_ELT}}\ (base\_node-\/>refs,\ j,\ ref\_node)}
+\DoxyCodeLine{00724\ \ \ \ \ \ \ \{}
+\DoxyCodeLine{00725\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{size\_t}\ k;}
+\DoxyCodeLine{00726\ \ \ \ \ \ \ \ \ modref\_access\_node\ *access\_node;}
+\DoxyCodeLine{00727\ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{vec_8h_a2ded00ca01beb0905e1551aa46e658d2}{FOR\_EACH\_VEC\_SAFE\_ELT}}\ (ref\_node-\/>accesses,\ k,\ access\_node)}
+\DoxyCodeLine{00728\ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (access\_node-\/>parm\_index\ >=\ 0)}
+\DoxyCodeLine{00729\ \ \ \ \ \ \ \ \ \{}
+\DoxyCodeLine{00730\ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (access\_node-\/>parm\_index\ <\ (\textcolor{keywordtype}{int})map-\/>length\ ())}
+\DoxyCodeLine{00731\ \ \ \ \ \ \ \ \ \ \ \ \ access\_node-\/>parm\_index\ =\ (*map)[access\_node-\/>parm\_index];}
+\DoxyCodeLine{00732\ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00733\ \ \ \ \ \ \ \ \ \ \ \ \ access\_node-\/>parm\_index\ =\ \doxymbox{\hyperlink{ipa-modref-tree_8h_a654ead8e5e1ac4ec467ffc0722e3a261a3ad0d628c8e1c898bd22c7ec638f4589}{MODREF\_UNKNOWN\_PARM}};}
+\DoxyCodeLine{00734\ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00735\ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00736\ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00737\ \ \ \}}
+\DoxyCodeLine{00738\ \};}
+\DoxyCodeLine{00739\ }
+\DoxyCodeLine{00740\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{ipa-modref-tree_8h_a96bbf8c80289aadddf4c0a84024cc94c}{gt\_ggc\_mx}}\ (modref\_tree\ <int>*\ \textcolor{keyword}{const}\&);}
+\DoxyCodeLine{00741\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{ipa-modref-tree_8h_a96bbf8c80289aadddf4c0a84024cc94c}{gt\_ggc\_mx}}\ (modref\_tree\ <tree\_node*>*\ \textcolor{keyword}{const}\&);}
+\DoxyCodeLine{00742\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{ipa-modref-tree_8h_a58edab98f442d66688dbece8561e341d}{gt\_pch\_nx}}\ (modref\_tree\ <int>*\ \textcolor{keyword}{const}\&);}
+\DoxyCodeLine{00743\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{ipa-modref-tree_8h_a58edab98f442d66688dbece8561e341d}{gt\_pch\_nx}}\ (modref\_tree\ <tree\_node*>*\ \textcolor{keyword}{const}\&);}
+\DoxyCodeLine{00744\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{ipa-modref-tree_8h_a58edab98f442d66688dbece8561e341d}{gt\_pch\_nx}}\ (modref\_tree\ <int>*\ \textcolor{keyword}{const}\&,\ \doxymbox{\hyperlink{coretypes_8h_ae5ca95fa9feb025fb3b39d2ed62f2a56}{gt\_pointer\_operator}}\ op,\ \textcolor{keywordtype}{void}\ *cookie);}
+\DoxyCodeLine{00745\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{ipa-modref-tree_8h_a58edab98f442d66688dbece8561e341d}{gt\_pch\_nx}}\ (modref\_tree\ <tree\_node*>*\ \textcolor{keyword}{const}\&,\ \doxymbox{\hyperlink{coretypes_8h_ae5ca95fa9feb025fb3b39d2ed62f2a56}{gt\_pointer\_operator}}\ op,}
+\DoxyCodeLine{00746\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{void}\ *cookie);}
+\DoxyCodeLine{00747\ }
+\DoxyCodeLine{00748\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{ipa-modref-tree_8h_a96bbf8c80289aadddf4c0a84024cc94c}{gt\_ggc\_mx}}\ (modref\_base\_node\ <int>*);}
+\DoxyCodeLine{00749\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{ipa-modref-tree_8h_a96bbf8c80289aadddf4c0a84024cc94c}{gt\_ggc\_mx}}\ (modref\_base\_node\ <tree\_node*>*\ \&);}
+\DoxyCodeLine{00750\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{ipa-modref-tree_8h_a58edab98f442d66688dbece8561e341d}{gt\_pch\_nx}}\ (modref\_base\_node\ <int>*\ \textcolor{keyword}{const}\&);}
+\DoxyCodeLine{00751\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{ipa-modref-tree_8h_a58edab98f442d66688dbece8561e341d}{gt\_pch\_nx}}\ (modref\_base\_node\ <tree\_node*>*\ \textcolor{keyword}{const}\&);}
+\DoxyCodeLine{00752\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{ipa-modref-tree_8h_a58edab98f442d66688dbece8561e341d}{gt\_pch\_nx}}\ (modref\_base\_node\ <int>*\ \textcolor{keyword}{const}\&,\ \doxymbox{\hyperlink{coretypes_8h_ae5ca95fa9feb025fb3b39d2ed62f2a56}{gt\_pointer\_operator}}\ op,}
+\DoxyCodeLine{00753\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{void}\ *cookie);}
+\DoxyCodeLine{00754\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{ipa-modref-tree_8h_a58edab98f442d66688dbece8561e341d}{gt\_pch\_nx}}\ (modref\_base\_node\ <tree\_node*>*\ \textcolor{keyword}{const}\&,\ \doxymbox{\hyperlink{coretypes_8h_ae5ca95fa9feb025fb3b39d2ed62f2a56}{gt\_pointer\_operator}}\ op,}
+\DoxyCodeLine{00755\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{void}\ *cookie);}
+\DoxyCodeLine{00756\ }
+\DoxyCodeLine{00757\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{ipa-modref-tree_8h_a96bbf8c80289aadddf4c0a84024cc94c}{gt\_ggc\_mx}}\ (modref\_ref\_node\ <int>*);}
+\DoxyCodeLine{00758\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{ipa-modref-tree_8h_a96bbf8c80289aadddf4c0a84024cc94c}{gt\_ggc\_mx}}\ (modref\_ref\_node\ <tree\_node*>*\ \&);}
+\DoxyCodeLine{00759\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{ipa-modref-tree_8h_a58edab98f442d66688dbece8561e341d}{gt\_pch\_nx}}\ (modref\_ref\_node\ <int>*\ \textcolor{keyword}{const}\&);}
+\DoxyCodeLine{00760\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{ipa-modref-tree_8h_a58edab98f442d66688dbece8561e341d}{gt\_pch\_nx}}\ (modref\_ref\_node\ <tree\_node*>*\ \textcolor{keyword}{const}\&);}
+\DoxyCodeLine{00761\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{ipa-modref-tree_8h_a58edab98f442d66688dbece8561e341d}{gt\_pch\_nx}}\ (modref\_ref\_node\ <int>*\ \textcolor{keyword}{const}\&,\ \doxymbox{\hyperlink{coretypes_8h_ae5ca95fa9feb025fb3b39d2ed62f2a56}{gt\_pointer\_operator}}\ op,}
+\DoxyCodeLine{00762\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{void}\ *cookie);}
+\DoxyCodeLine{00763\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{ipa-modref-tree_8h_a58edab98f442d66688dbece8561e341d}{gt\_pch\_nx}}\ (modref\_ref\_node\ <tree\_node*>*\ \textcolor{keyword}{const}\&,\ \doxymbox{\hyperlink{coretypes_8h_ae5ca95fa9feb025fb3b39d2ed62f2a56}{gt\_pointer\_operator}}\ op,}
+\DoxyCodeLine{00764\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{void}\ *cookie);}
+\DoxyCodeLine{00765\ }
+\DoxyCodeLine{00766\ \textcolor{preprocessor}{\#endif}}
+
+\end{DoxyCode}

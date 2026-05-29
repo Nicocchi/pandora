@@ -1,0 +1,303 @@
+\doxysection{is-\/a.h}
+\hypertarget{is-a_8h_source}{}\label{is-a_8h_source}\index{toolchain/x86\_64-\/elf/lib/gcc/x86\_64-\/elf/14.2.0/plugin/include/is-\/a.h@{toolchain/x86\_64-\/elf/lib/gcc/x86\_64-\/elf/14.2.0/plugin/include/is-\/a.h}}
+\doxymbox{\hyperlink{is-a_8h}{Go to the documentation of this file.}}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001\ \textcolor{comment}{/*\ Dynamic\ testing\ for\ abstract\ is-\/a\ relationships.}}
+\DoxyCodeLine{00002\ \textcolor{comment}{\ \ \ Copyright\ (C)\ 2012-\/2024\ Free\ Software\ Foundation,\ Inc.}}
+\DoxyCodeLine{00003\ \textcolor{comment}{\ \ \ Contributed\ by\ Lawrence\ Crowl.}}
+\DoxyCodeLine{00004\ \textcolor{comment}{}}
+\DoxyCodeLine{00005\ \textcolor{comment}{This\ file\ is\ part\ of\ GCC.}}
+\DoxyCodeLine{00006\ \textcolor{comment}{}}
+\DoxyCodeLine{00007\ \textcolor{comment}{GCC\ is\ free\ software;\ you\ can\ redistribute\ it\ and/or\ modify\ it\ under}}
+\DoxyCodeLine{00008\ \textcolor{comment}{the\ terms\ of\ the\ GNU\ General\ Public\ License\ as\ published\ by\ the\ Free}}
+\DoxyCodeLine{00009\ \textcolor{comment}{Software\ Foundation;\ either\ version\ 3,\ or\ (at\ your\ option)\ any\ later}}
+\DoxyCodeLine{00010\ \textcolor{comment}{version.}}
+\DoxyCodeLine{00011\ \textcolor{comment}{}}
+\DoxyCodeLine{00012\ \textcolor{comment}{GCC\ is\ distributed\ in\ the\ hope\ that\ it\ will\ be\ useful,\ but\ WITHOUT\ ANY}}
+\DoxyCodeLine{00013\ \textcolor{comment}{WARRANTY;\ without\ even\ the\ implied\ warranty\ of\ MERCHANTABILITY\ or}}
+\DoxyCodeLine{00014\ \textcolor{comment}{FITNESS\ FOR\ A\ PARTICULAR\ PURPOSE.\ \ See\ the\ GNU\ General\ Public\ License}}
+\DoxyCodeLine{00015\ \textcolor{comment}{for\ more\ details.}}
+\DoxyCodeLine{00016\ \textcolor{comment}{}}
+\DoxyCodeLine{00017\ \textcolor{comment}{You\ should\ have\ received\ a\ copy\ of\ the\ GNU\ General\ Public\ License}}
+\DoxyCodeLine{00018\ \textcolor{comment}{along\ with\ GCC;\ see\ the\ file\ COPYING3.\ \ If\ not\ see}}
+\DoxyCodeLine{00019\ \textcolor{comment}{<http://www.gnu.org/licenses/>.\ \ */}}
+\DoxyCodeLine{00020\ }
+\DoxyCodeLine{00021\ }
+\DoxyCodeLine{00022\ \textcolor{comment}{/*\ This\ header\ generic\ type\ query\ and\ conversion\ functions.}}
+\DoxyCodeLine{00023\ \textcolor{comment}{}}
+\DoxyCodeLine{00024\ \textcolor{comment}{}}
+\DoxyCodeLine{00025\ \textcolor{comment}{USING\ THE\ GENERIC\ TYPE\ FACILITY}}
+\DoxyCodeLine{00026\ \textcolor{comment}{}}
+\DoxyCodeLine{00027\ \textcolor{comment}{}}
+\DoxyCodeLine{00028\ \textcolor{comment}{The\ user\ functions\ are:}}
+\DoxyCodeLine{00029\ \textcolor{comment}{}}
+\DoxyCodeLine{00030\ \textcolor{comment}{bool\ is\_a\ <TYPE>\ (pointer)}}
+\DoxyCodeLine{00031\ \textcolor{comment}{}}
+\DoxyCodeLine{00032\ \textcolor{comment}{\ \ \ \ Tests\ whether\ the\ pointer\ actually\ points\ to\ a\ more\ derived\ TYPE.}}
+\DoxyCodeLine{00033\ \textcolor{comment}{}}
+\DoxyCodeLine{00034\ \textcolor{comment}{\ \ \ \ Suppose\ you\ have\ a\ symtab\_node\ *ptr,\ AKA\ symtab\_node\ *ptr.\ \ You\ can\ test}}
+\DoxyCodeLine{00035\ \textcolor{comment}{\ \ \ \ whether\ it\ points\ to\ a\ 'derived'\ cgraph\_node\ as\ follows.}}
+\DoxyCodeLine{00036\ \textcolor{comment}{}}
+\DoxyCodeLine{00037\ \textcolor{comment}{\ \ \ \ \ \ if\ (is\_a\ <cgraph\_node\ *>\ (ptr))}}
+\DoxyCodeLine{00038\ \textcolor{comment}{\ \ \ \ \ \ \ \ ....}}
+\DoxyCodeLine{00039\ \textcolor{comment}{}}
+\DoxyCodeLine{00040\ \textcolor{comment}{}}
+\DoxyCodeLine{00041\ \textcolor{comment}{TYPE\ as\_a\ <TYPE>\ (pointer)}}
+\DoxyCodeLine{00042\ \textcolor{comment}{}}
+\DoxyCodeLine{00043\ \textcolor{comment}{\ \ \ \ Converts\ pointer\ to\ a\ TYPE.}}
+\DoxyCodeLine{00044\ \textcolor{comment}{}}
+\DoxyCodeLine{00045\ \textcolor{comment}{\ \ \ \ You\ can\ just\ assume\ that\ it\ is\ such\ a\ node.}}
+\DoxyCodeLine{00046\ \textcolor{comment}{}}
+\DoxyCodeLine{00047\ \textcolor{comment}{\ \ \ \ \ \ do\_something\_with\ (as\_a\ <cgraph\_node\ *>\ *ptr);}}
+\DoxyCodeLine{00048\ \textcolor{comment}{}}
+\DoxyCodeLine{00049\ \textcolor{comment}{TYPE\ safe\_as\_a\ <TYPE>\ (pointer)}}
+\DoxyCodeLine{00050\ \textcolor{comment}{}}
+\DoxyCodeLine{00051\ \textcolor{comment}{\ \ \ \ Like\ as\_a\ <TYPE>\ (pointer),\ but\ where\ pointer\ could\ be\ NULL.\ \ This}}
+\DoxyCodeLine{00052\ \textcolor{comment}{\ \ \ \ adds\ a\ check\ against\ NULL\ where\ the\ regular\ is\_a\_helper\ hook\ for\ TYPE}}
+\DoxyCodeLine{00053\ \textcolor{comment}{\ \ \ \ assumes\ non-\/NULL.}}
+\DoxyCodeLine{00054\ \textcolor{comment}{}}
+\DoxyCodeLine{00055\ \textcolor{comment}{\ \ \ \ \ \ do\_something\_with\ (safe\_as\_a\ <cgraph\_node\ *>\ *ptr);}}
+\DoxyCodeLine{00056\ \textcolor{comment}{}}
+\DoxyCodeLine{00057\ \textcolor{comment}{TYPE\ dyn\_cast\ <TYPE>\ (pointer)}}
+\DoxyCodeLine{00058\ \textcolor{comment}{}}
+\DoxyCodeLine{00059\ \textcolor{comment}{\ \ \ \ Converts\ pointer\ to\ TYPE\ if\ and\ only\ if\ "{}is\_a\ <TYPE>\ pointer"{}.\ \ Otherwise,}}
+\DoxyCodeLine{00060\ \textcolor{comment}{\ \ \ \ returns\ NULL.\ \ This\ function\ is\ essentially\ a\ checked\ down\ cast.}}
+\DoxyCodeLine{00061\ \textcolor{comment}{}}
+\DoxyCodeLine{00062\ \textcolor{comment}{\ \ \ \ This\ functions\ reduce\ compile\ time\ and\ increase\ type\ safety\ when\ treating\ a}}
+\DoxyCodeLine{00063\ \textcolor{comment}{\ \ \ \ generic\ item\ as\ a\ more\ specific\ item.}}
+\DoxyCodeLine{00064\ \textcolor{comment}{}}
+\DoxyCodeLine{00065\ \textcolor{comment}{\ \ \ \ You\ can\ test\ and\ obtain\ a\ pointer\ to\ the\ 'derived'\ type\ in\ one\ indivisible}}
+\DoxyCodeLine{00066\ \textcolor{comment}{\ \ \ \ operation.}}
+\DoxyCodeLine{00067\ \textcolor{comment}{}}
+\DoxyCodeLine{00068\ \textcolor{comment}{\ \ \ \ \ \ if\ (cgraph\_node\ *cptr\ =\ dyn\_cast\ <cgraph\_node\ *>\ (ptr))}}
+\DoxyCodeLine{00069\ \textcolor{comment}{\ \ \ \ \ \ \ \ ....}}
+\DoxyCodeLine{00070\ \textcolor{comment}{}}
+\DoxyCodeLine{00071\ \textcolor{comment}{\ \ \ \ As\ an\ example,\ the\ code\ change\ is\ from}}
+\DoxyCodeLine{00072\ \textcolor{comment}{}}
+\DoxyCodeLine{00073\ \textcolor{comment}{\ \ \ \ \ \ if\ (symtab\_function\_p\ (node))}}
+\DoxyCodeLine{00074\ \textcolor{comment}{\ \ \ \ \ \ \ \ \{}}
+\DoxyCodeLine{00075\ \textcolor{comment}{\ \ \ \ \ \ \ \ \ \ struct\ cgraph\_node\ *cnode\ =\ cgraph\ (node);}}
+\DoxyCodeLine{00076\ \textcolor{comment}{\ \ \ \ \ \ \ \ \ \ ....}}
+\DoxyCodeLine{00077\ \textcolor{comment}{\ \ \ \ \ \ \ \ \}}}
+\DoxyCodeLine{00078\ \textcolor{comment}{}}
+\DoxyCodeLine{00079\ \textcolor{comment}{\ \ \ \ to}}
+\DoxyCodeLine{00080\ \textcolor{comment}{}}
+\DoxyCodeLine{00081\ \textcolor{comment}{\ \ \ \ \ \ if\ (cgraph\_node\ *cnode\ =\ dyn\_cast\ <cgraph\_node\ *>\ (node))}}
+\DoxyCodeLine{00082\ \textcolor{comment}{\ \ \ \ \ \ \ \ \{}}
+\DoxyCodeLine{00083\ \textcolor{comment}{\ \ \ \ \ \ \ \ \ \ ....}}
+\DoxyCodeLine{00084\ \textcolor{comment}{\ \ \ \ \ \ \ \ \}}}
+\DoxyCodeLine{00085\ \textcolor{comment}{}}
+\DoxyCodeLine{00086\ \textcolor{comment}{\ \ \ \ The\ necessary\ conditional\ test\ defines\ a\ variable\ that\ holds\ a\ known\ good}}
+\DoxyCodeLine{00087\ \textcolor{comment}{\ \ \ \ pointer\ to\ the\ specific\ item\ and\ avoids\ subsequent\ conversion\ calls\ and}}
+\DoxyCodeLine{00088\ \textcolor{comment}{\ \ \ \ the\ assertion\ checks\ that\ may\ come\ with\ them.}}
+\DoxyCodeLine{00089\ \textcolor{comment}{}}
+\DoxyCodeLine{00090\ \textcolor{comment}{\ \ \ \ When,\ the\ property\ test\ is\ embedded\ within\ a\ larger\ condition,\ the}}
+\DoxyCodeLine{00091\ \textcolor{comment}{\ \ \ \ variable\ declaration\ gets\ pulled\ out\ of\ the\ condition.\ \ (This\ approach}}
+\DoxyCodeLine{00092\ \textcolor{comment}{\ \ \ \ leaves\ some\ room\ for\ using\ the\ variable\ inappropriately.)}}
+\DoxyCodeLine{00093\ \textcolor{comment}{}}
+\DoxyCodeLine{00094\ \textcolor{comment}{\ \ \ \ \ \ if\ (symtab\_variable\_p\ (node)\ \&\&\ varpool\ (node)-\/>finalized)}}
+\DoxyCodeLine{00095\ \textcolor{comment}{\ \ \ \ \ \ \ \ varpool\_analyze\_node\ (varpool\ (node));}}
+\DoxyCodeLine{00096\ \textcolor{comment}{}}
+\DoxyCodeLine{00097\ \textcolor{comment}{\ \ \ \ becomes}}
+\DoxyCodeLine{00098\ \textcolor{comment}{}}
+\DoxyCodeLine{00099\ \textcolor{comment}{\ \ \ \ \ \ varpool\_node\ *vnode\ =\ dyn\_cast\ <varpool\_node\ *>\ (node);}}
+\DoxyCodeLine{00100\ \textcolor{comment}{\ \ \ \ \ \ if\ (vnode\ \&\&\ vnode-\/>finalized)}}
+\DoxyCodeLine{00101\ \textcolor{comment}{\ \ \ \ \ \ \ \ varpool\_analyze\_node\ (vnode);}}
+\DoxyCodeLine{00102\ \textcolor{comment}{}}
+\DoxyCodeLine{00103\ \textcolor{comment}{\ \ \ \ Note\ that\ we\ have\ converted\ two\ sets\ of\ assertions\ in\ the\ calls\ to\ varpool}}
+\DoxyCodeLine{00104\ \textcolor{comment}{\ \ \ \ into\ safe\ and\ efficient\ use\ of\ a\ variable.}}
+\DoxyCodeLine{00105\ \textcolor{comment}{}}
+\DoxyCodeLine{00106\ \textcolor{comment}{TYPE\ safe\_dyn\_cast\ <TYPE>\ (pointer)}}
+\DoxyCodeLine{00107\ \textcolor{comment}{}}
+\DoxyCodeLine{00108\ \textcolor{comment}{\ \ \ \ Like\ dyn\_cast\ <TYPE>\ (pointer),\ except\ that\ it\ accepts\ null\ pointers}}
+\DoxyCodeLine{00109\ \textcolor{comment}{\ \ \ \ and\ returns\ null\ results\ for\ them.}}
+\DoxyCodeLine{00110\ \textcolor{comment}{}}
+\DoxyCodeLine{00111\ \textcolor{comment}{}}
+\DoxyCodeLine{00112\ \textcolor{comment}{If\ you\ use\ these\ functions\ and\ get\ a\ 'inline\ function\ not\ defined'\ or\ a}}
+\DoxyCodeLine{00113\ \textcolor{comment}{'missing\ symbol'\ error\ message\ for\ 'is\_a\_helper<....>::test',\ it\ means\ that}}
+\DoxyCodeLine{00114\ \textcolor{comment}{the\ connection\ between\ the\ types\ has\ not\ been\ made.\ \ See\ below.}}
+\DoxyCodeLine{00115\ \textcolor{comment}{}}
+\DoxyCodeLine{00116\ \textcolor{comment}{}}
+\DoxyCodeLine{00117\ \textcolor{comment}{EXTENDING\ THE\ GENERIC\ TYPE\ FACILITY}}
+\DoxyCodeLine{00118\ \textcolor{comment}{}}
+\DoxyCodeLine{00119\ \textcolor{comment}{Method\ 1}}
+\DoxyCodeLine{00120\ \textcolor{comment}{-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{00121\ \textcolor{comment}{}}
+\DoxyCodeLine{00122\ \textcolor{comment}{If\ DERIVED\ is\ derived\ from\ BASE,\ and\ if\ BASE\ contains\ enough\ information}}
+\DoxyCodeLine{00123\ \textcolor{comment}{to\ determine\ whether\ an\ object\ is\ actually\ an\ instance\ of\ DERIVED,}}
+\DoxyCodeLine{00124\ \textcolor{comment}{then\ you\ can\ make\ the\ above\ routines\ work\ for\ DERIVED\ by\ defining}}
+\DoxyCodeLine{00125\ \textcolor{comment}{a\ specialization\ of\ is\_a\_helper\ such\ as:}}
+\DoxyCodeLine{00126\ \textcolor{comment}{}}
+\DoxyCodeLine{00127\ \textcolor{comment}{\ \ template<>}}
+\DoxyCodeLine{00128\ \textcolor{comment}{\ \ struct\ is\_a\_helper<DERIVED\ *>\ :\ static\_is\_a\_helper<DERIVED\ *>}}
+\DoxyCodeLine{00129\ \textcolor{comment}{\ \ \{}}
+\DoxyCodeLine{00130\ \textcolor{comment}{\ \ \ \ static\ inline\ bool\ test\ (const\ BASE\ *p)\ \{\ return\ ...;\ \}}}
+\DoxyCodeLine{00131\ \textcolor{comment}{\ \ \};}}
+\DoxyCodeLine{00132\ \textcolor{comment}{}}
+\DoxyCodeLine{00133\ \textcolor{comment}{This\ test\ function\ should\ return\ true\ if\ P\ is\ an\ instanced\ of\ DERIVED.}}
+\DoxyCodeLine{00134\ \textcolor{comment}{This\ on\ its\ own\ is\ enough;\ the\ comments\ below\ for\ method\ 2\ do\ not\ apply.}}
+\DoxyCodeLine{00135\ \textcolor{comment}{}}
+\DoxyCodeLine{00136\ \textcolor{comment}{Method\ 2}}
+\DoxyCodeLine{00137\ \textcolor{comment}{-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{00138\ \textcolor{comment}{}}
+\DoxyCodeLine{00139\ \textcolor{comment}{Alternatively,\ if\ two\ types\ are\ connected\ in\ ways\ other\ than\ C++}}
+\DoxyCodeLine{00140\ \textcolor{comment}{inheritance,\ each\ connection\ between\ them\ must\ be\ made\ by\ defining\ a}}
+\DoxyCodeLine{00141\ \textcolor{comment}{specialization\ of\ the\ template\ member\ function\ 'test'\ of\ the\ template}}
+\DoxyCodeLine{00142\ \textcolor{comment}{class\ 'is\_a\_helper'.\ \ For\ example,}}
+\DoxyCodeLine{00143\ \textcolor{comment}{}}
+\DoxyCodeLine{00144\ \textcolor{comment}{\ \ template\ <>}}
+\DoxyCodeLine{00145\ \textcolor{comment}{\ \ template\ <>}}
+\DoxyCodeLine{00146\ \textcolor{comment}{\ \ inline\ bool}}
+\DoxyCodeLine{00147\ \textcolor{comment}{\ \ is\_a\_helper\ <cgraph\_node\ *>::test\ (symtab\_node\ *p)}}
+\DoxyCodeLine{00148\ \textcolor{comment}{\ \ \{}}
+\DoxyCodeLine{00149\ \textcolor{comment}{\ \ \ \ return\ p-\/>type\ ==\ SYMTAB\_FUNCTION;}}
+\DoxyCodeLine{00150\ \textcolor{comment}{\ \ \}}}
+\DoxyCodeLine{00151\ \textcolor{comment}{}}
+\DoxyCodeLine{00152\ \textcolor{comment}{If\ a\ simple\ reinterpret\_cast\ between\ the\ pointer\ types\ is\ incorrect,\ then\ you}}
+\DoxyCodeLine{00153\ \textcolor{comment}{must\ also\ specialize\ the\ template\ member\ function\ 'cast'.\ \ Failure\ to\ do\ so}}
+\DoxyCodeLine{00154\ \textcolor{comment}{when\ needed\ may\ result\ in\ a\ crash.\ \ For\ example,}}
+\DoxyCodeLine{00155\ \textcolor{comment}{}}
+\DoxyCodeLine{00156\ \textcolor{comment}{\ \ template\ <>}}
+\DoxyCodeLine{00157\ \textcolor{comment}{\ \ template\ <>}}
+\DoxyCodeLine{00158\ \textcolor{comment}{\ \ inline\ bool}}
+\DoxyCodeLine{00159\ \textcolor{comment}{\ \ is\_a\_helper\ <cgraph\_node\ *>::cast\ (symtab\_node\ *p)}}
+\DoxyCodeLine{00160\ \textcolor{comment}{\ \ \{}}
+\DoxyCodeLine{00161\ \textcolor{comment}{\ \ \ \ return\ \&p-\/>x\_function;}}
+\DoxyCodeLine{00162\ \textcolor{comment}{\ \ \}}}
+\DoxyCodeLine{00163\ \textcolor{comment}{}}
+\DoxyCodeLine{00164\ \textcolor{comment}{*/}}
+\DoxyCodeLine{00165\ }
+\DoxyCodeLine{00166\ \textcolor{preprocessor}{\#ifndef\ GCC\_IS\_A\_H}}
+\DoxyCodeLine{00167\ \textcolor{preprocessor}{\#define\ GCC\_IS\_A\_H}}
+\DoxyCodeLine{00168\ }
+\DoxyCodeLine{00169\ \textcolor{comment}{/*\ A\ base\ class\ that\ specializations\ of\ is\_a\_helper\ can\ use\ if\ casting}}
+\DoxyCodeLine{00170\ \textcolor{comment}{\ \ \ U\ *\ to\ T\ is\ simply\ a\ reinterpret\_cast.\ \ */}}
+\DoxyCodeLine{00171\ }
+\DoxyCodeLine{00172\ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ T>}
+\DoxyCodeLine{00173\ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{structreinterpret__is__a__helper}{reinterpret\_is\_a\_helper}}}
+\DoxyCodeLine{00174\ \{}
+\DoxyCodeLine{00175\ \ \ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ U>}
+\DoxyCodeLine{00176\ \ \ \textcolor{keyword}{static}\ \textcolor{keyword}{inline}\ T\ \doxymbox{\hyperlink{structreinterpret__is__a__helper_a46770e25230efba58cd7aafce39a4b2f}{cast}}\ (U\ *p)\ \{\ \textcolor{keywordflow}{return}\ \textcolor{keyword}{reinterpret\_cast\ <}T\textcolor{keyword}{>}\ (p);\ \}}
+\DoxyCodeLine{00177\ \};}
+\DoxyCodeLine{00178\ }
+\DoxyCodeLine{00179\ \textcolor{comment}{/*\ A\ base\ class\ that\ specializations\ of\ is\_a\_helper\ can\ use\ if\ casting}}
+\DoxyCodeLine{00180\ \textcolor{comment}{\ \ \ U\ *\ to\ T\ is\ simply\ a\ static\_cast.\ \ This\ is\ more\ type-\/safe\ than}}
+\DoxyCodeLine{00181\ \textcolor{comment}{\ \ \ reinterpret\_is\_a\_helper.\ \ */}}
+\DoxyCodeLine{00182\ }
+\DoxyCodeLine{00183\ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ T>}
+\DoxyCodeLine{00184\ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{structstatic__is__a__helper}{static\_is\_a\_helper}}}
+\DoxyCodeLine{00185\ \{}
+\DoxyCodeLine{00186\ \ \ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ U>}
+\DoxyCodeLine{00187\ \ \ \textcolor{keyword}{static}\ \textcolor{keyword}{inline}\ T\ \doxymbox{\hyperlink{structstatic__is__a__helper_a7b4aa3d032c2999bb405409357090c74}{cast}}\ (U\ *p)\ \{\ \textcolor{keywordflow}{return}\ \textcolor{keyword}{static\_cast\ <}T\textcolor{keyword}{>}\ (p);\ \}}
+\DoxyCodeLine{00188\ \};}
+\DoxyCodeLine{00189\ }
+\DoxyCodeLine{00190\ \textcolor{comment}{/*\ A\ generic\ type\ conversion\ internal\ helper\ class.\ \ */}}
+\DoxyCodeLine{00191\ }
+\DoxyCodeLine{00192\ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ T>}
+\DoxyCodeLine{00193\ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{structis__a__helper}{is\_a\_helper}}\ :\ \doxymbox{\hyperlink{structreinterpret__is__a__helper}{reinterpret\_is\_a\_helper}}<T>}
+\DoxyCodeLine{00194\ \{}
+\DoxyCodeLine{00195\ \ \ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ U>}
+\DoxyCodeLine{00196\ \ \ \textcolor{keyword}{static}\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{structis__a__helper_ab2c6d014fcddabaca757e6ccfb696a1d}{test}}\ (U\ *p);}
+\DoxyCodeLine{00197\ \};}
+\DoxyCodeLine{00198\ }
+\DoxyCodeLine{00199\ \textcolor{comment}{/*\ Reuse\ the\ definition\ of\ is\_a\_helper<T\ *>\ to\ implement}}
+\DoxyCodeLine{00200\ \textcolor{comment}{\ \ \ is\_a\_helper<const\ T\ *>.\ \ */}}
+\DoxyCodeLine{00201\ }
+\DoxyCodeLine{00202\ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ T>}
+\DoxyCodeLine{00203\ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{structis__a__helper}{is\_a\_helper}}<const\ T\ *>}
+\DoxyCodeLine{00204\ \{}
+\DoxyCodeLine{00205\ \ \ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ U>}
+\DoxyCodeLine{00206\ \ \ \textcolor{keyword}{static}\ \textcolor{keyword}{inline}\ \textcolor{keyword}{const}\ T\ *\doxymbox{\hyperlink{structis__a__helper_3_01const_01T_01_5_01_4_a76324721b9d5684281685f6abd8b6dcd}{cast}}\ (\textcolor{keyword}{const}\ U\ *p)}
+\DoxyCodeLine{00207\ \ \ \{}
+\DoxyCodeLine{00208\ \ \ \ \ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{structreinterpret__is__a__helper_a46770e25230efba58cd7aafce39a4b2f}{is\_a\_helper<T\ *>::cast}}\ (\textcolor{keyword}{const\_cast\ <}U\ *\textcolor{keyword}{>}\ (p));}
+\DoxyCodeLine{00209\ \ \ \}}
+\DoxyCodeLine{00210\ \ \ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ U>}
+\DoxyCodeLine{00211\ \ \ \textcolor{keyword}{static}\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{structis__a__helper_3_01const_01T_01_5_01_4_a3727492351f555903e7a1533c96710e4}{test}}\ (\textcolor{keyword}{const}\ U\ *p)}
+\DoxyCodeLine{00212\ \ \ \{}
+\DoxyCodeLine{00213\ \ \ \ \ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{structis__a__helper_ab2c6d014fcddabaca757e6ccfb696a1d}{is\_a\_helper<T\ *>::test}}\ (p);}
+\DoxyCodeLine{00214\ \ \ \}}
+\DoxyCodeLine{00215\ \};}
+\DoxyCodeLine{00216\ }
+\DoxyCodeLine{00217\ \textcolor{comment}{/*\ Note\ that\ we\ deliberately\ do\ not\ define\ the\ 'test'\ member\ template.\ \ Not}}
+\DoxyCodeLine{00218\ \textcolor{comment}{\ \ \ doing\ so\ will\ result\ in\ a\ build-\/time\ error\ for\ type\ relationships\ that\ have}}
+\DoxyCodeLine{00219\ \textcolor{comment}{\ \ \ not\ been\ defined,\ rather\ than\ a\ run-\/time\ error.\ \ See\ the\ discussion\ above}}
+\DoxyCodeLine{00220\ \textcolor{comment}{\ \ \ for\ when\ to\ define\ this\ member.\ \ */}}
+\DoxyCodeLine{00221\ }
+\DoxyCodeLine{00222\ \textcolor{comment}{/*\ The\ public\ interface.\ \ */}}
+\DoxyCodeLine{00223\ }
+\DoxyCodeLine{00224\ \textcolor{comment}{/*\ A\ generic\ test\ for\ a\ type\ relationship.\ \ See\ the\ discussion\ above\ for\ when}}
+\DoxyCodeLine{00225\ \textcolor{comment}{\ \ \ to\ use\ this\ function.\ \ The\ question\ answered\ is\ "{}Is\ type\ T\ a\ derived\ type\ of}}
+\DoxyCodeLine{00226\ \textcolor{comment}{\ \ \ type\ U?"{}.\ \ */}}
+\DoxyCodeLine{00227\ }
+\DoxyCodeLine{00228\ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ T,\ \textcolor{keyword}{typename}\ U>}
+\DoxyCodeLine{00229\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{bool}}
+\DoxyCodeLine{00230\ \doxymbox{\hyperlink{is-a_8h_a7fc3c6f9ffa582e4caa829307f4ada7a}{is\_a}}\ (U\ *p)}
+\DoxyCodeLine{00231\ \{}
+\DoxyCodeLine{00232\ \ \ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{structis__a__helper_ab2c6d014fcddabaca757e6ccfb696a1d}{is\_a\_helper<T>::test}}\ (p);}
+\DoxyCodeLine{00233\ \}}
+\DoxyCodeLine{00234\ }
+\DoxyCodeLine{00235\ \textcolor{comment}{/*\ Similar\ to\ is\_a<>,\ but\ where\ the\ pointer\ can\ be\ NULL,\ even\ if}}
+\DoxyCodeLine{00236\ \textcolor{comment}{\ \ \ is\_a\_helper<T>\ doesn't\ check\ for\ NULL.\ \ */}}
+\DoxyCodeLine{00237\ }
+\DoxyCodeLine{00238\ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ T,\ \textcolor{keyword}{typename}\ U>}
+\DoxyCodeLine{00239\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{bool}}
+\DoxyCodeLine{00240\ \doxymbox{\hyperlink{is-a_8h_a8120d02be50efeb73454b30401fc419e}{safe\_is\_a}}\ (U\ *p)}
+\DoxyCodeLine{00241\ \{}
+\DoxyCodeLine{00242\ \ \ \textcolor{keywordflow}{if}\ (p)}
+\DoxyCodeLine{00243\ \ \ \ \ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{structis__a__helper_ab2c6d014fcddabaca757e6ccfb696a1d}{is\_a\_helper\ <T>::test}}\ (p);}
+\DoxyCodeLine{00244\ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00245\ \ \ \ \ \textcolor{keywordflow}{return}\ \textcolor{keyword}{false};}
+\DoxyCodeLine{00246\ \}}
+\DoxyCodeLine{00247\ }
+\DoxyCodeLine{00248\ \textcolor{comment}{/*\ A\ generic\ conversion\ from\ a\ base\ type\ U\ to\ a\ derived\ type\ T.\ \ See\ the}}
+\DoxyCodeLine{00249\ \textcolor{comment}{\ \ \ discussion\ above\ for\ when\ to\ use\ this\ function.\ \ */}}
+\DoxyCodeLine{00250\ }
+\DoxyCodeLine{00251\ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ T,\ \textcolor{keyword}{typename}\ U>}
+\DoxyCodeLine{00252\ \textcolor{keyword}{inline}\ T}
+\DoxyCodeLine{00253\ \doxymbox{\hyperlink{is-a_8h_aca295849653a5caadba0a81a521dda2e}{as\_a}}\ (U\ *p)}
+\DoxyCodeLine{00254\ \{}
+\DoxyCodeLine{00255\ \ \ \doxymbox{\hyperlink{system_8h_aff447899dc74d54931b2bc2d47de9423}{gcc\_checking\_assert}}\ (\doxymbox{\hyperlink{is-a_8h_a7fc3c6f9ffa582e4caa829307f4ada7a}{is\_a\ <T>}}\ (p));}
+\DoxyCodeLine{00256\ \ \ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{structreinterpret__is__a__helper_a46770e25230efba58cd7aafce39a4b2f}{is\_a\_helper\ <T>::cast}}\ (p);}
+\DoxyCodeLine{00257\ \}}
+\DoxyCodeLine{00258\ }
+\DoxyCodeLine{00259\ \textcolor{comment}{/*\ Similar\ to\ as\_a<>,\ but\ where\ the\ pointer\ can\ be\ NULL,\ even\ if}}
+\DoxyCodeLine{00260\ \textcolor{comment}{\ \ \ is\_a\_helper<T>\ doesn't\ check\ for\ NULL.\ \ */}}
+\DoxyCodeLine{00261\ }
+\DoxyCodeLine{00262\ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ T,\ \textcolor{keyword}{typename}\ U>}
+\DoxyCodeLine{00263\ \textcolor{keyword}{inline}\ T}
+\DoxyCodeLine{00264\ \doxymbox{\hyperlink{is-a_8h_aa716da2610ac71a4f18f9c8c61cc96b4}{safe\_as\_a}}\ (U\ *p)}
+\DoxyCodeLine{00265\ \{}
+\DoxyCodeLine{00266\ \ \ \textcolor{keywordflow}{if}\ (p)}
+\DoxyCodeLine{00267\ \ \ \ \ \{}
+\DoxyCodeLine{00268\ \ \ \ \ \ \ \doxymbox{\hyperlink{system_8h_aff447899dc74d54931b2bc2d47de9423}{gcc\_checking\_assert}}\ (\doxymbox{\hyperlink{is-a_8h_a7fc3c6f9ffa582e4caa829307f4ada7a}{is\_a\ <T>}}\ (p));}
+\DoxyCodeLine{00269\ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{structreinterpret__is__a__helper_a46770e25230efba58cd7aafce39a4b2f}{is\_a\_helper\ <T>::cast}}\ (p);}
+\DoxyCodeLine{00270\ \ \ \ \ \}}
+\DoxyCodeLine{00271\ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00272\ \ \ \ \ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{stddef_8h_a070d2ce7b6bb7e5c05602aa8c308d0c4}{NULL}};}
+\DoxyCodeLine{00273\ \}}
+\DoxyCodeLine{00274\ }
+\DoxyCodeLine{00275\ \textcolor{comment}{/*\ A\ generic\ checked\ conversion\ from\ a\ base\ type\ U\ to\ a\ derived\ type\ T.\ \ See}}
+\DoxyCodeLine{00276\ \textcolor{comment}{\ \ \ the\ discussion\ above\ for\ when\ to\ use\ this\ function.\ \ */}}
+\DoxyCodeLine{00277\ }
+\DoxyCodeLine{00278\ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ T,\ \textcolor{keyword}{typename}\ U>}
+\DoxyCodeLine{00279\ \textcolor{keyword}{inline}\ T}
+\DoxyCodeLine{00280\ \doxymbox{\hyperlink{is-a_8h_aea38ccb7ddbe54f14c7c56e9cffe887b}{dyn\_cast}}\ (U\ *p)}
+\DoxyCodeLine{00281\ \{}
+\DoxyCodeLine{00282\ \ \ \textcolor{keywordflow}{if}\ (\doxymbox{\hyperlink{is-a_8h_a7fc3c6f9ffa582e4caa829307f4ada7a}{is\_a\ <T>}}\ (p))}
+\DoxyCodeLine{00283\ \ \ \ \ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{structreinterpret__is__a__helper_a46770e25230efba58cd7aafce39a4b2f}{is\_a\_helper\ <T>::cast}}\ (p);}
+\DoxyCodeLine{00284\ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00285\ \ \ \ \ \textcolor{keywordflow}{return}\ \textcolor{keyword}{static\_cast\ <}T\textcolor{keyword}{>}\ (0);}
+\DoxyCodeLine{00286\ \}}
+\DoxyCodeLine{00287\ }
+\DoxyCodeLine{00288\ \textcolor{comment}{/*\ Similar\ to\ dyn\_cast,\ except\ that\ the\ pointer\ may\ be\ null.\ \ */}}
+\DoxyCodeLine{00289\ }
+\DoxyCodeLine{00290\ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ T,\ \textcolor{keyword}{typename}\ U>}
+\DoxyCodeLine{00291\ \textcolor{keyword}{inline}\ T}
+\DoxyCodeLine{00292\ \doxymbox{\hyperlink{is-a_8h_ab8bfbaf46656dbaf3d4b69364d174d76}{safe\_dyn\_cast}}\ (U\ *p)}
+\DoxyCodeLine{00293\ \{}
+\DoxyCodeLine{00294\ \ \ \textcolor{keywordflow}{return}\ p\ ?\ \doxymbox{\hyperlink{is-a_8h_aea38ccb7ddbe54f14c7c56e9cffe887b}{dyn\_cast\ <T>}}\ (p)\ :\ 0;}
+\DoxyCodeLine{00295\ \}}
+\DoxyCodeLine{00296\ }
+\DoxyCodeLine{00297\ \textcolor{preprocessor}{\#endif\ \ }\textcolor{comment}{/*\ GCC\_IS\_A\_H\ \ */}\textcolor{preprocessor}{}}
+
+\end{DoxyCode}

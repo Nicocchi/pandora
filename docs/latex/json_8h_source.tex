@@ -1,0 +1,216 @@
+\doxysection{json.\+h}
+\hypertarget{json_8h_source}{}\label{json_8h_source}\index{toolchain/x86\_64-\/elf/lib/gcc/x86\_64-\/elf/14.2.0/plugin/include/json.h@{toolchain/x86\_64-\/elf/lib/gcc/x86\_64-\/elf/14.2.0/plugin/include/json.h}}
+\doxymbox{\hyperlink{json_8h}{Go to the documentation of this file.}}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001\ \textcolor{comment}{/*\ JSON\ trees}}
+\DoxyCodeLine{00002\ \textcolor{comment}{\ \ \ Copyright\ (C)\ 2017-\/2024\ Free\ Software\ Foundation,\ Inc.}}
+\DoxyCodeLine{00003\ \textcolor{comment}{\ \ \ Contributed\ by\ David\ Malcolm\ <dmalcolm@redhat.com>.}}
+\DoxyCodeLine{00004\ \textcolor{comment}{}}
+\DoxyCodeLine{00005\ \textcolor{comment}{This\ file\ is\ part\ of\ GCC.}}
+\DoxyCodeLine{00006\ \textcolor{comment}{}}
+\DoxyCodeLine{00007\ \textcolor{comment}{GCC\ is\ free\ software;\ you\ can\ redistribute\ it\ and/or\ modify\ it\ under}}
+\DoxyCodeLine{00008\ \textcolor{comment}{the\ terms\ of\ the\ GNU\ General\ Public\ License\ as\ published\ by\ the\ Free}}
+\DoxyCodeLine{00009\ \textcolor{comment}{Software\ Foundation;\ either\ version\ 3,\ or\ (at\ your\ option)\ any\ later}}
+\DoxyCodeLine{00010\ \textcolor{comment}{version.}}
+\DoxyCodeLine{00011\ \textcolor{comment}{}}
+\DoxyCodeLine{00012\ \textcolor{comment}{GCC\ is\ distributed\ in\ the\ hope\ that\ it\ will\ be\ useful,\ but\ WITHOUT\ ANY}}
+\DoxyCodeLine{00013\ \textcolor{comment}{WARRANTY;\ without\ even\ the\ implied\ warranty\ of\ MERCHANTABILITY\ or}}
+\DoxyCodeLine{00014\ \textcolor{comment}{FITNESS\ FOR\ A\ PARTICULAR\ PURPOSE.\ \ See\ the\ GNU\ General\ Public\ License}}
+\DoxyCodeLine{00015\ \textcolor{comment}{for\ more\ details.}}
+\DoxyCodeLine{00016\ \textcolor{comment}{}}
+\DoxyCodeLine{00017\ \textcolor{comment}{You\ should\ have\ received\ a\ copy\ of\ the\ GNU\ General\ Public\ License}}
+\DoxyCodeLine{00018\ \textcolor{comment}{along\ with\ GCC;\ see\ the\ file\ COPYING3.\ \ If\ not\ see}}
+\DoxyCodeLine{00019\ \textcolor{comment}{<http://www.gnu.org/licenses/>.\ \ */}}
+\DoxyCodeLine{00020\ }
+\DoxyCodeLine{00021\ \textcolor{preprocessor}{\#ifndef\ GCC\_JSON\_H}}
+\DoxyCodeLine{00022\ \textcolor{preprocessor}{\#define\ GCC\_JSON\_H}}
+\DoxyCodeLine{00023\ }
+\DoxyCodeLine{00024\ \textcolor{comment}{/*\ Implementation\ of\ JSON,\ a\ lightweight\ data-\/interchange\ format.}}
+\DoxyCodeLine{00025\ \textcolor{comment}{}}
+\DoxyCodeLine{00026\ \textcolor{comment}{\ \ \ See\ http://www.json.org/}}
+\DoxyCodeLine{00027\ \textcolor{comment}{\ \ \ and\ http://www.ecma-\/international.org/publications/files/ECMA-\/ST/ECMA-\/404.pdf}}
+\DoxyCodeLine{00028\ \textcolor{comment}{\ \ \ and\ https://tools.ietf.org/html/rfc7159}}
+\DoxyCodeLine{00029\ \textcolor{comment}{}}
+\DoxyCodeLine{00030\ \textcolor{comment}{\ \ \ Supports\ creating\ a\ DOM-\/like\ tree\ of\ json::value\ *,\ and\ then\ dumping}}
+\DoxyCodeLine{00031\ \textcolor{comment}{\ \ \ json::value\ *\ to\ text.\ \ */}}
+\DoxyCodeLine{00032\ }
+\DoxyCodeLine{00033\ \textcolor{comment}{/*\ TODO:\ \`{}libcpp/mkdeps.cc`\ wants\ JSON\ writing\ support\ for\ p1689r5\ output;}}
+\DoxyCodeLine{00034\ \textcolor{comment}{\ \ \ extract\ this\ code\ and\ move\ to\ libiberty.\ \ */}}
+\DoxyCodeLine{00035\ }
+\DoxyCodeLine{00036\ \textcolor{keyword}{namespace\ }\doxymbox{\hyperlink{namespacejson}{json}}}
+\DoxyCodeLine{00037\ \{}
+\DoxyCodeLine{00038\ }
+\DoxyCodeLine{00039\ \textcolor{comment}{/*\ Forward\ decls\ of\ json::value\ and\ its\ subclasses\ (using\ indentation}}
+\DoxyCodeLine{00040\ \textcolor{comment}{\ \ \ to\ denote\ inheritance.\ \ */}}
+\DoxyCodeLine{00041\ }
+\DoxyCodeLine{00042\ \textcolor{keyword}{class\ }\doxymbox{\hyperlink{classjson_1_1value}{value}};}
+\DoxyCodeLine{00043\ \ \ \textcolor{keyword}{class\ }\doxymbox{\hyperlink{classjson_1_1object}{object}};}
+\DoxyCodeLine{00044\ \ \ \textcolor{keyword}{class\ }\doxymbox{\hyperlink{classjson_1_1array}{array}};}
+\DoxyCodeLine{00045\ \ \ \textcolor{keyword}{class\ }\doxymbox{\hyperlink{classjson_1_1float__number}{float\_number}};}
+\DoxyCodeLine{00046\ \ \ \textcolor{keyword}{class\ }\doxymbox{\hyperlink{classjson_1_1integer__number}{integer\_number}};}
+\DoxyCodeLine{00047\ \ \ \textcolor{keyword}{class\ }\doxymbox{\hyperlink{classjson_1_1string}{string}};}
+\DoxyCodeLine{00048\ \ \ \textcolor{keyword}{class\ }\doxymbox{\hyperlink{classjson_1_1literal}{literal}};}
+\DoxyCodeLine{00049\ }
+\DoxyCodeLine{00050\ \textcolor{comment}{/*\ An\ enum\ for\ discriminating\ the\ subclasses\ of\ json::value.\ \ */}}
+\DoxyCodeLine{00051\ }
+\DoxyCodeLine{00052\ \textcolor{keyword}{enum}\ \doxymbox{\hyperlink{namespacejson_a9f5a5109c1edd510ca35a6d3916deba8}{kind}}}
+\DoxyCodeLine{00053\ \{}
+\DoxyCodeLine{00054\ \ \ \textcolor{comment}{/*\ class\ json::object.\ \ */}}
+\DoxyCodeLine{00055\ \ \ \doxymbox{\hyperlink{namespacejson_a9f5a5109c1edd510ca35a6d3916deba8a9fed0ba01ddd858f199f33da2f14e488}{JSON\_OBJECT}},}
+\DoxyCodeLine{00056\ }
+\DoxyCodeLine{00057\ \ \ \textcolor{comment}{/*\ class\ json::array.\ \ */}}
+\DoxyCodeLine{00058\ \ \ \doxymbox{\hyperlink{namespacejson_a9f5a5109c1edd510ca35a6d3916deba8a2814435dfc5eb3e56dac937e0a0b7ed0}{JSON\_ARRAY}},}
+\DoxyCodeLine{00059\ }
+\DoxyCodeLine{00060\ \ \ \textcolor{comment}{/*\ class\ json::integer\_number.\ \ */}}
+\DoxyCodeLine{00061\ \ \ \doxymbox{\hyperlink{namespacejson_a9f5a5109c1edd510ca35a6d3916deba8a6b4c586a9445ae8b3d29e48ac0b27b55}{JSON\_INTEGER}},}
+\DoxyCodeLine{00062\ }
+\DoxyCodeLine{00063\ \ \ \textcolor{comment}{/*\ class\ json::float\_number.\ \ */}}
+\DoxyCodeLine{00064\ \ \ \doxymbox{\hyperlink{namespacejson_a9f5a5109c1edd510ca35a6d3916deba8ace205e1d8395de179a74337427f7fd84}{JSON\_FLOAT}},}
+\DoxyCodeLine{00065\ }
+\DoxyCodeLine{00066\ \ \ \textcolor{comment}{/*\ class\ json::string.\ \ */}}
+\DoxyCodeLine{00067\ \ \ \doxymbox{\hyperlink{namespacejson_a9f5a5109c1edd510ca35a6d3916deba8ad84c005353708379829b7025f90651f7}{JSON\_STRING}},}
+\DoxyCodeLine{00068\ }
+\DoxyCodeLine{00069\ \ \ \textcolor{comment}{/*\ class\ json::literal\ uses\ these\ three\ values\ to\ identify\ the}}
+\DoxyCodeLine{00070\ \textcolor{comment}{\ \ \ \ \ particular\ literal.\ \ */}}
+\DoxyCodeLine{00071\ \ \ \doxymbox{\hyperlink{namespacejson_a9f5a5109c1edd510ca35a6d3916deba8ac90229954b617171f9081c59e80deb74}{JSON\_TRUE}},}
+\DoxyCodeLine{00072\ \ \ \doxymbox{\hyperlink{namespacejson_a9f5a5109c1edd510ca35a6d3916deba8a2b49a6101b0c1ad3e5da29afb9768509}{JSON\_FALSE}},}
+\DoxyCodeLine{00073\ \ \ \doxymbox{\hyperlink{namespacejson_a9f5a5109c1edd510ca35a6d3916deba8a77f5b14ecc89404ea874170793486f0c}{JSON\_NULL}}}
+\DoxyCodeLine{00074\ \};}
+\DoxyCodeLine{00075\ }
+\DoxyCodeLine{00076\ \textcolor{comment}{/*\ Base\ class\ of\ JSON\ value.\ \ */}}
+\DoxyCodeLine{00077\ }
+\DoxyCodeLine{00078\ \textcolor{keyword}{class\ }\doxymbox{\hyperlink{classjson_1_1value}{value}}}
+\DoxyCodeLine{00079\ \{}
+\DoxyCodeLine{00080\ \ \textcolor{keyword}{public}:}
+\DoxyCodeLine{00081\ \ \ \textcolor{keyword}{virtual}\ \doxymbox{\hyperlink{classjson_1_1value_affd03ffe5f2e6242ebcd5778f8470a18}{\string~value}}\ ()\ \{\}}
+\DoxyCodeLine{00082\ \ \ \textcolor{keyword}{virtual}\ \textcolor{keyword}{enum}\ \doxymbox{\hyperlink{namespacejson_a9f5a5109c1edd510ca35a6d3916deba8}{kind}}\ \doxymbox{\hyperlink{classjson_1_1value_a188bc95c1bfa075b27b86d8b38807e19}{get\_kind}}\ ()\ \textcolor{keyword}{const}\ =\ 0;}
+\DoxyCodeLine{00083\ \ \ \textcolor{keyword}{virtual}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classjson_1_1value_a70f00cff2ec569321f13273f5394a757}{print}}\ (\doxymbox{\hyperlink{classpretty__printer}{pretty\_printer}}\ *pp,\ \textcolor{keywordtype}{bool}\ formatted)\ \textcolor{keyword}{const}\ =\ 0;}
+\DoxyCodeLine{00084\ }
+\DoxyCodeLine{00085\ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classjson_1_1value_a618ad5add11b4ce79c8a730eca57eb2b}{dump}}\ (FILE\ *,\ \textcolor{keywordtype}{bool}\ formatted)\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00086\ \};}
+\DoxyCodeLine{00087\ }
+\DoxyCodeLine{00088\ \textcolor{comment}{/*\ Subclass\ of\ value\ for\ objects:\ a\ collection\ of\ key/value\ pairs}}
+\DoxyCodeLine{00089\ \textcolor{comment}{\ \ \ preserving\ the\ ordering\ in\ which\ keys\ were\ inserted.}}
+\DoxyCodeLine{00090\ \textcolor{comment}{}}
+\DoxyCodeLine{00091\ \textcolor{comment}{\ \ \ Preserving\ the\ order\ eliminates\ non-\/determinism\ in\ the\ output,}}
+\DoxyCodeLine{00092\ \textcolor{comment}{\ \ \ making\ it\ easier\ for\ the\ user\ to\ compare\ repeated\ invocations.\ \ */}}
+\DoxyCodeLine{00093\ }
+\DoxyCodeLine{00094\ \textcolor{keyword}{class\ }\doxymbox{\hyperlink{classjson_1_1object}{object}}\ :\ \textcolor{keyword}{public}\ \doxymbox{\hyperlink{classjson_1_1value}{value}}}
+\DoxyCodeLine{00095\ \{}
+\DoxyCodeLine{00096\ \ \textcolor{keyword}{public}:}
+\DoxyCodeLine{00097\ \ \ \doxymbox{\hyperlink{classjson_1_1object_a6e206cdf89e2eb5822d22f1637b4d590}{\string~object}}\ ();}
+\DoxyCodeLine{00098\ }
+\DoxyCodeLine{00099\ \ \ \textcolor{keyword}{enum}\ \doxymbox{\hyperlink{namespacejson_a9f5a5109c1edd510ca35a6d3916deba8}{kind}}\ \doxymbox{\hyperlink{classjson_1_1object_a4f9cf9f90b8332bba93ef2f57607cacf}{get\_kind}}\ ()\ const\ \doxymbox{\hyperlink{output_8h_ab52ea22aac29575278d6a9e723d1d234}{final}}\textcolor{keyword}{\ override\ }\{\ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{namespacejson_a9f5a5109c1edd510ca35a6d3916deba8a9fed0ba01ddd858f199f33da2f14e488}{JSON\_OBJECT}};\ \}}
+\DoxyCodeLine{00100\ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classjson_1_1object_a02030449b310f6178a580df5711ff531}{print}}\ (\doxymbox{\hyperlink{classpretty__printer}{pretty\_printer}}\ *pp,\ \textcolor{keywordtype}{bool}\ formatted)\ \textcolor{keyword}{const}\ \textcolor{keyword}{final}\ \textcolor{keyword}{override};}
+\DoxyCodeLine{00101\ }
+\DoxyCodeLine{00102\ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classjson_1_1object_a5b20de85c2ff51e8366f9fea3753540d}{set}}\ (\textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *key,\ \doxymbox{\hyperlink{classjson_1_1value}{value}}\ *v);}
+\DoxyCodeLine{00103\ \ \ \doxymbox{\hyperlink{classjson_1_1value}{value}}\ *\doxymbox{\hyperlink{classjson_1_1object_a85dbc90c3eae805a22bccf01aac1e1e0}{get}}\ (\textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *key)\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00104\ }
+\DoxyCodeLine{00105\ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classjson_1_1object_a2818d3e5de1abeeab1c41d71b39e64fa}{set\_string}}\ (\textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *key,\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *utf8\_value);}
+\DoxyCodeLine{00106\ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classjson_1_1object_a576d2807260133945ccb035eb34178bc}{set\_integer}}\ (\textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *key,\ \textcolor{keywordtype}{long}\ v);}
+\DoxyCodeLine{00107\ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classjson_1_1object_a6c195364abb76a38704e2c7918e506cd}{set\_float}}\ (\textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *key,\ \textcolor{keywordtype}{double}\ v);}
+\DoxyCodeLine{00108\ }
+\DoxyCodeLine{00109\ \ \ \textcolor{comment}{/*\ Set\ to\ literal\ true/false.\ \ */}}
+\DoxyCodeLine{00110\ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classjson_1_1object_a63eaa25bedea3f846558bb6f8a230b44}{set\_bool}}\ (\textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *key,\ \textcolor{keywordtype}{bool}\ v);}
+\DoxyCodeLine{00111\ }
+\DoxyCodeLine{00112\ \ \textcolor{keyword}{private}:}
+\DoxyCodeLine{00113\ \ \ \textcolor{keyword}{typedef}\ \doxymbox{\hyperlink{classhash__map}{hash\_map}}\ <\textcolor{keywordtype}{char}\ *,\ \doxymbox{\hyperlink{classjson_1_1value}{value}}\ *,}
+\DoxyCodeLine{00114\ \ \ \ \ \doxymbox{\hyperlink{structsimple__hashmap__traits}{simple\_hashmap\_traits<nofree\_string\_hash,\ value\ *>}}\ >\ \doxymbox{\hyperlink{classjson_1_1object_a010b4bb62aeef0709ffe44d3f5747a23}{map\_t}};}
+\DoxyCodeLine{00115\ \ \ \doxymbox{\hyperlink{classjson_1_1object_a010b4bb62aeef0709ffe44d3f5747a23}{map\_t}}\ \doxymbox{\hyperlink{classjson_1_1object_a7ca452fd341720dd823354d929eac6c3}{m\_map}};}
+\DoxyCodeLine{00116\ }
+\DoxyCodeLine{00117\ \ \ \textcolor{comment}{/*\ Keep\ track\ of\ order\ in\ which\ keys\ were\ inserted.\ \ */}}
+\DoxyCodeLine{00118\ \ \ auto\_vec\ <const\ char\ *>\ \doxymbox{\hyperlink{classjson_1_1object_a54198310d03acdd5a27c00930e7d6e3d}{m\_keys}};}
+\DoxyCodeLine{00119\ \};}
+\DoxyCodeLine{00120\ }
+\DoxyCodeLine{00121\ \textcolor{comment}{/*\ Subclass\ of\ value\ for\ arrays.\ \ */}}
+\DoxyCodeLine{00122\ }
+\DoxyCodeLine{00123\ \textcolor{keyword}{class\ }\doxymbox{\hyperlink{classjson_1_1array}{array}}\ :\ \textcolor{keyword}{public}\ \doxymbox{\hyperlink{classjson_1_1value}{value}}}
+\DoxyCodeLine{00124\ \{}
+\DoxyCodeLine{00125\ \ \textcolor{keyword}{public}:}
+\DoxyCodeLine{00126\ \ \ \doxymbox{\hyperlink{classjson_1_1array_a9ff2ac5fe3eeea98ac37e33737d9d7e8}{\string~array}}\ ();}
+\DoxyCodeLine{00127\ }
+\DoxyCodeLine{00128\ \ \ \textcolor{keyword}{enum}\ \doxymbox{\hyperlink{namespacejson_a9f5a5109c1edd510ca35a6d3916deba8}{kind}}\ \doxymbox{\hyperlink{classjson_1_1array_a0be09a664e4da3899a7deb53bfa5f223}{get\_kind}}\ ()\ const\ \doxymbox{\hyperlink{output_8h_ab52ea22aac29575278d6a9e723d1d234}{final}}\textcolor{keyword}{\ override\ }\{\ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{namespacejson_a9f5a5109c1edd510ca35a6d3916deba8a2814435dfc5eb3e56dac937e0a0b7ed0}{JSON\_ARRAY}};\ \}}
+\DoxyCodeLine{00129\ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classjson_1_1array_ac192b26dacf312600197a08b3cfaa3bc}{print}}\ (\doxymbox{\hyperlink{classpretty__printer}{pretty\_printer}}\ *pp,\ \textcolor{keywordtype}{bool}\ formatted)\ \textcolor{keyword}{const}\ \textcolor{keyword}{final}\ \textcolor{keyword}{override};}
+\DoxyCodeLine{00130\ }
+\DoxyCodeLine{00131\ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classjson_1_1array_afba5aad8a674afbaedc0397f46cea0b6}{append}}\ (\doxymbox{\hyperlink{classjson_1_1value}{value}}\ *v);}
+\DoxyCodeLine{00132\ }
+\DoxyCodeLine{00133\ \ \textcolor{keyword}{private}:}
+\DoxyCodeLine{00134\ \ \ \doxymbox{\hyperlink{classauto__vec}{auto\_vec<value\ *>}}\ \doxymbox{\hyperlink{classjson_1_1array_a24a8d414e65bbcce0af2b91b2c189f05}{m\_elements}};}
+\DoxyCodeLine{00135\ \};}
+\DoxyCodeLine{00136\ }
+\DoxyCodeLine{00137\ \textcolor{comment}{/*\ Subclass\ of\ value\ for\ floating-\/point\ numbers.\ \ */}}
+\DoxyCodeLine{00138\ }
+\DoxyCodeLine{00139\ \textcolor{keyword}{class\ }\doxymbox{\hyperlink{classjson_1_1float__number_a527a23d9e62540c727510b4c35f55169}{float\_number}}\ :\ \textcolor{keyword}{public}\ \doxymbox{\hyperlink{classjson_1_1value}{value}}}
+\DoxyCodeLine{00140\ \{}
+\DoxyCodeLine{00141\ \ \textcolor{keyword}{public}:}
+\DoxyCodeLine{00142\ \ \ \doxymbox{\hyperlink{classjson_1_1float__number_a527a23d9e62540c727510b4c35f55169}{float\_number}}\ (\textcolor{keywordtype}{double}\ \doxymbox{\hyperlink{classjson_1_1value}{value}})\ :\ \doxymbox{\hyperlink{classjson_1_1float__number_abf80307d02e99c77f8e460b819e69631}{m\_value}}\ (\doxymbox{\hyperlink{classjson_1_1value}{value}})\ \{\}}
+\DoxyCodeLine{00143\ }
+\DoxyCodeLine{00144\ \ \ \textcolor{keyword}{enum}\ \doxymbox{\hyperlink{namespacejson_a9f5a5109c1edd510ca35a6d3916deba8}{kind}}\ \doxymbox{\hyperlink{classjson_1_1float__number_a1c187416d0b47019afaf299b8fa36c1a}{get\_kind}}\ ()\ const\ \doxymbox{\hyperlink{output_8h_ab52ea22aac29575278d6a9e723d1d234}{final}}\textcolor{keyword}{\ override\ }\{\ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{namespacejson_a9f5a5109c1edd510ca35a6d3916deba8ace205e1d8395de179a74337427f7fd84}{JSON\_FLOAT}};\ \}}
+\DoxyCodeLine{00145\ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classjson_1_1float__number_a3eeadc616e2d8f12550dd568b996c0e2}{print}}\ (\doxymbox{\hyperlink{classpretty__printer}{pretty\_printer}}\ *pp,\ \textcolor{keywordtype}{bool}\ formatted)\ \textcolor{keyword}{const}\ \textcolor{keyword}{final}\ \textcolor{keyword}{override};}
+\DoxyCodeLine{00146\ }
+\DoxyCodeLine{00147\ \ \ \textcolor{keywordtype}{double}\ \doxymbox{\hyperlink{classjson_1_1float__number_aa14b5f831d25ccabb57fba6a997c585e}{get}}\ ()\textcolor{keyword}{\ const\ }\{\ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{classjson_1_1float__number_abf80307d02e99c77f8e460b819e69631}{m\_value}};\ \}}
+\DoxyCodeLine{00148\ }
+\DoxyCodeLine{00149\ \ \textcolor{keyword}{private}:}
+\DoxyCodeLine{00150\ \ \ \textcolor{keywordtype}{double}\ \doxymbox{\hyperlink{classjson_1_1float__number_abf80307d02e99c77f8e460b819e69631}{m\_value}};}
+\DoxyCodeLine{00151\ \};}
+\DoxyCodeLine{00152\ }
+\DoxyCodeLine{00153\ \textcolor{comment}{/*\ Subclass\ of\ value\ for\ integer-\/valued\ numbers.\ \ */}}
+\DoxyCodeLine{00154\ }
+\DoxyCodeLine{00155\ \textcolor{keyword}{class\ }\doxymbox{\hyperlink{classjson_1_1integer__number_a1cf51d5eb333080192cb13eb0ee923fb}{integer\_number}}\ :\ \textcolor{keyword}{public}\ \doxymbox{\hyperlink{classjson_1_1value}{value}}}
+\DoxyCodeLine{00156\ \{}
+\DoxyCodeLine{00157\ \ \textcolor{keyword}{public}:}
+\DoxyCodeLine{00158\ \ \ \doxymbox{\hyperlink{classjson_1_1integer__number_a1cf51d5eb333080192cb13eb0ee923fb}{integer\_number}}\ (\textcolor{keywordtype}{long}\ \doxymbox{\hyperlink{classjson_1_1value}{value}})\ :\ \doxymbox{\hyperlink{classjson_1_1integer__number_a04297aa7596b37d172ba969301cf0e96}{m\_value}}\ (\doxymbox{\hyperlink{classjson_1_1value}{value}})\ \{\}}
+\DoxyCodeLine{00159\ }
+\DoxyCodeLine{00160\ \ \ \textcolor{keyword}{enum}\ \doxymbox{\hyperlink{namespacejson_a9f5a5109c1edd510ca35a6d3916deba8}{kind}}\ \doxymbox{\hyperlink{classjson_1_1integer__number_a1c46c11221c58ce43d6cb5e0c261e57f}{get\_kind}}\ ()\ const\ \doxymbox{\hyperlink{output_8h_ab52ea22aac29575278d6a9e723d1d234}{final}}\textcolor{keyword}{\ override\ }\{\ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{namespacejson_a9f5a5109c1edd510ca35a6d3916deba8a6b4c586a9445ae8b3d29e48ac0b27b55}{JSON\_INTEGER}};\ \}}
+\DoxyCodeLine{00161\ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classjson_1_1integer__number_aa3619c1c88545dae74422f39e292b22d}{print}}\ (\doxymbox{\hyperlink{classpretty__printer}{pretty\_printer}}\ *pp,\ \textcolor{keywordtype}{bool}\ formatted)\ \textcolor{keyword}{const}\ \textcolor{keyword}{final}\ \textcolor{keyword}{override};}
+\DoxyCodeLine{00162\ }
+\DoxyCodeLine{00163\ \ \ \textcolor{keywordtype}{long}\ \doxymbox{\hyperlink{classjson_1_1integer__number_a7e3cafec0e7dc129944910926e582dbd}{get}}\ ()\textcolor{keyword}{\ const\ }\{\ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{classjson_1_1integer__number_a04297aa7596b37d172ba969301cf0e96}{m\_value}};\ \}}
+\DoxyCodeLine{00164\ }
+\DoxyCodeLine{00165\ \ \textcolor{keyword}{private}:}
+\DoxyCodeLine{00166\ \ \ \textcolor{keywordtype}{long}\ \doxymbox{\hyperlink{classjson_1_1integer__number_a04297aa7596b37d172ba969301cf0e96}{m\_value}};}
+\DoxyCodeLine{00167\ \};}
+\DoxyCodeLine{00168\ }
+\DoxyCodeLine{00169\ }
+\DoxyCodeLine{00170\ \textcolor{comment}{/*\ Subclass\ of\ value\ for\ strings.\ \ */}}
+\DoxyCodeLine{00171\ }
+\DoxyCodeLine{00172\ \textcolor{keyword}{class\ }\doxymbox{\hyperlink{classjson_1_1string_abe577018d8b038c4a13e9086774dea51}{string}}\ :\ \textcolor{keyword}{public}\ \doxymbox{\hyperlink{classjson_1_1value}{value}}}
+\DoxyCodeLine{00173\ \{}
+\DoxyCodeLine{00174\ \ \textcolor{keyword}{public}:}
+\DoxyCodeLine{00175\ \ \ \textcolor{keyword}{explicit}\ \doxymbox{\hyperlink{classjson_1_1string_abe577018d8b038c4a13e9086774dea51}{string}}\ (\textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *utf8);}
+\DoxyCodeLine{00176\ \ \ \doxymbox{\hyperlink{classjson_1_1string_a3b7260f35e80d96f017ed383bc8be5dc}{string}}\ (\textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *utf8,\ \textcolor{keywordtype}{size\_t}\ len);}
+\DoxyCodeLine{00177\ \ \ \doxymbox{\hyperlink{classjson_1_1string_a1709e657799b15a70f00a91502355a09}{\string~string}}\ ()\ \{\ free\ (\doxymbox{\hyperlink{classjson_1_1string_a7f985b68178ee80292b040832df52ebe}{m\_utf8}});\ \}}
+\DoxyCodeLine{00178\ }
+\DoxyCodeLine{00179\ \ \ \textcolor{keyword}{enum}\ \doxymbox{\hyperlink{namespacejson_a9f5a5109c1edd510ca35a6d3916deba8}{kind}}\ \doxymbox{\hyperlink{classjson_1_1string_a1692e62582ec2ce1165f97eaa5edd045}{get\_kind}}\ ()\ const\ \doxymbox{\hyperlink{output_8h_ab52ea22aac29575278d6a9e723d1d234}{final}}\textcolor{keyword}{\ override\ }\{\ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{namespacejson_a9f5a5109c1edd510ca35a6d3916deba8ad84c005353708379829b7025f90651f7}{JSON\_STRING}};\ \}}
+\DoxyCodeLine{00180\ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classjson_1_1string_a2075e5480326b8f4556594aeee29ae0a}{print}}\ (\doxymbox{\hyperlink{classpretty__printer}{pretty\_printer}}\ *pp,\ \textcolor{keywordtype}{bool}\ formatted)\ \textcolor{keyword}{const}\ \textcolor{keyword}{final}\ \textcolor{keyword}{override};}
+\DoxyCodeLine{00181\ }
+\DoxyCodeLine{00182\ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *\doxymbox{\hyperlink{classjson_1_1string_a1af93e16419765200cd7e7fd27da1556}{get\_string}}\ ()\textcolor{keyword}{\ const\ }\{\ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{classjson_1_1string_a7f985b68178ee80292b040832df52ebe}{m\_utf8}};\ \}}
+\DoxyCodeLine{00183\ \ \ \textcolor{keywordtype}{size\_t}\ \doxymbox{\hyperlink{classjson_1_1string_ac55f5a10f30b241565722dea632fea4b}{get\_length}}\ ()\textcolor{keyword}{\ const\ }\{\ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{classjson_1_1string_a395fb5fccf498542a6001a45622bc37a}{m\_len}};\ \}}
+\DoxyCodeLine{00184\ }
+\DoxyCodeLine{00185\ \ \textcolor{keyword}{private}:}
+\DoxyCodeLine{00186\ \ \ \textcolor{keywordtype}{char}\ *\doxymbox{\hyperlink{classjson_1_1string_a7f985b68178ee80292b040832df52ebe}{m\_utf8}};}
+\DoxyCodeLine{00187\ \ \ \textcolor{keywordtype}{size\_t}\ \doxymbox{\hyperlink{classjson_1_1string_a395fb5fccf498542a6001a45622bc37a}{m\_len}};}
+\DoxyCodeLine{00188\ \};}
+\DoxyCodeLine{00189\ }
+\DoxyCodeLine{00190\ \textcolor{comment}{/*\ Subclass\ of\ value\ for\ the\ three\ JSON\ literals\ "{}true"{},\ "{}false"{},}}
+\DoxyCodeLine{00191\ \textcolor{comment}{\ \ \ and\ "{}null"{}.\ \ */}}
+\DoxyCodeLine{00192\ }
+\DoxyCodeLine{00193\ \textcolor{keyword}{class\ }\doxymbox{\hyperlink{classjson_1_1literal_a9963574dc02614d98170554cb7886772}{literal}}\ :\ \textcolor{keyword}{public}\ \doxymbox{\hyperlink{classjson_1_1value}{value}}}
+\DoxyCodeLine{00194\ \{}
+\DoxyCodeLine{00195\ \ \textcolor{keyword}{public}:}
+\DoxyCodeLine{00196\ \ \ \doxymbox{\hyperlink{classjson_1_1literal_a9963574dc02614d98170554cb7886772}{literal}}\ (\textcolor{keyword}{enum}\ \doxymbox{\hyperlink{namespacejson_a9f5a5109c1edd510ca35a6d3916deba8}{kind}}\ \doxymbox{\hyperlink{namespacejson_a9f5a5109c1edd510ca35a6d3916deba8}{kind}})\ :\ \doxymbox{\hyperlink{classjson_1_1literal_a94ac0d271098f80fbdf02a869b8a9049}{m\_kind}}\ (\doxymbox{\hyperlink{namespacejson_a9f5a5109c1edd510ca35a6d3916deba8}{kind}})\ \{\}}
+\DoxyCodeLine{00197\ }
+\DoxyCodeLine{00198\ \ \ \textcolor{comment}{/*\ Construct\ literal\ for\ a\ boolean\ value.\ \ */}}
+\DoxyCodeLine{00199\ \ \ \doxymbox{\hyperlink{classjson_1_1literal_a3d4e9f6e6f2b7333fe9e82452fca17a5}{literal}}\ (\textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{classjson_1_1value}{value}}):\ \doxymbox{\hyperlink{classjson_1_1literal_a94ac0d271098f80fbdf02a869b8a9049}{m\_kind}}\ (\doxymbox{\hyperlink{classjson_1_1value}{value}}\ ?\ \doxymbox{\hyperlink{namespacejson_a9f5a5109c1edd510ca35a6d3916deba8ac90229954b617171f9081c59e80deb74}{JSON\_TRUE}}\ :\ \doxymbox{\hyperlink{namespacejson_a9f5a5109c1edd510ca35a6d3916deba8a2b49a6101b0c1ad3e5da29afb9768509}{JSON\_FALSE}})\ \{\}}
+\DoxyCodeLine{00200\ }
+\DoxyCodeLine{00201\ \ \ \textcolor{keyword}{enum}\ \doxymbox{\hyperlink{namespacejson_a9f5a5109c1edd510ca35a6d3916deba8}{kind}}\ \doxymbox{\hyperlink{classjson_1_1literal_ac35d4f5a573e9d224534d6b0e1a16bd4}{get\_kind}}\ ()\ const\ \doxymbox{\hyperlink{output_8h_ab52ea22aac29575278d6a9e723d1d234}{final}}\textcolor{keyword}{\ override\ }\{\ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{classjson_1_1literal_a94ac0d271098f80fbdf02a869b8a9049}{m\_kind}};\ \}}
+\DoxyCodeLine{00202\ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classjson_1_1literal_a2722124d3e499692221455d99387afde}{print}}\ (\doxymbox{\hyperlink{classpretty__printer}{pretty\_printer}}\ *pp,\ \textcolor{keywordtype}{bool}\ formatted)\ \textcolor{keyword}{const}\ \textcolor{keyword}{final}\ \textcolor{keyword}{override};}
+\DoxyCodeLine{00203\ }
+\DoxyCodeLine{00204\ \ \textcolor{keyword}{private}:}
+\DoxyCodeLine{00205\ \ \ \textcolor{keyword}{enum}\ \doxymbox{\hyperlink{namespacejson_a9f5a5109c1edd510ca35a6d3916deba8}{kind}}\ \doxymbox{\hyperlink{classjson_1_1literal_a94ac0d271098f80fbdf02a869b8a9049}{m\_kind}};}
+\DoxyCodeLine{00206\ \};}
+\DoxyCodeLine{00207\ }
+\DoxyCodeLine{00208\ \}\ \textcolor{comment}{//\ namespace\ json}}
+\DoxyCodeLine{00209\ }
+\DoxyCodeLine{00210\ \textcolor{preprocessor}{\#endif\ \ }\textcolor{comment}{/*\ GCC\_JSON\_H\ \ */}\textcolor{preprocessor}{}}
+
+\end{DoxyCode}

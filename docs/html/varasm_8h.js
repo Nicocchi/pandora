@@ -1,0 +1,28 @@
+var varasm_8h =
+[
+    [ "assemble_alias", "varasm_8h.html#adf923d61c7e6a430a8d9650f30436c7e", null ],
+    [ "assemble_static_space", "varasm_8h.html#a100b2a6ac2fdd2d7d972a62fe41c7bf2", null ],
+    [ "assemble_trampoline_template", "varasm_8h.html#aee81f8866cdd26a97b8894c2ec7cdc76", null ],
+    [ "constructor_static_from_elts_p", "varasm_8h.html#ae2dd44b5ac9ca8e3a2330d6235022f98", null ],
+    [ "decl_binds_to_current_def_p", "varasm_8h.html#acbd17987316bc968bab1643dfcca6feb", null ],
+    [ "decl_default_tls_model", "varasm_8h.html#ace69f5a364ca33b6ec57c8c80470f503", null ],
+    [ "decl_replaceable_p", "varasm_8h.html#a9ad27ea897afb860c394c858be0d7b8a", null ],
+    [ "declare_weak", "varasm_8h.html#a7afb0d118f4e0b023488e79c6415a2f0", null ],
+    [ "init_varasm_status", "varasm_8h.html#a7379b9ce4d508a0e2a8d81c6e51f6560", null ],
+    [ "initializer_constant_valid_for_bitfield_p", "varasm_8h.html#a0383492fa6cf210719206e8d82b9ed57", null ],
+    [ "initializer_constant_valid_p", "varasm_8h.html#a963af2953438b35bf1fbef0c1476deba", null ],
+    [ "make_decl_one_only", "varasm_8h.html#ac8d31cf53814b226f2643b48eee022c3", null ],
+    [ "make_decl_rtl", "varasm_8h.html#a6bc2bb0a23d1993b45a8a8eb3d2e40f3", null ],
+    [ "make_decl_rtl_for_debug", "varasm_8h.html#aab79048e7cc292b7abb7261ba0c1dc49", null ],
+    [ "mark_decl_referenced", "varasm_8h.html#ae545bdcf5a94493f7c706f95a92c185b", null ],
+    [ "mark_referenced", "varasm_8h.html#a84adc172172f292f7cdee3a43d0081a0", null ],
+    [ "merge_weak", "varasm_8h.html#adb7d2fff59c568e9b2b9db9a028063af", null ],
+    [ "notice_global_symbol", "varasm_8h.html#a068c4f94a313cc01d2bd539ff35f5b4b", null ],
+    [ "process_pending_assemble_externals", "varasm_8h.html#adf9dcd30476dbdd860b0944ad3191f85", null ],
+    [ "resolve_unique_section", "varasm_8h.html#a251bdf6a08be3801f9e66dd96ce0eb3c", null ],
+    [ "set_user_assembler_name", "varasm_8h.html#a1be6a2a6c26933178870547405e1c63a", null ],
+    [ "supports_one_only", "varasm_8h.html#a97875d8853f8bbf95531644397b2de39", null ],
+    [ "switch_to_comdat_section", "varasm_8h.html#ac8173bfd39d1f787f6e99b7e5dd595cc", null ],
+    [ "tree_output_constant_def", "varasm_8h.html#a60c3c2f2342de23b84451eca33af2e96", null ],
+    [ "cold_function_name", "varasm_8h.html#adffc444d9599c0180c015e925427cac6", null ]
+];

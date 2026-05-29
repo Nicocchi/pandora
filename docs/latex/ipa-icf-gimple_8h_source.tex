@@ -1,0 +1,315 @@
+\doxysection{ipa-\/icf-\/gimple.h}
+\hypertarget{ipa-icf-gimple_8h_source}{}\label{ipa-icf-gimple_8h_source}\index{toolchain/x86\_64-\/elf/lib/gcc/x86\_64-\/elf/14.2.0/plugin/include/ipa-\/icf-\/gimple.h@{toolchain/x86\_64-\/elf/lib/gcc/x86\_64-\/elf/14.2.0/plugin/include/ipa-\/icf-\/gimple.h}}
+\doxymbox{\hyperlink{ipa-icf-gimple_8h}{Go to the documentation of this file.}}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001\ \textcolor{comment}{/*\ Interprocedural\ semantic\ function\ equality\ pass}}
+\DoxyCodeLine{00002\ \textcolor{comment}{\ \ \ Copyright\ (C)\ 2014-\/2024\ Free\ Software\ Foundation,\ Inc.}}
+\DoxyCodeLine{00003\ \textcolor{comment}{}}
+\DoxyCodeLine{00004\ \textcolor{comment}{\ \ \ Contributed\ by\ Jan\ Hubicka\ <hubicka@ucw.cz>\ and\ Martin\ Liska\ <mliska@suse.cz>}}
+\DoxyCodeLine{00005\ \textcolor{comment}{}}
+\DoxyCodeLine{00006\ \textcolor{comment}{This\ file\ is\ part\ of\ GCC.}}
+\DoxyCodeLine{00007\ \textcolor{comment}{}}
+\DoxyCodeLine{00008\ \textcolor{comment}{GCC\ is\ free\ software;\ you\ can\ redistribute\ it\ and/or\ modify\ it\ under}}
+\DoxyCodeLine{00009\ \textcolor{comment}{the\ terms\ of\ the\ GNU\ General\ Public\ License\ as\ published\ by\ the\ Free}}
+\DoxyCodeLine{00010\ \textcolor{comment}{Software\ Foundation;\ either\ version\ 3,\ or\ (at\ your\ option)\ any\ later}}
+\DoxyCodeLine{00011\ \textcolor{comment}{version.}}
+\DoxyCodeLine{00012\ \textcolor{comment}{}}
+\DoxyCodeLine{00013\ \textcolor{comment}{GCC\ is\ distributed\ in\ the\ hope\ that\ it\ will\ be\ useful,\ but\ WITHOUT\ ANY}}
+\DoxyCodeLine{00014\ \textcolor{comment}{WARRANTY;\ without\ even\ the\ implied\ warranty\ of\ MERCHANTABILITY\ or}}
+\DoxyCodeLine{00015\ \textcolor{comment}{FITNESS\ FOR\ A\ PARTICULAR\ PURPOSE.\ \ See\ the\ GNU\ General\ Public\ License}}
+\DoxyCodeLine{00016\ \textcolor{comment}{for\ more\ details.}}
+\DoxyCodeLine{00017\ \textcolor{comment}{}}
+\DoxyCodeLine{00018\ \textcolor{comment}{You\ should\ have\ received\ a\ copy\ of\ the\ GNU\ General\ Public\ License}}
+\DoxyCodeLine{00019\ \textcolor{comment}{along\ with\ GCC;\ see\ the\ file\ COPYING3.\ \ If\ not\ see}}
+\DoxyCodeLine{00020\ \textcolor{comment}{<http://www.gnu.org/licenses/>.\ \ */}}
+\DoxyCodeLine{00021\ }
+\DoxyCodeLine{00022\ \textcolor{comment}{/*\ Gimple\ identical\ code\ folding\ (class\ func\_checker)\ is\ an\ infrastructure}}
+\DoxyCodeLine{00023\ \textcolor{comment}{\ \ \ capable\ of\ comparing\ two\ given\ functions.\ The\ class\ compares\ every}}
+\DoxyCodeLine{00024\ \textcolor{comment}{\ \ \ gimple\ statement\ and\ uses\ many\ dictionaries\ to\ map\ source\ and\ target}}
+\DoxyCodeLine{00025\ \textcolor{comment}{\ \ \ SSA\_NAMEs,\ declarations\ and\ other\ components.}}
+\DoxyCodeLine{00026\ \textcolor{comment}{}}
+\DoxyCodeLine{00027\ \textcolor{comment}{\ \ \ To\ use\ the\ infrastructure,\ create\ an\ instance\ of\ func\_checker\ and\ call}}
+\DoxyCodeLine{00028\ \textcolor{comment}{\ \ \ a\ comparison\ function\ based\ on\ type\ of\ gimple\ statement.\ \ */}}
+\DoxyCodeLine{00029\ }
+\DoxyCodeLine{00030\ \textcolor{comment}{/*\ Prints\ string\ STRING\ to\ a\ FILE\ with\ a\ given\ number\ of\ SPACE\_COUNT.\ \ */}}
+\DoxyCodeLine{00031\ \textcolor{preprocessor}{\#define\ FPUTS\_SPACES(file,\ space\_count,\ string)\ \(\backslash\)}}
+\DoxyCodeLine{00032\ \textcolor{preprocessor}{\ \ fprintf\ (file,\ "{}\%*s"{}\ string,\ space\_count,\ "{}\ "{});}}
+\DoxyCodeLine{00033\ }
+\DoxyCodeLine{00034\ \textcolor{comment}{/*\ fprintf\ function\ wrapper\ that\ transforms\ given\ FORMAT\ to\ follow\ given}}
+\DoxyCodeLine{00035\ \textcolor{comment}{\ \ \ number\ for\ SPACE\_COUNT\ and\ call\ fprintf\ for\ a\ FILE.\ \ */}}
+\DoxyCodeLine{00036\ \textcolor{preprocessor}{\#define\ FPRINTF\_SPACES(file,\ space\_count,\ format,\ ...)\ \(\backslash\)}}
+\DoxyCodeLine{00037\ \textcolor{preprocessor}{\ \ fprintf\ (file,\ "{}\%*s"{}\ format,\ space\_count,\ "{}\ "{},\ \#\#\_\_VA\_ARGS\_\_);}}
+\DoxyCodeLine{00038\ }
+\DoxyCodeLine{00039\ \textcolor{comment}{/*\ Logs\ a\ MESSAGE\ to\ dump\_file\ if\ exists\ and\ returns\ false.\ FUNC\ is\ name}}
+\DoxyCodeLine{00040\ \textcolor{comment}{\ \ \ of\ function\ and\ LINE\ is\ location\ in\ the\ source\ file.\ \ */}}
+\DoxyCodeLine{00041\ }
+\DoxyCodeLine{00042\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{bool}}
+\DoxyCodeLine{00043\ \doxymbox{\hyperlink{ipa-icf-gimple_8h_aa2bead7d43c464a52e5ac14f8258c61d}{return\_false\_with\_message\_1}}\ (\textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *message,\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *filename,}
+\DoxyCodeLine{00044\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *func,\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ line)}
+\DoxyCodeLine{00045\ \{}
+\DoxyCodeLine{00046\ \ \ \textcolor{keywordflow}{if}\ (\doxymbox{\hyperlink{dumpfile_8h_ad120f3485ae619a3fd8b645e6fe3d9b9}{dump\_file}}\ \&\&\ (\doxymbox{\hyperlink{dumpfile_8h_a29bcffb27ffbf98e0b325ee1cfbbd273}{dump\_flags}}\ \&\ \doxymbox{\hyperlink{dumpfile_8h_a46ea204a52b2b7db3da32879f10ed1bca70f7814a774aefe3f44056d248f58f6a}{TDF\_DETAILS}}))}
+\DoxyCodeLine{00047\ \ \ \ \ fprintf\ (\doxymbox{\hyperlink{dumpfile_8h_ad120f3485ae619a3fd8b645e6fe3d9b9}{dump\_file}},\ \textcolor{stringliteral}{"{}\ \ false\ returned:\ '\%s'\ in\ \%s\ at\ \%s:\%u\(\backslash\)n"{}},\ message,\ func,}
+\DoxyCodeLine{00048\ \ \ \ \ \ \ \ \ \ filename,\ line);}
+\DoxyCodeLine{00049\ \ \ \textcolor{keywordflow}{return}\ \textcolor{keyword}{false};}
+\DoxyCodeLine{00050\ \}}
+\DoxyCodeLine{00051\ }
+\DoxyCodeLine{00052\ \textcolor{comment}{/*\ Logs\ a\ MESSAGE\ to\ dump\_file\ if\ exists\ and\ returns\ false.\ \ */}}
+\DoxyCodeLine{00053\ \textcolor{preprocessor}{\#define\ return\_false\_with\_msg(message)\ \(\backslash\)}}
+\DoxyCodeLine{00054\ \textcolor{preprocessor}{\ \ return\_false\_with\_message\_1\ (message,\ \_\_FILE\_\_,\ \_\_func\_\_,\ \_\_LINE\_\_)}}
+\DoxyCodeLine{00055\ }
+\DoxyCodeLine{00056\ \textcolor{comment}{/*\ Return\ false\ and\ log\ that\ false\ value\ is\ returned.\ \ */}}
+\DoxyCodeLine{00057\ \textcolor{preprocessor}{\#define\ return\_false()\ return\_false\_with\_msg\ ("{}"{})}}
+\DoxyCodeLine{00058\ }
+\DoxyCodeLine{00059\ \textcolor{comment}{/*\ Logs\ return\ value\ if\ RESULT\ is\ false.\ FUNC\ is\ name\ of\ function\ and\ LINE}}
+\DoxyCodeLine{00060\ \textcolor{comment}{\ \ \ is\ location\ in\ the\ source\ file.\ \ */}}
+\DoxyCodeLine{00061\ }
+\DoxyCodeLine{00062\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{bool}}
+\DoxyCodeLine{00063\ \doxymbox{\hyperlink{ipa-icf-gimple_8h_a4efb2ca2d45cf04ea05758b134805765}{return\_with\_result}}\ (\textcolor{keywordtype}{bool}\ result,\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *filename,}
+\DoxyCodeLine{00064\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *func,\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ line)}
+\DoxyCodeLine{00065\ \{}
+\DoxyCodeLine{00066\ \ \ \textcolor{keywordflow}{if}\ (!result\ \&\&\ \doxymbox{\hyperlink{dumpfile_8h_ad120f3485ae619a3fd8b645e6fe3d9b9}{dump\_file}}\ \&\&\ (\doxymbox{\hyperlink{dumpfile_8h_a29bcffb27ffbf98e0b325ee1cfbbd273}{dump\_flags}}\ \&\ \doxymbox{\hyperlink{dumpfile_8h_a46ea204a52b2b7db3da32879f10ed1bca70f7814a774aefe3f44056d248f58f6a}{TDF\_DETAILS}}))}
+\DoxyCodeLine{00067\ \ \ \ \ fprintf\ (\doxymbox{\hyperlink{dumpfile_8h_ad120f3485ae619a3fd8b645e6fe3d9b9}{dump\_file}},\ \textcolor{stringliteral}{"{}\ \ false\ returned:\ ''\ in\ \%s\ at\ \%s:\%u\(\backslash\)n"{}},\ func,}
+\DoxyCodeLine{00068\ \ \ \ \ \ \ \ \ \ filename,\ line);}
+\DoxyCodeLine{00069\ }
+\DoxyCodeLine{00070\ \ \ \textcolor{keywordflow}{return}\ result;}
+\DoxyCodeLine{00071\ \}}
+\DoxyCodeLine{00072\ }
+\DoxyCodeLine{00073\ \textcolor{comment}{/*\ Logs\ return\ value\ if\ RESULT\ is\ false.\ \ */}}
+\DoxyCodeLine{00074\ \textcolor{preprocessor}{\#define\ return\_with\_debug(result)\ return\_with\_result\ \(\backslash\)}}
+\DoxyCodeLine{00075\ \textcolor{preprocessor}{\ \ (result,\ \_\_FILE\_\_,\ \_\_func\_\_,\ \_\_LINE\_\_)}}
+\DoxyCodeLine{00076\ }
+\DoxyCodeLine{00077\ \textcolor{comment}{/*\ Verbose\ logging\ function\ logging\ statements\ S1\ and\ S2\ of\ a\ CODE.}}
+\DoxyCodeLine{00078\ \textcolor{comment}{\ \ \ FUNC\ is\ name\ of\ function\ and\ LINE\ is\ location\ in\ the\ source\ file.\ \ */}}
+\DoxyCodeLine{00079\ }
+\DoxyCodeLine{00080\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{bool}}
+\DoxyCodeLine{00081\ \doxymbox{\hyperlink{ipa-icf-gimple_8h_a22d9b4e6a51d3da9a993f5f14aae0521}{return\_different\_stmts\_1}}\ (gimple\ *s1,\ gimple\ *s2,\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *code,}
+\DoxyCodeLine{00082\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *func,\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ line)}
+\DoxyCodeLine{00083\ \{}
+\DoxyCodeLine{00084\ \ \ \textcolor{keywordflow}{if}\ (\doxymbox{\hyperlink{dumpfile_8h_ad120f3485ae619a3fd8b645e6fe3d9b9}{dump\_file}}\ \&\&\ (\doxymbox{\hyperlink{dumpfile_8h_a29bcffb27ffbf98e0b325ee1cfbbd273}{dump\_flags}}\ \&\ \doxymbox{\hyperlink{dumpfile_8h_a46ea204a52b2b7db3da32879f10ed1bca70f7814a774aefe3f44056d248f58f6a}{TDF\_DETAILS}}))}
+\DoxyCodeLine{00085\ \ \ \ \ \{}
+\DoxyCodeLine{00086\ \ \ \ \ \ \ fprintf\ (\doxymbox{\hyperlink{dumpfile_8h_ad120f3485ae619a3fd8b645e6fe3d9b9}{dump\_file}},\ \textcolor{stringliteral}{"{}\ \ different\ statement\ for\ code:\ \%s\ (\%s:\%u):\(\backslash\)n"{}},}
+\DoxyCodeLine{00087\ \ \ \ \ \ \ \ \ \ \ \ code,\ func,\ line);}
+\DoxyCodeLine{00088\ }
+\DoxyCodeLine{00089\ \ \ \ \ \ \ \doxymbox{\hyperlink{gimple-pretty-print_8h_a2bee3aa979a3a089526f4751182d18db}{print\_gimple\_stmt}}\ (\doxymbox{\hyperlink{dumpfile_8h_ad120f3485ae619a3fd8b645e6fe3d9b9}{dump\_file}},\ s1,\ 3,\ \doxymbox{\hyperlink{dumpfile_8h_a46ea204a52b2b7db3da32879f10ed1bca70f7814a774aefe3f44056d248f58f6a}{TDF\_DETAILS}});}
+\DoxyCodeLine{00090\ \ \ \ \ \ \ \doxymbox{\hyperlink{gimple-pretty-print_8h_a2bee3aa979a3a089526f4751182d18db}{print\_gimple\_stmt}}\ (\doxymbox{\hyperlink{dumpfile_8h_ad120f3485ae619a3fd8b645e6fe3d9b9}{dump\_file}},\ s2,\ 3,\ \doxymbox{\hyperlink{dumpfile_8h_a46ea204a52b2b7db3da32879f10ed1bca70f7814a774aefe3f44056d248f58f6a}{TDF\_DETAILS}});}
+\DoxyCodeLine{00091\ \ \ \ \ \}}
+\DoxyCodeLine{00092\ }
+\DoxyCodeLine{00093\ \ \ \textcolor{keywordflow}{return}\ \textcolor{keyword}{false};}
+\DoxyCodeLine{00094\ \}}
+\DoxyCodeLine{00095\ }
+\DoxyCodeLine{00096\ \textcolor{comment}{/*\ Verbose\ logging\ function\ logging\ statements\ S1\ and\ S2\ of\ a\ CODE.\ \ */}}
+\DoxyCodeLine{00097\ \textcolor{preprocessor}{\#define\ return\_different\_stmts(s1,\ s2,\ code)\ \(\backslash\)}}
+\DoxyCodeLine{00098\ \textcolor{preprocessor}{\ \ return\_different\_stmts\_1\ (s1,\ s2,\ code,\ \_\_func\_\_,\ \_\_LINE\_\_)}}
+\DoxyCodeLine{00099\ }
+\DoxyCodeLine{00100\ \textcolor{keyword}{namespace\ }\doxymbox{\hyperlink{namespaceipa__icf__gimple}{ipa\_icf\_gimple}}\ \{}
+\DoxyCodeLine{00101\ }
+\DoxyCodeLine{00102\ \textcolor{comment}{/*\ Basic\ block\ struct\ for\ semantic\ equality\ pass.\ \ */}}
+\DoxyCodeLine{00103\ \textcolor{keyword}{class\ }\doxymbox{\hyperlink{classipa__icf__gimple_1_1sem__bb_ace178629e414bf00181a987b8e6a3d2c}{sem\_bb}}}
+\DoxyCodeLine{00104\ \{}
+\DoxyCodeLine{00105\ \textcolor{keyword}{public}:}
+\DoxyCodeLine{00106\ \ \ \doxymbox{\hyperlink{classipa__icf__gimple_1_1sem__bb_ace178629e414bf00181a987b8e6a3d2c}{sem\_bb}}\ (\doxymbox{\hyperlink{coretypes_8h_a0469df20b471a4cd7c81fbdce5027487}{basic\_block}}\ bb\_,\ \textcolor{keywordtype}{unsigned}\ nondbg\_stmt\_count\_,\ \textcolor{keywordtype}{unsigned}\ edge\_count\_):}
+\DoxyCodeLine{00107\ \ \ \ \ \doxymbox{\hyperlink{classipa__icf__gimple_1_1sem__bb_afc7fe220b74f327aec29109065333501}{bb}}\ (bb\_),\ \doxymbox{\hyperlink{classipa__icf__gimple_1_1sem__bb_a861294ad403b53ddbb6de04058c19212}{nondbg\_stmt\_count}}\ (nondbg\_stmt\_count\_),\ \doxymbox{\hyperlink{classipa__icf__gimple_1_1sem__bb_a7dff644a94ae86f5f27f3aed40554177}{edge\_count}}\ (edge\_count\_)\ \{\}}
+\DoxyCodeLine{00108\ }
+\DoxyCodeLine{00109\ \ \ \textcolor{comment}{/*\ Basic\ block\ the\ structure\ belongs\ to.\ \ */}}
+\DoxyCodeLine{00110\ \ \ \doxymbox{\hyperlink{coretypes_8h_a0469df20b471a4cd7c81fbdce5027487}{basic\_block}}\ \doxymbox{\hyperlink{classipa__icf__gimple_1_1sem__bb_afc7fe220b74f327aec29109065333501}{bb}};}
+\DoxyCodeLine{00111\ }
+\DoxyCodeLine{00112\ \ \ \textcolor{comment}{/*\ Number\ of\ non-\/debug\ statements\ in\ the\ basic\ block.\ \ */}}
+\DoxyCodeLine{00113\ \ \ \textcolor{keywordtype}{unsigned}\ \doxymbox{\hyperlink{classipa__icf__gimple_1_1sem__bb_a861294ad403b53ddbb6de04058c19212}{nondbg\_stmt\_count}};}
+\DoxyCodeLine{00114\ }
+\DoxyCodeLine{00115\ \ \ \textcolor{comment}{/*\ Number\ of\ edges\ connected\ to\ the\ block.\ \ */}}
+\DoxyCodeLine{00116\ \ \ \textcolor{keywordtype}{unsigned}\ \doxymbox{\hyperlink{classipa__icf__gimple_1_1sem__bb_a7dff644a94ae86f5f27f3aed40554177}{edge\_count}};}
+\DoxyCodeLine{00117\ \};}
+\DoxyCodeLine{00118\ }
+\DoxyCodeLine{00119\ \textcolor{comment}{/*\ A\ class\ aggregating\ all\ connections\ and\ semantic\ equivalents}}
+\DoxyCodeLine{00120\ \textcolor{comment}{\ \ \ for\ a\ given\ pair\ of\ semantic\ function\ candidates.\ \ */}}
+\DoxyCodeLine{00121\ \textcolor{keyword}{class\ }\doxymbox{\hyperlink{classipa__icf__gimple_1_1func__checker_ad55d5ad1ad29d9a11f4988160d406c72}{func\_checker}}\ :\ \doxymbox{\hyperlink{classao__compare}{ao\_compare}}}
+\DoxyCodeLine{00122\ \{}
+\DoxyCodeLine{00123\ \textcolor{keyword}{public}:}
+\DoxyCodeLine{00124\ \ \ \textcolor{comment}{/*\ Default\ constructor.\ \ */}}
+\DoxyCodeLine{00125\ \ \ \doxymbox{\hyperlink{classipa__icf__gimple_1_1func__checker_ad55d5ad1ad29d9a11f4988160d406c72}{func\_checker}}\ ():}
+\DoxyCodeLine{00126\ \ \ \ \ \doxymbox{\hyperlink{classipa__icf__gimple_1_1func__checker_a3abde1e8096cd7229e10b4b3e12f0a21}{m\_source\_func\_decl}}\ (\doxymbox{\hyperlink{tree_8h_aeda0ce25865d2494883f523217559d1e}{NULL\_TREE}}),\ \doxymbox{\hyperlink{classipa__icf__gimple_1_1func__checker_a3394aa708e882b538f7498c053e8c67e}{m\_target\_func\_decl}}\ (\doxymbox{\hyperlink{tree_8h_aeda0ce25865d2494883f523217559d1e}{NULL\_TREE}}),}
+\DoxyCodeLine{00127\ \ \ \ \ \doxymbox{\hyperlink{classipa__icf__gimple_1_1func__checker_a975153de1a548f16a85860dafeb5e13e}{m\_ignored\_source\_nodes}}\ (\doxymbox{\hyperlink{stddef_8h_a070d2ce7b6bb7e5c05602aa8c308d0c4}{NULL}}),\ \doxymbox{\hyperlink{classipa__icf__gimple_1_1func__checker_a3c705d2269eaee85f1d1e7ab34f0dbb1}{m\_ignored\_target\_nodes}}\ (\doxymbox{\hyperlink{stddef_8h_a070d2ce7b6bb7e5c05602aa8c308d0c4}{NULL}}),}
+\DoxyCodeLine{00128\ \ \ \ \ \doxymbox{\hyperlink{classipa__icf__gimple_1_1func__checker_a7fec4386b45c0c83b69c0168a75b7e2e}{m\_ignore\_labels}}\ (\doxymbox{\hyperlink{stdbool_8h_a65e9886d74aaee76545e83dd09011727}{false}}),\ \doxymbox{\hyperlink{classipa__icf__gimple_1_1func__checker_a0f8c7dea20d2ea7d92b410efa866457e}{m\_tbaa}}\ (\doxymbox{\hyperlink{stdbool_8h_a41f9c5fb8b08eb5dc3edce4dcb37fee7}{true}}),}
+\DoxyCodeLine{00129\ \ \ \ \ \doxymbox{\hyperlink{classipa__icf__gimple_1_1func__checker_afd178f1d9c9dd28cc5426fb3857bf62f}{m\_total\_scalarization\_limit\_known\_p}}\ (\doxymbox{\hyperlink{stdbool_8h_a65e9886d74aaee76545e83dd09011727}{false}})}
+\DoxyCodeLine{00130\ \ \ \{}
+\DoxyCodeLine{00131\ \ \ \ \ \doxymbox{\hyperlink{classipa__icf__gimple_1_1func__checker_a14016967eeca9998a008755dc945dd19}{m\_source\_ssa\_names}}.create\ (0);}
+\DoxyCodeLine{00132\ \ \ \ \ \doxymbox{\hyperlink{classipa__icf__gimple_1_1func__checker_addd901e638a5436c2decefedcf738515}{m\_target\_ssa\_names}}.create\ (0);}
+\DoxyCodeLine{00133\ \ \ \}}
+\DoxyCodeLine{00134\ }
+\DoxyCodeLine{00135\ \ \ \textcolor{comment}{/*\ Initialize\ internal\ structures\ for\ a\ given\ SOURCE\_FUNC\_DECL\ and}}
+\DoxyCodeLine{00136\ \textcolor{comment}{\ \ \ \ \ TARGET\_FUNC\_DECL.\ Strict\ polymorphic\ comparison\ is\ processed\ if}}
+\DoxyCodeLine{00137\ \textcolor{comment}{\ \ \ \ \ an\ option\ COMPARE\_POLYMORPHIC\ is\ true.\ For\ special\ cases,\ one\ can}}
+\DoxyCodeLine{00138\ \textcolor{comment}{\ \ \ \ \ set\ IGNORE\_LABELS\ to\ skip\ label\ comparison.}}
+\DoxyCodeLine{00139\ \textcolor{comment}{\ \ \ \ \ Similarly,\ IGNORE\_SOURCE\_DECLS\ and\ IGNORE\_TARGET\_DECLS\ are\ sets}}
+\DoxyCodeLine{00140\ \textcolor{comment}{\ \ \ \ \ of\ declarations\ that\ can\ be\ skipped.\ \ */}}
+\DoxyCodeLine{00141\ \ \ \doxymbox{\hyperlink{classipa__icf__gimple_1_1func__checker_ae1ea66d826c142866999e8e974dc294a}{func\_checker}}\ (\doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ source\_func\_decl,\ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ target\_func\_decl,}
+\DoxyCodeLine{00142\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{bool}\ ignore\_labels\ =\ \textcolor{keyword}{false},}
+\DoxyCodeLine{00143\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{bool}\ tbaa\ =\ \textcolor{keyword}{true},}
+\DoxyCodeLine{00144\ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{classhash__set}{hash\_set<symtab\_node\ *>}}\ *ignored\_source\_nodes\ =\ \doxymbox{\hyperlink{stddef_8h_a070d2ce7b6bb7e5c05602aa8c308d0c4}{NULL}},}
+\DoxyCodeLine{00145\ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{classhash__set}{hash\_set<symtab\_node\ *>}}\ *ignored\_target\_nodes\ =\ \doxymbox{\hyperlink{stddef_8h_a070d2ce7b6bb7e5c05602aa8c308d0c4}{NULL}});}
+\DoxyCodeLine{00146\ }
+\DoxyCodeLine{00147\ \ \ \textcolor{comment}{/*\ Memory\ release\ routine.\ \ */}}
+\DoxyCodeLine{00148\ \ \ \textcolor{keyword}{virtual}\ \doxymbox{\hyperlink{classipa__icf__gimple_1_1func__checker_a13f2077e409702dd212d620ff8fd7ee8}{\string~func\_checker}}\ ();}
+\DoxyCodeLine{00149\ }
+\DoxyCodeLine{00150\ \ \ \textcolor{comment}{/*\ Function\ visits\ all\ gimple\ labels\ and\ creates\ corresponding}}
+\DoxyCodeLine{00151\ \textcolor{comment}{\ \ \ \ \ mapping\ between\ basic\ blocks\ and\ labels.\ \ */}}
+\DoxyCodeLine{00152\ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classipa__icf__gimple_1_1func__checker_a9b33a5cf97cfbca8fa42d56259739959}{parse\_labels}}\ (\doxymbox{\hyperlink{classipa__icf__gimple_1_1sem__bb}{sem\_bb}}\ *bb);}
+\DoxyCodeLine{00153\ }
+\DoxyCodeLine{00154\ \ \ \textcolor{comment}{/*\ Basic\ block\ equivalence\ comparison\ function\ that\ returns\ true\ if}}
+\DoxyCodeLine{00155\ \textcolor{comment}{\ \ \ \ \ basic\ blocks\ BB1\ and\ BB2\ correspond.\ \ */}}
+\DoxyCodeLine{00156\ \ \ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{classipa__icf__gimple_1_1func__checker_afcd19d20943e31c14d5de93b57a57370}{compare\_bb}}\ (\doxymbox{\hyperlink{classipa__icf__gimple_1_1sem__bb}{sem\_bb}}\ *bb1,\ \doxymbox{\hyperlink{classipa__icf__gimple_1_1sem__bb}{sem\_bb}}\ *bb2);}
+\DoxyCodeLine{00157\ }
+\DoxyCodeLine{00158\ \ \ \textcolor{comment}{/*\ Verifies\ that\ trees\ T1\ and\ T2\ are\ equivalent\ from\ perspective\ of\ ICF.\ \ */}}
+\DoxyCodeLine{00159\ \ \ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{classipa__icf__gimple_1_1func__checker_a00ec6c5a9ecd1baf2a5538fb68d8aca6}{compare\_ssa\_name}}\ (\doxymbox{\hyperlink{coretypes_8h_ad41eb6a6028ff5b3fd00b1ee9f35ed46}{const\_tree}}\ t1,\ \doxymbox{\hyperlink{coretypes_8h_ad41eb6a6028ff5b3fd00b1ee9f35ed46}{const\_tree}}\ t2);}
+\DoxyCodeLine{00160\ }
+\DoxyCodeLine{00161\ \ \ \textcolor{comment}{/*\ Verification\ function\ for\ edges\ E1\ and\ E2.\ \ */}}
+\DoxyCodeLine{00162\ \ \ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{classipa__icf__gimple_1_1func__checker_ac7ec57e9bd60b70f7a87810811cbb37b}{compare\_edge}}\ (\doxymbox{\hyperlink{coretypes_8h_a44ae11f0c90646aa6208ad4bf486490b}{edge}}\ e1,\ \doxymbox{\hyperlink{coretypes_8h_a44ae11f0c90646aa6208ad4bf486490b}{edge}}\ e2);}
+\DoxyCodeLine{00163\ }
+\DoxyCodeLine{00164\ \ \ \textcolor{comment}{/*\ Verifies\ for\ given\ GIMPLEs\ S1\ and\ S2\ that}}
+\DoxyCodeLine{00165\ \textcolor{comment}{\ \ \ \ \ call\ statements\ are\ semantically\ equivalent.\ \ */}}
+\DoxyCodeLine{00166\ \ \ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{classipa__icf__gimple_1_1func__checker_aa4f15c13a501b217c64ebfb2a86b9b0a}{compare\_gimple\_call}}\ (gcall\ *s1,\ gcall\ *s2);}
+\DoxyCodeLine{00167\ }
+\DoxyCodeLine{00168\ \ \ \textcolor{comment}{/*\ Verifies\ for\ given\ GIMPLEs\ S1\ and\ S2\ that}}
+\DoxyCodeLine{00169\ \textcolor{comment}{\ \ \ \ \ assignment\ statements\ are\ semantically\ equivalent.\ \ */}}
+\DoxyCodeLine{00170\ \ \ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{classipa__icf__gimple_1_1func__checker_a07b0f33b36178397c6a8ea13533acd58}{compare\_gimple\_assign}}\ (gimple\ *s1,\ gimple\ *s2);}
+\DoxyCodeLine{00171\ }
+\DoxyCodeLine{00172\ \ \ \textcolor{comment}{/*\ Verifies\ for\ given\ GIMPLEs\ S1\ and\ S2\ that}}
+\DoxyCodeLine{00173\ \textcolor{comment}{\ \ \ \ \ condition\ statements\ are\ semantically\ equivalent.\ \ */}}
+\DoxyCodeLine{00174\ \ \ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{classipa__icf__gimple_1_1func__checker_a706e2d4f6ca816006f384d5eb575294d}{compare\_gimple\_cond}}\ (gimple\ *s1,\ gimple\ *s2);}
+\DoxyCodeLine{00175\ }
+\DoxyCodeLine{00176\ \ \ \textcolor{comment}{/*\ Verifies\ for\ given\ GIMPLE\_LABEL\ stmts\ S1\ and\ S2\ that}}
+\DoxyCodeLine{00177\ \textcolor{comment}{\ \ \ \ \ label\ statements\ are\ semantically\ equivalent.\ \ */}}
+\DoxyCodeLine{00178\ \ \ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{classipa__icf__gimple_1_1func__checker_aee4dd10c6abd2089d623cdf8e2061cdc}{compare\_gimple\_label}}\ (\textcolor{keyword}{const}\ glabel\ *s1,\ \textcolor{keyword}{const}\ glabel\ *s2);}
+\DoxyCodeLine{00179\ }
+\DoxyCodeLine{00180\ \ \ \textcolor{comment}{/*\ Verifies\ for\ given\ GIMPLE\_SWITCH\ stmts\ S1\ and\ S2\ that}}
+\DoxyCodeLine{00181\ \textcolor{comment}{\ \ \ \ \ switch\ statements\ are\ semantically\ equivalent.\ \ */}}
+\DoxyCodeLine{00182\ \ \ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{classipa__icf__gimple_1_1func__checker_a52da61e240229a07ab11421688d7ba4f}{compare\_gimple\_switch}}\ (\textcolor{keyword}{const}\ gswitch\ *s1,\ \textcolor{keyword}{const}\ gswitch\ *s2);}
+\DoxyCodeLine{00183\ }
+\DoxyCodeLine{00184\ \ \ \textcolor{comment}{/*\ Verifies\ for\ given\ GIMPLE\_RETURN\ stmts\ S1\ and\ S2\ that}}
+\DoxyCodeLine{00185\ \textcolor{comment}{\ \ \ \ \ return\ statements\ are\ semantically\ equivalent.\ \ */}}
+\DoxyCodeLine{00186\ \ \ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{classipa__icf__gimple_1_1func__checker_aee7f6ce9b3afc3be936f0de9cf7d894e}{compare\_gimple\_return}}\ (\textcolor{keyword}{const}\ greturn\ *s1,\ \textcolor{keyword}{const}\ greturn\ *s2);}
+\DoxyCodeLine{00187\ }
+\DoxyCodeLine{00188\ \ \ \textcolor{comment}{/*\ Verifies\ for\ given\ GIMPLEs\ S1\ and\ S2\ that}}
+\DoxyCodeLine{00189\ \textcolor{comment}{\ \ \ \ \ goto\ statements\ are\ semantically\ equivalent.\ \ */}}
+\DoxyCodeLine{00190\ \ \ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{classipa__icf__gimple_1_1func__checker_a81edfa3ec748db000b7536e951490d29}{compare\_gimple\_goto}}\ (gimple\ *s1,\ gimple\ *s2);}
+\DoxyCodeLine{00191\ }
+\DoxyCodeLine{00192\ \ \ \textcolor{comment}{/*\ Verifies\ for\ given\ GIMPLE\_RESX\ stmts\ S1\ and\ S2\ that}}
+\DoxyCodeLine{00193\ \textcolor{comment}{\ \ \ \ \ resx\ statements\ are\ semantically\ equivalent.\ \ */}}
+\DoxyCodeLine{00194\ \ \ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{classipa__icf__gimple_1_1func__checker_a83d44ec9beb5d9f615a3dbbab01c2d29}{compare\_gimple\_resx}}\ (\textcolor{keyword}{const}\ gresx\ *s1,\ \textcolor{keyword}{const}\ gresx\ *s2);}
+\DoxyCodeLine{00195\ }
+\DoxyCodeLine{00196\ \ \ \textcolor{comment}{/*\ Verifies\ for\ given\ GIMPLE\_ASM\ stmts\ S1\ and\ S2\ that\ ASM\ statements}}
+\DoxyCodeLine{00197\ \textcolor{comment}{\ \ \ \ \ are\ equivalent.}}
+\DoxyCodeLine{00198\ \textcolor{comment}{\ \ \ \ \ For\ the\ beginning,\ the\ pass\ only\ supports\ equality\ for}}
+\DoxyCodeLine{00199\ \textcolor{comment}{\ \ \ \ \ '\_\_asm\_\_\ \_\_volatile\_\_\ ("{}"{},\ "{}"{},\ "{}"{},\ "{}memory"{})'.\ \ */}}
+\DoxyCodeLine{00200\ \ \ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{classipa__icf__gimple_1_1func__checker_a4e812c5a4c6407c0e77bcfe168a06fff}{compare\_gimple\_asm}}\ (\textcolor{keyword}{const}\ gasm\ *s1,\ \textcolor{keyword}{const}\ gasm\ *s2);}
+\DoxyCodeLine{00201\ }
+\DoxyCodeLine{00202\ \ \ \textcolor{comment}{/*\ Verification\ function\ for\ declaration\ trees\ T1\ and\ T2.\ \ */}}
+\DoxyCodeLine{00203\ \ \ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{classipa__icf__gimple_1_1func__checker_aac783606b333511dbff3f0c3925a541e}{compare\_decl}}\ (\doxymbox{\hyperlink{coretypes_8h_ad41eb6a6028ff5b3fd00b1ee9f35ed46}{const\_tree}}\ t1,\ \doxymbox{\hyperlink{coretypes_8h_ad41eb6a6028ff5b3fd00b1ee9f35ed46}{const\_tree}}\ t2);}
+\DoxyCodeLine{00204\ }
+\DoxyCodeLine{00205\ \ \ \textcolor{comment}{/*\ Compute\ hash\ map\ MAP\ that\ determines\ loads\ and\ stores\ of\ STMT.\ \ */}}
+\DoxyCodeLine{00206\ \ \ \textcolor{keyword}{enum}\ \doxymbox{\hyperlink{classipa__icf__gimple_1_1func__checker_ac62ff3ebe52a543583748182b7f3d57a}{operand\_access\_type}}\ \{\doxymbox{\hyperlink{classipa__icf__gimple_1_1func__checker_ac62ff3ebe52a543583748182b7f3d57aa5260de4424bd8fb100e94b58c84e291c}{OP\_MEMORY}},\ \doxymbox{\hyperlink{classipa__icf__gimple_1_1func__checker_ac62ff3ebe52a543583748182b7f3d57aabd4aa2ff9b082ff8850b61e2c71147e7}{OP\_NORMAL}}\};}
+\DoxyCodeLine{00207\ \ \ \textcolor{keyword}{typedef}\ \doxymbox{\hyperlink{classhash__set}{hash\_set<tree>}}\ \doxymbox{\hyperlink{classipa__icf__gimple_1_1func__checker_aff5785e8f556a9d20cb6a7e7f078d0f9}{operand\_access\_type\_map}};}
+\DoxyCodeLine{00208\ }
+\DoxyCodeLine{00209\ \ \ \textcolor{comment}{/*\ Return\ true\ if\ either\ T1\ and\ T2\ cannot\ be\ totally\ scalarized\ or\ if\ doing}}
+\DoxyCodeLine{00210\ \textcolor{comment}{\ \ \ \ \ so\ would\ result\ in\ copying\ the\ same\ memory.\ \ Otherwise\ return\ false.\ \ */}}
+\DoxyCodeLine{00211\ \ \ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{classipa__icf__gimple_1_1func__checker_a6a23863839b92cdb7d640de8734a1962}{safe\_for\_total\_scalarization\_p}}\ (\doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ t1,\ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ t2);}
+\DoxyCodeLine{00212\ }
+\DoxyCodeLine{00213\ \ \ \textcolor{comment}{/*\ Function\ responsible\ for\ comparison\ of\ various\ operands\ T1\ and\ T2.}}
+\DoxyCodeLine{00214\ \textcolor{comment}{\ \ \ \ \ If\ these\ components,\ from\ functions\ FUNC1\ and\ FUNC2,\ are\ equal,\ true}}
+\DoxyCodeLine{00215\ \textcolor{comment}{\ \ \ \ \ is\ returned.\ \ */}}
+\DoxyCodeLine{00216\ \ \ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{classipa__icf__gimple_1_1func__checker_acd975f0725185c2dfdd84956d41180c9}{compare\_operand}}\ (\doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ t1,\ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ t2,\ \doxymbox{\hyperlink{classipa__icf__gimple_1_1func__checker_ac62ff3ebe52a543583748182b7f3d57a}{operand\_access\_type}}\ \doxymbox{\hyperlink{structtype}{type}});}
+\DoxyCodeLine{00217\ }
+\DoxyCodeLine{00218\ \ \ \textcolor{comment}{/*\ Compares\ GIMPLE\ ASM\ inputs\ (or\ outputs)\ where\ we\ iterate\ tree\ chain}}
+\DoxyCodeLine{00219\ \textcolor{comment}{\ \ \ \ \ and\ compare\ both\ TREE\_PURPOSEs\ and\ TREE\_VALUEs.\ \ */}}
+\DoxyCodeLine{00220\ \ \ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{classipa__icf__gimple_1_1func__checker_a4db4bce14beb0c01b0e66e228fa1baf7}{compare\_asm\_inputs\_outputs}}\ (\doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ t1,\ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ t2,}
+\DoxyCodeLine{00221\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{classipa__icf__gimple_1_1func__checker_aff5785e8f556a9d20cb6a7e7f078d0f9}{operand\_access\_type\_map}}\ *map);}
+\DoxyCodeLine{00222\ }
+\DoxyCodeLine{00223\ \ \ \textcolor{comment}{/*\ Verifies\ that\ trees\ T1\ and\ T2,\ representing\ function\ declarations}}
+\DoxyCodeLine{00224\ \textcolor{comment}{\ \ \ \ \ are\ equivalent\ from\ perspective\ of\ ICF.\ \ */}}
+\DoxyCodeLine{00225\ \ \ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{classipa__icf__gimple_1_1func__checker_acaf6150bbb5e998bbc6237cc3f257f27}{compare\_function\_decl}}\ (\doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ t1,\ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ t2);}
+\DoxyCodeLine{00226\ }
+\DoxyCodeLine{00227\ \ \ \textcolor{comment}{/*\ Verifies\ that\ trees\ T1\ and\ T2\ do\ correspond.\ \ */}}
+\DoxyCodeLine{00228\ \ \ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{classipa__icf__gimple_1_1func__checker_ac0a1114cbb05f15e37ecff72cf5c3529}{compare\_variable\_decl}}\ (\doxymbox{\hyperlink{coretypes_8h_ad41eb6a6028ff5b3fd00b1ee9f35ed46}{const\_tree}}\ t1,\ \doxymbox{\hyperlink{coretypes_8h_ad41eb6a6028ff5b3fd00b1ee9f35ed46}{const\_tree}}\ t2);}
+\DoxyCodeLine{00229\ }
+\DoxyCodeLine{00230\ \ \ \textcolor{comment}{/*\ Compare\ loop\ information\ for\ basic\ blocks\ BB1\ and\ BB2.\ \ */}}
+\DoxyCodeLine{00231\ \ \ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{classipa__icf__gimple_1_1func__checker_a30daa27ef1ca99bc2935482b8087fc5f}{compare\_loops}}\ (\doxymbox{\hyperlink{coretypes_8h_a0469df20b471a4cd7c81fbdce5027487}{basic\_block}}\ bb1,\ \doxymbox{\hyperlink{coretypes_8h_a0469df20b471a4cd7c81fbdce5027487}{basic\_block}}\ bb2);}
+\DoxyCodeLine{00232\ }
+\DoxyCodeLine{00233\ \ \ \textcolor{comment}{/*\ Return\ true\ if\ types\ are\ compatible\ for\ polymorphic\ call\ analysis.}}
+\DoxyCodeLine{00234\ \textcolor{comment}{\ \ \ \ \ COMPARE\_PTR\ indicates\ if\ polymorphic\ type\ comparison\ should\ be}}
+\DoxyCodeLine{00235\ \textcolor{comment}{\ \ \ \ \ done\ for\ pointers,\ too.\ \ */}}
+\DoxyCodeLine{00236\ \ \ \textcolor{keyword}{static}\ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{classipa__icf__gimple_1_1func__checker_aecd8f3b6d906811b7f53796a229877ac}{compatible\_polymorphic\_types\_p}}\ (\doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ t1,\ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ t2,}
+\DoxyCodeLine{00237\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{bool}\ compare\_ptr);}
+\DoxyCodeLine{00238\ }
+\DoxyCodeLine{00239\ \ \ \textcolor{comment}{/*\ Return\ true\ if\ types\ are\ compatible\ from\ perspective\ of\ ICF.}}
+\DoxyCodeLine{00240\ \textcolor{comment}{\ \ \ \ \ FIRST\_ARGUMENT\ indicates\ if\ the\ comparison\ is\ called\ for}}
+\DoxyCodeLine{00241\ \textcolor{comment}{\ \ \ \ \ first\ parameter\ of\ a\ function.\ \ */}}
+\DoxyCodeLine{00242\ \ \ \textcolor{keyword}{static}\ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{classipa__icf__gimple_1_1func__checker_a0b7fa5e2c6c38003f973389faac204d0}{compatible\_types\_p}}\ (\doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ t1,\ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ t2);}
+\DoxyCodeLine{00243\ }
+\DoxyCodeLine{00244\ \ \ \textcolor{comment}{/*\ Compute\ hash\ map\ determining\ access\ types\ of\ operands.\ \ */}}
+\DoxyCodeLine{00245\ \ \ \textcolor{keyword}{static}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classipa__icf__gimple_1_1func__checker_aca608cfdf655430d9b8574ed6af38346}{classify\_operands}}\ (\textcolor{keyword}{const}\ gimple\ *stmt,}
+\DoxyCodeLine{00246\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{classipa__icf__gimple_1_1func__checker_aff5785e8f556a9d20cb6a7e7f078d0f9}{operand\_access\_type\_map}}\ *map);}
+\DoxyCodeLine{00247\ }
+\DoxyCodeLine{00248\ \ \ \textcolor{comment}{/*\ Return\ access\ type\ of\ a\ given\ operand.\ \ */}}
+\DoxyCodeLine{00249\ \ \ \textcolor{keyword}{static}\ \doxymbox{\hyperlink{classipa__icf__gimple_1_1func__checker_ac62ff3ebe52a543583748182b7f3d57a}{operand\_access\_type}}\ \doxymbox{\hyperlink{classipa__icf__gimple_1_1func__checker_a80484df35d4265d299414e22c10ae1e3}{get\_operand\_access\_type}}}
+\DoxyCodeLine{00250\ \ \ \ \ \ \ \ \ \ (\doxymbox{\hyperlink{classipa__icf__gimple_1_1func__checker_aff5785e8f556a9d20cb6a7e7f078d0f9}{operand\_access\_type\_map}}\ *map,\ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}});}
+\DoxyCodeLine{00251\ \textcolor{keyword}{private}:}
+\DoxyCodeLine{00252\ \ \ \textcolor{comment}{/*\ Vector\ mapping\ source\ SSA\ names\ to\ target\ ones.\ \ */}}
+\DoxyCodeLine{00253\ \ \ vec\ <int>\ \doxymbox{\hyperlink{classipa__icf__gimple_1_1func__checker_a14016967eeca9998a008755dc945dd19}{m\_source\_ssa\_names}};}
+\DoxyCodeLine{00254\ }
+\DoxyCodeLine{00255\ \ \ \textcolor{comment}{/*\ Vector\ mapping\ target\ SSA\ names\ to\ source\ ones.\ \ */}}
+\DoxyCodeLine{00256\ \ \ vec\ <int>\ \doxymbox{\hyperlink{classipa__icf__gimple_1_1func__checker_addd901e638a5436c2decefedcf738515}{m\_target\_ssa\_names}};}
+\DoxyCodeLine{00257\ }
+\DoxyCodeLine{00258\ \ \ \textcolor{comment}{/*\ Source\ TREE\ function\ declaration.\ \ */}}
+\DoxyCodeLine{00259\ \ \ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ \doxymbox{\hyperlink{classipa__icf__gimple_1_1func__checker_a3abde1e8096cd7229e10b4b3e12f0a21}{m\_source\_func\_decl}};}
+\DoxyCodeLine{00260\ }
+\DoxyCodeLine{00261\ \ \ \textcolor{comment}{/*\ Target\ TREE\ function\ declaration.\ \ */}}
+\DoxyCodeLine{00262\ \ \ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ \doxymbox{\hyperlink{classipa__icf__gimple_1_1func__checker_a3394aa708e882b538f7498c053e8c67e}{m\_target\_func\_decl}};}
+\DoxyCodeLine{00263\ }
+\DoxyCodeLine{00264\ \ \ \textcolor{comment}{/*\ Source\ symbol\ nodes\ that\ should\ be\ skipped\ by}}
+\DoxyCodeLine{00265\ \textcolor{comment}{\ \ \ \ \ declaration\ comparison.\ \ */}}
+\DoxyCodeLine{00266\ \ \ \doxymbox{\hyperlink{classhash__set}{hash\_set<symtab\_node\ *>}}\ *\doxymbox{\hyperlink{classipa__icf__gimple_1_1func__checker_a975153de1a548f16a85860dafeb5e13e}{m\_ignored\_source\_nodes}};}
+\DoxyCodeLine{00267\ }
+\DoxyCodeLine{00268\ \ \ \textcolor{comment}{/*\ Target\ symbol\ nodes\ that\ should\ be\ skipped\ by}}
+\DoxyCodeLine{00269\ \textcolor{comment}{\ \ \ \ \ declaration\ comparison.\ \ */}}
+\DoxyCodeLine{00270\ \ \ \doxymbox{\hyperlink{classhash__set}{hash\_set<symtab\_node\ *>}}\ *\doxymbox{\hyperlink{classipa__icf__gimple_1_1func__checker_a3c705d2269eaee85f1d1e7ab34f0dbb1}{m\_ignored\_target\_nodes}};}
+\DoxyCodeLine{00271\ }
+\DoxyCodeLine{00272\ \ \ \textcolor{comment}{/*\ Source\ to\ target\ edge\ map.\ \ */}}
+\DoxyCodeLine{00273\ \ \ hash\_map\ <edge,\ edge>\ \doxymbox{\hyperlink{classipa__icf__gimple_1_1func__checker_a4f1acdf7c5e493e9447713719ac604be}{m\_edge\_map}};}
+\DoxyCodeLine{00274\ }
+\DoxyCodeLine{00275\ \ \ \textcolor{comment}{/*\ Source\ to\ target\ declaration\ map.\ \ */}}
+\DoxyCodeLine{00276\ \ \ hash\_map\ <const\_tree,\ const\_tree>\ \doxymbox{\hyperlink{classipa__icf__gimple_1_1func__checker_adc89f07c0ea4f6152d7d70ad9dc2df49}{m\_decl\_map}};}
+\DoxyCodeLine{00277\ }
+\DoxyCodeLine{00278\ \ \ \textcolor{comment}{/*\ Label\ to\ basic\ block\ index\ mapping.\ \ */}}
+\DoxyCodeLine{00279\ \ \ hash\_map\ <const\_tree,\ int>\ \doxymbox{\hyperlink{classipa__icf__gimple_1_1func__checker_aaf580e18ab2ab5c92380209a7d6c7812}{m\_label\_bb\_map}};}
+\DoxyCodeLine{00280\ }
+\DoxyCodeLine{00281\ \ \ \textcolor{comment}{/*\ Flag\ if\ ignore\ labels\ in\ comparison.\ \ */}}
+\DoxyCodeLine{00282\ \ \ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{classipa__icf__gimple_1_1func__checker_a7fec4386b45c0c83b69c0168a75b7e2e}{m\_ignore\_labels}};}
+\DoxyCodeLine{00283\ }
+\DoxyCodeLine{00284\ \ \ \textcolor{comment}{/*\ Flag\ if\ we\ should\ compare\ type\ based\ alias\ analysis\ info.\ \ */}}
+\DoxyCodeLine{00285\ \ \ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{classipa__icf__gimple_1_1func__checker_a0f8c7dea20d2ea7d92b410efa866457e}{m\_tbaa}};}
+\DoxyCodeLine{00286\ }
+\DoxyCodeLine{00287\ \ \ \textcolor{comment}{/*\ Set\ to\ true\ when\ total\ scalarization\ size\ has\ already\ been\ determined\ for}}
+\DoxyCodeLine{00288\ \textcolor{comment}{\ \ \ \ \ the\ functions.\ \ */}}
+\DoxyCodeLine{00289\ \ \ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{classipa__icf__gimple_1_1func__checker_afd178f1d9c9dd28cc5426fb3857bf62f}{m\_total\_scalarization\_limit\_known\_p}};}
+\DoxyCodeLine{00290\ }
+\DoxyCodeLine{00291\ \ \ \textcolor{comment}{/*\ When\ the\ above\ it\ set\ to\ true\ the\ determiend\ total\ scalarization}}
+\DoxyCodeLine{00292\ \textcolor{comment}{\ \ \ \ \ limit.\ \ */}}
+\DoxyCodeLine{00293\ \ \ \textcolor{keywordtype}{unsigned}\ HOST\_WIDE\_INT\ \doxymbox{\hyperlink{classipa__icf__gimple_1_1func__checker_a9312298bca35d3d1747953d87834ad09}{m\_total\_scalarization\_limit}};}
+\DoxyCodeLine{00294\ }
+\DoxyCodeLine{00295\ \textcolor{keyword}{public}:}
+\DoxyCodeLine{00296\ \ \ \textcolor{comment}{/*\ Return\ true\ if\ two\ operands\ are\ equal.\ \ The\ flags\ fields\ can\ be\ used}}
+\DoxyCodeLine{00297\ \textcolor{comment}{\ \ \ \ \ to\ specify\ OEP\ flags\ described\ above.\ \ */}}
+\DoxyCodeLine{00298\ \ \ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{classipa__icf__gimple_1_1func__checker_acbab7723b658aed4e67533029ce46c43}{operand\_equal\_p}}\ (\doxymbox{\hyperlink{coretypes_8h_ad41eb6a6028ff5b3fd00b1ee9f35ed46}{const\_tree}},\ \doxymbox{\hyperlink{coretypes_8h_ad41eb6a6028ff5b3fd00b1ee9f35ed46}{const\_tree}},\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ flags)}
+\DoxyCodeLine{00299\ \ \ \ \ \textcolor{keyword}{final}\ \textcolor{keyword}{override};}
+\DoxyCodeLine{00300\ }
+\DoxyCodeLine{00301\ \ \ \textcolor{comment}{/*\ Generate\ a\ hash\ value\ for\ an\ expression.\ \ This\ can\ be\ used\ iteratively}}
+\DoxyCodeLine{00302\ \textcolor{comment}{\ \ \ \ \ by\ passing\ a\ previous\ result\ as\ the\ HSTATE\ argument.\ \ */}}
+\DoxyCodeLine{00303\ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classipa__icf__gimple_1_1func__checker_a2d8a90a67c6f52e9cb9bd6f4e8b9d4a5}{hash\_operand}}\ (\doxymbox{\hyperlink{coretypes_8h_ad41eb6a6028ff5b3fd00b1ee9f35ed46}{const\_tree}},\ \doxymbox{\hyperlink{classinchash_1_1hash}{inchash::hash}}\ \&,\ \textcolor{keywordtype}{unsigned}\ flags)}
+\DoxyCodeLine{00304\ \ \ \ \ \textcolor{keyword}{final}\ \textcolor{keyword}{override};}
+\DoxyCodeLine{00305\ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classipa__icf__gimple_1_1func__checker_a3f5391f97afee0fb7a52a1a9187b155f}{hash\_operand}}\ (\doxymbox{\hyperlink{coretypes_8h_ad41eb6a6028ff5b3fd00b1ee9f35ed46}{const\_tree}},\ \doxymbox{\hyperlink{classinchash_1_1hash}{inchash::hash}}\ \&,\ \textcolor{keywordtype}{unsigned}\ flags,}
+\DoxyCodeLine{00306\ \ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{classipa__icf__gimple_1_1func__checker_ac62ff3ebe52a543583748182b7f3d57a}{operand\_access\_type}}\ access);}
+\DoxyCodeLine{00307\ \};}
+\DoxyCodeLine{00308\ }
+\DoxyCodeLine{00309\ \}\ \textcolor{comment}{//\ ipa\_icf\_gimple\ namespace}}
+
+\end{DoxyCode}

@@ -1,0 +1,166 @@
+\doxysection{hw-\/doloop.h}
+\hypertarget{hw-doloop_8h_source}{}\label{hw-doloop_8h_source}\index{toolchain/x86\_64-\/elf/lib/gcc/x86\_64-\/elf/14.2.0/plugin/include/hw-\/doloop.h@{toolchain/x86\_64-\/elf/lib/gcc/x86\_64-\/elf/14.2.0/plugin/include/hw-\/doloop.h}}
+\doxymbox{\hyperlink{hw-doloop_8h}{Go to the documentation of this file.}}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001\ \textcolor{comment}{/*\ Code\ to\ analyze\ doloop\ loops\ in\ order\ for\ targets\ to\ perform\ late}}
+\DoxyCodeLine{00002\ \textcolor{comment}{\ \ \ optimizations\ converting\ doloops\ to\ other\ forms\ of\ hardware\ loops.}}
+\DoxyCodeLine{00003\ \textcolor{comment}{\ \ \ Copyright\ (C)\ 2011-\/2024\ Free\ Software\ Foundation,\ Inc.}}
+\DoxyCodeLine{00004\ \textcolor{comment}{}}
+\DoxyCodeLine{00005\ \textcolor{comment}{This\ file\ is\ part\ of\ GCC.}}
+\DoxyCodeLine{00006\ \textcolor{comment}{}}
+\DoxyCodeLine{00007\ \textcolor{comment}{GCC\ is\ free\ software;\ you\ can\ redistribute\ it\ and/or\ modify\ it\ under}}
+\DoxyCodeLine{00008\ \textcolor{comment}{the\ terms\ of\ the\ GNU\ General\ Public\ License\ as\ published\ by\ the\ Free}}
+\DoxyCodeLine{00009\ \textcolor{comment}{Software\ Foundation;\ either\ version\ 3,\ or\ (at\ your\ option)\ any\ later}}
+\DoxyCodeLine{00010\ \textcolor{comment}{version.}}
+\DoxyCodeLine{00011\ \textcolor{comment}{}}
+\DoxyCodeLine{00012\ \textcolor{comment}{GCC\ is\ distributed\ in\ the\ hope\ that\ it\ will\ be\ useful,\ but\ WITHOUT\ ANY}}
+\DoxyCodeLine{00013\ \textcolor{comment}{WARRANTY;\ without\ even\ the\ implied\ warranty\ of\ MERCHANTABILITY\ or}}
+\DoxyCodeLine{00014\ \textcolor{comment}{FITNESS\ FOR\ A\ PARTICULAR\ PURPOSE.\ \ See\ the\ GNU\ General\ Public\ License}}
+\DoxyCodeLine{00015\ \textcolor{comment}{for\ more\ details.}}
+\DoxyCodeLine{00016\ \textcolor{comment}{}}
+\DoxyCodeLine{00017\ \textcolor{comment}{You\ should\ have\ received\ a\ copy\ of\ the\ GNU\ General\ Public\ License}}
+\DoxyCodeLine{00018\ \textcolor{comment}{along\ with\ GCC;\ see\ the\ file\ COPYING3.\ \ If\ not\ see}}
+\DoxyCodeLine{00019\ \textcolor{comment}{<http://www.gnu.org/licenses/>.\ \ */}}
+\DoxyCodeLine{00020\ }
+\DoxyCodeLine{00021\ \textcolor{preprocessor}{\#ifndef\ GCC\_HW\_DOLOOP\_H}}
+\DoxyCodeLine{00022\ \textcolor{preprocessor}{\#define\ GCC\_HW\_DOLOOP\_H}}
+\DoxyCodeLine{00023\ }
+\DoxyCodeLine{00024\ \textcolor{comment}{/*\ We\ need\ to\ keep\ a\ vector\ of\ loops\ */}}
+\DoxyCodeLine{00025\ \textcolor{keyword}{typedef}\ \textcolor{keyword}{struct\ }hwloop\_info\_d\ *\doxymbox{\hyperlink{hw-doloop_8h_a48bd24c3a9858e33922f3e1c5e27b36a}{hwloop\_info}};}
+\DoxyCodeLine{00026\ }
+\DoxyCodeLine{00027\ \textcolor{comment}{/*\ Information\ about\ a\ loop\ we\ have\ found\ (or\ are\ in\ the\ process\ of}}
+\DoxyCodeLine{00028\ \textcolor{comment}{\ \ \ finding).\ \ */}}
+\DoxyCodeLine{00029\ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{coretypes_8h_ae5708c4d4b300570eebe0bc0c78facbc}{GTY}}\ (())\ hwloop\_info\_d}
+\DoxyCodeLine{00030\ \{}
+\DoxyCodeLine{00031\ \ \ \textcolor{comment}{/*\ loop\ number,\ for\ dumps\ */}}
+\DoxyCodeLine{00032\ \ \ \textcolor{keywordtype}{int}\ loop\_no;}
+\DoxyCodeLine{00033\ }
+\DoxyCodeLine{00034\ \ \ \textcolor{comment}{/*\ Next\ loop\ in\ the\ graph.\ */}}
+\DoxyCodeLine{00035\ \ \ \doxymbox{\hyperlink{hw-doloop_8h_a48bd24c3a9858e33922f3e1c5e27b36a}{hwloop\_info}}\ next;}
+\DoxyCodeLine{00036\ }
+\DoxyCodeLine{00037\ \ \ \textcolor{comment}{/*\ Vector\ of\ blocks\ only\ within\ the\ loop,\ including\ those\ within}}
+\DoxyCodeLine{00038\ \textcolor{comment}{\ \ \ \ \ inner\ loops.\ \ */}}
+\DoxyCodeLine{00039\ \ \ \doxymbox{\hyperlink{structvec}{vec<basic\_block>}}\ blocks;}
+\DoxyCodeLine{00040\ }
+\DoxyCodeLine{00041\ \ \ \textcolor{comment}{/*\ Same\ information\ in\ a\ bitmap.\ \ */}}
+\DoxyCodeLine{00042\ \ \ \doxymbox{\hyperlink{coretypes_8h_ae7ea3a04cabf8964dc6e8e95a9cde1b8}{bitmap}}\ block\_bitmap;}
+\DoxyCodeLine{00043\ }
+\DoxyCodeLine{00044\ \ \ \textcolor{comment}{/*\ Vector\ of\ inner\ loops\ within\ this\ loop.\ \ Includes\ loops\ of\ every}}
+\DoxyCodeLine{00045\ \textcolor{comment}{\ \ \ \ \ nesting\ level.\ \ */}}
+\DoxyCodeLine{00046\ \ \ \doxymbox{\hyperlink{structvec}{vec<hwloop\_info>}}\ loops;}
+\DoxyCodeLine{00047\ }
+\DoxyCodeLine{00048\ \ \ \textcolor{comment}{/*\ All\ edges\ that\ jump\ into\ the\ loop.\ \ */}}
+\DoxyCodeLine{00049\ \ \ \doxymbox{\hyperlink{structvec}{vec<edge,\ va\_gc>}}\ *incoming;}
+\DoxyCodeLine{00050\ }
+\DoxyCodeLine{00051\ \ \ \textcolor{comment}{/*\ The\ ports\ currently\ using\ this\ infrastructure\ can\ typically}}
+\DoxyCodeLine{00052\ \textcolor{comment}{\ \ \ \ \ handle\ two\ cases:\ all\ incoming\ edges\ have\ the\ same\ destination}}
+\DoxyCodeLine{00053\ \textcolor{comment}{\ \ \ \ \ block,\ or\ all\ incoming\ edges\ have\ the\ same\ source\ block.\ \ These}}
+\DoxyCodeLine{00054\ \textcolor{comment}{\ \ \ \ \ two\ members\ are\ set\ to\ the\ common\ source\ or\ destination\ we\ found,}}
+\DoxyCodeLine{00055\ \textcolor{comment}{\ \ \ \ \ or\ NULL\ if\ different\ blocks\ were\ found.\ \ If\ both\ are\ NULL\ the}}
+\DoxyCodeLine{00056\ \textcolor{comment}{\ \ \ \ \ loop\ can't\ be\ optimized.\ \ */}}
+\DoxyCodeLine{00057\ \ \ \doxymbox{\hyperlink{coretypes_8h_a0469df20b471a4cd7c81fbdce5027487}{basic\_block}}\ incoming\_src;}
+\DoxyCodeLine{00058\ \ \ \doxymbox{\hyperlink{coretypes_8h_a0469df20b471a4cd7c81fbdce5027487}{basic\_block}}\ incoming\_dest;}
+\DoxyCodeLine{00059\ }
+\DoxyCodeLine{00060\ \ \ \textcolor{comment}{/*\ First\ block\ in\ the\ loop.\ \ This\ is\ the\ one\ branched\ to\ by\ the\ loop\_end}}
+\DoxyCodeLine{00061\ \textcolor{comment}{\ \ \ \ \ insn.\ \ */}}
+\DoxyCodeLine{00062\ \ \ \doxymbox{\hyperlink{coretypes_8h_a0469df20b471a4cd7c81fbdce5027487}{basic\_block}}\ head;}
+\DoxyCodeLine{00063\ }
+\DoxyCodeLine{00064\ \ \ \textcolor{comment}{/*\ Last\ block\ in\ the\ loop\ (the\ one\ with\ the\ loop\_end\ insn).\ \ */}}
+\DoxyCodeLine{00065\ \ \ \doxymbox{\hyperlink{coretypes_8h_a0469df20b471a4cd7c81fbdce5027487}{basic\_block}}\ tail;}
+\DoxyCodeLine{00066\ }
+\DoxyCodeLine{00067\ \ \ \textcolor{comment}{/*\ The\ successor\ block\ of\ the\ loop.\ \ This\ is\ the\ one\ the\ loop\_end\ insn}}
+\DoxyCodeLine{00068\ \textcolor{comment}{\ \ \ \ \ falls\ into.\ \ */}}
+\DoxyCodeLine{00069\ \ \ \doxymbox{\hyperlink{coretypes_8h_a0469df20b471a4cd7c81fbdce5027487}{basic\_block}}\ successor;}
+\DoxyCodeLine{00070\ }
+\DoxyCodeLine{00071\ \ \ \textcolor{comment}{/*\ The\ last\ instruction\ in\ the\ tail.\ \ */}}
+\DoxyCodeLine{00072\ \ \ rtx\_insn\ *last\_insn;}
+\DoxyCodeLine{00073\ }
+\DoxyCodeLine{00074\ \ \ \textcolor{comment}{/*\ The\ loop\_end\ insn.\ \ */}}
+\DoxyCodeLine{00075\ \ \ rtx\_insn\ *loop\_end;}
+\DoxyCodeLine{00076\ }
+\DoxyCodeLine{00077\ \ \ \textcolor{comment}{/*\ The\ iteration\ register.\ \ */}}
+\DoxyCodeLine{00078\ \ \ \doxymbox{\hyperlink{coretypes_8h_a20e671ce9e7827268658cff844f4281c}{rtx}}\ iter\_reg;}
+\DoxyCodeLine{00079\ }
+\DoxyCodeLine{00080\ \ \ \textcolor{comment}{/*\ The\ new\ label\ placed\ at\ the\ beginning\ of\ the\ loop.\ */}}
+\DoxyCodeLine{00081\ \ \ rtx\_insn\ *start\_label;}
+\DoxyCodeLine{00082\ }
+\DoxyCodeLine{00083\ \ \ \textcolor{comment}{/*\ The\ new\ label\ placed\ at\ the\ end\ of\ the\ loop.\ */}}
+\DoxyCodeLine{00084\ \ \ \doxymbox{\hyperlink{coretypes_8h_a20e671ce9e7827268658cff844f4281c}{rtx}}\ end\_label;}
+\DoxyCodeLine{00085\ }
+\DoxyCodeLine{00086\ \ \ \textcolor{comment}{/*\ The\ length\ of\ the\ loop.\ \ */}}
+\DoxyCodeLine{00087\ \ \ \textcolor{keywordtype}{int}\ length;}
+\DoxyCodeLine{00088\ }
+\DoxyCodeLine{00089\ \ \ \textcolor{comment}{/*\ The\ nesting\ depth\ of\ the\ loop.\ \ Innermost\ loops\ are\ given\ a\ depth}}
+\DoxyCodeLine{00090\ \textcolor{comment}{\ \ \ \ \ of\ 1.\ \ Only\ successfully\ optimized\ doloops\ are\ counted;\ if\ an\ inner}}
+\DoxyCodeLine{00091\ \textcolor{comment}{\ \ \ \ \ loop\ was\ marked\ as\ bad,\ it\ does\ not\ increase\ the\ depth\ of\ its\ parent}}
+\DoxyCodeLine{00092\ \textcolor{comment}{\ \ \ \ \ loop.}}
+\DoxyCodeLine{00093\ \textcolor{comment}{\ \ \ \ \ This\ value\ is\ valid\ when\ the\ target's\ optimize\ function\ is\ called.\ \ */}}
+\DoxyCodeLine{00094\ \ \ \textcolor{keywordtype}{int}\ depth;}
+\DoxyCodeLine{00095\ }
+\DoxyCodeLine{00096\ \ \ \textcolor{comment}{/*\ True\ if\ we\ can't\ optimize\ this\ loop.\ \ */}}
+\DoxyCodeLine{00097\ \ \ \textcolor{keywordtype}{bool}\ bad;}
+\DoxyCodeLine{00098\ }
+\DoxyCodeLine{00099\ \ \ \textcolor{comment}{/*\ True\ if\ we\ have\ visited\ this\ loop\ during\ the\ optimization\ phase.\ \ */}}
+\DoxyCodeLine{00100\ \ \ \textcolor{keywordtype}{bool}\ visited;}
+\DoxyCodeLine{00101\ }
+\DoxyCodeLine{00102\ \ \ \textcolor{comment}{/*\ The\ following\ values\ are\ collected\ before\ calling\ the\ target's\ optimize}}
+\DoxyCodeLine{00103\ \textcolor{comment}{\ \ \ \ \ function\ and\ are\ not\ valid\ earlier.\ \ */}}
+\DoxyCodeLine{00104\ \ \ }
+\DoxyCodeLine{00105\ \ \ \textcolor{comment}{/*\ Record\ information\ about\ control\ flow:\ whether\ the\ loop\ has\ calls}}
+\DoxyCodeLine{00106\ \textcolor{comment}{\ \ \ \ \ or\ asm\ statements,\ whether\ it\ has\ edges\ that\ jump\ out\ of\ the\ loop,}}
+\DoxyCodeLine{00107\ \textcolor{comment}{\ \ \ \ \ or\ edges\ that\ jump\ within\ the\ loop.\ \ */}}
+\DoxyCodeLine{00108\ \ \ \textcolor{keywordtype}{bool}\ has\_call;}
+\DoxyCodeLine{00109\ \ \ \textcolor{keywordtype}{bool}\ has\_asm;}
+\DoxyCodeLine{00110\ \ \ \textcolor{keywordtype}{bool}\ jumps\_within;}
+\DoxyCodeLine{00111\ \ \ \textcolor{keywordtype}{bool}\ jumps\_outof;}
+\DoxyCodeLine{00112\ }
+\DoxyCodeLine{00113\ \ \ \textcolor{comment}{/*\ True\ if\ there\ is\ an\ instruction\ other\ than\ the\ doloop\_end\ which\ uses\ the}}
+\DoxyCodeLine{00114\ \textcolor{comment}{\ \ \ \ \ iteration\ register.\ \ */}}
+\DoxyCodeLine{00115\ \ \ \textcolor{keywordtype}{bool}\ iter\_reg\_used;}
+\DoxyCodeLine{00116\ \ \ \textcolor{comment}{/*\ True\ if\ the\ iteration\ register\ lives\ past\ the\ doloop\ instruction.\ \ */}}
+\DoxyCodeLine{00117\ \ \ \textcolor{keywordtype}{bool}\ iter\_reg\_used\_outside;}
+\DoxyCodeLine{00118\ }
+\DoxyCodeLine{00119\ \ \ \textcolor{comment}{/*\ Hard\ registers\ set\ at\ any\ point\ in\ the\ loop,\ except\ for\ the\ loop\ counter}}
+\DoxyCodeLine{00120\ \textcolor{comment}{\ \ \ \ \ register's\ set\ in\ the\ doloop\_end\ instruction.\ \ */}}
+\DoxyCodeLine{00121\ \ \ \doxymbox{\hyperlink{hard-reg-set_8h_a58a1569980de76957f391607c395d443}{HARD\_REG\_SET}}\ regs\_set\_in\_loop;}
+\DoxyCodeLine{00122\ \};}
+\DoxyCodeLine{00123\ }
+\DoxyCodeLine{00124\ \textcolor{comment}{/*\ A\ set\ of\ hooks\ to\ be\ defined\ by\ a\ target\ that\ wants\ to\ use\ the\ reorg\_loops}}
+\DoxyCodeLine{00125\ \textcolor{comment}{\ \ \ functionality.}}
+\DoxyCodeLine{00126\ \textcolor{comment}{}}
+\DoxyCodeLine{00127\ \textcolor{comment}{\ \ \ reorg\_loops\ is\ intended\ to\ handle\ cases\ where\ special\ hardware\ loop}}
+\DoxyCodeLine{00128\ \textcolor{comment}{\ \ \ setup\ instructions\ are\ required\ before\ the\ loop,\ for\ example\ to\ set}}
+\DoxyCodeLine{00129\ \textcolor{comment}{\ \ \ up\ loop\ counter\ registers\ that\ are\ not\ exposed\ to\ the\ register}}
+\DoxyCodeLine{00130\ \textcolor{comment}{\ \ \ allocator,\ or\ to\ inform\ the\ hardware\ about\ loop\ bounds.}}
+\DoxyCodeLine{00131\ \textcolor{comment}{}}
+\DoxyCodeLine{00132\ \textcolor{comment}{\ \ \ reorg\_loops\ performs\ analysis\ to\ discover\ loop\_end\ patterns\ created}}
+\DoxyCodeLine{00133\ \textcolor{comment}{\ \ \ by\ the\ earlier\ loop-\/doloop\ pass,\ and\ sets\ up\ a\ hwloop\_info}}
+\DoxyCodeLine{00134\ \textcolor{comment}{\ \ \ structure\ for\ each\ such\ insn\ it\ finds.\ \ It\ then\ tries\ to\ discover}}
+\DoxyCodeLine{00135\ \textcolor{comment}{\ \ \ the\ basic\ blocks\ containing\ the\ loop\ by\ tracking\ the\ lifetime\ of}}
+\DoxyCodeLine{00136\ \textcolor{comment}{\ \ \ the\ iteration\ register.}}
+\DoxyCodeLine{00137\ \textcolor{comment}{}}
+\DoxyCodeLine{00138\ \textcolor{comment}{\ \ \ If\ a\ valid\ loop\ can't\ be\ found,\ the\ FAIL\ function\ is\ called;}}
+\DoxyCodeLine{00139\ \textcolor{comment}{\ \ \ otherwise\ the\ OPT\ function\ is\ called\ for\ each\ loop,\ visiting}}
+\DoxyCodeLine{00140\ \textcolor{comment}{\ \ \ innermost\ loops\ first\ and\ ascending.\ \ */}}
+\DoxyCodeLine{00141\ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{structhw__doloop__hooks}{hw\_doloop\_hooks}}}
+\DoxyCodeLine{00142\ \{}
+\DoxyCodeLine{00143\ \ \ \textcolor{comment}{/*\ Examine\ INSN.\ \ If\ it\ is\ a\ suitable\ doloop\_end\ pattern,\ return\ the}}
+\DoxyCodeLine{00144\ \textcolor{comment}{\ \ \ \ \ iteration\ register,\ which\ should\ be\ a\ single\ hard\ register.}}
+\DoxyCodeLine{00145\ \textcolor{comment}{\ \ \ \ \ Otherwise,\ return\ NULL\_RTX.\ \ */}}
+\DoxyCodeLine{00146\ \ \ \doxymbox{\hyperlink{coretypes_8h_a20e671ce9e7827268658cff844f4281c}{rtx}}\ (*\doxymbox{\hyperlink{structhw__doloop__hooks_ac46ff370cb5831f42db506f4848ed78e}{end\_pattern\_reg}})\ (rtx\_insn\ *insn);}
+\DoxyCodeLine{00147\ \ \ \textcolor{comment}{/*\ Optimize\ LOOP.\ \ The\ target\ should\ perform\ any\ additional\ analysis}}
+\DoxyCodeLine{00148\ \textcolor{comment}{\ \ \ \ \ (e.g.\ checking\ that\ the\ loop\ isn't\ too\ long),\ and\ then\ perform}}
+\DoxyCodeLine{00149\ \textcolor{comment}{\ \ \ \ \ its\ transformations.\ \ Return\ true\ if\ successful,\ false\ if\ the}}
+\DoxyCodeLine{00150\ \textcolor{comment}{\ \ \ \ \ loop\ should\ be\ marked\ bad.\ \ If\ it\ returns\ false,\ the\ FAIL}}
+\DoxyCodeLine{00151\ \textcolor{comment}{\ \ \ \ \ function\ is\ called.\ \ */}}
+\DoxyCodeLine{00152\ \ \ \doxymbox{\hyperlink{stdbool_8h_abb452686968e48b67397da5f97445f5b}{bool}}\ (*\doxymbox{\hyperlink{structhw__doloop__hooks_a850050d1259897faa6f935509bb32de8}{opt}})\ (\doxymbox{\hyperlink{hw-doloop_8h_a48bd24c3a9858e33922f3e1c5e27b36a}{hwloop\_info}}\ loop);}
+\DoxyCodeLine{00153\ \ \ \textcolor{comment}{/*\ Handle\ a\ loop\ that\ was\ marked\ bad\ for\ any\ reason.\ \ This\ could\ be}}
+\DoxyCodeLine{00154\ \textcolor{comment}{\ \ \ \ \ used\ to\ split\ the\ doloop\_end\ pattern.\ \ */}}
+\DoxyCodeLine{00155\ \ \ void\ (*\doxymbox{\hyperlink{structhw__doloop__hooks_ac2921b4b662506fe4033251eedba2acf}{fail}})\ (\doxymbox{\hyperlink{hw-doloop_8h_a48bd24c3a9858e33922f3e1c5e27b36a}{hwloop\_info}}\ loop);}
+\DoxyCodeLine{00156\ \};}
+\DoxyCodeLine{00157\ }
+\DoxyCodeLine{00158\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{hw-doloop_8h_a48630d259c0b5c5d2859e5bdaafe50d3}{reorg\_loops}}\ (\textcolor{keywordtype}{bool},\ \textcolor{keyword}{struct}\ \doxymbox{\hyperlink{structhw__doloop__hooks}{hw\_doloop\_hooks}}\ *);}
+\DoxyCodeLine{00159\ }
+\DoxyCodeLine{00160\ \textcolor{preprocessor}{\#endif\ }\textcolor{comment}{/*\ GCC\_HW\_DOLOOP\_H\ */}\textcolor{preprocessor}{}}
+
+\end{DoxyCode}

@@ -1,0 +1,35 @@
+var classipa__predicate =
+[
+    [ "predicate_conditions", "classipa__predicate.html#a8cd8e925c97a2aede8a5e1a6609b67e7", [
+      [ "false_condition", "classipa__predicate.html#a8cd8e925c97a2aede8a5e1a6609b67e7a933d310156248deb1a5ddef53540f3d5", null ],
+      [ "not_inlined_condition", "classipa__predicate.html#a8cd8e925c97a2aede8a5e1a6609b67e7af41bd3ce809b1b9fea131e78e2771338", null ],
+      [ "first_dynamic_condition", "classipa__predicate.html#a8cd8e925c97a2aede8a5e1a6609b67e7a098b9e93ce0deb6905c367f2de2b0a43", null ]
+    ] ],
+    [ "ipa_predicate", "classipa__predicate.html#a68d7b3b6ae589972683b336078ce0be6", null ],
+    [ "ipa_predicate", "classipa__predicate.html#affe33a924049117b834f10be9b3c50fc", null ],
+    [ "add_clause", "classipa__predicate.html#a3e881c410e8d8c308b15fcc33ed74cd7", null ],
+    [ "debug", "classipa__predicate.html#a3ff0943f24d2110d5a9b931e513bf02e", null ],
+    [ "dump", "classipa__predicate.html#a219a5f32b8965932dfd3517be3517ea7", null ],
+    [ "evaluate", "classipa__predicate.html#a55ef3989633bdf8e1a1bbddf900d08d8", null ],
+    [ "not_inlined", "classipa__predicate.html#a59764ceac2f78671ad6acac3e58c73a9", null ],
+    [ "operator!=", "classipa__predicate.html#ad8fc498876021acc526e080eddd72253", null ],
+    [ "operator!=", "classipa__predicate.html#a5b20e861f9d6bbe6b7f110a7346585ec", null ],
+    [ "operator&", "classipa__predicate.html#af378347c9231281239453b80223a42f8", null ],
+    [ "operator&=", "classipa__predicate.html#a057b96281c02e01159b0f6b5716e72bf", null ],
+    [ "operator==", "classipa__predicate.html#a1befd2d85828f0695b632d626f414920", null ],
+    [ "operator==", "classipa__predicate.html#a612dd637e209612cce816f41b83eaa5b", null ],
+    [ "or_with", "classipa__predicate.html#a75ad88d5a9ee67b415205e6a3bff8de4", null ],
+    [ "predicate_testing_cond", "classipa__predicate.html#a9d7e925dc7db8fba07becbabc21ebdb4", null ],
+    [ "probability", "classipa__predicate.html#a8a4e8c79711000fab5279705e5f08ba8", null ],
+    [ "remap_after_duplication", "classipa__predicate.html#a7d8f0e1500f402a1577f72338f7a4813", null ],
+    [ "remap_after_inlining", "classipa__predicate.html#aded9de111c5e256a00c9af1a5c6498d3", null ],
+    [ "set_to_cond", "classipa__predicate.html#ab8f1e1b7b7dfd8c5ac60bace1fef53e2", null ],
+    [ "stream_in", "classipa__predicate.html#a2e44a01791f2c44695ffad0f21f21127", null ],
+    [ "stream_out", "classipa__predicate.html#a4d8b1478efdf090ae15300299f13c64a", null ],
+    [ "changed", "classipa__predicate.html#a9f11ef139a38823f718bab5571ecb903", null ],
+    [ "is_not_constant", "classipa__predicate.html#ac69cb59b5a7b319e5d6aff75fca993c2", null ],
+    [ "m_clause", "classipa__predicate.html#a5b8763703272c87e164c55c3fa6b6a56", null ],
+    [ "max_clauses", "classipa__predicate.html#a13c9f9f92a51b03e1594f7668cde8503", null ],
+    [ "not_sra_candidate", "classipa__predicate.html#a5e5f8415592da11c006df8b4932598c4", null ],
+    [ "num_conditions", "classipa__predicate.html#ab42cede5faea4bdcda34029546389f0d", null ]
+];

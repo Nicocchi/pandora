@@ -1,0 +1,488 @@
+\doxysection{pending-\/diagnostic.h}
+\hypertarget{pending-diagnostic_8h_source}{}\label{pending-diagnostic_8h_source}\index{toolchain/x86\_64-\/elf/lib/gcc/x86\_64-\/elf/14.2.0/plugin/include/analyzer/pending-\/diagnostic.h@{toolchain/x86\_64-\/elf/lib/gcc/x86\_64-\/elf/14.2.0/plugin/include/analyzer/pending-\/diagnostic.h}}
+\doxymbox{\hyperlink{pending-diagnostic_8h}{Go to the documentation of this file.}}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001\ \textcolor{comment}{/*\ Classes\ for\ analyzer\ diagnostics.}}
+\DoxyCodeLine{00002\ \textcolor{comment}{\ \ \ Copyright\ (C)\ 2019-\/2024\ Free\ Software\ Foundation,\ Inc.}}
+\DoxyCodeLine{00003\ \textcolor{comment}{\ \ \ Contributed\ by\ David\ Malcolm\ <dmalcolm@redhat.com>.}}
+\DoxyCodeLine{00004\ \textcolor{comment}{}}
+\DoxyCodeLine{00005\ \textcolor{comment}{This\ file\ is\ part\ of\ GCC.}}
+\DoxyCodeLine{00006\ \textcolor{comment}{}}
+\DoxyCodeLine{00007\ \textcolor{comment}{GCC\ is\ free\ software;\ you\ can\ redistribute\ it\ and/or\ modify\ it}}
+\DoxyCodeLine{00008\ \textcolor{comment}{under\ the\ terms\ of\ the\ GNU\ General\ Public\ License\ as\ published\ by}}
+\DoxyCodeLine{00009\ \textcolor{comment}{the\ Free\ Software\ Foundation;\ either\ version\ 3,\ or\ (at\ your\ option)}}
+\DoxyCodeLine{00010\ \textcolor{comment}{any\ later\ version.}}
+\DoxyCodeLine{00011\ \textcolor{comment}{}}
+\DoxyCodeLine{00012\ \textcolor{comment}{GCC\ is\ distributed\ in\ the\ hope\ that\ it\ will\ be\ useful,\ but}}
+\DoxyCodeLine{00013\ \textcolor{comment}{WITHOUT\ ANY\ WARRANTY;\ without\ even\ the\ implied\ warranty\ of}}
+\DoxyCodeLine{00014\ \textcolor{comment}{MERCHANTABILITY\ or\ FITNESS\ FOR\ A\ PARTICULAR\ PURPOSE.\ \ See\ the\ GNU}}
+\DoxyCodeLine{00015\ \textcolor{comment}{General\ Public\ License\ for\ more\ details.}}
+\DoxyCodeLine{00016\ \textcolor{comment}{}}
+\DoxyCodeLine{00017\ \textcolor{comment}{You\ should\ have\ received\ a\ copy\ of\ the\ GNU\ General\ Public\ License}}
+\DoxyCodeLine{00018\ \textcolor{comment}{along\ with\ GCC;\ see\ the\ file\ COPYING3.\ \ If\ not\ see}}
+\DoxyCodeLine{00019\ \textcolor{comment}{<http://www.gnu.org/licenses/>.\ \ */}}
+\DoxyCodeLine{00020\ }
+\DoxyCodeLine{00021\ \textcolor{preprocessor}{\#ifndef\ GCC\_ANALYZER\_PENDING\_DIAGNOSTIC\_H}}
+\DoxyCodeLine{00022\ \textcolor{preprocessor}{\#define\ GCC\_ANALYZER\_PENDING\_DIAGNOSTIC\_H}}
+\DoxyCodeLine{00023\ }
+\DoxyCodeLine{00024\ \textcolor{preprocessor}{\#include\ "{}\doxymbox{\hyperlink{diagnostic-metadata_8h}{diagnostic-\/metadata.h}}"{}}}
+\DoxyCodeLine{00025\ \textcolor{preprocessor}{\#include\ "{}\doxymbox{\hyperlink{diagnostic-path_8h}{diagnostic-\/path.h}}"{}}}
+\DoxyCodeLine{00026\ \textcolor{preprocessor}{\#include\ "{}\doxymbox{\hyperlink{sm_8h}{analyzer/sm.h}}"{}}}
+\DoxyCodeLine{00027\ }
+\DoxyCodeLine{00028\ \textcolor{keyword}{namespace\ }\doxymbox{\hyperlink{namespaceana}{ana}}\ \{}
+\DoxyCodeLine{00029\ }
+\DoxyCodeLine{00030\ \textcolor{comment}{/*\ A\ bundle\ of\ information\ about\ things\ that\ are\ of\ interest\ to\ a}}
+\DoxyCodeLine{00031\ \textcolor{comment}{\ \ \ pending\_diagnostic.}}
+\DoxyCodeLine{00032\ \textcolor{comment}{}}
+\DoxyCodeLine{00033\ \textcolor{comment}{\ \ \ For\ now,\ merely\ the\ set\ of\ regions\ that\ are\ pertinent\ to\ the}}
+\DoxyCodeLine{00034\ \textcolor{comment}{\ \ \ diagnostic,\ so\ that\ we\ can\ notify\ the\ user\ about\ when\ they}}
+\DoxyCodeLine{00035\ \textcolor{comment}{\ \ \ were\ created.\ \ */}}
+\DoxyCodeLine{00036\ }
+\DoxyCodeLine{00037\ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{structana_1_1interesting__t}{interesting\_t}}}
+\DoxyCodeLine{00038\ \{}
+\DoxyCodeLine{00039\ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{structana_1_1interesting__t_a905e63135de08d882ed884c79fd646c3}{add\_region\_creation}}\ (\textcolor{keyword}{const}\ \doxymbox{\hyperlink{classana_1_1region}{region}}\ *reg);}
+\DoxyCodeLine{00040\ }
+\DoxyCodeLine{00041\ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{structana_1_1interesting__t_a623906ec9e7f87abb655d048d5271a8b}{dump\_to\_pp}}\ (\doxymbox{\hyperlink{classpretty__printer}{pretty\_printer}}\ *pp,\ \textcolor{keywordtype}{bool}\ simple)\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00042\ }
+\DoxyCodeLine{00043\ \ \ \doxymbox{\hyperlink{classauto__vec}{auto\_vec<const\ region\ *>}}\ \doxymbox{\hyperlink{structana_1_1interesting__t_af9e86bce1c8ee6c55197b887673e1bfb}{m\_region\_creation}};}
+\DoxyCodeLine{00044\ \};}
+\DoxyCodeLine{00045\ }
+\DoxyCodeLine{00046\ \textcolor{comment}{/*\ Various\ bundles\ of\ information\ used\ for\ generating\ more\ precise}}
+\DoxyCodeLine{00047\ \textcolor{comment}{\ \ \ messages\ for\ events\ within\ a\ diagnostic\_path,\ for\ passing\ to\ the}}
+\DoxyCodeLine{00048\ \textcolor{comment}{\ \ \ various\ "{}describe\_*"{}\ vfuncs\ of\ pending\_diagnostic.\ \ See\ those}}
+\DoxyCodeLine{00049\ \textcolor{comment}{\ \ \ for\ more\ information.\ \ */}}
+\DoxyCodeLine{00050\ }
+\DoxyCodeLine{00051\ \textcolor{keyword}{namespace\ }\doxymbox{\hyperlink{namespaceana_1_1evdesc}{evdesc}}\ \{}
+\DoxyCodeLine{00052\ }
+\DoxyCodeLine{00053\ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{structana_1_1evdesc_1_1event__desc_a53788beda277ddaeeb4398ca2f9fde2d}{event\_desc}}}
+\DoxyCodeLine{00054\ \{}
+\DoxyCodeLine{00055\ \ \ \doxymbox{\hyperlink{structana_1_1evdesc_1_1event__desc_a53788beda277ddaeeb4398ca2f9fde2d}{event\_desc}}\ (\textcolor{keywordtype}{bool}\ colorize)\ :\ \doxymbox{\hyperlink{structana_1_1evdesc_1_1event__desc_ad551828a905e19cf38325054a86da98d}{m\_colorize}}\ (colorize)\ \{\}}
+\DoxyCodeLine{00056\ }
+\DoxyCodeLine{00057\ \ \ \doxymbox{\hyperlink{classlabel__text}{label\_text}}\ \doxymbox{\hyperlink{structana_1_1evdesc_1_1event__desc_ab5eec62d5d3eb0f554e1ac381ace4bba}{formatted\_print}}\ (\textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *fmt,\ ...)\ const}
+\DoxyCodeLine{00058\ \ \ \ \ \doxymbox{\hyperlink{diagnostic-core_8h_aefe7c26feedfec1c17ec07749bd3cbe2}{ATTRIBUTE\_GCC\_DIAG}}(2,3);}
+\DoxyCodeLine{00059\ }
+\DoxyCodeLine{00060\ \ \ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{structana_1_1evdesc_1_1event__desc_ad551828a905e19cf38325054a86da98d}{m\_colorize}};}
+\DoxyCodeLine{00061\ \};}
+\DoxyCodeLine{00062\ }
+\DoxyCodeLine{00063\ \textcolor{comment}{/*\ For\ use\ by\ pending\_diagnostic::describe\_state\_change.\ \ */}}
+\DoxyCodeLine{00064\ }
+\DoxyCodeLine{00065\ struct\ \doxymbox{\hyperlink{structana_1_1evdesc_1_1state__change_a6a9e3b3a1f079098bf2252de375968a3}{state\_change}}\ :\ public\ \doxymbox{\hyperlink{structana_1_1evdesc_1_1event__desc_a53788beda277ddaeeb4398ca2f9fde2d}{event\_desc}}}
+\DoxyCodeLine{00066\ \{}
+\DoxyCodeLine{00067\ \ \ \doxymbox{\hyperlink{structana_1_1evdesc_1_1state__change_a6a9e3b3a1f079098bf2252de375968a3}{state\_change}}\ (\textcolor{keywordtype}{bool}\ colorize,}
+\DoxyCodeLine{00068\ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ expr,}
+\DoxyCodeLine{00069\ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ origin,}
+\DoxyCodeLine{00070\ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{classana_1_1state__machine_ab5050cb93451ec1d29956daeddadcff6}{state\_machine::state\_t}}\ old\_state,}
+\DoxyCodeLine{00071\ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{classana_1_1state__machine_ab5050cb93451ec1d29956daeddadcff6}{state\_machine::state\_t}}\ new\_state,}
+\DoxyCodeLine{00072\ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{classdiagnostic__event__id__t}{diagnostic\_event\_id\_t}}\ event\_id,}
+\DoxyCodeLine{00073\ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classana_1_1state__change__event}{state\_change\_event}}\ \&event)}
+\DoxyCodeLine{00074\ \ \ :\ \doxymbox{\hyperlink{structana_1_1evdesc_1_1event__desc_a53788beda277ddaeeb4398ca2f9fde2d}{event\_desc}}\ (colorize),}
+\DoxyCodeLine{00075\ \ \ \ \ \doxymbox{\hyperlink{structana_1_1evdesc_1_1state__change_a4274d459b136656b1e185575f51b9868}{m\_expr}}\ (expr),\ \doxymbox{\hyperlink{structana_1_1evdesc_1_1state__change_ae165ed2d9f73d77bb9e57b465c72042b}{m\_origin}}\ (origin),}
+\DoxyCodeLine{00076\ \ \ \ \ \doxymbox{\hyperlink{structana_1_1evdesc_1_1state__change_a51102106829108ca6972b859ef9bc802}{m\_old\_state}}\ (old\_state),\ \doxymbox{\hyperlink{structana_1_1evdesc_1_1state__change_ad986b9535ee82c34e51635a3ba4d07ee}{m\_new\_state}}\ (new\_state),}
+\DoxyCodeLine{00077\ \ \ \ \ \doxymbox{\hyperlink{structana_1_1evdesc_1_1state__change_a928f3c603964b25084d3e34bdf948304}{m\_event\_id}}\ (event\_id),\ \doxymbox{\hyperlink{structana_1_1evdesc_1_1state__change_a90dac2d61a2c91b301730ebd4b303c87}{m\_event}}\ (event)}
+\DoxyCodeLine{00078\ \ \ \{\}}
+\DoxyCodeLine{00079\ }
+\DoxyCodeLine{00080\ \ \ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{structana_1_1evdesc_1_1state__change_a9cdffbc6d5b5b8bd1d36b57eefcbd176}{is\_global\_p}}\ ()\textcolor{keyword}{\ const\ }\{\ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{structana_1_1evdesc_1_1state__change_a4274d459b136656b1e185575f51b9868}{m\_expr}}\ ==\ \doxymbox{\hyperlink{tree_8h_aeda0ce25865d2494883f523217559d1e}{NULL\_TREE}};\ \}}
+\DoxyCodeLine{00081\ }
+\DoxyCodeLine{00082\ \ \ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ \doxymbox{\hyperlink{structana_1_1evdesc_1_1state__change_a4274d459b136656b1e185575f51b9868}{m\_expr}};}
+\DoxyCodeLine{00083\ \ \ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ \doxymbox{\hyperlink{structana_1_1evdesc_1_1state__change_ae165ed2d9f73d77bb9e57b465c72042b}{m\_origin}};}
+\DoxyCodeLine{00084\ \ \ \doxymbox{\hyperlink{classana_1_1state__machine_ab5050cb93451ec1d29956daeddadcff6}{state\_machine::state\_t}}\ \doxymbox{\hyperlink{structana_1_1evdesc_1_1state__change_a51102106829108ca6972b859ef9bc802}{m\_old\_state}};}
+\DoxyCodeLine{00085\ \ \ \doxymbox{\hyperlink{classana_1_1state__machine_ab5050cb93451ec1d29956daeddadcff6}{state\_machine::state\_t}}\ \doxymbox{\hyperlink{structana_1_1evdesc_1_1state__change_ad986b9535ee82c34e51635a3ba4d07ee}{m\_new\_state}};}
+\DoxyCodeLine{00086\ \ \ \doxymbox{\hyperlink{classdiagnostic__event__id__t}{diagnostic\_event\_id\_t}}\ \doxymbox{\hyperlink{structana_1_1evdesc_1_1state__change_a928f3c603964b25084d3e34bdf948304}{m\_event\_id}};}
+\DoxyCodeLine{00087\ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classana_1_1state__change__event}{state\_change\_event}}\ \&\doxymbox{\hyperlink{structana_1_1evdesc_1_1state__change_a90dac2d61a2c91b301730ebd4b303c87}{m\_event}};}
+\DoxyCodeLine{00088\ \};}
+\DoxyCodeLine{00089\ }
+\DoxyCodeLine{00090\ \textcolor{comment}{/*\ For\ use\ by\ pending\_diagnostic::describe\_call\_with\_state.\ \ */}}
+\DoxyCodeLine{00091\ }
+\DoxyCodeLine{00092\ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{structana_1_1evdesc_1_1call__with__state_ab7f8408dd981be8d72df8bc8937d94c4}{call\_with\_state}}\ :\ \textcolor{keyword}{public}\ \doxymbox{\hyperlink{structana_1_1evdesc_1_1event__desc_a53788beda277ddaeeb4398ca2f9fde2d}{event\_desc}}}
+\DoxyCodeLine{00093\ \{}
+\DoxyCodeLine{00094\ \ \ \doxymbox{\hyperlink{structana_1_1evdesc_1_1call__with__state_ab7f8408dd981be8d72df8bc8937d94c4}{call\_with\_state}}\ (\textcolor{keywordtype}{bool}\ colorize,}
+\DoxyCodeLine{00095\ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ caller\_fndecl,\ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ callee\_fndecl,}
+\DoxyCodeLine{00096\ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ expr,\ \doxymbox{\hyperlink{classana_1_1state__machine_ab5050cb93451ec1d29956daeddadcff6}{state\_machine::state\_t}}\ state)}
+\DoxyCodeLine{00097\ \ \ :\ \doxymbox{\hyperlink{structana_1_1evdesc_1_1event__desc_a53788beda277ddaeeb4398ca2f9fde2d}{event\_desc}}\ (colorize),}
+\DoxyCodeLine{00098\ \ \ \ \ \doxymbox{\hyperlink{structana_1_1evdesc_1_1call__with__state_a18683014e05f760f190e374dc6a88a90}{m\_caller\_fndecl}}\ (caller\_fndecl),}
+\DoxyCodeLine{00099\ \ \ \ \ \doxymbox{\hyperlink{structana_1_1evdesc_1_1call__with__state_a5f4f3d5e3dcc741e33d95fbe954c57ae}{m\_callee\_fndecl}}\ (callee\_fndecl),}
+\DoxyCodeLine{00100\ \ \ \ \ \doxymbox{\hyperlink{structana_1_1evdesc_1_1call__with__state_ade8eebb90125acf766a0fd4a70d56931}{m\_expr}}\ (expr),}
+\DoxyCodeLine{00101\ \ \ \ \ \doxymbox{\hyperlink{structana_1_1evdesc_1_1call__with__state_aae12097dd2df21c587516562402ed8f9}{m\_state}}\ (state)}
+\DoxyCodeLine{00102\ \ \ \{}
+\DoxyCodeLine{00103\ \ \ \}}
+\DoxyCodeLine{00104\ }
+\DoxyCodeLine{00105\ \ \ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ \doxymbox{\hyperlink{structana_1_1evdesc_1_1call__with__state_a18683014e05f760f190e374dc6a88a90}{m\_caller\_fndecl}};}
+\DoxyCodeLine{00106\ \ \ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ \doxymbox{\hyperlink{structana_1_1evdesc_1_1call__with__state_a5f4f3d5e3dcc741e33d95fbe954c57ae}{m\_callee\_fndecl}};}
+\DoxyCodeLine{00107\ \ \ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ \doxymbox{\hyperlink{structana_1_1evdesc_1_1call__with__state_ade8eebb90125acf766a0fd4a70d56931}{m\_expr}};}
+\DoxyCodeLine{00108\ \ \ \doxymbox{\hyperlink{classana_1_1state__machine_ab5050cb93451ec1d29956daeddadcff6}{state\_machine::state\_t}}\ \doxymbox{\hyperlink{structana_1_1evdesc_1_1call__with__state_aae12097dd2df21c587516562402ed8f9}{m\_state}};}
+\DoxyCodeLine{00109\ \};}
+\DoxyCodeLine{00110\ }
+\DoxyCodeLine{00111\ \textcolor{comment}{/*\ For\ use\ by\ pending\_diagnostic::describe\_return\_of\_state.\ \ */}}
+\DoxyCodeLine{00112\ }
+\DoxyCodeLine{00113\ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{structana_1_1evdesc_1_1return__of__state_acf52d9dd25b38bcdab6822b573f07e3c}{return\_of\_state}}\ :\ \textcolor{keyword}{public}\ \doxymbox{\hyperlink{structana_1_1evdesc_1_1event__desc_a53788beda277ddaeeb4398ca2f9fde2d}{event\_desc}}}
+\DoxyCodeLine{00114\ \{}
+\DoxyCodeLine{00115\ \ \ \doxymbox{\hyperlink{structana_1_1evdesc_1_1return__of__state_acf52d9dd25b38bcdab6822b573f07e3c}{return\_of\_state}}\ (\textcolor{keywordtype}{bool}\ colorize,}
+\DoxyCodeLine{00116\ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ caller\_fndecl,\ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ callee\_fndecl,}
+\DoxyCodeLine{00117\ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{classana_1_1state__machine_ab5050cb93451ec1d29956daeddadcff6}{state\_machine::state\_t}}\ state)}
+\DoxyCodeLine{00118\ \ \ :\ \doxymbox{\hyperlink{structana_1_1evdesc_1_1event__desc_a53788beda277ddaeeb4398ca2f9fde2d}{event\_desc}}\ (colorize),}
+\DoxyCodeLine{00119\ \ \ \ \ \doxymbox{\hyperlink{structana_1_1evdesc_1_1return__of__state_af3e76bc52dc7edfca37375d9e4f53761}{m\_caller\_fndecl}}\ (caller\_fndecl),}
+\DoxyCodeLine{00120\ \ \ \ \ \doxymbox{\hyperlink{structana_1_1evdesc_1_1return__of__state_a4b71bea1dc2bc451beb4636315c171f7}{m\_callee\_fndecl}}\ (callee\_fndecl),}
+\DoxyCodeLine{00121\ \ \ \ \ \doxymbox{\hyperlink{structana_1_1evdesc_1_1return__of__state_a89dacf8955aac28634cdc1ae34ba96d9}{m\_state}}\ (state)}
+\DoxyCodeLine{00122\ \ \ \{}
+\DoxyCodeLine{00123\ \ \ \}}
+\DoxyCodeLine{00124\ }
+\DoxyCodeLine{00125\ \ \ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ \doxymbox{\hyperlink{structana_1_1evdesc_1_1return__of__state_af3e76bc52dc7edfca37375d9e4f53761}{m\_caller\_fndecl}};}
+\DoxyCodeLine{00126\ \ \ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ \doxymbox{\hyperlink{structana_1_1evdesc_1_1return__of__state_a4b71bea1dc2bc451beb4636315c171f7}{m\_callee\_fndecl}};}
+\DoxyCodeLine{00127\ \ \ \doxymbox{\hyperlink{classana_1_1state__machine_ab5050cb93451ec1d29956daeddadcff6}{state\_machine::state\_t}}\ \doxymbox{\hyperlink{structana_1_1evdesc_1_1return__of__state_a89dacf8955aac28634cdc1ae34ba96d9}{m\_state}};}
+\DoxyCodeLine{00128\ \};}
+\DoxyCodeLine{00129\ }
+\DoxyCodeLine{00130\ \textcolor{comment}{/*\ For\ use\ by\ pending\_diagnostic::describe\_final\_event.\ \ */}}
+\DoxyCodeLine{00131\ }
+\DoxyCodeLine{00132\ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{structana_1_1evdesc_1_1final__event_a6ad56c132194954330e41261e68f9627}{final\_event}}\ :\ \textcolor{keyword}{public}\ \doxymbox{\hyperlink{structana_1_1evdesc_1_1event__desc_a53788beda277ddaeeb4398ca2f9fde2d}{event\_desc}}}
+\DoxyCodeLine{00133\ \{}
+\DoxyCodeLine{00134\ \ \ \doxymbox{\hyperlink{structana_1_1evdesc_1_1final__event_a6ad56c132194954330e41261e68f9627}{final\_event}}\ (\textcolor{keywordtype}{bool}\ colorize,}
+\DoxyCodeLine{00135\ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ expr,\ \doxymbox{\hyperlink{classana_1_1state__machine_ab5050cb93451ec1d29956daeddadcff6}{state\_machine::state\_t}}\ state,}
+\DoxyCodeLine{00136\ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classana_1_1warning__event}{warning\_event}}\ \&event)}
+\DoxyCodeLine{00137\ \ \ :\ \doxymbox{\hyperlink{structana_1_1evdesc_1_1event__desc_a53788beda277ddaeeb4398ca2f9fde2d}{event\_desc}}\ (colorize),}
+\DoxyCodeLine{00138\ \ \ \ \ \doxymbox{\hyperlink{structana_1_1evdesc_1_1final__event_a8b1f15b710c8d99e590795e88b0b9bef}{m\_expr}}\ (expr),\ \doxymbox{\hyperlink{structana_1_1evdesc_1_1final__event_a48d17e868f284a58f972d99db66c9614}{m\_state}}\ (state),\ \doxymbox{\hyperlink{structana_1_1evdesc_1_1final__event_a82758f97b3e23c24cbedc2f367bdf306}{m\_event}}\ (event)}
+\DoxyCodeLine{00139\ \ \ \{\}}
+\DoxyCodeLine{00140\ }
+\DoxyCodeLine{00141\ \ \ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ \doxymbox{\hyperlink{structana_1_1evdesc_1_1final__event_a8b1f15b710c8d99e590795e88b0b9bef}{m\_expr}};}
+\DoxyCodeLine{00142\ \ \ \doxymbox{\hyperlink{classana_1_1state__machine_ab5050cb93451ec1d29956daeddadcff6}{state\_machine::state\_t}}\ \doxymbox{\hyperlink{structana_1_1evdesc_1_1final__event_a48d17e868f284a58f972d99db66c9614}{m\_state}};}
+\DoxyCodeLine{00143\ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classana_1_1warning__event}{warning\_event}}\ \&\doxymbox{\hyperlink{structana_1_1evdesc_1_1final__event_a82758f97b3e23c24cbedc2f367bdf306}{m\_event}};}
+\DoxyCodeLine{00144\ \};}
+\DoxyCodeLine{00145\ }
+\DoxyCodeLine{00146\ \}\ \textcolor{comment}{/*\ end\ of\ namespace\ evdesc\ */}}
+\DoxyCodeLine{00147\ }
+\DoxyCodeLine{00148\ \textcolor{comment}{/*\ \ A\ bundle\ of\ information\ for\ use\ by\ implementations\ of\ the}}
+\DoxyCodeLine{00149\ \textcolor{comment}{\ \ \ \ pending\_diagnostic::emit\ vfunc.}}
+\DoxyCodeLine{00150\ \textcolor{comment}{}}
+\DoxyCodeLine{00151\ \textcolor{comment}{\ \ \ \ The\ rich\_location\ will\ have\ already\ been\ populated\ with\ a}}
+\DoxyCodeLine{00152\ \textcolor{comment}{\ \ \ \ diagnostic\_path.\ \ */}}
+\DoxyCodeLine{00153\ }
+\DoxyCodeLine{00154\ \textcolor{keyword}{class\ }\doxymbox{\hyperlink{classana_1_1diagnostic__emission__context_ac1a9fb24d55fe23cceac6be7686b5aeb}{diagnostic\_emission\_context}}}
+\DoxyCodeLine{00155\ \{}
+\DoxyCodeLine{00156\ \textcolor{keyword}{public}:}
+\DoxyCodeLine{00157\ \ \ \doxymbox{\hyperlink{classana_1_1diagnostic__emission__context_ac1a9fb24d55fe23cceac6be7686b5aeb}{diagnostic\_emission\_context}}\ (\textcolor{keyword}{const}\ \doxymbox{\hyperlink{classana_1_1saved__diagnostic}{saved\_diagnostic}}\ \&sd,}
+\DoxyCodeLine{00158\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{classrich__location}{rich\_location}}\ \&rich\_loc,}
+\DoxyCodeLine{00159\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{classdiagnostic__metadata}{diagnostic\_metadata}}\ \&metadata,}
+\DoxyCodeLine{00160\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{classana_1_1logger}{logger}}\ *\doxymbox{\hyperlink{classana_1_1logger}{logger}})}
+\DoxyCodeLine{00161\ \ \ :\ \doxymbox{\hyperlink{classana_1_1diagnostic__emission__context_a0628c633bd919bee8f40c75d6c0ebf64}{m\_sd}}\ (sd),}
+\DoxyCodeLine{00162\ \ \ \ \ \doxymbox{\hyperlink{classana_1_1diagnostic__emission__context_a412eb674338889714f0cc50752bf334b}{m\_rich\_loc}}\ (rich\_loc),}
+\DoxyCodeLine{00163\ \ \ \ \ \doxymbox{\hyperlink{classana_1_1diagnostic__emission__context_a740ddf286e05460d7abfa7d1313280e5}{m\_metadata}}\ (metadata),}
+\DoxyCodeLine{00164\ \ \ \ \ \doxymbox{\hyperlink{classana_1_1diagnostic__emission__context_a8f94a00f4eb6e1da933ebf16c9061c39}{m\_logger}}\ (\doxymbox{\hyperlink{classana_1_1logger}{logger}})}
+\DoxyCodeLine{00165\ \ \ \{}
+\DoxyCodeLine{00166\ \ \ \}}
+\DoxyCodeLine{00167\ }
+\DoxyCodeLine{00168\ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classana_1_1pending__diagnostic}{pending\_diagnostic}}\ \&\doxymbox{\hyperlink{classana_1_1diagnostic__emission__context_ac3b680eba3a57fca31a5f33d51b47d86}{get\_pending\_diagnostic}}\ ()\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00169\ }
+\DoxyCodeLine{00170\ \ \ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{classana_1_1diagnostic__emission__context_a378034e55d2589534dd8ceaf56a96253}{warn}}\ (\textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *,\ ...)\ \doxymbox{\hyperlink{diagnostic-core_8h_aefe7c26feedfec1c17ec07749bd3cbe2}{ATTRIBUTE\_GCC\_DIAG}}\ (2,3);}
+\DoxyCodeLine{00171\ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classana_1_1diagnostic__emission__context_a76e31413443febe46a7ef84d1022642e}{inform}}\ (const\ \textcolor{keywordtype}{char}\ *,\ ...)\ \doxymbox{\hyperlink{diagnostic-core_8h_aefe7c26feedfec1c17ec07749bd3cbe2}{ATTRIBUTE\_GCC\_DIAG}}\ (2,3);}
+\DoxyCodeLine{00172\ }
+\DoxyCodeLine{00173\ \ \ \doxymbox{\hyperlink{line-map_8h_aedf25620511d64e43327f1a229906a96}{location\_t}}\ \doxymbox{\hyperlink{classana_1_1diagnostic__emission__context_abd1879f01c6902509032ae031a3f2ca0}{get\_location}}\ ()\textcolor{keyword}{\ const\ }\{\ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{classana_1_1diagnostic__emission__context_a412eb674338889714f0cc50752bf334b}{m\_rich\_loc}}.get\_loc\ ();\ \}}
+\DoxyCodeLine{00174\ \ \ \doxymbox{\hyperlink{classana_1_1logger}{logger}}\ *\doxymbox{\hyperlink{classana_1_1diagnostic__emission__context_aab1f16367d64478c078ad65ff4122795}{get\_logger}}\ ()\textcolor{keyword}{\ const\ }\{\ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{classana_1_1diagnostic__emission__context_a8f94a00f4eb6e1da933ebf16c9061c39}{m\_logger}};\ \}}
+\DoxyCodeLine{00175\ }
+\DoxyCodeLine{00176\ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classana_1_1diagnostic__emission__context_a87aeec4d5b2c4d3c801a7bdf2ee68dad}{add\_cwe}}\ (\textcolor{keywordtype}{int}\ cwe)\ \{\ \doxymbox{\hyperlink{classana_1_1diagnostic__emission__context_a740ddf286e05460d7abfa7d1313280e5}{m\_metadata}}.add\_cwe\ (cwe);\ \}}
+\DoxyCodeLine{00177\ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classana_1_1diagnostic__emission__context_ac3d94968eb3e265f7bae17e31590fb68}{add\_rule}}\ (\textcolor{keyword}{const}\ \doxymbox{\hyperlink{classdiagnostic__metadata_1_1rule}{diagnostic\_metadata::rule}}\ \&\doxymbox{\hyperlink{poly-int_8h_a3ecac2571dcdc8050989339124f1bd26}{r}})}
+\DoxyCodeLine{00178\ \ \ \{}
+\DoxyCodeLine{00179\ \ \ \ \ \doxymbox{\hyperlink{classana_1_1diagnostic__emission__context_a740ddf286e05460d7abfa7d1313280e5}{m\_metadata}}.add\_rule\ (\doxymbox{\hyperlink{poly-int_8h_a3ecac2571dcdc8050989339124f1bd26}{r}});}
+\DoxyCodeLine{00180\ \ \ \}}
+\DoxyCodeLine{00181\ }
+\DoxyCodeLine{00182\ \textcolor{keyword}{private}:}
+\DoxyCodeLine{00183\ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classana_1_1saved__diagnostic}{saved\_diagnostic}}\ \&\doxymbox{\hyperlink{classana_1_1diagnostic__emission__context_a0628c633bd919bee8f40c75d6c0ebf64}{m\_sd}};}
+\DoxyCodeLine{00184\ \ \ \doxymbox{\hyperlink{classrich__location}{rich\_location}}\ \&\doxymbox{\hyperlink{classana_1_1diagnostic__emission__context_a412eb674338889714f0cc50752bf334b}{m\_rich\_loc}};}
+\DoxyCodeLine{00185\ \ \ \doxymbox{\hyperlink{classdiagnostic__metadata}{diagnostic\_metadata}}\ \&\doxymbox{\hyperlink{classana_1_1diagnostic__emission__context_a740ddf286e05460d7abfa7d1313280e5}{m\_metadata}};}
+\DoxyCodeLine{00186\ \ \ \doxymbox{\hyperlink{classana_1_1logger}{logger}}\ *\doxymbox{\hyperlink{classana_1_1diagnostic__emission__context_a8f94a00f4eb6e1da933ebf16c9061c39}{m\_logger}};}
+\DoxyCodeLine{00187\ \};}
+\DoxyCodeLine{00188\ }
+\DoxyCodeLine{00189\ \textcolor{comment}{/*\ An\ abstract\ base\ class\ for\ capturing\ information\ about\ a\ diagnostic\ in}}
+\DoxyCodeLine{00190\ \textcolor{comment}{\ \ \ a\ form\ that\ is\ ready\ to\ emit\ at\ a\ later\ point\ (or\ be\ rejected).}}
+\DoxyCodeLine{00191\ \textcolor{comment}{\ \ \ Each\ kind\ of\ diagnostic\ will\ have\ a\ concrete\ subclass\ of}}
+\DoxyCodeLine{00192\ \textcolor{comment}{\ \ \ pending\_diagnostic.}}
+\DoxyCodeLine{00193\ \textcolor{comment}{}}
+\DoxyCodeLine{00194\ \textcolor{comment}{\ \ \ Normally,\ gcc\ diagnostics\ are\ emitted\ using\ va\_list,\ which\ can't\ be}}
+\DoxyCodeLine{00195\ \textcolor{comment}{\ \ \ portably\ stored\ for\ later\ use,\ so\ we\ have\ to\ use\ an\ "{}emit"{}\ virtual}}
+\DoxyCodeLine{00196\ \textcolor{comment}{\ \ \ function.}}
+\DoxyCodeLine{00197\ \textcolor{comment}{}}
+\DoxyCodeLine{00198\ \textcolor{comment}{\ \ \ This\ class\ also\ supports\ comparison,\ so\ that\ multiple\ pending\_diagnostic}}
+\DoxyCodeLine{00199\ \textcolor{comment}{\ \ \ instances\ can\ be\ de-\/duplicated.}}
+\DoxyCodeLine{00200\ \textcolor{comment}{}}
+\DoxyCodeLine{00201\ \textcolor{comment}{\ \ \ As\ well\ as\ emitting\ a\ diagnostic,\ the\ class\ has\ various\ "{}precision\ of}}
+\DoxyCodeLine{00202\ \textcolor{comment}{\ \ \ wording"{}\ virtual\ functions,\ for\ generating\ descriptions\ for\ events}}
+\DoxyCodeLine{00203\ \textcolor{comment}{\ \ \ within\ a\ diagnostic\_path.\ \ These\ are\ optional,\ but\ implementing\ these}}
+\DoxyCodeLine{00204\ \textcolor{comment}{\ \ \ allows\ for\ more\ precise\ wordings\ than\ the\ more\ generic}}
+\DoxyCodeLine{00205\ \textcolor{comment}{\ \ \ implementation.\ \ */}}
+\DoxyCodeLine{00206\ }
+\DoxyCodeLine{00207\ \textcolor{keyword}{class\ }\doxymbox{\hyperlink{classana_1_1pending__diagnostic}{pending\_diagnostic}}}
+\DoxyCodeLine{00208\ \{}
+\DoxyCodeLine{00209\ \ \textcolor{keyword}{public}:}
+\DoxyCodeLine{00210\ \ \ \textcolor{keyword}{virtual}\ \doxymbox{\hyperlink{classana_1_1pending__diagnostic_a3d065c5ed722487fe7a38205e83c86b3}{\string~pending\_diagnostic}}\ ()\ \{\}}
+\DoxyCodeLine{00211\ }
+\DoxyCodeLine{00212\ \ \ \textcolor{comment}{/*\ Vfunc\ to\ get\ the\ command-\/line\ option\ used\ when\ emitting\ the\ diagnostic,}}
+\DoxyCodeLine{00213\ \textcolor{comment}{\ \ \ \ \ or\ zero\ if\ there\ is\ none.}}
+\DoxyCodeLine{00214\ \textcolor{comment}{\ \ \ \ \ Used\ by\ diagnostic\_manager\ for\ early\ rejection\ of\ diagnostics\ (to\ avoid}}
+\DoxyCodeLine{00215\ \textcolor{comment}{\ \ \ \ \ having\ to\ generate\ feasible\ execution\ paths\ for\ them).\ \ */}}
+\DoxyCodeLine{00216\ \ \ \textcolor{keyword}{virtual}\ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{classana_1_1pending__diagnostic_adfc8ac8eff1a250dd501a1b24a5abbdc}{get\_controlling\_option}}\ ()\ \textcolor{keyword}{const}\ =\ 0;}
+\DoxyCodeLine{00217\ }
+\DoxyCodeLine{00218\ \ \ \textcolor{comment}{/*\ Vfunc\ to\ give\ the\ diagnostic\ the\ chance\ to\ terminate\ the\ execution}}
+\DoxyCodeLine{00219\ \textcolor{comment}{\ \ \ \ \ path\ being\ explored.\ \ By\ default,\ don't\ terminate\ the\ path.\ \ */}}
+\DoxyCodeLine{00220\ \ \ \textcolor{keyword}{virtual}\ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{classana_1_1pending__diagnostic_ab23d4b72527661a356d7ccde506b21d0}{terminate\_path\_p}}\ ()\textcolor{keyword}{\ const\ }\{\ \textcolor{keywordflow}{return}\ \textcolor{keyword}{false};\ \}}
+\DoxyCodeLine{00221\ }
+\DoxyCodeLine{00222\ \ \ \textcolor{comment}{/*\ Vfunc\ for\ emitting\ the\ diagnostic.}}
+\DoxyCodeLine{00223\ \textcolor{comment}{\ \ \ \ \ Return\ true\ if\ a\ diagnostic\ is\ actually\ emitted.\ \ */}}
+\DoxyCodeLine{00224\ \ \ \textcolor{keyword}{virtual}\ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{classana_1_1pending__diagnostic_af5c690e1cbaf620ab4467ae271021914}{emit}}\ (\doxymbox{\hyperlink{classana_1_1diagnostic__emission__context}{diagnostic\_emission\_context}}\ \&)\ =\ 0;}
+\DoxyCodeLine{00225\ }
+\DoxyCodeLine{00226\ \ \ \textcolor{comment}{/*\ Hand-\/coded\ RTTI:\ get\ an\ ID\ for\ the\ subclass.\ \ */}}
+\DoxyCodeLine{00227\ \ \ \textcolor{keyword}{virtual}\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *\doxymbox{\hyperlink{classana_1_1pending__diagnostic_a8f775af980f1ebdc4940cea7e5b9ed10}{get\_kind}}\ ()\ \textcolor{keyword}{const}\ =\ 0;}
+\DoxyCodeLine{00228\ }
+\DoxyCodeLine{00229\ \ \ \textcolor{comment}{/*\ A\ vfunc\ for\ identifying\ "{}use\ of\ uninitialized\ value"{}.\ \ */}}
+\DoxyCodeLine{00230\ \ \ \textcolor{keyword}{virtual}\ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{classana_1_1pending__diagnostic_a466eb9f51270201035e35c6ac7592ea8}{use\_of\_uninit\_p}}\ ()\textcolor{keyword}{\ const\ }\{\ \textcolor{keywordflow}{return}\ \textcolor{keyword}{false};\ \}}
+\DoxyCodeLine{00231\ }
+\DoxyCodeLine{00232\ \ \ \textcolor{comment}{/*\ Compare\ for\ equality\ with\ OTHER,\ which\ might\ be\ of\ a\ different}}
+\DoxyCodeLine{00233\ \textcolor{comment}{\ \ \ \ \ subclass.\ \ */}}
+\DoxyCodeLine{00234\ }
+\DoxyCodeLine{00235\ \ \ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{classana_1_1pending__diagnostic_ab7e9cd17878563d0e279b181217bbce3}{equal\_p}}\ (\textcolor{keyword}{const}\ \doxymbox{\hyperlink{classana_1_1pending__diagnostic}{pending\_diagnostic}}\ \&other)\textcolor{keyword}{\ const}}
+\DoxyCodeLine{00236\ \textcolor{keyword}{\ \ }\{}
+\DoxyCodeLine{00237\ \ \ \ \ \textcolor{comment}{/*\ Check\ for\ pointer\ equality\ on\ the\ IDs\ from\ get\_kind.\ \ */}}
+\DoxyCodeLine{00238\ \ \ \ \ \textcolor{keywordflow}{if}\ (\doxymbox{\hyperlink{classana_1_1pending__diagnostic_a8f775af980f1ebdc4940cea7e5b9ed10}{get\_kind}}\ ()\ !=\ other.\doxymbox{\hyperlink{classana_1_1pending__diagnostic_a8f775af980f1ebdc4940cea7e5b9ed10}{get\_kind}}\ ())}
+\DoxyCodeLine{00239\ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ \textcolor{keyword}{false};}
+\DoxyCodeLine{00240\ \ \ \ \ \textcolor{comment}{/*\ Call\ vfunc\ now\ we\ know\ they\ have\ the\ same\ ID:\ */}}
+\DoxyCodeLine{00241\ \ \ \ \ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{classana_1_1pending__diagnostic_a5f727ad469a2e4bd78fcd90d8bc3cd47}{subclass\_equal\_p}}\ (other);}
+\DoxyCodeLine{00242\ \ \ \}}
+\DoxyCodeLine{00243\ }
+\DoxyCodeLine{00244\ \ \ \textcolor{comment}{/*\ A\ vfunc\ for\ testing\ for\ equality,\ where\ we've\ already}}
+\DoxyCodeLine{00245\ \textcolor{comment}{\ \ \ \ \ checked\ they\ have\ the\ same\ ID.\ \ See\ pending\_diagnostic\_subclass}}
+\DoxyCodeLine{00246\ \textcolor{comment}{\ \ \ \ \ below\ for\ a\ convenience\ subclass\ for\ implementing\ this.\ \ */}}
+\DoxyCodeLine{00247\ \ \ \textcolor{keyword}{virtual}\ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{classana_1_1pending__diagnostic_a5f727ad469a2e4bd78fcd90d8bc3cd47}{subclass\_equal\_p}}\ (\textcolor{keyword}{const}\ \doxymbox{\hyperlink{classana_1_1pending__diagnostic}{pending\_diagnostic}}\ \&other)\ \textcolor{keyword}{const}\ =\ 0;}
+\DoxyCodeLine{00248\ }
+\DoxyCodeLine{00249\ \ \ \textcolor{comment}{/*\ Return\ true\ if\ T1\ and\ T2\ are\ "{}the\ same"{}\ for\ the\ purposes\ of}}
+\DoxyCodeLine{00250\ \textcolor{comment}{\ \ \ \ \ diagnostic\ deduplication.\ \ */}}
+\DoxyCodeLine{00251\ \ \ \textcolor{keyword}{static}\ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{classana_1_1pending__diagnostic_aec27df9fb3f17070e833e98217172459}{same\_tree\_p}}\ (\doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ t1,\ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ t2);}
+\DoxyCodeLine{00252\ }
+\DoxyCodeLine{00253\ \ \ \textcolor{comment}{/*\ Vfunc\ for\ fixing\ up\ locations,\ e.g.\ to\ avoid\ unwinding}}
+\DoxyCodeLine{00254\ \textcolor{comment}{\ \ \ \ \ inside\ specific\ macros.\ \ PRIMARY\ is\ true\ for\ the\ primary\ location}}
+\DoxyCodeLine{00255\ \textcolor{comment}{\ \ \ \ \ for\ the\ diagnostic,\ and\ FALSE\ for\ events\ in\ their\ paths.\ \ */}}
+\DoxyCodeLine{00256\ \ \ \textcolor{keyword}{virtual}\ \doxymbox{\hyperlink{line-map_8h_aedf25620511d64e43327f1a229906a96}{location\_t}}\ \doxymbox{\hyperlink{classana_1_1pending__diagnostic_affae476319355cb752af18c7da6c6271}{fixup\_location}}\ (\doxymbox{\hyperlink{line-map_8h_aedf25620511d64e43327f1a229906a96}{location\_t}}\ loc,\ \textcolor{keywordtype}{bool}\ primary)\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00257\ }
+\DoxyCodeLine{00258\ \ \ \textcolor{comment}{/*\ Precision-\/of-\/wording\ vfunc\ for\ describing\ a\ critical\ state\ change}}
+\DoxyCodeLine{00259\ \textcolor{comment}{\ \ \ \ \ within\ the\ diagnostic\_path.}}
+\DoxyCodeLine{00260\ \textcolor{comment}{}}
+\DoxyCodeLine{00261\ \textcolor{comment}{\ \ \ \ \ For\ example,\ a\ double-\/free\ diagnostic\ might\ use\ the\ descriptions:}}
+\DoxyCodeLine{00262\ \textcolor{comment}{\ \ \ \ \ -\/\ "{}first\ 'free'\ happens\ here"{}}}
+\DoxyCodeLine{00263\ \textcolor{comment}{\ \ \ \ \ -\/\ "{}second\ 'free'\ happens\ here"{}}}
+\DoxyCodeLine{00264\ \textcolor{comment}{\ \ \ \ \ for\ the\ pertinent\ events,\ whereas\ a\ use-\/after-\/free\ might\ use\ the}}
+\DoxyCodeLine{00265\ \textcolor{comment}{\ \ \ \ \ descriptions:}}
+\DoxyCodeLine{00266\ \textcolor{comment}{\ \ \ \ \ -\/\ "{}freed\ here"{}}}
+\DoxyCodeLine{00267\ \textcolor{comment}{\ \ \ \ \ -\/\ "{}use\ after\ free\ here"{}}}
+\DoxyCodeLine{00268\ \textcolor{comment}{\ \ \ \ \ Note\ how\ in\ both\ cases\ the\ first\ event\ is\ a\ "{}free"{}:\ the\ best}}
+\DoxyCodeLine{00269\ \textcolor{comment}{\ \ \ \ \ description\ to\ use\ depends\ on\ the\ diagnostic.\ \ */}}
+\DoxyCodeLine{00270\ }
+\DoxyCodeLine{00271\ \ \ \textcolor{keyword}{virtual}\ \doxymbox{\hyperlink{classlabel__text}{label\_text}}\ \doxymbox{\hyperlink{classana_1_1pending__diagnostic_afd7c9c265805b616b52d26200dba4fb3}{describe\_state\_change}}\ (\textcolor{keyword}{const}\ \doxymbox{\hyperlink{structana_1_1evdesc_1_1state__change}{evdesc::state\_change}}\ \&)}
+\DoxyCodeLine{00272\ \ \ \{}
+\DoxyCodeLine{00273\ \ \ \ \ \textcolor{comment}{/*\ Default\ no-\/op\ implementation.\ \ */}}
+\DoxyCodeLine{00274\ \ \ \ \ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{classlabel__text}{label\_text}}\ ();}
+\DoxyCodeLine{00275\ \ \ \}}
+\DoxyCodeLine{00276\ }
+\DoxyCodeLine{00277\ \ \ \textcolor{comment}{/*\ Vfunc\ for\ implementing\ diagnostic\_event::get\_meaning\ for}}
+\DoxyCodeLine{00278\ \textcolor{comment}{\ \ \ \ \ state\_change\_event.\ \ */}}
+\DoxyCodeLine{00279\ \ \ \textcolor{keyword}{virtual}\ \doxymbox{\hyperlink{structdiagnostic__event_1_1meaning}{diagnostic\_event::meaning}}}
+\DoxyCodeLine{00280\ \ \ \doxymbox{\hyperlink{classana_1_1pending__diagnostic_ae0738b579ef6cf2acdc13829de744ffe}{get\_meaning\_for\_state\_change}}\ (\textcolor{keyword}{const}\ \doxymbox{\hyperlink{structana_1_1evdesc_1_1state__change}{evdesc::state\_change}}\ \&)\textcolor{keyword}{\ const}}
+\DoxyCodeLine{00281\ \textcolor{keyword}{\ \ }\{}
+\DoxyCodeLine{00282\ \ \ \ \ \textcolor{comment}{/*\ Default\ no-\/op\ implementation.\ \ */}}
+\DoxyCodeLine{00283\ \ \ \ \ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{structdiagnostic__event_1_1meaning}{diagnostic\_event::meaning}}\ ();}
+\DoxyCodeLine{00284\ \ \ \}}
+\DoxyCodeLine{00285\ }
+\DoxyCodeLine{00286\ \ \ \textcolor{comment}{/*\ Precision-\/of-\/wording\ vfunc\ for\ describing\ an\ interprocedural\ call}}
+\DoxyCodeLine{00287\ \textcolor{comment}{\ \ \ \ \ carrying\ critial\ state\ for\ the\ diagnostic,\ from\ caller\ to\ callee.}}
+\DoxyCodeLine{00288\ \textcolor{comment}{}}
+\DoxyCodeLine{00289\ \textcolor{comment}{\ \ \ \ \ For\ example\ a\ double-\/free\ diagnostic\ might\ use:}}
+\DoxyCodeLine{00290\ \textcolor{comment}{\ \ \ \ \ -\/\ "{}passing\ freed\ pointer\ 'ptr'\ in\ call\ to\ 'deallocator'\ from\ 'test'"{}}}
+\DoxyCodeLine{00291\ \textcolor{comment}{\ \ \ \ \ to\ make\ it\ clearer\ how\ the\ freed\ value\ moves\ from\ caller\ to}}
+\DoxyCodeLine{00292\ \textcolor{comment}{\ \ \ \ \ callee.\ \ */}}
+\DoxyCodeLine{00293\ }
+\DoxyCodeLine{00294\ \ \ \textcolor{keyword}{virtual}\ \doxymbox{\hyperlink{classlabel__text}{label\_text}}\ \doxymbox{\hyperlink{classana_1_1pending__diagnostic_aaeb81e73a305706d92482c43d75f3c06}{describe\_call\_with\_state}}\ (\textcolor{keyword}{const}\ \doxymbox{\hyperlink{structana_1_1evdesc_1_1call__with__state}{evdesc::call\_with\_state}}\ \&)}
+\DoxyCodeLine{00295\ \ \ \{}
+\DoxyCodeLine{00296\ \ \ \ \ \textcolor{comment}{/*\ Default\ no-\/op\ implementation.\ \ */}}
+\DoxyCodeLine{00297\ \ \ \ \ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{classlabel__text}{label\_text}}\ ();}
+\DoxyCodeLine{00298\ \ \ \}}
+\DoxyCodeLine{00299\ }
+\DoxyCodeLine{00300\ \ \ \textcolor{comment}{/*\ Precision-\/of-\/wording\ vfunc\ for\ describing\ an\ interprocedural\ return}}
+\DoxyCodeLine{00301\ \textcolor{comment}{\ \ \ \ \ within\ the\ diagnostic\_path\ that\ carries\ critial\ state\ for\ the}}
+\DoxyCodeLine{00302\ \textcolor{comment}{\ \ \ \ \ diagnostic,\ from\ callee\ back\ to\ caller.}}
+\DoxyCodeLine{00303\ \textcolor{comment}{}}
+\DoxyCodeLine{00304\ \textcolor{comment}{\ \ \ \ \ For\ example,\ a\ deref-\/of-\/unchecked-\/malloc\ diagnostic\ might\ use:}}
+\DoxyCodeLine{00305\ \textcolor{comment}{\ \ \ \ \ -\/\ "{}returning\ possibly-\/NULL\ pointer\ to\ 'make\_obj'\ from\ 'allocator'"{}}}
+\DoxyCodeLine{00306\ \textcolor{comment}{\ \ \ \ \ to\ make\ it\ clearer\ how\ the\ unchecked\ value\ moves\ from\ callee}}
+\DoxyCodeLine{00307\ \textcolor{comment}{\ \ \ \ \ back\ to\ caller.\ \ */}}
+\DoxyCodeLine{00308\ }
+\DoxyCodeLine{00309\ \ \ \textcolor{keyword}{virtual}\ \doxymbox{\hyperlink{classlabel__text}{label\_text}}\ \doxymbox{\hyperlink{classana_1_1pending__diagnostic_ad2cefadaf32a1896ca1b6b30c84d5745}{describe\_return\_of\_state}}\ (\textcolor{keyword}{const}\ \doxymbox{\hyperlink{structana_1_1evdesc_1_1return__of__state}{evdesc::return\_of\_state}}\ \&)}
+\DoxyCodeLine{00310\ \ \ \{}
+\DoxyCodeLine{00311\ \ \ \ \ \textcolor{comment}{/*\ Default\ no-\/op\ implementation.\ \ */}}
+\DoxyCodeLine{00312\ \ \ \ \ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{classlabel__text}{label\_text}}\ ();}
+\DoxyCodeLine{00313\ \ \ \}}
+\DoxyCodeLine{00314\ }
+\DoxyCodeLine{00315\ \ \ \textcolor{comment}{/*\ Precision-\/of-\/wording\ vfunc\ for\ describing\ the\ final\ event\ within\ a}}
+\DoxyCodeLine{00316\ \textcolor{comment}{\ \ \ \ \ diagnostic\_path.}}
+\DoxyCodeLine{00317\ \textcolor{comment}{}}
+\DoxyCodeLine{00318\ \textcolor{comment}{\ \ \ \ \ For\ example\ a\ double-\/free\ diagnostic\ might\ use:}}
+\DoxyCodeLine{00319\ \textcolor{comment}{\ \ \ \ \ \ -\/\ "{}second\ 'free'\ here;\ first\ 'free'\ was\ at\ (3)"{}}}
+\DoxyCodeLine{00320\ \textcolor{comment}{\ \ \ \ \ and\ a\ use-\/after-\/free\ might\ use}}
+\DoxyCodeLine{00321\ \textcolor{comment}{\ \ \ \ \ \ -\/\ "{}use\ after\ 'free'\ here;\ memory\ was\ freed\ at\ (2)"{}.\ \ */}}
+\DoxyCodeLine{00322\ }
+\DoxyCodeLine{00323\ \ \ \textcolor{keyword}{virtual}\ \doxymbox{\hyperlink{classlabel__text}{label\_text}}\ \doxymbox{\hyperlink{classana_1_1pending__diagnostic_af1b6c9ea9691d6ee73d00c73ed6e1030}{describe\_final\_event}}\ (\textcolor{keyword}{const}\ \doxymbox{\hyperlink{structana_1_1evdesc_1_1final__event}{evdesc::final\_event}}\ \&)}
+\DoxyCodeLine{00324\ \ \ \{}
+\DoxyCodeLine{00325\ \ \ \ \ \textcolor{comment}{/*\ Default\ no-\/op\ implementation.\ \ */}}
+\DoxyCodeLine{00326\ \ \ \ \ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{classlabel__text}{label\_text}}\ ();}
+\DoxyCodeLine{00327\ \ \ \}}
+\DoxyCodeLine{00328\ }
+\DoxyCodeLine{00329\ \ \ \textcolor{comment}{/*\ End\ of\ precision-\/of-\/wording\ vfuncs.\ \ */}}
+\DoxyCodeLine{00330\ }
+\DoxyCodeLine{00331\ \ \ \textcolor{comment}{/*\ Vfunc\ for\ adding\ a\ function\_entry\_event\ to\ a\ checker\_path,\ so\ that\ e.g.}}
+\DoxyCodeLine{00332\ \textcolor{comment}{\ \ \ \ \ the\ infinite\ recursion\ diagnostic\ can\ add\ a\ custom\ event\ subclass}}
+\DoxyCodeLine{00333\ \textcolor{comment}{\ \ \ \ \ that\ annotates\ recursively\ entering\ a\ function.\ \ */}}
+\DoxyCodeLine{00334\ }
+\DoxyCodeLine{00335\ \ \ \textcolor{keyword}{virtual}\ \textcolor{keywordtype}{void}}
+\DoxyCodeLine{00336\ \ \ \doxymbox{\hyperlink{classana_1_1pending__diagnostic_ada45ef989fb642a959fadd13736ea22e}{add\_function\_entry\_event}}\ (\textcolor{keyword}{const}\ \doxymbox{\hyperlink{classana_1_1exploded__edge}{exploded\_edge}}\ \&eedge,}
+\DoxyCodeLine{00337\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{classana_1_1checker__path}{checker\_path}}\ *emission\_path);}
+\DoxyCodeLine{00338\ }
+\DoxyCodeLine{00339\ \ \ \textcolor{comment}{/*\ Vfunc\ for\ extending/overriding\ creation\ of\ the\ events\ for\ an}}
+\DoxyCodeLine{00340\ \textcolor{comment}{\ \ \ \ \ exploded\_edge\ that\ corresponds\ to\ a\ superedge,\ allowing\ for\ custom}}
+\DoxyCodeLine{00341\ \textcolor{comment}{\ \ \ \ \ events\ to\ be\ created\ that\ are\ pertinent\ to\ a\ particular}}
+\DoxyCodeLine{00342\ \textcolor{comment}{\ \ \ \ \ pending\_diagnostic\ subclass.}}
+\DoxyCodeLine{00343\ \textcolor{comment}{}}
+\DoxyCodeLine{00344\ \textcolor{comment}{\ \ \ \ \ For\ example,\ the\ -\/Wanalyzer-\/stale-\/setjmp-\/buffer\ diagnostic\ adds\ a}}
+\DoxyCodeLine{00345\ \textcolor{comment}{\ \ \ \ \ custom\ event\ showing\ when\ the\ pertinent\ stack\ frame\ is\ popped}}
+\DoxyCodeLine{00346\ \textcolor{comment}{\ \ \ \ \ (and\ thus\ the\ point\ at\ which\ the\ jmp\_buf\ becomes\ invalid).\ \ */}}
+\DoxyCodeLine{00347\ }
+\DoxyCodeLine{00348\ \ \ \textcolor{keyword}{virtual}\ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{classana_1_1pending__diagnostic_a7b44f21376334a59d81dd6ef5837bf7c}{maybe\_add\_custom\_events\_for\_superedge}}\ (\textcolor{keyword}{const}\ \doxymbox{\hyperlink{classana_1_1exploded__edge}{exploded\_edge}}\ \&,}
+\DoxyCodeLine{00349\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{classana_1_1checker__path}{checker\_path}}\ *)}
+\DoxyCodeLine{00350\ \ \ \{}
+\DoxyCodeLine{00351\ \ \ \ \ \textcolor{keywordflow}{return}\ \textcolor{keyword}{false};}
+\DoxyCodeLine{00352\ \ \ \}}
+\DoxyCodeLine{00353\ }
+\DoxyCodeLine{00354\ \ \ \textcolor{comment}{/*\ Vfunc\ for\ adding\ a\ call\_event\ to\ a\ checker\_path,\ so\ that\ e.g.}}
+\DoxyCodeLine{00355\ \textcolor{comment}{\ \ \ \ \ the\ varargs\ diagnostics\ can\ add\ a\ custom\ event\ subclass\ that\ annotates}}
+\DoxyCodeLine{00356\ \textcolor{comment}{\ \ \ \ \ the\ variadic\ arguments.\ \ */}}
+\DoxyCodeLine{00357\ \ \ \textcolor{keyword}{virtual}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classana_1_1pending__diagnostic_addf1a1d97461b6995e4b1b31f285c7b8}{add\_call\_event}}\ (\textcolor{keyword}{const}\ \doxymbox{\hyperlink{classana_1_1exploded__edge}{exploded\_edge}}\ \&,}
+\DoxyCodeLine{00358\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{classana_1_1checker__path}{checker\_path}}\ *);}
+\DoxyCodeLine{00359\ }
+\DoxyCodeLine{00360\ \ \ \textcolor{comment}{/*\ Vfunc\ for\ adding\ any\ events\ for\ the\ creation\ of\ regions\ identified}}
+\DoxyCodeLine{00361\ \textcolor{comment}{\ \ \ \ \ by\ the\ mark\_interesting\_stuff\ vfunc.}}
+\DoxyCodeLine{00362\ \textcolor{comment}{\ \ \ \ \ See\ the\ comment\ for\ class\ region\_creation\_event.\ \ */}}
+\DoxyCodeLine{00363\ \ \ \textcolor{keyword}{virtual}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classana_1_1pending__diagnostic_a88a346f5ad8573b04dce5503866848c9}{add\_region\_creation\_events}}\ (\textcolor{keyword}{const}\ \doxymbox{\hyperlink{classana_1_1region}{region}}\ *reg,}
+\DoxyCodeLine{00364\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ capacity,}
+\DoxyCodeLine{00365\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{structana_1_1event__loc__info}{event\_loc\_info}}\ \&loc\_info,}
+\DoxyCodeLine{00366\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{classana_1_1checker__path}{checker\_path}}\ \&emission\_path);}
+\DoxyCodeLine{00367\ }
+\DoxyCodeLine{00368\ \ \ \textcolor{comment}{/*\ Vfunc\ for\ adding\ the\ final\ warning\_event\ to\ a\ checker\_path,\ so\ that\ e.g.}}
+\DoxyCodeLine{00369\ \textcolor{comment}{\ \ \ \ \ the\ infinite\ recursion\ diagnostic\ can\ have\ its\ diagnostic\ appear\ at}}
+\DoxyCodeLine{00370\ \textcolor{comment}{\ \ \ \ \ the\ callsite,\ but\ the\ final\ event\ in\ the\ path\ be\ at\ the\ entrypoint}}
+\DoxyCodeLine{00371\ \textcolor{comment}{\ \ \ \ \ of\ the\ called\ function.\ \ */}}
+\DoxyCodeLine{00372\ \ \ \textcolor{keyword}{virtual}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classana_1_1pending__diagnostic_a6a0d24f3cd1cfdc66f5928b9d780df93}{add\_final\_event}}\ (\textcolor{keyword}{const}\ \doxymbox{\hyperlink{classana_1_1state__machine}{state\_machine}}\ *sm,}
+\DoxyCodeLine{00373\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classana_1_1exploded__node}{exploded\_node}}\ *enode,}
+\DoxyCodeLine{00374\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ gimple\ *stmt,}
+\DoxyCodeLine{00375\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ var,\ \doxymbox{\hyperlink{classana_1_1state__machine_ab5050cb93451ec1d29956daeddadcff6}{state\_machine::state\_t}}\ state,}
+\DoxyCodeLine{00376\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{classana_1_1checker__path}{checker\_path}}\ *emission\_path);}
+\DoxyCodeLine{00377\ }
+\DoxyCodeLine{00378\ \ \ \textcolor{comment}{/*\ Vfunc\ for\ determining\ that\ this\ pending\_diagnostic\ supercedes\ OTHER,}}
+\DoxyCodeLine{00379\ \textcolor{comment}{\ \ \ \ \ and\ that\ OTHER\ should\ therefore\ not\ be\ emitted.}}
+\DoxyCodeLine{00380\ \textcolor{comment}{\ \ \ \ \ They\ have\ already\ been\ tested\ for\ being\ at\ the\ same\ stmt.\ \ */}}
+\DoxyCodeLine{00381\ }
+\DoxyCodeLine{00382\ \ \ \textcolor{keyword}{virtual}\ \textcolor{keywordtype}{bool}}
+\DoxyCodeLine{00383\ \ \ \doxymbox{\hyperlink{classana_1_1pending__diagnostic_a42e1928c9ac578cd2c874c8feedc4b0b}{supercedes\_p}}\ (\textcolor{keyword}{const}\ \doxymbox{\hyperlink{classana_1_1pending__diagnostic}{pending\_diagnostic}}\ \&other\ \doxymbox{\hyperlink{ansidecl_8h_a635a8d08da53567d5c3b67deb7f98ed3}{ATTRIBUTE\_UNUSED}})\textcolor{keyword}{\ const}}
+\DoxyCodeLine{00384\ \textcolor{keyword}{\ \ }\{}
+\DoxyCodeLine{00385\ \ \ \ \ \textcolor{keywordflow}{return}\ \textcolor{keyword}{false};}
+\DoxyCodeLine{00386\ \ \ \}}
+\DoxyCodeLine{00387\ }
+\DoxyCodeLine{00388\ \ \ \textcolor{comment}{/*\ Vfunc\ for\ registering\ additional\ information\ of\ interest\ to\ this}}
+\DoxyCodeLine{00389\ \textcolor{comment}{\ \ \ \ \ diagnostic.\ \ */}}
+\DoxyCodeLine{00390\ }
+\DoxyCodeLine{00391\ \ \ \textcolor{keyword}{virtual}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classana_1_1pending__diagnostic_a6ff8233ce7248adff8d34fec0b554467}{mark\_interesting\_stuff}}\ (\doxymbox{\hyperlink{structana_1_1interesting__t}{interesting\_t}}\ *)}
+\DoxyCodeLine{00392\ \ \ \{}
+\DoxyCodeLine{00393\ \ \ \ \ \textcolor{comment}{/*\ Default\ no-\/op\ implementation.\ \ */}}
+\DoxyCodeLine{00394\ \ \ \}}
+\DoxyCodeLine{00395\ }
+\DoxyCodeLine{00396\ \ \ \textcolor{comment}{/*\ Vfunc\ to\ give\ diagnostic\ subclasses\ the\ opportunity\ to\ reject\ diagnostics}}
+\DoxyCodeLine{00397\ \textcolor{comment}{\ \ \ \ \ by\ imposing\ their\ own\ additional\ feasibility\ checks\ on\ the\ path\ to\ a}}
+\DoxyCodeLine{00398\ \textcolor{comment}{\ \ \ \ \ given\ feasible\_node.\ \ */}}
+\DoxyCodeLine{00399\ \ \ \textcolor{keyword}{virtual}\ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{classana_1_1pending__diagnostic_aeba70b5b36951e3480b9cdeae349f51b}{check\_valid\_fpath\_p}}\ (\textcolor{keyword}{const}\ \doxymbox{\hyperlink{classana_1_1feasible__node}{feasible\_node}}\ \&,}
+\DoxyCodeLine{00400\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ gimple\ *)\textcolor{keyword}{\ const}}
+\DoxyCodeLine{00401\ \textcolor{keyword}{\ \ }\{}
+\DoxyCodeLine{00402\ \ \ \ \ \textcolor{comment}{/*\ Default\ implementation:\ accept\ this\ path.\ \ */}}
+\DoxyCodeLine{00403\ \ \ \ \ \textcolor{keywordflow}{return}\ \textcolor{keyword}{true};}
+\DoxyCodeLine{00404\ \ \ \}}
+\DoxyCodeLine{00405\ }
+\DoxyCodeLine{00406\ \ \ \textcolor{comment}{/*\ Vfunc\ for\ use\ in\ SARIF\ output\ to\ give\ pending\_diagnostic\ subclasses}}
+\DoxyCodeLine{00407\ \textcolor{comment}{\ \ \ \ \ the\ opportunity\ to\ add\ diagnostic-\/specific\ properties\ to\ the\ SARIF}}
+\DoxyCodeLine{00408\ \textcolor{comment}{\ \ \ \ \ "{}result"{}\ object\ for\ the\ diagnostic.}}
+\DoxyCodeLine{00409\ \textcolor{comment}{\ \ \ \ \ This\ is\ intended\ for\ use\ when\ debugging\ a\ diagnostic.\ \ */}}
+\DoxyCodeLine{00410\ \ \ \textcolor{keyword}{virtual}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classana_1_1pending__diagnostic_a7648461e44db8e429892f3024d78cbe4}{maybe\_add\_sarif\_properties}}\ (\doxymbox{\hyperlink{classsarif__object}{sarif\_object}}\ \&\textcolor{comment}{/*result\_obj*/})\textcolor{keyword}{\ const}}
+\DoxyCodeLine{00411\ \textcolor{keyword}{\ \ }\{}
+\DoxyCodeLine{00412\ \ \ \ \ \textcolor{comment}{/*\ Default\ no-\/op\ implementation.\ \ */}}
+\DoxyCodeLine{00413\ \ \ \}}
+\DoxyCodeLine{00414\ \};}
+\DoxyCodeLine{00415\ }
+\DoxyCodeLine{00416\ \textcolor{comment}{/*\ A\ template\ to\ make\ it\ easier\ to\ make\ subclasses\ of\ pending\_diagnostic.}}
+\DoxyCodeLine{00417\ \textcolor{comment}{}}
+\DoxyCodeLine{00418\ \textcolor{comment}{\ \ \ This\ uses\ the\ curiously-\/recurring\ template\ pattern,\ to\ implement}}
+\DoxyCodeLine{00419\ \textcolor{comment}{\ \ \ pending\_diagnostic::subclass\_equal\_p\ by\ casting\ and\ calling}}
+\DoxyCodeLine{00420\ \textcolor{comment}{\ \ \ the\ operator==}}
+\DoxyCodeLine{00421\ \textcolor{comment}{}}
+\DoxyCodeLine{00422\ \textcolor{comment}{\ \ \ This\ assumes\ that\ BASE\_OTHER\ has\ already\ been\ checked\ to\ have}}
+\DoxyCodeLine{00423\ \textcolor{comment}{\ \ \ been\ of\ the\ same\ subclass\ (which\ pending\_diagnostic::equal\_p\ does).\ \ */}}
+\DoxyCodeLine{00424\ }
+\DoxyCodeLine{00425\ \textcolor{keyword}{template}\ <\textcolor{keyword}{class}\ Sub\textcolor{keyword}{class}>}
+\DoxyCodeLine{00426\ \textcolor{keyword}{class\ }\doxymbox{\hyperlink{classana_1_1pending__diagnostic__subclass}{pending\_diagnostic\_subclass}}\ :\ \textcolor{keyword}{public}\ \doxymbox{\hyperlink{classana_1_1pending__diagnostic}{pending\_diagnostic}}}
+\DoxyCodeLine{00427\ \{}
+\DoxyCodeLine{00428\ \ \textcolor{keyword}{public}:}
+\DoxyCodeLine{00429\ \ \ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{classana_1_1pending__diagnostic__subclass_ab6fe8dbf7e21488a2915f6f245441a65}{subclass\_equal\_p}}\ (\textcolor{keyword}{const}\ \doxymbox{\hyperlink{classana_1_1pending__diagnostic}{pending\_diagnostic}}\ \&base\_other)\ \textcolor{keyword}{const}}
+\DoxyCodeLine{00430\ \ \ \ \ \textcolor{keyword}{final}\ \textcolor{keyword}{override}}
+\DoxyCodeLine{00431\ \ \ \{}
+\DoxyCodeLine{00432\ \ \ \ \ \textcolor{keyword}{const}\ Subclass\ \&other\ =\ (\textcolor{keyword}{const}\ Subclass\ \&)base\_other;}
+\DoxyCodeLine{00433\ \ \ \ \ \textcolor{keywordflow}{return}\ *(\textcolor{keyword}{const}\ Subclass*)\textcolor{keyword}{this}\ ==\ other;}
+\DoxyCodeLine{00434\ \ \ \}}
+\DoxyCodeLine{00435\ \};}
+\DoxyCodeLine{00436\ }
+\DoxyCodeLine{00437\ \textcolor{comment}{/*\ An\ abstract\ base\ class\ for\ capturing\ additional\ notes\ that\ are\ to\ be}}
+\DoxyCodeLine{00438\ \textcolor{comment}{\ \ \ emitted\ with\ a\ diagnostic.\ \ */}}
+\DoxyCodeLine{00439\ }
+\DoxyCodeLine{00440\ \textcolor{keyword}{class\ }\doxymbox{\hyperlink{classana_1_1pending__note}{pending\_note}}}
+\DoxyCodeLine{00441\ \{}
+\DoxyCodeLine{00442\ \textcolor{keyword}{public}:}
+\DoxyCodeLine{00443\ \ \ \textcolor{keyword}{virtual}\ \doxymbox{\hyperlink{classana_1_1pending__note_a5962beccb8b6496b8a7ddd96f81db696}{\string~pending\_note}}\ ()\ \{\}}
+\DoxyCodeLine{00444\ }
+\DoxyCodeLine{00445\ \ \ \textcolor{comment}{/*\ Hand-\/coded\ RTTI:\ get\ an\ ID\ for\ the\ subclass.\ \ */}}
+\DoxyCodeLine{00446\ \ \ \textcolor{keyword}{virtual}\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *\doxymbox{\hyperlink{classana_1_1pending__note_ab6ac42d78188907f6f6e696f7f63dd99}{get\_kind}}\ ()\ \textcolor{keyword}{const}\ =\ 0;}
+\DoxyCodeLine{00447\ }
+\DoxyCodeLine{00448\ \ \ \textcolor{comment}{/*\ Vfunc\ for\ emitting\ the\ note.\ \ */}}
+\DoxyCodeLine{00449\ \ \ \textcolor{keyword}{virtual}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classana_1_1pending__note_a95357bcb6f78d52ff30365eede55fbe6}{emit}}\ ()\ \textcolor{keyword}{const}\ =\ 0;}
+\DoxyCodeLine{00450\ }
+\DoxyCodeLine{00451\ \ \ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{classana_1_1pending__note_acec2a553fb278e57d3d871841f770e62}{equal\_p}}\ (\textcolor{keyword}{const}\ \doxymbox{\hyperlink{classana_1_1pending__note}{pending\_note}}\ \&other)\textcolor{keyword}{\ const}}
+\DoxyCodeLine{00452\ \textcolor{keyword}{\ \ }\{}
+\DoxyCodeLine{00453\ \ \ \ \ \textcolor{comment}{/*\ Check\ for\ pointer\ equality\ on\ the\ IDs\ from\ get\_kind.\ \ */}}
+\DoxyCodeLine{00454\ \ \ \ \ \textcolor{keywordflow}{if}\ (\doxymbox{\hyperlink{classana_1_1pending__note_ab6ac42d78188907f6f6e696f7f63dd99}{get\_kind}}\ ()\ !=\ other.\doxymbox{\hyperlink{classana_1_1pending__note_ab6ac42d78188907f6f6e696f7f63dd99}{get\_kind}}\ ())}
+\DoxyCodeLine{00455\ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ \textcolor{keyword}{false};}
+\DoxyCodeLine{00456\ \ \ \ \ \textcolor{comment}{/*\ Call\ vfunc\ now\ we\ know\ they\ have\ the\ same\ ID:\ */}}
+\DoxyCodeLine{00457\ \ \ \ \ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{classana_1_1pending__note_a7462801f781f9b3d4e315ca355488255}{subclass\_equal\_p}}\ (other);}
+\DoxyCodeLine{00458\ \ \ \}}
+\DoxyCodeLine{00459\ }
+\DoxyCodeLine{00460\ \ \ \textcolor{comment}{/*\ A\ vfunc\ for\ testing\ for\ equality,\ where\ we've\ already}}
+\DoxyCodeLine{00461\ \textcolor{comment}{\ \ \ \ \ checked\ they\ have\ the\ same\ ID.\ \ See\ pending\_note\_subclass}}
+\DoxyCodeLine{00462\ \textcolor{comment}{\ \ \ \ \ below\ for\ a\ convenience\ subclass\ for\ implementing\ this.\ \ */}}
+\DoxyCodeLine{00463\ \ \ \textcolor{keyword}{virtual}\ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{classana_1_1pending__note_a7462801f781f9b3d4e315ca355488255}{subclass\_equal\_p}}\ (\textcolor{keyword}{const}\ \doxymbox{\hyperlink{classana_1_1pending__note}{pending\_note}}\ \&other)\ \textcolor{keyword}{const}\ =\ 0;}
+\DoxyCodeLine{00464\ \};}
+\DoxyCodeLine{00465\ }
+\DoxyCodeLine{00466\ \textcolor{comment}{/*\ Analogous\ to\ pending\_diagnostic\_subclass,\ but\ for\ pending\_note.\ \ */}}
+\DoxyCodeLine{00467\ }
+\DoxyCodeLine{00468\ \textcolor{keyword}{template}\ <\textcolor{keyword}{class}\ Sub\textcolor{keyword}{class}>}
+\DoxyCodeLine{00469\ \textcolor{keyword}{class\ }\doxymbox{\hyperlink{classana_1_1pending__note__subclass}{pending\_note\_subclass}}\ :\ \textcolor{keyword}{public}\ \doxymbox{\hyperlink{classana_1_1pending__note}{pending\_note}}}
+\DoxyCodeLine{00470\ \{}
+\DoxyCodeLine{00471\ \ \textcolor{keyword}{public}:}
+\DoxyCodeLine{00472\ \ \ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{classana_1_1pending__note__subclass_a24e5111b185b2874839cbf5c0c7e8df0}{subclass\_equal\_p}}\ (\textcolor{keyword}{const}\ \doxymbox{\hyperlink{classana_1_1pending__note}{pending\_note}}\ \&base\_other)\ \textcolor{keyword}{const}}
+\DoxyCodeLine{00473\ \ \ \ \ \textcolor{keyword}{final}\ \textcolor{keyword}{override}}
+\DoxyCodeLine{00474\ \ \ \{}
+\DoxyCodeLine{00475\ \ \ \ \ \textcolor{keyword}{const}\ Subclass\ \&other\ =\ (\textcolor{keyword}{const}\ Subclass\ \&)base\_other;}
+\DoxyCodeLine{00476\ \ \ \ \ \textcolor{keywordflow}{return}\ *(\textcolor{keyword}{const}\ Subclass*)\textcolor{keyword}{this}\ ==\ other;}
+\DoxyCodeLine{00477\ \ \ \}}
+\DoxyCodeLine{00478\ \};}
+\DoxyCodeLine{00479\ }
+\DoxyCodeLine{00480\ \}\ \textcolor{comment}{//\ namespace\ ana}}
+\DoxyCodeLine{00481\ }
+\DoxyCodeLine{00482\ \textcolor{preprocessor}{\#endif\ }\textcolor{comment}{/*\ GCC\_ANALYZER\_PENDING\_DIAGNOSTIC\_H\ */}\textcolor{preprocessor}{}}
+
+\end{DoxyCode}

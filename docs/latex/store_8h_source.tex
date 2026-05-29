@@ -1,0 +1,892 @@
+\doxysection{store.\+h}
+\hypertarget{store_8h_source}{}\label{store_8h_source}\index{toolchain/x86\_64-\/elf/lib/gcc/x86\_64-\/elf/14.2.0/plugin/include/analyzer/store.h@{toolchain/x86\_64-\/elf/lib/gcc/x86\_64-\/elf/14.2.0/plugin/include/analyzer/store.h}}
+\doxymbox{\hyperlink{store_8h}{Go to the documentation of this file.}}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001\ \textcolor{comment}{/*\ Classes\ for\ modeling\ the\ state\ of\ memory.}}
+\DoxyCodeLine{00002\ \textcolor{comment}{\ \ \ Copyright\ (C)\ 2020-\/2024\ Free\ Software\ Foundation,\ Inc.}}
+\DoxyCodeLine{00003\ \textcolor{comment}{\ \ \ Contributed\ by\ David\ Malcolm\ <dmalcolm@redhat.com>.}}
+\DoxyCodeLine{00004\ \textcolor{comment}{}}
+\DoxyCodeLine{00005\ \textcolor{comment}{This\ file\ is\ part\ of\ GCC.}}
+\DoxyCodeLine{00006\ \textcolor{comment}{}}
+\DoxyCodeLine{00007\ \textcolor{comment}{GCC\ is\ free\ software;\ you\ can\ redistribute\ it\ and/or\ modify\ it}}
+\DoxyCodeLine{00008\ \textcolor{comment}{under\ the\ terms\ of\ the\ GNU\ General\ Public\ License\ as\ published\ by}}
+\DoxyCodeLine{00009\ \textcolor{comment}{the\ Free\ Software\ Foundation;\ either\ version\ 3,\ or\ (at\ your\ option)}}
+\DoxyCodeLine{00010\ \textcolor{comment}{any\ later\ version.}}
+\DoxyCodeLine{00011\ \textcolor{comment}{}}
+\DoxyCodeLine{00012\ \textcolor{comment}{GCC\ is\ distributed\ in\ the\ hope\ that\ it\ will\ be\ useful,\ but}}
+\DoxyCodeLine{00013\ \textcolor{comment}{WITHOUT\ ANY\ WARRANTY;\ without\ even\ the\ implied\ warranty\ of}}
+\DoxyCodeLine{00014\ \textcolor{comment}{MERCHANTABILITY\ or\ FITNESS\ FOR\ A\ PARTICULAR\ PURPOSE.\ \ See\ the\ GNU}}
+\DoxyCodeLine{00015\ \textcolor{comment}{General\ Public\ License\ for\ more\ details.}}
+\DoxyCodeLine{00016\ \textcolor{comment}{}}
+\DoxyCodeLine{00017\ \textcolor{comment}{You\ should\ have\ received\ a\ copy\ of\ the\ GNU\ General\ Public\ License}}
+\DoxyCodeLine{00018\ \textcolor{comment}{along\ with\ GCC;\ see\ the\ file\ COPYING3.\ \ If\ not\ see}}
+\DoxyCodeLine{00019\ \textcolor{comment}{<http://www.gnu.org/licenses/>.\ \ */}}
+\DoxyCodeLine{00020\ }
+\DoxyCodeLine{00021\ \textcolor{preprocessor}{\#ifndef\ GCC\_ANALYZER\_STORE\_H}}
+\DoxyCodeLine{00022\ \textcolor{preprocessor}{\#define\ GCC\_ANALYZER\_STORE\_H}}
+\DoxyCodeLine{00023\ }
+\DoxyCodeLine{00024\ \textcolor{comment}{/*\ Implementation\ of\ the\ region-\/based\ ternary\ model\ described\ in:}}
+\DoxyCodeLine{00025\ \textcolor{comment}{\ \ \ \ \ "{}A\ Memory\ Model\ for\ Static\ Analysis\ of\ C\ Programs"{}}}
+\DoxyCodeLine{00026\ \textcolor{comment}{\ \ \ \ \ \ (Zhongxing\ Xu,\ Ted\ Kremenek,\ and\ Jian\ Zhang)}}
+\DoxyCodeLine{00027\ \textcolor{comment}{\ \ \ \ \ http://lcs.ios.ac.cn/\string~xuzb/canalyze/memmodel.pdf\ \ */}}
+\DoxyCodeLine{00028\ }
+\DoxyCodeLine{00029\ \textcolor{comment}{/*\ The\ store\ models\ memory\ as\ a\ collection\ of\ "{}clusters"{},\ where\ regions}}
+\DoxyCodeLine{00030\ \textcolor{comment}{\ \ \ are\ partitioned\ into\ clusters\ via\ their\ base\ region.}}
+\DoxyCodeLine{00031\ \textcolor{comment}{}}
+\DoxyCodeLine{00032\ \textcolor{comment}{\ \ \ For\ example,\ given:}}
+\DoxyCodeLine{00033\ \textcolor{comment}{\ \ \ \ \ int\ a,\ b,\ c;}}
+\DoxyCodeLine{00034\ \textcolor{comment}{\ \ \ \ \ struct\ coord\ \{\ double\ x;\ double\ y;\ \}\ verts[3];}}
+\DoxyCodeLine{00035\ \textcolor{comment}{\ \ \ then\ "{}verts[0].y"{}\ and\ "{}verts[1].x"{}\ both\ have\ "{}verts"{}\ as\ their\ base\ region.}}
+\DoxyCodeLine{00036\ \textcolor{comment}{\ \ \ Each\ of\ a,\ b,\ c,\ and\ verts\ will\ have\ their\ own\ clusters,\ so\ that\ we}}
+\DoxyCodeLine{00037\ \textcolor{comment}{\ \ \ know\ that\ writes\ to\ e.g.\ "{}verts[1].x"{}.don't\ affect\ e.g.\ "{}a"{}.}}
+\DoxyCodeLine{00038\ \textcolor{comment}{}}
+\DoxyCodeLine{00039\ \textcolor{comment}{\ \ \ Within\ each\ cluster\ we\ store\ a\ map\ of\ bindings\ to\ values,\ where\ the}}
+\DoxyCodeLine{00040\ \textcolor{comment}{\ \ \ binding\ keys\ can\ be\ either\ concrete\ or\ symbolic.}}
+\DoxyCodeLine{00041\ \textcolor{comment}{}}
+\DoxyCodeLine{00042\ \textcolor{comment}{\ \ \ Concrete\ bindings\ affect\ a\ specific\ range\ of\ bits\ relative\ to\ the\ start}}
+\DoxyCodeLine{00043\ \textcolor{comment}{\ \ \ of\ the\ base\ region\ of\ the\ cluster,\ whereas\ symbolic\ bindings\ affect}}
+\DoxyCodeLine{00044\ \textcolor{comment}{\ \ \ a\ specific\ subregion\ within\ the\ cluster.}}
+\DoxyCodeLine{00045\ \textcolor{comment}{}}
+\DoxyCodeLine{00046\ \textcolor{comment}{\ \ \ Consider\ (from\ the\ symbolic-\/1.c\ testcase):}}
+\DoxyCodeLine{00047\ \textcolor{comment}{}}
+\DoxyCodeLine{00048\ \textcolor{comment}{\ \ \ \ \ char\ arr[1024];}}
+\DoxyCodeLine{00049\ \textcolor{comment}{\ \ \ \ \ arr[2]\ =\ a;\ \ (1)}}
+\DoxyCodeLine{00050\ \textcolor{comment}{\ \ \ \ \ arr[3]\ =\ b;\ \ (2)}}
+\DoxyCodeLine{00051\ \textcolor{comment}{\ \ \ \ \ \ \ After\ (1)\ and\ (2),\ the\ cluster\ for\ "{}arr"{}\ has\ concrete\ bindings}}
+\DoxyCodeLine{00052\ \textcolor{comment}{\ \ \ \ \ \ \ for\ bits\ 16-\/23\ and\ for\ bits\ 24-\/31,\ with\ svalues\ "{}INIT\_VAL(a)"{}}}
+\DoxyCodeLine{00053\ \textcolor{comment}{\ \ \ \ \ \ \ and\ "{}INIT\_VAL(b)"{}\ respectively:}}
+\DoxyCodeLine{00054\ \textcolor{comment}{\ \ \ \ \ \ \ cluster:\ \{bits\ 16-\/23:\ "{}INIT\_VAL(a)"{},}}
+\DoxyCodeLine{00055\ \textcolor{comment}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ bits\ 24-\/31:\ "{}INIT\_VAL(b)"{};}}
+\DoxyCodeLine{00056\ \textcolor{comment}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ flags:\ \{\}\}}}
+\DoxyCodeLine{00057\ \textcolor{comment}{\ \ \ \ \ \ \ Attempting\ to\ query\ unbound\ subregions\ e.g.\ arr[4]\ will}}
+\DoxyCodeLine{00058\ \textcolor{comment}{\ \ \ \ \ \ \ return\ "{}UNINITIALIZED"{}.}}
+\DoxyCodeLine{00059\ \textcolor{comment}{\ \ \ \ \ \ \ "{}a"{}\ and\ "{}b"{}\ are\ each\ in\ their\ own\ clusters,\ with\ no\ explicit}}
+\DoxyCodeLine{00060\ \textcolor{comment}{\ \ \ \ \ \ \ bindings,\ and\ thus\ implicitly\ have\ value\ INIT\_VAL(a)\ and\ INIT\_VAL(b).}}
+\DoxyCodeLine{00061\ \textcolor{comment}{}}
+\DoxyCodeLine{00062\ \textcolor{comment}{\ \ \ \ \ arr[3]\ =\ c;\ \ (3)}}
+\DoxyCodeLine{00063\ \textcolor{comment}{\ \ \ \ \ \ \ After\ (3),\ the\ concrete\ binding\ for\ bits\ 24-\/31\ is\ replaced\ with\ the}}
+\DoxyCodeLine{00064\ \textcolor{comment}{\ \ \ \ \ \ \ svalue\ "{}INIT\_VAL(c)"{}:}}
+\DoxyCodeLine{00065\ \textcolor{comment}{\ \ \ \ \ \ \ cluster:\ \{bits\ 16-\/23:\ "{}INIT\_VAL(a)"{},\ \ (from\ before)}}
+\DoxyCodeLine{00066\ \textcolor{comment}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ bits\ 24-\/31:\ "{}INIT\_VAL(c)"{};\ \ (updated)}}
+\DoxyCodeLine{00067\ \textcolor{comment}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ flags:\ \{\}\}}}
+\DoxyCodeLine{00068\ \textcolor{comment}{}}
+\DoxyCodeLine{00069\ \textcolor{comment}{\ \ \ \ \ arr[i]\ =\ d;\ \ (4)}}
+\DoxyCodeLine{00070\ \textcolor{comment}{\ \ \ \ \ \ \ After\ (4),\ we\ lose\ the\ concrete\ bindings\ and\ replace\ them\ with\ a}}
+\DoxyCodeLine{00071\ \textcolor{comment}{\ \ \ \ \ \ \ symbolic\ binding\ for\ "{}arr[i]"{},\ with\ svalue\ "{}INIT\_VAL(d)"{}.\ \ We\ also}}
+\DoxyCodeLine{00072\ \textcolor{comment}{\ \ \ \ \ \ \ mark\ the\ cluster\ as\ having\ been\ "{}symbolically\ touched"{}:\ future}}
+\DoxyCodeLine{00073\ \textcolor{comment}{\ \ \ \ \ \ \ attempts\ to\ query\ the\ values\ of\ subregions\ other\ than\ "{}arr[i]"{},}}
+\DoxyCodeLine{00074\ \textcolor{comment}{\ \ \ \ \ \ \ such\ as\ "{}arr[3]"{}\ are\ "{}UNKNOWN"{},\ since\ we\ don't\ know\ if\ the\ write}}
+\DoxyCodeLine{00075\ \textcolor{comment}{\ \ \ \ \ \ \ to\ arr[i]\ affected\ them.}}
+\DoxyCodeLine{00076\ \textcolor{comment}{\ \ \ \ \ \ \ cluster:\ \{symbolic\_key(arr[i]):\ "{}INIT\_VAL(d)"{};}}
+\DoxyCodeLine{00077\ \textcolor{comment}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ flags:\ \{TOUCHED\}\}}}
+\DoxyCodeLine{00078\ \textcolor{comment}{}}
+\DoxyCodeLine{00079\ \textcolor{comment}{\ \ \ \ \ arr[j]\ =\ e;\ \ (5)}}
+\DoxyCodeLine{00080\ \textcolor{comment}{\ \ \ \ \ \ \ After\ (5),\ we\ lose\ the\ symbolic\ binding\ for\ "{}arr[i]"{}\ since\ we\ could}}
+\DoxyCodeLine{00081\ \textcolor{comment}{\ \ \ \ \ \ \ have\ overwritten\ it,\ and\ add\ a\ symbolic\ binding\ for\ "{}arr[j]"{}.}}
+\DoxyCodeLine{00082\ \textcolor{comment}{\ \ \ \ \ \ \ cluster:\ \{symbolic\_key(arr[j]):\ "{}INIT\_VAL(d)"{};\ (different\ symbolic}}
+\DoxyCodeLine{00083\ \textcolor{comment}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ flags:\ \{TOUCHED\}\}\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ binding)}}
+\DoxyCodeLine{00084\ \textcolor{comment}{}}
+\DoxyCodeLine{00085\ \textcolor{comment}{\ \ \ \ \ arr[3]\ =\ f;\ \ (6)}}
+\DoxyCodeLine{00086\ \textcolor{comment}{\ \ \ \ \ \ \ After\ (6),\ we\ lose\ the\ symbolic\ binding\ for\ "{}arr[j]"{}\ since\ we\ could}}
+\DoxyCodeLine{00087\ \textcolor{comment}{\ \ \ \ \ \ \ have\ overwritten\ it,\ and\ gain\ a\ concrete\ binding\ for\ bits\ 24-\/31}}
+\DoxyCodeLine{00088\ \textcolor{comment}{\ \ \ \ \ \ \ again,\ this\ time\ with\ svalue\ "{}INIT\_VAL(e)"{}:}}
+\DoxyCodeLine{00089\ \textcolor{comment}{\ \ \ \ \ \ \ cluster:\ \{bits\ 24-\/31:\ "{}INIT\_VAL(d)"{};}}
+\DoxyCodeLine{00090\ \textcolor{comment}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ flags:\ \{TOUCHED\}\}}}
+\DoxyCodeLine{00091\ \textcolor{comment}{\ \ \ \ \ \ \ The\ cluster\ is\ still\ flagged\ as\ touched,\ so\ that\ we\ know\ that}}
+\DoxyCodeLine{00092\ \textcolor{comment}{\ \ \ \ \ \ \ accesses\ to\ other\ elements\ are\ "{}UNKNOWN"{}\ rather\ than}}
+\DoxyCodeLine{00093\ \textcolor{comment}{\ \ \ \ \ \ \ "{}UNINITIALIZED"{}.}}
+\DoxyCodeLine{00094\ \textcolor{comment}{}}
+\DoxyCodeLine{00095\ \textcolor{comment}{\ \ \ Handling\ symbolic\ regions\ requires\ us\ to\ handle\ aliasing.}}
+\DoxyCodeLine{00096\ \textcolor{comment}{}}
+\DoxyCodeLine{00097\ \textcolor{comment}{\ \ \ In\ the\ first\ example\ above,\ each\ of\ a,\ b,\ c\ and\ verts\ are\ non-\/symbolic}}
+\DoxyCodeLine{00098\ \textcolor{comment}{\ \ \ base\ regions\ and\ so\ their\ clusters\ are\ "{}concrete\ clusters"{},\ whereas\ given:}}
+\DoxyCodeLine{00099\ \textcolor{comment}{\ \ \ \ \ \ \ struct\ coord\ *p,\ *q;}}
+\DoxyCodeLine{00100\ \textcolor{comment}{\ \ \ then\ "{}*p"{}\ and\ "{}*q"{}\ are\ symbolic\ base\ regions,\ and\ thus\ "{}*p"{}\ and\ "{}*q"{}}}
+\DoxyCodeLine{00101\ \textcolor{comment}{\ \ \ have\ "{}symbolic\ clusters"{}.}}
+\DoxyCodeLine{00102\ \textcolor{comment}{}}
+\DoxyCodeLine{00103\ \textcolor{comment}{\ \ \ In\ the\ above,\ "{}verts[i].x"{}\ will\ have\ a\ symbolic\ *binding*\ within\ a}}
+\DoxyCodeLine{00104\ \textcolor{comment}{\ \ \ concrete\ cluster\ for\ "{}verts"{},\ whereas\ "{}*p"{}\ is\ a\ symbolic\ *cluster*.}}
+\DoxyCodeLine{00105\ \textcolor{comment}{}}
+\DoxyCodeLine{00106\ \textcolor{comment}{\ \ \ Writes\ to\ concrete\ clusters\ can't\ affect\ other\ concrete\ clusters,}}
+\DoxyCodeLine{00107\ \textcolor{comment}{\ \ \ but\ can\ affect\ symbolic\ clusters;\ e.g.\ after:}}
+\DoxyCodeLine{00108\ \textcolor{comment}{\ \ \ \ \ \ \ verts[0].x\ =\ 42;}}
+\DoxyCodeLine{00109\ \textcolor{comment}{\ \ \ we\ bind\ 42\ in\ the\ cluster\ for\ "{}verts"{},\ but\ the\ clusters\ for\ "{}b"{}\ and\ "{}c"{}}}
+\DoxyCodeLine{00110\ \textcolor{comment}{\ \ \ can't\ be\ affected.\ \ Any\ symbolic\ clusters\ for\ *p\ and\ for\ *q\ can\ be}}
+\DoxyCodeLine{00111\ \textcolor{comment}{\ \ \ affected,\ *p\ and\ *q\ could\ alias\ verts.}}
+\DoxyCodeLine{00112\ \textcolor{comment}{}}
+\DoxyCodeLine{00113\ \textcolor{comment}{\ \ \ Writes\ to\ a\ symbolic\ cluster\ can\ affect\ other\ clusters,\ both}}
+\DoxyCodeLine{00114\ \textcolor{comment}{\ \ \ concrete\ and\ symbolic;\ e.g.\ after:}}
+\DoxyCodeLine{00115\ \textcolor{comment}{\ \ \ \ \ \ \ p-\/>x\ =\ 17;}}
+\DoxyCodeLine{00116\ \textcolor{comment}{\ \ \ we\ bind\ 17\ within\ the\ cluster\ for\ "{}*p"{}.\ \ The\ concrete\ clusters\ for\ a,\ b,}}
+\DoxyCodeLine{00117\ \textcolor{comment}{\ \ \ c,\ and\ verts\ could\ be\ affected,\ depending\ on\ whether\ *p\ aliases\ them.}}
+\DoxyCodeLine{00118\ \textcolor{comment}{\ \ \ Similarly,\ the\ symbolic\ cluster\ to\ *q\ could\ be\ affected.\ \ */}}
+\DoxyCodeLine{00119\ }
+\DoxyCodeLine{00120\ \textcolor{keyword}{namespace\ }\doxymbox{\hyperlink{namespaceana}{ana}}\ \{}
+\DoxyCodeLine{00121\ }
+\DoxyCodeLine{00122\ \textcolor{comment}{/*\ A\ class\ for\ keeping\ track\ of\ aspects\ of\ a\ program\_state\ that\ we\ don't}}
+\DoxyCodeLine{00123\ \textcolor{comment}{\ \ \ know\ about,\ to\ avoid\ false\ positives\ about\ leaks.}}
+\DoxyCodeLine{00124\ \textcolor{comment}{}}
+\DoxyCodeLine{00125\ \textcolor{comment}{\ \ \ Consider:}}
+\DoxyCodeLine{00126\ \textcolor{comment}{}}
+\DoxyCodeLine{00127\ \textcolor{comment}{\ \ \ \ \ \ p-\/>field\ =\ malloc\ (1024);}}
+\DoxyCodeLine{00128\ \textcolor{comment}{\ \ \ \ \ \ q-\/>field\ =\ NULL;}}
+\DoxyCodeLine{00129\ \textcolor{comment}{}}
+\DoxyCodeLine{00130\ \textcolor{comment}{\ \ \ where\ we\ don't\ know\ whether\ or\ not\ p\ and\ q\ point\ to\ the\ same\ memory,}}
+\DoxyCodeLine{00131\ \textcolor{comment}{\ \ \ and:}}
+\DoxyCodeLine{00132\ \textcolor{comment}{}}
+\DoxyCodeLine{00133\ \textcolor{comment}{\ \ \ \ \ \ p-\/>field\ =\ malloc\ (1024);}}
+\DoxyCodeLine{00134\ \textcolor{comment}{\ \ \ \ \ \ unknown\_fn\ (p);}}
+\DoxyCodeLine{00135\ \textcolor{comment}{}}
+\DoxyCodeLine{00136\ \textcolor{comment}{\ \ \ In\ both\ cases,\ the\ svalue\ for\ the\ address\ of\ the\ allocated\ buffer}}
+\DoxyCodeLine{00137\ \textcolor{comment}{\ \ \ goes\ from\ being\ bound\ to\ p-\/>field\ to\ not\ having\ anything\ explicitly\ bound}}
+\DoxyCodeLine{00138\ \textcolor{comment}{\ \ \ to\ it.}}
+\DoxyCodeLine{00139\ \textcolor{comment}{}}
+\DoxyCodeLine{00140\ \textcolor{comment}{\ \ \ Given\ that\ we\ conservatively\ discard\ bindings\ due\ to\ possible\ aliasing\ or}}
+\DoxyCodeLine{00141\ \textcolor{comment}{\ \ \ calls\ to\ unknown\ function,\ the\ store\ loses\ references\ to\ svalues,}}
+\DoxyCodeLine{00142\ \textcolor{comment}{\ \ \ but\ these\ svalues\ could\ still\ be\ live.\ \ We\ don't\ want\ to\ warn\ about}}
+\DoxyCodeLine{00143\ \textcolor{comment}{\ \ \ them\ leaking\ -\/\ they're\ effectively\ in\ a\ "{}maybe\ live"{}\ state.}}
+\DoxyCodeLine{00144\ \textcolor{comment}{}}
+\DoxyCodeLine{00145\ \textcolor{comment}{\ \ \ This\ "{}maybe\ live"{}\ information\ is\ somewhat\ transient.}}
+\DoxyCodeLine{00146\ \textcolor{comment}{}}
+\DoxyCodeLine{00147\ \textcolor{comment}{\ \ \ We\ don't\ want\ to\ store\ this\ "{}maybe\ live"{}\ information\ in\ the\ program\_state,}}
+\DoxyCodeLine{00148\ \textcolor{comment}{\ \ \ region\_model,\ or\ store,\ since\ we\ don't\ want\ to\ bloat\ these\ objects\ (and}}
+\DoxyCodeLine{00149\ \textcolor{comment}{\ \ \ potentially\ bloat\ the\ exploded\_graph\ with\ more\ nodes).}}
+\DoxyCodeLine{00150\ \textcolor{comment}{\ \ \ However,\ we\ can't\ store\ it\ in\ the\ region\_model\_context,\ as\ these\ context}}
+\DoxyCodeLine{00151\ \textcolor{comment}{\ \ \ objects\ sometimes\ don't\ last\ long\ enough\ to\ be\ around\ when\ comparing\ the}}
+\DoxyCodeLine{00152\ \textcolor{comment}{\ \ \ old\ vs\ the\ new\ state.}}
+\DoxyCodeLine{00153\ \textcolor{comment}{}}
+\DoxyCodeLine{00154\ \textcolor{comment}{\ \ \ This\ class\ is\ a\ way\ to\ track\ a\ set\ of\ such\ svalues,\ so\ that\ we\ can}}
+\DoxyCodeLine{00155\ \textcolor{comment}{\ \ \ temporarily\ capture\ that\ they\ are\ in\ a\ "{}maybe\ live"{}\ state\ whilst}}
+\DoxyCodeLine{00156\ \textcolor{comment}{\ \ \ comparing\ old\ and\ new\ states.\ \ */}}
+\DoxyCodeLine{00157\ }
+\DoxyCodeLine{00158\ \textcolor{keyword}{class\ }\doxymbox{\hyperlink{classana_1_1uncertainty__t}{uncertainty\_t}}}
+\DoxyCodeLine{00159\ \{}
+\DoxyCodeLine{00160\ \textcolor{keyword}{public}:}
+\DoxyCodeLine{00161\ \ \ \textcolor{keyword}{typedef}\ \doxymbox{\hyperlink{classhash__set_1_1iterator}{hash\_set<const\ svalue\ *>::iterator}}\ \doxymbox{\hyperlink{classana_1_1uncertainty__t_ac309d481bc23ee3cf12b15d8558becec}{iterator}};}
+\DoxyCodeLine{00162\ }
+\DoxyCodeLine{00163\ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classana_1_1uncertainty__t_abaf3ec44571d533e735ee36577af9d8a}{on\_maybe\_bound\_sval}}\ (\textcolor{keyword}{const}\ \doxymbox{\hyperlink{classana_1_1svalue}{svalue}}\ *sval)}
+\DoxyCodeLine{00164\ \ \ \{}
+\DoxyCodeLine{00165\ \ \ \ \ \doxymbox{\hyperlink{classana_1_1uncertainty__t_af4335b61009928bd02cef464d23a9aa2}{m\_maybe\_bound\_svals}}.add\ (sval);}
+\DoxyCodeLine{00166\ \ \ \}}
+\DoxyCodeLine{00167\ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classana_1_1uncertainty__t_ab61300193675361873590fb22237415d}{on\_mutable\_sval\_at\_unknown\_call}}\ (\textcolor{keyword}{const}\ \doxymbox{\hyperlink{classana_1_1svalue}{svalue}}\ *sval)}
+\DoxyCodeLine{00168\ \ \ \{}
+\DoxyCodeLine{00169\ \ \ \ \ \doxymbox{\hyperlink{classana_1_1uncertainty__t_ab752550d6d9fe09b2b6218dd6d225015}{m\_mutable\_at\_unknown\_call\_svals}}.add\ (sval);}
+\DoxyCodeLine{00170\ \ \ \}}
+\DoxyCodeLine{00171\ }
+\DoxyCodeLine{00172\ \ \ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{classana_1_1uncertainty__t_a2107237271c7039af27f038f6561154b}{unknown\_sm\_state\_p}}\ (\textcolor{keyword}{const}\ \doxymbox{\hyperlink{classana_1_1svalue}{svalue}}\ *sval)}
+\DoxyCodeLine{00173\ \ \ \{}
+\DoxyCodeLine{00174\ \ \ \ \ \textcolor{keywordflow}{return}\ (\doxymbox{\hyperlink{classana_1_1uncertainty__t_af4335b61009928bd02cef464d23a9aa2}{m\_maybe\_bound\_svals}}.contains\ (sval)}
+\DoxyCodeLine{00175\ \ \ \ \ \ \ \ \ ||\ \doxymbox{\hyperlink{classana_1_1uncertainty__t_ab752550d6d9fe09b2b6218dd6d225015}{m\_mutable\_at\_unknown\_call\_svals}}.contains\ (sval));}
+\DoxyCodeLine{00176\ \ \ \}}
+\DoxyCodeLine{00177\ }
+\DoxyCodeLine{00178\ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classana_1_1uncertainty__t_a9b11607226dcebb8a994bd0535a28e0e}{dump\_to\_pp}}\ (\doxymbox{\hyperlink{classpretty__printer}{pretty\_printer}}\ *pp,\ \textcolor{keywordtype}{bool}\ simple)\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00179\ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classana_1_1uncertainty__t_a482eb9910a8407295bf45351ebdc5cce}{dump}}\ (\textcolor{keywordtype}{bool}\ simple)\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00180\ }
+\DoxyCodeLine{00181\ \ \ \doxymbox{\hyperlink{classana_1_1uncertainty__t_ac309d481bc23ee3cf12b15d8558becec}{iterator}}\ \doxymbox{\hyperlink{classana_1_1uncertainty__t_ad809b01d327f7ba179ae9f1d573a9496}{begin\_maybe\_bound\_svals}}\ ()\textcolor{keyword}{\ const}}
+\DoxyCodeLine{00182\ \textcolor{keyword}{\ \ }\{}
+\DoxyCodeLine{00183\ \ \ \ \ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{classana_1_1uncertainty__t_af4335b61009928bd02cef464d23a9aa2}{m\_maybe\_bound\_svals}}.begin\ ();}
+\DoxyCodeLine{00184\ \ \ \}}
+\DoxyCodeLine{00185\ \ \ \doxymbox{\hyperlink{classana_1_1uncertainty__t_ac309d481bc23ee3cf12b15d8558becec}{iterator}}\ \doxymbox{\hyperlink{classana_1_1uncertainty__t_ab670652512ed9cdb6a4f73da385c614e}{end\_maybe\_bound\_svals}}\ ()\textcolor{keyword}{\ const}}
+\DoxyCodeLine{00186\ \textcolor{keyword}{\ \ }\{}
+\DoxyCodeLine{00187\ \ \ \ \ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{classana_1_1uncertainty__t_af4335b61009928bd02cef464d23a9aa2}{m\_maybe\_bound\_svals}}.end\ ();}
+\DoxyCodeLine{00188\ \ \ \}}
+\DoxyCodeLine{00189\ }
+\DoxyCodeLine{00190\ \textcolor{keyword}{private}:}
+\DoxyCodeLine{00191\ }
+\DoxyCodeLine{00192\ \ \ \textcolor{comment}{/*\ svalues\ that\ might\ or\ might\ not\ still\ be\ bound.\ \ */}}
+\DoxyCodeLine{00193\ \ \ \doxymbox{\hyperlink{classhash__set}{hash\_set<const\ svalue\ *>}}\ \doxymbox{\hyperlink{classana_1_1uncertainty__t_af4335b61009928bd02cef464d23a9aa2}{m\_maybe\_bound\_svals}};}
+\DoxyCodeLine{00194\ }
+\DoxyCodeLine{00195\ \ \ \textcolor{comment}{/*\ svalues\ that\ have\ mutable\ sm-\/state\ at\ unknown\ calls.\ \ */}}
+\DoxyCodeLine{00196\ \ \ \doxymbox{\hyperlink{classhash__set}{hash\_set<const\ svalue\ *>}}\ \doxymbox{\hyperlink{classana_1_1uncertainty__t_ab752550d6d9fe09b2b6218dd6d225015}{m\_mutable\_at\_unknown\_call\_svals}};}
+\DoxyCodeLine{00197\ \};}
+\DoxyCodeLine{00198\ }
+\DoxyCodeLine{00199\ \textcolor{keyword}{class\ }\doxymbox{\hyperlink{structana_1_1byte__range}{byte\_range}};}
+\DoxyCodeLine{00200\ \textcolor{keyword}{class\ }\doxymbox{\hyperlink{classana_1_1concrete__binding}{concrete\_binding}};}
+\DoxyCodeLine{00201\ \textcolor{keyword}{class\ }\doxymbox{\hyperlink{classana_1_1symbolic__binding}{symbolic\_binding}};}
+\DoxyCodeLine{00202\ }
+\DoxyCodeLine{00203\ \textcolor{comment}{/*\ Abstract\ base\ class\ for\ describing\ ranges\ of\ bits\ within\ a\ binding\_map}}
+\DoxyCodeLine{00204\ \textcolor{comment}{\ \ \ that\ can\ have\ svalues\ bound\ to\ them.\ \ */}}
+\DoxyCodeLine{00205\ }
+\DoxyCodeLine{00206\ \textcolor{keyword}{class\ }\doxymbox{\hyperlink{classana_1_1binding__key}{binding\_key}}}
+\DoxyCodeLine{00207\ \{}
+\DoxyCodeLine{00208\ \textcolor{keyword}{public}:}
+\DoxyCodeLine{00209\ \ \ \textcolor{keyword}{virtual}\ \doxymbox{\hyperlink{classana_1_1binding__key_ab86530997c71fa3e3cb3505ed270e1c0}{\string~binding\_key}}\ ()\ \{\}}
+\DoxyCodeLine{00210\ \ \ \textcolor{keyword}{virtual}\ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{classana_1_1binding__key_a8d829230a5a9c62c62c0b24dce96558b}{concrete\_p}}\ ()\ \textcolor{keyword}{const}\ =\ 0;}
+\DoxyCodeLine{00211\ \ \ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{classana_1_1binding__key_ac575e82f33c923952a9a892ec8195a38}{symbolic\_p}}\ ()\textcolor{keyword}{\ const\ }\{\ \textcolor{keywordflow}{return}\ !\doxymbox{\hyperlink{classana_1_1binding__key_a8d829230a5a9c62c62c0b24dce96558b}{concrete\_p}}\ ();\ \}}
+\DoxyCodeLine{00212\ }
+\DoxyCodeLine{00213\ \ \ \textcolor{keyword}{static}\ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classana_1_1binding__key}{binding\_key}}\ *\doxymbox{\hyperlink{classana_1_1binding__key_a3241be55ffea18655323621d32d28c96}{make}}\ (\doxymbox{\hyperlink{classana_1_1store__manager}{store\_manager}}\ *mgr,\ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classana_1_1region}{region}}\ *\doxymbox{\hyperlink{poly-int_8h_a3ecac2571dcdc8050989339124f1bd26}{r}});}
+\DoxyCodeLine{00214\ }
+\DoxyCodeLine{00215\ \ \ \textcolor{keyword}{virtual}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classana_1_1binding__key_a9cb0ffd637367e8315167d2f17a5f0e7}{dump\_to\_pp}}\ (\doxymbox{\hyperlink{classpretty__printer}{pretty\_printer}}\ *pp,\ \textcolor{keywordtype}{bool}\ simple)\ \textcolor{keyword}{const}\ =\ 0;}
+\DoxyCodeLine{00216\ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classana_1_1binding__key_a166cd76a6cc1e8ca8fb4ea0d9a447b9d}{dump}}\ (\textcolor{keywordtype}{bool}\ simple)\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00217\ \ \ \doxymbox{\hyperlink{classlabel__text}{label\_text}}\ \doxymbox{\hyperlink{classana_1_1binding__key_af5dfe47779961e77f232cafc897f8269}{get\_desc}}\ (\textcolor{keywordtype}{bool}\ simple=\textcolor{keyword}{true})\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00218\ }
+\DoxyCodeLine{00219\ \ \ \textcolor{keyword}{static}\ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{classana_1_1binding__key_a3ee15528861c9ccdb6f91bb74c951dc9}{cmp\_ptrs}}\ (\textcolor{keyword}{const}\ \textcolor{keywordtype}{void}\ *,\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{void}\ *);}
+\DoxyCodeLine{00220\ \ \ \textcolor{keyword}{static}\ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{classana_1_1binding__key_ae35fcee27e87935518b2ddfbb6112ea7}{cmp}}\ (\textcolor{keyword}{const}\ \doxymbox{\hyperlink{classana_1_1binding__key}{binding\_key}}\ *,\ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classana_1_1binding__key}{binding\_key}}\ *);}
+\DoxyCodeLine{00221\ }
+\DoxyCodeLine{00222\ \ \ \textcolor{keyword}{virtual}\ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classana_1_1concrete__binding}{concrete\_binding}}\ *\doxymbox{\hyperlink{classana_1_1binding__key_af8d36d17345f6f2fbe54a1bcd070eb82}{dyn\_cast\_concrete\_binding}}\ ()\textcolor{keyword}{\ const}}
+\DoxyCodeLine{00223\ \textcolor{keyword}{\ \ }\{\ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{stddef_8h_a070d2ce7b6bb7e5c05602aa8c308d0c4}{NULL}};\ \}}
+\DoxyCodeLine{00224\ \ \ \textcolor{keyword}{virtual}\ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classana_1_1symbolic__binding}{symbolic\_binding}}\ *\doxymbox{\hyperlink{classana_1_1binding__key_a53ae2094c20789c3bc399ae31273f76f}{dyn\_cast\_symbolic\_binding}}\ ()\textcolor{keyword}{\ const}}
+\DoxyCodeLine{00225\ \textcolor{keyword}{\ \ }\{\ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{stddef_8h_a070d2ce7b6bb7e5c05602aa8c308d0c4}{NULL}};\ \}}
+\DoxyCodeLine{00226\ \};}
+\DoxyCodeLine{00227\ }
+\DoxyCodeLine{00228\ \textcolor{comment}{/*\ A\ concrete\ range\ of\ bits.\ \ */}}
+\DoxyCodeLine{00229\ }
+\DoxyCodeLine{00230\ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{structana_1_1bit__range_aae9665dfcac22acdceb138fbd83e2a61}{bit\_range}}}
+\DoxyCodeLine{00231\ \{}
+\DoxyCodeLine{00232\ \ \ \doxymbox{\hyperlink{structana_1_1bit__range_aae9665dfcac22acdceb138fbd83e2a61}{bit\_range}}\ (\doxymbox{\hyperlink{namespaceana_a2f8d7e9c711f16b8223623821a662c02}{bit\_offset\_t}}\ start\_bit\_offset,\ \doxymbox{\hyperlink{namespaceana_ab9bf88188685df44678297f160072cc0}{bit\_size\_t}}\ size\_in\_bits)}
+\DoxyCodeLine{00233\ \ \ :\ \doxymbox{\hyperlink{structana_1_1bit__range_aa6916cc096bdf7dac8dac31b5d08d82f}{m\_start\_bit\_offset}}\ (start\_bit\_offset),}
+\DoxyCodeLine{00234\ \ \ \ \ \doxymbox{\hyperlink{structana_1_1bit__range_a8631589770db0ab872ed99935a01f3fe}{m\_size\_in\_bits}}\ (size\_in\_bits)}
+\DoxyCodeLine{00235\ \ \ \{\}}
+\DoxyCodeLine{00236\ }
+\DoxyCodeLine{00237\ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{structana_1_1bit__range_aaa32276d61962b62de6da21a4bafc67c}{dump\_to\_pp}}\ (\doxymbox{\hyperlink{classpretty__printer}{pretty\_printer}}\ *pp)\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00238\ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{structana_1_1bit__range_ab98d07f6a7966536e018fc3d15bcd280}{dump}}\ ()\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00239\ }
+\DoxyCodeLine{00240\ \ \ \doxymbox{\hyperlink{classjson_1_1object}{json::object}}\ *\doxymbox{\hyperlink{structana_1_1bit__range_a202d4d2a2468d25eb637a019680edf67}{to\_json}}\ ()\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00241\ }
+\DoxyCodeLine{00242\ \ \ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{structana_1_1bit__range_a32fedea055bd958c9d5cd6e3b590ee3f}{empty\_p}}\ ()\textcolor{keyword}{\ const}}
+\DoxyCodeLine{00243\ \textcolor{keyword}{\ \ }\{}
+\DoxyCodeLine{00244\ \ \ \ \ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{structana_1_1bit__range_a8631589770db0ab872ed99935a01f3fe}{m\_size\_in\_bits}}\ ==\ 0;}
+\DoxyCodeLine{00245\ \ \ \}}
+\DoxyCodeLine{00246\ }
+\DoxyCodeLine{00247\ \ \ \doxymbox{\hyperlink{namespaceana_a2f8d7e9c711f16b8223623821a662c02}{bit\_offset\_t}}\ \doxymbox{\hyperlink{structana_1_1bit__range_aed0ce05ca8f92fce7aa34e5b73aecccd}{get\_start\_bit\_offset}}\ ()\textcolor{keyword}{\ const}}
+\DoxyCodeLine{00248\ \textcolor{keyword}{\ \ }\{}
+\DoxyCodeLine{00249\ \ \ \ \ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{structana_1_1bit__range_aa6916cc096bdf7dac8dac31b5d08d82f}{m\_start\_bit\_offset}};}
+\DoxyCodeLine{00250\ \ \ \}}
+\DoxyCodeLine{00251\ \ \ \doxymbox{\hyperlink{namespaceana_a2f8d7e9c711f16b8223623821a662c02}{bit\_offset\_t}}\ \doxymbox{\hyperlink{structana_1_1bit__range_aa2acea0554c56c2c093d29b824d63e69}{get\_next\_bit\_offset}}\ ()\textcolor{keyword}{\ const}}
+\DoxyCodeLine{00252\ \textcolor{keyword}{\ \ }\{}
+\DoxyCodeLine{00253\ \ \ \ \ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{structana_1_1bit__range_aa6916cc096bdf7dac8dac31b5d08d82f}{m\_start\_bit\_offset}}\ +\ \doxymbox{\hyperlink{structana_1_1bit__range_a8631589770db0ab872ed99935a01f3fe}{m\_size\_in\_bits}};}
+\DoxyCodeLine{00254\ \ \ \}}
+\DoxyCodeLine{00255\ \ \ \doxymbox{\hyperlink{namespaceana_a2f8d7e9c711f16b8223623821a662c02}{bit\_offset\_t}}\ \doxymbox{\hyperlink{structana_1_1bit__range_aede7bd6547de06744982ecfe5b425fe5}{get\_last\_bit\_offset}}\ ()\textcolor{keyword}{\ const}}
+\DoxyCodeLine{00256\ \textcolor{keyword}{\ \ }\{}
+\DoxyCodeLine{00257\ \ \ \ \ \doxymbox{\hyperlink{system_8h_a0deee0ddaa8ce3bbd400ab5f75de06ff}{gcc\_assert}}\ (!\doxymbox{\hyperlink{structana_1_1bit__range_a32fedea055bd958c9d5cd6e3b590ee3f}{empty\_p}}\ ());}
+\DoxyCodeLine{00258\ \ \ \ \ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{structana_1_1bit__range_aa2acea0554c56c2c093d29b824d63e69}{get\_next\_bit\_offset}}\ ()\ -\/\ 1;}
+\DoxyCodeLine{00259\ \ \ \}}
+\DoxyCodeLine{00260\ }
+\DoxyCodeLine{00261\ \ \ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{structana_1_1bit__range_a9ad79e4dba0250fae81b43897dc2b1dc}{contains\_p}}\ (\doxymbox{\hyperlink{namespaceana_a2f8d7e9c711f16b8223623821a662c02}{bit\_offset\_t}}\ offset)\textcolor{keyword}{\ const}}
+\DoxyCodeLine{00262\ \textcolor{keyword}{\ \ }\{}
+\DoxyCodeLine{00263\ \ \ \ \ \textcolor{keywordflow}{return}\ (offset\ >=\ \doxymbox{\hyperlink{structana_1_1bit__range_aed0ce05ca8f92fce7aa34e5b73aecccd}{get\_start\_bit\_offset}}\ ()}
+\DoxyCodeLine{00264\ \ \ \ \ \ \ \ \ \&\&\ offset\ <\ \doxymbox{\hyperlink{structana_1_1bit__range_aa2acea0554c56c2c093d29b824d63e69}{get\_next\_bit\_offset}}\ ());}
+\DoxyCodeLine{00265\ \ \ \}}
+\DoxyCodeLine{00266\ }
+\DoxyCodeLine{00267\ \ \ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{structana_1_1bit__range_ade01d7f6c3bb1a8fb664e79867a0d24a}{contains\_p}}\ (\textcolor{keyword}{const}\ \doxymbox{\hyperlink{structana_1_1bit__range_aae9665dfcac22acdceb138fbd83e2a61}{bit\_range}}\ \&other,\ \doxymbox{\hyperlink{structana_1_1bit__range_aae9665dfcac22acdceb138fbd83e2a61}{bit\_range}}\ *out)\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00268\ }
+\DoxyCodeLine{00269\ \ \ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{structana_1_1bit__range_a0ca7f4010da4ff56eb10b82b65098ef3}{operator==\ }}(\textcolor{keyword}{const}\ \doxymbox{\hyperlink{structana_1_1bit__range_aae9665dfcac22acdceb138fbd83e2a61}{bit\_range}}\ \&other)\textcolor{keyword}{\ const}}
+\DoxyCodeLine{00270\ \textcolor{keyword}{\ \ }\{}
+\DoxyCodeLine{00271\ \ \ \ \ \textcolor{keywordflow}{return}\ (\doxymbox{\hyperlink{structana_1_1bit__range_aa6916cc096bdf7dac8dac31b5d08d82f}{m\_start\_bit\_offset}}\ ==\ other.\doxymbox{\hyperlink{structana_1_1bit__range_aa6916cc096bdf7dac8dac31b5d08d82f}{m\_start\_bit\_offset}}}
+\DoxyCodeLine{00272\ \ \ \ \ \ \ \ \ \&\&\ \doxymbox{\hyperlink{structana_1_1bit__range_a8631589770db0ab872ed99935a01f3fe}{m\_size\_in\_bits}}\ ==\ other.\doxymbox{\hyperlink{structana_1_1bit__range_a8631589770db0ab872ed99935a01f3fe}{m\_size\_in\_bits}});}
+\DoxyCodeLine{00273\ \ \ \}}
+\DoxyCodeLine{00274\ }
+\DoxyCodeLine{00275\ \ \ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{structana_1_1bit__range_a3811909b14726c88a4044cf9694ee7cc}{intersects\_p}}\ (\textcolor{keyword}{const}\ \doxymbox{\hyperlink{structana_1_1bit__range_aae9665dfcac22acdceb138fbd83e2a61}{bit\_range}}\ \&other)\textcolor{keyword}{\ const}}
+\DoxyCodeLine{00276\ \textcolor{keyword}{\ \ }\{}
+\DoxyCodeLine{00277\ \ \ \ \ \textcolor{keywordflow}{return}\ (\doxymbox{\hyperlink{structana_1_1bit__range_aed0ce05ca8f92fce7aa34e5b73aecccd}{get\_start\_bit\_offset}}\ ()\ <\ other.\doxymbox{\hyperlink{structana_1_1bit__range_aa2acea0554c56c2c093d29b824d63e69}{get\_next\_bit\_offset}}\ ()}
+\DoxyCodeLine{00278\ \ \ \ \ \ \ \ \ \&\&\ other.\doxymbox{\hyperlink{structana_1_1bit__range_aed0ce05ca8f92fce7aa34e5b73aecccd}{get\_start\_bit\_offset}}\ ()\ <\ \doxymbox{\hyperlink{structana_1_1bit__range_aa2acea0554c56c2c093d29b824d63e69}{get\_next\_bit\_offset}}\ ());}
+\DoxyCodeLine{00279\ \ \ \}}
+\DoxyCodeLine{00280\ \ \ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{structana_1_1bit__range_aa84e42bf98bdfee75896b384c8c6fd02}{intersects\_p}}\ (\textcolor{keyword}{const}\ \doxymbox{\hyperlink{structana_1_1bit__range_aae9665dfcac22acdceb138fbd83e2a61}{bit\_range}}\ \&other,}
+\DoxyCodeLine{00281\ \ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{namespaceana_ab9bf88188685df44678297f160072cc0}{bit\_size\_t}}\ *out\_num\_overlap\_bits)\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00282\ \ \ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{structana_1_1bit__range_a8166021cabe92ebc0ad4be9dc6fc8f79}{intersects\_p}}\ (\textcolor{keyword}{const}\ \doxymbox{\hyperlink{structana_1_1bit__range_aae9665dfcac22acdceb138fbd83e2a61}{bit\_range}}\ \&other,}
+\DoxyCodeLine{00283\ \ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{structana_1_1bit__range_aae9665dfcac22acdceb138fbd83e2a61}{bit\_range}}\ *out\_this,}
+\DoxyCodeLine{00284\ \ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{structana_1_1bit__range_aae9665dfcac22acdceb138fbd83e2a61}{bit\_range}}\ *out\_other)\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00285\ }
+\DoxyCodeLine{00286\ \ \ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{structana_1_1bit__range_a154a9f5fb82fb9120356bbbc306eee5f}{exceeds\_p}}\ (\textcolor{keyword}{const}\ \doxymbox{\hyperlink{structana_1_1bit__range_aae9665dfcac22acdceb138fbd83e2a61}{bit\_range}}\ \&other,}
+\DoxyCodeLine{00287\ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{structana_1_1bit__range_aae9665dfcac22acdceb138fbd83e2a61}{bit\_range}}\ *out\_overhanging\_bit\_range)\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00288\ }
+\DoxyCodeLine{00289\ \ \ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{structana_1_1bit__range_a633e49385c7eb679dcde48f5358c1910}{falls\_short\_of\_p}}\ (\doxymbox{\hyperlink{namespaceana_a2f8d7e9c711f16b8223623821a662c02}{bit\_offset\_t}}\ offset,}
+\DoxyCodeLine{00290\ \ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{structana_1_1bit__range_aae9665dfcac22acdceb138fbd83e2a61}{bit\_range}}\ *out\_fall\_short\_bits)\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00291\ }
+\DoxyCodeLine{00292\ \ \ \textcolor{keyword}{static}\ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{structana_1_1bit__range_abfb97be435f6548471f70058b1e38f17}{cmp}}\ (\textcolor{keyword}{const}\ \doxymbox{\hyperlink{structana_1_1bit__range_aae9665dfcac22acdceb138fbd83e2a61}{bit\_range}}\ \&br1,\ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{structana_1_1bit__range_aae9665dfcac22acdceb138fbd83e2a61}{bit\_range}}\ \&br2);}
+\DoxyCodeLine{00293\ }
+\DoxyCodeLine{00294\ \ \ \doxymbox{\hyperlink{structana_1_1bit__range_aae9665dfcac22acdceb138fbd83e2a61}{bit\_range}}\ \doxymbox{\hyperlink{structana_1_1bit__range_a00bdb4b2b2e940563e984fecd4786f95}{operator-\/\ }}(\doxymbox{\hyperlink{namespaceana_a2f8d7e9c711f16b8223623821a662c02}{bit\_offset\_t}}\ offset)\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00295\ }
+\DoxyCodeLine{00296\ \ \ \textcolor{keyword}{static}\ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{structana_1_1bit__range_a4b4a63dd466fcc725593c1c51e083bf2}{from\_mask}}\ (\textcolor{keywordtype}{unsigned}\ HOST\_WIDE\_INT\ mask,\ \doxymbox{\hyperlink{structana_1_1bit__range_aae9665dfcac22acdceb138fbd83e2a61}{bit\_range}}\ *out);}
+\DoxyCodeLine{00297\ }
+\DoxyCodeLine{00298\ \ \ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{structana_1_1bit__range_ab79e1b93fe73699d2f518426877e52dd}{as\_byte\_range}}\ (\doxymbox{\hyperlink{structana_1_1byte__range}{byte\_range}}\ *out)\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00299\ }
+\DoxyCodeLine{00300\ \ \ \doxymbox{\hyperlink{namespaceana_a2f8d7e9c711f16b8223623821a662c02}{bit\_offset\_t}}\ \doxymbox{\hyperlink{structana_1_1bit__range_aa6916cc096bdf7dac8dac31b5d08d82f}{m\_start\_bit\_offset}};}
+\DoxyCodeLine{00301\ \ \ \doxymbox{\hyperlink{namespaceana_ab9bf88188685df44678297f160072cc0}{bit\_size\_t}}\ \doxymbox{\hyperlink{structana_1_1bit__range_a8631589770db0ab872ed99935a01f3fe}{m\_size\_in\_bits}};}
+\DoxyCodeLine{00302\ \};}
+\DoxyCodeLine{00303\ }
+\DoxyCodeLine{00304\ \textcolor{comment}{/*\ A\ concrete\ range\ of\ bytes.\ \ */}}
+\DoxyCodeLine{00305\ }
+\DoxyCodeLine{00306\ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{structana_1_1byte__range_a8316ad055dcbb9734566beb117f1e69d}{byte\_range}}}
+\DoxyCodeLine{00307\ \{}
+\DoxyCodeLine{00308\ \ \ \doxymbox{\hyperlink{structana_1_1byte__range_a8316ad055dcbb9734566beb117f1e69d}{byte\_range}}\ (\doxymbox{\hyperlink{namespaceana_a8bfb70b7662ce75a6449c30521c2a08f}{byte\_offset\_t}}\ start\_byte\_offset,\ \doxymbox{\hyperlink{namespaceana_a17d595c47d2d3a2851bc3c395e10ab0b}{byte\_size\_t}}\ \doxymbox{\hyperlink{tree_8h_aa86cfdca05a8db53832c748d3285e43b}{size\_in\_bytes}})}
+\DoxyCodeLine{00309\ \ \ :\ \doxymbox{\hyperlink{structana_1_1byte__range_abd574e991f6e3e0689ec01ae7cb393d6}{m\_start\_byte\_offset}}\ (start\_byte\_offset),}
+\DoxyCodeLine{00310\ \ \ \ \ \doxymbox{\hyperlink{structana_1_1byte__range_a2dd9cbafa8c0e2bb56574eb6e3620901}{m\_size\_in\_bytes}}\ (\doxymbox{\hyperlink{tree_8h_aa86cfdca05a8db53832c748d3285e43b}{size\_in\_bytes}})}
+\DoxyCodeLine{00311\ \ \ \{\}}
+\DoxyCodeLine{00312\ }
+\DoxyCodeLine{00313\ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{structana_1_1byte__range_a6462585f192e625e6747b56f74d5e6d9}{dump\_to\_pp}}\ (\doxymbox{\hyperlink{classpretty__printer}{pretty\_printer}}\ *pp)\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00314\ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{structana_1_1byte__range_a68f632efa5a8d36b28e4bc075a1b3621}{dump}}\ ()\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00315\ }
+\DoxyCodeLine{00316\ \ \ \doxymbox{\hyperlink{classjson_1_1object}{json::object}}\ *\doxymbox{\hyperlink{structana_1_1byte__range_a6041bfbec0b3cfa90eb29f563928267b}{to\_json}}\ ()\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00317\ }
+\DoxyCodeLine{00318\ \ \ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{structana_1_1byte__range_ac41f46db45b631a6c3d38c9572b9c8b1}{empty\_p}}\ ()\textcolor{keyword}{\ const}}
+\DoxyCodeLine{00319\ \textcolor{keyword}{\ \ }\{}
+\DoxyCodeLine{00320\ \ \ \ \ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{structana_1_1byte__range_a2dd9cbafa8c0e2bb56574eb6e3620901}{m\_size\_in\_bytes}}\ ==\ 0;}
+\DoxyCodeLine{00321\ \ \ \}}
+\DoxyCodeLine{00322\ }
+\DoxyCodeLine{00323\ \ \ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{structana_1_1byte__range_a4ba746c385b843464274257a132eb661}{contains\_p}}\ (\doxymbox{\hyperlink{namespaceana_a8bfb70b7662ce75a6449c30521c2a08f}{byte\_offset\_t}}\ offset)\textcolor{keyword}{\ const}}
+\DoxyCodeLine{00324\ \textcolor{keyword}{\ \ }\{}
+\DoxyCodeLine{00325\ \ \ \ \ \textcolor{keywordflow}{return}\ (offset\ >=\ \doxymbox{\hyperlink{structana_1_1byte__range_a5f8619badeaa22c031da1f80649b10d0}{get\_start\_byte\_offset}}\ ()}
+\DoxyCodeLine{00326\ \ \ \ \ \ \ \ \ \&\&\ offset\ <\ \doxymbox{\hyperlink{structana_1_1byte__range_a2a9e88a1baa0745e06c5c5df2ae4981e}{get\_next\_byte\_offset}}\ ());}
+\DoxyCodeLine{00327\ \ \ \}}
+\DoxyCodeLine{00328\ \ \ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{structana_1_1byte__range_ac0f493e59cac54af3b8be27cd1913322}{contains\_p}}\ (\textcolor{keyword}{const}\ \doxymbox{\hyperlink{structana_1_1byte__range_a8316ad055dcbb9734566beb117f1e69d}{byte\_range}}\ \&other,\ \doxymbox{\hyperlink{structana_1_1byte__range_a8316ad055dcbb9734566beb117f1e69d}{byte\_range}}\ *out)\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00329\ }
+\DoxyCodeLine{00330\ \ \ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{structana_1_1byte__range_a058065921b44586fa84061ff7b4e416f}{operator==\ }}(\textcolor{keyword}{const}\ \doxymbox{\hyperlink{structana_1_1byte__range_a8316ad055dcbb9734566beb117f1e69d}{byte\_range}}\ \&other)\textcolor{keyword}{\ const}}
+\DoxyCodeLine{00331\ \textcolor{keyword}{\ \ }\{}
+\DoxyCodeLine{00332\ \ \ \ \ \textcolor{keywordflow}{return}\ (\doxymbox{\hyperlink{structana_1_1byte__range_abd574e991f6e3e0689ec01ae7cb393d6}{m\_start\_byte\_offset}}\ ==\ other.\doxymbox{\hyperlink{structana_1_1byte__range_abd574e991f6e3e0689ec01ae7cb393d6}{m\_start\_byte\_offset}}}
+\DoxyCodeLine{00333\ \ \ \ \ \ \ \ \ \&\&\ \doxymbox{\hyperlink{structana_1_1byte__range_a2dd9cbafa8c0e2bb56574eb6e3620901}{m\_size\_in\_bytes}}\ ==\ other.\doxymbox{\hyperlink{structana_1_1byte__range_a2dd9cbafa8c0e2bb56574eb6e3620901}{m\_size\_in\_bytes}});}
+\DoxyCodeLine{00334\ \ \ \}}
+\DoxyCodeLine{00335\ }
+\DoxyCodeLine{00336\ \ \ \doxymbox{\hyperlink{namespaceana_a8bfb70b7662ce75a6449c30521c2a08f}{byte\_offset\_t}}\ \doxymbox{\hyperlink{structana_1_1byte__range_a5f8619badeaa22c031da1f80649b10d0}{get\_start\_byte\_offset}}\ ()\textcolor{keyword}{\ const}}
+\DoxyCodeLine{00337\ \textcolor{keyword}{\ \ }\{}
+\DoxyCodeLine{00338\ \ \ \ \ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{structana_1_1byte__range_abd574e991f6e3e0689ec01ae7cb393d6}{m\_start\_byte\_offset}};}
+\DoxyCodeLine{00339\ \ \ \}}
+\DoxyCodeLine{00340\ \ \ \doxymbox{\hyperlink{namespaceana_a8bfb70b7662ce75a6449c30521c2a08f}{byte\_offset\_t}}\ \doxymbox{\hyperlink{structana_1_1byte__range_a2a9e88a1baa0745e06c5c5df2ae4981e}{get\_next\_byte\_offset}}\ ()\textcolor{keyword}{\ const}}
+\DoxyCodeLine{00341\ \textcolor{keyword}{\ \ }\{}
+\DoxyCodeLine{00342\ \ \ \ \ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{structana_1_1byte__range_abd574e991f6e3e0689ec01ae7cb393d6}{m\_start\_byte\_offset}}\ +\ \doxymbox{\hyperlink{structana_1_1byte__range_a2dd9cbafa8c0e2bb56574eb6e3620901}{m\_size\_in\_bytes}};}
+\DoxyCodeLine{00343\ \ \ \}}
+\DoxyCodeLine{00344\ \ \ \doxymbox{\hyperlink{namespaceana_a8bfb70b7662ce75a6449c30521c2a08f}{byte\_offset\_t}}\ \doxymbox{\hyperlink{structana_1_1byte__range_a305aa3375ec3e29da3ba5824a6bccf2f}{get\_last\_byte\_offset}}\ ()\textcolor{keyword}{\ const}}
+\DoxyCodeLine{00345\ \textcolor{keyword}{\ \ }\{}
+\DoxyCodeLine{00346\ \ \ \ \ \doxymbox{\hyperlink{system_8h_a0deee0ddaa8ce3bbd400ab5f75de06ff}{gcc\_assert}}\ (!\doxymbox{\hyperlink{structana_1_1byte__range_ac41f46db45b631a6c3d38c9572b9c8b1}{empty\_p}}\ ());}
+\DoxyCodeLine{00347\ \ \ \ \ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{structana_1_1byte__range_abd574e991f6e3e0689ec01ae7cb393d6}{m\_start\_byte\_offset}}\ +\ \doxymbox{\hyperlink{structana_1_1byte__range_a2dd9cbafa8c0e2bb56574eb6e3620901}{m\_size\_in\_bytes}}\ -\/\ 1;}
+\DoxyCodeLine{00348\ \ \ \}}
+\DoxyCodeLine{00349\ }
+\DoxyCodeLine{00350\ \ \ \doxymbox{\hyperlink{structana_1_1bit__range}{bit\_range}}\ \doxymbox{\hyperlink{structana_1_1byte__range_af524ed7fbadeaf588dfcb987425f1e61}{as\_bit\_range}}\ ()\textcolor{keyword}{\ const}}
+\DoxyCodeLine{00351\ \textcolor{keyword}{\ \ }\{}
+\DoxyCodeLine{00352\ \ \ \ \ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{structana_1_1bit__range}{bit\_range}}\ (\doxymbox{\hyperlink{structana_1_1byte__range_abd574e991f6e3e0689ec01ae7cb393d6}{m\_start\_byte\_offset}}\ *\ \doxymbox{\hyperlink{insn-modes_8h_a19b3cdf92677eacf8f07f1f8e9495eab}{BITS\_PER\_UNIT}},}
+\DoxyCodeLine{00353\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{structana_1_1byte__range_a2dd9cbafa8c0e2bb56574eb6e3620901}{m\_size\_in\_bytes}}\ *\ \doxymbox{\hyperlink{insn-modes_8h_a19b3cdf92677eacf8f07f1f8e9495eab}{BITS\_PER\_UNIT}});}
+\DoxyCodeLine{00354\ \ \ \}}
+\DoxyCodeLine{00355\ }
+\DoxyCodeLine{00356\ \ \ \doxymbox{\hyperlink{namespaceana_a2f8d7e9c711f16b8223623821a662c02}{bit\_offset\_t}}\ \doxymbox{\hyperlink{structana_1_1byte__range_ab70da3472d9795771414e69ee9c727dc}{get\_start\_bit\_offset}}\ ()\textcolor{keyword}{\ const}}
+\DoxyCodeLine{00357\ \textcolor{keyword}{\ \ }\{}
+\DoxyCodeLine{00358\ \ \ \ \ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{structana_1_1byte__range_abd574e991f6e3e0689ec01ae7cb393d6}{m\_start\_byte\_offset}}\ *\ \doxymbox{\hyperlink{insn-modes_8h_a19b3cdf92677eacf8f07f1f8e9495eab}{BITS\_PER\_UNIT}};}
+\DoxyCodeLine{00359\ \ \ \}}
+\DoxyCodeLine{00360\ \ \ \doxymbox{\hyperlink{namespaceana_a2f8d7e9c711f16b8223623821a662c02}{bit\_offset\_t}}\ \doxymbox{\hyperlink{structana_1_1byte__range_ad0e9f375dc64e3fc0bc91488faf0ac35}{get\_next\_bit\_offset}}\ ()\textcolor{keyword}{\ const}}
+\DoxyCodeLine{00361\ \textcolor{keyword}{\ \ }\{}
+\DoxyCodeLine{00362\ \ \ \ \ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{structana_1_1byte__range_a2a9e88a1baa0745e06c5c5df2ae4981e}{get\_next\_byte\_offset}}\ ()\ *\ \doxymbox{\hyperlink{insn-modes_8h_a19b3cdf92677eacf8f07f1f8e9495eab}{BITS\_PER\_UNIT}};}
+\DoxyCodeLine{00363\ \ \ \}}
+\DoxyCodeLine{00364\ }
+\DoxyCodeLine{00365\ \ \ \textcolor{keyword}{static}\ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{structana_1_1byte__range_aa36d57eb06bb28230bc3488de113bbb7}{cmp}}\ (\textcolor{keyword}{const}\ \doxymbox{\hyperlink{structana_1_1byte__range_a8316ad055dcbb9734566beb117f1e69d}{byte\_range}}\ \&br1,\ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{structana_1_1byte__range_a8316ad055dcbb9734566beb117f1e69d}{byte\_range}}\ \&br2);}
+\DoxyCodeLine{00366\ }
+\DoxyCodeLine{00367\ \ \ \doxymbox{\hyperlink{namespaceana_a8bfb70b7662ce75a6449c30521c2a08f}{byte\_offset\_t}}\ \doxymbox{\hyperlink{structana_1_1byte__range_abd574e991f6e3e0689ec01ae7cb393d6}{m\_start\_byte\_offset}};}
+\DoxyCodeLine{00368\ \ \ \doxymbox{\hyperlink{namespaceana_a17d595c47d2d3a2851bc3c395e10ab0b}{byte\_size\_t}}\ \doxymbox{\hyperlink{structana_1_1byte__range_a2dd9cbafa8c0e2bb56574eb6e3620901}{m\_size\_in\_bytes}};}
+\DoxyCodeLine{00369\ \};}
+\DoxyCodeLine{00370\ }
+\DoxyCodeLine{00371\ \textcolor{comment}{/*\ Concrete\ subclass\ of\ binding\_key,\ for\ describing\ a\ non-\/empty}}
+\DoxyCodeLine{00372\ \textcolor{comment}{\ \ \ concrete\ range\ of\ bits\ within\ the\ binding\_map\ (e.g.\ "{}bits\ 8-\/15"{}).\ \ */}}
+\DoxyCodeLine{00373\ }
+\DoxyCodeLine{00374\ \textcolor{keyword}{class\ }\doxymbox{\hyperlink{classana_1_1concrete__binding_a25df7445bef21dbaf1369180dca9a64b}{concrete\_binding}}\ :\ \textcolor{keyword}{public}\ \doxymbox{\hyperlink{classana_1_1binding__key}{binding\_key}}}
+\DoxyCodeLine{00375\ \{}
+\DoxyCodeLine{00376\ \textcolor{keyword}{public}:}
+\DoxyCodeLine{00377\ \ \ \textcolor{comment}{/*\ This\ class\ is\ its\ own\ key\ for\ the\ purposes\ of\ consolidation.\ \ */}}
+\DoxyCodeLine{00378\ \ \ \textcolor{keyword}{typedef}\ \doxymbox{\hyperlink{classana_1_1concrete__binding_a25df7445bef21dbaf1369180dca9a64b}{concrete\_binding}}\ \doxymbox{\hyperlink{classana_1_1concrete__binding_a404943d2756d1317cc0952def40ff711}{key\_t}};}
+\DoxyCodeLine{00379\ }
+\DoxyCodeLine{00380\ \ \ \doxymbox{\hyperlink{classana_1_1concrete__binding_a25df7445bef21dbaf1369180dca9a64b}{concrete\_binding}}\ (\doxymbox{\hyperlink{namespaceana_a2f8d7e9c711f16b8223623821a662c02}{bit\_offset\_t}}\ start\_bit\_offset,\ \doxymbox{\hyperlink{namespaceana_ab9bf88188685df44678297f160072cc0}{bit\_size\_t}}\ size\_in\_bits)}
+\DoxyCodeLine{00381\ \ \ :\ \doxymbox{\hyperlink{classana_1_1concrete__binding_ac2cf2d1f035f2e7f0eb240fb5f889a74}{m\_bit\_range}}\ (start\_bit\_offset,\ size\_in\_bits)}
+\DoxyCodeLine{00382\ \ \ \{}
+\DoxyCodeLine{00383\ \ \ \ \ \doxymbox{\hyperlink{system_8h_a0deee0ddaa8ce3bbd400ab5f75de06ff}{gcc\_assert}}\ (\doxymbox{\hyperlink{classana_1_1concrete__binding_ac2cf2d1f035f2e7f0eb240fb5f889a74}{m\_bit\_range}}.m\_size\_in\_bits\ >\ 0);}
+\DoxyCodeLine{00384\ \ \ \}}
+\DoxyCodeLine{00385\ \ \ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{classana_1_1concrete__binding_aaab2176076d7eadc9800ad5e58b3e0ca}{concrete\_p}}\ ()\ const\ \doxymbox{\hyperlink{output_8h_ab52ea22aac29575278d6a9e723d1d234}{final}}\textcolor{keyword}{\ override\ }\{\ \textcolor{keywordflow}{return}\ \textcolor{keyword}{true};\ \}}
+\DoxyCodeLine{00386\ }
+\DoxyCodeLine{00387\ \ \ \doxymbox{\hyperlink{hashtab_8h_a2d05e5049721cf3117dd6b34e20d4f65}{hashval\_t}}\ \doxymbox{\hyperlink{classana_1_1concrete__binding_af25e78d0fab2373f0d31da8ea55a515b}{hash}}\ ()\textcolor{keyword}{\ const}}
+\DoxyCodeLine{00388\ \textcolor{keyword}{\ \ }\{}
+\DoxyCodeLine{00389\ \ \ \ \ \doxymbox{\hyperlink{classinchash_1_1hash}{inchash::hash}}\ hstate;}
+\DoxyCodeLine{00390\ \ \ \ \ hstate.\doxymbox{\hyperlink{classinchash_1_1hash_abe901e7ec20f4e94e8a59921c2404af6}{add\_wide\_int}}\ (\doxymbox{\hyperlink{classana_1_1concrete__binding_ac2cf2d1f035f2e7f0eb240fb5f889a74}{m\_bit\_range}}.m\_start\_bit\_offset);}
+\DoxyCodeLine{00391\ \ \ \ \ hstate.\doxymbox{\hyperlink{classinchash_1_1hash_abe901e7ec20f4e94e8a59921c2404af6}{add\_wide\_int}}\ (\doxymbox{\hyperlink{classana_1_1concrete__binding_ac2cf2d1f035f2e7f0eb240fb5f889a74}{m\_bit\_range}}.m\_size\_in\_bits);}
+\DoxyCodeLine{00392\ \ \ \ \ \textcolor{keywordflow}{return}\ hstate.\doxymbox{\hyperlink{classinchash_1_1hash_abbb8b89688e2bc759f3f4585887bc96a}{end}}\ ();}
+\DoxyCodeLine{00393\ \ \ \}}
+\DoxyCodeLine{00394\ \ \ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{classana_1_1concrete__binding_a977b392a3b80397b138df708ff74ade1}{operator==\ }}(\textcolor{keyword}{const}\ \doxymbox{\hyperlink{classana_1_1concrete__binding_a25df7445bef21dbaf1369180dca9a64b}{concrete\_binding}}\ \&other)\textcolor{keyword}{\ const}}
+\DoxyCodeLine{00395\ \textcolor{keyword}{\ \ }\{}
+\DoxyCodeLine{00396\ \ \ \ \ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{classana_1_1concrete__binding_ac2cf2d1f035f2e7f0eb240fb5f889a74}{m\_bit\_range}}\ ==\ other.\doxymbox{\hyperlink{classana_1_1concrete__binding_ac2cf2d1f035f2e7f0eb240fb5f889a74}{m\_bit\_range}};}
+\DoxyCodeLine{00397\ \ \ \}}
+\DoxyCodeLine{00398\ }
+\DoxyCodeLine{00399\ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classana_1_1concrete__binding_a408409c15261306e8322d9f2a5ea7f1b}{dump\_to\_pp}}\ (\doxymbox{\hyperlink{classpretty__printer}{pretty\_printer}}\ *pp,\ \textcolor{keywordtype}{bool}\ simple)\ \textcolor{keyword}{const}\ \textcolor{keyword}{final}\ \textcolor{keyword}{override};}
+\DoxyCodeLine{00400\ }
+\DoxyCodeLine{00401\ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classana_1_1concrete__binding_a25df7445bef21dbaf1369180dca9a64b}{concrete\_binding}}\ *\doxymbox{\hyperlink{classana_1_1concrete__binding_afec6bd9a26bfd0d9974f79bc7eadc1c2}{dyn\_cast\_concrete\_binding}}\ ()\ const\ \doxymbox{\hyperlink{output_8h_ab52ea22aac29575278d6a9e723d1d234}{final}}\textcolor{keyword}{\ override}}
+\DoxyCodeLine{00402\ \textcolor{keyword}{\ \ }\{\ \textcolor{keywordflow}{return}\ \textcolor{keyword}{this};\ \}}
+\DoxyCodeLine{00403\ }
+\DoxyCodeLine{00404\ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{structana_1_1bit__range}{bit\_range}}\ \&\doxymbox{\hyperlink{classana_1_1concrete__binding_a407f48c0cc58bdff5663ba83cd5f3c44}{get\_bit\_range}}\ ()\textcolor{keyword}{\ const\ }\{\ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{classana_1_1concrete__binding_ac2cf2d1f035f2e7f0eb240fb5f889a74}{m\_bit\_range}};\ \}}
+\DoxyCodeLine{00405\ \ \ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{classana_1_1concrete__binding_a0882a91d8bc85f3551d5ffaa8e94d1bc}{get\_byte\_range}}\ (\doxymbox{\hyperlink{structana_1_1byte__range}{byte\_range}}\ *out)\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00406\ }
+\DoxyCodeLine{00407\ \ \ \doxymbox{\hyperlink{namespaceana_a2f8d7e9c711f16b8223623821a662c02}{bit\_offset\_t}}\ \doxymbox{\hyperlink{classana_1_1concrete__binding_ae148bca22658ea9e91874d88253f77c4}{get\_start\_bit\_offset}}\ ()\textcolor{keyword}{\ const}}
+\DoxyCodeLine{00408\ \textcolor{keyword}{\ \ }\{}
+\DoxyCodeLine{00409\ \ \ \ \ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{classana_1_1concrete__binding_ac2cf2d1f035f2e7f0eb240fb5f889a74}{m\_bit\_range}}.m\_start\_bit\_offset;}
+\DoxyCodeLine{00410\ \ \ \}}
+\DoxyCodeLine{00411\ \ \ \doxymbox{\hyperlink{namespaceana_ab9bf88188685df44678297f160072cc0}{bit\_size\_t}}\ \doxymbox{\hyperlink{classana_1_1concrete__binding_a0342699e8ef4527814edc1419fe8e5fc}{get\_size\_in\_bits}}\ ()\textcolor{keyword}{\ const}}
+\DoxyCodeLine{00412\ \textcolor{keyword}{\ \ }\{}
+\DoxyCodeLine{00413\ \ \ \ \ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{classana_1_1concrete__binding_ac2cf2d1f035f2e7f0eb240fb5f889a74}{m\_bit\_range}}.m\_size\_in\_bits;}
+\DoxyCodeLine{00414\ \ \ \}}
+\DoxyCodeLine{00415\ \ \ \textcolor{comment}{/*\ Return\ the\ next\ bit\ offset\ after\ the\ end\ of\ this\ binding.\ \ */}}
+\DoxyCodeLine{00416\ \ \ \doxymbox{\hyperlink{namespaceana_a2f8d7e9c711f16b8223623821a662c02}{bit\_offset\_t}}\ \doxymbox{\hyperlink{classana_1_1concrete__binding_a88972647f0e4717cbd39ceb200b0f393}{get\_next\_bit\_offset}}\ ()\textcolor{keyword}{\ const}}
+\DoxyCodeLine{00417\ \textcolor{keyword}{\ \ }\{}
+\DoxyCodeLine{00418\ \ \ \ \ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{classana_1_1concrete__binding_ac2cf2d1f035f2e7f0eb240fb5f889a74}{m\_bit\_range}}.get\_next\_bit\_offset\ ();}
+\DoxyCodeLine{00419\ \ \ \}}
+\DoxyCodeLine{00420\ }
+\DoxyCodeLine{00421\ \ \ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{classana_1_1concrete__binding_af18b2ad370714341440cc02043983c96}{overlaps\_p}}\ (\textcolor{keyword}{const}\ \doxymbox{\hyperlink{classana_1_1concrete__binding_a25df7445bef21dbaf1369180dca9a64b}{concrete\_binding}}\ \&other)\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00422\ }
+\DoxyCodeLine{00423\ \ \ \textcolor{keyword}{static}\ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{classana_1_1concrete__binding_aff00ebb0379e357a6d67a002947a95e7}{cmp\_ptr\_ptr}}\ (\textcolor{keyword}{const}\ \textcolor{keywordtype}{void}\ *,\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{void}\ *);}
+\DoxyCodeLine{00424\ }
+\DoxyCodeLine{00425\ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classana_1_1concrete__binding_aef861aead447038fbbeb1e9d0d94ffaa}{mark\_deleted}}\ ()\ \{\ \doxymbox{\hyperlink{classana_1_1concrete__binding_ac2cf2d1f035f2e7f0eb240fb5f889a74}{m\_bit\_range}}.m\_size\_in\_bits\ =\ -\/1;\ \}}
+\DoxyCodeLine{00426\ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classana_1_1concrete__binding_a18566c2a9acc8a3e9a6ad4c0a86bea40}{mark\_empty}}\ ()\ \{\ \doxymbox{\hyperlink{classana_1_1concrete__binding_ac2cf2d1f035f2e7f0eb240fb5f889a74}{m\_bit\_range}}.m\_size\_in\_bits\ =\ -\/2;\ \}}
+\DoxyCodeLine{00427\ \ \ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{classana_1_1concrete__binding_aeaea225c5aef66a5c3a6dedf118420fb}{is\_deleted}}\ ()\textcolor{keyword}{\ const\ }\{\ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{classana_1_1concrete__binding_ac2cf2d1f035f2e7f0eb240fb5f889a74}{m\_bit\_range}}.m\_size\_in\_bits\ ==\ -\/1;\ \}}
+\DoxyCodeLine{00428\ \ \ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{classana_1_1concrete__binding_ac847703fcc02da90764e472acdab0d13}{is\_empty}}\ ()\textcolor{keyword}{\ const\ }\{\ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{classana_1_1concrete__binding_ac2cf2d1f035f2e7f0eb240fb5f889a74}{m\_bit\_range}}.m\_size\_in\_bits\ ==\ -\/2;\ \}}
+\DoxyCodeLine{00429\ }
+\DoxyCodeLine{00430\ \textcolor{keyword}{private}:}
+\DoxyCodeLine{00431\ \ \ \doxymbox{\hyperlink{structana_1_1bit__range}{bit\_range}}\ \doxymbox{\hyperlink{classana_1_1concrete__binding_ac2cf2d1f035f2e7f0eb240fb5f889a74}{m\_bit\_range}};}
+\DoxyCodeLine{00432\ \};}
+\DoxyCodeLine{00433\ }
+\DoxyCodeLine{00434\ \}\ \textcolor{comment}{//\ namespace\ ana}}
+\DoxyCodeLine{00435\ }
+\DoxyCodeLine{00436\ \textcolor{keyword}{template}\ <>}
+\DoxyCodeLine{00437\ \textcolor{keyword}{template}\ <>}
+\DoxyCodeLine{00438\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{bool}}
+\DoxyCodeLine{00439\ \doxymbox{\hyperlink{structis__a__helper_ab2c6d014fcddabaca757e6ccfb696a1d}{is\_a\_helper\ <const\ ana::concrete\_binding\ *>::test}}\ (\textcolor{keyword}{const}\ \doxymbox{\hyperlink{classana_1_1binding__key}{ana::binding\_key}}\ *key)}
+\DoxyCodeLine{00440\ \{}
+\DoxyCodeLine{00441\ \ \ \textcolor{keywordflow}{return}\ key-\/>concrete\_p\ ();}
+\DoxyCodeLine{00442\ \}}
+\DoxyCodeLine{00443\ }
+\DoxyCodeLine{00444\ \textcolor{keyword}{template}\ <>\ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{structdefault__hash__traits}{default\_hash\_traits}}<\doxymbox{\hyperlink{namespaceana}{ana}}::\doxymbox{\hyperlink{classana_1_1concrete__binding_a25df7445bef21dbaf1369180dca9a64b}{concrete\_binding}}>}
+\DoxyCodeLine{00445\ :\ \textcolor{keyword}{public}\ \doxymbox{\hyperlink{structmember__function__hash__traits}{member\_function\_hash\_traits}}<ana::concrete\_binding>}
+\DoxyCodeLine{00446\ \{}
+\DoxyCodeLine{00447\ \ \ \textcolor{keyword}{static}\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{structdefault__hash__traits_3_01ana_1_1concrete__binding_01_4_af18c83d0f1ebab5f5698a37a5c61fbb8}{empty\_zero\_p}}\ =\ \textcolor{keyword}{false};}
+\DoxyCodeLine{00448\ \};}
+\DoxyCodeLine{00449\ }
+\DoxyCodeLine{00450\ \textcolor{keyword}{namespace\ }\doxymbox{\hyperlink{namespaceana}{ana}}\ \{}
+\DoxyCodeLine{00451\ }
+\DoxyCodeLine{00452\ \textcolor{comment}{/*\ Concrete\ subclass\ of\ binding\_key,\ for\ describing\ a\ symbolic\ set\ of}}
+\DoxyCodeLine{00453\ \textcolor{comment}{\ \ \ bits\ within\ the\ binding\_map\ in\ terms\ of\ a\ region\ (e.g.\ "{}arr[i]"{}).\ \ */}}
+\DoxyCodeLine{00454\ }
+\DoxyCodeLine{00455\ \textcolor{keyword}{class\ }\doxymbox{\hyperlink{classana_1_1symbolic__binding_a9d755316f5f51028a3cfdc46a938f62c}{symbolic\_binding}}\ :\ \textcolor{keyword}{public}\ \doxymbox{\hyperlink{classana_1_1binding__key}{binding\_key}}}
+\DoxyCodeLine{00456\ \{}
+\DoxyCodeLine{00457\ \textcolor{keyword}{public}:}
+\DoxyCodeLine{00458\ \ \ \textcolor{comment}{/*\ This\ class\ is\ its\ own\ key\ for\ the\ purposes\ of\ consolidation.\ \ */}}
+\DoxyCodeLine{00459\ \ \ \textcolor{keyword}{typedef}\ \doxymbox{\hyperlink{classana_1_1symbolic__binding_a9d755316f5f51028a3cfdc46a938f62c}{symbolic\_binding}}\ \doxymbox{\hyperlink{classana_1_1symbolic__binding_ab3a851034ec693635d4cb3efea7e683b}{key\_t}};}
+\DoxyCodeLine{00460\ }
+\DoxyCodeLine{00461\ \ \ \doxymbox{\hyperlink{classana_1_1symbolic__binding_a9d755316f5f51028a3cfdc46a938f62c}{symbolic\_binding}}\ (\textcolor{keyword}{const}\ \doxymbox{\hyperlink{classana_1_1region}{region}}\ *\doxymbox{\hyperlink{classana_1_1region}{region}})\ :\ \doxymbox{\hyperlink{classana_1_1symbolic__binding_ae1b0c11ce32a12d52e99f43f3dd0ba36}{m\_region}}\ (\doxymbox{\hyperlink{classana_1_1region}{region}})\ \{\}}
+\DoxyCodeLine{00462\ \ \ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{classana_1_1symbolic__binding_a9935dacc3336ad3543f69d364a7d4c59}{concrete\_p}}\ ()\ const\ \doxymbox{\hyperlink{output_8h_ab52ea22aac29575278d6a9e723d1d234}{final}}\textcolor{keyword}{\ override\ }\{\ \textcolor{keywordflow}{return}\ \textcolor{keyword}{false};\ \}}
+\DoxyCodeLine{00463\ }
+\DoxyCodeLine{00464\ \ \ \doxymbox{\hyperlink{hashtab_8h_a2d05e5049721cf3117dd6b34e20d4f65}{hashval\_t}}\ \doxymbox{\hyperlink{classana_1_1symbolic__binding_addd78bd59dc57decf68238b3223544cf}{hash}}\ ()\textcolor{keyword}{\ const}}
+\DoxyCodeLine{00465\ \textcolor{keyword}{\ \ }\{}
+\DoxyCodeLine{00466\ \ \ \ \ \textcolor{keywordflow}{return}\ (intptr\_t)\doxymbox{\hyperlink{classana_1_1symbolic__binding_ae1b0c11ce32a12d52e99f43f3dd0ba36}{m\_region}};}
+\DoxyCodeLine{00467\ \ \ \}}
+\DoxyCodeLine{00468\ \ \ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{classana_1_1symbolic__binding_a94901084b6799a5f3114042dd288fa4b}{operator==\ }}(\textcolor{keyword}{const}\ \doxymbox{\hyperlink{classana_1_1symbolic__binding_a9d755316f5f51028a3cfdc46a938f62c}{symbolic\_binding}}\ \&other)\textcolor{keyword}{\ const}}
+\DoxyCodeLine{00469\ \textcolor{keyword}{\ \ }\{}
+\DoxyCodeLine{00470\ \ \ \ \ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{classana_1_1symbolic__binding_ae1b0c11ce32a12d52e99f43f3dd0ba36}{m\_region}}\ ==\ other.\doxymbox{\hyperlink{classana_1_1symbolic__binding_ae1b0c11ce32a12d52e99f43f3dd0ba36}{m\_region}};}
+\DoxyCodeLine{00471\ \ \ \}}
+\DoxyCodeLine{00472\ }
+\DoxyCodeLine{00473\ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classana_1_1symbolic__binding_a39edb002e304b1521c322e92052e7fbe}{dump\_to\_pp}}\ (\doxymbox{\hyperlink{classpretty__printer}{pretty\_printer}}\ *pp,\ \textcolor{keywordtype}{bool}\ simple)\ \textcolor{keyword}{const}\ \textcolor{keyword}{final}\ \textcolor{keyword}{override};}
+\DoxyCodeLine{00474\ }
+\DoxyCodeLine{00475\ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classana_1_1symbolic__binding_a9d755316f5f51028a3cfdc46a938f62c}{symbolic\_binding}}\ *\doxymbox{\hyperlink{classana_1_1symbolic__binding_abb967f318b05ccc96cc89d8cf180afa3}{dyn\_cast\_symbolic\_binding}}\ ()\ const\ \doxymbox{\hyperlink{output_8h_ab52ea22aac29575278d6a9e723d1d234}{final}}\textcolor{keyword}{\ override}}
+\DoxyCodeLine{00476\ \textcolor{keyword}{\ \ }\{\ \textcolor{keywordflow}{return}\ \textcolor{keyword}{this};\ \}}
+\DoxyCodeLine{00477\ }
+\DoxyCodeLine{00478\ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classana_1_1region}{region}}\ *\doxymbox{\hyperlink{classana_1_1symbolic__binding_abbf52beb56dd94616daf55caec295a69}{get\_region}}\ ()\textcolor{keyword}{\ const\ }\{\ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{classana_1_1symbolic__binding_ae1b0c11ce32a12d52e99f43f3dd0ba36}{m\_region}};\ \}}
+\DoxyCodeLine{00479\ }
+\DoxyCodeLine{00480\ \ \ \textcolor{keyword}{static}\ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{classana_1_1symbolic__binding_ae88638bcf0915851ede58771b543fe43}{cmp\_ptr\_ptr}}\ (\textcolor{keyword}{const}\ \textcolor{keywordtype}{void}\ *,\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{void}\ *);}
+\DoxyCodeLine{00481\ }
+\DoxyCodeLine{00482\ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classana_1_1symbolic__binding_afb1a4ff93d33e6d9aff2092b881734c9}{mark\_deleted}}\ ()\ \{\ \doxymbox{\hyperlink{classana_1_1symbolic__binding_ae1b0c11ce32a12d52e99f43f3dd0ba36}{m\_region}}\ =\ \textcolor{keyword}{reinterpret\_cast<}\textcolor{keyword}{const\ }\doxymbox{\hyperlink{classana_1_1region}{region}}\ *\textcolor{keyword}{>}\ (1);\ \}}
+\DoxyCodeLine{00483\ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classana_1_1symbolic__binding_a8acd9d1d8fbd3a403db33e17c8d418e5}{mark\_empty}}\ ()\ \{\ \doxymbox{\hyperlink{classana_1_1symbolic__binding_ae1b0c11ce32a12d52e99f43f3dd0ba36}{m\_region}}\ =\ \doxymbox{\hyperlink{stddef_8h_a070d2ce7b6bb7e5c05602aa8c308d0c4}{NULL}};\ \}}
+\DoxyCodeLine{00484\ \ \ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{classana_1_1symbolic__binding_ac28f9f5a4e74a8b30f02c79203aa6ae4}{is\_deleted}}\ ()\textcolor{keyword}{\ const}}
+\DoxyCodeLine{00485\ \textcolor{keyword}{\ \ }\{\ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{classana_1_1symbolic__binding_ae1b0c11ce32a12d52e99f43f3dd0ba36}{m\_region}}\ ==\ \textcolor{keyword}{reinterpret\_cast<}\textcolor{keyword}{const\ }\doxymbox{\hyperlink{classana_1_1region}{region}}\ *\textcolor{keyword}{>}\ (1);\ \}}
+\DoxyCodeLine{00486\ \ \ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{classana_1_1symbolic__binding_a491ca4d89efbf91fa42c68a7a3d771d9}{is\_empty}}\ ()\textcolor{keyword}{\ const\ }\{\ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{classana_1_1symbolic__binding_ae1b0c11ce32a12d52e99f43f3dd0ba36}{m\_region}}\ ==\ \doxymbox{\hyperlink{stddef_8h_a070d2ce7b6bb7e5c05602aa8c308d0c4}{NULL}};\ \}}
+\DoxyCodeLine{00487\ }
+\DoxyCodeLine{00488\ \textcolor{keyword}{private}:}
+\DoxyCodeLine{00489\ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classana_1_1region}{region}}\ *\doxymbox{\hyperlink{classana_1_1symbolic__binding_ae1b0c11ce32a12d52e99f43f3dd0ba36}{m\_region}};}
+\DoxyCodeLine{00490\ \};}
+\DoxyCodeLine{00491\ }
+\DoxyCodeLine{00492\ \}\ \textcolor{comment}{//\ namespace\ ana}}
+\DoxyCodeLine{00493\ }
+\DoxyCodeLine{00494\ \textcolor{keyword}{template}\ <>\ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{structdefault__hash__traits}{default\_hash\_traits}}<\doxymbox{\hyperlink{namespaceana}{ana}}::\doxymbox{\hyperlink{classana_1_1symbolic__binding_a9d755316f5f51028a3cfdc46a938f62c}{symbolic\_binding}}>}
+\DoxyCodeLine{00495\ :\ \textcolor{keyword}{public}\ \doxymbox{\hyperlink{structmember__function__hash__traits}{member\_function\_hash\_traits}}<ana::symbolic\_binding>}
+\DoxyCodeLine{00496\ \{}
+\DoxyCodeLine{00497\ \ \ \textcolor{keyword}{static}\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{structdefault__hash__traits_3_01ana_1_1symbolic__binding_01_4_a758eb8903c3b13bfa3b95d404de5b562}{empty\_zero\_p}}\ =\ \textcolor{keyword}{true};}
+\DoxyCodeLine{00498\ \};}
+\DoxyCodeLine{00499\ }
+\DoxyCodeLine{00500\ \textcolor{keyword}{namespace\ }\doxymbox{\hyperlink{namespaceana}{ana}}\ \{}
+\DoxyCodeLine{00501\ }
+\DoxyCodeLine{00502\ \textcolor{comment}{/*\ A\ mapping\ from\ binding\_keys\ to\ svalues,\ for\ use\ by\ binding\_cluster}}
+\DoxyCodeLine{00503\ \textcolor{comment}{\ \ \ and\ compound\_svalue.\ \ */}}
+\DoxyCodeLine{00504\ }
+\DoxyCodeLine{00505\ \textcolor{keyword}{class\ }\doxymbox{\hyperlink{classana_1_1binding__map_aec1d78b524d74cf931200fc4c6841317}{binding\_map}}}
+\DoxyCodeLine{00506\ \{}
+\DoxyCodeLine{00507\ \textcolor{keyword}{public}:}
+\DoxyCodeLine{00508\ \ \ \textcolor{keyword}{typedef}\ hash\_map\ <const\ binding\_key\ *,\ const\ svalue\ *>\ \doxymbox{\hyperlink{classana_1_1binding__map_a2dd351c3006b9ed01a1b5205407c0ca2}{map\_t}};}
+\DoxyCodeLine{00509\ \ \ \textcolor{keyword}{typedef}\ map\_t::iterator\ \doxymbox{\hyperlink{classana_1_1binding__map_af9b36688e7ec9f86528b2bd946eb5563}{iterator\_t}};}
+\DoxyCodeLine{00510\ }
+\DoxyCodeLine{00511\ \ \ \doxymbox{\hyperlink{classana_1_1binding__map_aec1d78b524d74cf931200fc4c6841317}{binding\_map}}\ ()\ :\ \doxymbox{\hyperlink{classana_1_1binding__map_a15925dcedfd455a2e355def0c40577f2}{m\_map}}\ ()\ \{\}}
+\DoxyCodeLine{00512\ \ \ \doxymbox{\hyperlink{classana_1_1binding__map_aff80f0cd44cd253d650c3171c4fba2c5}{binding\_map}}\ (\textcolor{keyword}{const}\ \doxymbox{\hyperlink{classana_1_1binding__map_aec1d78b524d74cf931200fc4c6841317}{binding\_map}}\ \&other);}
+\DoxyCodeLine{00513\ \ \ \doxymbox{\hyperlink{classana_1_1binding__map_aec1d78b524d74cf931200fc4c6841317}{binding\_map}}\&\ \doxymbox{\hyperlink{classana_1_1binding__map_a11954565f4df728e7773bfa57b98c267}{operator=}}(\textcolor{keyword}{const}\ \doxymbox{\hyperlink{classana_1_1binding__map_aec1d78b524d74cf931200fc4c6841317}{binding\_map}}\ \&other);}
+\DoxyCodeLine{00514\ }
+\DoxyCodeLine{00515\ \ \ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{classana_1_1binding__map_a2b77fdfc082ffbdf3dc9b3aa5ac4567f}{operator==\ }}(\textcolor{keyword}{const}\ \doxymbox{\hyperlink{classana_1_1binding__map_aec1d78b524d74cf931200fc4c6841317}{binding\_map}}\ \&other)\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00516\ \ \ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{classana_1_1binding__map_ad5c9e1f04c98e87234fa60df35c0af30}{operator!=\ }}(\textcolor{keyword}{const}\ \doxymbox{\hyperlink{classana_1_1binding__map_aec1d78b524d74cf931200fc4c6841317}{binding\_map}}\ \&other)\textcolor{keyword}{\ const}}
+\DoxyCodeLine{00517\ \textcolor{keyword}{\ \ }\{}
+\DoxyCodeLine{00518\ \ \ \ \ \textcolor{keywordflow}{return}\ !(*\textcolor{keyword}{this}\ ==\ other);}
+\DoxyCodeLine{00519\ \ \ \}}
+\DoxyCodeLine{00520\ }
+\DoxyCodeLine{00521\ \ \ \doxymbox{\hyperlink{hashtab_8h_a2d05e5049721cf3117dd6b34e20d4f65}{hashval\_t}}\ \doxymbox{\hyperlink{classana_1_1binding__map_a4231417ddc9d50b7329b01abc02cebc3}{hash}}\ ()\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00522\ }
+\DoxyCodeLine{00523\ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classana_1_1svalue}{svalue}}\ *\doxymbox{\hyperlink{classana_1_1binding__map_a844723949fe8785221dc084014b4186a}{get}}\ (\textcolor{keyword}{const}\ \doxymbox{\hyperlink{classana_1_1binding__key}{binding\_key}}\ *key)\textcolor{keyword}{\ const}}
+\DoxyCodeLine{00524\ \textcolor{keyword}{\ \ }\{}
+\DoxyCodeLine{00525\ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classana_1_1svalue}{svalue}}\ **slot\ =\ \textcolor{keyword}{const\_cast<}\doxymbox{\hyperlink{classana_1_1binding__map_a2dd351c3006b9ed01a1b5205407c0ca2}{map\_t}}\ \&\textcolor{keyword}{>}\ (\doxymbox{\hyperlink{classana_1_1binding__map_a15925dcedfd455a2e355def0c40577f2}{m\_map}}).\doxymbox{\hyperlink{classana_1_1binding__map_a844723949fe8785221dc084014b4186a}{get}}\ (key);}
+\DoxyCodeLine{00526\ \ \ \ \ \textcolor{keywordflow}{if}\ (slot)}
+\DoxyCodeLine{00527\ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ *slot;}
+\DoxyCodeLine{00528\ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00529\ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{stddef_8h_a070d2ce7b6bb7e5c05602aa8c308d0c4}{NULL}};}
+\DoxyCodeLine{00530\ \ \ \}}
+\DoxyCodeLine{00531\ \ \ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{classana_1_1binding__map_aed923b2bfe62383e850701e51d80e9d3}{put}}\ (\textcolor{keyword}{const}\ \doxymbox{\hyperlink{classana_1_1binding__key}{binding\_key}}\ *k,\ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classana_1_1svalue}{svalue}}\ *v)}
+\DoxyCodeLine{00532\ \ \ \{}
+\DoxyCodeLine{00533\ \ \ \ \ \doxymbox{\hyperlink{system_8h_a0deee0ddaa8ce3bbd400ab5f75de06ff}{gcc\_assert}}\ (v);}
+\DoxyCodeLine{00534\ \ \ \ \ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{classana_1_1binding__map_a15925dcedfd455a2e355def0c40577f2}{m\_map}}.put\ (k,\ v);}
+\DoxyCodeLine{00535\ \ \ \}}
+\DoxyCodeLine{00536\ }
+\DoxyCodeLine{00537\ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classana_1_1binding__map_aecf62f7c3fa59e365e1bf689ffa0d711}{remove}}\ (\textcolor{keyword}{const}\ \doxymbox{\hyperlink{classana_1_1binding__key}{binding\_key}}\ *k)\ \{\ \doxymbox{\hyperlink{classana_1_1binding__map_a15925dcedfd455a2e355def0c40577f2}{m\_map}}.remove\ (k);\ \}}
+\DoxyCodeLine{00538\ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classana_1_1binding__map_a8095a57c9dd486746758af17ee16ded9}{empty}}\ ()\ \{\ \doxymbox{\hyperlink{classana_1_1binding__map_a15925dcedfd455a2e355def0c40577f2}{m\_map}}.empty\ ();\ \}}
+\DoxyCodeLine{00539\ }
+\DoxyCodeLine{00540\ \ \ \doxymbox{\hyperlink{classana_1_1binding__map_af9b36688e7ec9f86528b2bd946eb5563}{iterator\_t}}\ \doxymbox{\hyperlink{classana_1_1binding__map_a1f4fb6e17ad4a3032a20bbe11efc81a4}{begin}}\ ()\textcolor{keyword}{\ const\ }\{\ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{classana_1_1binding__map_a15925dcedfd455a2e355def0c40577f2}{m\_map}}.begin\ ();\ \}}
+\DoxyCodeLine{00541\ \ \ \doxymbox{\hyperlink{classana_1_1binding__map_af9b36688e7ec9f86528b2bd946eb5563}{iterator\_t}}\ \doxymbox{\hyperlink{classana_1_1binding__map_af6ef5ea55c4a4388790d2385f4beed7d}{end}}\ ()\textcolor{keyword}{\ const\ }\{\ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{classana_1_1binding__map_a15925dcedfd455a2e355def0c40577f2}{m\_map}}.end\ ();\ \}}
+\DoxyCodeLine{00542\ \ \ \textcolor{keywordtype}{size\_t}\ \doxymbox{\hyperlink{classana_1_1binding__map_a0cd1e11c4e608b3ad3a06705f820ef95}{elements}}\ ()\textcolor{keyword}{\ const\ }\{\ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{classana_1_1binding__map_a15925dcedfd455a2e355def0c40577f2}{m\_map}}.elements\ ();\ \}}
+\DoxyCodeLine{00543\ }
+\DoxyCodeLine{00544\ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classana_1_1binding__map_a21a75290275e7dfd965b4377c496471d}{dump\_to\_pp}}\ (\doxymbox{\hyperlink{classpretty__printer}{pretty\_printer}}\ *pp,\ \textcolor{keywordtype}{bool}\ simple,\ \textcolor{keywordtype}{bool}\ multiline)\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00545\ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classana_1_1binding__map_a38527e5b63d4ec3d99efd57e3d439ffb}{dump}}\ (\textcolor{keywordtype}{bool}\ simple)\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00546\ }
+\DoxyCodeLine{00547\ \ \ \doxymbox{\hyperlink{classjson_1_1object}{json::object}}\ *\doxymbox{\hyperlink{classana_1_1binding__map_ad94f0d8e899ea826f548bc3a869607b9}{to\_json}}\ ()\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00548\ }
+\DoxyCodeLine{00549\ \ \ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{classana_1_1binding__map_a9f118310eae6e9535ea05f252646f1a3}{apply\_ctor\_to\_region}}\ (\textcolor{keyword}{const}\ \doxymbox{\hyperlink{classana_1_1region}{region}}\ *parent\_reg,\ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ ctor,}
+\DoxyCodeLine{00550\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{classana_1_1region__model__manager}{region\_model\_manager}}\ *mgr);}
+\DoxyCodeLine{00551\ }
+\DoxyCodeLine{00552\ \ \ \textcolor{keyword}{static}\ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{classana_1_1binding__map_a16f6444b80fe4942045bca0576b86390}{cmp}}\ (\textcolor{keyword}{const}\ \doxymbox{\hyperlink{classana_1_1binding__map_aec1d78b524d74cf931200fc4c6841317}{binding\_map}}\ \&map1,\ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classana_1_1binding__map_aec1d78b524d74cf931200fc4c6841317}{binding\_map}}\ \&map2);}
+\DoxyCodeLine{00553\ }
+\DoxyCodeLine{00554\ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classana_1_1binding__map_ad620982250a385bd655aaa4738a6bcf4}{remove\_overlapping\_bindings}}\ (\doxymbox{\hyperlink{classana_1_1store__manager}{store\_manager}}\ *mgr,}
+\DoxyCodeLine{00555\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classana_1_1binding__key}{binding\_key}}\ *drop\_key,}
+\DoxyCodeLine{00556\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{classana_1_1uncertainty__t}{uncertainty\_t}}\ *uncertainty,}
+\DoxyCodeLine{00557\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{namespaceana_ad3e98df056c4d8cad7e7740bc5ee21ca}{svalue\_set}}\ *maybe\_live\_values,}
+\DoxyCodeLine{00558\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{bool}\ always\_overlap);}
+\DoxyCodeLine{00559\ }
+\DoxyCodeLine{00560\ \textcolor{keyword}{private}:}
+\DoxyCodeLine{00561\ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classana_1_1binding__map_a21fc0521a455bb4b3d3847e975cf3a91}{get\_overlapping\_bindings}}\ (\textcolor{keyword}{const}\ \doxymbox{\hyperlink{classana_1_1binding__key}{binding\_key}}\ *key,}
+\DoxyCodeLine{00562\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{classauto__vec}{auto\_vec<const\ binding\_key\ *>}}\ *out);}
+\DoxyCodeLine{00563\ \ \ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{classana_1_1binding__map_a8df40ea97b35a3c72a1871d114904a8f}{apply\_ctor\_val\_to\_range}}\ (\textcolor{keyword}{const}\ \doxymbox{\hyperlink{classana_1_1region}{region}}\ *parent\_reg,}
+\DoxyCodeLine{00564\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{classana_1_1region__model__manager}{region\_model\_manager}}\ *mgr,}
+\DoxyCodeLine{00565\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ min\_index,\ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ max\_index,}
+\DoxyCodeLine{00566\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ val);}
+\DoxyCodeLine{00567\ \ \ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{classana_1_1binding__map_a2efcde82be748a13186a4c8e2eedb68c}{apply\_ctor\_pair\_to\_child\_region}}\ (\textcolor{keyword}{const}\ \doxymbox{\hyperlink{classana_1_1region}{region}}\ *parent\_reg,}
+\DoxyCodeLine{00568\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{classana_1_1region__model__manager}{region\_model\_manager}}\ *mgr,}
+\DoxyCodeLine{00569\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ index,\ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ val);}
+\DoxyCodeLine{00570\ }
+\DoxyCodeLine{00571\ \ \ \doxymbox{\hyperlink{classana_1_1binding__map_a2dd351c3006b9ed01a1b5205407c0ca2}{map\_t}}\ \doxymbox{\hyperlink{classana_1_1binding__map_a15925dcedfd455a2e355def0c40577f2}{m\_map}};}
+\DoxyCodeLine{00572\ \};}
+\DoxyCodeLine{00573\ }
+\DoxyCodeLine{00574\ \textcolor{comment}{/*\ Concept:\ BindingVisitor,\ for\ use\ by\ binding\_cluster::for\_each\_binding}}
+\DoxyCodeLine{00575\ \textcolor{comment}{\ \ \ and\ store::for\_each\_binding.}}
+\DoxyCodeLine{00576\ \textcolor{comment}{}}
+\DoxyCodeLine{00577\ \textcolor{comment}{\ \ \ Should\ implement:}}
+\DoxyCodeLine{00578\ \textcolor{comment}{\ \ \ \ \ void\ on\_binding\ (const\ binding\_key\ *key,\ const\ svalue\ *\&sval);}}
+\DoxyCodeLine{00579\ \textcolor{comment}{*/}}
+\DoxyCodeLine{00580\ }
+\DoxyCodeLine{00581\ \textcolor{comment}{/*\ All\ of\ the\ bindings\ within\ a\ store\ for\ regions\ that\ share\ the\ same}}
+\DoxyCodeLine{00582\ \textcolor{comment}{\ \ \ base\ region.\ \ */}}
+\DoxyCodeLine{00583\ }
+\DoxyCodeLine{00584\ \textcolor{keyword}{class\ }\doxymbox{\hyperlink{classana_1_1binding__cluster_affed1256b8495950f846c8521c3b820c}{binding\_cluster}}}
+\DoxyCodeLine{00585\ \{}
+\DoxyCodeLine{00586\ \textcolor{keyword}{public}:}
+\DoxyCodeLine{00587\ \ \ \textcolor{keyword}{friend}\ \textcolor{keyword}{class\ }\doxymbox{\hyperlink{classana_1_1binding__cluster_a530dd68d277ab833519b3cf30264f0fb}{store}};}
+\DoxyCodeLine{00588\ }
+\DoxyCodeLine{00589\ \ \ \textcolor{keyword}{typedef}\ hash\_map\ <const\ binding\_key\ *,\ const\ svalue\ *>\ \doxymbox{\hyperlink{classana_1_1binding__cluster_aae827f5ada0edd530679434de3e442cd}{map\_t}};}
+\DoxyCodeLine{00590\ \ \ \textcolor{keyword}{typedef}\ map\_t::iterator\ \doxymbox{\hyperlink{classana_1_1binding__cluster_a42287d057fb7051c458c150355f36e7c}{iterator\_t}};}
+\DoxyCodeLine{00591\ }
+\DoxyCodeLine{00592\ \ \ \doxymbox{\hyperlink{classana_1_1binding__cluster_affed1256b8495950f846c8521c3b820c}{binding\_cluster}}\ (\textcolor{keyword}{const}\ \doxymbox{\hyperlink{classana_1_1region}{region}}\ *base\_region);}
+\DoxyCodeLine{00593\ \ \ \doxymbox{\hyperlink{classana_1_1binding__cluster_a5b5b50cb848797809c70440efaa08462}{binding\_cluster}}\ (\textcolor{keyword}{const}\ \doxymbox{\hyperlink{classana_1_1binding__cluster_affed1256b8495950f846c8521c3b820c}{binding\_cluster}}\ \&other);}
+\DoxyCodeLine{00594\ \ \ \doxymbox{\hyperlink{classana_1_1binding__cluster_affed1256b8495950f846c8521c3b820c}{binding\_cluster}}\&\ \doxymbox{\hyperlink{classana_1_1binding__cluster_ab194fbfa5d43278f536a13b1291562ae}{operator=}}(\textcolor{keyword}{const}\ \doxymbox{\hyperlink{classana_1_1binding__cluster_affed1256b8495950f846c8521c3b820c}{binding\_cluster}}\ \&other);}
+\DoxyCodeLine{00595\ }
+\DoxyCodeLine{00596\ \ \ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{classana_1_1binding__cluster_a8e49384c29fea5417e9066fd68c59123}{operator==\ }}(\textcolor{keyword}{const}\ \doxymbox{\hyperlink{classana_1_1binding__cluster_affed1256b8495950f846c8521c3b820c}{binding\_cluster}}\ \&other)\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00597\ \ \ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{classana_1_1binding__cluster_aa73a750780ca75e7c969c2ef4d618abf}{operator!=\ }}(\textcolor{keyword}{const}\ \doxymbox{\hyperlink{classana_1_1binding__cluster_affed1256b8495950f846c8521c3b820c}{binding\_cluster}}\ \&other)\textcolor{keyword}{\ const}}
+\DoxyCodeLine{00598\ \textcolor{keyword}{\ \ }\{}
+\DoxyCodeLine{00599\ \ \ \ \ \textcolor{keywordflow}{return}\ !(*\textcolor{keyword}{this}\ ==\ other);}
+\DoxyCodeLine{00600\ \ \ \}}
+\DoxyCodeLine{00601\ }
+\DoxyCodeLine{00602\ \ \ \doxymbox{\hyperlink{hashtab_8h_a2d05e5049721cf3117dd6b34e20d4f65}{hashval\_t}}\ \doxymbox{\hyperlink{classana_1_1binding__cluster_a69dfc2f799038b2cacd11c9f57476c54}{hash}}\ ()\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00603\ }
+\DoxyCodeLine{00604\ \ \ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{classana_1_1binding__cluster_a7b9c537c5f5824c49db98ddb884a87db}{symbolic\_p}}\ ()\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00605\ }
+\DoxyCodeLine{00606\ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classana_1_1region}{region}}\ *\doxymbox{\hyperlink{classana_1_1binding__cluster_abea4609634e6c9cb9c7aa9ae3c789720}{get\_base\_region}}\ ()\textcolor{keyword}{\ const\ }\{\ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{classana_1_1binding__cluster_ac7888d9664264f585ba3670b15887b94}{m\_base\_region}};\ \}}
+\DoxyCodeLine{00607\ }
+\DoxyCodeLine{00608\ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classana_1_1binding__cluster_ab586d9d514b04a1bc79cfce7bc265ecb}{dump\_to\_pp}}\ (\doxymbox{\hyperlink{classpretty__printer}{pretty\_printer}}\ *pp,\ \textcolor{keywordtype}{bool}\ simple,\ \textcolor{keywordtype}{bool}\ multiline)\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00609\ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classana_1_1binding__cluster_a1953eadacfb8e03801d333c8cc306108}{dump}}\ (\textcolor{keywordtype}{bool}\ simple)\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00610\ }
+\DoxyCodeLine{00611\ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classana_1_1binding__cluster_a6fe73e2a45fb1d9a1cb6d8dafd3c45df}{validate}}\ ()\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00612\ }
+\DoxyCodeLine{00613\ \ \ \doxymbox{\hyperlink{classjson_1_1object}{json::object}}\ *\doxymbox{\hyperlink{classana_1_1binding__cluster_a9bdca6b3bd897a7005d5414d01314e6c}{to\_json}}\ ()\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00614\ }
+\DoxyCodeLine{00615\ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classana_1_1binding__cluster_a12e95df91b0a67e8f77823fd1008bdc3}{bind}}\ (\doxymbox{\hyperlink{classana_1_1store__manager}{store\_manager}}\ *mgr,\ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classana_1_1region}{region}}\ *,\ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classana_1_1svalue}{svalue}}\ *);}
+\DoxyCodeLine{00616\ }
+\DoxyCodeLine{00617\ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classana_1_1binding__cluster_a84aeced4229d4afd3fa078b9527db9ed}{clobber\_region}}\ (\doxymbox{\hyperlink{classana_1_1store__manager}{store\_manager}}\ *mgr,\ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classana_1_1region}{region}}\ *reg);}
+\DoxyCodeLine{00618\ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classana_1_1binding__cluster_a7bd68deb14fe4bd32f40cfc3b40eb3a0}{purge\_region}}\ (\doxymbox{\hyperlink{classana_1_1store__manager}{store\_manager}}\ *mgr,\ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classana_1_1region}{region}}\ *reg);}
+\DoxyCodeLine{00619\ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classana_1_1binding__cluster_a2a4e56c6474595ea2e57aa06ddd3cbfa}{fill\_region}}\ (\doxymbox{\hyperlink{classana_1_1store__manager}{store\_manager}}\ *mgr,\ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classana_1_1region}{region}}\ *reg,\ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classana_1_1svalue}{svalue}}\ *sval);}
+\DoxyCodeLine{00620\ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classana_1_1binding__cluster_ae342f78f856b3ea7dcb30dcd5bca30c1}{zero\_fill\_region}}\ (\doxymbox{\hyperlink{classana_1_1store__manager}{store\_manager}}\ *mgr,\ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classana_1_1region}{region}}\ *reg);}
+\DoxyCodeLine{00621\ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classana_1_1binding__cluster_a5846b003ed6824b8aa2876de7c134473}{mark\_region\_as\_unknown}}\ (\doxymbox{\hyperlink{classana_1_1store__manager}{store\_manager}}\ *mgr,}
+\DoxyCodeLine{00622\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classana_1_1region}{region}}\ *reg\_to\_bind,}
+\DoxyCodeLine{00623\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classana_1_1region}{region}}\ *reg\_for\_overlap,}
+\DoxyCodeLine{00624\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{classana_1_1uncertainty__t}{uncertainty\_t}}\ *uncertainty,}
+\DoxyCodeLine{00625\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{namespaceana_ad3e98df056c4d8cad7e7740bc5ee21ca}{svalue\_set}}\ *maybe\_live\_values);}
+\DoxyCodeLine{00626\ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classana_1_1binding__cluster_ab33965736b364148d565980ff061e61b}{purge\_state\_involving}}\ (\textcolor{keyword}{const}\ \doxymbox{\hyperlink{classana_1_1svalue}{svalue}}\ *sval,}
+\DoxyCodeLine{00627\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{classana_1_1region__model__manager}{region\_model\_manager}}\ *sval\_mgr);}
+\DoxyCodeLine{00628\ }
+\DoxyCodeLine{00629\ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classana_1_1svalue}{svalue}}\ *\doxymbox{\hyperlink{classana_1_1binding__cluster_ae86750fb2a4b790f50801f08cc930c49}{get\_binding}}\ (\doxymbox{\hyperlink{classana_1_1store__manager}{store\_manager}}\ *mgr,\ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classana_1_1region}{region}}\ *reg)\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00630\ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classana_1_1svalue}{svalue}}\ *\doxymbox{\hyperlink{classana_1_1binding__cluster_a3d7fb7684388c360339f01ac9ec940a4}{get\_binding\_recursive}}\ (\doxymbox{\hyperlink{classana_1_1store__manager}{store\_manager}}\ *mgr,}
+\DoxyCodeLine{00631\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classana_1_1region}{region}}\ *reg)\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00632\ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classana_1_1svalue}{svalue}}\ *\doxymbox{\hyperlink{classana_1_1binding__cluster_aa23bd4ba8306548e4b5b83f3633c8063}{get\_any\_binding}}\ (\doxymbox{\hyperlink{classana_1_1store__manager}{store\_manager}}\ *mgr,}
+\DoxyCodeLine{00633\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classana_1_1region}{region}}\ *reg)\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00634\ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classana_1_1svalue}{svalue}}\ *\doxymbox{\hyperlink{classana_1_1binding__cluster_ac9719a5e85e3120ca25e8a56a502ef0c}{maybe\_get\_compound\_binding}}\ (\doxymbox{\hyperlink{classana_1_1store__manager}{store\_manager}}\ *mgr,}
+\DoxyCodeLine{00635\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classana_1_1region}{region}}\ *reg)\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00636\ }
+\DoxyCodeLine{00637\ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classana_1_1binding__cluster_ae32ca81f0e8abf7f7f181f5aab9dbda4}{remove\_overlapping\_bindings}}\ (\doxymbox{\hyperlink{classana_1_1store__manager}{store\_manager}}\ *mgr,\ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classana_1_1region}{region}}\ *reg,}
+\DoxyCodeLine{00638\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{classana_1_1uncertainty__t}{uncertainty\_t}}\ *uncertainty,}
+\DoxyCodeLine{00639\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{namespaceana_ad3e98df056c4d8cad7e7740bc5ee21ca}{svalue\_set}}\ *maybe\_live\_values);}
+\DoxyCodeLine{00640\ }
+\DoxyCodeLine{00641\ \ \ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ T>}
+\DoxyCodeLine{00642\ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classana_1_1binding__cluster_a430500403a7e0d00d266e955dfdc0ae1}{for\_each\_value}}\ (\textcolor{keywordtype}{void}\ (*cb)\ (\textcolor{keyword}{const}\ \doxymbox{\hyperlink{classana_1_1svalue}{svalue}}\ *sval,\ T\ user\_data),}
+\DoxyCodeLine{00643\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ T\ user\_data)\textcolor{keyword}{\ const}}
+\DoxyCodeLine{00644\ \textcolor{keyword}{\ \ }\{}
+\DoxyCodeLine{00645\ \ \ \ \ \textcolor{keywordflow}{for}\ (map\_t::iterator\ iter\ =\ \doxymbox{\hyperlink{classana_1_1binding__cluster_a072a57401d69cee54814785d3d177ef1}{m\_map}}.begin\ ();\ iter\ !=\ \doxymbox{\hyperlink{classana_1_1binding__cluster_a072a57401d69cee54814785d3d177ef1}{m\_map}}.end\ ();\ ++iter)}
+\DoxyCodeLine{00646\ \ \ \ \ \ \ cb\ ((*iter).second,\ user\_data);}
+\DoxyCodeLine{00647\ \ \ \}}
+\DoxyCodeLine{00648\ }
+\DoxyCodeLine{00649\ \ \ \textcolor{keyword}{static}\ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{classana_1_1binding__cluster_aee92055247098f9fb7943098a7106e13}{can\_merge\_p}}\ (\textcolor{keyword}{const}\ \doxymbox{\hyperlink{classana_1_1binding__cluster_affed1256b8495950f846c8521c3b820c}{binding\_cluster}}\ *cluster\_a,}
+\DoxyCodeLine{00650\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classana_1_1binding__cluster_affed1256b8495950f846c8521c3b820c}{binding\_cluster}}\ *cluster\_b,}
+\DoxyCodeLine{00651\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{classana_1_1binding__cluster_affed1256b8495950f846c8521c3b820c}{binding\_cluster}}\ *out\_cluster,}
+\DoxyCodeLine{00652\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{classana_1_1binding__cluster_a530dd68d277ab833519b3cf30264f0fb}{store}}\ *out\_store,}
+\DoxyCodeLine{00653\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{classana_1_1store__manager}{store\_manager}}\ *mgr,}
+\DoxyCodeLine{00654\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{structana_1_1model__merger}{model\_merger}}\ *merger);}
+\DoxyCodeLine{00655\ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classana_1_1binding__cluster_a8d450e435db52ef7f697d17d9e3142ab}{make\_unknown\_relative\_to}}\ (\textcolor{keyword}{const}\ \doxymbox{\hyperlink{classana_1_1binding__cluster_affed1256b8495950f846c8521c3b820c}{binding\_cluster}}\ *other\_cluster,}
+\DoxyCodeLine{00656\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{classana_1_1binding__cluster_a530dd68d277ab833519b3cf30264f0fb}{store}}\ *out\_store,}
+\DoxyCodeLine{00657\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{classana_1_1store__manager}{store\_manager}}\ *mgr);}
+\DoxyCodeLine{00658\ }
+\DoxyCodeLine{00659\ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classana_1_1binding__cluster_a060cb8626a8438c18aa1ef416de5b25c}{mark\_as\_escaped}}\ ();}
+\DoxyCodeLine{00660\ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classana_1_1binding__cluster_a8d5613a571474cfc606891aece890b6e}{on\_unknown\_fncall}}\ (\textcolor{keyword}{const}\ gcall\ *call,\ \doxymbox{\hyperlink{classana_1_1store__manager}{store\_manager}}\ *mgr,}
+\DoxyCodeLine{00661\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classana_1_1conjured__purge}{conjured\_purge}}\ \&p);}
+\DoxyCodeLine{00662\ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classana_1_1binding__cluster_a38a9cdb530837ca3e3ee7bccfa215017}{on\_asm}}\ (\textcolor{keyword}{const}\ gasm\ *stmt,\ \doxymbox{\hyperlink{classana_1_1store__manager}{store\_manager}}\ *mgr,}
+\DoxyCodeLine{00663\ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classana_1_1conjured__purge}{conjured\_purge}}\ \&p);}
+\DoxyCodeLine{00664\ }
+\DoxyCodeLine{00665\ \ \ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{classana_1_1binding__cluster_ad2b63d137b70f69980d1321680fbcb80}{escaped\_p}}\ ()\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00666\ \ \ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{classana_1_1binding__cluster_ac99792bed265044fd923b776756d3aa8}{touched\_p}}\ ()\textcolor{keyword}{\ const\ }\{\ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{classana_1_1binding__cluster_afba04099629f1f9ab233baf3437861b6}{m\_touched}};\ \}}
+\DoxyCodeLine{00667\ }
+\DoxyCodeLine{00668\ \ \ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{classana_1_1binding__cluster_afa4fafea111990f8e47dad2d3244dbea}{redundant\_p}}\ ()\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00669\ \ \ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{classana_1_1binding__cluster_a9c4037101e1d2fc5b0c0b4229b5df158}{empty\_p}}\ ()\textcolor{keyword}{\ const\ }\{\ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{classana_1_1binding__cluster_a072a57401d69cee54814785d3d177ef1}{m\_map}}.elements\ ()\ ==\ 0;\ \}}
+\DoxyCodeLine{00670\ }
+\DoxyCodeLine{00671\ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classana_1_1binding__cluster_ac26b54fdadea57d6081b9a266be7eb05}{get\_representative\_path\_vars}}\ (\textcolor{keyword}{const}\ \doxymbox{\hyperlink{classana_1_1region__model}{region\_model}}\ *model,}
+\DoxyCodeLine{00672\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{namespaceana_ad3e98df056c4d8cad7e7740bc5ee21ca}{svalue\_set}}\ *visited,}
+\DoxyCodeLine{00673\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classana_1_1region}{region}}\ *base\_reg,}
+\DoxyCodeLine{00674\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classana_1_1svalue}{svalue}}\ *sval,}
+\DoxyCodeLine{00675\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{classauto__vec}{auto\_vec<path\_var>}}\ *out\_pvs)\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00676\ }
+\DoxyCodeLine{00677\ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classana_1_1svalue}{svalue}}\ *\doxymbox{\hyperlink{classana_1_1binding__cluster_aff1bfd3329fb6c4d246a8cad2914e170}{maybe\_get\_simple\_value}}\ (\doxymbox{\hyperlink{classana_1_1store__manager}{store\_manager}}\ *mgr)\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00678\ }
+\DoxyCodeLine{00679\ \ \ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ BindingVisitor>}
+\DoxyCodeLine{00680\ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classana_1_1binding__cluster_acf7fbdec412c8c3325d493061265d250}{for\_each\_binding}}\ (BindingVisitor\ \&v)\textcolor{keyword}{\ const}}
+\DoxyCodeLine{00681\ \textcolor{keyword}{\ \ }\{}
+\DoxyCodeLine{00682\ \ \ \ \ \textcolor{keywordflow}{for}\ (map\_t::iterator\ iter\ =\ \doxymbox{\hyperlink{classana_1_1binding__cluster_a072a57401d69cee54814785d3d177ef1}{m\_map}}.begin\ ();\ iter\ !=\ \doxymbox{\hyperlink{classana_1_1binding__cluster_a072a57401d69cee54814785d3d177ef1}{m\_map}}.end\ ();\ ++iter)}
+\DoxyCodeLine{00683\ \ \ \ \ \ \ \{}
+\DoxyCodeLine{00684\ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classana_1_1binding__key}{binding\_key}}\ *key\ =\ (*iter).first;}
+\DoxyCodeLine{00685\ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classana_1_1svalue}{svalue}}\ *\&sval\ =\ (*iter).second;}
+\DoxyCodeLine{00686\ \ \ \ \ v.on\_binding\ (key,\ sval);}
+\DoxyCodeLine{00687\ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00688\ \ \ \}}
+\DoxyCodeLine{00689\ }
+\DoxyCodeLine{00690\ \ \ \doxymbox{\hyperlink{classana_1_1binding__cluster_a42287d057fb7051c458c150355f36e7c}{iterator\_t}}\ \doxymbox{\hyperlink{classana_1_1binding__cluster_ad3435d37438e26be4d1ea37c7699bc1d}{begin}}\ ()\textcolor{keyword}{\ const\ }\{\ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{classana_1_1binding__cluster_a072a57401d69cee54814785d3d177ef1}{m\_map}}.begin\ ();\ \}}
+\DoxyCodeLine{00691\ \ \ \doxymbox{\hyperlink{classana_1_1binding__cluster_a42287d057fb7051c458c150355f36e7c}{iterator\_t}}\ \doxymbox{\hyperlink{classana_1_1binding__cluster_aa5316221a6fb22212ff084726871a524}{end}}\ ()\textcolor{keyword}{\ const\ }\{\ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{classana_1_1binding__cluster_a072a57401d69cee54814785d3d177ef1}{m\_map}}.end\ ();\ \}}
+\DoxyCodeLine{00692\ }
+\DoxyCodeLine{00693\ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classana_1_1binding__map}{binding\_map}}\ \&\doxymbox{\hyperlink{classana_1_1binding__cluster_acc56620be1f6136e77e2335afb54e92a}{get\_map}}\ ()\textcolor{keyword}{\ const\ }\{\ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{classana_1_1binding__cluster_a072a57401d69cee54814785d3d177ef1}{m\_map}};\ \}}
+\DoxyCodeLine{00694\ }
+\DoxyCodeLine{00695\ \textcolor{keyword}{private}:}
+\DoxyCodeLine{00696\ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classana_1_1svalue}{svalue}}\ *\doxymbox{\hyperlink{classana_1_1binding__cluster_ab544735365db6a92c7263bff1f33eaa6}{get\_any\_value}}\ (\textcolor{keyword}{const}\ \doxymbox{\hyperlink{classana_1_1binding__key}{binding\_key}}\ *key)\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00697\ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classana_1_1binding__cluster_a46f1d0fdd1e36a13804e29d9616a8ece}{bind\_compound\_sval}}\ (\doxymbox{\hyperlink{classana_1_1store__manager}{store\_manager}}\ *mgr,}
+\DoxyCodeLine{00698\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classana_1_1region}{region}}\ *reg,}
+\DoxyCodeLine{00699\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classana_1_1compound__svalue}{compound\_svalue}}\ *compound\_sval);}
+\DoxyCodeLine{00700\ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classana_1_1binding__cluster_a9af351c4b6662021e8bf4dd32f3d5aa2}{bind\_key}}\ (\textcolor{keyword}{const}\ \doxymbox{\hyperlink{classana_1_1binding__key}{binding\_key}}\ *key,\ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classana_1_1svalue}{svalue}}\ *sval);}
+\DoxyCodeLine{00701\ }
+\DoxyCodeLine{00702\ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classana_1_1region}{region}}\ *\doxymbox{\hyperlink{classana_1_1binding__cluster_ac7888d9664264f585ba3670b15887b94}{m\_base\_region}};}
+\DoxyCodeLine{00703\ }
+\DoxyCodeLine{00704\ \ \ \doxymbox{\hyperlink{classana_1_1binding__map}{binding\_map}}\ \doxymbox{\hyperlink{classana_1_1binding__cluster_a072a57401d69cee54814785d3d177ef1}{m\_map}};}
+\DoxyCodeLine{00705\ }
+\DoxyCodeLine{00706\ \ \ \textcolor{comment}{/*\ Has\ a\ pointer\ to\ this\ cluster\ "{}escaped"{}\ into\ a\ part\ of\ the\ program}}
+\DoxyCodeLine{00707\ \textcolor{comment}{\ \ \ \ \ we\ don't\ know\ about\ (via\ a\ call\ to\ a\ function\ with\ an\ unknown\ body,}}
+\DoxyCodeLine{00708\ \textcolor{comment}{\ \ \ \ \ or\ by\ being\ passed\ in\ as\ a\ pointer\ param\ of\ a\ "{}top-\/level"{}\ function\ call).}}
+\DoxyCodeLine{00709\ \textcolor{comment}{\ \ \ \ \ Such\ regions\ could\ be\ overwritten\ when\ other\ such\ functions\ are\ called,}}
+\DoxyCodeLine{00710\ \textcolor{comment}{\ \ \ \ \ even\ if\ the\ region\ is\ no\ longer\ reachable\ by\ pointers\ that\ we\ are}}
+\DoxyCodeLine{00711\ \textcolor{comment}{\ \ \ \ \ tracking.\ */}}
+\DoxyCodeLine{00712\ \ \ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{classana_1_1binding__cluster_a4fb33f9bea847eef14d5b690d342cf29}{m\_escaped}};}
+\DoxyCodeLine{00713\ }
+\DoxyCodeLine{00714\ \ \ \textcolor{comment}{/*\ Has\ this\ cluster\ been\ written\ to\ via\ a\ symbolic\ binding?}}
+\DoxyCodeLine{00715\ \textcolor{comment}{\ \ \ \ \ If\ so,\ then\ we\ don't\ know\ anything\ about\ unbound\ subregions,}}
+\DoxyCodeLine{00716\ \textcolor{comment}{\ \ \ \ \ so\ we\ can't\ use\ initial\_svalue,\ treat\ them\ as\ uninitialized,\ or}}
+\DoxyCodeLine{00717\ \textcolor{comment}{\ \ \ \ \ inherit\ values\ from\ a\ parent\ region.\ \ */}}
+\DoxyCodeLine{00718\ \ \ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{classana_1_1binding__cluster_afba04099629f1f9ab233baf3437861b6}{m\_touched}};}
+\DoxyCodeLine{00719\ \};}
+\DoxyCodeLine{00720\ }
+\DoxyCodeLine{00721\ \textcolor{comment}{/*\ The\ mapping\ from\ regions\ to\ svalues.}}
+\DoxyCodeLine{00722\ \textcolor{comment}{\ \ \ This\ is\ actually\ expressed\ by\ subdividing\ into\ clusters,\ to\ better}}
+\DoxyCodeLine{00723\ \textcolor{comment}{\ \ \ handle\ aliasing.\ \ */}}
+\DoxyCodeLine{00724\ }
+\DoxyCodeLine{00725\ \textcolor{keyword}{class\ }\doxymbox{\hyperlink{classana_1_1store_a5d12862cdf20f371318599887a278636}{store}}}
+\DoxyCodeLine{00726\ \{}
+\DoxyCodeLine{00727\ \textcolor{keyword}{public}:}
+\DoxyCodeLine{00728\ \ \ \textcolor{keyword}{typedef}\ hash\_map\ <const\ region\ *,\ binding\_cluster\ *>\ \doxymbox{\hyperlink{classana_1_1store_a513f6ff05edef8c1a9fab39e42b67291}{cluster\_map\_t}};}
+\DoxyCodeLine{00729\ }
+\DoxyCodeLine{00730\ \ \ \doxymbox{\hyperlink{classana_1_1store_a5d12862cdf20f371318599887a278636}{store}}\ ();}
+\DoxyCodeLine{00731\ \ \ \doxymbox{\hyperlink{classana_1_1store_a244445ee1029aac8740d75e57c85c2e9}{store}}\ (\textcolor{keyword}{const}\ \doxymbox{\hyperlink{classana_1_1store_a5d12862cdf20f371318599887a278636}{store}}\ \&other);}
+\DoxyCodeLine{00732\ \ \ \doxymbox{\hyperlink{classana_1_1store_a0014ce8c2ba39435c807c20d1c8cb9b3}{\string~store}}\ ();}
+\DoxyCodeLine{00733\ }
+\DoxyCodeLine{00734\ \ \ \doxymbox{\hyperlink{classana_1_1store_a5d12862cdf20f371318599887a278636}{store}}\ \&\doxymbox{\hyperlink{classana_1_1store_a4e59fe5f0cd52542ed24f99d7ef8a70a}{operator=\ }}(\textcolor{keyword}{const}\ \doxymbox{\hyperlink{classana_1_1store_a5d12862cdf20f371318599887a278636}{store}}\ \&other);}
+\DoxyCodeLine{00735\ }
+\DoxyCodeLine{00736\ \ \ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{classana_1_1store_a4b0b38add2152f6f41582f1e16a9df85}{operator==\ }}(\textcolor{keyword}{const}\ \doxymbox{\hyperlink{classana_1_1store_a5d12862cdf20f371318599887a278636}{store}}\ \&other)\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00737\ \ \ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{classana_1_1store_a851db7b4559ef2c2ed0675d528faf855}{operator!=\ }}(\textcolor{keyword}{const}\ \doxymbox{\hyperlink{classana_1_1store_a5d12862cdf20f371318599887a278636}{store}}\ \&other)\textcolor{keyword}{\ const}}
+\DoxyCodeLine{00738\ \textcolor{keyword}{\ \ }\{}
+\DoxyCodeLine{00739\ \ \ \ \ \textcolor{keywordflow}{return}\ !(*\textcolor{keyword}{this}\ ==\ other);}
+\DoxyCodeLine{00740\ \ \ \}}
+\DoxyCodeLine{00741\ }
+\DoxyCodeLine{00742\ \ \ \doxymbox{\hyperlink{hashtab_8h_a2d05e5049721cf3117dd6b34e20d4f65}{hashval\_t}}\ \doxymbox{\hyperlink{classana_1_1store_ae32b33eaee5f94dcd8cef10e4428c905}{hash}}\ ()\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00743\ }
+\DoxyCodeLine{00744\ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classana_1_1store_aecb1ea5d709786676d4fe41d7b952690}{dump\_to\_pp}}\ (\doxymbox{\hyperlink{classpretty__printer}{pretty\_printer}}\ *pp,\ \textcolor{keywordtype}{bool}\ summarize,\ \textcolor{keywordtype}{bool}\ multiline,}
+\DoxyCodeLine{00745\ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{classana_1_1store__manager}{store\_manager}}\ *mgr)\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00746\ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classana_1_1store_a1d1d79b2c14731efeb6f51e040ae71b1}{dump}}\ (\textcolor{keywordtype}{bool}\ simple)\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00747\ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classana_1_1store_a3cb22fd09b6623a3cef29dc8ef2584ac}{summarize\_to\_pp}}\ (\doxymbox{\hyperlink{classpretty__printer}{pretty\_printer}}\ *pp,\ \textcolor{keywordtype}{bool}\ simple)\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00748\ }
+\DoxyCodeLine{00749\ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classana_1_1store_abc720a03c0df378e2908719589d0357b}{validate}}\ ()\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00750\ }
+\DoxyCodeLine{00751\ \ \ \doxymbox{\hyperlink{classjson_1_1object}{json::object}}\ *\doxymbox{\hyperlink{classana_1_1store_a381bd3462c6ea947f68b40b6efc6e673}{to\_json}}\ ()\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00752\ }
+\DoxyCodeLine{00753\ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classana_1_1svalue}{svalue}}\ *\doxymbox{\hyperlink{classana_1_1store_ad9c78a514ae4e4d4d914d9c7a3b0fbb2}{get\_any\_binding}}\ (\doxymbox{\hyperlink{classana_1_1store__manager}{store\_manager}}\ *mgr,\ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classana_1_1region}{region}}\ *reg)\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00754\ }
+\DoxyCodeLine{00755\ \ \ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{classana_1_1store_a9672fc649e6e2d3292966d25d70c4b0a}{called\_unknown\_fn\_p}}\ ()\textcolor{keyword}{\ const\ }\{\ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{classana_1_1store_a6bcd7563bbf7a12c818c33a1ff802c42}{m\_called\_unknown\_fn}};\ \}}
+\DoxyCodeLine{00756\ }
+\DoxyCodeLine{00757\ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classana_1_1store_a999f083af659af857edded87e2e0988d}{set\_value}}\ (\doxymbox{\hyperlink{classana_1_1store__manager}{store\_manager}}\ *mgr,\ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classana_1_1region}{region}}\ *lhs\_reg,}
+\DoxyCodeLine{00758\ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classana_1_1svalue}{svalue}}\ *rhs\_sval,}
+\DoxyCodeLine{00759\ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{classana_1_1uncertainty__t}{uncertainty\_t}}\ *uncertainty);}
+\DoxyCodeLine{00760\ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classana_1_1store_afa4b0a9e2bf5cbe5a371d283ce18a9f5}{clobber\_region}}\ (\doxymbox{\hyperlink{classana_1_1store__manager}{store\_manager}}\ *mgr,\ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classana_1_1region}{region}}\ *reg);}
+\DoxyCodeLine{00761\ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classana_1_1store_a368a594e09f3e6f2d4e8a75e34f1f6da}{purge\_region}}\ (\doxymbox{\hyperlink{classana_1_1store__manager}{store\_manager}}\ *mgr,\ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classana_1_1region}{region}}\ *reg);}
+\DoxyCodeLine{00762\ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classana_1_1store_a2c4aa1410821a047fef3f73c401b74a5}{fill\_region}}\ (\doxymbox{\hyperlink{classana_1_1store__manager}{store\_manager}}\ *mgr,\ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classana_1_1region}{region}}\ *reg,\ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classana_1_1svalue}{svalue}}\ *sval);}
+\DoxyCodeLine{00763\ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classana_1_1store_ab23bcac41713a6e528af59960da08758}{zero\_fill\_region}}\ (\doxymbox{\hyperlink{classana_1_1store__manager}{store\_manager}}\ *mgr,\ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classana_1_1region}{region}}\ *reg);}
+\DoxyCodeLine{00764\ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classana_1_1store_ac2cec08944aaeecfa969ba02829aaa7c}{mark\_region\_as\_unknown}}\ (\doxymbox{\hyperlink{classana_1_1store__manager}{store\_manager}}\ *mgr,\ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classana_1_1region}{region}}\ *reg,}
+\DoxyCodeLine{00765\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{classana_1_1uncertainty__t}{uncertainty\_t}}\ *uncertainty,}
+\DoxyCodeLine{00766\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{namespaceana_ad3e98df056c4d8cad7e7740bc5ee21ca}{svalue\_set}}\ *maybe\_live\_values);}
+\DoxyCodeLine{00767\ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classana_1_1store_a05f73ed97b9ecc51c7a0eba1dcc94f2a}{purge\_state\_involving}}\ (\textcolor{keyword}{const}\ \doxymbox{\hyperlink{classana_1_1svalue}{svalue}}\ *sval,}
+\DoxyCodeLine{00768\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{classana_1_1region__model__manager}{region\_model\_manager}}\ *sval\_mgr);}
+\DoxyCodeLine{00769\ }
+\DoxyCodeLine{00770\ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classana_1_1binding__cluster}{binding\_cluster}}\ *\doxymbox{\hyperlink{classana_1_1store_aab57fa751e804f17e1f6c2237cc29ef9}{get\_cluster}}\ (\textcolor{keyword}{const}\ \doxymbox{\hyperlink{classana_1_1region}{region}}\ *base\_reg)\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00771\ \ \ \doxymbox{\hyperlink{classana_1_1binding__cluster}{binding\_cluster}}\ *\doxymbox{\hyperlink{classana_1_1store_ae8d28f3bf7e91140b2fb61ede13e7e67}{get\_cluster}}\ (\textcolor{keyword}{const}\ \doxymbox{\hyperlink{classana_1_1region}{region}}\ *base\_reg);}
+\DoxyCodeLine{00772\ \ \ \doxymbox{\hyperlink{classana_1_1binding__cluster}{binding\_cluster}}\ *\doxymbox{\hyperlink{classana_1_1store_a7df3c06545d41389475e38f0e261f81f}{get\_or\_create\_cluster}}\ (\textcolor{keyword}{const}\ \doxymbox{\hyperlink{classana_1_1region}{region}}\ *base\_reg);}
+\DoxyCodeLine{00773\ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classana_1_1store_af581b05fee543e4c0cd0b584757a9bdc}{purge\_cluster}}\ (\textcolor{keyword}{const}\ \doxymbox{\hyperlink{classana_1_1region}{region}}\ *base\_reg);}
+\DoxyCodeLine{00774\ }
+\DoxyCodeLine{00775\ \ \ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ T>}
+\DoxyCodeLine{00776\ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classana_1_1store_af721e2d7d6abd13ef7212f2c94011611}{for\_each\_cluster}}\ (\textcolor{keywordtype}{void}\ (*cb)\ (\textcolor{keyword}{const}\ \doxymbox{\hyperlink{classana_1_1region}{region}}\ *base\_reg,\ T\ user\_data),}
+\DoxyCodeLine{00777\ \ \ \ \ \ \ \ \ \ \ \ \ \ T\ user\_data)\textcolor{keyword}{\ const}}
+\DoxyCodeLine{00778\ \textcolor{keyword}{\ \ }\{}
+\DoxyCodeLine{00779\ \ \ \ \ \textcolor{keywordflow}{for}\ (cluster\_map\_t::iterator\ iter\ =\ \doxymbox{\hyperlink{classana_1_1store_a9eb75e871a1863a143bc55aa6ba45885}{m\_cluster\_map}}.begin\ ();}
+\DoxyCodeLine{00780\ \ \ \ \ \ iter\ !=\ \doxymbox{\hyperlink{classana_1_1store_a9eb75e871a1863a143bc55aa6ba45885}{m\_cluster\_map}}.end\ ();\ ++iter)}
+\DoxyCodeLine{00781\ \ \ \ \ \ \ cb\ ((*iter).first,\ user\_data);}
+\DoxyCodeLine{00782\ \ \ \}}
+\DoxyCodeLine{00783\ }
+\DoxyCodeLine{00784\ \ \ \textcolor{keyword}{static}\ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{classana_1_1store_a82fce02ba8f9e7cb5ed2b9a295636157}{can\_merge\_p}}\ (\textcolor{keyword}{const}\ \doxymbox{\hyperlink{classana_1_1store_a5d12862cdf20f371318599887a278636}{store}}\ *store\_a,\ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classana_1_1store_a5d12862cdf20f371318599887a278636}{store}}\ *store\_b,}
+\DoxyCodeLine{00785\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{classana_1_1store_a5d12862cdf20f371318599887a278636}{store}}\ *out\_store,\ \doxymbox{\hyperlink{classana_1_1store__manager}{store\_manager}}\ *mgr,}
+\DoxyCodeLine{00786\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{structana_1_1model__merger}{model\_merger}}\ *merger);}
+\DoxyCodeLine{00787\ }
+\DoxyCodeLine{00788\ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classana_1_1store_a362571add9fb2cb3f72b43361084e19b}{mark\_as\_escaped}}\ (\textcolor{keyword}{const}\ \doxymbox{\hyperlink{classana_1_1region}{region}}\ *base\_reg);}
+\DoxyCodeLine{00789\ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classana_1_1store_af2ea5dfdbbd0bd16183b038fe72b40bf}{on\_unknown\_fncall}}\ (\textcolor{keyword}{const}\ gcall\ *call,\ \doxymbox{\hyperlink{classana_1_1store__manager}{store\_manager}}\ *mgr,}
+\DoxyCodeLine{00790\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classana_1_1conjured__purge}{conjured\_purge}}\ \&p);}
+\DoxyCodeLine{00791\ \ \ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{classana_1_1store_a1db27bc2e523faa8b1e7924e3bf051fb}{escaped\_p}}\ (\textcolor{keyword}{const}\ \doxymbox{\hyperlink{classana_1_1region}{region}}\ *reg)\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00792\ }
+\DoxyCodeLine{00793\ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classana_1_1store_ae2f8e15f770ae288f4b51df946ebe33b}{get\_representative\_path\_vars}}\ (\textcolor{keyword}{const}\ \doxymbox{\hyperlink{classana_1_1region__model}{region\_model}}\ *model,}
+\DoxyCodeLine{00794\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{namespaceana_ad3e98df056c4d8cad7e7740bc5ee21ca}{svalue\_set}}\ *visited,}
+\DoxyCodeLine{00795\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classana_1_1svalue}{svalue}}\ *sval,}
+\DoxyCodeLine{00796\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{classauto__vec}{auto\_vec<path\_var>}}\ *out\_pvs)\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00797\ }
+\DoxyCodeLine{00798\ \ \ cluster\_map\_t::iterator\ \doxymbox{\hyperlink{classana_1_1store_ad1b3febe4f1e21193df4e2a0a81c0f9b}{begin}}\ ()\textcolor{keyword}{\ const\ }\{\ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{classana_1_1store_a9eb75e871a1863a143bc55aa6ba45885}{m\_cluster\_map}}.begin\ ();\ \}}
+\DoxyCodeLine{00799\ \ \ cluster\_map\_t::iterator\ \doxymbox{\hyperlink{classana_1_1store_a53369c5b94d975aed1fc3b373e58b950}{end}}\ ()\textcolor{keyword}{\ const\ }\{\ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{classana_1_1store_a9eb75e871a1863a143bc55aa6ba45885}{m\_cluster\_map}}.end\ ();\ \}}
+\DoxyCodeLine{00800\ }
+\DoxyCodeLine{00801\ \ \ \doxymbox{\hyperlink{classtristate}{tristate}}\ \doxymbox{\hyperlink{classana_1_1store_a3ca78902530b547f085f0b18943eb37b}{eval\_alias}}\ (\textcolor{keyword}{const}\ \doxymbox{\hyperlink{classana_1_1region}{region}}\ *base\_reg\_a,}
+\DoxyCodeLine{00802\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classana_1_1region}{region}}\ *base\_reg\_b)\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00803\ }
+\DoxyCodeLine{00804\ \ \ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ BindingVisitor>}
+\DoxyCodeLine{00805\ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classana_1_1store_a52fb2bff561f037d44c071bb269bc4d3}{for\_each\_binding}}\ (BindingVisitor\ \&v)}
+\DoxyCodeLine{00806\ \ \ \{}
+\DoxyCodeLine{00807\ \ \ \ \ \textcolor{keywordflow}{for}\ (cluster\_map\_t::iterator\ iter\ =\ \doxymbox{\hyperlink{classana_1_1store_a9eb75e871a1863a143bc55aa6ba45885}{m\_cluster\_map}}.begin\ ();}
+\DoxyCodeLine{00808\ \ \ \ \ \ iter\ !=\ \doxymbox{\hyperlink{classana_1_1store_a9eb75e871a1863a143bc55aa6ba45885}{m\_cluster\_map}}.end\ ();\ ++iter)}
+\DoxyCodeLine{00809\ \ \ \ \ \ \ (*iter).second-\/>for\_each\_binding\ (v);}
+\DoxyCodeLine{00810\ \ \ \}}
+\DoxyCodeLine{00811\ }
+\DoxyCodeLine{00812\ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classana_1_1store_ac979c490715611970ff8c4f1722242bf}{canonicalize}}\ (\doxymbox{\hyperlink{classana_1_1store__manager}{store\_manager}}\ *mgr);}
+\DoxyCodeLine{00813\ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classana_1_1store_a6c9fdc6f571407137e5fa07ee8d53708}{loop\_replay\_fixup}}\ (\textcolor{keyword}{const}\ \doxymbox{\hyperlink{classana_1_1store_a5d12862cdf20f371318599887a278636}{store}}\ *other\_store,}
+\DoxyCodeLine{00814\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{classana_1_1region__model__manager}{region\_model\_manager}}\ *mgr);}
+\DoxyCodeLine{00815\ }
+\DoxyCodeLine{00816\ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classana_1_1store_aeb5518a5f448fb42be26daabaad0b96f}{replay\_call\_summary}}\ (\doxymbox{\hyperlink{classana_1_1call__summary__replay}{call\_summary\_replay}}\ \&\doxymbox{\hyperlink{poly-int_8h_a3ecac2571dcdc8050989339124f1bd26}{r}},}
+\DoxyCodeLine{00817\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classana_1_1store_a5d12862cdf20f371318599887a278636}{store}}\ \&summary);}
+\DoxyCodeLine{00818\ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classana_1_1store_a51c42965709cbe739c8480ec9c6e3d7a}{replay\_call\_summary\_cluster}}\ (\doxymbox{\hyperlink{classana_1_1call__summary__replay}{call\_summary\_replay}}\ \&\doxymbox{\hyperlink{poly-int_8h_a3ecac2571dcdc8050989339124f1bd26}{r}},}
+\DoxyCodeLine{00819\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classana_1_1store_a5d12862cdf20f371318599887a278636}{store}}\ \&summary,}
+\DoxyCodeLine{00820\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classana_1_1region}{region}}\ *base\_reg);}
+\DoxyCodeLine{00821\ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classana_1_1store_a97f52819bf0e28a471343711e1738c5f}{on\_maybe\_live\_values}}\ (\textcolor{keyword}{const}\ \doxymbox{\hyperlink{namespaceana_ad3e98df056c4d8cad7e7740bc5ee21ca}{svalue\_set}}\ \&maybe\_live\_values);}
+\DoxyCodeLine{00822\ }
+\DoxyCodeLine{00823\ \textcolor{keyword}{private}:}
+\DoxyCodeLine{00824\ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classana_1_1store_af7ce8e392a9c6b6ae86457b2fd9726c0}{remove\_overlapping\_bindings}}\ (\doxymbox{\hyperlink{classana_1_1store__manager}{store\_manager}}\ *mgr,\ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classana_1_1region}{region}}\ *reg,}
+\DoxyCodeLine{00825\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{classana_1_1uncertainty__t}{uncertainty\_t}}\ *uncertainty);}
+\DoxyCodeLine{00826\ \ \ \doxymbox{\hyperlink{classtristate}{tristate}}\ \doxymbox{\hyperlink{classana_1_1store_ab9073a21edd95075e18926b0663daec6}{eval\_alias\_1}}\ (\textcolor{keyword}{const}\ \doxymbox{\hyperlink{classana_1_1region}{region}}\ *base\_reg\_a,}
+\DoxyCodeLine{00827\ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classana_1_1region}{region}}\ *base\_reg\_b)\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00828\ }
+\DoxyCodeLine{00829\ \ \ \doxymbox{\hyperlink{classana_1_1store_a513f6ff05edef8c1a9fab39e42b67291}{cluster\_map\_t}}\ \doxymbox{\hyperlink{classana_1_1store_a9eb75e871a1863a143bc55aa6ba45885}{m\_cluster\_map}};}
+\DoxyCodeLine{00830\ }
+\DoxyCodeLine{00831\ \ \ \textcolor{comment}{/*\ If\ this\ is\ true,\ then\ unknown\ code\ has\ been\ called,\ and\ so}}
+\DoxyCodeLine{00832\ \textcolor{comment}{\ \ \ \ \ any\ global\ variable\ that\ isn't\ currently\ modelled\ by\ the\ store}}
+\DoxyCodeLine{00833\ \textcolor{comment}{\ \ \ \ \ has\ unknown\ state,\ rather\ than\ being\ in\ an\ "{}initial\ state"{}.}}
+\DoxyCodeLine{00834\ \textcolor{comment}{\ \ \ \ \ This\ is\ to\ avoid\ having\ to\ mark\ (and\ thus\ explicitly\ track)}}
+\DoxyCodeLine{00835\ \textcolor{comment}{\ \ \ \ \ every\ global\ when\ an\ unknown\ function\ is\ called;\ instead,\ they}}
+\DoxyCodeLine{00836\ \textcolor{comment}{\ \ \ \ \ can\ be\ tracked\ implicitly.\ \ */}}
+\DoxyCodeLine{00837\ \ \ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{classana_1_1store_a6bcd7563bbf7a12c818c33a1ff802c42}{m\_called\_unknown\_fn}};}
+\DoxyCodeLine{00838\ \};}
+\DoxyCodeLine{00839\ }
+\DoxyCodeLine{00840\ \textcolor{comment}{/*\ A\ class\ responsible\ for\ owning\ and\ consolidating\ binding\ keys}}
+\DoxyCodeLine{00841\ \textcolor{comment}{\ \ \ (both\ concrete\ and\ symbolic).}}
+\DoxyCodeLine{00842\ \textcolor{comment}{\ \ \ Key\ instances\ are\ immutable\ as\ far\ as\ clients\ are\ concerned,\ so\ they}}
+\DoxyCodeLine{00843\ \textcolor{comment}{\ \ \ are\ provided\ as\ "{}const"{}\ ptrs.\ \ */}}
+\DoxyCodeLine{00844\ }
+\DoxyCodeLine{00845\ \textcolor{keyword}{class\ }\doxymbox{\hyperlink{classana_1_1store__manager_aa6ba90466915233079463dea5188d88f}{store\_manager}}}
+\DoxyCodeLine{00846\ \{}
+\DoxyCodeLine{00847\ \textcolor{keyword}{public}:}
+\DoxyCodeLine{00848\ \ \ \doxymbox{\hyperlink{classana_1_1store__manager_aa6ba90466915233079463dea5188d88f}{store\_manager}}\ (\doxymbox{\hyperlink{classana_1_1region__model__manager}{region\_model\_manager}}\ *mgr)\ :\ \doxymbox{\hyperlink{classana_1_1store__manager_a448168cc40873de773c2adbe46fa8f55}{m\_mgr}}\ (mgr)\ \{\}}
+\DoxyCodeLine{00849\ }
+\DoxyCodeLine{00850\ \ \ \doxymbox{\hyperlink{classana_1_1logger}{logger}}\ *\doxymbox{\hyperlink{classana_1_1store__manager_a4df534baa1eea080cccba26080f7e803}{get\_logger}}\ ()\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00851\ }
+\DoxyCodeLine{00852\ \ \ \textcolor{comment}{/*\ binding\ consolidation.\ \ */}}
+\DoxyCodeLine{00853\ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classana_1_1concrete__binding}{concrete\_binding}}\ *}
+\DoxyCodeLine{00854\ \ \ \doxymbox{\hyperlink{classana_1_1store__manager_a1ebc1b88cc6acdd24b7fc0e624309510}{get\_concrete\_binding}}\ (\doxymbox{\hyperlink{namespaceana_a2f8d7e9c711f16b8223623821a662c02}{bit\_offset\_t}}\ start\_bit\_offset,}
+\DoxyCodeLine{00855\ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{namespaceana_a2f8d7e9c711f16b8223623821a662c02}{bit\_offset\_t}}\ size\_in\_bits);}
+\DoxyCodeLine{00856\ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classana_1_1concrete__binding}{concrete\_binding}}\ *}
+\DoxyCodeLine{00857\ \ \ \doxymbox{\hyperlink{classana_1_1store__manager_a1b8213d56c26ab7cc00cfa2d7976a43a}{get\_concrete\_binding}}\ (\textcolor{keyword}{const}\ \doxymbox{\hyperlink{structana_1_1bit__range}{bit\_range}}\ \&bits)}
+\DoxyCodeLine{00858\ \ \ \{}
+\DoxyCodeLine{00859\ \ \ \ \ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{classana_1_1store__manager_a1ebc1b88cc6acdd24b7fc0e624309510}{get\_concrete\_binding}}\ (bits.\doxymbox{\hyperlink{structana_1_1bit__range_aed0ce05ca8f92fce7aa34e5b73aecccd}{get\_start\_bit\_offset}}\ (),}
+\DoxyCodeLine{00860\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ bits.\doxymbox{\hyperlink{structana_1_1bit__range_a8631589770db0ab872ed99935a01f3fe}{m\_size\_in\_bits}});}
+\DoxyCodeLine{00861\ \ \ \}}
+\DoxyCodeLine{00862\ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classana_1_1concrete__binding}{concrete\_binding}}\ *}
+\DoxyCodeLine{00863\ \ \ \doxymbox{\hyperlink{classana_1_1store__manager_a3e5c23e13fe47e3f2bd9a4adcecbcaf9}{get\_concrete\_binding}}\ (\textcolor{keyword}{const}\ \doxymbox{\hyperlink{structana_1_1byte__range}{byte\_range}}\ \&bytes)}
+\DoxyCodeLine{00864\ \ \ \{}
+\DoxyCodeLine{00865\ \ \ \ \ \doxymbox{\hyperlink{structana_1_1bit__range}{bit\_range}}\ bits\ =\ bytes.\doxymbox{\hyperlink{structana_1_1byte__range_af524ed7fbadeaf588dfcb987425f1e61}{as\_bit\_range}}\ ();}
+\DoxyCodeLine{00866\ \ \ \ \ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{classana_1_1store__manager_a1ebc1b88cc6acdd24b7fc0e624309510}{get\_concrete\_binding}}\ (bits);}
+\DoxyCodeLine{00867\ \ \ \}}
+\DoxyCodeLine{00868\ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classana_1_1symbolic__binding}{symbolic\_binding}}\ *}
+\DoxyCodeLine{00869\ \ \ \doxymbox{\hyperlink{classana_1_1store__manager_ae50eb321faf412263ca070473f04ed41}{get\_symbolic\_binding}}\ (\textcolor{keyword}{const}\ \doxymbox{\hyperlink{classana_1_1region}{region}}\ *\doxymbox{\hyperlink{classana_1_1region}{region}});}
+\DoxyCodeLine{00870\ }
+\DoxyCodeLine{00871\ \ \ \doxymbox{\hyperlink{classana_1_1region__model__manager}{region\_model\_manager}}\ *\doxymbox{\hyperlink{classana_1_1store__manager_a7f7e24a14197a32403691a7643f38716}{get\_svalue\_manager}}\ ()\textcolor{keyword}{\ const}}
+\DoxyCodeLine{00872\ \textcolor{keyword}{\ \ }\{}
+\DoxyCodeLine{00873\ \ \ \ \ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{classana_1_1store__manager_a448168cc40873de773c2adbe46fa8f55}{m\_mgr}};}
+\DoxyCodeLine{00874\ \ \ \}}
+\DoxyCodeLine{00875\ }
+\DoxyCodeLine{00876\ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classana_1_1store__manager_ad89e38b794e061ba910f0877761b5aed}{log\_stats}}\ (\doxymbox{\hyperlink{classana_1_1logger}{logger}}\ *\doxymbox{\hyperlink{classana_1_1logger}{logger}},\ \textcolor{keywordtype}{bool}\ show\_objs)\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00877\ }
+\DoxyCodeLine{00878\ \textcolor{keyword}{private}:}
+\DoxyCodeLine{00879\ \ \ \doxymbox{\hyperlink{classana_1_1region__model__manager}{region\_model\_manager}}\ *\doxymbox{\hyperlink{classana_1_1store__manager_a448168cc40873de773c2adbe46fa8f55}{m\_mgr}};}
+\DoxyCodeLine{00880\ \ \ \doxymbox{\hyperlink{classconsolidation__map}{consolidation\_map<concrete\_binding>}}\ \doxymbox{\hyperlink{classana_1_1store__manager_aab0cf8cfadd92924bed04577ca40483e}{m\_concrete\_binding\_key\_mgr}};}
+\DoxyCodeLine{00881\ \ \ \doxymbox{\hyperlink{classconsolidation__map}{consolidation\_map<symbolic\_binding>}}\ \doxymbox{\hyperlink{classana_1_1store__manager_a06e4d446d7f30190d4c81eb280c5ce52}{m\_symbolic\_binding\_key\_mgr}};}
+\DoxyCodeLine{00882\ \};}
+\DoxyCodeLine{00883\ }
+\DoxyCodeLine{00884\ \}\ \textcolor{comment}{//\ namespace\ ana}}
+\DoxyCodeLine{00885\ }
+\DoxyCodeLine{00886\ \textcolor{preprocessor}{\#endif\ }\textcolor{comment}{/*\ GCC\_ANALYZER\_STORE\_H\ */}\textcolor{preprocessor}{}}
+
+\end{DoxyCode}

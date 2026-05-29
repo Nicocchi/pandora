@@ -1,0 +1,28 @@
+var avx512vnnivlintrin_8h =
+[
+    [ "__DISABLE_AVX512VNNIVL__", "avx512vnnivlintrin_8h.html#a90db625cae3c0608307dba06346fc21d", null ],
+    [ "_mm256_dpbusd_epi32", "avx512vnnivlintrin_8h.html#a37a9814ae544a037e382936956e6b041", null ],
+    [ "_mm256_dpbusds_epi32", "avx512vnnivlintrin_8h.html#aa6bd09acb7c842044c3d858f5a39a857", null ],
+    [ "_mm256_dpwssd_epi32", "avx512vnnivlintrin_8h.html#a5964a95b1ff0b97bc9e0718e6c91d05f", null ],
+    [ "_mm256_dpwssds_epi32", "avx512vnnivlintrin_8h.html#a3c4ca03fa1cc3c3f05c9ff9ed469b520", null ],
+    [ "_mm_dpbusd_epi32", "avx512vnnivlintrin_8h.html#afe848754c6e9cc8edb743ea8b8f0e7c9", null ],
+    [ "_mm_dpbusds_epi32", "avx512vnnivlintrin_8h.html#a9b46aa6fc919844a174d45fc78bf7400", null ],
+    [ "_mm_dpwssd_epi32", "avx512vnnivlintrin_8h.html#a55c454179d797eb25ef0134b404e6f30", null ],
+    [ "_mm_dpwssds_epi32", "avx512vnnivlintrin_8h.html#a2d23e1e8809f3feb3e934a7b9c793ced", null ],
+    [ "_mm256_mask_dpbusd_epi32", "avx512vnnivlintrin_8h.html#af584cd29332e57f11edbbc4b63df6361", null ],
+    [ "_mm256_mask_dpbusds_epi32", "avx512vnnivlintrin_8h.html#ad54e8c7e0a8ea4e2e604e30750471f25", null ],
+    [ "_mm256_mask_dpwssd_epi32", "avx512vnnivlintrin_8h.html#a49d18634bb3e79ba1b66167c471b69a7", null ],
+    [ "_mm256_mask_dpwssds_epi32", "avx512vnnivlintrin_8h.html#aa738691265b10bf2c26ce1eb9e4bf7e4", null ],
+    [ "_mm256_maskz_dpbusd_epi32", "avx512vnnivlintrin_8h.html#ac80226cc0d7baae07be86db477982f85", null ],
+    [ "_mm256_maskz_dpbusds_epi32", "avx512vnnivlintrin_8h.html#a643a07c95177bff88274122f348a71df", null ],
+    [ "_mm256_maskz_dpwssd_epi32", "avx512vnnivlintrin_8h.html#aaf7bdd312d9ada8c413f1123f5baa3a4", null ],
+    [ "_mm256_maskz_dpwssds_epi32", "avx512vnnivlintrin_8h.html#a2b05d23e0d522b62d3bd0ad029ff42ca", null ],
+    [ "_mm_mask_dpbusd_epi32", "avx512vnnivlintrin_8h.html#a812ce7122080c9f09efb848969e14d4a", null ],
+    [ "_mm_mask_dpbusds_epi32", "avx512vnnivlintrin_8h.html#a46f6b7559bbf7917637596927a6f44e0", null ],
+    [ "_mm_mask_dpwssd_epi32", "avx512vnnivlintrin_8h.html#a8a296fa2be7df288383306df7c82914f", null ],
+    [ "_mm_mask_dpwssds_epi32", "avx512vnnivlintrin_8h.html#a8da2c6a9b97c5a4e79d21cff90c64f77", null ],
+    [ "_mm_maskz_dpbusd_epi32", "avx512vnnivlintrin_8h.html#ab5a34f13992bb1c4946eb9cc00395412", null ],
+    [ "_mm_maskz_dpbusds_epi32", "avx512vnnivlintrin_8h.html#a084c33833fa7bb4d848766d9df9ce302", null ],
+    [ "_mm_maskz_dpwssd_epi32", "avx512vnnivlintrin_8h.html#a4b87f1a795d3d5680caf7f9841cbd00d", null ],
+    [ "_mm_maskz_dpwssds_epi32", "avx512vnnivlintrin_8h.html#afb9e9fca73db8fc7a8816be3b3ef507e", null ]
+];

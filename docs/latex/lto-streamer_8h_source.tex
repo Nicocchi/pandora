@@ -1,0 +1,1256 @@
+\doxysection{lto-\/streamer.h}
+\hypertarget{lto-streamer_8h_source}{}\label{lto-streamer_8h_source}\index{toolchain/x86\_64-\/elf/lib/gcc/x86\_64-\/elf/14.2.0/plugin/include/lto-\/streamer.h@{toolchain/x86\_64-\/elf/lib/gcc/x86\_64-\/elf/14.2.0/plugin/include/lto-\/streamer.h}}
+\doxymbox{\hyperlink{lto-streamer_8h}{Go to the documentation of this file.}}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001\ \textcolor{comment}{/*\ Data\ structures\ and\ declarations\ used\ for\ reading\ and\ writing}}
+\DoxyCodeLine{00002\ \textcolor{comment}{\ \ \ GIMPLE\ to\ a\ file\ stream.}}
+\DoxyCodeLine{00003\ \textcolor{comment}{}}
+\DoxyCodeLine{00004\ \textcolor{comment}{\ \ \ Copyright\ (C)\ 2009-\/2024\ Free\ Software\ Foundation,\ Inc.}}
+\DoxyCodeLine{00005\ \textcolor{comment}{\ \ \ Contributed\ by\ Doug\ Kwan\ <dougkwan@google.com>}}
+\DoxyCodeLine{00006\ \textcolor{comment}{}}
+\DoxyCodeLine{00007\ \textcolor{comment}{This\ file\ is\ part\ of\ GCC.}}
+\DoxyCodeLine{00008\ \textcolor{comment}{}}
+\DoxyCodeLine{00009\ \textcolor{comment}{GCC\ is\ free\ software;\ you\ can\ redistribute\ it\ and/or\ modify\ it\ under}}
+\DoxyCodeLine{00010\ \textcolor{comment}{the\ terms\ of\ the\ GNU\ General\ Public\ License\ as\ published\ by\ the\ Free}}
+\DoxyCodeLine{00011\ \textcolor{comment}{Software\ Foundation;\ either\ version\ 3,\ or\ (at\ your\ option)\ any\ later}}
+\DoxyCodeLine{00012\ \textcolor{comment}{version.}}
+\DoxyCodeLine{00013\ \textcolor{comment}{}}
+\DoxyCodeLine{00014\ \textcolor{comment}{GCC\ is\ distributed\ in\ the\ hope\ that\ it\ will\ be\ useful,\ but\ WITHOUT\ ANY}}
+\DoxyCodeLine{00015\ \textcolor{comment}{WARRANTY;\ without\ even\ the\ implied\ warranty\ of\ MERCHANTABILITY\ or}}
+\DoxyCodeLine{00016\ \textcolor{comment}{FITNESS\ FOR\ A\ PARTICULAR\ PURPOSE.\ \ See\ the\ GNU\ General\ Public\ License}}
+\DoxyCodeLine{00017\ \textcolor{comment}{for\ more\ details.}}
+\DoxyCodeLine{00018\ \textcolor{comment}{}}
+\DoxyCodeLine{00019\ \textcolor{comment}{You\ should\ have\ received\ a\ copy\ of\ the\ GNU\ General\ Public\ License}}
+\DoxyCodeLine{00020\ \textcolor{comment}{along\ with\ GCC;\ see\ the\ file\ COPYING3.\ \ If\ not\ see}}
+\DoxyCodeLine{00021\ \textcolor{comment}{<http://www.gnu.org/licenses/>.\ \ */}}
+\DoxyCodeLine{00022\ }
+\DoxyCodeLine{00023\ \textcolor{preprocessor}{\#ifndef\ GCC\_LTO\_STREAMER\_H}}
+\DoxyCodeLine{00024\ \textcolor{preprocessor}{\#define\ GCC\_LTO\_STREAMER\_H}}
+\DoxyCodeLine{00025\ }
+\DoxyCodeLine{00026\ \textcolor{preprocessor}{\#include\ "{}\doxymbox{\hyperlink{plugin-api_8h}{plugin-\/api.h}}"{}}}
+\DoxyCodeLine{00027\ \textcolor{preprocessor}{\#include\ "{}\doxymbox{\hyperlink{gcov-io_8h}{gcov-\/io.h}}"{}}}
+\DoxyCodeLine{00028\ \textcolor{preprocessor}{\#include\ "{}\doxymbox{\hyperlink{diagnostic_8h}{diagnostic.h}}"{}}}
+\DoxyCodeLine{00029\ \textcolor{preprocessor}{\#include\ "{}\doxymbox{\hyperlink{version_8h}{version.h}}"{}}}
+\DoxyCodeLine{00030\ }
+\DoxyCodeLine{00031\ \textcolor{comment}{/*\ The\ encoding\ for\ a\ function\ consists\ of\ the\ following\ sections:}}
+\DoxyCodeLine{00032\ \textcolor{comment}{}}
+\DoxyCodeLine{00033\ \textcolor{comment}{\ \ \ 1)\ \ \ \ The\ header.}}
+\DoxyCodeLine{00034\ \textcolor{comment}{\ \ \ 2)\ \ \ \ FIELD\_DECLS.}}
+\DoxyCodeLine{00035\ \textcolor{comment}{\ \ \ 3)\ \ \ \ FUNCTION\_DECLS.}}
+\DoxyCodeLine{00036\ \textcolor{comment}{\ \ \ 4)\ \ \ \ global\ VAR\_DECLS.}}
+\DoxyCodeLine{00037\ \textcolor{comment}{\ \ \ 5)\ \ \ \ type\_decls}}
+\DoxyCodeLine{00038\ \textcolor{comment}{\ \ \ 6)\ \ \ \ types.}}
+\DoxyCodeLine{00039\ \textcolor{comment}{\ \ \ 7)\ \ \ \ Names\ for\ the\ labels\ that\ have\ names}}
+\DoxyCodeLine{00040\ \textcolor{comment}{\ \ \ 8)\ \ \ \ The\ SSA\ names.}}
+\DoxyCodeLine{00041\ \textcolor{comment}{\ \ \ 9)\ \ \ \ The\ control\ flow\ graph.}}
+\DoxyCodeLine{00042\ \textcolor{comment}{\ \ \ 10-\/11)Gimple\ for\ local\ decls.}}
+\DoxyCodeLine{00043\ \textcolor{comment}{\ \ \ 12)\ \ \ Gimple\ for\ the\ function.}}
+\DoxyCodeLine{00044\ \textcolor{comment}{\ \ \ 13)\ \ \ Strings.}}
+\DoxyCodeLine{00045\ \textcolor{comment}{}}
+\DoxyCodeLine{00046\ \textcolor{comment}{\ \ \ 1)\ THE\ HEADER.}}
+\DoxyCodeLine{00047\ \textcolor{comment}{\ \ \ 2-\/6)\ THE\ GLOBAL\ DECLS\ AND\ TYPES.}}
+\DoxyCodeLine{00048\ \textcolor{comment}{}}
+\DoxyCodeLine{00049\ \textcolor{comment}{\ \ \ \ \ \ The\ global\ decls\ and\ types\ are\ encoded\ in\ the\ same\ way.\ \ For\ each}}
+\DoxyCodeLine{00050\ \textcolor{comment}{\ \ \ \ \ \ entry,\ there\ is\ word\ with\ the\ offset\ within\ the\ section\ to\ the}}
+\DoxyCodeLine{00051\ \textcolor{comment}{\ \ \ \ \ \ entry.}}
+\DoxyCodeLine{00052\ \textcolor{comment}{}}
+\DoxyCodeLine{00053\ \textcolor{comment}{\ \ \ 7)\ THE\ LABEL\ NAMES.}}
+\DoxyCodeLine{00054\ \textcolor{comment}{}}
+\DoxyCodeLine{00055\ \textcolor{comment}{\ \ \ \ \ \ Since\ most\ labels\ do\ not\ have\ names,\ this\ section\ my\ be\ of\ zero}}
+\DoxyCodeLine{00056\ \textcolor{comment}{\ \ \ \ \ \ length.\ \ It\ consists\ of\ an\ array\ of\ string\ table\ references,\ one}}
+\DoxyCodeLine{00057\ \textcolor{comment}{\ \ \ \ \ \ per\ label.\ \ In\ the\ lto\ code,\ the\ labels\ are\ given\ either}}
+\DoxyCodeLine{00058\ \textcolor{comment}{\ \ \ \ \ \ positive\ or\ negative\ indexes.\ \ the\ positive\ ones\ have\ names\ and}}
+\DoxyCodeLine{00059\ \textcolor{comment}{\ \ \ \ \ \ the\ negative\ ones\ do\ not.\ \ The\ positive\ index\ can\ be\ used\ to}}
+\DoxyCodeLine{00060\ \textcolor{comment}{\ \ \ \ \ \ find\ the\ name\ in\ this\ array.}}
+\DoxyCodeLine{00061\ \textcolor{comment}{}}
+\DoxyCodeLine{00062\ \textcolor{comment}{\ \ \ 9)\ THE\ CFG.}}
+\DoxyCodeLine{00063\ \textcolor{comment}{}}
+\DoxyCodeLine{00064\ \textcolor{comment}{\ \ \ 10)\ Index\ into\ the\ local\ decls.\ \ Since\ local\ decls\ can\ have\ local}}
+\DoxyCodeLine{00065\ \textcolor{comment}{\ \ \ \ \ \ decls\ inside\ them,\ they\ must\ be\ read\ in\ randomly\ in\ order\ to}}
+\DoxyCodeLine{00066\ \textcolor{comment}{\ \ \ \ \ \ properly\ restore\ them.}}
+\DoxyCodeLine{00067\ \textcolor{comment}{}}
+\DoxyCodeLine{00068\ \textcolor{comment}{\ \ \ 11-\/12)\ GIMPLE\ FOR\ THE\ LOCAL\ DECLS\ AND\ THE\ FUNCTION\ BODY.}}
+\DoxyCodeLine{00069\ \textcolor{comment}{}}
+\DoxyCodeLine{00070\ \textcolor{comment}{\ \ \ \ \ The\ gimple\ consists\ of\ a\ set\ of\ records.}}
+\DoxyCodeLine{00071\ \textcolor{comment}{}}
+\DoxyCodeLine{00072\ \textcolor{comment}{\ \ \ \ \ THE\ FUNCTION}}
+\DoxyCodeLine{00073\ \textcolor{comment}{}}
+\DoxyCodeLine{00074\ \textcolor{comment}{\ \ \ \ \ At\ the\ top\ level\ of\ (8)\ is\ the\ function.\ It\ consists\ of\ five}}
+\DoxyCodeLine{00075\ \textcolor{comment}{\ \ \ \ \ pieces:}}
+\DoxyCodeLine{00076\ \textcolor{comment}{}}
+\DoxyCodeLine{00077\ \textcolor{comment}{\ \ \ \ \ LTO\_function\ \ \ \ \ -\/\ The\ tag.}}
+\DoxyCodeLine{00078\ \textcolor{comment}{\ \ \ \ \ eh\ tree\ \ \ \ \ \ \ \ \ \ -\/\ This\ is\ all\ of\ the\ exception\ handling\ regions}}
+\DoxyCodeLine{00079\ \textcolor{comment}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ put\ out\ in\ a\ post\ order\ traversial\ of\ the}}
+\DoxyCodeLine{00080\ \textcolor{comment}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ tree.\ \ Siblings\ are\ output\ as\ lists\ terminated}}
+\DoxyCodeLine{00081\ \textcolor{comment}{\ \ \ \ \ \ \ \ \ \ \ \ by\ a\ 0.\ \ The\ set\ of\ fields\ matches\ the\ fields}}
+\DoxyCodeLine{00082\ \textcolor{comment}{\ \ \ \ \ \ \ \ \ \ \ \ defined\ in\ except.cc.}}
+\DoxyCodeLine{00083\ \textcolor{comment}{}}
+\DoxyCodeLine{00084\ \textcolor{comment}{\ \ \ \ \ last\_basic\_block\ -\/\ in\ uleb128\ form.}}
+\DoxyCodeLine{00085\ \textcolor{comment}{}}
+\DoxyCodeLine{00086\ \textcolor{comment}{\ \ \ \ \ basic\ blocks\ \ \ \ \ -\/\ This\ is\ the\ set\ of\ basic\ blocks.}}
+\DoxyCodeLine{00087\ \textcolor{comment}{}}
+\DoxyCodeLine{00088\ \textcolor{comment}{\ \ \ \ \ zero\ \ \ \ \ \ \ \ \ \ \ \ \ -\/\ The\ termination\ of\ the\ basic\ blocks.}}
+\DoxyCodeLine{00089\ \textcolor{comment}{}}
+\DoxyCodeLine{00090\ \textcolor{comment}{\ \ \ \ \ BASIC\ BLOCKS}}
+\DoxyCodeLine{00091\ \textcolor{comment}{}}
+\DoxyCodeLine{00092\ \textcolor{comment}{\ \ \ \ \ There\ are\ two\ forms\ of\ basic\ blocks\ depending\ on\ if\ they\ are}}
+\DoxyCodeLine{00093\ \textcolor{comment}{\ \ \ \ \ empty\ or\ not.}}
+\DoxyCodeLine{00094\ \textcolor{comment}{}}
+\DoxyCodeLine{00095\ \textcolor{comment}{\ \ \ \ \ The\ basic\ block\ consists\ of:}}
+\DoxyCodeLine{00096\ \textcolor{comment}{}}
+\DoxyCodeLine{00097\ \textcolor{comment}{\ \ \ \ \ LTO\_bb1\ or\ LTO\_bb0\ -\/\ The\ tag.}}
+\DoxyCodeLine{00098\ \textcolor{comment}{}}
+\DoxyCodeLine{00099\ \textcolor{comment}{\ \ \ \ \ bb-\/>index\ \ \ \ \ \ \ \ \ \ -\/\ the\ index\ in\ uleb128\ form.}}
+\DoxyCodeLine{00100\ \textcolor{comment}{}}
+\DoxyCodeLine{00101\ \textcolor{comment}{\ \ \ \ \ \#succs\ \ \ \ \ \ \ \ \ \ \ \ \ -\/\ The\ number\ of\ successors\ un\ uleb128\ form.}}
+\DoxyCodeLine{00102\ \textcolor{comment}{}}
+\DoxyCodeLine{00103\ \textcolor{comment}{\ \ \ \ \ the\ successors\ \ \ \ \ -\/\ For\ each\ edge,\ a\ pair.\ \ The\ first\ of\ the}}
+\DoxyCodeLine{00104\ \textcolor{comment}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ pair\ is\ the\ index\ of\ the\ successor\ in}}
+\DoxyCodeLine{00105\ \textcolor{comment}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ uleb128\ form\ and\ the\ second\ are\ the\ flags\ in}}
+\DoxyCodeLine{00106\ \textcolor{comment}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ uleb128\ form.}}
+\DoxyCodeLine{00107\ \textcolor{comment}{}}
+\DoxyCodeLine{00108\ \textcolor{comment}{\ \ \ \ \ the\ statements\ \ \ \ \ -\/\ A\ gimple\ tree,\ as\ described\ above.}}
+\DoxyCodeLine{00109\ \textcolor{comment}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ These\ are\ only\ present\ for\ LTO\_BB1.}}
+\DoxyCodeLine{00110\ \textcolor{comment}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ Following\ each\ statement\ is\ an\ optional}}
+\DoxyCodeLine{00111\ \textcolor{comment}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ exception\ handling\ record\ LTO\_eh\_region}}
+\DoxyCodeLine{00112\ \textcolor{comment}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ which\ contains\ the\ region\ number\ (for}}
+\DoxyCodeLine{00113\ \textcolor{comment}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ regions\ >=\ 0).}}
+\DoxyCodeLine{00114\ \textcolor{comment}{}}
+\DoxyCodeLine{00115\ \textcolor{comment}{\ \ \ \ \ zero\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ -\/\ This\ is\ only\ present\ for\ LTO\_BB1\ and\ is\ used}}
+\DoxyCodeLine{00116\ \textcolor{comment}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ to\ terminate\ the\ statements\ and\ exception}}
+\DoxyCodeLine{00117\ \textcolor{comment}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ regions\ within\ this\ block.}}
+\DoxyCodeLine{00118\ \textcolor{comment}{}}
+\DoxyCodeLine{00119\ \textcolor{comment}{\ \ \ 12)\ STRINGS}}
+\DoxyCodeLine{00120\ \textcolor{comment}{}}
+\DoxyCodeLine{00121\ \textcolor{comment}{\ \ \ \ \ String\ are\ represented\ in\ the\ table\ as\ pairs,\ a\ length\ in\ ULEB128}}
+\DoxyCodeLine{00122\ \textcolor{comment}{\ \ \ \ \ form\ followed\ by\ the\ data\ for\ the\ string.\ \ */}}
+\DoxyCodeLine{00123\ }
+\DoxyCodeLine{00124\ \textcolor{preprocessor}{\#define\ LTO\_major\_version\ GCC\_major\_version}}
+\DoxyCodeLine{00125\ \textcolor{preprocessor}{\#define\ LTO\_minor\_version\ 0}}
+\DoxyCodeLine{00126\ }
+\DoxyCodeLine{00127\ \textcolor{keyword}{typedef}\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{char}\ \ \ \doxymbox{\hyperlink{lto-streamer_8h_aedd80705c04bd93b4d3f9102b1b1a4b1}{lto\_decl\_flags\_t}};}
+\DoxyCodeLine{00128\ }
+\DoxyCodeLine{00129\ \textcolor{comment}{/*\ Stream\ additional\ data\ to\ LTO\ object\ files\ to\ make\ it\ easier\ to\ debug}}
+\DoxyCodeLine{00130\ \textcolor{comment}{\ \ \ streaming\ code.\ \ This\ changes\ object\ files.\ \ */}}
+\DoxyCodeLine{00131\ \textcolor{keyword}{static}\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{lto-streamer_8h_a5b9c112e0309d3c034f9ad6e870b99f6}{streamer\_debugging}}\ =\ \textcolor{keyword}{false};}
+\DoxyCodeLine{00132\ }
+\DoxyCodeLine{00133\ \textcolor{comment}{/*\ Tags\ representing\ the\ various\ IL\ objects\ written\ to\ the\ bytecode\ file}}
+\DoxyCodeLine{00134\ \textcolor{comment}{\ \ \ (GIMPLE\ statements,\ basic\ blocks,\ EH\ regions,\ tree\ nodes,\ etc).}}
+\DoxyCodeLine{00135\ \textcolor{comment}{}}
+\DoxyCodeLine{00136\ \textcolor{comment}{\ \ \ NOTE,\ when\ adding\ new\ LTO\ tags,\ also\ update\ lto\_tag\_name.\ \ */}}
+\DoxyCodeLine{00137\ \textcolor{keyword}{enum}\ \doxymbox{\hyperlink{lto-streamer_8h_a4688b4d26de18a3c5e5ac2d4ebc14360}{LTO\_tags}}}
+\DoxyCodeLine{00138\ \{}
+\DoxyCodeLine{00139\ \ \ \doxymbox{\hyperlink{lto-streamer_8h_a4688b4d26de18a3c5e5ac2d4ebc14360a53fced8747c925242dd9ab27316c5b39}{LTO\_null}}\ =\ 0,}
+\DoxyCodeLine{00140\ }
+\DoxyCodeLine{00141\ \ \ \textcolor{comment}{/*\ Reference\ to\ previously-\/streamed\ node.\ \ */}}
+\DoxyCodeLine{00142\ \ \ \doxymbox{\hyperlink{lto-streamer_8h_a4688b4d26de18a3c5e5ac2d4ebc14360a52e3af2a457fb66d7ac6eaf821da1978}{LTO\_tree\_pickle\_reference}},}
+\DoxyCodeLine{00143\ }
+\DoxyCodeLine{00144\ \ \ \textcolor{comment}{/*\ References\ to\ indexable\ tree\ nodes.\ \ These\ objects\ are\ stored\ in}}
+\DoxyCodeLine{00145\ \textcolor{comment}{\ \ \ \ \ tables\ that\ are\ written\ separately\ from\ the\ function\ bodies}}
+\DoxyCodeLine{00146\ \textcolor{comment}{\ \ \ \ \ and\ variable\ constructors\ that\ reference\ them.\ \ This\ way\ they\ can\ be}}
+\DoxyCodeLine{00147\ \textcolor{comment}{\ \ \ \ \ instantiated\ even\ when\ the\ referencing\ functions\ aren't\ (e.g.,\ during\ WPA)}}
+\DoxyCodeLine{00148\ \textcolor{comment}{\ \ \ \ \ and\ it\ also\ allows\ functions\ to\ be\ copied\ from\ one\ file\ to\ another\ without}}
+\DoxyCodeLine{00149\ \textcolor{comment}{\ \ \ \ \ having\ to\ unpickle\ the\ body\ first\ (the\ references\ are\ location}}
+\DoxyCodeLine{00150\ \textcolor{comment}{\ \ \ \ \ independent).\ \ */}}
+\DoxyCodeLine{00151\ \ \ \doxymbox{\hyperlink{lto-streamer_8h_a4688b4d26de18a3c5e5ac2d4ebc14360a458a31785d651d93cd54983ee35b072e}{LTO\_global\_stream\_ref}},}
+\DoxyCodeLine{00152\ }
+\DoxyCodeLine{00153\ \ \ \doxymbox{\hyperlink{lto-streamer_8h_a4688b4d26de18a3c5e5ac2d4ebc14360a7c73f72d95ea8cace53527424755a82d}{LTO\_ssa\_name\_ref}},}
+\DoxyCodeLine{00154\ }
+\DoxyCodeLine{00155\ \ \ \textcolor{comment}{/*\ Special\ for\ global\ streamer.\ \ A\ blob\ of\ unnamed\ tree\ nodes.\ \ */}}
+\DoxyCodeLine{00156\ \ \ \doxymbox{\hyperlink{lto-streamer_8h_a4688b4d26de18a3c5e5ac2d4ebc14360a1468a02bc21564d315d3a555123b4a94}{LTO\_tree\_scc}},}
+\DoxyCodeLine{00157\ }
+\DoxyCodeLine{00158\ \ \ \textcolor{comment}{/*\ Sequence\ of\ trees.\ \ */}}
+\DoxyCodeLine{00159\ \ \ \doxymbox{\hyperlink{lto-streamer_8h_a4688b4d26de18a3c5e5ac2d4ebc14360a96bdf7546f768379da7e40da46bbf1bf}{LTO\_trees}},}
+\DoxyCodeLine{00160\ }
+\DoxyCodeLine{00161\ \ \ \textcolor{comment}{/*\ Shared\ INTEGER\_CST\ node.\ \ */}}
+\DoxyCodeLine{00162\ \ \ \doxymbox{\hyperlink{lto-streamer_8h_a4688b4d26de18a3c5e5ac2d4ebc14360aed13cefea0731f6ca0b834af370fc078}{LTO\_integer\_cst}},}
+\DoxyCodeLine{00163\ }
+\DoxyCodeLine{00164\ \ \ \textcolor{comment}{/*\ Tags\ of\ trees\ are\ encoded\ as}}
+\DoxyCodeLine{00165\ \textcolor{comment}{\ \ \ \ \ LTO\_first\_tree\_tag\ +\ TREE\_CODE.\ \ */}}
+\DoxyCodeLine{00166\ \ \ \doxymbox{\hyperlink{lto-streamer_8h_a4688b4d26de18a3c5e5ac2d4ebc14360a9a234be5d2708c6a129365c7537d628b}{LTO\_first\_tree\_tag}},}
+\DoxyCodeLine{00167\ \ \ \textcolor{comment}{/*\ Tags\ of\ gimple\ typles\ are\ encoded\ as}}
+\DoxyCodeLine{00168\ \textcolor{comment}{\ \ \ \ \ LTO\_first\_gimple\_tag\ +\ gimple\_code.\ \ */}}
+\DoxyCodeLine{00169\ \ \ \doxymbox{\hyperlink{lto-streamer_8h_a4688b4d26de18a3c5e5ac2d4ebc14360acbf0cd55bfcde31169e0db06d9f14316}{LTO\_first\_gimple\_tag}}\ =\ \doxymbox{\hyperlink{lto-streamer_8h_a4688b4d26de18a3c5e5ac2d4ebc14360a9a234be5d2708c6a129365c7537d628b}{LTO\_first\_tree\_tag}}\ +\ MAX\_TREE\_CODES,}
+\DoxyCodeLine{00170\ }
+\DoxyCodeLine{00171\ \ \ \textcolor{comment}{/*\ Entry\ and\ exit\ basic\ blocks.\ \ */}}
+\DoxyCodeLine{00172\ \ \ \doxymbox{\hyperlink{lto-streamer_8h_a4688b4d26de18a3c5e5ac2d4ebc14360a5f7375b6e99fec4eac2fc042f8dbca1c}{LTO\_bb0}}\ =\ \doxymbox{\hyperlink{lto-streamer_8h_a4688b4d26de18a3c5e5ac2d4ebc14360acbf0cd55bfcde31169e0db06d9f14316}{LTO\_first\_gimple\_tag}}\ +\ LAST\_AND\_UNUSED\_GIMPLE\_CODE,}
+\DoxyCodeLine{00173\ \ \ \doxymbox{\hyperlink{lto-streamer_8h_a4688b4d26de18a3c5e5ac2d4ebc14360a1d39ce5024c0f4d8428d3406fdbfbaf3}{LTO\_bb1}},}
+\DoxyCodeLine{00174\ }
+\DoxyCodeLine{00175\ \ \ \textcolor{comment}{/*\ EH\ region\ holding\ the\ previous\ statement.\ \ */}}
+\DoxyCodeLine{00176\ \ \ \doxymbox{\hyperlink{lto-streamer_8h_a4688b4d26de18a3c5e5ac2d4ebc14360a77194c8a07b834670810406c2f157421}{LTO\_eh\_region}},}
+\DoxyCodeLine{00177\ }
+\DoxyCodeLine{00178\ \ \ \textcolor{comment}{/*\ Function\ body.\ \ */}}
+\DoxyCodeLine{00179\ \ \ \doxymbox{\hyperlink{lto-streamer_8h_a4688b4d26de18a3c5e5ac2d4ebc14360acb1e3b494d9dc80e6585888c153e99b7}{LTO\_function}},}
+\DoxyCodeLine{00180\ }
+\DoxyCodeLine{00181\ \ \ \textcolor{comment}{/*\ EH\ table.\ \ */}}
+\DoxyCodeLine{00182\ \ \ \doxymbox{\hyperlink{lto-streamer_8h_a4688b4d26de18a3c5e5ac2d4ebc14360af34ac89dc061547a0a743afa75d8fa77}{LTO\_eh\_table}},}
+\DoxyCodeLine{00183\ }
+\DoxyCodeLine{00184\ \ \ \textcolor{comment}{/*\ EH\ region\ types.\ \ These\ mirror\ enum\ eh\_region\_type.\ \ */}}
+\DoxyCodeLine{00185\ \ \ \doxymbox{\hyperlink{lto-streamer_8h_a4688b4d26de18a3c5e5ac2d4ebc14360afe9ad672e44ab8f4544ae42934802cd3}{LTO\_ert\_cleanup}},}
+\DoxyCodeLine{00186\ \ \ \doxymbox{\hyperlink{lto-streamer_8h_a4688b4d26de18a3c5e5ac2d4ebc14360a1b2058d8d5fdad4e6c88342af40d5879}{LTO\_ert\_try}},}
+\DoxyCodeLine{00187\ \ \ \doxymbox{\hyperlink{lto-streamer_8h_a4688b4d26de18a3c5e5ac2d4ebc14360a0a653abcb050fa67cae5b3b49ee77556}{LTO\_ert\_allowed\_exceptions}},}
+\DoxyCodeLine{00188\ \ \ \doxymbox{\hyperlink{lto-streamer_8h_a4688b4d26de18a3c5e5ac2d4ebc14360a4a2ee66bc8bf5fd9332760e9473ab7de}{LTO\_ert\_must\_not\_throw}},}
+\DoxyCodeLine{00189\ }
+\DoxyCodeLine{00190\ \ \ \textcolor{comment}{/*\ EH\ landing\ pad.\ \ */}}
+\DoxyCodeLine{00191\ \ \ \doxymbox{\hyperlink{lto-streamer_8h_a4688b4d26de18a3c5e5ac2d4ebc14360ad24f3ebf467e45ae9a968c0ab6d0cb64}{LTO\_eh\_landing\_pad}},}
+\DoxyCodeLine{00192\ }
+\DoxyCodeLine{00193\ \ \ \textcolor{comment}{/*\ EH\ try/catch\ node.\ \ */}}
+\DoxyCodeLine{00194\ \ \ \doxymbox{\hyperlink{lto-streamer_8h_a4688b4d26de18a3c5e5ac2d4ebc14360a2933cd9aafe2e2c05e41a3a0d5668021}{LTO\_eh\_catch}},}
+\DoxyCodeLine{00195\ }
+\DoxyCodeLine{00196\ \ \ \textcolor{comment}{/*\ This\ tag\ must\ always\ be\ last.\ \ */}}
+\DoxyCodeLine{00197\ \ \ \doxymbox{\hyperlink{lto-streamer_8h_a4688b4d26de18a3c5e5ac2d4ebc14360a2fae7dc418d2f08a3fa31d86ce3e390e}{LTO\_NUM\_TAGS}}}
+\DoxyCodeLine{00198\ \};}
+\DoxyCodeLine{00199\ }
+\DoxyCodeLine{00200\ }
+\DoxyCodeLine{00201\ \textcolor{comment}{/*\ Set\ of\ section\ types\ that\ are\ in\ an\ LTO\ file.\ \ This\ list\ will\ grow}}
+\DoxyCodeLine{00202\ \textcolor{comment}{\ \ \ as\ the\ number\ of\ IPA\ passes\ grows\ since\ each\ IPA\ pass\ will\ need\ its}}
+\DoxyCodeLine{00203\ \textcolor{comment}{\ \ \ own\ section\ type\ to\ store\ its\ summary\ information.}}
+\DoxyCodeLine{00204\ \textcolor{comment}{}}
+\DoxyCodeLine{00205\ \textcolor{comment}{\ \ \ When\ adding\ a\ new\ section\ type,\ you\ must\ also\ extend\ the}}
+\DoxyCodeLine{00206\ \textcolor{comment}{\ \ \ LTO\_SECTION\_NAME\ array\ in\ lto-\/section-\/in.cc.\ \ */}}
+\DoxyCodeLine{00207\ \textcolor{keyword}{enum}\ \doxymbox{\hyperlink{lto-streamer_8h_a6e0587d4b9c06c0984264b0b57a46826}{lto\_section\_type}}}
+\DoxyCodeLine{00208\ \{}
+\DoxyCodeLine{00209\ \ \ \doxymbox{\hyperlink{lto-streamer_8h_a6e0587d4b9c06c0984264b0b57a46826a18285479ede783ff93188193e05e8133}{LTO\_section\_decls}}\ =\ 0,}
+\DoxyCodeLine{00210\ \ \ \doxymbox{\hyperlink{lto-streamer_8h_a6e0587d4b9c06c0984264b0b57a46826ac80bd796bc6813040909d3d84ed4685d}{LTO\_section\_function\_body}},}
+\DoxyCodeLine{00211\ \ \ \doxymbox{\hyperlink{lto-streamer_8h_a6e0587d4b9c06c0984264b0b57a46826a7422a608b0bbd4c7b9e9cebe8de1311b}{LTO\_section\_static\_initializer}},}
+\DoxyCodeLine{00212\ \ \ \doxymbox{\hyperlink{lto-streamer_8h_a6e0587d4b9c06c0984264b0b57a46826a16b0ae70bc79c6d609bad191593d1710}{LTO\_section\_symtab}},}
+\DoxyCodeLine{00213\ \ \ \doxymbox{\hyperlink{lto-streamer_8h_a6e0587d4b9c06c0984264b0b57a46826a3f3343722841a8f8098d24f61b62905b}{LTO\_section\_symtab\_extension}},}
+\DoxyCodeLine{00214\ \ \ \doxymbox{\hyperlink{lto-streamer_8h_a6e0587d4b9c06c0984264b0b57a46826a75d071290ea9e5ac316cbe1e5b18c4bb}{LTO\_section\_refs}},}
+\DoxyCodeLine{00215\ \ \ \doxymbox{\hyperlink{lto-streamer_8h_a6e0587d4b9c06c0984264b0b57a46826a91b3cf3537e3602fd4b9a85c90eed347}{LTO\_section\_asm}},}
+\DoxyCodeLine{00216\ \ \ \doxymbox{\hyperlink{lto-streamer_8h_a6e0587d4b9c06c0984264b0b57a46826a247e80e05bd5aab6c312e36594406ed0}{LTO\_section\_jump\_functions}},}
+\DoxyCodeLine{00217\ \ \ \doxymbox{\hyperlink{lto-streamer_8h_a6e0587d4b9c06c0984264b0b57a46826a39464711f387f1b1a95af08d919a7e3b}{LTO\_section\_ipa\_pure\_const}},}
+\DoxyCodeLine{00218\ \ \ \doxymbox{\hyperlink{lto-streamer_8h_a6e0587d4b9c06c0984264b0b57a46826ab0bd28006beeb5f14dff9849efa71646}{LTO\_section\_ipa\_reference}},}
+\DoxyCodeLine{00219\ \ \ \doxymbox{\hyperlink{lto-streamer_8h_a6e0587d4b9c06c0984264b0b57a46826a5b642253a2e606674db21b702d07a39e}{LTO\_section\_ipa\_profile}},}
+\DoxyCodeLine{00220\ \ \ \doxymbox{\hyperlink{lto-streamer_8h_a6e0587d4b9c06c0984264b0b57a46826a4ecbacc98e22abee2ce52f71e6e165a2}{LTO\_section\_symtab\_nodes}},}
+\DoxyCodeLine{00221\ \ \ \doxymbox{\hyperlink{lto-streamer_8h_a6e0587d4b9c06c0984264b0b57a46826a77ba79a0505dc9d71e43a735e134d868}{LTO\_section\_opts}},}
+\DoxyCodeLine{00222\ \ \ \doxymbox{\hyperlink{lto-streamer_8h_a6e0587d4b9c06c0984264b0b57a46826a1968569d4ce1fb78e357344a9b65a945}{LTO\_section\_cgraph\_opt\_sum}},}
+\DoxyCodeLine{00223\ \ \ \doxymbox{\hyperlink{lto-streamer_8h_a6e0587d4b9c06c0984264b0b57a46826a2bf3766e82c744da4b2c97847e463131}{LTO\_section\_ipa\_fn\_summary}},}
+\DoxyCodeLine{00224\ \ \ \doxymbox{\hyperlink{lto-streamer_8h_a6e0587d4b9c06c0984264b0b57a46826a367fb4444abf7f95e833c6e5315d75ca}{LTO\_section\_ipcp\_transform}},}
+\DoxyCodeLine{00225\ \ \ \doxymbox{\hyperlink{lto-streamer_8h_a6e0587d4b9c06c0984264b0b57a46826ae648491cb6dfa6d651ceca714d7051fb}{LTO\_section\_ipa\_icf}},}
+\DoxyCodeLine{00226\ \ \ \doxymbox{\hyperlink{lto-streamer_8h_a6e0587d4b9c06c0984264b0b57a46826a12d43509c2a82903cf8fa10e1d2f6472}{LTO\_section\_offload\_table}},}
+\DoxyCodeLine{00227\ \ \ \doxymbox{\hyperlink{lto-streamer_8h_a6e0587d4b9c06c0984264b0b57a46826a7a254bd751234bc34b255ad5b50051ac}{LTO\_section\_mode\_table}},}
+\DoxyCodeLine{00228\ \ \ \doxymbox{\hyperlink{lto-streamer_8h_a6e0587d4b9c06c0984264b0b57a46826a3dcf24be8d8503c15e500ed52d1779ca}{LTO\_section\_lto}},}
+\DoxyCodeLine{00229\ \ \ \doxymbox{\hyperlink{lto-streamer_8h_a6e0587d4b9c06c0984264b0b57a46826a592c4062bc896d03eac7d99a91391c24}{LTO\_section\_ipa\_sra}},}
+\DoxyCodeLine{00230\ \ \ \doxymbox{\hyperlink{lto-streamer_8h_a6e0587d4b9c06c0984264b0b57a46826a7519ea27c95f74ede425468baca65036}{LTO\_section\_odr\_types}},}
+\DoxyCodeLine{00231\ \ \ \doxymbox{\hyperlink{lto-streamer_8h_a6e0587d4b9c06c0984264b0b57a46826a2ad9240f8faa31df526d24dff68eeb1d}{LTO\_section\_ipa\_modref}},}
+\DoxyCodeLine{00232\ \ \ \doxymbox{\hyperlink{lto-streamer_8h_a6e0587d4b9c06c0984264b0b57a46826ac18ac74b057e04f7e5ba979e003bb4d7}{LTO\_N\_SECTION\_TYPES}}\ \ \ \ \ \ \ \textcolor{comment}{/*\ Must\ be\ last.\ \ */}}
+\DoxyCodeLine{00233\ \};}
+\DoxyCodeLine{00234\ }
+\DoxyCodeLine{00235\ \textcolor{comment}{/*\ Indices\ to\ the\ various\ function,\ type\ and\ symbol\ streams.\ */}}
+\DoxyCodeLine{00236\ \textcolor{keyword}{enum}\ \doxymbox{\hyperlink{lto-streamer_8h_a6bf8f176d613e17a7c291a07508ff6a3}{lto\_decl\_stream\_e\_t}}}
+\DoxyCodeLine{00237\ \{}
+\DoxyCodeLine{00238\ \ \ \doxymbox{\hyperlink{lto-streamer_8h_a6bf8f176d613e17a7c291a07508ff6a3a797de910014868a0c278558778bef5ee}{LTO\_DECL\_STREAM}}\ =\ 0,\ \ \ \ \ \ \textcolor{comment}{/*\ Must\ be\ first.\ \ */}}
+\DoxyCodeLine{00239\ \ \ \doxymbox{\hyperlink{lto-streamer_8h_a6bf8f176d613e17a7c291a07508ff6a3a0e7e0a3ae2151c3965f285b5f3b019ee}{LTO\_N\_DECL\_STREAMS}}}
+\DoxyCodeLine{00240\ \};}
+\DoxyCodeLine{00241\ }
+\DoxyCodeLine{00242\ \textcolor{keyword}{typedef}\ \textcolor{keyword}{enum}\ \doxymbox{\hyperlink{plugin-api_8h_ae8a95573c08683bcb79f9009902f372e}{ld\_plugin\_symbol\_resolution}}\ \doxymbox{\hyperlink{lto-streamer_8h_a4e5bd58dc84304189bbfc2808f4181e1}{ld\_plugin\_symbol\_resolution\_t}};}
+\DoxyCodeLine{00243\ }
+\DoxyCodeLine{00244\ \textcolor{comment}{/*\ Return\ a\ char\ pointer\ to\ the\ start\ of\ a\ data\ stream\ for\ an\ lto\ pass}}
+\DoxyCodeLine{00245\ \textcolor{comment}{\ \ \ or\ function.\ \ The\ first\ parameter\ is\ the\ file\ data\ that\ contains}}
+\DoxyCodeLine{00246\ \textcolor{comment}{\ \ \ the\ information.\ \ The\ second\ parameter\ is\ the\ type\ of\ information}}
+\DoxyCodeLine{00247\ \textcolor{comment}{\ \ \ to\ be\ obtained.\ \ The\ third\ parameter\ is\ the\ name\ of\ the\ function}}
+\DoxyCodeLine{00248\ \textcolor{comment}{\ \ \ and\ is\ only\ used\ when\ finding\ a\ function\ body;\ otherwise\ it\ is}}
+\DoxyCodeLine{00249\ \textcolor{comment}{\ \ \ NULL.\ \ The\ fourth\ parameter\ is\ the\ length\ of\ the\ data\ returned.\ \ */}}
+\DoxyCodeLine{00250\ \textcolor{keyword}{typedef}\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}*\ (\doxymbox{\hyperlink{lto-streamer_8h_af3b47ecb9cef3edb34db9656060cfc5c}{lto\_get\_section\_data\_f}})\ (\textcolor{keyword}{struct}\ lto\_file\_decl\_data\ *,}
+\DoxyCodeLine{00251\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{enum}\ \doxymbox{\hyperlink{lto-streamer_8h_a6e0587d4b9c06c0984264b0b57a46826}{lto\_section\_type}},}
+\DoxyCodeLine{00252\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *,}
+\DoxyCodeLine{00253\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{int},}
+\DoxyCodeLine{00254\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{size\_t}\ *);}
+\DoxyCodeLine{00255\ }
+\DoxyCodeLine{00256\ \textcolor{comment}{/*\ Return\ the\ data\ found\ from\ the\ above\ call.\ \ The\ first\ three}}
+\DoxyCodeLine{00257\ \textcolor{comment}{\ \ \ parameters\ are\ the\ same\ as\ above.\ \ The\ fourth\ parameter\ is\ the\ data}}
+\DoxyCodeLine{00258\ \textcolor{comment}{\ \ \ itself\ and\ the\ fifth\ is\ the\ length\ of\ the\ data.\ */}}
+\DoxyCodeLine{00259\ \textcolor{keyword}{typedef}\ void\ (\doxymbox{\hyperlink{lto-streamer_8h_a3cd4aa64227692f4180acf79a3e84b78}{lto\_free\_section\_data\_f}})\ (\textcolor{keyword}{struct\ }lto\_file\_decl\_data\ *,}
+\DoxyCodeLine{00260\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{enum}\ \doxymbox{\hyperlink{lto-streamer_8h_a6e0587d4b9c06c0984264b0b57a46826}{lto\_section\_type}},}
+\DoxyCodeLine{00261\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *,}
+\DoxyCodeLine{00262\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *,}
+\DoxyCodeLine{00263\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{stddef_8h_aa9d55e2f20e580b7445617d0d12fff6e}{size\_t}});}
+\DoxyCodeLine{00264\ }
+\DoxyCodeLine{00265\ \textcolor{comment}{/*\ The\ location\ cache\ holds\ expanded\ locations\ for\ streamed\ in\ trees.}}
+\DoxyCodeLine{00266\ \textcolor{comment}{\ \ \ This\ is\ done\ to\ reduce\ memory\ usage\ of\ libcpp\ linemap\ that\ strongly\ prefers}}
+\DoxyCodeLine{00267\ \textcolor{comment}{\ \ \ locations\ to\ be\ inserted\ in\ the\ source\ order.\ \ */}}
+\DoxyCodeLine{00268\ }
+\DoxyCodeLine{00269\ \textcolor{keyword}{class\ }\doxymbox{\hyperlink{classlto__location__cache_a2e6f4391a4b4ace2c647b0a2dd028229}{lto\_location\_cache}}}
+\DoxyCodeLine{00270\ \{}
+\DoxyCodeLine{00271\ \textcolor{keyword}{public}:}
+\DoxyCodeLine{00272\ \ \ \textcolor{comment}{/*\ Apply\ all\ changes\ in\ location\ cache.\ \ Add\ locations\ into\ linemap\ and\ patch}}
+\DoxyCodeLine{00273\ \textcolor{comment}{\ \ \ \ \ trees.\ \ */}}
+\DoxyCodeLine{00274\ \ \ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{classlto__location__cache_ad12bf032ab7e32e49ae8735ec243280d}{apply\_location\_cache}}\ ();}
+\DoxyCodeLine{00275\ \ \ \textcolor{comment}{/*\ Tree\ merging\ did\ not\ suceed;\ mark\ all\ changes\ in\ the\ cache\ as\ accepted.\ \ */}}
+\DoxyCodeLine{00276\ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classlto__location__cache_a5d491810a01957774d5bcaf8d886ba35}{accept\_location\_cache}}\ ();}
+\DoxyCodeLine{00277\ \ \ \textcolor{comment}{/*\ Tree\ merging\ did\ suceed;\ throw\ away\ recent\ changes.\ \ */}}
+\DoxyCodeLine{00278\ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classlto__location__cache_a03b97f457760f301013e8328325def5e}{revert\_location\_cache}}\ ();}
+\DoxyCodeLine{00279\ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classlto__location__cache_aeb54c4e53bb10644645afdde15fb0a65}{input\_location}}\ (\doxymbox{\hyperlink{line-map_8h_aedf25620511d64e43327f1a229906a96}{location\_t}}\ *loc,\ \textcolor{keyword}{struct}\ \doxymbox{\hyperlink{structbitpack__d}{bitpack\_d}}\ *bp,}
+\DoxyCodeLine{00280\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{class}\ \doxymbox{\hyperlink{classdata__in}{data\_in}}\ *\doxymbox{\hyperlink{classdata__in}{data\_in}});}
+\DoxyCodeLine{00281\ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classlto__location__cache_a6a66161acc256e571cb57a176f85fa20}{input\_location\_and\_block}}\ (\doxymbox{\hyperlink{line-map_8h_aedf25620511d64e43327f1a229906a96}{location\_t}}\ *loc,\ \textcolor{keyword}{struct}\ \doxymbox{\hyperlink{structbitpack__d}{bitpack\_d}}\ *bp,}
+\DoxyCodeLine{00282\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{class}\ \doxymbox{\hyperlink{classlto__input__block}{lto\_input\_block}}\ *ib,}
+\DoxyCodeLine{00283\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{class}\ \doxymbox{\hyperlink{classdata__in}{data\_in}}\ *\doxymbox{\hyperlink{classdata__in}{data\_in}});}
+\DoxyCodeLine{00284\ \ \ \doxymbox{\hyperlink{classlto__location__cache_a2e6f4391a4b4ace2c647b0a2dd028229}{lto\_location\_cache}}\ ()}
+\DoxyCodeLine{00285\ \ \ \ \ \ :\ \doxymbox{\hyperlink{classlto__location__cache_a5707335a8a3dfb03fe368cebac87ace8}{loc\_cache}}\ (),\ \doxymbox{\hyperlink{classlto__location__cache_a697c537d3aef7beae42322d13c08f268}{accepted\_length}}\ (0),\ \doxymbox{\hyperlink{classlto__location__cache_aa0a2da115b428d186248201bc2048c4a}{current\_file}}\ (\doxymbox{\hyperlink{stddef_8h_a070d2ce7b6bb7e5c05602aa8c308d0c4}{NULL}}),\ \doxymbox{\hyperlink{classlto__location__cache_ad0e2658d176f1eb5b563d4efc303b62d}{current\_line}}\ (0),}
+\DoxyCodeLine{00286\ \ \ \ \ \ \ \ \doxymbox{\hyperlink{classlto__location__cache_acff94f09d6e4c144a705e19eb5b55793}{current\_col}}\ (0),\ \doxymbox{\hyperlink{classlto__location__cache_aea829d483c23512552daa90bc16b6666}{current\_sysp}}\ (\doxymbox{\hyperlink{stdbool_8h_a65e9886d74aaee76545e83dd09011727}{false}}),\ \doxymbox{\hyperlink{classlto__location__cache_adea3f5366674c71155cfc64d3e6a6724}{current\_loc}}\ (\doxymbox{\hyperlink{input_8h_a846cad98d2567653f058bedc23bd90fc}{UNKNOWN\_LOCATION}}),}
+\DoxyCodeLine{00287\ \ \ \ \ \ \ \ \doxymbox{\hyperlink{classlto__location__cache_a89895d55642cb3a091077b8cecce13b2}{current\_block}}\ (\doxymbox{\hyperlink{tree_8h_aeda0ce25865d2494883f523217559d1e}{NULL\_TREE}})}
+\DoxyCodeLine{00288\ \ \ \{}
+\DoxyCodeLine{00289\ \ \ \ \ \doxymbox{\hyperlink{system_8h_a0deee0ddaa8ce3bbd400ab5f75de06ff}{gcc\_assert}}\ (!\doxymbox{\hyperlink{classlto__location__cache_a560131216724c8f0ac5d5350e8d97d57}{current\_cache}});}
+\DoxyCodeLine{00290\ \ \ \ \ \doxymbox{\hyperlink{classlto__location__cache_a560131216724c8f0ac5d5350e8d97d57}{current\_cache}}\ =\ \textcolor{keyword}{this};}
+\DoxyCodeLine{00291\ \ \ \}}
+\DoxyCodeLine{00292\ \ \ \doxymbox{\hyperlink{classlto__location__cache_a8316f7ec053b92adc836ebcacad7e0b1}{\string~lto\_location\_cache}}\ ()}
+\DoxyCodeLine{00293\ \ \ \{}
+\DoxyCodeLine{00294\ \ \ \ \ \doxymbox{\hyperlink{classlto__location__cache_ad12bf032ab7e32e49ae8735ec243280d}{apply\_location\_cache}}\ ();}
+\DoxyCodeLine{00295\ \ \ \ \ \doxymbox{\hyperlink{system_8h_a0deee0ddaa8ce3bbd400ab5f75de06ff}{gcc\_assert}}\ (\doxymbox{\hyperlink{classlto__location__cache_a560131216724c8f0ac5d5350e8d97d57}{current\_cache}}\ ==\ \textcolor{keyword}{this});}
+\DoxyCodeLine{00296\ \ \ \ \ \doxymbox{\hyperlink{classlto__location__cache_a560131216724c8f0ac5d5350e8d97d57}{current\_cache}}\ =\ \doxymbox{\hyperlink{stddef_8h_a070d2ce7b6bb7e5c05602aa8c308d0c4}{NULL}};}
+\DoxyCodeLine{00297\ \ \ \}}
+\DoxyCodeLine{00298\ }
+\DoxyCodeLine{00299\ \ \ \textcolor{comment}{/*\ There\ can\ be\ at\ most\ one\ instance\ of\ location\ cache\ (combining\ multiple}}
+\DoxyCodeLine{00300\ \textcolor{comment}{\ \ \ \ \ would\ bring\ it\ out\ of\ sync\ with\ libcpp\ linemap);\ point\ to\ current}}
+\DoxyCodeLine{00301\ \textcolor{comment}{\ \ \ \ \ one.\ \ */}}
+\DoxyCodeLine{00302\ \ \ \textcolor{keyword}{static}\ \doxymbox{\hyperlink{classlto__location__cache_a2e6f4391a4b4ace2c647b0a2dd028229}{lto\_location\_cache}}\ *\doxymbox{\hyperlink{classlto__location__cache_a560131216724c8f0ac5d5350e8d97d57}{current\_cache}};}
+\DoxyCodeLine{00303\ \ \ }
+\DoxyCodeLine{00304\ \textcolor{keyword}{private}:}
+\DoxyCodeLine{00305\ \ \ \textcolor{keyword}{static}\ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{classlto__location__cache_af6a72a07a855481de9fae91d2c91df4c}{cmp\_loc}}\ (\textcolor{keyword}{const}\ \textcolor{keywordtype}{void}\ *pa,\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{void}\ *pb);}
+\DoxyCodeLine{00306\ }
+\DoxyCodeLine{00307\ \ \ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{structlto__location__cache_1_1cached__location}{cached\_location}}}
+\DoxyCodeLine{00308\ \ \ \{}
+\DoxyCodeLine{00309\ \ \ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *\doxymbox{\hyperlink{structlto__location__cache_1_1cached__location_a25a9837852d369d6fc4fcfc91bf77cb2}{file}};}
+\DoxyCodeLine{00310\ \ \ \ \ \doxymbox{\hyperlink{line-map_8h_aedf25620511d64e43327f1a229906a96}{location\_t}}\ *\doxymbox{\hyperlink{structlto__location__cache_1_1cached__location_a387f474ce7e1e975a0430fc15fc51344}{loc}};}
+\DoxyCodeLine{00311\ \ \ \ \ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{structlto__location__cache_1_1cached__location_a358a9a7652d8e6236e8d7fdfba24d699}{line}},\ \doxymbox{\hyperlink{structlto__location__cache_1_1cached__location_ab425b97a2ccdd33d9e91d431c96580f0}{col}};}
+\DoxyCodeLine{00312\ \ \ \ \ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{structlto__location__cache_1_1cached__location_ac5d98d02e211a1ec2d2b312e90cbe314}{sysp}};}
+\DoxyCodeLine{00313\ \ \ \ \ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ \doxymbox{\hyperlink{structlto__location__cache_1_1cached__location_a01ae76e412d8534455c8d4f1ec3a199c}{block}};}
+\DoxyCodeLine{00314\ \ \ \ \ \textcolor{keywordtype}{unsigned}\ \doxymbox{\hyperlink{structlto__location__cache_1_1cached__location_a30e14b9ffb8cbcc7b1ae641f7f1fa74c}{discr}};}
+\DoxyCodeLine{00315\ \ \ \};}
+\DoxyCodeLine{00316\ }
+\DoxyCodeLine{00317\ \ \ \textcolor{comment}{/*\ The\ location\ cache.\ \ */}}
+\DoxyCodeLine{00318\ }
+\DoxyCodeLine{00319\ \ \ \doxymbox{\hyperlink{classauto__vec}{auto\_vec<cached\_location>}}\ \doxymbox{\hyperlink{classlto__location__cache_a5707335a8a3dfb03fe368cebac87ace8}{loc\_cache}};}
+\DoxyCodeLine{00320\ }
+\DoxyCodeLine{00321\ \ \ \textcolor{comment}{/*\ Accepted\ entries\ are\ ones\ used\ by\ trees\ that\ are\ known\ to\ be\ not\ unified}}
+\DoxyCodeLine{00322\ \textcolor{comment}{\ \ \ \ \ by\ tree\ merging.\ \ */}}
+\DoxyCodeLine{00323\ }
+\DoxyCodeLine{00324\ \ \ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{classlto__location__cache_a697c537d3aef7beae42322d13c08f268}{accepted\_length}};}
+\DoxyCodeLine{00325\ }
+\DoxyCodeLine{00326\ \ \ \textcolor{comment}{/*\ Bookkeeping\ to\ remember\ state\ in\ between\ calls\ to\ lto\_apply\_location\_cache}}
+\DoxyCodeLine{00327\ \textcolor{comment}{\ \ \ \ \ When\ streaming\ gimple,\ the\ location\ cache\ is\ not\ used\ and\ thus}}
+\DoxyCodeLine{00328\ \textcolor{comment}{\ \ \ \ \ lto\_apply\_location\_cache\ happens\ per\ location\ basis.\ \ It\ is\ then}}
+\DoxyCodeLine{00329\ \textcolor{comment}{\ \ \ \ \ useful\ to\ avoid\ redundant\ calls\ of\ linemap\ API.\ \ */}}
+\DoxyCodeLine{00330\ }
+\DoxyCodeLine{00331\ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *\doxymbox{\hyperlink{classlto__location__cache_aa0a2da115b428d186248201bc2048c4a}{current\_file}};}
+\DoxyCodeLine{00332\ \ \ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{classlto__location__cache_ad0e2658d176f1eb5b563d4efc303b62d}{current\_line}};}
+\DoxyCodeLine{00333\ \ \ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{classlto__location__cache_acff94f09d6e4c144a705e19eb5b55793}{current\_col}};}
+\DoxyCodeLine{00334\ \ \ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{classlto__location__cache_aea829d483c23512552daa90bc16b6666}{current\_sysp}};}
+\DoxyCodeLine{00335\ \ \ \doxymbox{\hyperlink{line-map_8h_aedf25620511d64e43327f1a229906a96}{location\_t}}\ \doxymbox{\hyperlink{classlto__location__cache_adea3f5366674c71155cfc64d3e6a6724}{current\_loc}};}
+\DoxyCodeLine{00336\ \ \ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ \doxymbox{\hyperlink{classlto__location__cache_a89895d55642cb3a091077b8cecce13b2}{current\_block}};}
+\DoxyCodeLine{00337\ \ \ \textcolor{keywordtype}{unsigned}\ \doxymbox{\hyperlink{classlto__location__cache_acfec0778a4e3c9608a04748b1ddc5383}{current\_discr}};}
+\DoxyCodeLine{00338\ \};}
+\DoxyCodeLine{00339\ }
+\DoxyCodeLine{00340\ \textcolor{comment}{/*\ Structure\ used\ as\ buffer\ for\ reading\ an\ LTO\ file.\ \ */}}
+\DoxyCodeLine{00341\ \textcolor{keyword}{class\ }\doxymbox{\hyperlink{classlto__input__block_a5d1c7e7beb4e0299daa3754fb0658c54}{lto\_input\_block}}}
+\DoxyCodeLine{00342\ \{}
+\DoxyCodeLine{00343\ \textcolor{keyword}{public}:}
+\DoxyCodeLine{00344\ \ \ \textcolor{comment}{/*\ Special\ constructor\ for\ the\ string\ table,\ it\ abuses\ this\ to}}
+\DoxyCodeLine{00345\ \textcolor{comment}{\ \ \ \ \ do\ random\ access\ but\ use\ the\ uhwi\ decoder.\ \ */}}
+\DoxyCodeLine{00346\ \ \ \doxymbox{\hyperlink{classlto__input__block_a5d1c7e7beb4e0299daa3754fb0658c54}{lto\_input\_block}}\ (\textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *data\_,\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ p\_,\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ len\_,}
+\DoxyCodeLine{00347\ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ lto\_file\_decl\_data\ *file\_data\_)}
+\DoxyCodeLine{00348\ \ \ \ \ \ \ :\ \doxymbox{\hyperlink{classlto__input__block_a6433b3125a2de87f96a14a79dca175aa}{data}}\ (data\_),\ \doxymbox{\hyperlink{classlto__input__block_aec2d17a61278fa57e0a2a574f730b24a}{file\_data}}\ (file\_data\_),\ \doxymbox{\hyperlink{classlto__input__block_a46080b4b9e53935749fb30e211103ee2}{p}}\ (p\_),\ \doxymbox{\hyperlink{classlto__input__block_a0ebfd39d8cb66dcc3334506467410988}{len}}\ (len\_)\ \{\}}
+\DoxyCodeLine{00349\ \ \ \doxymbox{\hyperlink{classlto__input__block_af664970d16b44b03dc860a7b0081b83d}{lto\_input\_block}}\ (\textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *data\_,\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ len\_,}
+\DoxyCodeLine{00350\ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ lto\_file\_decl\_data\ *file\_data\_)}
+\DoxyCodeLine{00351\ \ \ \ \ \ \ :\ \doxymbox{\hyperlink{classlto__input__block_a6433b3125a2de87f96a14a79dca175aa}{data}}\ (data\_),\ \doxymbox{\hyperlink{classlto__input__block_aec2d17a61278fa57e0a2a574f730b24a}{file\_data}}\ (file\_data\_),\ \doxymbox{\hyperlink{classlto__input__block_a46080b4b9e53935749fb30e211103ee2}{p}}\ (0),\ \doxymbox{\hyperlink{classlto__input__block_a0ebfd39d8cb66dcc3334506467410988}{len}}\ (len\_)\ \{\}}
+\DoxyCodeLine{00352\ }
+\DoxyCodeLine{00353\ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *\doxymbox{\hyperlink{classlto__input__block_a6433b3125a2de87f96a14a79dca175aa}{data}};}
+\DoxyCodeLine{00354\ \ \ \textcolor{keyword}{const}\ lto\_file\_decl\_data\ *\doxymbox{\hyperlink{classlto__input__block_aec2d17a61278fa57e0a2a574f730b24a}{file\_data}};}
+\DoxyCodeLine{00355\ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{classlto__input__block_a46080b4b9e53935749fb30e211103ee2}{p}};}
+\DoxyCodeLine{00356\ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{classlto__input__block_a0ebfd39d8cb66dcc3334506467410988}{len}};}
+\DoxyCodeLine{00357\ \};}
+\DoxyCodeLine{00358\ }
+\DoxyCodeLine{00359\ \textcolor{comment}{/*\ Compression\ algorithm\ used\ for\ compression\ of\ LTO\ bytecode.\ \ */}}
+\DoxyCodeLine{00360\ }
+\DoxyCodeLine{00361\ \textcolor{keyword}{enum}\ \doxymbox{\hyperlink{lto-streamer_8h_ac9a05d30d0fe2335ab64d74f918ddbf3}{lto\_compression}}}
+\DoxyCodeLine{00362\ \{}
+\DoxyCodeLine{00363\ \ \ \doxymbox{\hyperlink{lto-streamer_8h_ac9a05d30d0fe2335ab64d74f918ddbf3aff714d61d445b732d2553d246ac580e8}{ZLIB}},}
+\DoxyCodeLine{00364\ \ \ \doxymbox{\hyperlink{lto-streamer_8h_ac9a05d30d0fe2335ab64d74f918ddbf3a0d27b7d5f49b692fa62f88efce1c6dc4}{ZSTD}}}
+\DoxyCodeLine{00365\ \};}
+\DoxyCodeLine{00366\ }
+\DoxyCodeLine{00367\ \textcolor{comment}{/*\ Structure\ that\ represents\ LTO\ ELF\ section\ with\ information}}
+\DoxyCodeLine{00368\ \textcolor{comment}{\ \ \ about\ the\ format.\ \ */}}
+\DoxyCodeLine{00369\ }
+\DoxyCodeLine{00370\ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{structlto__section}{lto\_section}}}
+\DoxyCodeLine{00371\ \{}
+\DoxyCodeLine{00372\ \ \ int16\_t\ \doxymbox{\hyperlink{structlto__section_ad870a278c08e642f9ae2949028192ea3}{major\_version}};}
+\DoxyCodeLine{00373\ \ \ int16\_t\ \doxymbox{\hyperlink{structlto__section_aaa75990235a2ccabc6a120a1e777e8eb}{minor\_version}};}
+\DoxyCodeLine{00374\ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{char}\ \doxymbox{\hyperlink{structlto__section_abb6395367e2443d4dad1d6d74de7b8ee}{slim\_object}};}
+\DoxyCodeLine{00375\ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{char}\ \doxymbox{\hyperlink{structlto__section_a7d360ce27d87beb3ba481f6df7d283e0}{\_padding}};}
+\DoxyCodeLine{00376\ }
+\DoxyCodeLine{00377\ \ \ \textcolor{comment}{/*\ Flags\ is\ a\ private\ field\ that\ is\ not\ defined\ publicly.\ \ */}}
+\DoxyCodeLine{00378\ \ \ uint16\_t\ \doxymbox{\hyperlink{structlto__section_a57bfbacfb61282bdec34929c58784e4b}{flags}};}
+\DoxyCodeLine{00379\ }
+\DoxyCodeLine{00380\ \ \ \textcolor{comment}{/*\ Set\ compression\ to\ FLAGS.\ \ */}}
+\DoxyCodeLine{00381\ \ \ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{structlto__section_af8564b421fc930f7ecdb111c8ed5fe09}{set\_compression}}\ (\doxymbox{\hyperlink{lto-streamer_8h_ac9a05d30d0fe2335ab64d74f918ddbf3}{lto\_compression}}\ c)}
+\DoxyCodeLine{00382\ \ \ \{}
+\DoxyCodeLine{00383\ \ \ \ \ \doxymbox{\hyperlink{structlto__section_a57bfbacfb61282bdec34929c58784e4b}{flags}}\ =\ c;}
+\DoxyCodeLine{00384\ \ \ \}}
+\DoxyCodeLine{00385\ }
+\DoxyCodeLine{00386\ \ \ \textcolor{comment}{/*\ Get\ compression\ from\ FLAGS.\ \ */}}
+\DoxyCodeLine{00387\ \ \ \textcolor{keyword}{inline}\ \doxymbox{\hyperlink{lto-streamer_8h_ac9a05d30d0fe2335ab64d74f918ddbf3}{lto\_compression}}\ \doxymbox{\hyperlink{structlto__section_ae3f05fb6eabc226a77d76d838e495e49}{get\_compression}}\ ()}
+\DoxyCodeLine{00388\ \ \ \{}
+\DoxyCodeLine{00389\ \ \ \ \ \textcolor{keywordflow}{return}\ (\doxymbox{\hyperlink{lto-streamer_8h_ac9a05d30d0fe2335ab64d74f918ddbf3}{lto\_compression}})\ \doxymbox{\hyperlink{structlto__section_a57bfbacfb61282bdec34929c58784e4b}{flags}};}
+\DoxyCodeLine{00390\ \ \ \}}
+\DoxyCodeLine{00391\ \};}
+\DoxyCodeLine{00392\ }
+\DoxyCodeLine{00393\ \doxymbox{\hyperlink{system_8h_ad43df400ec5a5f05d7099854a1829264}{STATIC\_ASSERT}}\ (\textcolor{keyword}{sizeof}\ (\doxymbox{\hyperlink{structlto__section}{lto\_section}})\ ==\ 8);}
+\DoxyCodeLine{00394\ }
+\DoxyCodeLine{00395\ \textcolor{comment}{/*\ The\ is\ the\ first\ part\ of\ the\ record\ in\ an\ LTO\ file\ for\ many\ of\ the}}
+\DoxyCodeLine{00396\ \textcolor{comment}{\ \ \ IPA\ passes.\ \ */}}
+\DoxyCodeLine{00397\ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{structlto__simple__header}{lto\_simple\_header}}}
+\DoxyCodeLine{00398\ \{}
+\DoxyCodeLine{00399\ \ \ \textcolor{comment}{/*\ Size\ of\ main\ gimple\ body\ of\ function.\ \ */}}
+\DoxyCodeLine{00400\ \ \ int32\_t\ \doxymbox{\hyperlink{structlto__simple__header_ab6f53842c62e0569b9357ed681eb4064}{main\_size}};}
+\DoxyCodeLine{00401\ \};}
+\DoxyCodeLine{00402\ }
+\DoxyCodeLine{00403\ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{structlto__simple__header__with__strings}{lto\_simple\_header\_with\_strings}}\ :\ \doxymbox{\hyperlink{structlto__simple__header}{lto\_simple\_header}}}
+\DoxyCodeLine{00404\ \{}
+\DoxyCodeLine{00405\ \ \ \textcolor{comment}{/*\ Size\ of\ the\ string\ table.\ \ */}}
+\DoxyCodeLine{00406\ \ \ int32\_t\ \doxymbox{\hyperlink{structlto__simple__header__with__strings_a7e1907d4894b1971fc7a2f62bd103262}{string\_size}};}
+\DoxyCodeLine{00407\ \};}
+\DoxyCodeLine{00408\ }
+\DoxyCodeLine{00409\ \textcolor{comment}{/*\ The\ header\ for\ a\ function\ body.\ \ */}}
+\DoxyCodeLine{00410\ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{structlto__function__header}{lto\_function\_header}}\ :\ \doxymbox{\hyperlink{structlto__simple__header__with__strings}{lto\_simple\_header\_with\_strings}}}
+\DoxyCodeLine{00411\ \{}
+\DoxyCodeLine{00412\ \ \ \textcolor{comment}{/*\ Size\ of\ the\ cfg.\ \ */}}
+\DoxyCodeLine{00413\ \ \ int32\_t\ \doxymbox{\hyperlink{structlto__function__header_aa85e56cdf04871f155d3061c2e4def58}{cfg\_size}};}
+\DoxyCodeLine{00414\ \};}
+\DoxyCodeLine{00415\ }
+\DoxyCodeLine{00416\ }
+\DoxyCodeLine{00417\ \textcolor{comment}{/*\ Structure\ describing\ a\ symbol\ section.\ \ */}}
+\DoxyCodeLine{00418\ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{structlto__decl__header}{lto\_decl\_header}}\ :\ \doxymbox{\hyperlink{structlto__simple__header__with__strings}{lto\_simple\_header\_with\_strings}}}
+\DoxyCodeLine{00419\ \{}
+\DoxyCodeLine{00420\ \ \ \textcolor{comment}{/*\ Size\ of\ region\ for\ decl\ state.\ */}}
+\DoxyCodeLine{00421\ \ \ int32\_t\ \doxymbox{\hyperlink{structlto__decl__header_a22534633a20b04d2c69b922822a5ed57}{decl\_state\_size}};}
+\DoxyCodeLine{00422\ }
+\DoxyCodeLine{00423\ \ \ \textcolor{comment}{/*\ Number\ of\ nodes\ in\ globals\ stream.\ \ */}}
+\DoxyCodeLine{00424\ \ \ int32\_t\ \doxymbox{\hyperlink{structlto__decl__header_aab1407fcfdbe1d59760d180ce9e34eb5}{num\_nodes}};}
+\DoxyCodeLine{00425\ \};}
+\DoxyCodeLine{00426\ }
+\DoxyCodeLine{00427\ }
+\DoxyCodeLine{00428\ \textcolor{comment}{/*\ Statistics\ gathered\ during\ LTO,\ WPA\ and\ LTRANS.\ \ */}}
+\DoxyCodeLine{00429\ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{structlto__stats__d}{lto\_stats\_d}}}
+\DoxyCodeLine{00430\ \{}
+\DoxyCodeLine{00431\ \ \ \textcolor{keywordtype}{unsigned}\ HOST\_WIDE\_INT\ \doxymbox{\hyperlink{structlto__stats__d_a042b5afa5ab742a0d6a3601f2f08d199}{num\_input\_cgraph\_nodes}};}
+\DoxyCodeLine{00432\ \ \ \textcolor{keywordtype}{unsigned}\ HOST\_WIDE\_INT\ \doxymbox{\hyperlink{structlto__stats__d_acb91d9229c744a8344bee4b24caf549c}{num\_output\_symtab\_nodes}};}
+\DoxyCodeLine{00433\ \ \ \textcolor{keywordtype}{unsigned}\ HOST\_WIDE\_INT\ \doxymbox{\hyperlink{structlto__stats__d_a18f45334cb365d61f3a72234e4db983b}{num\_input\_files}};}
+\DoxyCodeLine{00434\ \ \ \textcolor{keywordtype}{unsigned}\ HOST\_WIDE\_INT\ \doxymbox{\hyperlink{structlto__stats__d_a218c5606ca6466c09a5cbbf26b316bd6}{num\_output\_files}};}
+\DoxyCodeLine{00435\ \ \ \textcolor{keywordtype}{unsigned}\ HOST\_WIDE\_INT\ \doxymbox{\hyperlink{structlto__stats__d_aa1829d971bd28aa7e272b0e7d2abed6d}{num\_cgraph\_partitions}};}
+\DoxyCodeLine{00436\ \ \ \textcolor{keywordtype}{unsigned}\ HOST\_WIDE\_INT\ \doxymbox{\hyperlink{structlto__stats__d_a783b6897fc1a66aabcddb003c6a3e46b}{section\_size}}[\doxymbox{\hyperlink{lto-streamer_8h_a6e0587d4b9c06c0984264b0b57a46826ac18ac74b057e04f7e5ba979e003bb4d7}{LTO\_N\_SECTION\_TYPES}}];}
+\DoxyCodeLine{00437\ \ \ \textcolor{keywordtype}{unsigned}\ HOST\_WIDE\_INT\ \doxymbox{\hyperlink{structlto__stats__d_a44e96fa4036c4b333de984cf2e069e0b}{num\_function\_bodies}};}
+\DoxyCodeLine{00438\ \ \ \textcolor{keywordtype}{unsigned}\ HOST\_WIDE\_INT\ \doxymbox{\hyperlink{structlto__stats__d_a41b0ea8047b69dc1d19f52afa550c7ca}{num\_trees}}[\doxymbox{\hyperlink{tree-core_8h_acf28b9801252dd1a37f8337c1a1e0852}{NUM\_TREE\_CODES}}];}
+\DoxyCodeLine{00439\ \ \ \textcolor{keywordtype}{unsigned}\ HOST\_WIDE\_INT\ \doxymbox{\hyperlink{structlto__stats__d_a11309387286db8afeb9e8001f7ba068c}{num\_output\_il\_bytes}};}
+\DoxyCodeLine{00440\ \ \ \textcolor{keywordtype}{unsigned}\ HOST\_WIDE\_INT\ \doxymbox{\hyperlink{structlto__stats__d_a1d651577dacf60b208abe1f32f646c2b}{num\_compressed\_il\_bytes}};}
+\DoxyCodeLine{00441\ \ \ \textcolor{keywordtype}{unsigned}\ HOST\_WIDE\_INT\ \doxymbox{\hyperlink{structlto__stats__d_a675b4ebc75b51beb865332f019679856}{num\_input\_il\_bytes}};}
+\DoxyCodeLine{00442\ \ \ \textcolor{keywordtype}{unsigned}\ HOST\_WIDE\_INT\ \doxymbox{\hyperlink{structlto__stats__d_a7c7ba75f58126dd3691b083ece953238}{num\_uncompressed\_il\_bytes}};}
+\DoxyCodeLine{00443\ \ \ \textcolor{keywordtype}{unsigned}\ HOST\_WIDE\_INT\ \doxymbox{\hyperlink{structlto__stats__d_ad8d29193dd8cd229607ec7ab0204668e}{num\_tree\_bodies\_output}};}
+\DoxyCodeLine{00444\ \ \ \textcolor{keywordtype}{unsigned}\ HOST\_WIDE\_INT\ \doxymbox{\hyperlink{structlto__stats__d_a031eda4e872e5ee28cdd656ebc4557f8}{num\_pickle\_refs\_output}};}
+\DoxyCodeLine{00445\ \};}
+\DoxyCodeLine{00446\ }
+\DoxyCodeLine{00447\ \textcolor{comment}{/*\ Entry\ of\ LTO\ symtab\ encoder.\ \ */}}
+\DoxyCodeLine{00448\ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{structlto__encoder__entry}{lto\_encoder\_entry}}}
+\DoxyCodeLine{00449\ \{}
+\DoxyCodeLine{00450\ \ \ symtab\_node\ *\doxymbox{\hyperlink{structlto__encoder__entry_aee813173120690f1b50d9edd5e9b4b35}{node}};}
+\DoxyCodeLine{00451\ \ \ \textcolor{comment}{/*\ Is\ the\ node\ in\ this\ partition\ (i.e.\ ltrans\ of\ this\ partition\ will}}
+\DoxyCodeLine{00452\ \textcolor{comment}{\ \ \ \ \ be\ responsible\ for\ outputting\ it)?\ */}}
+\DoxyCodeLine{00453\ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{structlto__encoder__entry_a418fca6c241989c855885a6906fd06af}{in\_partition}}:1;}
+\DoxyCodeLine{00454\ \ \ \textcolor{comment}{/*\ Do\ we\ encode\ body\ in\ this\ partition?\ \ */}}
+\DoxyCodeLine{00455\ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{structlto__encoder__entry_a3d971b3c1556c979ca18455413db3199}{body}}:1;}
+\DoxyCodeLine{00456\ \ \ \textcolor{comment}{/*\ Do\ we\ encode\ initializer\ in\ this\ partition?}}
+\DoxyCodeLine{00457\ \textcolor{comment}{\ \ \ \ \ For\ example\ the\ readonly\ variable\ initializers\ are\ encoded\ to\ aid}}
+\DoxyCodeLine{00458\ \textcolor{comment}{\ \ \ \ \ constant\ folding\ even\ if\ they\ are\ not\ in\ the\ partition.\ \ */}}
+\DoxyCodeLine{00459\ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{structlto__encoder__entry_acc3911475817501b9a205205a459c7c5}{initializer}}:1;}
+\DoxyCodeLine{00460\ \};}
+\DoxyCodeLine{00461\ }
+\DoxyCodeLine{00462\ }
+\DoxyCodeLine{00463\ \textcolor{comment}{/*\ Encoder\ data\ structure\ used\ to\ stream\ callgraph\ nodes.\ \ */}}
+\DoxyCodeLine{00464\ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{structlto__symtab__encoder__d}{lto\_symtab\_encoder\_d}}}
+\DoxyCodeLine{00465\ \{}
+\DoxyCodeLine{00466\ \ \ \doxymbox{\hyperlink{structvec}{vec<lto\_encoder\_entry>}}\ \doxymbox{\hyperlink{structlto__symtab__encoder__d_a4a96905b96d51bed5b40022eb6550cac}{nodes}};}
+\DoxyCodeLine{00467\ \ \ \doxymbox{\hyperlink{classhash__map}{hash\_map<symtab\_node\ *,\ size\_t>}}\ *\doxymbox{\hyperlink{structlto__symtab__encoder__d_a6197d00171616dfe8c8f3807c1125c1e}{map}};}
+\DoxyCodeLine{00468\ \};}
+\DoxyCodeLine{00469\ }
+\DoxyCodeLine{00470\ \textcolor{keyword}{typedef}\ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{structlto__symtab__encoder__d}{lto\_symtab\_encoder\_d}}\ *\doxymbox{\hyperlink{lto-streamer_8h_a0f04c68697e33ef4ea47f5fa451e32b0}{lto\_symtab\_encoder\_t}};}
+\DoxyCodeLine{00471\ }
+\DoxyCodeLine{00472\ \textcolor{comment}{/*\ Iterator\ structure\ for\ cgraph\ node\ sets.\ \ */}}
+\DoxyCodeLine{00473\ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{structlto__symtab__encoder__iterator}{lto\_symtab\_encoder\_iterator}}}
+\DoxyCodeLine{00474\ \{}
+\DoxyCodeLine{00475\ \ \ \doxymbox{\hyperlink{lto-streamer_8h_a0f04c68697e33ef4ea47f5fa451e32b0}{lto\_symtab\_encoder\_t}}\ \doxymbox{\hyperlink{structlto__symtab__encoder__iterator_a6c1f546141bc598e658db0039b5ebd96}{encoder}};}
+\DoxyCodeLine{00476\ \ \ \textcolor{keywordtype}{unsigned}\ \doxymbox{\hyperlink{structlto__symtab__encoder__iterator_a9e4a34ccbbd09dca11ddfc13e0d871c2}{index}};}
+\DoxyCodeLine{00477\ \};}
+\DoxyCodeLine{00478\ }
+\DoxyCodeLine{00479\ }
+\DoxyCodeLine{00480\ }
+\DoxyCodeLine{00481\ \textcolor{comment}{/*\ The\ lto\_tree\_ref\_encoder\ struct\ is\ used\ to\ encode\ trees\ into\ indices.\ */}}
+\DoxyCodeLine{00482\ }
+\DoxyCodeLine{00483\ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{structlto__tree__ref__encoder}{lto\_tree\_ref\_encoder}}}
+\DoxyCodeLine{00484\ \{}
+\DoxyCodeLine{00485\ \ \ \doxymbox{\hyperlink{classhash__map}{hash\_map<tree,\ unsigned>}}\ *\doxymbox{\hyperlink{structlto__tree__ref__encoder_ac5002b048814156df1703d8000420315}{tree\_hash\_table}};\ \ \ \ \textcolor{comment}{/*\ Maps\ pointers\ to\ indices.\ */}}
+\DoxyCodeLine{00486\ \ \ \doxymbox{\hyperlink{structvec}{vec<tree>}}\ \doxymbox{\hyperlink{structlto__tree__ref__encoder_af5d3304e09253a964e186ca9f1c2a124}{trees}};\ \ \ \ \ \ \ \ \ \ \textcolor{comment}{/*\ Maps\ indices\ to\ pointers.\ */}}
+\DoxyCodeLine{00487\ \};}
+\DoxyCodeLine{00488\ }
+\DoxyCodeLine{00489\ }
+\DoxyCodeLine{00490\ \textcolor{comment}{/*\ Structure\ to\ hold\ states\ of\ input\ scope.\ \ */}}
+\DoxyCodeLine{00491\ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{coretypes_8h_ae5708c4d4b300570eebe0bc0c78facbc}{GTY}}((for\_user))\ lto\_in\_decl\_state}
+\DoxyCodeLine{00492\ \{}
+\DoxyCodeLine{00493\ \ \ \textcolor{comment}{/*\ Array\ of\ lto\_in\_decl\_buffers\ to\ store\ type\ and\ decls\ streams.\ */}}
+\DoxyCodeLine{00494\ \ \ \doxymbox{\hyperlink{structvec}{vec<tree,\ va\_gc>}}\ *streams[\doxymbox{\hyperlink{lto-streamer_8h_a6bf8f176d613e17a7c291a07508ff6a3a0e7e0a3ae2151c3965f285b5f3b019ee}{LTO\_N\_DECL\_STREAMS}}];}
+\DoxyCodeLine{00495\ }
+\DoxyCodeLine{00496\ \ \ \textcolor{comment}{/*\ If\ this\ in-\/decl\ state\ is\ associated\ with\ a\ function.\ FN\_DECL}}
+\DoxyCodeLine{00497\ \textcolor{comment}{\ \ \ \ \ point\ to\ the\ FUNCTION\_DECL.\ */}}
+\DoxyCodeLine{00498\ \ \ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ fn\_decl;}
+\DoxyCodeLine{00499\ }
+\DoxyCodeLine{00500\ \ \ \textcolor{comment}{/*\ True\ if\ decl\ state\ is\ compressed.\ \ */}}
+\DoxyCodeLine{00501\ \ \ \textcolor{keywordtype}{bool}\ compressed;}
+\DoxyCodeLine{00502\ \};}
+\DoxyCodeLine{00503\ }
+\DoxyCodeLine{00504\ \textcolor{keyword}{typedef}\ \textcolor{keyword}{struct\ }lto\_in\_decl\_state\ *\doxymbox{\hyperlink{lto-streamer_8h_a4028dd7ad102a0af58776901b83b300a}{lto\_in\_decl\_state\_ptr}};}
+\DoxyCodeLine{00505\ }
+\DoxyCodeLine{00506\ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{structdecl__state__hasher}{decl\_state\_hasher}}\ :\ \doxymbox{\hyperlink{structggc__ptr__hash}{ggc\_ptr\_hash}}<lto\_in\_decl\_state>}
+\DoxyCodeLine{00507\ \{}
+\DoxyCodeLine{00508\ \ \ \textcolor{keyword}{static}\ \doxymbox{\hyperlink{hashtab_8h_a2d05e5049721cf3117dd6b34e20d4f65}{hashval\_t}}}
+\DoxyCodeLine{00509\ \ \ \doxymbox{\hyperlink{structdecl__state__hasher_a5c6292dabdf3cd4777c9ebe7edff44a1}{hash}}\ (lto\_in\_decl\_state\ *s)}
+\DoxyCodeLine{00510\ \ \ \{}
+\DoxyCodeLine{00511\ \ \ \ \ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{hashtab_8h_a47e4c89c9c747e205b18b78657ce113a}{htab\_hash\_pointer}}\ (s-\/>fn\_decl);}
+\DoxyCodeLine{00512\ \ \ \}}
+\DoxyCodeLine{00513\ }
+\DoxyCodeLine{00514\ \ \ \textcolor{keyword}{static}\ \textcolor{keywordtype}{bool}}
+\DoxyCodeLine{00515\ \ \ \doxymbox{\hyperlink{structdecl__state__hasher_a21ea83bf52ccf1848386039b050547da}{equal}}\ (lto\_in\_decl\_state\ *\doxymbox{\hyperlink{poly-int_8h_af77c881600a14567e276ee17dfb8764f}{a}},\ lto\_in\_decl\_state\ *\doxymbox{\hyperlink{poly-int_8h_af3bb9d9df219585072cf9e4e95572f70}{b}})}
+\DoxyCodeLine{00516\ \ \ \{}
+\DoxyCodeLine{00517\ \ \ \ \ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{poly-int_8h_af77c881600a14567e276ee17dfb8764f}{a}}-\/>fn\_decl\ ==\ \doxymbox{\hyperlink{poly-int_8h_af3bb9d9df219585072cf9e4e95572f70}{b}}-\/>fn\_decl;}
+\DoxyCodeLine{00518\ \ \ \}}
+\DoxyCodeLine{00519\ \};}
+\DoxyCodeLine{00520\ }
+\DoxyCodeLine{00521\ \textcolor{comment}{/*\ The\ structure\ that\ holds\ all\ of\ the\ vectors\ of\ global\ types,}}
+\DoxyCodeLine{00522\ \textcolor{comment}{\ \ \ decls\ and\ cgraph\ nodes\ used\ in\ the\ serialization\ of\ this\ file.\ \ */}}
+\DoxyCodeLine{00523\ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{structlto__out__decl__state}{lto\_out\_decl\_state}}}
+\DoxyCodeLine{00524\ \{}
+\DoxyCodeLine{00525\ \ \ \textcolor{comment}{/*\ The\ buffers\ contain\ the\ sets\ of\ decls\ of\ various\ kinds\ and\ types\ we\ have}}
+\DoxyCodeLine{00526\ \textcolor{comment}{\ \ \ \ \ seen\ so\ far\ and\ the\ indexes\ assigned\ to\ them.\ \ */}}
+\DoxyCodeLine{00527\ \ \ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{structlto__tree__ref__encoder}{lto\_tree\_ref\_encoder}}\ \doxymbox{\hyperlink{structlto__out__decl__state_ac2c3f0555b261c732c2877215720bda6}{streams}}[\doxymbox{\hyperlink{lto-streamer_8h_a6bf8f176d613e17a7c291a07508ff6a3a0e7e0a3ae2151c3965f285b5f3b019ee}{LTO\_N\_DECL\_STREAMS}}];}
+\DoxyCodeLine{00528\ }
+\DoxyCodeLine{00529\ \ \ \textcolor{comment}{/*\ Encoder\ for\ cgraph\ nodes.\ \ */}}
+\DoxyCodeLine{00530\ \ \ \doxymbox{\hyperlink{lto-streamer_8h_a0f04c68697e33ef4ea47f5fa451e32b0}{lto\_symtab\_encoder\_t}}\ \doxymbox{\hyperlink{structlto__out__decl__state_a2d484e9e7b8b99146e50c0afc3d42553}{symtab\_node\_encoder}};}
+\DoxyCodeLine{00531\ }
+\DoxyCodeLine{00532\ \ \ \textcolor{comment}{/*\ If\ this\ out-\/decl\ state\ belongs\ to\ a\ function,\ fn\_decl\ points\ to\ that}}
+\DoxyCodeLine{00533\ \textcolor{comment}{\ \ \ \ \ function.\ \ Otherwise,\ it\ is\ NULL.\ */}}
+\DoxyCodeLine{00534\ \ \ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ \doxymbox{\hyperlink{structlto__out__decl__state_a5be252f48e188a394da834afcae0e873}{fn\_decl}};}
+\DoxyCodeLine{00535\ }
+\DoxyCodeLine{00536\ \ \ \textcolor{comment}{/*\ True\ if\ decl\ state\ is\ compressed.\ \ */}}
+\DoxyCodeLine{00537\ \ \ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{structlto__out__decl__state_a39aa0f9c5cabd1c99072be4d086f6d5d}{compressed}};}
+\DoxyCodeLine{00538\ \};}
+\DoxyCodeLine{00539\ }
+\DoxyCodeLine{00540\ \textcolor{keyword}{typedef}\ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{structlto__out__decl__state}{lto\_out\_decl\_state}}\ *\doxymbox{\hyperlink{lto-streamer_8h_a0f3e820405e4e411cd897873690094c4}{lto\_out\_decl\_state\_ptr}};}
+\DoxyCodeLine{00541\ }
+\DoxyCodeLine{00542\ }
+\DoxyCodeLine{00543\ \textcolor{comment}{/*\ Compact\ representation\ of\ a\ index\ <-\/>\ resolution\ pair.\ Unpacked\ to\ an\ }}
+\DoxyCodeLine{00544\ \textcolor{comment}{\ \ \ vector\ later.\ */}}
+\DoxyCodeLine{00545\ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{structres__pair}{res\_pair}}\ }
+\DoxyCodeLine{00546\ \{}
+\DoxyCodeLine{00547\ \ \ \doxymbox{\hyperlink{lto-streamer_8h_a4e5bd58dc84304189bbfc2808f4181e1}{ld\_plugin\_symbol\_resolution\_t}}\ \doxymbox{\hyperlink{structres__pair_a551d25318808878838fa9b376eac9a2f}{res}};}
+\DoxyCodeLine{00548\ \ \ \textcolor{keywordtype}{unsigned}\ \doxymbox{\hyperlink{structres__pair_a57bf663db9d60d1b8d09d91d8748eca8}{index}};}
+\DoxyCodeLine{00549\ \};}
+\DoxyCodeLine{00550\ }
+\DoxyCodeLine{00551\ }
+\DoxyCodeLine{00552\ \textcolor{comment}{/*\ One\ of\ these\ is\ allocated\ for\ each\ object\ file\ that\ being\ compiled}}
+\DoxyCodeLine{00553\ \textcolor{comment}{\ \ \ by\ lto.\ \ This\ structure\ contains\ the\ tables\ that\ are\ needed\ by\ the}}
+\DoxyCodeLine{00554\ \textcolor{comment}{\ \ \ serialized\ functions\ and\ ipa\ passes\ to\ connect\ themselves\ to\ the}}
+\DoxyCodeLine{00555\ \textcolor{comment}{\ \ \ global\ types\ and\ decls\ as\ they\ are\ reconstituted.\ \ */}}
+\DoxyCodeLine{00556\ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{coretypes_8h_ae5708c4d4b300570eebe0bc0c78facbc}{GTY}}(())\ lto\_file\_decl\_data}
+\DoxyCodeLine{00557\ \{}
+\DoxyCodeLine{00558\ \ \ \textcolor{comment}{/*\ Decl\ state\ currently\ used.\ */}}
+\DoxyCodeLine{00559\ \ \ \textcolor{keyword}{struct\ }lto\_in\_decl\_state\ *current\_decl\_state;}
+\DoxyCodeLine{00560\ }
+\DoxyCodeLine{00561\ \ \ \textcolor{comment}{/*\ Decl\ state\ corresponding\ to\ regions\ outside\ of\ any\ functions}}
+\DoxyCodeLine{00562\ \textcolor{comment}{\ \ \ \ \ in\ the\ compilation\ unit.\ */}}
+\DoxyCodeLine{00563\ \ \ \textcolor{keyword}{struct\ }lto\_in\_decl\_state\ *global\_decl\_state;}
+\DoxyCodeLine{00564\ }
+\DoxyCodeLine{00565\ \ \ \textcolor{comment}{/*\ Table\ of\ cgraph\ nodes\ present\ in\ this\ file.\ \ */}}
+\DoxyCodeLine{00566\ \ \ \doxymbox{\hyperlink{lto-streamer_8h_a0f04c68697e33ef4ea47f5fa451e32b0}{lto\_symtab\_encoder\_t}}\ \doxymbox{\hyperlink{coretypes_8h_ae5708c4d4b300570eebe0bc0c78facbc}{GTY}}((skip))\ symtab\_node\_encoder;}
+\DoxyCodeLine{00567\ }
+\DoxyCodeLine{00568\ \ \ \textcolor{comment}{/*\ Hash\ table\ maps\ lto-\/related\ section\ names\ to\ location\ in\ file.\ \ */}}
+\DoxyCodeLine{00569\ \ \ \doxymbox{\hyperlink{classhash__table}{hash\_table<decl\_state\_hasher>}}\ *function\_decl\_states;}
+\DoxyCodeLine{00570\ }
+\DoxyCodeLine{00571\ \ \ \textcolor{comment}{/*\ The\ .o\ file\ that\ these\ offsets\ relate\ to.\ \ */}}
+\DoxyCodeLine{00572\ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *\doxymbox{\hyperlink{coretypes_8h_ae5708c4d4b300570eebe0bc0c78facbc}{GTY}}((skip))\ file\_name;}
+\DoxyCodeLine{00573\ }
+\DoxyCodeLine{00574\ \ \ \textcolor{comment}{/*\ Hash\ table\ maps\ lto-\/related\ section\ names\ to\ location\ in\ file.\ \ */}}
+\DoxyCodeLine{00575\ \ \ \doxymbox{\hyperlink{hashtab_8h_aa3847a9bffeefab8f9895fc38007118a}{htab\_t}}\ \doxymbox{\hyperlink{coretypes_8h_ae5708c4d4b300570eebe0bc0c78facbc}{GTY}}((skip))\ section\_hash\_table;}
+\DoxyCodeLine{00576\ }
+\DoxyCodeLine{00577\ \ \ \textcolor{comment}{/*\ Hash\ new\ name\ of\ renamed\ global\ declaration\ to\ its\ original\ name.\ \ */}}
+\DoxyCodeLine{00578\ \ \ \doxymbox{\hyperlink{hashtab_8h_aa3847a9bffeefab8f9895fc38007118a}{htab\_t}}\ \doxymbox{\hyperlink{coretypes_8h_ae5708c4d4b300570eebe0bc0c78facbc}{GTY}}((skip))\ renaming\_hash\_table;}
+\DoxyCodeLine{00579\ }
+\DoxyCodeLine{00580\ \ \ \textcolor{comment}{/*\ Linked\ list\ used\ temporarily\ in\ reader\ */}}
+\DoxyCodeLine{00581\ \ \ \textcolor{keyword}{struct\ }lto\_file\_decl\_data\ *next;}
+\DoxyCodeLine{00582\ }
+\DoxyCodeLine{00583\ \ \ \textcolor{comment}{/*\ Order\ in\ which\ the\ file\ appears\ on\ the\ command\ line.\ \ */}}
+\DoxyCodeLine{00584\ \ \ \textcolor{keywordtype}{int}\ order;}
+\DoxyCodeLine{00585\ }
+\DoxyCodeLine{00586\ \ \ \textcolor{comment}{/*\ Sub\ ID\ for\ merged\ objects.\ */}}
+\DoxyCodeLine{00587\ \ \ \textcolor{keywordtype}{unsigned}\ HOST\_WIDE\_INT\ id;}
+\DoxyCodeLine{00588\ }
+\DoxyCodeLine{00589\ \ \ \textcolor{comment}{/*\ Symbol\ resolutions\ for\ this\ file\ */}}
+\DoxyCodeLine{00590\ \ \ \doxymbox{\hyperlink{structvec}{vec<res\_pair>}}\ \ \doxymbox{\hyperlink{coretypes_8h_ae5708c4d4b300570eebe0bc0c78facbc}{GTY}}((skip))\ respairs;}
+\DoxyCodeLine{00591\ \ \ \textcolor{keywordtype}{unsigned}\ max\_index;}
+\DoxyCodeLine{00592\ }
+\DoxyCodeLine{00593\ \ \ \doxymbox{\hyperlink{structgcov__summary}{gcov\_summary}}\ \doxymbox{\hyperlink{coretypes_8h_ae5708c4d4b300570eebe0bc0c78facbc}{GTY}}((skip))\ \doxymbox{\hyperlink{profile_8h_a3687ef4b23c5484bd1f8228a28701141}{profile\_info}};}
+\DoxyCodeLine{00594\ }
+\DoxyCodeLine{00595\ \ \ \textcolor{comment}{/*\ Map\ assigning\ declarations\ their\ resolutions.\ \ */}}
+\DoxyCodeLine{00596\ \ \ \doxymbox{\hyperlink{classhash__map}{hash\_map<tree,\ ld\_plugin\_symbol\_resolution>}}\ *\ \doxymbox{\hyperlink{coretypes_8h_ae5708c4d4b300570eebe0bc0c78facbc}{GTY}}((skip))\ resolution\_map;}
+\DoxyCodeLine{00597\ }
+\DoxyCodeLine{00598\ \ \ \textcolor{comment}{/*\ Mode\ translation\ table.\ \ */}}
+\DoxyCodeLine{00599\ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{char}\ *mode\_table;}
+\DoxyCodeLine{00600\ }
+\DoxyCodeLine{00601\ \ \ \textcolor{comment}{/*\ Read\ LTO\ section.\ \ */}}
+\DoxyCodeLine{00602\ \ \ \doxymbox{\hyperlink{structlto__section}{lto\_section}}\ lto\_section\_header;}
+\DoxyCodeLine{00603\ }
+\DoxyCodeLine{00604\ \ \ \textcolor{keywordtype}{int}\ order\_base;}
+\DoxyCodeLine{00605\ }
+\DoxyCodeLine{00606\ \ \ \textcolor{keywordtype}{int}\ unit\_base;}
+\DoxyCodeLine{00607\ }
+\DoxyCodeLine{00608\ \ \ \textcolor{keywordtype}{unsigned}\ mode\_bits;}
+\DoxyCodeLine{00609\ \};}
+\DoxyCodeLine{00610\ }
+\DoxyCodeLine{00611\ \textcolor{keyword}{typedef}\ \textcolor{keyword}{struct\ }lto\_file\_decl\_data\ *\doxymbox{\hyperlink{lto-streamer_8h_a34df86653a1a43a44ed414b284f9764a}{lto\_file\_decl\_data\_ptr}};}
+\DoxyCodeLine{00612\ }
+\DoxyCodeLine{00613\ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{structlto__char__ptr__base}{lto\_char\_ptr\_base}}}
+\DoxyCodeLine{00614\ \{}
+\DoxyCodeLine{00615\ \ \ \textcolor{keywordtype}{char}\ *\doxymbox{\hyperlink{structlto__char__ptr__base_a9f26b67c00d8957f71d7a357f254b1ec}{ptr}};}
+\DoxyCodeLine{00616\ \};}
+\DoxyCodeLine{00617\ }
+\DoxyCodeLine{00618\ \textcolor{comment}{/*\ An\ incore\ byte\ stream\ to\ buffer\ the\ various\ parts\ of\ the\ function.}}
+\DoxyCodeLine{00619\ \textcolor{comment}{\ \ \ The\ entire\ structure\ should\ be\ zeroed\ when\ created.\ \ The\ record}}
+\DoxyCodeLine{00620\ \textcolor{comment}{\ \ \ consists\ of\ a\ set\ of\ blocks.\ \ The\ first\ sizeof\ (ptr)\ bytes\ are\ used}}
+\DoxyCodeLine{00621\ \textcolor{comment}{\ \ \ as\ a\ chain,\ and\ the\ rest\ store\ the\ bytes\ to\ be\ written.\ \ */}}
+\DoxyCodeLine{00622\ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{structlto__output__stream}{lto\_output\_stream}}}
+\DoxyCodeLine{00623\ \{}
+\DoxyCodeLine{00624\ \ \ \textcolor{comment}{/*\ The\ pointer\ to\ the\ first\ block\ in\ the\ stream.\ \ */}}
+\DoxyCodeLine{00625\ \ \ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{structlto__char__ptr__base}{lto\_char\_ptr\_base}}\ *\ \doxymbox{\hyperlink{structlto__output__stream_aebada3d578485cfe0c71103cf4e21f08}{first\_block}};}
+\DoxyCodeLine{00626\ }
+\DoxyCodeLine{00627\ \ \ \textcolor{comment}{/*\ The\ pointer\ to\ the\ last\ and\ current\ block\ in\ the\ stream.\ \ */}}
+\DoxyCodeLine{00628\ \ \ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{structlto__char__ptr__base}{lto\_char\_ptr\_base}}\ *\ \doxymbox{\hyperlink{structlto__output__stream_a6d3284100836ecf30b94aca9f10c65d1}{current\_block}};}
+\DoxyCodeLine{00629\ }
+\DoxyCodeLine{00630\ \ \ \textcolor{comment}{/*\ The\ pointer\ to\ where\ the\ next\ char\ should\ be\ written.\ \ */}}
+\DoxyCodeLine{00631\ \ \ \textcolor{keywordtype}{char}\ *\ \doxymbox{\hyperlink{structlto__output__stream_ac05e87af909a7935be2cf08310a3df4c}{current\_pointer}};}
+\DoxyCodeLine{00632\ }
+\DoxyCodeLine{00633\ \ \ \textcolor{comment}{/*\ The\ number\ of\ characters\ left\ in\ the\ current\ block.\ \ */}}
+\DoxyCodeLine{00634\ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{structlto__output__stream_aa445055c650507dd6629e38413c86f92}{left\_in\_block}};}
+\DoxyCodeLine{00635\ }
+\DoxyCodeLine{00636\ \ \ \textcolor{comment}{/*\ The\ block\ size\ of\ the\ last\ block\ allocated.\ \ */}}
+\DoxyCodeLine{00637\ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{structlto__output__stream_aa22316dc03ddfe07dbba55c5de4567b6}{block\_size}};}
+\DoxyCodeLine{00638\ }
+\DoxyCodeLine{00639\ \ \ \textcolor{comment}{/*\ The\ total\ number\ of\ characters\ written.\ \ */}}
+\DoxyCodeLine{00640\ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{structlto__output__stream_a850e0270cca1f99f06db31f9e69cc9b5}{total\_size}};}
+\DoxyCodeLine{00641\ \};}
+\DoxyCodeLine{00642\ }
+\DoxyCodeLine{00643\ \textcolor{comment}{/*\ A\ simple\ output\ block.\ \ This\ can\ be\ used\ for\ simple\ IPA\ passes\ that}}
+\DoxyCodeLine{00644\ \textcolor{comment}{\ \ \ do\ not\ need\ more\ than\ one\ stream.\ \ */}}
+\DoxyCodeLine{00645\ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{structlto__simple__output__block}{lto\_simple\_output\_block}}}
+\DoxyCodeLine{00646\ \{}
+\DoxyCodeLine{00647\ \ \ \textcolor{keyword}{enum}\ \doxymbox{\hyperlink{lto-streamer_8h_a6e0587d4b9c06c0984264b0b57a46826}{lto\_section\_type}}\ \doxymbox{\hyperlink{structlto__simple__output__block_a4bd7491f9af8f22415c3ecf587a7c59f}{section\_type}};}
+\DoxyCodeLine{00648\ \ \ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{structlto__out__decl__state}{lto\_out\_decl\_state}}\ *\doxymbox{\hyperlink{structlto__simple__output__block_a6bd5fa53f8834ce32096213a38851189}{decl\_state}};}
+\DoxyCodeLine{00649\ }
+\DoxyCodeLine{00650\ \ \ \textcolor{comment}{/*\ The\ stream\ that\ the\ main\ tree\ codes\ are\ written\ to.\ \ */}}
+\DoxyCodeLine{00651\ \ \ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{structlto__output__stream}{lto\_output\_stream}}\ *\doxymbox{\hyperlink{structlto__simple__output__block_a31484e7f157382251f8ccba64222ffe7}{main\_stream}};}
+\DoxyCodeLine{00652\ \};}
+\DoxyCodeLine{00653\ }
+\DoxyCodeLine{00654\ \textcolor{comment}{/*\ String\ hashing.\ \ */}}
+\DoxyCodeLine{00655\ }
+\DoxyCodeLine{00656\ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{structstring__slot}{string\_slot}}}
+\DoxyCodeLine{00657\ \{}
+\DoxyCodeLine{00658\ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *\doxymbox{\hyperlink{structstring__slot_abf45b8e2982c8a664842807c51bb7714}{s}};}
+\DoxyCodeLine{00659\ \ \ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{structstring__slot_a0fcccd83e9b79cad82e216cb92d3958c}{len}};}
+\DoxyCodeLine{00660\ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{structstring__slot_a4d90a83075fb2ac24cbc519fd9a5c1b7}{slot\_num}};}
+\DoxyCodeLine{00661\ \};}
+\DoxyCodeLine{00662\ }
+\DoxyCodeLine{00663\ \textcolor{comment}{/*\ Hashtable\ helpers.\ \ */}}
+\DoxyCodeLine{00664\ }
+\DoxyCodeLine{00665\ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{structstring__slot__hasher}{string\_slot\_hasher}}\ :\ \doxymbox{\hyperlink{structnofree__ptr__hash}{nofree\_ptr\_hash}}\ <string\_slot>}
+\DoxyCodeLine{00666\ \{}
+\DoxyCodeLine{00667\ \ \ \textcolor{keyword}{static}\ \textcolor{keyword}{inline}\ \doxymbox{\hyperlink{hashtab_8h_a2d05e5049721cf3117dd6b34e20d4f65}{hashval\_t}}\ \doxymbox{\hyperlink{structstring__slot__hasher_ac7dc444d425b8d828f21251f646a9fc8}{hash}}\ (\textcolor{keyword}{const}\ \doxymbox{\hyperlink{structstring__slot}{string\_slot}}\ *);}
+\DoxyCodeLine{00668\ \ \ \textcolor{keyword}{static}\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{structstring__slot__hasher_a279990536643762a6d52517ccb881ec0}{equal}}\ (\textcolor{keyword}{const}\ \doxymbox{\hyperlink{structstring__slot}{string\_slot}}\ *,\ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{structstring__slot}{string\_slot}}\ *);}
+\DoxyCodeLine{00669\ \};}
+\DoxyCodeLine{00670\ }
+\DoxyCodeLine{00671\ \textcolor{comment}{/*\ Returns\ a\ hash\ code\ for\ DS.\ \ Adapted\ from\ libiberty's\ htab\_hash\_string}}
+\DoxyCodeLine{00672\ \textcolor{comment}{\ \ \ to\ support\ strings\ that\ may\ not\ end\ in\ '\(\backslash\)0'.\ \ */}}
+\DoxyCodeLine{00673\ }
+\DoxyCodeLine{00674\ \textcolor{keyword}{inline}\ \doxymbox{\hyperlink{hashtab_8h_a2d05e5049721cf3117dd6b34e20d4f65}{hashval\_t}}}
+\DoxyCodeLine{00675\ \doxymbox{\hyperlink{structstring__slot__hasher_ac7dc444d425b8d828f21251f646a9fc8}{string\_slot\_hasher::hash}}\ (\textcolor{keyword}{const}\ \doxymbox{\hyperlink{structstring__slot}{string\_slot}}\ *ds)}
+\DoxyCodeLine{00676\ \{}
+\DoxyCodeLine{00677\ \ \ \doxymbox{\hyperlink{hashtab_8h_a2d05e5049721cf3117dd6b34e20d4f65}{hashval\_t}}\ \doxymbox{\hyperlink{poly-int_8h_a3ecac2571dcdc8050989339124f1bd26}{r}}\ =\ ds-\/>\doxymbox{\hyperlink{structstring__slot_a0fcccd83e9b79cad82e216cb92d3958c}{len}};}
+\DoxyCodeLine{00678\ \ \ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{poly-int_8h_a7e98b8a17c0aad30ba64d47b74e2a6c1}{i}};}
+\DoxyCodeLine{00679\ }
+\DoxyCodeLine{00680\ \ \ \textcolor{keywordflow}{for}\ (\doxymbox{\hyperlink{poly-int_8h_a7e98b8a17c0aad30ba64d47b74e2a6c1}{i}}\ =\ 0;\ \doxymbox{\hyperlink{poly-int_8h_a7e98b8a17c0aad30ba64d47b74e2a6c1}{i}}\ <\ ds-\/>\doxymbox{\hyperlink{structstring__slot_a0fcccd83e9b79cad82e216cb92d3958c}{len}};\ \doxymbox{\hyperlink{poly-int_8h_a7e98b8a17c0aad30ba64d47b74e2a6c1}{i}}++)}
+\DoxyCodeLine{00681\ \ \ \ \ \ \doxymbox{\hyperlink{poly-int_8h_a3ecac2571dcdc8050989339124f1bd26}{r}}\ =\ \doxymbox{\hyperlink{poly-int_8h_a3ecac2571dcdc8050989339124f1bd26}{r}}\ *\ 67\ +\ (\textcolor{keywordtype}{unsigned})ds-\/>\doxymbox{\hyperlink{structstring__slot_abf45b8e2982c8a664842807c51bb7714}{s}}[\doxymbox{\hyperlink{poly-int_8h_a7e98b8a17c0aad30ba64d47b74e2a6c1}{i}}]\ -\/\ 113;}
+\DoxyCodeLine{00682\ \ \ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{poly-int_8h_a3ecac2571dcdc8050989339124f1bd26}{r}};}
+\DoxyCodeLine{00683\ \}}
+\DoxyCodeLine{00684\ }
+\DoxyCodeLine{00685\ \textcolor{comment}{/*\ Returns\ nonzero\ if\ DS1\ and\ DS2\ are\ equal.\ \ */}}
+\DoxyCodeLine{00686\ }
+\DoxyCodeLine{00687\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{bool}}
+\DoxyCodeLine{00688\ \doxymbox{\hyperlink{structstring__slot__hasher_a279990536643762a6d52517ccb881ec0}{string\_slot\_hasher::equal}}\ (\textcolor{keyword}{const}\ \doxymbox{\hyperlink{structstring__slot}{string\_slot}}\ *ds1,\ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{structstring__slot}{string\_slot}}\ *ds2)}
+\DoxyCodeLine{00689\ \{}
+\DoxyCodeLine{00690\ \ \ \textcolor{keywordflow}{if}\ (ds1-\/>\doxymbox{\hyperlink{structstring__slot_a0fcccd83e9b79cad82e216cb92d3958c}{len}}\ ==\ ds2-\/>\doxymbox{\hyperlink{structstring__slot_a0fcccd83e9b79cad82e216cb92d3958c}{len}})}
+\DoxyCodeLine{00691\ \ \ \ \ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{string_8cpp_a9e6df54ee04e18a3772335580e2ed872}{memcmp}}\ (ds1-\/>\doxymbox{\hyperlink{structstring__slot_abf45b8e2982c8a664842807c51bb7714}{s}},\ ds2-\/>\doxymbox{\hyperlink{structstring__slot_abf45b8e2982c8a664842807c51bb7714}{s}},\ ds1-\/>\doxymbox{\hyperlink{structstring__slot_a0fcccd83e9b79cad82e216cb92d3958c}{len}})\ ==\ 0;}
+\DoxyCodeLine{00692\ }
+\DoxyCodeLine{00693\ \ \ \textcolor{keywordflow}{return}\ 0;}
+\DoxyCodeLine{00694\ \}}
+\DoxyCodeLine{00695\ }
+\DoxyCodeLine{00696\ \textcolor{comment}{/*\ Data\ structure\ holding\ all\ the\ data\ and\ descriptors\ used\ when\ writing}}
+\DoxyCodeLine{00697\ \textcolor{comment}{\ \ \ an\ LTO\ file.\ \ */}}
+\DoxyCodeLine{00698\ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{structoutput__block}{output\_block}}}
+\DoxyCodeLine{00699\ \{}
+\DoxyCodeLine{00700\ \ \ \textcolor{keyword}{enum}\ \doxymbox{\hyperlink{lto-streamer_8h_a6e0587d4b9c06c0984264b0b57a46826}{lto\_section\_type}}\ \doxymbox{\hyperlink{structoutput__block_a5322b3c1fd23e92dca46965b641ea879}{section\_type}};}
+\DoxyCodeLine{00701\ \ \ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{structlto__out__decl__state}{lto\_out\_decl\_state}}\ *\doxymbox{\hyperlink{structoutput__block_a86a1c2822690bd951b1701cb05883bd8}{decl\_state}};}
+\DoxyCodeLine{00702\ }
+\DoxyCodeLine{00703\ \ \ \textcolor{comment}{/*\ The\ stream\ that\ the\ main\ tree\ codes\ are\ written\ to.\ \ */}}
+\DoxyCodeLine{00704\ \ \ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{structlto__output__stream}{lto\_output\_stream}}\ *\doxymbox{\hyperlink{structoutput__block_af775a2f2def14b746d783c821d3fb597}{main\_stream}};}
+\DoxyCodeLine{00705\ }
+\DoxyCodeLine{00706\ \ \ \textcolor{comment}{/*\ The\ stream\ that\ contains\ the\ string\ table.\ \ */}}
+\DoxyCodeLine{00707\ \ \ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{structlto__output__stream}{lto\_output\_stream}}\ *\doxymbox{\hyperlink{structoutput__block_a3cbea0a36d4b09b3014acb88a607a49c}{string\_stream}};}
+\DoxyCodeLine{00708\ }
+\DoxyCodeLine{00709\ \ \ \textcolor{comment}{/*\ The\ stream\ that\ contains\ the\ cfg.\ \ */}}
+\DoxyCodeLine{00710\ \ \ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{structlto__output__stream}{lto\_output\_stream}}\ *\doxymbox{\hyperlink{structoutput__block_a353a1941c0e27adb1a097f241d988afc}{cfg\_stream}};}
+\DoxyCodeLine{00711\ }
+\DoxyCodeLine{00712\ \ \ \textcolor{comment}{/*\ The\ hash\ table\ that\ contains\ the\ set\ of\ strings\ we\ have\ seen\ so}}
+\DoxyCodeLine{00713\ \textcolor{comment}{\ \ \ \ \ far\ and\ the\ indexes\ assigned\ to\ them.\ \ */}}
+\DoxyCodeLine{00714\ \ \ \doxymbox{\hyperlink{classhash__table}{hash\_table<string\_slot\_hasher>}}\ *\doxymbox{\hyperlink{structoutput__block_ab31e96adbe9c60942c0a5c978b1c16e6}{string\_hash\_table}};}
+\DoxyCodeLine{00715\ }
+\DoxyCodeLine{00716\ \ \ \textcolor{comment}{/*\ The\ current\ symbol\ that\ we\ are\ currently\ serializing.\ \ Null}}
+\DoxyCodeLine{00717\ \textcolor{comment}{\ \ \ \ \ if\ we\ are\ serializing\ something\ else.\ \ */}}
+\DoxyCodeLine{00718\ \ \ symtab\_node\ *\doxymbox{\hyperlink{structoutput__block_ab51e08ed22a33f32ea0f165c0eb54428}{symbol}};}
+\DoxyCodeLine{00719\ }
+\DoxyCodeLine{00720\ \ \ \textcolor{comment}{/*\ These\ are\ the\ last\ file\ and\ line\ that\ were\ seen\ in\ the\ stream.}}
+\DoxyCodeLine{00721\ \textcolor{comment}{\ \ \ \ \ If\ the\ current\ node\ differs\ from\ these,\ it\ needs\ to\ insert}}
+\DoxyCodeLine{00722\ \textcolor{comment}{\ \ \ \ \ something\ into\ the\ stream\ and\ fix\ these\ up.\ \ */}}
+\DoxyCodeLine{00723\ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *\doxymbox{\hyperlink{structoutput__block_ab52cec6a0d995b15547e54ea4defcc54}{current\_file}};}
+\DoxyCodeLine{00724\ \ \ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{structoutput__block_a2bcf6ee0ed1b523617408d4930cfa91d}{current\_line}};}
+\DoxyCodeLine{00725\ \ \ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{structoutput__block_a6d2bdd0e9f5c9582b845f151fe728e4c}{current\_col}};}
+\DoxyCodeLine{00726\ \ \ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{structoutput__block_a636c128d294124ac3894fb9e51d580bb}{current\_sysp}};}
+\DoxyCodeLine{00727\ \ \ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{structoutput__block_ac3b9bfe3a90f276cbd243687e47fce66}{reset\_locus}};}
+\DoxyCodeLine{00728\ \ \ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{structoutput__block_aad247605741289c4bb98c8c9c88f7f19}{emit\_pwd}};}
+\DoxyCodeLine{00729\ \ \ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ \doxymbox{\hyperlink{structoutput__block_a6e3887e25ef703bb9f88e92717f6ded5}{current\_block}};}
+\DoxyCodeLine{00730\ \ \ \textcolor{keywordtype}{unsigned}\ \doxymbox{\hyperlink{structoutput__block_a14d39ff432ad452cfd9b171c5da77ca1}{current\_discr}};}
+\DoxyCodeLine{00731\ }
+\DoxyCodeLine{00732\ \ \ \textcolor{comment}{/*\ Cache\ of\ nodes\ written\ in\ this\ section.\ \ */}}
+\DoxyCodeLine{00733\ \ \ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{structstreamer__tree__cache__d}{streamer\_tree\_cache\_d}}\ *\doxymbox{\hyperlink{structoutput__block_ac8c680469bf9ada5e8af5908abf40427}{writer\_cache}};}
+\DoxyCodeLine{00734\ }
+\DoxyCodeLine{00735\ \ \ \textcolor{comment}{/*\ All\ trees\ identified\ as\ local\ to\ the\ unit\ streamed.\ \ */}}
+\DoxyCodeLine{00736\ \ \ \doxymbox{\hyperlink{classhash__set}{hash\_set<tree>}}\ *\doxymbox{\hyperlink{structoutput__block_a595f2149403854671084ddb34aee226b}{local\_trees}};}
+\DoxyCodeLine{00737\ }
+\DoxyCodeLine{00738\ \ \ \textcolor{comment}{/*\ All\ data\ persistent\ across\ whole\ duration\ of\ output\ block}}
+\DoxyCodeLine{00739\ \textcolor{comment}{\ \ \ \ \ can\ go\ here.\ \ */}}
+\DoxyCodeLine{00740\ \ \ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{structoutput__block_a1d74d71149e21841aa6767f9a4d18749}{obstack}}\ \doxymbox{\hyperlink{structoutput__block_a1d74d71149e21841aa6767f9a4d18749}{obstack}};}
+\DoxyCodeLine{00741\ \};}
+\DoxyCodeLine{00742\ }
+\DoxyCodeLine{00743\ }
+\DoxyCodeLine{00744\ \textcolor{comment}{/*\ Data\ and\ descriptors\ used\ when\ reading\ from\ an\ LTO\ file.\ \ */}}
+\DoxyCodeLine{00745\ \textcolor{keyword}{class\ }\doxymbox{\hyperlink{classdata__in}{data\_in}}}
+\DoxyCodeLine{00746\ \{}
+\DoxyCodeLine{00747\ \textcolor{keyword}{public}:}
+\DoxyCodeLine{00748\ \ \ \textcolor{comment}{/*\ The\ global\ decls\ and\ types.\ \ */}}
+\DoxyCodeLine{00749\ \ \ \textcolor{keyword}{struct\ }lto\_file\_decl\_data\ *\doxymbox{\hyperlink{classdata__in_aa08cae8505da083c20a8a09157afa948}{file\_data}};}
+\DoxyCodeLine{00750\ }
+\DoxyCodeLine{00751\ \ \ \textcolor{comment}{/*\ The\ string\ table.\ \ */}}
+\DoxyCodeLine{00752\ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *\doxymbox{\hyperlink{classdata__in_adeb2d01a036f996fe4e4a1ca13aeb454}{strings}};}
+\DoxyCodeLine{00753\ }
+\DoxyCodeLine{00754\ \ \ \textcolor{comment}{/*\ The\ length\ of\ the\ string\ table.\ \ */}}
+\DoxyCodeLine{00755\ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{classdata__in_a8490ed105a112a68c90ae6b28e1d4a5c}{strings\_len}};}
+\DoxyCodeLine{00756\ }
+\DoxyCodeLine{00757\ \ \ \textcolor{comment}{/*\ Maps\ each\ reference\ number\ to\ the\ resolution\ done\ by\ the\ linker.\ */}}
+\DoxyCodeLine{00758\ \ \ \doxymbox{\hyperlink{structvec}{vec<ld\_plugin\_symbol\_resolution\_t>}}\ \doxymbox{\hyperlink{classdata__in_a7a9db145fe97d5e5c3fe6e4837e9b64c}{globals\_resolution}};}
+\DoxyCodeLine{00759\ }
+\DoxyCodeLine{00760\ \ \ \textcolor{comment}{/*\ Cache\ of\ pickled\ nodes.\ \ */}}
+\DoxyCodeLine{00761\ \ \ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{structstreamer__tree__cache__d}{streamer\_tree\_cache\_d}}\ *\doxymbox{\hyperlink{classdata__in_a83724f4bd1bc7791bdeb3bcc3ce627a7}{reader\_cache}};}
+\DoxyCodeLine{00762\ }
+\DoxyCodeLine{00763\ \ \ \textcolor{comment}{/*\ Cache\ of\ source\ code\ location.\ \ */}}
+\DoxyCodeLine{00764\ \ \ \doxymbox{\hyperlink{classlto__location__cache}{lto\_location\_cache}}\ \doxymbox{\hyperlink{classdata__in_a7bd51673005195e1d09aecf98c130791}{location\_cache}};}
+\DoxyCodeLine{00765\ \};}
+\DoxyCodeLine{00766\ }
+\DoxyCodeLine{00767\ }
+\DoxyCodeLine{00768\ \textcolor{comment}{/*\ In\ lto-\/section-\/in.cc\ \ */}}
+\DoxyCodeLine{00769\ \textcolor{keyword}{extern}\ \textcolor{keyword}{class\ }\doxymbox{\hyperlink{classlto__input__block}{lto\_input\_block}}\ *\ \doxymbox{\hyperlink{lto-streamer_8h_acf8b4648bb272750fefd18cf327830a9}{lto\_create\_simple\_input\_block}}\ (}
+\DoxyCodeLine{00770\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{struct}\ lto\_file\_decl\_data\ *,}
+\DoxyCodeLine{00771\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{enum}\ \doxymbox{\hyperlink{lto-streamer_8h_a6e0587d4b9c06c0984264b0b57a46826}{lto\_section\_type}},\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ **,\ \textcolor{keywordtype}{size\_t}\ *);}
+\DoxyCodeLine{00772\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}}
+\DoxyCodeLine{00773\ \doxymbox{\hyperlink{lto-streamer_8h_a83b52480f980ce3ec93f0a46208e3eb8}{lto\_destroy\_simple\_input\_block}}\ (\textcolor{keyword}{struct}\ lto\_file\_decl\_data\ *,}
+\DoxyCodeLine{00774\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{enum}\ \doxymbox{\hyperlink{lto-streamer_8h_a6e0587d4b9c06c0984264b0b57a46826}{lto\_section\_type}},}
+\DoxyCodeLine{00775\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{class}\ \doxymbox{\hyperlink{classlto__input__block}{lto\_input\_block}}\ *,\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *,\ \textcolor{keywordtype}{size\_t});}
+\DoxyCodeLine{00776\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{lto-streamer_8h_af1db73dbc79850403db8b961956b184e}{lto\_set\_in\_hooks}}\ (\textcolor{keyword}{struct}\ lto\_file\_decl\_data\ **,}
+\DoxyCodeLine{00777\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{lto-streamer_8h_af3b47ecb9cef3edb34db9656060cfc5c}{lto\_get\_section\_data\_f}}\ *,}
+\DoxyCodeLine{00778\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{lto-streamer_8h_a3cd4aa64227692f4180acf79a3e84b78}{lto\_free\_section\_data\_f}}\ *);}
+\DoxyCodeLine{00779\ \textcolor{keyword}{extern}\ \textcolor{keyword}{struct\ }lto\_file\_decl\_data\ **\doxymbox{\hyperlink{lto-streamer_8h_a8f3daf56daa7fd3baf504b3af27be823}{lto\_get\_file\_decl\_data}}\ (\textcolor{keywordtype}{void});}
+\DoxyCodeLine{00780\ \textcolor{keyword}{extern}\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *\doxymbox{\hyperlink{lto-streamer_8h_a77f17a6e93e58c9c034af0f317ef4719}{lto\_get\_section\_data}}\ (\textcolor{keyword}{struct}\ lto\_file\_decl\_data\ *,}
+\DoxyCodeLine{00781\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{enum}\ \doxymbox{\hyperlink{lto-streamer_8h_a6e0587d4b9c06c0984264b0b57a46826}{lto\_section\_type}},}
+\DoxyCodeLine{00782\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *,\ \textcolor{keywordtype}{int},\ \textcolor{keywordtype}{size\_t}\ *,}
+\DoxyCodeLine{00783\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{bool}\ decompress\ =\ \textcolor{keyword}{false});}
+\DoxyCodeLine{00784\ \textcolor{keyword}{extern}\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *\doxymbox{\hyperlink{lto-streamer_8h_a26e0f0e96e9d324ce7ec606f0a7cbfc3}{lto\_get\_summary\_section\_data}}\ (\textcolor{keyword}{struct}\ lto\_file\_decl\_data\ *,}
+\DoxyCodeLine{00785\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{enum}\ \doxymbox{\hyperlink{lto-streamer_8h_a6e0587d4b9c06c0984264b0b57a46826}{lto\_section\_type}},}
+\DoxyCodeLine{00786\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{size\_t}\ *);}
+\DoxyCodeLine{00787\ \textcolor{keyword}{extern}\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *\doxymbox{\hyperlink{lto-streamer_8h_af90806c2f4298e1bfe74125bb296cedb}{lto\_get\_raw\_section\_data}}\ (\textcolor{keyword}{struct}\ lto\_file\_decl\_data\ *,}
+\DoxyCodeLine{00788\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{enum}\ \doxymbox{\hyperlink{lto-streamer_8h_a6e0587d4b9c06c0984264b0b57a46826}{lto\_section\_type}},}
+\DoxyCodeLine{00789\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *,\ \textcolor{keywordtype}{int},\ \textcolor{keywordtype}{size\_t}\ *);}
+\DoxyCodeLine{00790\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{lto-streamer_8h_afd35f40062fbbf57879747eb1e1f47f3}{lto\_free\_section\_data}}\ (\textcolor{keyword}{struct}\ lto\_file\_decl\_data\ *,}
+\DoxyCodeLine{00791\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{enum}\ \doxymbox{\hyperlink{lto-streamer_8h_a6e0587d4b9c06c0984264b0b57a46826}{lto\_section\_type}},}
+\DoxyCodeLine{00792\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *,\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *,\ \textcolor{keywordtype}{size\_t},}
+\DoxyCodeLine{00793\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{bool}\ decompress\ =\ \textcolor{keyword}{false});}
+\DoxyCodeLine{00794\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{lto-streamer_8h_ab08437f684766fa6b00603f4508b2814}{lto\_free\_raw\_section\_data}}\ (\textcolor{keyword}{struct}\ lto\_file\_decl\_data\ *,}
+\DoxyCodeLine{00795\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{enum}\ \doxymbox{\hyperlink{lto-streamer_8h_a6e0587d4b9c06c0984264b0b57a46826}{lto\_section\_type}},}
+\DoxyCodeLine{00796\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *,\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *,\ \textcolor{keywordtype}{size\_t});}
+\DoxyCodeLine{00797\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{hashtab_8h_aa3847a9bffeefab8f9895fc38007118a}{htab\_t}}\ \doxymbox{\hyperlink{lto-streamer_8h_a23baa63f63a935a6dd9268b058062028}{lto\_create\_renaming\_table}}\ (\textcolor{keywordtype}{void});}
+\DoxyCodeLine{00798\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{lto-streamer_8h_aed55f6dfa7e6dc02c538f4894c6f90e9}{lto\_record\_renamed\_decl}}\ (\textcolor{keyword}{struct}\ lto\_file\_decl\_data\ *,}
+\DoxyCodeLine{00799\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *,\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *);}
+\DoxyCodeLine{00800\ \textcolor{keyword}{extern}\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *\doxymbox{\hyperlink{lto-streamer_8h_a35391fa1bbe98b5708c0f95ffd919aeb}{lto\_get\_decl\_name\_mapping}}\ (\textcolor{keyword}{struct}\ lto\_file\_decl\_data\ *,}
+\DoxyCodeLine{00801\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *);}
+\DoxyCodeLine{00802\ \textcolor{keyword}{extern}\ \textcolor{keyword}{struct\ }lto\_in\_decl\_state\ *\doxymbox{\hyperlink{lto-streamer_8h_aee7b51a92b8884cdd06021a43f6e43f0}{lto\_new\_in\_decl\_state}}\ (\textcolor{keywordtype}{void});}
+\DoxyCodeLine{00803\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{lto-streamer_8h_a68719e0cf389a43f75b908697be0af97}{lto\_delete\_in\_decl\_state}}\ (\textcolor{keyword}{struct}\ lto\_in\_decl\_state\ *);}
+\DoxyCodeLine{00804\ \textcolor{keyword}{extern}\ \textcolor{keyword}{struct\ }lto\_in\_decl\_state\ *\doxymbox{\hyperlink{lto-streamer_8h_a123aa185f00e86945f698d8809127b1d}{lto\_get\_function\_in\_decl\_state}}\ (}
+\DoxyCodeLine{00805\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{struct}\ lto\_file\_decl\_data\ *,\ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}});}
+\DoxyCodeLine{00806\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{lto-streamer_8h_a06e0fde699ec02b85e504729ea73aec2}{lto\_free\_function\_in\_decl\_state}}\ (\textcolor{keyword}{struct}\ lto\_in\_decl\_state\ *);}
+\DoxyCodeLine{00807\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{lto-streamer_8h_a2abaeea69a84e75557c6d2b494aed040}{lto\_free\_function\_in\_decl\_state\_for\_node}}\ (symtab\_node\ *);}
+\DoxyCodeLine{00808\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{lto-streamer_8h_a003d0dd28a0cc2543f35c7f77e9a3352}{lto\_section\_overrun}}\ (\textcolor{keyword}{class}\ \doxymbox{\hyperlink{classlto__input__block}{lto\_input\_block}}\ *)\ \doxymbox{\hyperlink{ansidecl_8h_ab5c6b9dfdcc70f672f37121b673a3bb9}{ATTRIBUTE\_NORETURN}};}
+\DoxyCodeLine{00809\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{lto-streamer_8h_a77cbef232fb5e6fbbbe3fdc46111ac15}{lto\_value\_range\_error}}\ (\textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *,}
+\DoxyCodeLine{00810\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ HOST\_WIDE\_INT,\ HOST\_WIDE\_INT,}
+\DoxyCodeLine{00811\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ HOST\_WIDE\_INT)\ \doxymbox{\hyperlink{ansidecl_8h_ab5c6b9dfdcc70f672f37121b673a3bb9}{ATTRIBUTE\_NORETURN}};}
+\DoxyCodeLine{00812\ }
+\DoxyCodeLine{00813\ \textcolor{comment}{/*\ In\ lto-\/section-\/out.cc\ \ */}}
+\DoxyCodeLine{00814\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{lto-streamer_8h_a4f5d12c1fb541d1bd0a4257be66e1186}{lto\_begin\_section}}\ (\textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *,\ \textcolor{keywordtype}{bool});}
+\DoxyCodeLine{00815\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{lto-streamer_8h_aefd42c25c2f51695694e7db5e9713a03}{lto\_end\_section}}\ (\textcolor{keywordtype}{void});}
+\DoxyCodeLine{00816\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{lto-streamer_8h_a53c2a7484cfc5a964ceba6d44a64382b}{lto\_write\_data}}\ (\textcolor{keyword}{const}\ \textcolor{keywordtype}{void}\ *,\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int});}
+\DoxyCodeLine{00817\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{lto-streamer_8h_a21b993f0dd7168bde25588ff79a2dd2b}{lto\_write\_raw\_data}}\ (\textcolor{keyword}{const}\ \textcolor{keywordtype}{void}\ *,\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int});}
+\DoxyCodeLine{00818\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{lto-streamer_8h_adb427f627c27d5e4862eecd3dc79061c}{lto\_write\_stream}}\ (\textcolor{keyword}{struct}\ \doxymbox{\hyperlink{structlto__output__stream}{lto\_output\_stream}}\ *);}
+\DoxyCodeLine{00819\ \textcolor{keyword}{extern}\ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{structlto__simple__output__block}{lto\_simple\_output\_block}}\ *\doxymbox{\hyperlink{lto-streamer_8h_a9ea5496c485352a1f75aa545ce26fac4}{lto\_create\_simple\_output\_block}}\ (}
+\DoxyCodeLine{00820\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{enum}\ \doxymbox{\hyperlink{lto-streamer_8h_a6e0587d4b9c06c0984264b0b57a46826}{lto\_section\_type}});}
+\DoxyCodeLine{00821\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{lto-streamer_8h_a30c8009b8fba29c964f14a74ba0bbd93}{lto\_destroy\_simple\_output\_block}}\ (\textcolor{keyword}{struct}\ \doxymbox{\hyperlink{structlto__simple__output__block}{lto\_simple\_output\_block}}\ *);}
+\DoxyCodeLine{00822\ \textcolor{keyword}{extern}\ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{structlto__out__decl__state}{lto\_out\_decl\_state}}\ *\doxymbox{\hyperlink{lto-streamer_8h_a43b5ab3eb362eca483cbd1fcdc07d57f}{lto\_new\_out\_decl\_state}}\ (\textcolor{keywordtype}{void});}
+\DoxyCodeLine{00823\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{lto-streamer_8h_a8f907780c556d9487483cb1a3695f79e}{lto\_delete\_out\_decl\_state}}\ (\textcolor{keyword}{struct}\ \doxymbox{\hyperlink{structlto__out__decl__state}{lto\_out\_decl\_state}}\ *);}
+\DoxyCodeLine{00824\ \textcolor{keyword}{extern}\ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{structlto__out__decl__state}{lto\_out\_decl\_state}}\ *\doxymbox{\hyperlink{lto-streamer_8h_a051827896be9ffaf0611b491b992a193}{lto\_get\_out\_decl\_state}}\ (\textcolor{keywordtype}{void});}
+\DoxyCodeLine{00825\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{lto-streamer_8h_ac990e36ea97b11de527442f1d129acea}{lto\_push\_out\_decl\_state}}\ (\textcolor{keyword}{struct}\ \doxymbox{\hyperlink{structlto__out__decl__state}{lto\_out\_decl\_state}}\ *);}
+\DoxyCodeLine{00826\ \textcolor{keyword}{extern}\ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{structlto__out__decl__state}{lto\_out\_decl\_state}}\ *\doxymbox{\hyperlink{lto-streamer_8h_adbba4b7822677a9847c8f23a1b0c1b26}{lto\_pop\_out\_decl\_state}}\ (\textcolor{keywordtype}{void});}
+\DoxyCodeLine{00827\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{lto-streamer_8h_a095399608ac59ae42d59f9c1b246398a}{lto\_record\_function\_out\_decl\_state}}\ (\doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}},}
+\DoxyCodeLine{00828\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{struct}\ \doxymbox{\hyperlink{structlto__out__decl__state}{lto\_out\_decl\_state}}\ *);}
+\DoxyCodeLine{00829\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{lto-streamer_8h_abd00417c598666192a9cdc7f26667035}{lto\_append\_block}}\ (\textcolor{keyword}{struct}\ \doxymbox{\hyperlink{structlto__output__stream}{lto\_output\_stream}}\ *);}
+\DoxyCodeLine{00830\ }
+\DoxyCodeLine{00831\ }
+\DoxyCodeLine{00832\ \textcolor{comment}{/*\ In\ lto-\/streamer.cc.\ \ */}}
+\DoxyCodeLine{00833\ }
+\DoxyCodeLine{00834\ \textcolor{comment}{/*\ Set\ when\ streaming\ LTO\ for\ offloading\ compiler.\ \ */}}
+\DoxyCodeLine{00835\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{lto-streamer_8h_ada46f1bb5243db5a79b64cb36cc63125}{lto\_stream\_offload\_p}};}
+\DoxyCodeLine{00836\ }
+\DoxyCodeLine{00837\ \textcolor{keyword}{extern}\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *\doxymbox{\hyperlink{lto-streamer_8h_adf2ef574ab902506ab15c26187992d00}{lto\_tag\_name}}\ (\textcolor{keyword}{enum}\ \doxymbox{\hyperlink{lto-streamer_8h_a4688b4d26de18a3c5e5ac2d4ebc14360}{LTO\_tags}});}
+\DoxyCodeLine{00838\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{char}\ *\doxymbox{\hyperlink{lto-streamer_8h_a22fa1d56b9c2c315aeab2d67e91829d0}{lto\_get\_section\_name}}\ (\textcolor{keywordtype}{int},\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *,\ \textcolor{keywordtype}{int},}
+\DoxyCodeLine{00839\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{struct}\ lto\_file\_decl\_data\ *);}
+\DoxyCodeLine{00840\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{lto-streamer_8h_a292dcb006ff1154e4494b8bd201315ef}{print\_lto\_report}}\ (\textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *);}
+\DoxyCodeLine{00841\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{lto-streamer_8h_ae1c7b5a8b6dac7019d16cdb7fec27b92}{lto\_streamer\_init}}\ (\textcolor{keywordtype}{void});}
+\DoxyCodeLine{00842\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{lto-streamer_8h_ae9d737164ce755bb4f928a55d65fbe59}{gate\_lto\_out}}\ (\textcolor{keywordtype}{void});}
+\DoxyCodeLine{00843\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{lto-streamer_8h_a896d2cbce0f012b96653010fa1b0ef9b}{lto\_check\_version}}\ (\textcolor{keywordtype}{int},\ \textcolor{keywordtype}{int},\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *);}
+\DoxyCodeLine{00844\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{lto-streamer_8h_a5b3d52625e5f0b503c48efc347f0813b}{lto\_streamer\_hooks\_init}}\ (\textcolor{keywordtype}{void});}
+\DoxyCodeLine{00845\ }
+\DoxyCodeLine{00846\ \textcolor{comment}{/*\ In\ lto-\/streamer-\/in.cc\ */}}
+\DoxyCodeLine{00847\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{lto-streamer_8h_a1e6d5d557e8228896dc5e1a12e52ca68}{lto\_input\_cgraph}}\ (\textcolor{keyword}{struct}\ lto\_file\_decl\_data\ *,\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *);}
+\DoxyCodeLine{00848\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{lto-streamer_8h_a9f41b0c177385643ed251789ffeb730f}{lto\_reader\_init}}\ (\textcolor{keywordtype}{void});}
+\DoxyCodeLine{00849\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{lto-streamer_8h_a07d153aab71c068eb7372b373f6c3a6d}{lto\_free\_file\_name\_hash}}\ (\textcolor{keywordtype}{void});}
+\DoxyCodeLine{00850\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{lto-streamer_8h_acc58f779d5d0670b47e43bab7d035293}{lto\_input\_function\_body}}\ (\textcolor{keyword}{struct}\ lto\_file\_decl\_data\ *,}
+\DoxyCodeLine{00851\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{struct}\ cgraph\_node\ *,}
+\DoxyCodeLine{00852\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *);}
+\DoxyCodeLine{00853\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{lto-streamer_8h_a0419a61283ca801c8625e44977943cf5}{lto\_input\_variable\_constructor}}\ (\textcolor{keyword}{struct}\ lto\_file\_decl\_data\ *,}
+\DoxyCodeLine{00854\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{struct}\ varpool\_node\ *,}
+\DoxyCodeLine{00855\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *);}
+\DoxyCodeLine{00856\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{lto-streamer_8h_a7e5fa11fa069798666852a3b272450a6}{lto\_input\_constructors\_and\_inits}}\ (\textcolor{keyword}{struct}\ lto\_file\_decl\_data\ *,}
+\DoxyCodeLine{00857\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *);}
+\DoxyCodeLine{00858\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{lto-streamer_8h_ab6854ea508e04797903852a2b18ad6bd}{lto\_input\_toplevel\_asms}}\ (\textcolor{keyword}{struct}\ lto\_file\_decl\_data\ *,\ \textcolor{keywordtype}{int});}
+\DoxyCodeLine{00859\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{lto-streamer_8h_a68de6f84d98764cf8c408fae7cb0ae16}{lto\_input\_mode\_table}}\ (\textcolor{keyword}{struct}\ lto\_file\_decl\_data\ *);}
+\DoxyCodeLine{00860\ \textcolor{keyword}{extern}\ \textcolor{keyword}{class\ }\doxymbox{\hyperlink{classdata__in}{data\_in}}\ *\doxymbox{\hyperlink{lto-streamer_8h_a17394f3b3d6666cad26c4e0da53138cf}{lto\_data\_in\_create}}\ (\textcolor{keyword}{struct}\ lto\_file\_decl\_data\ *,}
+\DoxyCodeLine{00861\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *,\ \textcolor{keywordtype}{unsigned},}
+\DoxyCodeLine{00862\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{structvec}{vec<ld\_plugin\_symbol\_resolution\_t>}}\ );}
+\DoxyCodeLine{00863\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{lto-streamer_8h_a914227d39d7101b26db09e554b3d7c0b}{lto\_data\_in\_delete}}\ (\textcolor{keyword}{class}\ \doxymbox{\hyperlink{classdata__in}{data\_in}}\ *);}
+\DoxyCodeLine{00864\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{lto-streamer_8h_a5116eae32e19920dbc7ee2af6b429f40}{lto\_input\_data\_block}}\ (\textcolor{keyword}{class}\ \doxymbox{\hyperlink{classlto__input__block}{lto\_input\_block}}\ *,\ \textcolor{keywordtype}{void}\ *,\ \textcolor{keywordtype}{size\_t});}
+\DoxyCodeLine{00865\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{lto-streamer_8h_ad32addc8374739cc4591176b9cbd2bfa}{lto\_input\_location}}\ (\doxymbox{\hyperlink{line-map_8h_aedf25620511d64e43327f1a229906a96}{location\_t}}\ *,\ \textcolor{keyword}{struct}\ \doxymbox{\hyperlink{structbitpack__d}{bitpack\_d}}\ *,\ \textcolor{keyword}{class}\ \doxymbox{\hyperlink{classdata__in}{data\_in}}\ *);}
+\DoxyCodeLine{00866\ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ \doxymbox{\hyperlink{lto-streamer_8h_ab9010551f06a8ba1412d60c03b3ffe0d}{lto\_input\_tree\_ref}}\ (\textcolor{keyword}{class}\ \doxymbox{\hyperlink{classlto__input__block}{lto\_input\_block}}\ *,\ \textcolor{keyword}{class}\ \doxymbox{\hyperlink{classdata__in}{data\_in}}\ *,}
+\DoxyCodeLine{00867\ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{struct}\ function\ *,\ \textcolor{keyword}{enum}\ \doxymbox{\hyperlink{lto-streamer_8h_a4688b4d26de18a3c5e5ac2d4ebc14360}{LTO\_tags}});}
+\DoxyCodeLine{00868\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{lto-streamer_8h_af07367ccfdee1f430c67b086d14efc79}{lto\_tag\_check\_set}}\ (\textcolor{keyword}{enum}\ \doxymbox{\hyperlink{lto-streamer_8h_a4688b4d26de18a3c5e5ac2d4ebc14360}{LTO\_tags}},\ \textcolor{keywordtype}{int},\ ...);}
+\DoxyCodeLine{00869\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{lto-streamer_8h_ae560e59cbc146a03f87a4c823abdfef0}{lto\_init\_eh}}\ (\textcolor{keywordtype}{void});}
+\DoxyCodeLine{00870\ \doxymbox{\hyperlink{hashtab_8h_a2d05e5049721cf3117dd6b34e20d4f65}{hashval\_t}}\ \doxymbox{\hyperlink{lto-streamer_8h_af2096640b2b1228ddbbcbfef244076ea}{lto\_input\_scc}}\ (\textcolor{keyword}{class}\ \doxymbox{\hyperlink{classlto__input__block}{lto\_input\_block}}\ *,\ \textcolor{keyword}{class}\ \doxymbox{\hyperlink{classdata__in}{data\_in}}\ *,}
+\DoxyCodeLine{00871\ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{unsigned}\ *,\ \textcolor{keywordtype}{unsigned}\ *,\ \textcolor{keywordtype}{bool});}
+\DoxyCodeLine{00872\ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ \doxymbox{\hyperlink{lto-streamer_8h_a310034af3e90a3056e5a2f640a1aa67a}{lto\_input\_tree\_1}}\ (\textcolor{keyword}{class}\ \doxymbox{\hyperlink{classlto__input__block}{lto\_input\_block}}\ *,\ \textcolor{keyword}{class}\ \doxymbox{\hyperlink{classdata__in}{data\_in}}\ *,}
+\DoxyCodeLine{00873\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{enum}\ \doxymbox{\hyperlink{lto-streamer_8h_a4688b4d26de18a3c5e5ac2d4ebc14360}{LTO\_tags}},\ \doxymbox{\hyperlink{hashtab_8h_a2d05e5049721cf3117dd6b34e20d4f65}{hashval\_t}}\ hash);}
+\DoxyCodeLine{00874\ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ \doxymbox{\hyperlink{lto-streamer_8h_a07be8c0a5207aa817c56d659fc8e8ca5}{lto\_input\_tree}}\ (\textcolor{keyword}{class}\ \doxymbox{\hyperlink{classlto__input__block}{lto\_input\_block}}\ *,\ \textcolor{keyword}{class}\ \doxymbox{\hyperlink{classdata__in}{data\_in}}\ *);}
+\DoxyCodeLine{00875\ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ \doxymbox{\hyperlink{lto-streamer_8h_ac2a2e7a0661926364b65a1e2b12a240c}{stream\_read\_tree\_ref}}\ (\textcolor{keyword}{class}\ \doxymbox{\hyperlink{classlto__input__block}{lto\_input\_block}}\ *,\ \textcolor{keyword}{class}\ \doxymbox{\hyperlink{classdata__in}{data\_in}}\ *);}
+\DoxyCodeLine{00876\ }
+\DoxyCodeLine{00877\ }
+\DoxyCodeLine{00878\ \textcolor{comment}{/*\ In\ lto-\/streamer-\/out.cc\ \ */}}
+\DoxyCodeLine{00879\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{lto-streamer_8h_adf0943c7d6c1ad540a60cb2e6f016725}{lto\_register\_decl\_definition}}\ (\doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}},\ \textcolor{keyword}{struct}\ lto\_file\_decl\_data\ *);}
+\DoxyCodeLine{00880\ \textcolor{keyword}{extern}\ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{structoutput__block}{output\_block}}\ *\doxymbox{\hyperlink{lto-streamer_8h_a6640170abff4ba2ed6ca59d22c3cdd67}{create\_output\_block}}\ (\textcolor{keyword}{enum}\ \doxymbox{\hyperlink{lto-streamer_8h_a6e0587d4b9c06c0984264b0b57a46826}{lto\_section\_type}});}
+\DoxyCodeLine{00881\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{lto-streamer_8h_a952538a6370f6174aad6dea3535ecf0f}{destroy\_output\_block}}\ (\textcolor{keyword}{struct}\ \doxymbox{\hyperlink{structoutput__block}{output\_block}}\ *);}
+\DoxyCodeLine{00882\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{lto-streamer_8h_a2dbacefcdfe4d2c9bad929c38d642762}{lto\_output\_tree}}\ (\textcolor{keyword}{struct}\ \doxymbox{\hyperlink{structoutput__block}{output\_block}}\ *,\ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}},\ \textcolor{keywordtype}{bool},\ \textcolor{keywordtype}{bool});}
+\DoxyCodeLine{00883\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{lto-streamer_8h_a3364f4732a32a217f9d42696a744dc6d}{stream\_write\_tree\_ref}}\ (\textcolor{keyword}{struct}\ \doxymbox{\hyperlink{structoutput__block}{output\_block}}\ *,\ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}});}
+\DoxyCodeLine{00884\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{lto-streamer_8h_a931533742edb7cb48fce0585c0dc3f57}{lto\_output\_var\_decl\_ref}}\ (\textcolor{keyword}{struct}\ \doxymbox{\hyperlink{structlto__out__decl__state}{lto\_out\_decl\_state}}\ *,}
+\DoxyCodeLine{00885\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{struct}\ \doxymbox{\hyperlink{structlto__output__stream}{lto\_output\_stream}}\ *,\ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}});}
+\DoxyCodeLine{00886\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{lto-streamer_8h_a8e6144a19ad1122c452314fab1d5c059}{lto\_output\_fn\_decl\_ref}}\ (\textcolor{keyword}{struct}\ \doxymbox{\hyperlink{structlto__out__decl__state}{lto\_out\_decl\_state}}\ *,}
+\DoxyCodeLine{00887\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{struct}\ \doxymbox{\hyperlink{structlto__output__stream}{lto\_output\_stream}}\ *,\ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}});}
+\DoxyCodeLine{00888\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ \doxymbox{\hyperlink{lto-streamer_8h_a8175059913011aa0121c18d8f51de1f8}{lto\_input\_var\_decl\_ref}}\ (\doxymbox{\hyperlink{classlto__input__block}{lto\_input\_block}}\ *,\ lto\_file\_decl\_data\ *);}
+\DoxyCodeLine{00889\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ \doxymbox{\hyperlink{lto-streamer_8h_a84e19aee44698dc260dc0bc56c526380}{lto\_input\_fn\_decl\_ref}}\ (\doxymbox{\hyperlink{classlto__input__block}{lto\_input\_block}}\ *,\ lto\_file\_decl\_data\ *);}
+\DoxyCodeLine{00890\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{lto-streamer_8h_a4ce566a4703d634e403f8381acba174d}{lto\_output\_toplevel\_asms}}\ (\textcolor{keywordtype}{void});}
+\DoxyCodeLine{00891\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{lto-streamer_8h_a8e4341b3ab9ba791236974082fa5403a}{produce\_asm}}\ (\textcolor{keyword}{struct}\ \doxymbox{\hyperlink{structoutput__block}{output\_block}}\ *ob,\ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ fn);}
+\DoxyCodeLine{00892\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{lto-streamer_8h_abcfd8c23ee674e98c9851f9ce9cb9259}{lto\_output}}\ ();}
+\DoxyCodeLine{00893\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{lto-streamer_8h_aac200c161cd24bb30051e63dbdb49bea}{produce\_asm\_for\_decls}}\ ();}
+\DoxyCodeLine{00894\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{lto-streamer_8h_a858ee85c408d5c16b61a7e7f4166434f}{lto\_output\_decl\_state\_streams}}\ (\textcolor{keyword}{struct}\ \doxymbox{\hyperlink{structoutput__block}{output\_block}}\ *,}
+\DoxyCodeLine{00895\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{struct}\ \doxymbox{\hyperlink{structlto__out__decl__state}{lto\_out\_decl\_state}}\ *);}
+\DoxyCodeLine{00896\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{lto-streamer_8h_aff09e140bbc2114120ea4067fcd9ad8a}{lto\_output\_decl\_state\_refs}}\ (\textcolor{keyword}{struct}\ \doxymbox{\hyperlink{structoutput__block}{output\_block}}\ *,}
+\DoxyCodeLine{00897\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{struct}\ \doxymbox{\hyperlink{structlto__output__stream}{lto\_output\_stream}}\ *,}
+\DoxyCodeLine{00898\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{struct}\ \doxymbox{\hyperlink{structlto__out__decl__state}{lto\_out\_decl\_state}}\ *);}
+\DoxyCodeLine{00899\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{lto-streamer_8h_ae9006bba776f35976dda07c1d5655dab}{lto\_output\_location}}\ (\textcolor{keyword}{struct}\ \doxymbox{\hyperlink{structoutput__block}{output\_block}}\ *,\ \textcolor{keyword}{struct}\ \doxymbox{\hyperlink{structbitpack__d}{bitpack\_d}}\ *,}
+\DoxyCodeLine{00900\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{line-map_8h_aedf25620511d64e43327f1a229906a96}{location\_t}});}
+\DoxyCodeLine{00901\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{lto-streamer_8h_a489d9af0d6f0fddf275ac00d35f24dd2}{lto\_output\_location\_and\_block}}\ (\textcolor{keyword}{struct}\ \doxymbox{\hyperlink{structoutput__block}{output\_block}}\ *,\ \textcolor{keyword}{struct}\ \doxymbox{\hyperlink{structbitpack__d}{bitpack\_d}}\ *,}
+\DoxyCodeLine{00902\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{line-map_8h_aedf25620511d64e43327f1a229906a96}{location\_t}});}
+\DoxyCodeLine{00903\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{lto-streamer_8h_a048fb4f43a29be5ffad497db049f5d3a}{lto\_output\_init\_mode\_table}}\ (\textcolor{keywordtype}{void});}
+\DoxyCodeLine{00904\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{lto-streamer_8h_ae910e3ba6705a8045af64b2cd5273b7f}{lto\_prepare\_function\_for\_streaming}}\ (cgraph\_node\ *);}
+\DoxyCodeLine{00905\ }
+\DoxyCodeLine{00906\ }
+\DoxyCodeLine{00907\ \textcolor{comment}{/*\ In\ lto-\/cgraph.cc\ \ */}}
+\DoxyCodeLine{00908\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{lto-streamer_8h_ab70d1445135d47dcd896e5bf93a4beda}{asm\_nodes\_output}};}
+\DoxyCodeLine{00909\ \doxymbox{\hyperlink{lto-streamer_8h_a0f04c68697e33ef4ea47f5fa451e32b0}{lto\_symtab\_encoder\_t}}\ \doxymbox{\hyperlink{lto-streamer_8h_a9df6498da3c6033dd0f88aac9106a7e9}{lto\_symtab\_encoder\_new}}\ (\textcolor{keywordtype}{bool});}
+\DoxyCodeLine{00910\ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{lto-streamer_8h_a9437d0f05c25060bc86199042f3d3add}{lto\_symtab\_encoder\_encode}}\ (\doxymbox{\hyperlink{lto-streamer_8h_a0f04c68697e33ef4ea47f5fa451e32b0}{lto\_symtab\_encoder\_t}},\ symtab\_node\ *);}
+\DoxyCodeLine{00911\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{lto-streamer_8h_a922d7b76341a3f5eb83582a290f52549}{lto\_symtab\_encoder\_delete}}\ (\doxymbox{\hyperlink{lto-streamer_8h_a0f04c68697e33ef4ea47f5fa451e32b0}{lto\_symtab\_encoder\_t}});}
+\DoxyCodeLine{00912\ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{lto-streamer_8h_adc7eb664f005f8507b165247b76ec962}{lto\_symtab\_encoder\_delete\_node}}\ (\doxymbox{\hyperlink{lto-streamer_8h_a0f04c68697e33ef4ea47f5fa451e32b0}{lto\_symtab\_encoder\_t}},\ symtab\_node\ *);}
+\DoxyCodeLine{00913\ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{lto-streamer_8h_a3bd2f82945a7a4a93937cc0a96cf7f04}{lto\_symtab\_encoder\_encode\_body\_p}}\ (\doxymbox{\hyperlink{lto-streamer_8h_a0f04c68697e33ef4ea47f5fa451e32b0}{lto\_symtab\_encoder\_t}},}
+\DoxyCodeLine{00914\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{struct}\ cgraph\_node\ *);}
+\DoxyCodeLine{00915\ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{lto-streamer_8h_af04acfe3edf35ddc0f2719b6b65f02fb}{lto\_symtab\_encoder\_in\_partition\_p}}\ (\doxymbox{\hyperlink{lto-streamer_8h_a0f04c68697e33ef4ea47f5fa451e32b0}{lto\_symtab\_encoder\_t}},}
+\DoxyCodeLine{00916\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ symtab\_node\ *);}
+\DoxyCodeLine{00917\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{lto-streamer_8h_ac75ac883173e979bb5918d862616d56c}{lto\_set\_symtab\_encoder\_in\_partition}}\ (\doxymbox{\hyperlink{lto-streamer_8h_a0f04c68697e33ef4ea47f5fa451e32b0}{lto\_symtab\_encoder\_t}},}
+\DoxyCodeLine{00918\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ symtab\_node\ *);}
+\DoxyCodeLine{00919\ }
+\DoxyCodeLine{00920\ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{lto-streamer_8h_afca64116cfc4684dd7031a179c4e457a}{lto\_symtab\_encoder\_encode\_initializer\_p}}\ (\doxymbox{\hyperlink{lto-streamer_8h_a0f04c68697e33ef4ea47f5fa451e32b0}{lto\_symtab\_encoder\_t}},}
+\DoxyCodeLine{00921\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ varpool\_node\ *);}
+\DoxyCodeLine{00922\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{lto-streamer_8h_a59b372416c5f91a6262ff12d02e92e3a}{output\_symtab}}\ (\textcolor{keywordtype}{void});}
+\DoxyCodeLine{00923\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{lto-streamer_8h_aa51973cc64904b7f57846bfae39f769c}{input\_symtab}}\ (\textcolor{keywordtype}{void});}
+\DoxyCodeLine{00924\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{lto-streamer_8h_ab4e241feea62b42381003f4e7b805f7d}{output\_offload\_tables}}\ (\textcolor{keywordtype}{void});}
+\DoxyCodeLine{00925\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{lto-streamer_8h_ae326d17f56cd832ee66afa00f716346f}{input\_offload\_tables}}\ (\textcolor{keywordtype}{bool});}
+\DoxyCodeLine{00926\ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{lto-streamer_8h_a523239f7a97ae33584a9b74c76681ae0}{referenced\_from\_other\_partition\_p}}\ (\textcolor{keyword}{struct}\ \doxymbox{\hyperlink{structipa__ref__list}{ipa\_ref\_list}}\ *,}
+\DoxyCodeLine{00927\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{lto-streamer_8h_a0f04c68697e33ef4ea47f5fa451e32b0}{lto\_symtab\_encoder\_t}});}
+\DoxyCodeLine{00928\ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{lto-streamer_8h_aec31108b1913047a1723d7b6a9f88a34}{reachable\_from\_other\_partition\_p}}\ (\textcolor{keyword}{struct}\ cgraph\_node\ *,}
+\DoxyCodeLine{00929\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{lto-streamer_8h_a0f04c68697e33ef4ea47f5fa451e32b0}{lto\_symtab\_encoder\_t}});}
+\DoxyCodeLine{00930\ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{lto-streamer_8h_a3222e64b37adef1dfd9e518ce23cb106}{referenced\_from\_this\_partition\_p}}\ (symtab\_node\ *,}
+\DoxyCodeLine{00931\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{lto-streamer_8h_a0f04c68697e33ef4ea47f5fa451e32b0}{lto\_symtab\_encoder\_t}});}
+\DoxyCodeLine{00932\ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{lto-streamer_8h_aedbcab3df6ffeddd101ff093f46c44ec}{reachable\_from\_this\_partition\_p}}\ (\textcolor{keyword}{struct}\ cgraph\_node\ *,}
+\DoxyCodeLine{00933\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{lto-streamer_8h_a0f04c68697e33ef4ea47f5fa451e32b0}{lto\_symtab\_encoder\_t}});}
+\DoxyCodeLine{00934\ \doxymbox{\hyperlink{lto-streamer_8h_a0f04c68697e33ef4ea47f5fa451e32b0}{lto\_symtab\_encoder\_t}}\ \doxymbox{\hyperlink{lto-streamer_8h_a17396914706d2a68f9d1e8911e699109}{compute\_ltrans\_boundary}}\ (\doxymbox{\hyperlink{lto-streamer_8h_a0f04c68697e33ef4ea47f5fa451e32b0}{lto\_symtab\_encoder\_t}}\ encoder);}
+\DoxyCodeLine{00935\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{lto-streamer_8h_aa8c54abb863fe728255c31206b95d40d}{select\_what\_to\_stream}}\ (\textcolor{keywordtype}{void});}
+\DoxyCodeLine{00936\ }
+\DoxyCodeLine{00937\ \textcolor{comment}{/*\ In\ omp-\/general.cc.\ \ */}}
+\DoxyCodeLine{00938\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{lto-streamer_8h_abf1f21ced3a376a66dd2a0c5e153ae11}{omp\_lto\_output\_declare\_variant\_alt}}\ (\doxymbox{\hyperlink{structlto__simple__output__block}{lto\_simple\_output\_block}}\ *,}
+\DoxyCodeLine{00939\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ cgraph\_node\ *,\ \doxymbox{\hyperlink{lto-streamer_8h_a0f04c68697e33ef4ea47f5fa451e32b0}{lto\_symtab\_encoder\_t}});}
+\DoxyCodeLine{00940\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{lto-streamer_8h_ab11eb9c4cce2a8b24b886f705a3d8211}{omp\_lto\_input\_declare\_variant\_alt}}\ (\doxymbox{\hyperlink{classlto__input__block}{lto\_input\_block}}\ *,\ cgraph\_node\ *,}
+\DoxyCodeLine{00941\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{structvec}{vec<symtab\_node\ *>}});}
+\DoxyCodeLine{00942\ }
+\DoxyCodeLine{00943\ \textcolor{comment}{/*\ In\ options-\/save.cc.\ \ */}}
+\DoxyCodeLine{00944\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{lto-streamer_8h_a68ab867361bb86dcbcd6f3cdbbb862c2}{cl\_target\_option\_stream\_out}}\ (\textcolor{keyword}{struct}\ \doxymbox{\hyperlink{structoutput__block}{output\_block}}\ *,\ \textcolor{keyword}{struct}\ \doxymbox{\hyperlink{structbitpack__d}{bitpack\_d}}\ *,}
+\DoxyCodeLine{00945\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{struct}\ cl\_target\_option\ *);}
+\DoxyCodeLine{00946\ }
+\DoxyCodeLine{00947\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{lto-streamer_8h_acab59b3d529333b0a818a9b3f9acc311}{cl\_target\_option\_stream\_in}}\ (\textcolor{keyword}{class}\ \doxymbox{\hyperlink{classdata__in}{data\_in}}\ *,}
+\DoxyCodeLine{00948\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{struct}\ \doxymbox{\hyperlink{structbitpack__d}{bitpack\_d}}\ *,}
+\DoxyCodeLine{00949\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{struct}\ cl\_target\_option\ *);}
+\DoxyCodeLine{00950\ }
+\DoxyCodeLine{00951\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{lto-streamer_8h_a0d0367e554ea7f20cc1ddd7427caa21b}{cl\_optimization\_stream\_out}}\ (\textcolor{keyword}{struct}\ \doxymbox{\hyperlink{structoutput__block}{output\_block}}\ *,}
+\DoxyCodeLine{00952\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{struct}\ \doxymbox{\hyperlink{structbitpack__d}{bitpack\_d}}\ *,\ \textcolor{keyword}{struct}\ cl\_optimization\ *);}
+\DoxyCodeLine{00953\ }
+\DoxyCodeLine{00954\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{lto-streamer_8h_a3a93ef7d30accafa227f99fede5f1733}{cl\_optimization\_stream\_in}}\ (\textcolor{keyword}{class}\ \doxymbox{\hyperlink{classdata__in}{data\_in}}\ *,}
+\DoxyCodeLine{00955\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{struct}\ \doxymbox{\hyperlink{structbitpack__d}{bitpack\_d}}\ *,\ \textcolor{keyword}{struct}\ cl\_optimization\ *);}
+\DoxyCodeLine{00956\ }
+\DoxyCodeLine{00957\ }
+\DoxyCodeLine{00958\ }
+\DoxyCodeLine{00959\ \textcolor{comment}{/*\ In\ lto-\/opts.cc.\ \ */}}
+\DoxyCodeLine{00960\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{lto-streamer_8h_ac066255b2685700a668d5ffd17e7a16d}{lto\_write\_options}}\ (\textcolor{keywordtype}{void});}
+\DoxyCodeLine{00961\ }
+\DoxyCodeLine{00962\ }
+\DoxyCodeLine{00963\ \textcolor{comment}{/*\ Statistics\ gathered\ during\ LTO,\ WPA\ and\ LTRANS.\ \ */}}
+\DoxyCodeLine{00964\ \textcolor{keyword}{extern}\ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{structlto__stats__d}{lto\_stats\_d}}\ \doxymbox{\hyperlink{lto-streamer_8h_aa73a90a020ff1e08c3b31a36831b5b8d}{lto\_stats}};}
+\DoxyCodeLine{00965\ }
+\DoxyCodeLine{00966\ \textcolor{comment}{/*\ Section\ names\ corresponding\ to\ the\ values\ of\ enum\ lto\_section\_type.\ \ */}}
+\DoxyCodeLine{00967\ \textcolor{keyword}{extern}\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *\doxymbox{\hyperlink{lto-streamer_8h_af421cd40635092c6907e19480bb49dcb}{lto\_section\_name}}[];}
+\DoxyCodeLine{00968\ }
+\DoxyCodeLine{00969\ \textcolor{comment}{/*\ Holds\ all\ the\ out\ decl\ states\ of\ functions\ output\ so\ far\ in\ the}}
+\DoxyCodeLine{00970\ \textcolor{comment}{\ \ \ current\ output\ file.\ \ */}}
+\DoxyCodeLine{00971\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{structvec}{vec<lto\_out\_decl\_state\_ptr>}}\ \doxymbox{\hyperlink{lto-streamer_8h_a13d0c584fbdb772bc1eb2f095fba8569}{lto\_function\_decl\_states}};}
+\DoxyCodeLine{00972\ }
+\DoxyCodeLine{00973\ \textcolor{comment}{/*\ Return\ true\ if\ LTO\ tag\ TAG\ corresponds\ to\ a\ tree\ code.\ \ */}}
+\DoxyCodeLine{00974\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{bool}}
+\DoxyCodeLine{00975\ \doxymbox{\hyperlink{lto-streamer_8h_a9c043fb263dab742f4943623ec0578ca}{lto\_tag\_is\_tree\_code\_p}}\ (\textcolor{keyword}{enum}\ \doxymbox{\hyperlink{lto-streamer_8h_a4688b4d26de18a3c5e5ac2d4ebc14360}{LTO\_tags}}\ tag)}
+\DoxyCodeLine{00976\ \{}
+\DoxyCodeLine{00977\ \ \ \textcolor{keywordflow}{return}\ tag\ >\ \doxymbox{\hyperlink{lto-streamer_8h_a4688b4d26de18a3c5e5ac2d4ebc14360a9a234be5d2708c6a129365c7537d628b}{LTO\_first\_tree\_tag}}\ \&\&\ (unsigned)\ tag\ <=\ MAX\_TREE\_CODES;}
+\DoxyCodeLine{00978\ \}}
+\DoxyCodeLine{00979\ }
+\DoxyCodeLine{00980\ }
+\DoxyCodeLine{00981\ \textcolor{comment}{/*\ Return\ true\ if\ LTO\ tag\ TAG\ corresponds\ to\ a\ gimple\ code.\ \ */}}
+\DoxyCodeLine{00982\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{bool}}
+\DoxyCodeLine{00983\ \doxymbox{\hyperlink{lto-streamer_8h_a924521cfdb70b9b90d685b88b872295f}{lto\_tag\_is\_gimple\_code\_p}}\ (\textcolor{keyword}{enum}\ \doxymbox{\hyperlink{lto-streamer_8h_a4688b4d26de18a3c5e5ac2d4ebc14360}{LTO\_tags}}\ tag)}
+\DoxyCodeLine{00984\ \{}
+\DoxyCodeLine{00985\ \ \ \textcolor{keywordflow}{return}\ (\textcolor{keywordtype}{unsigned})\ tag\ >=\ \doxymbox{\hyperlink{lto-streamer_8h_a4688b4d26de18a3c5e5ac2d4ebc14360acbf0cd55bfcde31169e0db06d9f14316}{LTO\_first\_gimple\_tag}}}
+\DoxyCodeLine{00986\ \ \ \ \ \ \&\&\ (unsigned)\ tag}
+\DoxyCodeLine{00987\ \ \ \ \ \ \ \ \ <\ \doxymbox{\hyperlink{lto-streamer_8h_a4688b4d26de18a3c5e5ac2d4ebc14360acbf0cd55bfcde31169e0db06d9f14316}{LTO\_first\_gimple\_tag}}\ +\ LAST\_AND\_UNUSED\_GIMPLE\_CODE;}
+\DoxyCodeLine{00988\ \}}
+\DoxyCodeLine{00989\ }
+\DoxyCodeLine{00990\ }
+\DoxyCodeLine{00991\ \textcolor{comment}{/*\ Return\ the\ LTO\ tag\ corresponding\ to\ gimple\ code\ CODE.\ \ See\ enum}}
+\DoxyCodeLine{00992\ \textcolor{comment}{\ \ \ LTO\_tags\ for\ details\ on\ the\ conversion.\ \ */}}
+\DoxyCodeLine{00993\ \textcolor{keyword}{inline}\ \textcolor{keyword}{enum}\ \doxymbox{\hyperlink{lto-streamer_8h_a4688b4d26de18a3c5e5ac2d4ebc14360}{LTO\_tags}}}
+\DoxyCodeLine{00994\ \doxymbox{\hyperlink{lto-streamer_8h_ab124c3fa209b6acaa90f2819ee403a58}{lto\_gimple\_code\_to\_tag}}\ (\textcolor{keyword}{enum}\ \doxymbox{\hyperlink{gimple_8h_a2a3ad11f4b4195051f6405b104eedd06}{gimple\_code}}\ code)}
+\DoxyCodeLine{00995\ \{}
+\DoxyCodeLine{00996\ \ \ \textcolor{keywordflow}{return}\ (\textcolor{keyword}{enum}\ \doxymbox{\hyperlink{lto-streamer_8h_a4688b4d26de18a3c5e5ac2d4ebc14360}{LTO\_tags}})\ ((unsigned)\ code\ +\ \doxymbox{\hyperlink{lto-streamer_8h_a4688b4d26de18a3c5e5ac2d4ebc14360acbf0cd55bfcde31169e0db06d9f14316}{LTO\_first\_gimple\_tag}});}
+\DoxyCodeLine{00997\ \}}
+\DoxyCodeLine{00998\ }
+\DoxyCodeLine{00999\ }
+\DoxyCodeLine{01000\ \textcolor{comment}{/*\ Return\ the\ GIMPLE\ code\ corresponding\ to\ TAG.\ \ See\ enum\ LTO\_tags\ for}}
+\DoxyCodeLine{01001\ \textcolor{comment}{\ \ \ details\ on\ the\ conversion.\ \ */}}
+\DoxyCodeLine{01002\ \textcolor{keyword}{inline}\ \textcolor{keyword}{enum}\ \doxymbox{\hyperlink{gimple_8h_a2a3ad11f4b4195051f6405b104eedd06}{gimple\_code}}}
+\DoxyCodeLine{01003\ \doxymbox{\hyperlink{lto-streamer_8h_a45a6460822497e8bde3debd6f1bc8cc6}{lto\_tag\_to\_gimple\_code}}\ (\textcolor{keyword}{enum}\ \doxymbox{\hyperlink{lto-streamer_8h_a4688b4d26de18a3c5e5ac2d4ebc14360}{LTO\_tags}}\ tag)}
+\DoxyCodeLine{01004\ \{}
+\DoxyCodeLine{01005\ \ \ \doxymbox{\hyperlink{system_8h_a0deee0ddaa8ce3bbd400ab5f75de06ff}{gcc\_assert}}\ (\doxymbox{\hyperlink{lto-streamer_8h_a924521cfdb70b9b90d685b88b872295f}{lto\_tag\_is\_gimple\_code\_p}}\ (tag));}
+\DoxyCodeLine{01006\ \ \ \textcolor{keywordflow}{return}\ (\textcolor{keyword}{enum}\ \doxymbox{\hyperlink{gimple_8h_a2a3ad11f4b4195051f6405b104eedd06}{gimple\_code}})\ ((unsigned)\ tag\ -\/\ \doxymbox{\hyperlink{lto-streamer_8h_a4688b4d26de18a3c5e5ac2d4ebc14360acbf0cd55bfcde31169e0db06d9f14316}{LTO\_first\_gimple\_tag}});}
+\DoxyCodeLine{01007\ \}}
+\DoxyCodeLine{01008\ }
+\DoxyCodeLine{01009\ }
+\DoxyCodeLine{01010\ \textcolor{comment}{/*\ Return\ the\ LTO\ tag\ corresponding\ to\ tree\ code\ CODE.\ \ See\ enum}}
+\DoxyCodeLine{01011\ \textcolor{comment}{\ \ \ LTO\_tags\ for\ details\ on\ the\ conversion.\ \ */}}
+\DoxyCodeLine{01012\ \textcolor{keyword}{inline}\ \textcolor{keyword}{enum}\ \doxymbox{\hyperlink{lto-streamer_8h_a4688b4d26de18a3c5e5ac2d4ebc14360}{LTO\_tags}}}
+\DoxyCodeLine{01013\ \doxymbox{\hyperlink{lto-streamer_8h_aa49e5a1c0d5b9174d95ce7188123e08a}{lto\_tree\_code\_to\_tag}}\ (\textcolor{keyword}{enum}\ \doxymbox{\hyperlink{tree-core_8h_aee7678415f75b79d1651bfccce10c9f5}{tree\_code}}\ code)}
+\DoxyCodeLine{01014\ \{}
+\DoxyCodeLine{01015\ \ \ \textcolor{keywordflow}{return}\ (\textcolor{keyword}{enum}\ \doxymbox{\hyperlink{lto-streamer_8h_a4688b4d26de18a3c5e5ac2d4ebc14360}{LTO\_tags}})\ ((unsigned)\ code\ +\ \doxymbox{\hyperlink{lto-streamer_8h_a4688b4d26de18a3c5e5ac2d4ebc14360a9a234be5d2708c6a129365c7537d628b}{LTO\_first\_tree\_tag}});}
+\DoxyCodeLine{01016\ \}}
+\DoxyCodeLine{01017\ }
+\DoxyCodeLine{01018\ }
+\DoxyCodeLine{01019\ \textcolor{comment}{/*\ Return\ the\ tree\ code\ corresponding\ to\ TAG.\ \ See\ enum\ LTO\_tags\ for}}
+\DoxyCodeLine{01020\ \textcolor{comment}{\ \ \ details\ on\ the\ conversion.\ \ */}}
+\DoxyCodeLine{01021\ \textcolor{keyword}{inline}\ \textcolor{keyword}{enum}\ \doxymbox{\hyperlink{tree-core_8h_aee7678415f75b79d1651bfccce10c9f5}{tree\_code}}}
+\DoxyCodeLine{01022\ \doxymbox{\hyperlink{lto-streamer_8h_a2c4e0697014329afa3c51b91d13ca43a}{lto\_tag\_to\_tree\_code}}\ (\textcolor{keyword}{enum}\ \doxymbox{\hyperlink{lto-streamer_8h_a4688b4d26de18a3c5e5ac2d4ebc14360}{LTO\_tags}}\ tag)}
+\DoxyCodeLine{01023\ \{}
+\DoxyCodeLine{01024\ \ \ \doxymbox{\hyperlink{system_8h_a0deee0ddaa8ce3bbd400ab5f75de06ff}{gcc\_assert}}\ (\doxymbox{\hyperlink{lto-streamer_8h_a9c043fb263dab742f4943623ec0578ca}{lto\_tag\_is\_tree\_code\_p}}\ (tag));}
+\DoxyCodeLine{01025\ \ \ \textcolor{keywordflow}{return}\ (\textcolor{keyword}{enum}\ \doxymbox{\hyperlink{tree-core_8h_aee7678415f75b79d1651bfccce10c9f5}{tree\_code}})\ ((unsigned)\ tag\ -\/\ \doxymbox{\hyperlink{lto-streamer_8h_a4688b4d26de18a3c5e5ac2d4ebc14360a9a234be5d2708c6a129365c7537d628b}{LTO\_first\_tree\_tag}});}
+\DoxyCodeLine{01026\ \}}
+\DoxyCodeLine{01027\ }
+\DoxyCodeLine{01028\ \textcolor{comment}{/*\ Check\ that\ tag\ ACTUAL\ ==\ EXPECTED.\ \ */}}
+\DoxyCodeLine{01029\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{void}}
+\DoxyCodeLine{01030\ \doxymbox{\hyperlink{lto-streamer_8h_a3e32a2e240ca2bb968718e10b2b83b03}{lto\_tag\_check}}\ (\textcolor{keyword}{enum}\ \doxymbox{\hyperlink{lto-streamer_8h_a4688b4d26de18a3c5e5ac2d4ebc14360}{LTO\_tags}}\ actual,\ \textcolor{keyword}{enum}\ \doxymbox{\hyperlink{lto-streamer_8h_a4688b4d26de18a3c5e5ac2d4ebc14360}{LTO\_tags}}\ expected)}
+\DoxyCodeLine{01031\ \{}
+\DoxyCodeLine{01032\ \ \ \textcolor{keywordflow}{if}\ (actual\ !=\ expected)}
+\DoxyCodeLine{01033\ \ \ \ \ \doxymbox{\hyperlink{diagnostic-core_8h_a0a36ca201ea523864630fbf4be4391fb}{internal\_error}}\ (\textcolor{stringliteral}{"{}bytecode\ stream:\ expected\ tag\ \%s\ instead\ of\ \%s"{}},}
+\DoxyCodeLine{01034\ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{lto-streamer_8h_adf2ef574ab902506ab15c26187992d00}{lto\_tag\_name}}\ (expected),\ \doxymbox{\hyperlink{lto-streamer_8h_adf2ef574ab902506ab15c26187992d00}{lto\_tag\_name}}\ (actual));}
+\DoxyCodeLine{01035\ \}}
+\DoxyCodeLine{01036\ }
+\DoxyCodeLine{01037\ \textcolor{comment}{/*\ Check\ that\ tag\ ACTUAL\ is\ in\ the\ range\ [TAG1,\ TAG2].\ \ */}}
+\DoxyCodeLine{01038\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{void}}
+\DoxyCodeLine{01039\ \doxymbox{\hyperlink{lto-streamer_8h_aa24c1b3c272ac20031721dec9fd667bc}{lto\_tag\_check\_range}}\ (\textcolor{keyword}{enum}\ \doxymbox{\hyperlink{lto-streamer_8h_a4688b4d26de18a3c5e5ac2d4ebc14360}{LTO\_tags}}\ actual,\ \textcolor{keyword}{enum}\ \doxymbox{\hyperlink{lto-streamer_8h_a4688b4d26de18a3c5e5ac2d4ebc14360}{LTO\_tags}}\ tag1,}
+\DoxyCodeLine{01040\ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{enum}\ \doxymbox{\hyperlink{lto-streamer_8h_a4688b4d26de18a3c5e5ac2d4ebc14360}{LTO\_tags}}\ tag2)}
+\DoxyCodeLine{01041\ \{}
+\DoxyCodeLine{01042\ \ \ \textcolor{keywordflow}{if}\ (actual\ <\ tag1\ ||\ actual\ >\ tag2)}
+\DoxyCodeLine{01043\ \ \ \ \ \doxymbox{\hyperlink{diagnostic-core_8h_a0a36ca201ea523864630fbf4be4391fb}{internal\_error}}\ (\textcolor{stringliteral}{"{}bytecode\ stream:\ tag\ \%s\ is\ not\ in\ the\ expected\ range\ "{}}}
+\DoxyCodeLine{01044\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{stringliteral}{"{}[\%s,\ \%s]"{}},}
+\DoxyCodeLine{01045\ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{lto-streamer_8h_adf2ef574ab902506ab15c26187992d00}{lto\_tag\_name}}\ (actual),}
+\DoxyCodeLine{01046\ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{lto-streamer_8h_adf2ef574ab902506ab15c26187992d00}{lto\_tag\_name}}\ (tag1),}
+\DoxyCodeLine{01047\ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{lto-streamer_8h_adf2ef574ab902506ab15c26187992d00}{lto\_tag\_name}}\ (tag2));}
+\DoxyCodeLine{01048\ \}}
+\DoxyCodeLine{01049\ }
+\DoxyCodeLine{01050\ \textcolor{comment}{/*\ Initialize\ an\ lto\_out\_decl\_buffer\ ENCODER.\ \ */}}
+\DoxyCodeLine{01051\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{void}}
+\DoxyCodeLine{01052\ \doxymbox{\hyperlink{lto-streamer_8h_a8407281f7fa22595f164b1c65eac9680}{lto\_init\_tree\_ref\_encoder}}\ (\textcolor{keyword}{struct}\ \doxymbox{\hyperlink{structlto__tree__ref__encoder}{lto\_tree\_ref\_encoder}}\ *encoder)}
+\DoxyCodeLine{01053\ \{}
+\DoxyCodeLine{01054\ \ \ encoder-\/>\doxymbox{\hyperlink{structlto__tree__ref__encoder_ac5002b048814156df1703d8000420315}{tree\_hash\_table}}\ =\ \textcolor{keyword}{new}\ \doxymbox{\hyperlink{classhash__map}{hash\_map<tree,\ unsigned>}}\ (251);}
+\DoxyCodeLine{01055\ \ \ encoder-\/>\doxymbox{\hyperlink{structlto__tree__ref__encoder_af5d3304e09253a964e186ca9f1c2a124}{trees}}.create\ (0);}
+\DoxyCodeLine{01056\ \}}
+\DoxyCodeLine{01057\ }
+\DoxyCodeLine{01058\ }
+\DoxyCodeLine{01059\ \textcolor{comment}{/*\ Destroy\ an\ lto\_tree\_ref\_encoder\ ENCODER\ by\ freeing\ its\ contents.\ \ The}}
+\DoxyCodeLine{01060\ \textcolor{comment}{\ \ \ memory\ used\ by\ ENCODER\ is\ not\ freed\ by\ this\ function.\ \ */}}
+\DoxyCodeLine{01061\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{void}}
+\DoxyCodeLine{01062\ \doxymbox{\hyperlink{lto-streamer_8h_addd704867d84e4bb9dd92b9cd44688f4}{lto\_destroy\_tree\_ref\_encoder}}\ (\textcolor{keyword}{struct}\ \doxymbox{\hyperlink{structlto__tree__ref__encoder}{lto\_tree\_ref\_encoder}}\ *encoder)}
+\DoxyCodeLine{01063\ \{}
+\DoxyCodeLine{01064\ \ \ \textcolor{comment}{/*\ Hash\ table\ may\ be\ delete\ already.\ \ */}}
+\DoxyCodeLine{01065\ \ \ \textcolor{keyword}{delete}\ encoder-\/>\doxymbox{\hyperlink{structlto__tree__ref__encoder_ac5002b048814156df1703d8000420315}{tree\_hash\_table}};}
+\DoxyCodeLine{01066\ \ \ encoder-\/>\doxymbox{\hyperlink{structlto__tree__ref__encoder_ac5002b048814156df1703d8000420315}{tree\_hash\_table}}\ =\ \doxymbox{\hyperlink{stddef_8h_a070d2ce7b6bb7e5c05602aa8c308d0c4}{NULL}};}
+\DoxyCodeLine{01067\ \ \ encoder-\/>\doxymbox{\hyperlink{structlto__tree__ref__encoder_af5d3304e09253a964e186ca9f1c2a124}{trees}}.release\ ();}
+\DoxyCodeLine{01068\ \}}
+\DoxyCodeLine{01069\ }
+\DoxyCodeLine{01070\ \textcolor{comment}{/*\ Return\ the\ number\ of\ trees\ encoded\ in\ ENCODER.\ */}}
+\DoxyCodeLine{01071\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}}
+\DoxyCodeLine{01072\ \doxymbox{\hyperlink{lto-streamer_8h_aaaee3be771e8a5f228ed89998b9f90f2}{lto\_tree\_ref\_encoder\_size}}\ (\textcolor{keyword}{struct}\ \doxymbox{\hyperlink{structlto__tree__ref__encoder}{lto\_tree\_ref\_encoder}}\ *encoder)}
+\DoxyCodeLine{01073\ \{}
+\DoxyCodeLine{01074\ \ \ \textcolor{keywordflow}{return}\ encoder-\/>\doxymbox{\hyperlink{structlto__tree__ref__encoder_af5d3304e09253a964e186ca9f1c2a124}{trees}}.length\ ();}
+\DoxyCodeLine{01075\ \}}
+\DoxyCodeLine{01076\ }
+\DoxyCodeLine{01077\ \textcolor{comment}{/*\ Return\ the\ IDX-\/th\ tree\ in\ ENCODER.\ */}}
+\DoxyCodeLine{01078\ \textcolor{keyword}{inline}\ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}}
+\DoxyCodeLine{01079\ \doxymbox{\hyperlink{lto-streamer_8h_a42d31ed1165bd5cf8f8d5785b89e7642}{lto\_tree\_ref\_encoder\_get\_tree}}\ (\textcolor{keyword}{struct}\ \doxymbox{\hyperlink{structlto__tree__ref__encoder}{lto\_tree\_ref\_encoder}}\ *encoder,}
+\DoxyCodeLine{01080\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ idx)}
+\DoxyCodeLine{01081\ \{}
+\DoxyCodeLine{01082\ \ \ \textcolor{keywordflow}{return}\ encoder-\/>\doxymbox{\hyperlink{structlto__tree__ref__encoder_af5d3304e09253a964e186ca9f1c2a124}{trees}}[idx];}
+\DoxyCodeLine{01083\ \}}
+\DoxyCodeLine{01084\ }
+\DoxyCodeLine{01085\ \textcolor{comment}{/*\ Return\ number\ of\ encoded\ nodes\ in\ ENCODER.\ \ */}}
+\DoxyCodeLine{01086\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{int}}
+\DoxyCodeLine{01087\ \doxymbox{\hyperlink{lto-streamer_8h_a7b1d247ec87cc71c65b7d71e45541b78}{lto\_symtab\_encoder\_size}}\ (\doxymbox{\hyperlink{lto-streamer_8h_a0f04c68697e33ef4ea47f5fa451e32b0}{lto\_symtab\_encoder\_t}}\ encoder)}
+\DoxyCodeLine{01088\ \{}
+\DoxyCodeLine{01089\ \ \ \textcolor{keywordflow}{return}\ encoder-\/>\doxymbox{\hyperlink{structlto__symtab__encoder__d_a4a96905b96d51bed5b40022eb6550cac}{nodes}}.length\ ();}
+\DoxyCodeLine{01090\ \}}
+\DoxyCodeLine{01091\ }
+\DoxyCodeLine{01092\ \textcolor{comment}{/*\ Value\ used\ to\ represent\ failure\ of\ lto\_symtab\_encoder\_lookup.\ \ */}}
+\DoxyCodeLine{01093\ \textcolor{preprocessor}{\#define\ LCC\_NOT\_FOUND\ \ \ (-\/1)}}
+\DoxyCodeLine{01094\ }
+\DoxyCodeLine{01095\ \textcolor{comment}{/*\ Look\ up\ NODE\ in\ encoder.\ \ Return\ NODE's\ reference\ if\ it\ has\ been\ encoded}}
+\DoxyCodeLine{01096\ \textcolor{comment}{\ \ \ or\ LCC\_NOT\_FOUND\ if\ it\ is\ not\ there.\ \ */}}
+\DoxyCodeLine{01097\ }
+\DoxyCodeLine{01098\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{int}}
+\DoxyCodeLine{01099\ \doxymbox{\hyperlink{lto-streamer_8h_a4e5b948636dbbafc3bd45182c1586c03}{lto\_symtab\_encoder\_lookup}}\ (\doxymbox{\hyperlink{lto-streamer_8h_a0f04c68697e33ef4ea47f5fa451e32b0}{lto\_symtab\_encoder\_t}}\ encoder,}
+\DoxyCodeLine{01100\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ symtab\_node\ *node)}
+\DoxyCodeLine{01101\ \{}
+\DoxyCodeLine{01102\ \ \ \textcolor{keywordtype}{size\_t}\ *slot\ =\ encoder-\/>\doxymbox{\hyperlink{structlto__symtab__encoder__d_a6197d00171616dfe8c8f3807c1125c1e}{map}}-\/>get\ (node);}
+\DoxyCodeLine{01103\ \ \ \textcolor{keywordflow}{return}\ (slot\ \&\&\ *slot\ ?\ *(slot)\ -\/\ 1\ :\ \doxymbox{\hyperlink{lto-streamer_8h_adcb935542b18358feae169fd70bf4743}{LCC\_NOT\_FOUND}});}
+\DoxyCodeLine{01104\ \}}
+\DoxyCodeLine{01105\ }
+\DoxyCodeLine{01106\ \textcolor{comment}{/*\ Return\ true\ if\ iterator\ LSE\ points\ to\ nothing.\ \ */}}
+\DoxyCodeLine{01107\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{bool}}
+\DoxyCodeLine{01108\ \doxymbox{\hyperlink{lto-streamer_8h_a4e734a743370e5d4b9a01959367fb247}{lsei\_end\_p}}\ (\doxymbox{\hyperlink{structlto__symtab__encoder__iterator}{lto\_symtab\_encoder\_iterator}}\ lsei)}
+\DoxyCodeLine{01109\ \{}
+\DoxyCodeLine{01110\ \ \ \textcolor{keywordflow}{return}\ lsei.\doxymbox{\hyperlink{structlto__symtab__encoder__iterator_a9e4a34ccbbd09dca11ddfc13e0d871c2}{index}}\ >=\ (unsigned)\doxymbox{\hyperlink{lto-streamer_8h_a7b1d247ec87cc71c65b7d71e45541b78}{lto\_symtab\_encoder\_size}}\ (lsei.\doxymbox{\hyperlink{structlto__symtab__encoder__iterator_a6c1f546141bc598e658db0039b5ebd96}{encoder}});}
+\DoxyCodeLine{01111\ \}}
+\DoxyCodeLine{01112\ }
+\DoxyCodeLine{01113\ \textcolor{comment}{/*\ Advance\ iterator\ LSE.\ \ */}}
+\DoxyCodeLine{01114\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{void}}
+\DoxyCodeLine{01115\ \doxymbox{\hyperlink{lto-streamer_8h_a0bd30b9139da59ea2f7c482f8695c500}{lsei\_next}}\ (\doxymbox{\hyperlink{structlto__symtab__encoder__iterator}{lto\_symtab\_encoder\_iterator}}\ *lsei)}
+\DoxyCodeLine{01116\ \{}
+\DoxyCodeLine{01117\ \ \ lsei-\/>\doxymbox{\hyperlink{structlto__symtab__encoder__iterator_a9e4a34ccbbd09dca11ddfc13e0d871c2}{index}}++;}
+\DoxyCodeLine{01118\ \}}
+\DoxyCodeLine{01119\ }
+\DoxyCodeLine{01120\ \textcolor{comment}{/*\ Return\ the\ node\ pointed\ to\ by\ LSI.\ \ */}}
+\DoxyCodeLine{01121\ \textcolor{keyword}{inline}\ symtab\_node\ *}
+\DoxyCodeLine{01122\ \doxymbox{\hyperlink{lto-streamer_8h_a74c265e4fbc1a0564c752a109b0c0147}{lsei\_node}}\ (\doxymbox{\hyperlink{structlto__symtab__encoder__iterator}{lto\_symtab\_encoder\_iterator}}\ lsei)}
+\DoxyCodeLine{01123\ \{}
+\DoxyCodeLine{01124\ \ \ \textcolor{keywordflow}{return}\ lsei.\doxymbox{\hyperlink{structlto__symtab__encoder__iterator_a6c1f546141bc598e658db0039b5ebd96}{encoder}}-\/>\doxymbox{\hyperlink{structlto__symtab__encoder__d_a4a96905b96d51bed5b40022eb6550cac}{nodes}}[lsei.\doxymbox{\hyperlink{structlto__symtab__encoder__iterator_a9e4a34ccbbd09dca11ddfc13e0d871c2}{index}}].node;}
+\DoxyCodeLine{01125\ \}}
+\DoxyCodeLine{01126\ }
+\DoxyCodeLine{01127\ \textcolor{comment}{/*\ Return\ the\ node\ pointed\ to\ by\ LSI.\ \ */}}
+\DoxyCodeLine{01128\ \textcolor{keyword}{inline}\ \textcolor{keyword}{struct\ }cgraph\_node\ *}
+\DoxyCodeLine{01129\ \doxymbox{\hyperlink{lto-streamer_8h_adfb5a2a3e4f76e4f300e148888f727dd}{lsei\_cgraph\_node}}\ (\doxymbox{\hyperlink{structlto__symtab__encoder__iterator}{lto\_symtab\_encoder\_iterator}}\ lsei)}
+\DoxyCodeLine{01130\ \{}
+\DoxyCodeLine{01131\ \ \ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{is-a_8h_aea38ccb7ddbe54f14c7c56e9cffe887b}{dyn\_cast<cgraph\_node\ *>}}\ (lsei.\doxymbox{\hyperlink{structlto__symtab__encoder__iterator_a6c1f546141bc598e658db0039b5ebd96}{encoder}}-\/>\doxymbox{\hyperlink{structlto__symtab__encoder__d_a4a96905b96d51bed5b40022eb6550cac}{nodes}}[lsei.\doxymbox{\hyperlink{structlto__symtab__encoder__iterator_a9e4a34ccbbd09dca11ddfc13e0d871c2}{index}}].node);}
+\DoxyCodeLine{01132\ \}}
+\DoxyCodeLine{01133\ }
+\DoxyCodeLine{01134\ \textcolor{comment}{/*\ Return\ the\ node\ pointed\ to\ by\ LSI.\ \ */}}
+\DoxyCodeLine{01135\ \textcolor{keyword}{inline}\ varpool\_node\ *}
+\DoxyCodeLine{01136\ \doxymbox{\hyperlink{lto-streamer_8h_ad7652195ef0ef3bc12e93320fcd8a7ed}{lsei\_varpool\_node}}\ (\doxymbox{\hyperlink{structlto__symtab__encoder__iterator}{lto\_symtab\_encoder\_iterator}}\ lsei)}
+\DoxyCodeLine{01137\ \{}
+\DoxyCodeLine{01138\ \ \ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{is-a_8h_aea38ccb7ddbe54f14c7c56e9cffe887b}{dyn\_cast<varpool\_node\ *>}}\ (lsei.\doxymbox{\hyperlink{structlto__symtab__encoder__iterator_a6c1f546141bc598e658db0039b5ebd96}{encoder}}-\/>\doxymbox{\hyperlink{structlto__symtab__encoder__d_a4a96905b96d51bed5b40022eb6550cac}{nodes}}[lsei.\doxymbox{\hyperlink{structlto__symtab__encoder__iterator_a9e4a34ccbbd09dca11ddfc13e0d871c2}{index}}].node);}
+\DoxyCodeLine{01139\ \}}
+\DoxyCodeLine{01140\ }
+\DoxyCodeLine{01141\ \textcolor{comment}{/*\ Return\ the\ cgraph\ node\ corresponding\ to\ REF\ using\ ENCODER.\ \ */}}
+\DoxyCodeLine{01142\ }
+\DoxyCodeLine{01143\ \textcolor{keyword}{inline}\ symtab\_node\ *}
+\DoxyCodeLine{01144\ \doxymbox{\hyperlink{lto-streamer_8h_ad32b6be73492ed9cdad53612b17e52c7}{lto\_symtab\_encoder\_deref}}\ (\doxymbox{\hyperlink{lto-streamer_8h_a0f04c68697e33ef4ea47f5fa451e32b0}{lto\_symtab\_encoder\_t}}\ encoder,\ \textcolor{keywordtype}{int}\ ref)}
+\DoxyCodeLine{01145\ \{}
+\DoxyCodeLine{01146\ \ \ \textcolor{keywordflow}{if}\ (ref\ ==\ \doxymbox{\hyperlink{lto-streamer_8h_adcb935542b18358feae169fd70bf4743}{LCC\_NOT\_FOUND}})}
+\DoxyCodeLine{01147\ \ \ \ \ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{stddef_8h_a070d2ce7b6bb7e5c05602aa8c308d0c4}{NULL}};}
+\DoxyCodeLine{01148\ }
+\DoxyCodeLine{01149\ \ \ \textcolor{keywordflow}{return}\ encoder-\/>\doxymbox{\hyperlink{structlto__symtab__encoder__d_a4a96905b96d51bed5b40022eb6550cac}{nodes}}[ref].node;}
+\DoxyCodeLine{01150\ \}}
+\DoxyCodeLine{01151\ }
+\DoxyCodeLine{01152\ \textcolor{comment}{/*\ Return\ an\ iterator\ to\ the\ first\ node\ in\ LSI.\ \ */}}
+\DoxyCodeLine{01153\ \textcolor{keyword}{inline}\ \doxymbox{\hyperlink{structlto__symtab__encoder__iterator}{lto\_symtab\_encoder\_iterator}}}
+\DoxyCodeLine{01154\ \doxymbox{\hyperlink{lto-streamer_8h_a77066d7afee1429facf15439eca9fb6c}{lsei\_start}}\ (\doxymbox{\hyperlink{lto-streamer_8h_a0f04c68697e33ef4ea47f5fa451e32b0}{lto\_symtab\_encoder\_t}}\ encoder)}
+\DoxyCodeLine{01155\ \{}
+\DoxyCodeLine{01156\ \ \ \doxymbox{\hyperlink{structlto__symtab__encoder__iterator}{lto\_symtab\_encoder\_iterator}}\ lsei;}
+\DoxyCodeLine{01157\ }
+\DoxyCodeLine{01158\ \ \ lsei.\doxymbox{\hyperlink{structlto__symtab__encoder__iterator_a6c1f546141bc598e658db0039b5ebd96}{encoder}}\ =\ encoder;}
+\DoxyCodeLine{01159\ \ \ lsei.\doxymbox{\hyperlink{structlto__symtab__encoder__iterator_a9e4a34ccbbd09dca11ddfc13e0d871c2}{index}}\ =\ 0;}
+\DoxyCodeLine{01160\ \ \ \textcolor{keywordflow}{return}\ lsei;}
+\DoxyCodeLine{01161\ \}}
+\DoxyCodeLine{01162\ }
+\DoxyCodeLine{01163\ \textcolor{comment}{/*\ Advance\ iterator\ LSE.\ \ */}}
+\DoxyCodeLine{01164\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{void}}
+\DoxyCodeLine{01165\ \doxymbox{\hyperlink{lto-streamer_8h_a6b6a9f2d214205a34bf2f2c1d785e85f}{lsei\_next\_in\_partition}}\ (\doxymbox{\hyperlink{structlto__symtab__encoder__iterator}{lto\_symtab\_encoder\_iterator}}\ *lsei)}
+\DoxyCodeLine{01166\ \{}
+\DoxyCodeLine{01167\ \ \ \doxymbox{\hyperlink{lto-streamer_8h_a0bd30b9139da59ea2f7c482f8695c500}{lsei\_next}}\ (lsei);}
+\DoxyCodeLine{01168\ \ \ \textcolor{keywordflow}{while}\ (!\doxymbox{\hyperlink{lto-streamer_8h_a4e734a743370e5d4b9a01959367fb247}{lsei\_end\_p}}\ (*lsei)}
+\DoxyCodeLine{01169\ \ \ \ \ \ \&\&\ !\doxymbox{\hyperlink{lto-streamer_8h_af04acfe3edf35ddc0f2719b6b65f02fb}{lto\_symtab\_encoder\_in\_partition\_p}}\ (lsei-\/>\doxymbox{\hyperlink{structlto__symtab__encoder__iterator_a6c1f546141bc598e658db0039b5ebd96}{encoder}},\ \doxymbox{\hyperlink{lto-streamer_8h_a74c265e4fbc1a0564c752a109b0c0147}{lsei\_node}}\ (*lsei)))}
+\DoxyCodeLine{01170\ \ \ \ \ \doxymbox{\hyperlink{lto-streamer_8h_a0bd30b9139da59ea2f7c482f8695c500}{lsei\_next}}\ (lsei);}
+\DoxyCodeLine{01171\ \}}
+\DoxyCodeLine{01172\ }
+\DoxyCodeLine{01173\ \textcolor{comment}{/*\ Return\ an\ iterator\ to\ the\ first\ node\ in\ LSI.\ \ */}}
+\DoxyCodeLine{01174\ \textcolor{keyword}{inline}\ \doxymbox{\hyperlink{structlto__symtab__encoder__iterator}{lto\_symtab\_encoder\_iterator}}}
+\DoxyCodeLine{01175\ \doxymbox{\hyperlink{lto-streamer_8h_a122fa44f0428baf873e87b624f4baca5}{lsei\_start\_in\_partition}}\ (\doxymbox{\hyperlink{lto-streamer_8h_a0f04c68697e33ef4ea47f5fa451e32b0}{lto\_symtab\_encoder\_t}}\ encoder)}
+\DoxyCodeLine{01176\ \{}
+\DoxyCodeLine{01177\ \ \ \doxymbox{\hyperlink{structlto__symtab__encoder__iterator}{lto\_symtab\_encoder\_iterator}}\ lsei\ =\ \doxymbox{\hyperlink{lto-streamer_8h_a77066d7afee1429facf15439eca9fb6c}{lsei\_start}}\ (encoder);}
+\DoxyCodeLine{01178\ }
+\DoxyCodeLine{01179\ \ \ \textcolor{keywordflow}{if}\ (\doxymbox{\hyperlink{lto-streamer_8h_a4e734a743370e5d4b9a01959367fb247}{lsei\_end\_p}}\ (lsei))}
+\DoxyCodeLine{01180\ \ \ \ \ \textcolor{keywordflow}{return}\ lsei;}
+\DoxyCodeLine{01181\ \ \ \textcolor{keywordflow}{if}\ (!\doxymbox{\hyperlink{lto-streamer_8h_af04acfe3edf35ddc0f2719b6b65f02fb}{lto\_symtab\_encoder\_in\_partition\_p}}\ (encoder,\ \doxymbox{\hyperlink{lto-streamer_8h_a74c265e4fbc1a0564c752a109b0c0147}{lsei\_node}}\ (lsei)))}
+\DoxyCodeLine{01182\ \ \ \ \ \doxymbox{\hyperlink{lto-streamer_8h_a6b6a9f2d214205a34bf2f2c1d785e85f}{lsei\_next\_in\_partition}}\ (\&lsei);}
+\DoxyCodeLine{01183\ }
+\DoxyCodeLine{01184\ \ \ \textcolor{keywordflow}{return}\ lsei;}
+\DoxyCodeLine{01185\ \}}
+\DoxyCodeLine{01186\ }
+\DoxyCodeLine{01187\ \textcolor{comment}{/*\ Advance\ iterator\ LSE.\ \ */}}
+\DoxyCodeLine{01188\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{void}}
+\DoxyCodeLine{01189\ \doxymbox{\hyperlink{lto-streamer_8h_a3b13808627d0cd3e426dad593871b3f3}{lsei\_next\_function\_in\_partition}}\ (\doxymbox{\hyperlink{structlto__symtab__encoder__iterator}{lto\_symtab\_encoder\_iterator}}\ *lsei)}
+\DoxyCodeLine{01190\ \{}
+\DoxyCodeLine{01191\ \ \ \doxymbox{\hyperlink{lto-streamer_8h_a0bd30b9139da59ea2f7c482f8695c500}{lsei\_next}}\ (lsei);}
+\DoxyCodeLine{01192\ \ \ \textcolor{keywordflow}{while}\ (!\doxymbox{\hyperlink{lto-streamer_8h_a4e734a743370e5d4b9a01959367fb247}{lsei\_end\_p}}\ (*lsei)}
+\DoxyCodeLine{01193\ \ \ \ \ \ \&\&\ (!\doxymbox{\hyperlink{is-a_8h_a7fc3c6f9ffa582e4caa829307f4ada7a}{is\_a\ <cgraph\_node\ *>}}\ (\doxymbox{\hyperlink{lto-streamer_8h_a74c265e4fbc1a0564c752a109b0c0147}{lsei\_node}}\ (*lsei))}
+\DoxyCodeLine{01194\ \ \ \ \ \ \ \ \ \ ||\ !\doxymbox{\hyperlink{lto-streamer_8h_af04acfe3edf35ddc0f2719b6b65f02fb}{lto\_symtab\_encoder\_in\_partition\_p}}\ (lsei-\/>\doxymbox{\hyperlink{structlto__symtab__encoder__iterator_a6c1f546141bc598e658db0039b5ebd96}{encoder}},\ \doxymbox{\hyperlink{lto-streamer_8h_a74c265e4fbc1a0564c752a109b0c0147}{lsei\_node}}\ (*lsei))))}
+\DoxyCodeLine{01195\ \ \ \ \ \doxymbox{\hyperlink{lto-streamer_8h_a0bd30b9139da59ea2f7c482f8695c500}{lsei\_next}}\ (lsei);}
+\DoxyCodeLine{01196\ \}}
+\DoxyCodeLine{01197\ }
+\DoxyCodeLine{01198\ \textcolor{comment}{/*\ Return\ an\ iterator\ to\ the\ first\ node\ in\ LSI.\ \ */}}
+\DoxyCodeLine{01199\ \textcolor{keyword}{inline}\ \doxymbox{\hyperlink{structlto__symtab__encoder__iterator}{lto\_symtab\_encoder\_iterator}}}
+\DoxyCodeLine{01200\ \doxymbox{\hyperlink{lto-streamer_8h_a44069db492cc700c1399442d78b5e09f}{lsei\_start\_function\_in\_partition}}\ (\doxymbox{\hyperlink{lto-streamer_8h_a0f04c68697e33ef4ea47f5fa451e32b0}{lto\_symtab\_encoder\_t}}\ encoder)}
+\DoxyCodeLine{01201\ \{}
+\DoxyCodeLine{01202\ \ \ \doxymbox{\hyperlink{structlto__symtab__encoder__iterator}{lto\_symtab\_encoder\_iterator}}\ lsei\ =\ \doxymbox{\hyperlink{lto-streamer_8h_a77066d7afee1429facf15439eca9fb6c}{lsei\_start}}\ (encoder);}
+\DoxyCodeLine{01203\ }
+\DoxyCodeLine{01204\ \ \ \textcolor{keywordflow}{if}\ (\doxymbox{\hyperlink{lto-streamer_8h_a4e734a743370e5d4b9a01959367fb247}{lsei\_end\_p}}\ (lsei))}
+\DoxyCodeLine{01205\ \ \ \ \ \textcolor{keywordflow}{return}\ lsei;}
+\DoxyCodeLine{01206\ \ \ \textcolor{keywordflow}{if}\ (!\doxymbox{\hyperlink{is-a_8h_a7fc3c6f9ffa582e4caa829307f4ada7a}{is\_a\ <cgraph\_node\ *>}}\ (\doxymbox{\hyperlink{lto-streamer_8h_a74c265e4fbc1a0564c752a109b0c0147}{lsei\_node}}\ (lsei))}
+\DoxyCodeLine{01207\ \ \ \ \ \ \ ||\ !\doxymbox{\hyperlink{lto-streamer_8h_af04acfe3edf35ddc0f2719b6b65f02fb}{lto\_symtab\_encoder\_in\_partition\_p}}\ (encoder,\ \doxymbox{\hyperlink{lto-streamer_8h_a74c265e4fbc1a0564c752a109b0c0147}{lsei\_node}}\ (lsei)))}
+\DoxyCodeLine{01208\ \ \ \ \ \doxymbox{\hyperlink{lto-streamer_8h_a3b13808627d0cd3e426dad593871b3f3}{lsei\_next\_function\_in\_partition}}\ (\&lsei);}
+\DoxyCodeLine{01209\ }
+\DoxyCodeLine{01210\ \ \ \textcolor{keywordflow}{return}\ lsei;}
+\DoxyCodeLine{01211\ \}}
+\DoxyCodeLine{01212\ }
+\DoxyCodeLine{01213\ \textcolor{comment}{/*\ Advance\ iterator\ LSE.\ \ */}}
+\DoxyCodeLine{01214\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{void}}
+\DoxyCodeLine{01215\ \doxymbox{\hyperlink{lto-streamer_8h_aabe4adb60163f29a1595894d7415b6ba}{lsei\_next\_variable\_in\_partition}}\ (\doxymbox{\hyperlink{structlto__symtab__encoder__iterator}{lto\_symtab\_encoder\_iterator}}\ *lsei)}
+\DoxyCodeLine{01216\ \{}
+\DoxyCodeLine{01217\ \ \ \doxymbox{\hyperlink{lto-streamer_8h_a0bd30b9139da59ea2f7c482f8695c500}{lsei\_next}}\ (lsei);}
+\DoxyCodeLine{01218\ \ \ \textcolor{keywordflow}{while}\ (!\doxymbox{\hyperlink{lto-streamer_8h_a4e734a743370e5d4b9a01959367fb247}{lsei\_end\_p}}\ (*lsei)}
+\DoxyCodeLine{01219\ \ \ \ \ \ \&\&\ (!\doxymbox{\hyperlink{is-a_8h_a7fc3c6f9ffa582e4caa829307f4ada7a}{is\_a\ <varpool\_node\ *>}}\ (\doxymbox{\hyperlink{lto-streamer_8h_a74c265e4fbc1a0564c752a109b0c0147}{lsei\_node}}\ (*lsei))}
+\DoxyCodeLine{01220\ \ \ \ \ \ \ \ \ \ ||\ !\doxymbox{\hyperlink{lto-streamer_8h_af04acfe3edf35ddc0f2719b6b65f02fb}{lto\_symtab\_encoder\_in\_partition\_p}}\ (lsei-\/>\doxymbox{\hyperlink{structlto__symtab__encoder__iterator_a6c1f546141bc598e658db0039b5ebd96}{encoder}},\ \doxymbox{\hyperlink{lto-streamer_8h_a74c265e4fbc1a0564c752a109b0c0147}{lsei\_node}}\ (*lsei))))}
+\DoxyCodeLine{01221\ \ \ \ \ \doxymbox{\hyperlink{lto-streamer_8h_a0bd30b9139da59ea2f7c482f8695c500}{lsei\_next}}\ (lsei);}
+\DoxyCodeLine{01222\ \}}
+\DoxyCodeLine{01223\ }
+\DoxyCodeLine{01224\ \textcolor{comment}{/*\ Return\ an\ iterator\ to\ the\ first\ node\ in\ LSI.\ \ */}}
+\DoxyCodeLine{01225\ \textcolor{keyword}{inline}\ \doxymbox{\hyperlink{structlto__symtab__encoder__iterator}{lto\_symtab\_encoder\_iterator}}}
+\DoxyCodeLine{01226\ \doxymbox{\hyperlink{lto-streamer_8h_a2d24748517326a7a94b3e2e8e8aeb54d}{lsei\_start\_variable\_in\_partition}}\ (\doxymbox{\hyperlink{lto-streamer_8h_a0f04c68697e33ef4ea47f5fa451e32b0}{lto\_symtab\_encoder\_t}}\ encoder)}
+\DoxyCodeLine{01227\ \{}
+\DoxyCodeLine{01228\ \ \ \doxymbox{\hyperlink{structlto__symtab__encoder__iterator}{lto\_symtab\_encoder\_iterator}}\ lsei\ =\ \doxymbox{\hyperlink{lto-streamer_8h_a77066d7afee1429facf15439eca9fb6c}{lsei\_start}}\ (encoder);}
+\DoxyCodeLine{01229\ }
+\DoxyCodeLine{01230\ \ \ \textcolor{keywordflow}{if}\ (\doxymbox{\hyperlink{lto-streamer_8h_a4e734a743370e5d4b9a01959367fb247}{lsei\_end\_p}}\ (lsei))}
+\DoxyCodeLine{01231\ \ \ \ \ \textcolor{keywordflow}{return}\ lsei;}
+\DoxyCodeLine{01232\ \ \ \textcolor{keywordflow}{if}\ (!\doxymbox{\hyperlink{is-a_8h_a7fc3c6f9ffa582e4caa829307f4ada7a}{is\_a\ <varpool\_node\ *>}}\ (\doxymbox{\hyperlink{lto-streamer_8h_a74c265e4fbc1a0564c752a109b0c0147}{lsei\_node}}\ (lsei))}
+\DoxyCodeLine{01233\ \ \ \ \ \ \ ||\ !\doxymbox{\hyperlink{lto-streamer_8h_af04acfe3edf35ddc0f2719b6b65f02fb}{lto\_symtab\_encoder\_in\_partition\_p}}\ (encoder,\ \doxymbox{\hyperlink{lto-streamer_8h_a74c265e4fbc1a0564c752a109b0c0147}{lsei\_node}}\ (lsei)))}
+\DoxyCodeLine{01234\ \ \ \ \ \doxymbox{\hyperlink{lto-streamer_8h_aabe4adb60163f29a1595894d7415b6ba}{lsei\_next\_variable\_in\_partition}}\ (\&lsei);}
+\DoxyCodeLine{01235\ }
+\DoxyCodeLine{01236\ \ \ \textcolor{keywordflow}{return}\ lsei;}
+\DoxyCodeLine{01237\ \}}
+\DoxyCodeLine{01238\ }
+\DoxyCodeLine{01239\ \textcolor{comment}{/*\ Entry\ for\ the\ delayed\ registering\ of\ decl\ -\/>\ DIE\ references.\ \ */}}
+\DoxyCodeLine{01240\ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{structdref__entry}{dref\_entry}}\ \{}
+\DoxyCodeLine{01241\ \ \ \ \ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ \doxymbox{\hyperlink{structdref__entry_a0c40ef3e4fe2507d4f86c65fa6b38bb1}{decl}};}
+\DoxyCodeLine{01242\ \ \ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *\doxymbox{\hyperlink{structdref__entry_afbf097b784fb2ce9f23a24db112c0b07}{sym}};}
+\DoxyCodeLine{01243\ \ \ \ \ \textcolor{keywordtype}{unsigned}\ HOST\_WIDE\_INT\ \doxymbox{\hyperlink{structdref__entry_ae3ece5eb54f6047210ebb92700f4a230}{off}};}
+\DoxyCodeLine{01244\ \};}
+\DoxyCodeLine{01245\ }
+\DoxyCodeLine{01246\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{structvec}{vec<dref\_entry>}}\ \doxymbox{\hyperlink{lto-streamer_8h_af000a79f7e9e390f7f98cabaeb57258d}{dref\_queue}};}
+\DoxyCodeLine{01247\ }
+\DoxyCodeLine{01248\ \textcolor{keyword}{extern}\ FILE\ *\doxymbox{\hyperlink{lto-streamer_8h_a95c306121191bac16ec848a80b3a6442}{streamer\_dump\_file}};}
+\DoxyCodeLine{01249\ }
+\DoxyCodeLine{01250\ \textcolor{preprocessor}{\#endif\ }\textcolor{comment}{/*\ GCC\_LTO\_STREAMER\_H\ \ */}\textcolor{preprocessor}{}}
+
+\end{DoxyCode}

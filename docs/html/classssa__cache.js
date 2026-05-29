@@ -1,0 +1,26 @@
+var classssa__cache =
+[
+    [ "ssa_cache", "classssa__cache.html#a34086597791264394eda0ee2d9e987cc", null ],
+    [ "~ssa_cache", "classssa__cache.html#ae99f76cc74e9f996abe9db3b12fb024b", null ],
+    [ "clear", "classssa__cache.html#a86e4dea7964f8d7bf81432e987744a9f", null ],
+    [ "clear_range", "classssa__cache.html#a6c29fa319a83d5cd41d55d4ea0816e97", null ],
+    [ "dump", "classssa__cache.html#ab1f9add9947b9825703ca725d8bde4d8", null ],
+    [ "get_arith_expr_range", "classssa__cache.html#a675e77f480b080c9a8669fccdc6b723e", null ],
+    [ "get_range", "classssa__cache.html#afbafea447b7916e7d1c1e63383fd5c09", null ],
+    [ "get_tree_range", "classssa__cache.html#a5c4303b582d13fbf7ae8f83b0ec360f6", null ],
+    [ "has_range", "classssa__cache.html#a95039e44a1ce3daf99778f5ac5b8977f", null ],
+    [ "merge_range", "classssa__cache.html#a44e65d8ede395a95fd832dbde7a4d69f", null ],
+    [ "oracle", "classssa__cache.html#a7363218a17454a3a0cc5f8a8c53e5571", null ],
+    [ "query_relation", "classssa__cache.html#a2d0402360212340763b673864d96fc30", null ],
+    [ "query_relation", "classssa__cache.html#ace02e08011c18a9496a13fe8829eb4b9", null ],
+    [ "range_of_expr", "classssa__cache.html#a4de56bdc9f6e7f5581efc65792e87bc7", null ],
+    [ "range_of_stmt", "classssa__cache.html#ada24522b47606791a7d471abd5293165", null ],
+    [ "range_on_edge", "classssa__cache.html#ac5edfb439f2e8ae0aa188edf609e3dba", null ],
+    [ "set_range", "classssa__cache.html#a21e35b797076a3ba07ff496fa31ee103", null ],
+    [ "value_of_expr", "classssa__cache.html#a18f0899de28108357f37ca756183b513", null ],
+    [ "value_of_stmt", "classssa__cache.html#a9127677ff891d09493cad30dd974d3c9", null ],
+    [ "value_on_edge", "classssa__cache.html#ab14d300978c48b214cfa06b46ad24790", null ],
+    [ "m_oracle", "classssa__cache.html#ab7ed1bb2aaf296b53a67aeef3a7501be", null ],
+    [ "m_range_allocator", "classssa__cache.html#a30b4001956dee98a47cbebf00aafb382", null ],
+    [ "m_tab", "classssa__cache.html#ab3768757e6c1e8346b04dfc559a0fa17", null ]
+];

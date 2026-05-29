@@ -1,0 +1,585 @@
+\doxysection{opts.\+h}
+\hypertarget{opts_8h_source}{}\label{opts_8h_source}\index{toolchain/x86\_64-\/elf/lib/gcc/x86\_64-\/elf/14.2.0/plugin/include/opts.h@{toolchain/x86\_64-\/elf/lib/gcc/x86\_64-\/elf/14.2.0/plugin/include/opts.h}}
+\doxymbox{\hyperlink{opts_8h}{Go to the documentation of this file.}}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001\ \textcolor{comment}{/*\ Command\ line\ option\ handling.}}
+\DoxyCodeLine{00002\ \textcolor{comment}{\ \ \ Copyright\ (C)\ 2002-\/2024\ Free\ Software\ Foundation,\ Inc.}}
+\DoxyCodeLine{00003\ \textcolor{comment}{}}
+\DoxyCodeLine{00004\ \textcolor{comment}{This\ file\ is\ part\ of\ GCC.}}
+\DoxyCodeLine{00005\ \textcolor{comment}{}}
+\DoxyCodeLine{00006\ \textcolor{comment}{GCC\ is\ free\ software;\ you\ can\ redistribute\ it\ and/or\ modify\ it\ under}}
+\DoxyCodeLine{00007\ \textcolor{comment}{the\ terms\ of\ the\ GNU\ General\ Public\ License\ as\ published\ by\ the\ Free}}
+\DoxyCodeLine{00008\ \textcolor{comment}{Software\ Foundation;\ either\ version\ 3,\ or\ (at\ your\ option)\ any\ later}}
+\DoxyCodeLine{00009\ \textcolor{comment}{version.}}
+\DoxyCodeLine{00010\ \textcolor{comment}{}}
+\DoxyCodeLine{00011\ \textcolor{comment}{GCC\ is\ distributed\ in\ the\ hope\ that\ it\ will\ be\ useful,\ but\ WITHOUT\ ANY}}
+\DoxyCodeLine{00012\ \textcolor{comment}{WARRANTY;\ without\ even\ the\ implied\ warranty\ of\ MERCHANTABILITY\ or}}
+\DoxyCodeLine{00013\ \textcolor{comment}{FITNESS\ FOR\ A\ PARTICULAR\ PURPOSE.\ \ See\ the\ GNU\ General\ Public\ License}}
+\DoxyCodeLine{00014\ \textcolor{comment}{for\ more\ details.}}
+\DoxyCodeLine{00015\ \textcolor{comment}{}}
+\DoxyCodeLine{00016\ \textcolor{comment}{You\ should\ have\ received\ a\ copy\ of\ the\ GNU\ General\ Public\ License}}
+\DoxyCodeLine{00017\ \textcolor{comment}{along\ with\ GCC;\ see\ the\ file\ COPYING3.\ \ If\ not\ see}}
+\DoxyCodeLine{00018\ \textcolor{comment}{<http://www.gnu.org/licenses/>.\ \ */}}
+\DoxyCodeLine{00019\ }
+\DoxyCodeLine{00020\ \textcolor{preprocessor}{\#ifndef\ GCC\_OPTS\_H}}
+\DoxyCodeLine{00021\ \textcolor{preprocessor}{\#define\ GCC\_OPTS\_H}}
+\DoxyCodeLine{00022\ }
+\DoxyCodeLine{00023\ \textcolor{preprocessor}{\#include\ "{}\doxymbox{\hyperlink{rich-location_8h}{rich-\/location.h}}"{}}}
+\DoxyCodeLine{00024\ \textcolor{preprocessor}{\#include\ "{}\doxymbox{\hyperlink{obstack_8h}{obstack.h}}"{}}}
+\DoxyCodeLine{00025\ }
+\DoxyCodeLine{00026\ \textcolor{comment}{/*\ Specifies\ how\ a\ switch's\ VAR\_VALUE\ relates\ to\ its\ FLAG\_VAR.\ \ */}}
+\DoxyCodeLine{00027\ \textcolor{keyword}{enum}\ \doxymbox{\hyperlink{opts_8h_a79914225ad95c9bf1400df70a7857a9b}{cl\_var\_type}}\ \{}
+\DoxyCodeLine{00028\ \ \ \textcolor{comment}{/*\ The\ switch\ is\ an\ integer\ value.\ \ */}}
+\DoxyCodeLine{00029\ \ \ \doxymbox{\hyperlink{opts_8h_a79914225ad95c9bf1400df70a7857a9ba6de6ca860692866e6e4d05b5e5db6260}{CLVC\_INTEGER}},}
+\DoxyCodeLine{00030\ }
+\DoxyCodeLine{00031\ \ \ \textcolor{comment}{/*\ The\ switch\ is\ enabled\ when\ FLAG\_VAR\ ==\ VAR\_VALUE.\ \ */}}
+\DoxyCodeLine{00032\ \ \ \doxymbox{\hyperlink{opts_8h_a79914225ad95c9bf1400df70a7857a9ba8c51268a53fd6351350505995ca0606a}{CLVC\_EQUAL}},}
+\DoxyCodeLine{00033\ }
+\DoxyCodeLine{00034\ \ \ \textcolor{comment}{/*\ The\ switch\ is\ enabled\ when\ VAR\_VALUE\ is\ not\ set\ in\ FLAG\_VAR.\ \ */}}
+\DoxyCodeLine{00035\ \ \ \doxymbox{\hyperlink{opts_8h_a79914225ad95c9bf1400df70a7857a9ba03f9708467f9a643188b86f7d648c5ff}{CLVC\_BIT\_CLEAR}},}
+\DoxyCodeLine{00036\ }
+\DoxyCodeLine{00037\ \ \ \textcolor{comment}{/*\ The\ switch\ is\ enabled\ when\ VAR\_VALUE\ is\ set\ in\ FLAG\_VAR.\ \ */}}
+\DoxyCodeLine{00038\ \ \ \doxymbox{\hyperlink{opts_8h_a79914225ad95c9bf1400df70a7857a9ba09e270cdf3b85799489f27d4196c418c}{CLVC\_BIT\_SET}},}
+\DoxyCodeLine{00039\ }
+\DoxyCodeLine{00040\ \ \ \textcolor{comment}{/*\ The\ switch\ is\ enabled\ when\ FLAG\_VAR\ is\ less\ than\ HOST\_WIDE\_INT\_M1U.\ \ */}}
+\DoxyCodeLine{00041\ \ \ \doxymbox{\hyperlink{opts_8h_a79914225ad95c9bf1400df70a7857a9babc4bce716209ad750776f8325f29eb88}{CLVC\_SIZE}},}
+\DoxyCodeLine{00042\ }
+\DoxyCodeLine{00043\ \ \ \textcolor{comment}{/*\ The\ switch\ takes\ a\ string\ argument\ and\ FLAG\_VAR\ points\ to\ that}}
+\DoxyCodeLine{00044\ \textcolor{comment}{\ \ \ \ \ argument.\ \ */}}
+\DoxyCodeLine{00045\ \ \ \doxymbox{\hyperlink{opts_8h_a79914225ad95c9bf1400df70a7857a9ba9bfc1e906c185f1081aef8176889b6a1}{CLVC\_STRING}},}
+\DoxyCodeLine{00046\ }
+\DoxyCodeLine{00047\ \ \ \textcolor{comment}{/*\ The\ switch\ takes\ an\ enumerated\ argument\ (VAR\_ENUM\ says\ what}}
+\DoxyCodeLine{00048\ \textcolor{comment}{\ \ \ \ \ enumeration)\ and\ FLAG\_VAR\ points\ to\ that\ argument.\ \ */}}
+\DoxyCodeLine{00049\ \ \ \doxymbox{\hyperlink{opts_8h_a79914225ad95c9bf1400df70a7857a9ba5f69c39c2cedd9294a1185f01f5cd6d7}{CLVC\_ENUM}},}
+\DoxyCodeLine{00050\ }
+\DoxyCodeLine{00051\ \ \ \textcolor{comment}{/*\ The\ switch\ should\ be\ stored\ in\ the\ VEC\ pointed\ to\ by\ FLAG\_VAR\ for}}
+\DoxyCodeLine{00052\ \textcolor{comment}{\ \ \ \ \ later\ processing.\ \ */}}
+\DoxyCodeLine{00053\ \ \ \doxymbox{\hyperlink{opts_8h_a79914225ad95c9bf1400df70a7857a9ba878914905d468347b22968a09d73d815}{CLVC\_DEFER}}}
+\DoxyCodeLine{00054\ \};}
+\DoxyCodeLine{00055\ }
+\DoxyCodeLine{00056\ \textcolor{comment}{/*\ Values\ for\ var\_value\ member\ of\ CLVC\_ENUM.\ \ */}}
+\DoxyCodeLine{00057\ \textcolor{keyword}{enum}\ \doxymbox{\hyperlink{opts_8h_a059f03162e8fa528c328f96510671734}{cl\_enum\_var\_value}}\ \{}
+\DoxyCodeLine{00058\ \ \ \textcolor{comment}{/*\ Enum\ without\ EnumSet\ or\ EnumBitSet.\ \ */}}
+\DoxyCodeLine{00059\ \ \ \doxymbox{\hyperlink{opts_8h_a059f03162e8fa528c328f96510671734a8dae0a73e351f9097b467ff92277ce8f}{CLEV\_NORMAL}},}
+\DoxyCodeLine{00060\ }
+\DoxyCodeLine{00061\ \ \ \textcolor{comment}{/*\ EnumSet.\ \ */}}
+\DoxyCodeLine{00062\ \ \ \doxymbox{\hyperlink{opts_8h_a059f03162e8fa528c328f96510671734a62420287992c52e6e72c4f59e5955984}{CLEV\_SET}},}
+\DoxyCodeLine{00063\ }
+\DoxyCodeLine{00064\ \ \ \textcolor{comment}{/*\ EnumBitSet.\ \ */}}
+\DoxyCodeLine{00065\ \ \ \doxymbox{\hyperlink{opts_8h_a059f03162e8fa528c328f96510671734a16b609b99a1ec6e3d6d14c13428747c7}{CLEV\_BITSET}}}
+\DoxyCodeLine{00066\ \};}
+\DoxyCodeLine{00067\ }
+\DoxyCodeLine{00068\ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{structcl__option}{cl\_option}}}
+\DoxyCodeLine{00069\ \{}
+\DoxyCodeLine{00070\ \ \ \textcolor{comment}{/*\ Text\ of\ the\ option,\ including\ initial\ '-\/'.\ \ */}}
+\DoxyCodeLine{00071\ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *\doxymbox{\hyperlink{structcl__option_a80cac9ceacf82fe8d40d181bfb7a229d}{opt\_text}};}
+\DoxyCodeLine{00072\ \ \ \textcolor{comment}{/*\ Help\ text\ for\ -\/-\/help,\ or\ NULL.\ \ */}}
+\DoxyCodeLine{00073\ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *\doxymbox{\hyperlink{structcl__option_aef50d16603bf4408a20e6b4055f1649e}{help}};}
+\DoxyCodeLine{00074\ \ \ \textcolor{comment}{/*\ Error\ message\ for\ missing\ argument,\ or\ NULL.\ \ */}}
+\DoxyCodeLine{00075\ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *\doxymbox{\hyperlink{structcl__option_af59532fe8188d5ee735abaeb52c326b3}{missing\_argument\_error}};}
+\DoxyCodeLine{00076\ \ \ \textcolor{comment}{/*\ Warning\ to\ give\ when\ this\ option\ is\ used,\ or\ NULL.\ \ */}}
+\DoxyCodeLine{00077\ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *\doxymbox{\hyperlink{structcl__option_ab23745e5963e2077ce270ba01fd574cb}{warn\_message}};}
+\DoxyCodeLine{00078\ \ \ \textcolor{comment}{/*\ Argument\ of\ alias\ target\ when\ positive\ option\ given,\ or\ NULL.\ \ */}}
+\DoxyCodeLine{00079\ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *\doxymbox{\hyperlink{structcl__option_a925a3e042403114c1eb07a2ab71b600e}{alias\_arg}};}
+\DoxyCodeLine{00080\ \ \ \textcolor{comment}{/*\ Argument\ of\ alias\ target\ when\ negative\ option\ given,\ or\ NULL.\ \ */}}
+\DoxyCodeLine{00081\ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *\doxymbox{\hyperlink{structcl__option_a73319a2d542a40bc05506f51293ea77a}{neg\_alias\_arg}};}
+\DoxyCodeLine{00082\ \ \ \textcolor{comment}{/*\ Alias\ target,\ or\ N\_OPTS\ if\ not\ an\ alias.\ \ */}}
+\DoxyCodeLine{00083\ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{short}\ \doxymbox{\hyperlink{structcl__option_a1c787c4818ef3b1dec7623f2f371dc0e}{alias\_target}};}
+\DoxyCodeLine{00084\ \ \ \textcolor{comment}{/*\ Previous\ option\ that\ is\ an\ initial\ substring\ of\ this\ one,\ or}}
+\DoxyCodeLine{00085\ \textcolor{comment}{\ \ \ \ \ N\_OPTS\ if\ none.\ \ */}}
+\DoxyCodeLine{00086\ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{short}\ \doxymbox{\hyperlink{structcl__option_aec3e7608a9d4112320f89072db6464c8}{back\_chain}};}
+\DoxyCodeLine{00087\ \ \ \textcolor{comment}{/*\ Option\ length,\ not\ including\ initial\ '-\/'.\ \ */}}
+\DoxyCodeLine{00088\ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{char}\ \doxymbox{\hyperlink{structcl__option_acf9f483e7ef64e5c753c68a58503f4fc}{opt\_len}};}
+\DoxyCodeLine{00089\ \ \ \textcolor{comment}{/*\ Next\ option\ in\ a\ sequence\ marked\ with\ Negative,\ or\ -\/1\ if\ none.}}
+\DoxyCodeLine{00090\ \textcolor{comment}{\ \ \ \ \ For\ a\ single\ option\ with\ both\ a\ negative\ and\ a\ positve\ form}}
+\DoxyCodeLine{00091\ \textcolor{comment}{\ \ \ \ \ (such\ as\ -\/Wall\ and\ -\/Wno-\/all),\ NEG\_IDX\ is\ equal\ to\ the\ option's}}
+\DoxyCodeLine{00092\ \textcolor{comment}{\ \ \ \ \ own\ index\ (i.e.,\ cl\_options[IDX].neg\_idx\ ==\ IDX\ holds).\ \ */}}
+\DoxyCodeLine{00093\ \ \ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{structcl__option_a81f641b623e85d83d3984bc5fe68bb8a}{neg\_index}};}
+\DoxyCodeLine{00094\ \ \ \textcolor{comment}{/*\ CL\_*\ flags\ for\ this\ option.\ \ */}}
+\DoxyCodeLine{00095\ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{structcl__option_aed9e042cbcdc03a18982d2a18104c955}{flags}};}
+\DoxyCodeLine{00096\ \ \ \textcolor{comment}{/*\ Disabled\ in\ this\ configuration.\ \ */}}
+\DoxyCodeLine{00097\ \ \ \doxymbox{\hyperlink{system_8h_a4e2bfb0cb3835aa91a62a553a53e9763}{BOOL\_BITFIELD}}\ \doxymbox{\hyperlink{structcl__option_ab68da57726a2d76b67386cafefac491a}{cl\_disabled}}\ :\ 1;}
+\DoxyCodeLine{00098\ \ \ \textcolor{comment}{/*\ Options\ marked\ with\ CL\_SEPARATE\ take\ a\ number\ of\ separate}}
+\DoxyCodeLine{00099\ \textcolor{comment}{\ \ \ \ \ arguments\ (1\ to\ 4)\ that\ is\ one\ more\ than\ the\ number\ in\ this}}
+\DoxyCodeLine{00100\ \textcolor{comment}{\ \ \ \ \ bit-\/field.\ \ */}}
+\DoxyCodeLine{00101\ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{structcl__option_aed0daef8e7deaa192751459fdab335e1}{cl\_separate\_nargs}}\ :\ 2;}
+\DoxyCodeLine{00102\ \ \ \textcolor{comment}{/*\ Option\ is\ an\ alias\ when\ used\ with\ separate\ argument.\ \ */}}
+\DoxyCodeLine{00103\ \ \ \doxymbox{\hyperlink{system_8h_a4e2bfb0cb3835aa91a62a553a53e9763}{BOOL\_BITFIELD}}\ \doxymbox{\hyperlink{structcl__option_a8a55a4e1cd59891e9795f9ae5c936abf}{cl\_separate\_alias}}\ :\ 1;}
+\DoxyCodeLine{00104\ \ \ \textcolor{comment}{/*\ Alias\ to\ negative\ form\ of\ option.\ \ */}}
+\DoxyCodeLine{00105\ \ \ \doxymbox{\hyperlink{system_8h_a4e2bfb0cb3835aa91a62a553a53e9763}{BOOL\_BITFIELD}}\ \doxymbox{\hyperlink{structcl__option_accd2a1e2bf668d45e6eb5919c44a392e}{cl\_negative\_alias}}\ :\ 1;}
+\DoxyCodeLine{00106\ \ \ \textcolor{comment}{/*\ Option\ takes\ no\ argument\ in\ the\ driver.\ \ */}}
+\DoxyCodeLine{00107\ \ \ \doxymbox{\hyperlink{system_8h_a4e2bfb0cb3835aa91a62a553a53e9763}{BOOL\_BITFIELD}}\ \doxymbox{\hyperlink{structcl__option_a73448824d7a3053c67024c03676e0d68}{cl\_no\_driver\_arg}}\ :\ 1;}
+\DoxyCodeLine{00108\ \ \ \textcolor{comment}{/*\ Reject\ this\ option\ in\ the\ driver.\ \ */}}
+\DoxyCodeLine{00109\ \ \ \doxymbox{\hyperlink{system_8h_a4e2bfb0cb3835aa91a62a553a53e9763}{BOOL\_BITFIELD}}\ \doxymbox{\hyperlink{structcl__option_a01f5ded5b477c5f8374daf179eabee9c}{cl\_reject\_driver}}\ :\ 1;}
+\DoxyCodeLine{00110\ \ \ \textcolor{comment}{/*\ Reject\ no-\/\ form.\ \ */}}
+\DoxyCodeLine{00111\ \ \ \doxymbox{\hyperlink{system_8h_a4e2bfb0cb3835aa91a62a553a53e9763}{BOOL\_BITFIELD}}\ \doxymbox{\hyperlink{structcl__option_a39cd892a4c896fce120a38cbbcbdc2ce}{cl\_reject\_negative}}\ :\ 1;}
+\DoxyCodeLine{00112\ \ \ \textcolor{comment}{/*\ Missing\ argument\ OK\ (joined).\ \ */}}
+\DoxyCodeLine{00113\ \ \ \doxymbox{\hyperlink{system_8h_a4e2bfb0cb3835aa91a62a553a53e9763}{BOOL\_BITFIELD}}\ \doxymbox{\hyperlink{structcl__option_a8a28de0e5dc10282d972a1a85f216ea1}{cl\_missing\_ok}}\ :\ 1;}
+\DoxyCodeLine{00114\ \ \ \textcolor{comment}{/*\ Argument\ is\ an\ integer\ >=0.\ \ */}}
+\DoxyCodeLine{00115\ \ \ \doxymbox{\hyperlink{system_8h_a4e2bfb0cb3835aa91a62a553a53e9763}{BOOL\_BITFIELD}}\ \doxymbox{\hyperlink{structcl__option_aa195bc10039ea484d1e2630012480a08}{cl\_uinteger}}\ :\ 1;}
+\DoxyCodeLine{00116\ \ \ \textcolor{comment}{/*\ Argument\ is\ a\ HOST\_WIDE\_INT.\ \ */}}
+\DoxyCodeLine{00117\ \ \ \doxymbox{\hyperlink{system_8h_a4e2bfb0cb3835aa91a62a553a53e9763}{BOOL\_BITFIELD}}\ \doxymbox{\hyperlink{structcl__option_a183d19005674e929da6c6683d9dd96f3}{cl\_host\_wide\_int}}\ :\ 1;}
+\DoxyCodeLine{00118\ \ \ \textcolor{comment}{/*\ Argument\ should\ be\ converted\ to\ lowercase.\ \ */}}
+\DoxyCodeLine{00119\ \ \ \doxymbox{\hyperlink{system_8h_a4e2bfb0cb3835aa91a62a553a53e9763}{BOOL\_BITFIELD}}\ \doxymbox{\hyperlink{structcl__option_a89af97d25d0358e458d24d1cd06dcbe2}{cl\_tolower}}\ :\ 1;}
+\DoxyCodeLine{00120\ \ \ \textcolor{comment}{/*\ Argument\ is\ an\ unsigned\ integer\ with\ an\ optional\ byte\ suffix.\ \ */}}
+\DoxyCodeLine{00121\ \ \ \doxymbox{\hyperlink{system_8h_a4e2bfb0cb3835aa91a62a553a53e9763}{BOOL\_BITFIELD}}\ \doxymbox{\hyperlink{structcl__option_ab3081edd084d93f87144edde7ff436e0}{cl\_byte\_size}}:\ 1;}
+\DoxyCodeLine{00122\ \ \ \textcolor{comment}{/*\ Offset\ of\ field\ for\ this\ option\ in\ struct\ gcc\_options,\ or}}
+\DoxyCodeLine{00123\ \textcolor{comment}{\ \ \ \ \ (unsigned\ short)\ -\/1\ if\ none.\ \ */}}
+\DoxyCodeLine{00124\ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{short}\ \doxymbox{\hyperlink{structcl__option_a40a28bed0f1d6b9bc5394d8cda9d8bda}{flag\_var\_offset}};}
+\DoxyCodeLine{00125\ \ \ \textcolor{comment}{/*\ Index\ in\ cl\_enums\ of\ enum\ used\ for\ this\ option's\ arguments,\ for}}
+\DoxyCodeLine{00126\ \textcolor{comment}{\ \ \ \ \ CLVC\_ENUM\ options.\ \ */}}
+\DoxyCodeLine{00127\ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{short}\ \doxymbox{\hyperlink{structcl__option_a323b4c03170043825eddd9c9c7fa4623}{var\_enum}};}
+\DoxyCodeLine{00128\ \ \ \textcolor{comment}{/*\ How\ this\ option's\ value\ is\ determined\ and\ sets\ a\ field.\ \ */}}
+\DoxyCodeLine{00129\ \ \ \textcolor{keyword}{enum}\ \doxymbox{\hyperlink{opts_8h_a79914225ad95c9bf1400df70a7857a9b}{cl\_var\_type}}\ \doxymbox{\hyperlink{structcl__option_a4ceb7b44f65b21ff39564b174dc536ec}{var\_type}};}
+\DoxyCodeLine{00130\ \ \ \textcolor{comment}{/*\ Value\ or\ bit-\/mask\ with\ which\ to\ set\ a\ field.\ \ */}}
+\DoxyCodeLine{00131\ \ \ HOST\_WIDE\_INT\ \doxymbox{\hyperlink{structcl__option_a8a620b908f3aa9daaf925a0b2dfff1e9}{var\_value}};}
+\DoxyCodeLine{00132\ \ \ \textcolor{comment}{/*\ Range\ info\ minimum,\ or\ -\/1.\ \ */}}
+\DoxyCodeLine{00133\ \ \ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{structcl__option_a8d83792f2f0b6f0d9e613fec6983d942}{range\_min}};}
+\DoxyCodeLine{00134\ \ \ \textcolor{comment}{/*\ Range\ info\ maximum,\ or\ -\/1.\ \ */}}
+\DoxyCodeLine{00135\ \ \ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{structcl__option_a5fb06c2c6f4e4b6c6081d589657099fa}{range\_max}};}
+\DoxyCodeLine{00136\ \};}
+\DoxyCodeLine{00137\ }
+\DoxyCodeLine{00138\ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{structcl__var}{cl\_var}}}
+\DoxyCodeLine{00139\ \{}
+\DoxyCodeLine{00140\ \ \ \textcolor{comment}{/*\ Name\ of\ the\ variable.\ \ */}}
+\DoxyCodeLine{00141\ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *\doxymbox{\hyperlink{structcl__var_aabf85f4bfaad9e5a8e989a2944162d4b}{var\_name}};}
+\DoxyCodeLine{00142\ \ \ \textcolor{comment}{/*\ Offset\ of\ field\ for\ this\ var\ in\ struct\ gcc\_options.\ \ */}}
+\DoxyCodeLine{00143\ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{short}\ \doxymbox{\hyperlink{structcl__var_ae6de07f783eb1d7bc847bf20282806eb}{var\_offset}};}
+\DoxyCodeLine{00144\ \};}
+\DoxyCodeLine{00145\ }
+\DoxyCodeLine{00146\ \textcolor{comment}{/*\ Records\ that\ the\ state\ of\ an\ option\ consists\ of\ SIZE\ bytes\ starting}}
+\DoxyCodeLine{00147\ \textcolor{comment}{\ \ \ at\ DATA.\ \ DATA\ might\ point\ to\ CH\ in\ some\ cases.\ \ */}}
+\DoxyCodeLine{00148\ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{structcl__option__state}{cl\_option\_state}}\ \{}
+\DoxyCodeLine{00149\ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{void}\ *\doxymbox{\hyperlink{structcl__option__state_aa475277c4fc54b706e5e048a37a067ef}{data}};}
+\DoxyCodeLine{00150\ \ \ \textcolor{keywordtype}{size\_t}\ \doxymbox{\hyperlink{structcl__option__state_ab58d1207d600c213d22239057b98bd25}{size}};}
+\DoxyCodeLine{00151\ \ \ \textcolor{keywordtype}{char}\ \doxymbox{\hyperlink{structcl__option__state_a6e28a5d58d644c029eebc08868597478}{ch}};}
+\DoxyCodeLine{00152\ \};}
+\DoxyCodeLine{00153\ }
+\DoxyCodeLine{00154\ \textcolor{keyword}{extern}\ \textcolor{keyword}{const}\ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{structcl__option}{cl\_option}}\ \doxymbox{\hyperlink{opts_8h_a00eeb0a6f8c19eadfcdd51c995aec11b}{cl\_options}}[];}
+\DoxyCodeLine{00155\ \textcolor{keyword}{extern}\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{opts_8h_abb46a660b48c3188d2a256b23704053e}{cl\_options\_count}};}
+\DoxyCodeLine{00156\ }
+\DoxyCodeLine{00157\ \textcolor{keyword}{extern}\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *}
+\DoxyCodeLine{00158\ \doxymbox{\hyperlink{opts_8h_ab0852b3b35b22cb11eafb7504a80a183}{get\_opt\_url\_suffix}}\ (\textcolor{keywordtype}{int}\ option\_index,\ \textcolor{keywordtype}{unsigned}\ lang\_mask);}
+\DoxyCodeLine{00159\ }
+\DoxyCodeLine{00160\ \textcolor{preprocessor}{\#ifdef\ ENABLE\_PLUGIN}}
+\DoxyCodeLine{00161\ \textcolor{keyword}{extern}\ \textcolor{keyword}{const}\ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{structcl__var}{cl\_var}}\ cl\_vars[];}
+\DoxyCodeLine{00162\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00163\ \textcolor{keyword}{extern}\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *\textcolor{keyword}{const}\ \doxymbox{\hyperlink{opts_8h_a7342592c9da79ff8a691edf6278c8c6c}{lang\_names}}[];}
+\DoxyCodeLine{00164\ \textcolor{keyword}{extern}\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{opts_8h_a83ec66f35c08dce4d5c6d795ad48b573}{cl\_lang\_count}};}
+\DoxyCodeLine{00165\ }
+\DoxyCodeLine{00166\ \textcolor{preprocessor}{\#define\ CL\_PARAMS\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ (1U\ <<\ 16)\ }\textcolor{comment}{/*\ Fake\ entry.\ \ Used\ to\ display\ -\/-\/param\ info\ with\ -\/-\/help.\ \ */}\textcolor{preprocessor}{}}
+\DoxyCodeLine{00167\ \textcolor{preprocessor}{\#define\ CL\_WARNING\ \ \ \ \ \ (1U\ <<\ 17)\ }\textcolor{comment}{/*\ Enables\ an\ (optional)\ warning\ message.\ \ */}\textcolor{preprocessor}{}}
+\DoxyCodeLine{00168\ \textcolor{preprocessor}{\#define\ CL\_OPTIMIZATION\ \ \ \ \ (1U\ <<\ 18)\ }\textcolor{comment}{/*\ Enables\ an\ (optional)\ optimization.\ \ */}\textcolor{preprocessor}{}}
+\DoxyCodeLine{00169\ \textcolor{preprocessor}{\#define\ CL\_DRIVER\ \ \ \ \ \ \ (1U\ <<\ 19)\ }\textcolor{comment}{/*\ Driver\ option.\ \ */}\textcolor{preprocessor}{}}
+\DoxyCodeLine{00170\ \textcolor{preprocessor}{\#define\ CL\_TARGET\ \ \ \ \ \ \ (1U\ <<\ 20)\ }\textcolor{comment}{/*\ Target-\/specific\ option.\ \ */}\textcolor{preprocessor}{}}
+\DoxyCodeLine{00171\ \textcolor{preprocessor}{\#define\ CL\_COMMON\ \ \ \ \ \ \ (1U\ <<\ 21)\ }\textcolor{comment}{/*\ Language-\/independent.\ \ */}\textcolor{preprocessor}{}}
+\DoxyCodeLine{00172\ }
+\DoxyCodeLine{00173\ \textcolor{preprocessor}{\#define\ CL\_MIN\_OPTION\_CLASS\ CL\_PARAMS}}
+\DoxyCodeLine{00174\ \textcolor{preprocessor}{\#define\ CL\_MAX\_OPTION\_CLASS\ CL\_COMMON}}
+\DoxyCodeLine{00175\ }
+\DoxyCodeLine{00176\ \textcolor{comment}{/*\ From\ here\ on\ the\ bits\ describe\ attributes\ of\ the\ options.}}
+\DoxyCodeLine{00177\ \textcolor{comment}{\ \ \ Before\ this\ point\ the\ bits\ have\ described\ the\ class\ of\ the\ option.}}
+\DoxyCodeLine{00178\ \textcolor{comment}{\ \ \ This\ distinction\ is\ important\ because\ -\/-\/help\ will\ not\ list\ options}}
+\DoxyCodeLine{00179\ \textcolor{comment}{\ \ \ which\ only\ have\ these\ higher\ bits\ set.\ \ */}}
+\DoxyCodeLine{00180\ }
+\DoxyCodeLine{00181\ \textcolor{preprocessor}{\#define\ CL\_JOINED\ \ \ \ \ \ \ (1U\ <<\ 22)\ }\textcolor{comment}{/*\ If\ takes\ joined\ argument.\ \ */}\textcolor{preprocessor}{}}
+\DoxyCodeLine{00182\ \textcolor{preprocessor}{\#define\ CL\_SEPARATE\ \ \ \ \ (1U\ <<\ 23)\ }\textcolor{comment}{/*\ If\ takes\ a\ separate\ argument.\ \ */}\textcolor{preprocessor}{}}
+\DoxyCodeLine{00183\ \textcolor{preprocessor}{\#define\ CL\_UNDOCUMENTED\ \ \ \ \ (1U\ <<\ 24)\ }\textcolor{comment}{/*\ Do\ not\ output\ with\ -\/-\/help.\ \ */}\textcolor{preprocessor}{}}
+\DoxyCodeLine{00184\ \textcolor{preprocessor}{\#define\ CL\_NO\_DWARF\_RECORD\ \ (1U\ <<\ 25)\ }\textcolor{comment}{/*\ Do\ not\ add\ to\ producer\ string.\ \ */}\textcolor{preprocessor}{}}
+\DoxyCodeLine{00185\ \textcolor{preprocessor}{\#define\ CL\_PCH\_IGNORE\ \ \ \ \ \ \ (1U\ <<\ 26)\ }\textcolor{comment}{/*\ Do\ compare\ state\ for\ pch.\ \ */}\textcolor{preprocessor}{}}
+\DoxyCodeLine{00186\ }
+\DoxyCodeLine{00187\ \textcolor{comment}{/*\ Flags\ for\ an\ enumerated\ option\ argument.\ \ */}}
+\DoxyCodeLine{00188\ \textcolor{preprocessor}{\#define\ CL\_ENUM\_CANONICAL\ \ \ (1\ <<\ 0)\ }\textcolor{comment}{/*\ Canonical\ for\ this\ value.\ \ */}\textcolor{preprocessor}{}}
+\DoxyCodeLine{00189\ \textcolor{preprocessor}{\#define\ CL\_ENUM\_DRIVER\_ONLY\ (1\ <<\ 1)\ }\textcolor{comment}{/*\ Only\ accepted\ in\ the\ driver.\ \ */}\textcolor{preprocessor}{}}
+\DoxyCodeLine{00190\ \textcolor{preprocessor}{\#define\ CL\_ENUM\_SET\_SHIFT\ \ \ 2\ \ \ \ }\textcolor{comment}{/*\ Shift\ for\ enum\ set.\ \ */}\textcolor{preprocessor}{}}
+\DoxyCodeLine{00191\ }
+\DoxyCodeLine{00192\ \textcolor{comment}{/*\ Structure\ describing\ an\ enumerated\ option\ argument.\ \ */}}
+\DoxyCodeLine{00193\ }
+\DoxyCodeLine{00194\ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{structcl__enum__arg}{cl\_enum\_arg}}}
+\DoxyCodeLine{00195\ \{}
+\DoxyCodeLine{00196\ \ \ \textcolor{comment}{/*\ The\ argument\ text,\ or\ NULL\ at\ the\ end\ of\ the\ array.\ \ */}}
+\DoxyCodeLine{00197\ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *\doxymbox{\hyperlink{structcl__enum__arg_a45d12006a581a065a67ffd147e9dbfac}{arg}};}
+\DoxyCodeLine{00198\ }
+\DoxyCodeLine{00199\ \ \ \textcolor{comment}{/*\ The\ corresponding\ integer\ value.\ \ */}}
+\DoxyCodeLine{00200\ \ \ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{structcl__enum__arg_a4a387671d8cb94da82ff69c4a42948df}{value}};}
+\DoxyCodeLine{00201\ }
+\DoxyCodeLine{00202\ \ \ \textcolor{comment}{/*\ Flags\ associated\ with\ this\ argument.\ \ */}}
+\DoxyCodeLine{00203\ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{structcl__enum__arg_a7c50b92100ccd49dc0c095f9966e1c50}{flags}};}
+\DoxyCodeLine{00204\ \};}
+\DoxyCodeLine{00205\ }
+\DoxyCodeLine{00206\ \textcolor{comment}{/*\ Structure\ describing\ an\ enumerated\ set\ of\ option\ arguments.\ \ */}}
+\DoxyCodeLine{00207\ }
+\DoxyCodeLine{00208\ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{structcl__enum}{cl\_enum}}}
+\DoxyCodeLine{00209\ \{}
+\DoxyCodeLine{00210\ \ \ \textcolor{comment}{/*\ Help\ text,\ or\ NULL\ if\ the\ values\ should\ not\ be\ listed\ in\ -\/-\/help}}
+\DoxyCodeLine{00211\ \textcolor{comment}{\ \ \ \ \ output.\ \ */}}
+\DoxyCodeLine{00212\ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *\doxymbox{\hyperlink{structcl__enum_a4debdf22ec0d1e5060189de9d472b20e}{help}};}
+\DoxyCodeLine{00213\ }
+\DoxyCodeLine{00214\ \ \ \textcolor{comment}{/*\ Error\ message\ for\ unknown\ arguments,\ or\ NULL\ to\ use\ a\ generic}}
+\DoxyCodeLine{00215\ \textcolor{comment}{\ \ \ \ \ error.\ \ */}}
+\DoxyCodeLine{00216\ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *\doxymbox{\hyperlink{structcl__enum_a9f7ad56068202fc14d18bc06b25fed38}{unknown\_error}};}
+\DoxyCodeLine{00217\ }
+\DoxyCodeLine{00218\ \ \ \textcolor{comment}{/*\ Array\ of\ possible\ values.\ \ */}}
+\DoxyCodeLine{00219\ \ \ \textcolor{keyword}{const}\ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{structcl__enum__arg}{cl\_enum\_arg}}\ *\doxymbox{\hyperlink{structcl__enum_a8e75f0943cab5d70329318a97f99ec5d}{values}};}
+\DoxyCodeLine{00220\ }
+\DoxyCodeLine{00221\ \ \ \textcolor{comment}{/*\ The\ size\ of\ the\ type\ used\ to\ store\ a\ value.\ \ */}}
+\DoxyCodeLine{00222\ \ \ \textcolor{keywordtype}{size\_t}\ \doxymbox{\hyperlink{structcl__enum_aff8f5e624109a27ef5290fbdb3d698e0}{var\_size}};}
+\DoxyCodeLine{00223\ }
+\DoxyCodeLine{00224\ \ \ \textcolor{comment}{/*\ Function\ to\ set\ a\ variable\ of\ this\ type.\ \ */}}
+\DoxyCodeLine{00225\ \ \ void\ (*\doxymbox{\hyperlink{structcl__enum_a85d676d60c0996a4144c66dc8d15869e}{set}})\ (\textcolor{keywordtype}{void}\ *var,\ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{configargs_8h_a92d544bd66c050551f3d87fa55eb3f5d}{value}});}
+\DoxyCodeLine{00226\ }
+\DoxyCodeLine{00227\ \ \ \textcolor{comment}{/*\ Function\ to\ get\ the\ value\ of\ a\ variable\ of\ this\ type.\ \ */}}
+\DoxyCodeLine{00228\ \ \ int\ (*\doxymbox{\hyperlink{structcl__enum_aef158b0b514ec29dddd4e14d61240e14}{get}})\ (\textcolor{keyword}{const}\ \textcolor{keywordtype}{void}\ *var);}
+\DoxyCodeLine{00229\ \};}
+\DoxyCodeLine{00230\ }
+\DoxyCodeLine{00231\ \textcolor{keyword}{extern}\ \textcolor{keyword}{const}\ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{structcl__enum}{cl\_enum}}\ \doxymbox{\hyperlink{opts_8h_a2dff004f9ce656b1b890ec5099e099ff}{cl\_enums}}[];}
+\DoxyCodeLine{00232\ \textcolor{keyword}{extern}\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{opts_8h_a09e0fd11f60028ae462aaebad0e3becf}{cl\_enums\_count}};}
+\DoxyCodeLine{00233\ }
+\DoxyCodeLine{00234\ \textcolor{comment}{/*\ Possible\ ways\ in\ which\ a\ command-\/line\ option\ may\ be\ erroneous.}}
+\DoxyCodeLine{00235\ \textcolor{comment}{\ \ \ These\ do\ not\ include\ not\ being\ known\ at\ all;\ an\ option\ index\ of}}
+\DoxyCodeLine{00236\ \textcolor{comment}{\ \ \ OPT\_SPECIAL\_unknown\ is\ used\ for\ that.\ \ */}}
+\DoxyCodeLine{00237\ }
+\DoxyCodeLine{00238\ \textcolor{preprocessor}{\#define\ CL\_ERR\_DISABLED\ \ \ \ \ (1\ <<\ 0)\ }\textcolor{comment}{/*\ Disabled\ in\ this\ configuration.\ \ */}\textcolor{preprocessor}{}}
+\DoxyCodeLine{00239\ \textcolor{preprocessor}{\#define\ CL\_ERR\_MISSING\_ARG\ \ (1\ <<\ 1)\ }\textcolor{comment}{/*\ Argument\ required\ but\ missing.\ \ */}\textcolor{preprocessor}{}}
+\DoxyCodeLine{00240\ \textcolor{preprocessor}{\#define\ CL\_ERR\_WRONG\_LANG\ \ \ (1\ <<\ 2)\ }\textcolor{comment}{/*\ Option\ for\ wrong\ language.\ \ */}\textcolor{preprocessor}{}}
+\DoxyCodeLine{00241\ \textcolor{preprocessor}{\#define\ CL\_ERR\_UINT\_ARG\ \ \ \ \ (1\ <<\ 3)\ }\textcolor{comment}{/*\ Bad\ unsigned\ integer\ argument.\ \ */}\textcolor{preprocessor}{}}
+\DoxyCodeLine{00242\ \textcolor{preprocessor}{\#define\ CL\_ERR\_INT\_RANGE\_ARG\ \ \ \ (1\ <<\ 4)\ }\textcolor{comment}{/*\ Bad\ unsigned\ integer\ argument.\ \ */}\textcolor{preprocessor}{}}
+\DoxyCodeLine{00243\ \textcolor{preprocessor}{\#define\ CL\_ERR\_ENUM\_ARG\ \ \ \ \ (1\ <<\ 5)\ }\textcolor{comment}{/*\ Bad\ enumerated\ argument.\ \ */}\textcolor{preprocessor}{}}
+\DoxyCodeLine{00244\ \textcolor{preprocessor}{\#define\ CL\_ERR\_NEGATIVE\ \ \ \ \ (1\ <<\ 6)\ }\textcolor{comment}{/*\ Negative\ form\ of\ option}}
+\DoxyCodeLine{00245\ \textcolor{comment}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ not\ permitted\ (together}}
+\DoxyCodeLine{00246\ \textcolor{comment}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ with\ OPT\_SPECIAL\_unknown).\ \ */}\textcolor{preprocessor}{}}
+\DoxyCodeLine{00247\ \textcolor{preprocessor}{\#define\ CL\_ERR\_ENUM\_SET\_ARG\ (1\ <<\ 7)\ }\textcolor{comment}{/*\ Bad\ argument\ of\ enumerated\ set.\ \ */}\textcolor{preprocessor}{}}
+\DoxyCodeLine{00248\ }
+\DoxyCodeLine{00249\ \textcolor{comment}{/*\ Structure\ describing\ the\ result\ of\ decoding\ an\ option.\ \ */}}
+\DoxyCodeLine{00250\ }
+\DoxyCodeLine{00251\ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{structcl__decoded__option}{cl\_decoded\_option}}}
+\DoxyCodeLine{00252\ \{}
+\DoxyCodeLine{00253\ \ \ \textcolor{comment}{/*\ The\ index\ of\ this\ option,\ or\ an\ OPT\_SPECIAL\_*\ value\ for}}
+\DoxyCodeLine{00254\ \textcolor{comment}{\ \ \ \ \ non-\/options\ and\ unknown\ options.\ \ */}}
+\DoxyCodeLine{00255\ \ \ \textcolor{keywordtype}{size\_t}\ \doxymbox{\hyperlink{structcl__decoded__option_a8d6b70582c3199828648afeffefd766e}{opt\_index}};}
+\DoxyCodeLine{00256\ }
+\DoxyCodeLine{00257\ \ \ \textcolor{comment}{/*\ Any\ warning\ to\ give\ for\ use\ of\ this\ option,\ or\ NULL\ if\ none.\ \ */}}
+\DoxyCodeLine{00258\ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *\doxymbox{\hyperlink{structcl__decoded__option_aef25b602672fc2d9e67446cc22dec5a8}{warn\_message}};}
+\DoxyCodeLine{00259\ }
+\DoxyCodeLine{00260\ \ \ \textcolor{comment}{/*\ The\ string\ argument,\ or\ NULL\ if\ none.\ \ For\ OPT\_SPECIAL\_*\ cases,}}
+\DoxyCodeLine{00261\ \textcolor{comment}{\ \ \ \ \ the\ option\ or\ non-\/option\ command-\/line\ argument.\ \ */}}
+\DoxyCodeLine{00262\ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *\doxymbox{\hyperlink{structcl__decoded__option_a1e78a040e3e0a33876569e96d180e0ac}{arg}};}
+\DoxyCodeLine{00263\ }
+\DoxyCodeLine{00264\ \ \ \textcolor{comment}{/*\ The\ original\ text\ of\ option\ plus\ arguments,\ with\ separate\ argv}}
+\DoxyCodeLine{00265\ \textcolor{comment}{\ \ \ \ \ elements\ concatenated\ into\ one\ string\ with\ spaces\ separating}}
+\DoxyCodeLine{00266\ \textcolor{comment}{\ \ \ \ \ them.\ \ This\ is\ for\ such\ uses\ as\ diagnostics\ and}}
+\DoxyCodeLine{00267\ \textcolor{comment}{\ \ \ \ \ -\/frecord-\/gcc-\/switches.\ \ */}}
+\DoxyCodeLine{00268\ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *\doxymbox{\hyperlink{structcl__decoded__option_a938d363e977e1169fe019f9573b074e3}{orig\_option\_with\_args\_text}};}
+\DoxyCodeLine{00269\ }
+\DoxyCodeLine{00270\ \ \ \textcolor{comment}{/*\ The\ canonical\ form\ of\ the\ option\ and\ its\ argument,\ for\ when\ it\ is}}
+\DoxyCodeLine{00271\ \textcolor{comment}{\ \ \ \ \ necessary\ to\ reconstruct\ argv\ elements\ (in\ particular,\ for}}
+\DoxyCodeLine{00272\ \textcolor{comment}{\ \ \ \ \ processing\ specs\ and\ passing\ options\ to\ subprocesses\ from\ the}}
+\DoxyCodeLine{00273\ \textcolor{comment}{\ \ \ \ \ driver).\ \ */}}
+\DoxyCodeLine{00274\ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *\doxymbox{\hyperlink{structcl__decoded__option_a6a36220042c5331e1dad5b17afa0086f}{canonical\_option}}[4];}
+\DoxyCodeLine{00275\ }
+\DoxyCodeLine{00276\ \ \ \textcolor{comment}{/*\ The\ number\ of\ elements\ in\ the\ canonical\ form\ of\ the\ option\ and}}
+\DoxyCodeLine{00277\ \textcolor{comment}{\ \ \ \ \ arguments;\ always\ at\ least\ 1.\ \ */}}
+\DoxyCodeLine{00278\ \ \ \textcolor{keywordtype}{size\_t}\ \doxymbox{\hyperlink{structcl__decoded__option_a65beb031a1dee2e03bca2aab63297c29}{canonical\_option\_num\_elements}};}
+\DoxyCodeLine{00279\ }
+\DoxyCodeLine{00280\ \ \ \textcolor{comment}{/*\ For\ a\ boolean\ option,\ 1\ for\ the\ true\ case\ and\ 0\ for\ the\ "{}no-\/"{}}}
+\DoxyCodeLine{00281\ \textcolor{comment}{\ \ \ \ \ case.\ \ For\ an\ unsigned\ integer\ option,\ the\ value\ of\ the}}
+\DoxyCodeLine{00282\ \textcolor{comment}{\ \ \ \ \ argument.\ \ For\ enum\ the\ value\ of\ the\ enumerator\ corresponding}}
+\DoxyCodeLine{00283\ \textcolor{comment}{\ \ \ \ \ to\ argument\ string.\ \ 1\ in\ all\ other\ cases.\ \ */}}
+\DoxyCodeLine{00284\ \ \ HOST\_WIDE\_INT\ \doxymbox{\hyperlink{structcl__decoded__option_ab27eece7484e6ad364fee3bffa270048}{value}};}
+\DoxyCodeLine{00285\ }
+\DoxyCodeLine{00286\ \ \ \textcolor{comment}{/*\ For\ EnumSet\ the\ value\ mask.\ \ Variable\ should\ be\ changed\ to}}
+\DoxyCodeLine{00287\ \textcolor{comment}{\ \ \ \ \ value\ |\ (prev\_value\ \&\ \string~mask).\ \ */}}
+\DoxyCodeLine{00288\ \ \ HOST\_WIDE\_INT\ \doxymbox{\hyperlink{structcl__decoded__option_af05bb18f80b228077cb81224fab3b203}{mask}};}
+\DoxyCodeLine{00289\ }
+\DoxyCodeLine{00290\ \ \ \textcolor{comment}{/*\ Any\ flags\ describing\ errors\ detected\ in\ this\ option.\ \ */}}
+\DoxyCodeLine{00291\ \ \ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{structcl__decoded__option_a0dab65156916775ffb21058b464f46ea}{errors}};}
+\DoxyCodeLine{00292\ \};}
+\DoxyCodeLine{00293\ }
+\DoxyCodeLine{00294\ \textcolor{comment}{/*\ Structure\ describing\ an\ option\ deferred\ for\ handling\ after\ the\ main}}
+\DoxyCodeLine{00295\ \textcolor{comment}{\ \ \ option\ handlers.\ \ */}}
+\DoxyCodeLine{00296\ }
+\DoxyCodeLine{00297\ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{structcl__deferred__option}{cl\_deferred\_option}}}
+\DoxyCodeLine{00298\ \{}
+\DoxyCodeLine{00299\ \ \ \textcolor{comment}{/*\ Elements\ from\ struct\ cl\_decoded\_option\ used\ for\ deferred}}
+\DoxyCodeLine{00300\ \textcolor{comment}{\ \ \ \ \ options.\ \ */}}
+\DoxyCodeLine{00301\ \ \ \textcolor{keywordtype}{size\_t}\ \doxymbox{\hyperlink{structcl__deferred__option_a98192fda5244b52b67357bddc957c523}{opt\_index}};}
+\DoxyCodeLine{00302\ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *\doxymbox{\hyperlink{structcl__deferred__option_aa45ad59609c245d9356c9cc5233463d7}{arg}};}
+\DoxyCodeLine{00303\ \ \ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{structcl__deferred__option_aa4f50d06246670f461c4bf3466648eaa}{value}};}
+\DoxyCodeLine{00304\ \};}
+\DoxyCodeLine{00305\ }
+\DoxyCodeLine{00306\ \textcolor{comment}{/*\ Structure\ describing\ a\ single\ option-\/handling\ callback.\ \ */}}
+\DoxyCodeLine{00307\ }
+\DoxyCodeLine{00308\ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{structcl__option__handler__func}{cl\_option\_handler\_func}}}
+\DoxyCodeLine{00309\ \{}
+\DoxyCodeLine{00310\ \ \ \textcolor{comment}{/*\ The\ function\ called\ to\ handle\ the\ option.\ \ */}}
+\DoxyCodeLine{00311\ \ \ \doxymbox{\hyperlink{stdbool_8h_abb452686968e48b67397da5f97445f5b}{bool}}\ (*\doxymbox{\hyperlink{structcl__option__handler__func_a2f35bcf6720d4f02a11c09247502a1fe}{handler}})\ (\textcolor{keyword}{struct\ }gcc\_options\ *opts,}
+\DoxyCodeLine{00312\ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{struct\ }gcc\_options\ *opts\_set,}
+\DoxyCodeLine{00313\ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{structcl__decoded__option}{cl\_decoded\_option}}\ *decoded,}
+\DoxyCodeLine{00314\ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ lang\_mask,\ \textcolor{keywordtype}{int}\ kind,\ \doxymbox{\hyperlink{line-map_8h_aedf25620511d64e43327f1a229906a96}{location\_t}}\ loc,}
+\DoxyCodeLine{00315\ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{structcl__option__handlers}{cl\_option\_handlers}}\ *handlers,}
+\DoxyCodeLine{00316\ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{classdiagnostic__context}{diagnostic\_context}}\ *dc,}
+\DoxyCodeLine{00317\ \ \ \ \ \ \ \ \ \ \ \ void\ (*target\_option\_override\_hook)\ (void));}
+\DoxyCodeLine{00318\ }
+\DoxyCodeLine{00319\ \ \ \textcolor{comment}{/*\ The\ mask\ that\ must\ have\ some\ bit\ in\ common\ with\ the\ flags\ for\ the}}
+\DoxyCodeLine{00320\ \textcolor{comment}{\ \ \ \ \ option\ for\ this\ particular\ handler\ to\ be\ used.\ \ */}}
+\DoxyCodeLine{00321\ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{structcl__option__handler__func_aeb34bd7c462bac168b4f1b601648fb32}{mask}};}
+\DoxyCodeLine{00322\ \};}
+\DoxyCodeLine{00323\ }
+\DoxyCodeLine{00324\ \textcolor{comment}{/*\ Structure\ describing\ the\ callbacks\ used\ in\ handling\ options.\ \ */}}
+\DoxyCodeLine{00325\ }
+\DoxyCodeLine{00326\ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{structcl__option__handlers}{cl\_option\_handlers}}}
+\DoxyCodeLine{00327\ \{}
+\DoxyCodeLine{00328\ \ \ \textcolor{comment}{/*\ Callback\ for\ an\ unknown\ option\ to\ determine\ whether\ to\ give\ an}}
+\DoxyCodeLine{00329\ \textcolor{comment}{\ \ \ \ \ error\ for\ it,\ and\ possibly\ store\ information\ to\ diagnose\ the}}
+\DoxyCodeLine{00330\ \textcolor{comment}{\ \ \ \ \ option\ at\ a\ later\ point.\ \ Return\ true\ if\ an\ error\ should\ be}}
+\DoxyCodeLine{00331\ \textcolor{comment}{\ \ \ \ \ given,\ false\ otherwise.\ \ */}}
+\DoxyCodeLine{00332\ \ \ \doxymbox{\hyperlink{stdbool_8h_abb452686968e48b67397da5f97445f5b}{bool}}\ (*\doxymbox{\hyperlink{structcl__option__handlers_af8d1684b2dc20271845c047a2b999366}{unknown\_option\_callback}})\ (\textcolor{keyword}{const}\ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{structcl__decoded__option}{cl\_decoded\_option}}\ *decoded);}
+\DoxyCodeLine{00333\ }
+\DoxyCodeLine{00334\ \ \ \textcolor{comment}{/*\ Callback\ to\ handle,\ and\ possibly\ diagnose,\ an\ option\ for\ another}}
+\DoxyCodeLine{00335\ \textcolor{comment}{\ \ \ \ \ language.\ \ */}}
+\DoxyCodeLine{00336\ \ \ void\ (*\doxymbox{\hyperlink{structcl__option__handlers_ab2026395f7b60c8b49c409f661d3636e}{wrong\_lang\_callback}})\ (\textcolor{keyword}{const}\ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{structcl__decoded__option}{cl\_decoded\_option}}\ *decoded,}
+\DoxyCodeLine{00337\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ lang\_mask);}
+\DoxyCodeLine{00338\ }
+\DoxyCodeLine{00339\ \ \ \textcolor{comment}{/*\ Target\ option\ override\ hook.\ \ */}}
+\DoxyCodeLine{00340\ \ \ void\ (*\doxymbox{\hyperlink{structcl__option__handlers_ac348df8b4af647db96236da23164036e}{target\_option\_override\_hook}})\ (void);}
+\DoxyCodeLine{00341\ }
+\DoxyCodeLine{00342\ \ \ \textcolor{comment}{/*\ The\ number\ of\ individual\ handlers.\ \ */}}
+\DoxyCodeLine{00343\ \ \ \textcolor{keywordtype}{size\_t}\ \doxymbox{\hyperlink{structcl__option__handlers_aaadc1968ec80460e80a4126c8857f2ad}{num\_handlers}};}
+\DoxyCodeLine{00344\ }
+\DoxyCodeLine{00345\ \ \ \textcolor{comment}{/*\ The\ handlers\ themselves.\ \ */}}
+\DoxyCodeLine{00346\ \ \ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{structcl__option__handler__func}{cl\_option\_handler\_func}}\ \doxymbox{\hyperlink{structcl__option__handlers_a0185ea3133e39821afcd5a49a88e414d}{handlers}}[3];}
+\DoxyCodeLine{00347\ \};}
+\DoxyCodeLine{00348\ }
+\DoxyCodeLine{00349\ \textcolor{comment}{/*\ Hold\ command-\/line\ options\ associated\ with\ stack\ limitation.\ \ */}}
+\DoxyCodeLine{00350\ \textcolor{keyword}{extern}\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *\doxymbox{\hyperlink{opts_8h_a36f49182e80c06efe08d6d82354cf645}{opt\_fstack\_limit\_symbol\_arg}};}
+\DoxyCodeLine{00351\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{opts_8h_a253b9b76c813c301b54f7b9e271461c9}{opt\_fstack\_limit\_register\_no}};}
+\DoxyCodeLine{00352\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{opts_8h_a6be768afc231d6b3cd791ad23c32e184}{flag\_stack\_protector\_set\_by\_fhardened\_p}};}
+\DoxyCodeLine{00353\ }
+\DoxyCodeLine{00354\ \textcolor{comment}{/*\ Input\ file\ names.\ \ */}}
+\DoxyCodeLine{00355\ }
+\DoxyCodeLine{00356\ \textcolor{keyword}{extern}\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ **\doxymbox{\hyperlink{opts_8h_a39c3ae77f2893b1379775bf46ad72423}{in\_fnames}};}
+\DoxyCodeLine{00357\ }
+\DoxyCodeLine{00358\ \textcolor{comment}{/*\ The\ count\ of\ input\ filenames.\ \ */}}
+\DoxyCodeLine{00359\ }
+\DoxyCodeLine{00360\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{unsigned}\ \doxymbox{\hyperlink{opts_8h_a0b81770d363fdf100488e487fd671c10}{num\_in\_fnames}};}
+\DoxyCodeLine{00361\ }
+\DoxyCodeLine{00362\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{char}\ *\doxymbox{\hyperlink{opts_8h_ae251d4b017a27228ab7b3f0c2e1e3de6}{opts\_concat}}\ (\textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *first,\ ...);}
+\DoxyCodeLine{00363\ }
+\DoxyCodeLine{00364\ \textcolor{comment}{/*\ Obstack\ for\ option\ strings.\ \ */}}
+\DoxyCodeLine{00365\ }
+\DoxyCodeLine{00366\ \textcolor{keyword}{extern}\ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{structobstack}{obstack}}\ \doxymbox{\hyperlink{opts_8h_afb440667b41c84665d44a6cc03054d58}{opts\_obstack}};}
+\DoxyCodeLine{00367\ }
+\DoxyCodeLine{00368\ \textcolor{keywordtype}{size\_t}\ \doxymbox{\hyperlink{opts_8h_a34143b67c77eaf06cfb496ae876988c4}{find\_opt}}\ (\textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *input,\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ lang\_mask);}
+\DoxyCodeLine{00369\ \textcolor{keyword}{extern}\ HOST\_WIDE\_INT\ \doxymbox{\hyperlink{opts_8h_a30661957c779422d1d410bacfb93e800}{integral\_argument}}\ (\textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *arg,\ \textcolor{keywordtype}{int}\ *\ =\ \doxymbox{\hyperlink{stddef_8h_a070d2ce7b6bb7e5c05602aa8c308d0c4}{NULL}},\ \textcolor{keywordtype}{bool}\ =\ \textcolor{keyword}{false});}
+\DoxyCodeLine{00370\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{opts_8h_af5c4cc6db88a8f08025991d2b9c2746f}{enum\_value\_to\_arg}}\ (\textcolor{keyword}{const}\ \textcolor{keyword}{struct}\ \doxymbox{\hyperlink{structcl__enum__arg}{cl\_enum\_arg}}\ *enum\_args,}
+\DoxyCodeLine{00371\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ **argp,\ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{configargs_8h_a92d544bd66c050551f3d87fa55eb3f5d}{value}},}
+\DoxyCodeLine{00372\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ lang\_mask);}
+\DoxyCodeLine{00373\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{opts_8h_aaeb94c0f0707c1be53b001979d1a1f13}{decode\_cmdline\_options\_to\_array}}\ (\textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ argc,}
+\DoxyCodeLine{00374\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ **argv,\ }
+\DoxyCodeLine{00375\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ lang\_mask,}
+\DoxyCodeLine{00376\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{struct}\ \doxymbox{\hyperlink{structcl__decoded__option}{cl\_decoded\_option}}\ **decoded\_options,}
+\DoxyCodeLine{00377\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ *decoded\_options\_count);}
+\DoxyCodeLine{00378\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{opts_8h_ac7c039ca57c8c0a1a0e9a87808f6a8fb}{init\_options\_once}}\ (\textcolor{keywordtype}{void});}
+\DoxyCodeLine{00379\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{opts_8h_acecd577251bc3471d3f1dfdfb7d3ede5}{init\_options\_struct}}\ (\textcolor{keyword}{struct}\ gcc\_options\ *opts,}
+\DoxyCodeLine{00380\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{struct}\ gcc\_options\ *opts\_set);}
+\DoxyCodeLine{00381\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{opts_8h_a24b0bd66ae1a5ad98f5c85390b968447}{init\_opts\_obstack}}\ (\textcolor{keywordtype}{void});}
+\DoxyCodeLine{00382\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{opts_8h_a41abe7d0137e151fc5ea4245eba3d174}{decode\_cmdline\_options\_to\_array\_default\_mask}}\ (\textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ argc,}
+\DoxyCodeLine{00383\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ **argv,\ }
+\DoxyCodeLine{00384\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{struct}\ \doxymbox{\hyperlink{structcl__decoded__option}{cl\_decoded\_option}}\ **decoded\_options,}
+\DoxyCodeLine{00385\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ *decoded\_options\_count);}
+\DoxyCodeLine{00386\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{opts_8h_a5f08165be2593ed15c4a2f4876b4d8e7}{set\_default\_handlers}}\ (\textcolor{keyword}{struct}\ \doxymbox{\hyperlink{structcl__option__handlers}{cl\_option\_handlers}}\ *handlers,}
+\DoxyCodeLine{00387\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{void}\ (*target\_option\_override\_hook)\ (\textcolor{keywordtype}{void}));}
+\DoxyCodeLine{00388\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{opts_8h_a50f2299c9ae14423e267e95c130db148}{decode\_options}}\ (\textcolor{keyword}{struct}\ gcc\_options\ *opts,}
+\DoxyCodeLine{00389\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{struct}\ gcc\_options\ *opts\_set,}
+\DoxyCodeLine{00390\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{struct}\ \doxymbox{\hyperlink{structcl__decoded__option}{cl\_decoded\_option}}\ *decoded\_options,}
+\DoxyCodeLine{00391\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ decoded\_options\_count,}
+\DoxyCodeLine{00392\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{line-map_8h_aedf25620511d64e43327f1a229906a96}{location\_t}}\ loc,}
+\DoxyCodeLine{00393\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{classdiagnostic__context}{diagnostic\_context}}\ *dc,}
+\DoxyCodeLine{00394\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{void}\ (*target\_option\_override\_hook)\ (\textcolor{keywordtype}{void}));}
+\DoxyCodeLine{00395\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{opts_8h_a0be15568398ab39c7e5e960db1223dfb}{option\_enabled}}\ (\textcolor{keywordtype}{int}\ opt\_idx,\ \textcolor{keywordtype}{unsigned}\ lang\_mask,\ \textcolor{keywordtype}{void}\ *opts);}
+\DoxyCodeLine{00396\ }
+\DoxyCodeLine{00397\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{opts_8h_a1cb085db2d4844267551815bda1acede}{get\_option\_state}}\ (\textcolor{keyword}{struct}\ gcc\_options\ *,\ \textcolor{keywordtype}{int},}
+\DoxyCodeLine{00398\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{struct}\ \doxymbox{\hyperlink{structcl__option__state}{cl\_option\_state}}\ *);}
+\DoxyCodeLine{00399\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{opts_8h_a155cced85c602cd7490ab84cda62a068}{set\_option}}\ (\textcolor{keyword}{struct}\ gcc\_options\ *opts,}
+\DoxyCodeLine{00400\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{struct}\ gcc\_options\ *opts\_set,}
+\DoxyCodeLine{00401\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{int}\ opt\_index,\ HOST\_WIDE\_INT\ \doxymbox{\hyperlink{configargs_8h_a92d544bd66c050551f3d87fa55eb3f5d}{value}},\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *arg,}
+\DoxyCodeLine{00402\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{int}\ kind,\ \doxymbox{\hyperlink{line-map_8h_aedf25620511d64e43327f1a229906a96}{location\_t}}\ loc,\ \doxymbox{\hyperlink{classdiagnostic__context}{diagnostic\_context}}\ *dc,}
+\DoxyCodeLine{00403\ \ \ \ \ \ \ \ \ \ \ \ \ HOST\_WIDE\_INT\ =\ 0);}
+\DoxyCodeLine{00404\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ *\doxymbox{\hyperlink{opts_8h_a49992401a2ff46acdbf961e0d9973863}{option\_flag\_var}}\ (\textcolor{keywordtype}{int}\ opt\_index,\ \textcolor{keyword}{struct}\ gcc\_options\ *opts);}
+\DoxyCodeLine{00405\ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{opts_8h_abc2d8bead80f190b9c881e9e897fae1a}{handle\_generated\_option}}\ (\textcolor{keyword}{struct}\ gcc\_options\ *opts,}
+\DoxyCodeLine{00406\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{struct}\ gcc\_options\ *opts\_set,}
+\DoxyCodeLine{00407\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{size\_t}\ opt\_index,\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *arg,}
+\DoxyCodeLine{00408\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ HOST\_WIDE\_INT\ \doxymbox{\hyperlink{configargs_8h_a92d544bd66c050551f3d87fa55eb3f5d}{value}},}
+\DoxyCodeLine{00409\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ lang\_mask,\ \textcolor{keywordtype}{int}\ kind,\ \doxymbox{\hyperlink{line-map_8h_aedf25620511d64e43327f1a229906a96}{location\_t}}\ loc,}
+\DoxyCodeLine{00410\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \textcolor{keyword}{struct}\ \doxymbox{\hyperlink{structcl__option__handlers}{cl\_option\_handlers}}\ *handlers,}
+\DoxyCodeLine{00411\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{bool}\ generated\_p,\ \doxymbox{\hyperlink{classdiagnostic__context}{diagnostic\_context}}\ *dc);}
+\DoxyCodeLine{00412\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{opts_8h_ae9320181c76966bca69f378627b14b9d}{generate\_option}}\ (\textcolor{keywordtype}{size\_t}\ opt\_index,\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *arg,\ HOST\_WIDE\_INT\ \doxymbox{\hyperlink{configargs_8h_a92d544bd66c050551f3d87fa55eb3f5d}{value}},}
+\DoxyCodeLine{00413\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ lang\_mask,}
+\DoxyCodeLine{00414\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{struct}\ \doxymbox{\hyperlink{structcl__decoded__option}{cl\_decoded\_option}}\ *decoded);}
+\DoxyCodeLine{00415\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{opts_8h_a50b187f96bbbef6cd8d540a43be08894}{generate\_option\_input\_file}}\ (\textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *file,}
+\DoxyCodeLine{00416\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{struct}\ \doxymbox{\hyperlink{structcl__decoded__option}{cl\_decoded\_option}}\ *decoded);}
+\DoxyCodeLine{00417\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{opts_8h_a4adb0b998576e58995d257ea74b017c3}{read\_cmdline\_option}}\ (\textcolor{keyword}{struct}\ gcc\_options\ *opts,}
+\DoxyCodeLine{00418\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{struct}\ gcc\_options\ *opts\_set,}
+\DoxyCodeLine{00419\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{struct}\ \doxymbox{\hyperlink{structcl__decoded__option}{cl\_decoded\_option}}\ *decoded,}
+\DoxyCodeLine{00420\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{line-map_8h_aedf25620511d64e43327f1a229906a96}{location\_t}}\ loc,}
+\DoxyCodeLine{00421\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ lang\_mask,}
+\DoxyCodeLine{00422\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \textcolor{keyword}{struct}\ \doxymbox{\hyperlink{structcl__option__handlers}{cl\_option\_handlers}}\ *handlers,}
+\DoxyCodeLine{00423\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{classdiagnostic__context}{diagnostic\_context}}\ *dc);}
+\DoxyCodeLine{00424\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{opts_8h_aca8c57d365c946addf565e2134d6efbc}{control\_warning\_option}}\ (\textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ opt\_index,\ \textcolor{keywordtype}{int}\ kind,}
+\DoxyCodeLine{00425\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *arg,\ \textcolor{keywordtype}{bool}\ imply,\ \doxymbox{\hyperlink{line-map_8h_aedf25620511d64e43327f1a229906a96}{location\_t}}\ loc,}
+\DoxyCodeLine{00426\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ lang\_mask,}
+\DoxyCodeLine{00427\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \textcolor{keyword}{struct}\ \doxymbox{\hyperlink{structcl__option__handlers}{cl\_option\_handlers}}\ *handlers,}
+\DoxyCodeLine{00428\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{struct}\ gcc\_options\ *opts,}
+\DoxyCodeLine{00429\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{struct}\ gcc\_options\ *opts\_set,}
+\DoxyCodeLine{00430\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{classdiagnostic__context}{diagnostic\_context}}\ *dc);}
+\DoxyCodeLine{00431\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{char}\ *\doxymbox{\hyperlink{opts_8h_af080af3cbfd1fbe85d69ceca84d7eaac}{write\_langs}}\ (\textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ mask);}
+\DoxyCodeLine{00432\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{opts_8h_adb9f871529de2979ce0fe2c80d094ffa}{print\_ignored\_options}}\ (\textcolor{keywordtype}{void});}
+\DoxyCodeLine{00433\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{opts_8h_a140f24940d08931627aef83a3d4845ab}{handle\_common\_deferred\_options}}\ (\textcolor{keywordtype}{void});}
+\DoxyCodeLine{00434\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{opts_8h_aa8e757cd265bb6c443a7683fbe97ae3e}{handle\_deferred\_dump\_options}}\ (\textcolor{keywordtype}{void});}
+\DoxyCodeLine{00435\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{opts_8h_a86ce9eacdee7d76d2436d6bcc433b305}{parse\_sanitizer\_options}}\ (\textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *,\ \doxymbox{\hyperlink{line-map_8h_aedf25620511d64e43327f1a229906a96}{location\_t}},\ \textcolor{keywordtype}{int},}
+\DoxyCodeLine{00436\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int},\ \textcolor{keywordtype}{int},\ \textcolor{keywordtype}{bool});}
+\DoxyCodeLine{00437\ }
+\DoxyCodeLine{00438\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{opts_8h_a6f850fe4982700e2a2ea43ec8960c16c}{parse\_no\_sanitize\_attribute}}\ (\textcolor{keywordtype}{char}\ *\doxymbox{\hyperlink{configargs_8h_a92d544bd66c050551f3d87fa55eb3f5d}{value}});}
+\DoxyCodeLine{00439\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{opts_8h_a2d1659d8e523588d29ca524457f7e1da}{common\_handle\_option}}\ (\textcolor{keyword}{struct}\ gcc\_options\ *opts,}
+\DoxyCodeLine{00440\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{struct}\ gcc\_options\ *opts\_set,}
+\DoxyCodeLine{00441\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \textcolor{keyword}{struct}\ \doxymbox{\hyperlink{structcl__decoded__option}{cl\_decoded\_option}}\ *decoded,}
+\DoxyCodeLine{00442\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ lang\_mask,\ \textcolor{keywordtype}{int}\ kind,}
+\DoxyCodeLine{00443\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{line-map_8h_aedf25620511d64e43327f1a229906a96}{location\_t}}\ loc,}
+\DoxyCodeLine{00444\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \textcolor{keyword}{struct}\ \doxymbox{\hyperlink{structcl__option__handlers}{cl\_option\_handlers}}\ *handlers,}
+\DoxyCodeLine{00445\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{classdiagnostic__context}{diagnostic\_context}}\ *dc,}
+\DoxyCodeLine{00446\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{void}\ (*target\_option\_override\_hook)\ (\textcolor{keywordtype}{void}));}
+\DoxyCodeLine{00447\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{opts_8h_acdafccf4457881d1351da3e2ab708f79}{target\_handle\_option}}\ (\textcolor{keyword}{struct}\ gcc\_options\ *opts,}
+\DoxyCodeLine{00448\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{struct}\ gcc\_options\ *opts\_set,}
+\DoxyCodeLine{00449\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \textcolor{keyword}{struct}\ \doxymbox{\hyperlink{structcl__decoded__option}{cl\_decoded\_option}}\ *decoded,}
+\DoxyCodeLine{00450\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ lang\_mask,\ \textcolor{keywordtype}{int}\ kind,}
+\DoxyCodeLine{00451\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{line-map_8h_aedf25620511d64e43327f1a229906a96}{location\_t}}\ loc,}
+\DoxyCodeLine{00452\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \textcolor{keyword}{struct}\ \doxymbox{\hyperlink{structcl__option__handlers}{cl\_option\_handlers}}\ *handlers,}
+\DoxyCodeLine{00453\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{classdiagnostic__context}{diagnostic\_context}}\ *dc,}
+\DoxyCodeLine{00454\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{void}\ (*target\_option\_override\_hook)\ (\textcolor{keywordtype}{void}));}
+\DoxyCodeLine{00455\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{opts_8h_a21b80d72653d997b973cb0804366f45b}{finish\_options}}\ (\textcolor{keyword}{struct}\ gcc\_options\ *opts,}
+\DoxyCodeLine{00456\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{struct}\ gcc\_options\ *opts\_set,}
+\DoxyCodeLine{00457\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{line-map_8h_aedf25620511d64e43327f1a229906a96}{location\_t}}\ loc);}
+\DoxyCodeLine{00458\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{opts_8h_a325f9846416d7ebda1fb8efd9a8aa4b5}{diagnose\_options}}\ (gcc\_options\ *opts,\ gcc\_options\ *opts\_set,}
+\DoxyCodeLine{00459\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{line-map_8h_aedf25620511d64e43327f1a229906a96}{location\_t}}\ loc);}
+\DoxyCodeLine{00460\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{opts_8h_aef159ac3cc888c96e58e7e797805c8b2}{print\_help}}\ (\textcolor{keyword}{struct}\ gcc\_options\ *opts,\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ lang\_mask,\ \textcolor{keyword}{const}}
+\DoxyCodeLine{00461\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{char}\ *help\_option\_argument);}
+\DoxyCodeLine{00462\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{opts_8h_a8aa4632394cbfeee96dbc967652306b0}{default\_options\_optimization}}\ (\textcolor{keyword}{struct}\ gcc\_options\ *opts,}
+\DoxyCodeLine{00463\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{struct}\ gcc\_options\ *opts\_set,}
+\DoxyCodeLine{00464\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{struct}\ \doxymbox{\hyperlink{structcl__decoded__option}{cl\_decoded\_option}}\ *decoded\_options,}
+\DoxyCodeLine{00465\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ decoded\_options\_count,}
+\DoxyCodeLine{00466\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{line-map_8h_aedf25620511d64e43327f1a229906a96}{location\_t}}\ loc,}
+\DoxyCodeLine{00467\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ lang\_mask,}
+\DoxyCodeLine{00468\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \textcolor{keyword}{struct}\ \doxymbox{\hyperlink{structcl__option__handlers}{cl\_option\_handlers}}\ *handlers,}
+\DoxyCodeLine{00469\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{classdiagnostic__context}{diagnostic\_context}}\ *dc);}
+\DoxyCodeLine{00470\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{opts_8h_aa91f989f3b068db96dad45624fba006f}{set\_struct\_debug\_option}}\ (\textcolor{keyword}{struct}\ gcc\_options\ *opts,}
+\DoxyCodeLine{00471\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{line-map_8h_aedf25620511d64e43327f1a229906a96}{location\_t}}\ loc,}
+\DoxyCodeLine{00472\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *\doxymbox{\hyperlink{configargs_8h_a92d544bd66c050551f3d87fa55eb3f5d}{value}});}
+\DoxyCodeLine{00473\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{opts_8h_a6f8aae2b04b4d4fcc372ee37429d2471}{opt\_enum\_arg\_to\_value}}\ (\textcolor{keywordtype}{size\_t}\ opt\_index,\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *arg,}
+\DoxyCodeLine{00474\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{int}\ *\doxymbox{\hyperlink{configargs_8h_a92d544bd66c050551f3d87fa55eb3f5d}{value}},}
+\DoxyCodeLine{00475\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ lang\_mask);}
+\DoxyCodeLine{00476\ }
+\DoxyCodeLine{00477\ \textcolor{keyword}{extern}\ \textcolor{keyword}{const}\ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{structsanitizer__opts__s}{sanitizer\_opts\_s}}}
+\DoxyCodeLine{00478\ \{}
+\DoxyCodeLine{00479\ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *\textcolor{keyword}{const}\ \doxymbox{\hyperlink{structsanitizer__opts__s_ab2f81fd26f316f4a2754d0479ce27085}{name}};}
+\DoxyCodeLine{00480\ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{structsanitizer__opts__s_aa633db28714e5de23713e8c77491a4e2}{flag}};}
+\DoxyCodeLine{00481\ \ \ \textcolor{keywordtype}{size\_t}\ \doxymbox{\hyperlink{structsanitizer__opts__s_ad1bb5f88a4e09d0f314cb267c8e90cb8}{len}};}
+\DoxyCodeLine{00482\ \ \ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{structsanitizer__opts__s_a236b6bc221a6fdc2f4335c69e556d054}{can\_recover}};}
+\DoxyCodeLine{00483\ \ \ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{structsanitizer__opts__s_a6b78426dd630fa436f988c05d1c3e981}{can\_trap}};}
+\DoxyCodeLine{00484\ \}\ \doxymbox{\hyperlink{opts_8h_ac9309a50651fcc00b856595971f49da3}{sanitizer\_opts}}[];}
+\DoxyCodeLine{00485\ }
+\DoxyCodeLine{00486\ \textcolor{keyword}{extern}\ \textcolor{keyword}{const}\ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{structzero__call__used__regs__opts__s}{zero\_call\_used\_regs\_opts\_s}}}
+\DoxyCodeLine{00487\ \{}
+\DoxyCodeLine{00488\ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *\textcolor{keyword}{const}\ \doxymbox{\hyperlink{configargs_8h_a8f8f80d37794cde9472343e4487ba3eb}{name}};}
+\DoxyCodeLine{00489\ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{structzero__call__used__regs__opts__s_a822da2ed21ed069a225e964352c3fd38}{flag}};}
+\DoxyCodeLine{00490\ \}\ \doxymbox{\hyperlink{opts_8h_ac6a96fcd712eafde7e2da8d8e90d9f5b}{zero\_call\_used\_regs\_opts}}[];}
+\DoxyCodeLine{00491\ }
+\DoxyCodeLine{00492\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{structvec}{vec<const\ char\ *>}}\ \doxymbox{\hyperlink{opts_8h_afc0bb98c6407777b1e7f8680049e24f2}{help\_option\_arguments}};}
+\DoxyCodeLine{00493\ }
+\DoxyCodeLine{00494\ \textcolor{keyword}{extern}\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *\doxymbox{\hyperlink{opts_8h_abe7818f452965018b3a5edc1c12ec4da}{get\_option\_prefix\_remapping}}\ (\textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *p,\ \textcolor{keywordtype}{size\_t}\ sz,}
+\DoxyCodeLine{00495\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ **out\_new\_prefix);}
+\DoxyCodeLine{00496\ }
+\DoxyCodeLine{00497\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{opts_8h_a685e74d62047b59a922392d93decbb13}{add\_misspelling\_candidates}}\ (\doxymbox{\hyperlink{classauto__vec}{auto\_vec<char\ *>}}\ *candidates,}
+\DoxyCodeLine{00498\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \textcolor{keyword}{struct}\ \doxymbox{\hyperlink{structcl__option}{cl\_option}}\ *option,}
+\DoxyCodeLine{00499\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *base\_option);}
+\DoxyCodeLine{00500\ \textcolor{keyword}{extern}\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *\doxymbox{\hyperlink{opts_8h_acfd34828edcc68f160cc640756d5fed7}{candidates\_list\_and\_hint}}\ (\textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *arg,\ \textcolor{keywordtype}{char}\ *\&str,}
+\DoxyCodeLine{00501\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ auto\_vec\ <const\ char\ *>\ \&}
+\DoxyCodeLine{00502\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ candidates);}
+\DoxyCodeLine{00503\ }
+\DoxyCodeLine{00504\ }
+\DoxyCodeLine{00505\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{opts_8h_af57dda8db37e78b453f883713ab4d132}{parse\_and\_check\_align\_values}}\ (\textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *flag,}
+\DoxyCodeLine{00506\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *\doxymbox{\hyperlink{configargs_8h_a8f8f80d37794cde9472343e4487ba3eb}{name}},}
+\DoxyCodeLine{00507\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{classauto__vec}{auto\_vec<unsigned>}}\ \&result\_values,}
+\DoxyCodeLine{00508\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{bool}\ report\_error,}
+\DoxyCodeLine{00509\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{line-map_8h_aedf25620511d64e43327f1a229906a96}{location\_t}}\ loc);}
+\DoxyCodeLine{00510\ }
+\DoxyCodeLine{00511\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{opts_8h_a51e4fd68d9d8abda671b656cf10b4bef}{parse\_and\_check\_patch\_area}}\ (\textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *arg,\ \textcolor{keywordtype}{bool}\ report\_error,}
+\DoxyCodeLine{00512\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ HOST\_WIDE\_INT\ *patch\_area\_size,}
+\DoxyCodeLine{00513\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ HOST\_WIDE\_INT\ *patch\_area\_start);}
+\DoxyCodeLine{00514\ }
+\DoxyCodeLine{00515\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{opts_8h_af9748aa16f46d16953179e9cb605445c}{parse\_options\_from\_collect\_gcc\_options}}\ (\textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *,\ \doxymbox{\hyperlink{structobstack}{obstack}}\ *,}
+\DoxyCodeLine{00516\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{int}\ *);}
+\DoxyCodeLine{00517\ }
+\DoxyCodeLine{00518\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{opts_8h_a748d92b0befc015b0a62ae0f8781294c}{prepend\_xassembler\_to\_collect\_as\_options}}\ (\textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *,\ \doxymbox{\hyperlink{structobstack}{obstack}}\ *);}
+\DoxyCodeLine{00519\ }
+\DoxyCodeLine{00520\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{char}\ *\doxymbox{\hyperlink{opts_8h_acc524794ea8bbdca4b67f6a11f15409b}{gen\_command\_line\_string}}\ (\doxymbox{\hyperlink{structcl__decoded__option}{cl\_decoded\_option}}\ *\doxymbox{\hyperlink{structoptions}{options}},}
+\DoxyCodeLine{00521\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ options\_count);}
+\DoxyCodeLine{00522\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{char}\ *\doxymbox{\hyperlink{opts_8h_ab1c9f514ef6fbb9df09c1922cd967311}{gen\_producer\_string}}\ (\textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *language\_string,}
+\DoxyCodeLine{00523\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{structcl__decoded__option}{cl\_decoded\_option}}\ *\doxymbox{\hyperlink{structoptions}{options}},}
+\DoxyCodeLine{00524\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ options\_count);}
+\DoxyCodeLine{00525\ }
+\DoxyCodeLine{00526\ \textcolor{comment}{/*\ Set\ OPTION\ in\ OPTS\ to\ VALUE\ if\ the\ option\ is\ not\ set\ in\ OPTS\_SET.\ \ */}}
+\DoxyCodeLine{00527\ }
+\DoxyCodeLine{00528\ \textcolor{preprocessor}{\#define\ SET\_OPTION\_IF\_UNSET(OPTS,\ OPTS\_SET,\ OPTION,\ VALUE)\ \(\backslash\)}}
+\DoxyCodeLine{00529\ \textcolor{preprocessor}{\ \ do\ \(\backslash\)}}
+\DoxyCodeLine{00530\ \textcolor{preprocessor}{\ \ \{\ \(\backslash\)}}
+\DoxyCodeLine{00531\ \textcolor{preprocessor}{\ \ \ \ if\ (!(OPTS\_SET)-\/>x\_\ \#\#\ OPTION)\ \(\backslash\)}}
+\DoxyCodeLine{00532\ \textcolor{preprocessor}{\ \ \ \ \ \ (OPTS)-\/>x\_\ \#\#\ OPTION\ =\ VALUE;\ \(\backslash\)}}
+\DoxyCodeLine{00533\ \textcolor{preprocessor}{\ \ \}\ \(\backslash\)}}
+\DoxyCodeLine{00534\ \textcolor{preprocessor}{\ \ while\ (false)}}
+\DoxyCodeLine{00535\ }
+\DoxyCodeLine{00536\ \textcolor{comment}{/*\ Return\ true\ if\ OPTION\ is\ set\ by\ user\ in\ global\ options.\ \ */}}
+\DoxyCodeLine{00537\ }
+\DoxyCodeLine{00538\ \textcolor{preprocessor}{\#define\ OPTION\_SET\_P(OPTION)\ global\_options\_set.x\_\ \#\#\ OPTION}}
+\DoxyCodeLine{00539\ }
+\DoxyCodeLine{00540\ \textcolor{comment}{/*\ Find\ all\ the\ switches\ given\ to\ us}}
+\DoxyCodeLine{00541\ \textcolor{comment}{\ \ \ and\ make\ a\ vector\ describing\ them.}}
+\DoxyCodeLine{00542\ \textcolor{comment}{\ \ \ The\ elements\ of\ the\ vector\ are\ strings,\ one\ per\ switch\ given.}}
+\DoxyCodeLine{00543\ \textcolor{comment}{\ \ \ If\ a\ switch\ uses\ following\ arguments,\ then\ the\ \`{}part1'\ field}}
+\DoxyCodeLine{00544\ \textcolor{comment}{\ \ \ is\ the\ switch\ itself\ and\ the\ \`{}args'\ field}}
+\DoxyCodeLine{00545\ \textcolor{comment}{\ \ \ is\ a\ null-\/terminated\ vector\ containing\ the\ following\ arguments.}}
+\DoxyCodeLine{00546\ \textcolor{comment}{\ \ \ Bits\ in\ the\ \`{}live\_cond'\ field\ are:}}
+\DoxyCodeLine{00547\ \textcolor{comment}{\ \ \ SWITCH\_LIVE\ to\ indicate\ this\ switch\ is\ true\ in\ a\ conditional\ spec.}}
+\DoxyCodeLine{00548\ \textcolor{comment}{\ \ \ SWITCH\_FALSE\ to\ indicate\ this\ switch\ is\ overridden\ by\ a\ later\ switch.}}
+\DoxyCodeLine{00549\ \textcolor{comment}{\ \ \ SWITCH\_IGNORE\ to\ indicate\ this\ switch\ should\ be\ ignored\ (used\ in\ \%<S).}}
+\DoxyCodeLine{00550\ \textcolor{comment}{\ \ \ SWITCH\_IGNORE\_PERMANENTLY\ to\ indicate\ this\ switch\ should\ be\ ignored.}}
+\DoxyCodeLine{00551\ \textcolor{comment}{\ \ \ SWITCH\_KEEP\_FOR\_GCC\ to\ indicate\ that\ this\ switch,\ otherwise\ ignored,}}
+\DoxyCodeLine{00552\ \textcolor{comment}{\ \ \ should\ be\ included\ in\ COLLECT\_GCC\_OPTIONS.}}
+\DoxyCodeLine{00553\ \textcolor{comment}{\ \ \ in\ all\ do\_spec\ calls\ afterwards.\ \ Used\ for\ \%<S\ from\ self\ specs.}}
+\DoxyCodeLine{00554\ \textcolor{comment}{\ \ \ The\ \`{}known'\ field\ describes\ whether\ this\ is\ an\ internal\ switch.}}
+\DoxyCodeLine{00555\ \textcolor{comment}{\ \ \ The\ \`{}validated'\ field\ describes\ whether\ any\ spec\ has\ looked\ at\ this\ switch;}}
+\DoxyCodeLine{00556\ \textcolor{comment}{\ \ \ if\ it\ remains\ false\ at\ the\ end\ of\ the\ run,\ the\ switch\ must\ be\ meaningless.}}
+\DoxyCodeLine{00557\ \textcolor{comment}{\ \ \ The\ \`{}ordering'\ field\ is\ used\ to\ temporarily\ mark\ switches\ that\ have\ to\ be}}
+\DoxyCodeLine{00558\ \textcolor{comment}{\ \ \ kept\ in\ a\ specific\ order.\ \ */}}
+\DoxyCodeLine{00559\ }
+\DoxyCodeLine{00560\ \textcolor{preprocessor}{\#define\ SWITCH\_LIVE\ \ \ \ \ \ \ \ \ \ \ \ \ (1\ <<\ 0)}}
+\DoxyCodeLine{00561\ \textcolor{preprocessor}{\#define\ SWITCH\_FALSE\ \ \ \ \ \ \ \ \ \ \ \ (1\ <<\ 1)}}
+\DoxyCodeLine{00562\ \textcolor{preprocessor}{\#define\ SWITCH\_IGNORE\ \ \ \ \ \ \ \ \ \ \ (1\ <<\ 2)}}
+\DoxyCodeLine{00563\ \textcolor{preprocessor}{\#define\ SWITCH\_IGNORE\_PERMANENTLY\ \ \ (1\ <<\ 3)}}
+\DoxyCodeLine{00564\ \textcolor{preprocessor}{\#define\ SWITCH\_KEEP\_FOR\_GCC\ \ \ \ \ (1\ <<\ 4)}}
+\DoxyCodeLine{00565\ }
+\DoxyCodeLine{00566\ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{structswitchstr}{switchstr}}}
+\DoxyCodeLine{00567\ \{}
+\DoxyCodeLine{00568\ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *\doxymbox{\hyperlink{structswitchstr_aa80738836f7385092dd19a8bea9da3aa}{part1}};}
+\DoxyCodeLine{00569\ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ **\doxymbox{\hyperlink{structswitchstr_a73a6d8748440ee95fff34590f072baa0}{args}};}
+\DoxyCodeLine{00570\ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{structswitchstr_a12c9540c01d1483932c08a1cd056635e}{live\_cond}};}
+\DoxyCodeLine{00571\ \ \ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{structswitchstr_afa49ba08ef3a1bda7a405de8fac6939e}{known}};}
+\DoxyCodeLine{00572\ \ \ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{structswitchstr_a8422732edc0affa1be034dcd3e4a3d3d}{validated}};}
+\DoxyCodeLine{00573\ \ \ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{structswitchstr_a9c36956bba0212c03774e80cea9a81ce}{ordering}};}
+\DoxyCodeLine{00574\ \};}
+\DoxyCodeLine{00575\ }
+\DoxyCodeLine{00576\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{classlabel__text}{label\_text}}}
+\DoxyCodeLine{00577\ \doxymbox{\hyperlink{opts_8h_aac8bc882f252066c376e6b22a8cf7f88}{get\_option\_url\_suffix}}\ (\textcolor{keywordtype}{int}\ option\_index,\ \textcolor{keywordtype}{unsigned}\ lang\_mask);}
+\DoxyCodeLine{00578\ }
+\DoxyCodeLine{00579\ \textcolor{preprocessor}{\#endif}}
+
+\end{DoxyCode}

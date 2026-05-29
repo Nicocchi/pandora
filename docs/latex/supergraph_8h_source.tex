@@ -1,0 +1,632 @@
+\doxysection{supergraph.\+h}
+\hypertarget{supergraph_8h_source}{}\label{supergraph_8h_source}\index{toolchain/x86\_64-\/elf/lib/gcc/x86\_64-\/elf/14.2.0/plugin/include/analyzer/supergraph.h@{toolchain/x86\_64-\/elf/lib/gcc/x86\_64-\/elf/14.2.0/plugin/include/analyzer/supergraph.h}}
+\doxymbox{\hyperlink{supergraph_8h}{Go to the documentation of this file.}}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001\ \textcolor{comment}{/*\ "{}Supergraph"{}\ classes\ that\ combine\ CFGs\ and\ callgraph\ into\ one\ digraph.}}
+\DoxyCodeLine{00002\ \textcolor{comment}{\ \ \ Copyright\ (C)\ 2019-\/2024\ Free\ Software\ Foundation,\ Inc.}}
+\DoxyCodeLine{00003\ \textcolor{comment}{\ \ \ Contributed\ by\ David\ Malcolm\ <dmalcolm@redhat.com>.}}
+\DoxyCodeLine{00004\ \textcolor{comment}{}}
+\DoxyCodeLine{00005\ \textcolor{comment}{This\ file\ is\ part\ of\ GCC.}}
+\DoxyCodeLine{00006\ \textcolor{comment}{}}
+\DoxyCodeLine{00007\ \textcolor{comment}{GCC\ is\ free\ software;\ you\ can\ redistribute\ it\ and/or\ modify\ it}}
+\DoxyCodeLine{00008\ \textcolor{comment}{under\ the\ terms\ of\ the\ GNU\ General\ Public\ License\ as\ published\ by}}
+\DoxyCodeLine{00009\ \textcolor{comment}{the\ Free\ Software\ Foundation;\ either\ version\ 3,\ or\ (at\ your\ option)}}
+\DoxyCodeLine{00010\ \textcolor{comment}{any\ later\ version.}}
+\DoxyCodeLine{00011\ \textcolor{comment}{}}
+\DoxyCodeLine{00012\ \textcolor{comment}{GCC\ is\ distributed\ in\ the\ hope\ that\ it\ will\ be\ useful,\ but}}
+\DoxyCodeLine{00013\ \textcolor{comment}{WITHOUT\ ANY\ WARRANTY;\ without\ even\ the\ implied\ warranty\ of}}
+\DoxyCodeLine{00014\ \textcolor{comment}{MERCHANTABILITY\ or\ FITNESS\ FOR\ A\ PARTICULAR\ PURPOSE.\ \ See\ the\ GNU}}
+\DoxyCodeLine{00015\ \textcolor{comment}{General\ Public\ License\ for\ more\ details.}}
+\DoxyCodeLine{00016\ \textcolor{comment}{}}
+\DoxyCodeLine{00017\ \textcolor{comment}{You\ should\ have\ received\ a\ copy\ of\ the\ GNU\ General\ Public\ License}}
+\DoxyCodeLine{00018\ \textcolor{comment}{along\ with\ GCC;\ see\ the\ file\ COPYING3.\ \ If\ not\ see}}
+\DoxyCodeLine{00019\ \textcolor{comment}{<http://www.gnu.org/licenses/>.\ \ */}}
+\DoxyCodeLine{00020\ }
+\DoxyCodeLine{00021\ \textcolor{preprocessor}{\#ifndef\ GCC\_ANALYZER\_SUPERGRAPH\_H}}
+\DoxyCodeLine{00022\ \textcolor{preprocessor}{\#define\ GCC\_ANALYZER\_SUPERGRAPH\_H}}
+\DoxyCodeLine{00023\ }
+\DoxyCodeLine{00024\ \textcolor{preprocessor}{\#include\ "{}\doxymbox{\hyperlink{ordered-hash-map_8h}{ordered-\/hash-\/map.h}}"{}}}
+\DoxyCodeLine{00025\ \textcolor{preprocessor}{\#include\ "{}\doxymbox{\hyperlink{cfg_8h}{cfg.h}}"{}}}
+\DoxyCodeLine{00026\ \textcolor{preprocessor}{\#include\ "{}\doxymbox{\hyperlink{basic-block_8h}{basic-\/block.h}}"{}}}
+\DoxyCodeLine{00027\ \textcolor{preprocessor}{\#include\ "{}\doxymbox{\hyperlink{gimple_8h}{gimple.h}}"{}}}
+\DoxyCodeLine{00028\ \textcolor{preprocessor}{\#include\ "{}\doxymbox{\hyperlink{gimple-iterator_8h}{gimple-\/iterator.h}}"{}}}
+\DoxyCodeLine{00029\ \textcolor{preprocessor}{\#include\ "{}\doxymbox{\hyperlink{digraph_8h}{digraph.h}}"{}}}
+\DoxyCodeLine{00030\ }
+\DoxyCodeLine{00031\ \textcolor{keyword}{using\ namespace\ }\doxymbox{\hyperlink{namespaceana}{ana}};}
+\DoxyCodeLine{00032\ }
+\DoxyCodeLine{00033\ \textcolor{keyword}{namespace\ }\doxymbox{\hyperlink{namespaceana}{ana}}\ \{}
+\DoxyCodeLine{00034\ }
+\DoxyCodeLine{00035\ \textcolor{comment}{/*\ Forward\ decls,\ using\ indentation\ to\ show\ inheritance.\ \ */}}
+\DoxyCodeLine{00036\ }
+\DoxyCodeLine{00037\ \textcolor{keyword}{class\ }\doxymbox{\hyperlink{classana_1_1supergraph}{supergraph}};}
+\DoxyCodeLine{00038\ \textcolor{keyword}{class\ }\doxymbox{\hyperlink{classana_1_1supernode}{supernode}};}
+\DoxyCodeLine{00039\ \textcolor{keyword}{class\ }\doxymbox{\hyperlink{classana_1_1superedge}{superedge}};}
+\DoxyCodeLine{00040\ \ \ \textcolor{keyword}{class\ }\doxymbox{\hyperlink{classana_1_1callgraph__superedge}{callgraph\_superedge}};}
+\DoxyCodeLine{00041\ \ \ \ \ \textcolor{keyword}{class\ }\doxymbox{\hyperlink{classana_1_1call__superedge}{call\_superedge}};}
+\DoxyCodeLine{00042\ \ \ \ \ \textcolor{keyword}{class\ }\doxymbox{\hyperlink{classana_1_1return__superedge}{return\_superedge}};}
+\DoxyCodeLine{00043\ \ \ \textcolor{keyword}{class\ }\doxymbox{\hyperlink{classana_1_1cfg__superedge}{cfg\_superedge}};}
+\DoxyCodeLine{00044\ \ \ \ \ \textcolor{keyword}{class\ }\doxymbox{\hyperlink{classana_1_1switch__cfg__superedge}{switch\_cfg\_superedge}};}
+\DoxyCodeLine{00045\ \textcolor{keyword}{class\ }supercluster;}
+\DoxyCodeLine{00046\ \textcolor{keyword}{class\ }\doxymbox{\hyperlink{classana_1_1dot__annotator}{dot\_annotator}};}
+\DoxyCodeLine{00047\ }
+\DoxyCodeLine{00048\ \textcolor{keyword}{class\ }\doxymbox{\hyperlink{classana_1_1logger}{logger}};}
+\DoxyCodeLine{00049\ }
+\DoxyCodeLine{00050\ \textcolor{comment}{/*\ An\ enum\ for\ discriminating\ between\ superedge\ subclasses.\ \ */}}
+\DoxyCodeLine{00051\ }
+\DoxyCodeLine{00052\ \textcolor{keyword}{enum}\ \doxymbox{\hyperlink{namespaceana_afcb9035fc2090ae0603cae240b3a00a1}{edge\_kind}}}
+\DoxyCodeLine{00053\ \{}
+\DoxyCodeLine{00054\ \ \ \doxymbox{\hyperlink{namespaceana_afcb9035fc2090ae0603cae240b3a00a1aca71c61640c6716494adb1f9202da944}{SUPEREDGE\_CFG\_EDGE}},}
+\DoxyCodeLine{00055\ \ \ \doxymbox{\hyperlink{namespaceana_afcb9035fc2090ae0603cae240b3a00a1a91d62d4f61c585f90f339c1caf884145}{SUPEREDGE\_CALL}},}
+\DoxyCodeLine{00056\ \ \ \doxymbox{\hyperlink{namespaceana_afcb9035fc2090ae0603cae240b3a00a1a7f9d5d3df331dd856bf105b5b4af1361}{SUPEREDGE\_RETURN}},}
+\DoxyCodeLine{00057\ \ \ \doxymbox{\hyperlink{namespaceana_afcb9035fc2090ae0603cae240b3a00a1aefb2aa9d75b02511e45c5b5ead152c23}{SUPEREDGE\_INTRAPROCEDURAL\_CALL}}}
+\DoxyCodeLine{00058\ \};}
+\DoxyCodeLine{00059\ }
+\DoxyCodeLine{00060\ \textcolor{comment}{/*\ Flags\ for\ controlling\ the\ appearance\ of\ .dot\ dumps.\ \ */}}
+\DoxyCodeLine{00061\ }
+\DoxyCodeLine{00062\ \textcolor{keyword}{enum}\ \doxymbox{\hyperlink{namespaceana_a902baeffa2e2e84b61f6390f0444ba7a}{supergraph\_dot\_flags}}}
+\DoxyCodeLine{00063\ \{}
+\DoxyCodeLine{00064\ \ \ \doxymbox{\hyperlink{namespaceana_a902baeffa2e2e84b61f6390f0444ba7aa2748ea065de26f57ca7347d908d5e7ef}{SUPERGRAPH\_DOT\_SHOW\_BBS}}\ =\ (1\ <<\ 0)}
+\DoxyCodeLine{00065\ \};}
+\DoxyCodeLine{00066\ }
+\DoxyCodeLine{00067\ \textcolor{comment}{/*\ A\ traits\ struct\ describing\ the\ family\ of\ node,\ edge\ and\ digraph}}
+\DoxyCodeLine{00068\ \textcolor{comment}{\ \ \ classes\ for\ supergraphs.\ \ */}}
+\DoxyCodeLine{00069\ }
+\DoxyCodeLine{00070\ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{structana_1_1supergraph__traits}{supergraph\_traits}}}
+\DoxyCodeLine{00071\ \{}
+\DoxyCodeLine{00072\ \ \ \textcolor{keyword}{typedef}\ \doxymbox{\hyperlink{classana_1_1supernode}{supernode}}\ \doxymbox{\hyperlink{structana_1_1supergraph__traits_a98e3a66e8a8f0e11134f7b3beb8a10cb}{node\_t}};}
+\DoxyCodeLine{00073\ \ \ \textcolor{keyword}{typedef}\ \doxymbox{\hyperlink{classana_1_1superedge}{superedge}}\ \doxymbox{\hyperlink{structana_1_1supergraph__traits_aee98ceb9ffdec6bbe6dadec260489760}{edge\_t}};}
+\DoxyCodeLine{00074\ \ \ \textcolor{keyword}{typedef}\ \doxymbox{\hyperlink{classana_1_1supergraph}{supergraph}}\ \doxymbox{\hyperlink{structana_1_1supergraph__traits_aba0d70d27d449a0e0373da0518d2e480}{graph\_t}};}
+\DoxyCodeLine{00075\ \ \ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{structana_1_1supergraph__traits_1_1dump__args__t_a928a767152640ad648fb7f319a7df5e5}{dump\_args\_t}}}
+\DoxyCodeLine{00076\ \ \ \{}
+\DoxyCodeLine{00077\ \ \ \ \ \doxymbox{\hyperlink{structana_1_1supergraph__traits_1_1dump__args__t_a928a767152640ad648fb7f319a7df5e5}{dump\_args\_t}}\ (\textcolor{keyword}{enum}\ \doxymbox{\hyperlink{namespaceana_a902baeffa2e2e84b61f6390f0444ba7a}{supergraph\_dot\_flags}}\ flags,}
+\DoxyCodeLine{00078\ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classana_1_1dot__annotator}{dot\_annotator}}\ *node\_annotator)}
+\DoxyCodeLine{00079\ \ \ \ \ :\ \doxymbox{\hyperlink{structana_1_1supergraph__traits_1_1dump__args__t_abff5f438452ebed669b9f4c856ca21e1}{m\_flags}}\ (flags),}
+\DoxyCodeLine{00080\ \ \ \ \ \ \ \doxymbox{\hyperlink{structana_1_1supergraph__traits_1_1dump__args__t_aa92b8fde024af8b3178f1fbb56ace0f7}{m\_node\_annotator}}\ (node\_annotator)}
+\DoxyCodeLine{00081\ \ \ \ \ \{\}}
+\DoxyCodeLine{00082\ }
+\DoxyCodeLine{00083\ \ \ \ \ \textcolor{keyword}{enum}\ \doxymbox{\hyperlink{namespaceana_a902baeffa2e2e84b61f6390f0444ba7a}{supergraph\_dot\_flags}}\ \doxymbox{\hyperlink{structana_1_1supergraph__traits_1_1dump__args__t_abff5f438452ebed669b9f4c856ca21e1}{m\_flags}};}
+\DoxyCodeLine{00084\ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classana_1_1dot__annotator}{dot\_annotator}}\ *\doxymbox{\hyperlink{structana_1_1supergraph__traits_1_1dump__args__t_aa92b8fde024af8b3178f1fbb56ace0f7}{m\_node\_annotator}};}
+\DoxyCodeLine{00085\ \ \ \};}
+\DoxyCodeLine{00086\ \ \ \textcolor{keyword}{typedef}\ supercluster\ \doxymbox{\hyperlink{structana_1_1supergraph__traits_a3a606da27c2f059ae847452964831efe}{cluster\_t}};}
+\DoxyCodeLine{00087\ \};}
+\DoxyCodeLine{00088\ }
+\DoxyCodeLine{00089\ \textcolor{comment}{/*\ A\ class\ to\ manage\ the\ setting\ and\ restoring\ of\ statement\ uids.\ \ */}}
+\DoxyCodeLine{00090\ }
+\DoxyCodeLine{00091\ \textcolor{keyword}{class\ }\doxymbox{\hyperlink{classana_1_1saved__uids}{saved\_uids}}}
+\DoxyCodeLine{00092\ \{}
+\DoxyCodeLine{00093\ \textcolor{keyword}{public}:}
+\DoxyCodeLine{00094\ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classana_1_1saved__uids_a6cf9f3b134d99c038be9631c0ab5680f}{make\_uid\_unique}}\ (gimple\ *stmt);}
+\DoxyCodeLine{00095\ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classana_1_1saved__uids_a5650bbf96a225ba0583753cd161564e5}{restore\_uids}}\ ()\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00096\ }
+\DoxyCodeLine{00097\ \textcolor{keyword}{private}:}
+\DoxyCodeLine{00098\ \ \ \doxymbox{\hyperlink{classauto__vec}{auto\_vec<std::pair<gimple\ *,\ unsigned>}}\ >\ \doxymbox{\hyperlink{classana_1_1saved__uids_a6ee755b3b82ac8363b81494f31027555}{m\_old\_stmt\_uids}};}
+\DoxyCodeLine{00099\ \};}
+\DoxyCodeLine{00100\ }
+\DoxyCodeLine{00101\ \textcolor{comment}{/*\ A\ "{}supergraph"{}\ is\ a\ directed\ graph\ formed\ by\ joining\ together\ all\ CFGs,}}
+\DoxyCodeLine{00102\ \textcolor{comment}{\ \ \ linking\ them\ via\ interprocedural\ call\ and\ return\ edges.}}
+\DoxyCodeLine{00103\ \textcolor{comment}{}}
+\DoxyCodeLine{00104\ \textcolor{comment}{\ \ \ Basic\ blocks\ are\ split\ at\ callsites,\ so\ that\ a\ call\ statement\ occurs}}
+\DoxyCodeLine{00105\ \textcolor{comment}{\ \ \ twice:\ once\ at\ the\ end\ of\ a\ supernode,\ and\ a\ second\ instance\ at\ the}}
+\DoxyCodeLine{00106\ \textcolor{comment}{\ \ \ start\ of\ the\ next\ supernode\ (to\ handle\ the\ return).\ \ */}}
+\DoxyCodeLine{00107\ }
+\DoxyCodeLine{00108\ \textcolor{keyword}{class\ }\doxymbox{\hyperlink{classana_1_1supergraph_a1e902b1f0e189ad6b43c9c714bfd017d}{supergraph}}\ :\ \textcolor{keyword}{public}\ \doxymbox{\hyperlink{classdigraph_afad3d6916b2c23500a935a27055605c3}{digraph}}<supergraph\_traits>}
+\DoxyCodeLine{00109\ \{}
+\DoxyCodeLine{00110\ \textcolor{keyword}{public}:}
+\DoxyCodeLine{00111\ \ \ \doxymbox{\hyperlink{classana_1_1supergraph_a1e902b1f0e189ad6b43c9c714bfd017d}{supergraph}}\ (\doxymbox{\hyperlink{classana_1_1logger}{logger}}\ *\doxymbox{\hyperlink{classana_1_1logger}{logger}});}
+\DoxyCodeLine{00112\ \ \ \doxymbox{\hyperlink{classana_1_1supergraph_ae048e60dd0b7fff1625f2a12165e735a}{\string~supergraph}}\ ();}
+\DoxyCodeLine{00113\ }
+\DoxyCodeLine{00114\ \ \ \doxymbox{\hyperlink{classana_1_1supernode}{supernode}}\ *\doxymbox{\hyperlink{classana_1_1supergraph_a8735b7ae2e7008cc33588156bda273d8}{get\_node\_for\_function\_entry}}\ (\textcolor{keyword}{const}\ function\ \&fun)\textcolor{keyword}{\ const}}
+\DoxyCodeLine{00115\ \textcolor{keyword}{\ \ }\{}
+\DoxyCodeLine{00116\ \ \ \ \ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{classana_1_1supergraph_a7973006076549c1d6545c9a24948bcdd}{get\_node\_for\_block}}\ (\doxymbox{\hyperlink{basic-block_8h_a743c03e2a046a2d900f2bd8c48f145f8}{ENTRY\_BLOCK\_PTR\_FOR\_FN}}\ (\&fun));}
+\DoxyCodeLine{00117\ \ \ \}}
+\DoxyCodeLine{00118\ }
+\DoxyCodeLine{00119\ \ \ \doxymbox{\hyperlink{classana_1_1supernode}{supernode}}\ *\doxymbox{\hyperlink{classana_1_1supergraph_a55491e2a7cbc07b70db87b3dd49eb9b1}{get\_node\_for\_function\_exit}}\ (\textcolor{keyword}{const}\ function\ \&fun)\textcolor{keyword}{\ const}}
+\DoxyCodeLine{00120\ \textcolor{keyword}{\ \ }\{}
+\DoxyCodeLine{00121\ \ \ \ \ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{classana_1_1supergraph_a7973006076549c1d6545c9a24948bcdd}{get\_node\_for\_block}}\ (\doxymbox{\hyperlink{basic-block_8h_ab0f26045d13e2d49d0006f6af2e12835}{EXIT\_BLOCK\_PTR\_FOR\_FN}}\ (\&fun));}
+\DoxyCodeLine{00122\ \ \ \}}
+\DoxyCodeLine{00123\ }
+\DoxyCodeLine{00124\ \ \ \doxymbox{\hyperlink{classana_1_1supernode}{supernode}}\ *\doxymbox{\hyperlink{classana_1_1supergraph_a7973006076549c1d6545c9a24948bcdd}{get\_node\_for\_block}}\ (\doxymbox{\hyperlink{coretypes_8h_a0469df20b471a4cd7c81fbdce5027487}{basic\_block}}\ bb)\textcolor{keyword}{\ const}}
+\DoxyCodeLine{00125\ \textcolor{keyword}{\ \ }\{}
+\DoxyCodeLine{00126\ \ \ \ \ \textcolor{keywordflow}{return}\ *\textcolor{keyword}{const\_cast\ <}\doxymbox{\hyperlink{classana_1_1supergraph_a86978c243775e4130605a60d1326e678}{bb\_to\_node\_t}}\ \&\textcolor{keyword}{>}\ (\doxymbox{\hyperlink{classana_1_1supergraph_ab3df76d42cc2a56b1f4cb5ac8f6a151c}{m\_bb\_to\_initial\_node}}).\doxymbox{\hyperlink{symbol-summary_8h_a47c1a2b92a5e66dbd23c840399c4488e}{get}}\ (bb);}
+\DoxyCodeLine{00127\ \ \ \}}
+\DoxyCodeLine{00128\ }
+\DoxyCodeLine{00129\ \ \ \textcolor{comment}{/*\ Get\ the\ supernode\ containing\ the\ second\ half\ of\ the\ gcall\ *}}
+\DoxyCodeLine{00130\ \textcolor{comment}{\ \ \ \ \ at\ an\ interprocedural\ call,\ within\ the\ caller.\ \ */}}
+\DoxyCodeLine{00131\ \ \ \doxymbox{\hyperlink{classana_1_1supernode}{supernode}}\ *\doxymbox{\hyperlink{classana_1_1supergraph_a1024006514d3494a1995aa71c4c8f00a}{get\_caller\_next\_node}}\ (cgraph\_edge\ *\doxymbox{\hyperlink{coretypes_8h_a44ae11f0c90646aa6208ad4bf486490b}{edge}})\textcolor{keyword}{\ const}}
+\DoxyCodeLine{00132\ \textcolor{keyword}{\ \ }\{}
+\DoxyCodeLine{00133\ \ \ \ \ \textcolor{keywordflow}{return}\ (*\textcolor{keyword}{const\_cast\ <}\doxymbox{\hyperlink{classana_1_1supergraph_a692d20e7c58bf6a6cae05ca0125a5bff}{cgraph\_edge\_to\_node\_t}}\ \&\textcolor{keyword}{>}}
+\DoxyCodeLine{00134\ \ \ \ \ \ \ \ \ \ \ (\doxymbox{\hyperlink{classana_1_1supergraph_a4a87b47d57d6af2f7ca36d279303fb9c}{m\_cgraph\_edge\_to\_caller\_next\_node}}).\doxymbox{\hyperlink{symbol-summary_8h_a47c1a2b92a5e66dbd23c840399c4488e}{get}}\ (\doxymbox{\hyperlink{coretypes_8h_a44ae11f0c90646aa6208ad4bf486490b}{edge}}));}
+\DoxyCodeLine{00135\ \ \ \}}
+\DoxyCodeLine{00136\ }
+\DoxyCodeLine{00137\ \ \ \doxymbox{\hyperlink{classana_1_1call__superedge}{call\_superedge}}\ *\doxymbox{\hyperlink{classana_1_1supergraph_adaabfe41941db1257da0a077282176c2}{get\_edge\_for\_call}}\ (cgraph\_edge\ *\doxymbox{\hyperlink{coretypes_8h_a44ae11f0c90646aa6208ad4bf486490b}{edge}})\textcolor{keyword}{\ const}}
+\DoxyCodeLine{00138\ \textcolor{keyword}{\ \ }\{}
+\DoxyCodeLine{00139\ \ \ \ \ \textcolor{keywordflow}{return}\ (*\textcolor{keyword}{const\_cast\ <}\doxymbox{\hyperlink{classana_1_1supergraph_a79dc914ee8530202bb0f573dcb712424}{cgraph\_edge\_to\_call\_superedge\_t}}\ \&\textcolor{keyword}{>}}
+\DoxyCodeLine{00140\ \ \ \ \ \ \ \ \ \ \ (\doxymbox{\hyperlink{classana_1_1supergraph_a0fff91ae728bf6e93e400ebe48f72543}{m\_cgraph\_edge\_to\_call\_superedge}}).\doxymbox{\hyperlink{symbol-summary_8h_a47c1a2b92a5e66dbd23c840399c4488e}{get}}\ (\doxymbox{\hyperlink{coretypes_8h_a44ae11f0c90646aa6208ad4bf486490b}{edge}}));}
+\DoxyCodeLine{00141\ \ \ \}}
+\DoxyCodeLine{00142\ }
+\DoxyCodeLine{00143\ \ \ \doxymbox{\hyperlink{classana_1_1return__superedge}{return\_superedge}}\ *\doxymbox{\hyperlink{classana_1_1supergraph_af379069bd660f1fc8e64627f0ea5d56e}{get\_edge\_for\_return}}\ (cgraph\_edge\ *\doxymbox{\hyperlink{coretypes_8h_a44ae11f0c90646aa6208ad4bf486490b}{edge}})\textcolor{keyword}{\ const}}
+\DoxyCodeLine{00144\ \textcolor{keyword}{\ \ }\{}
+\DoxyCodeLine{00145\ \ \ \ \ \textcolor{keywordflow}{return}\ (*\textcolor{keyword}{const\_cast\ <}\doxymbox{\hyperlink{classana_1_1supergraph_a06ca23db108a274d4264da5a136db113}{cgraph\_edge\_to\_return\_superedge\_t}}\ \&\textcolor{keyword}{>}}
+\DoxyCodeLine{00146\ \ \ \ \ \ \ \ \ \ \ (\doxymbox{\hyperlink{classana_1_1supergraph_ad9fe4e5db0678bf55e5aa2c3d150b34b}{m\_cgraph\_edge\_to\_return\_superedge}}).\doxymbox{\hyperlink{symbol-summary_8h_a47c1a2b92a5e66dbd23c840399c4488e}{get}}\ (\doxymbox{\hyperlink{coretypes_8h_a44ae11f0c90646aa6208ad4bf486490b}{edge}}));}
+\DoxyCodeLine{00147\ \ \ \}}
+\DoxyCodeLine{00148\ }
+\DoxyCodeLine{00149\ \ \ \doxymbox{\hyperlink{classana_1_1superedge}{superedge}}\ *\doxymbox{\hyperlink{classana_1_1supergraph_a613d7778fa8706720cabcd3bf02be626}{get\_intraprocedural\_edge\_for\_call}}\ (cgraph\_edge\ *\doxymbox{\hyperlink{coretypes_8h_a44ae11f0c90646aa6208ad4bf486490b}{edge}})\textcolor{keyword}{\ const}}
+\DoxyCodeLine{00150\ \textcolor{keyword}{\ \ }\{}
+\DoxyCodeLine{00151\ \ \ \ \ \textcolor{keywordflow}{return}\ (*\textcolor{keyword}{const\_cast\ <}\doxymbox{\hyperlink{classana_1_1supergraph_a752cf652919ddbe53c7925085727ed03}{cgraph\_edge\_to\_intraproc\_superedge\_t}}\ \&\textcolor{keyword}{>}}
+\DoxyCodeLine{00152\ \ \ \ \ \ \ \ \ \ \ (\doxymbox{\hyperlink{classana_1_1supergraph_a43cd80ae1f14343305fd710a262273f6}{m\_cgraph\_edge\_to\_intraproc\_superedge}}).\doxymbox{\hyperlink{symbol-summary_8h_a47c1a2b92a5e66dbd23c840399c4488e}{get}}\ (\doxymbox{\hyperlink{coretypes_8h_a44ae11f0c90646aa6208ad4bf486490b}{edge}}));}
+\DoxyCodeLine{00153\ \ \ \}}
+\DoxyCodeLine{00154\ }
+\DoxyCodeLine{00155\ \ \ \doxymbox{\hyperlink{classana_1_1cfg__superedge}{cfg\_superedge}}\ *\doxymbox{\hyperlink{classana_1_1supergraph_aad1ba51e646885c3d5bcdadbcb64a9b3}{get\_edge\_for\_cfg\_edge}}\ (\doxymbox{\hyperlink{coretypes_8h_a44ae11f0c90646aa6208ad4bf486490b}{edge}}\ e)\textcolor{keyword}{\ const}}
+\DoxyCodeLine{00156\ \textcolor{keyword}{\ \ }\{}
+\DoxyCodeLine{00157\ \ \ \ \ \textcolor{keywordflow}{return}\ (*\textcolor{keyword}{const\_cast\ <}\doxymbox{\hyperlink{classana_1_1supergraph_a28530a893281da84692f59740fdffac1}{cfg\_edge\_to\_cfg\_superedge\_t}}\ \&\textcolor{keyword}{>}}
+\DoxyCodeLine{00158\ \ \ \ \ \ \ \ \ \ \ (\doxymbox{\hyperlink{classana_1_1supergraph_a7f94363bacc640f2fcc3e28ac3d4200c}{m\_cfg\_edge\_to\_cfg\_superedge}}).\doxymbox{\hyperlink{symbol-summary_8h_a47c1a2b92a5e66dbd23c840399c4488e}{get}}\ (e));}
+\DoxyCodeLine{00159\ \ \ \}}
+\DoxyCodeLine{00160\ }
+\DoxyCodeLine{00161\ \ \ \doxymbox{\hyperlink{classana_1_1supernode}{supernode}}\ *\doxymbox{\hyperlink{classana_1_1supergraph_abb1b5fd107b37ee095c8e9c35d447040}{get\_supernode\_for\_stmt}}\ (\textcolor{keyword}{const}\ gimple\ *stmt)\textcolor{keyword}{\ const}}
+\DoxyCodeLine{00162\ \textcolor{keyword}{\ \ }\{}
+\DoxyCodeLine{00163\ \ \ \ \ \textcolor{keywordflow}{return}\ (*\textcolor{keyword}{const\_cast\ <}\doxymbox{\hyperlink{classana_1_1supergraph_ac20eb137111c04eb825d71fe63401296}{stmt\_to\_node\_t}}\ \&\textcolor{keyword}{>}(\doxymbox{\hyperlink{classana_1_1supergraph_a1d2bfd544febfed447bed65de2e2842b}{m\_stmt\_to\_node\_t}}).\doxymbox{\hyperlink{symbol-summary_8h_a47c1a2b92a5e66dbd23c840399c4488e}{get}}}
+\DoxyCodeLine{00164\ \ \ \ \ \ \ \ \ (\textcolor{keyword}{const\_cast\ <}gimple\ *\textcolor{keyword}{>}\ (stmt)));}
+\DoxyCodeLine{00165\ \ \ \}}
+\DoxyCodeLine{00166\ }
+\DoxyCodeLine{00167\ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classana_1_1supergraph_a8110bac8d80bcc879c2a47df19d116e8}{dump\_dot\_to\_pp}}\ (\doxymbox{\hyperlink{classpretty__printer}{pretty\_printer}}\ *pp,\ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classdigraph_adb6547cdb7936d2d2691ab9c2a671eda}{dump\_args\_t}}\ \&)\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00168\ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classana_1_1supergraph_ad950da260f9cd22b59665c113c5970f0}{dump\_dot\_to\_file}}\ (FILE\ *fp,\ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classdigraph_adb6547cdb7936d2d2691ab9c2a671eda}{dump\_args\_t}}\ \&)\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00169\ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classana_1_1supergraph_af004111edd0e3d6282efb36c993fcecc}{dump\_dot}}\ (\textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *path,\ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classdigraph_adb6547cdb7936d2d2691ab9c2a671eda}{dump\_args\_t}}\ \&)\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00170\ }
+\DoxyCodeLine{00171\ \ \ \doxymbox{\hyperlink{classjson_1_1object}{json::object}}\ *\doxymbox{\hyperlink{classana_1_1supergraph_af3a9a685957b3d7f8e67d667f0ada94a}{to\_json}}\ ()\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00172\ }
+\DoxyCodeLine{00173\ \ \ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{classana_1_1supergraph_a4eb7a9750c0e5e020d309a732bdfa9a0}{num\_nodes}}\ ()\textcolor{keyword}{\ const\ }\{\ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{classdigraph_a8949643179b6e121594f57d7a1f25316}{m\_nodes}}.length\ ();\ \}}
+\DoxyCodeLine{00174\ \ \ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{classana_1_1supergraph_a1b80cbbcb4e5f32b545535cc1b1ee700}{num\_edges}}\ ()\textcolor{keyword}{\ const\ }\{\ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{classdigraph_a5e3fe016435779b2af81b68c2fd442c5}{m\_edges}}.length\ ();\ \}}
+\DoxyCodeLine{00175\ }
+\DoxyCodeLine{00176\ \ \ \doxymbox{\hyperlink{classana_1_1supernode}{supernode}}\ *\doxymbox{\hyperlink{classana_1_1supergraph_a80033b242c4b86ac3b35c2144bc2db34}{get\_node\_by\_index}}\ (\textcolor{keywordtype}{int}\ idx)\textcolor{keyword}{\ const}}
+\DoxyCodeLine{00177\ \textcolor{keyword}{\ \ }\{}
+\DoxyCodeLine{00178\ \ \ \ \ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{classdigraph_a8949643179b6e121594f57d7a1f25316}{m\_nodes}}[idx];}
+\DoxyCodeLine{00179\ \ \ \}}
+\DoxyCodeLine{00180\ }
+\DoxyCodeLine{00181\ \ \ \textcolor{keywordtype}{unsigned}\ \doxymbox{\hyperlink{classana_1_1supergraph_a3972f7465f14cdd3bc4acb2332404322}{get\_num\_snodes}}\ (\textcolor{keyword}{const}\ function\ *fun)\textcolor{keyword}{\ const}}
+\DoxyCodeLine{00182\ \textcolor{keyword}{\ \ }\{}
+\DoxyCodeLine{00183\ \ \ \ \ \doxymbox{\hyperlink{classana_1_1supergraph_a9c2e75b9b4ebca96abf39eaffade4f93}{function\_to\_num\_snodes\_t}}\ \&map}
+\DoxyCodeLine{00184\ \ \ \ \ \ \ =\ \textcolor{keyword}{const\_cast\ <}\doxymbox{\hyperlink{classana_1_1supergraph_a9c2e75b9b4ebca96abf39eaffade4f93}{function\_to\_num\_snodes\_t}}\ \&\textcolor{keyword}{>}(\doxymbox{\hyperlink{classana_1_1supergraph_a939803b9f8d3de1b5fece1e7381e1086}{m\_function\_to\_num\_snodes}});}
+\DoxyCodeLine{00185\ \ \ \ \ \textcolor{keywordflow}{return}\ *map.get\ (fun);}
+\DoxyCodeLine{00186\ \ \ \}}
+\DoxyCodeLine{00187\ }
+\DoxyCodeLine{00188\ \textcolor{keyword}{private}:}
+\DoxyCodeLine{00189\ \ \ \doxymbox{\hyperlink{classana_1_1supernode}{supernode}}\ *\doxymbox{\hyperlink{classana_1_1supergraph_af475860d5219018ad4c4e32b6b2a9b28}{add\_node}}\ (function\ *fun,\ \doxymbox{\hyperlink{coretypes_8h_a0469df20b471a4cd7c81fbdce5027487}{basic\_block}}\ bb,\ gcall\ *returning\_call,}
+\DoxyCodeLine{00190\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{coretypes_8h_a4b4e58d1e0dada604ccfc7965bb9a3df}{gimple\_seq}}\ \doxymbox{\hyperlink{gimple_8h_a39478f904547633e8186c33c7305be8e}{phi\_nodes}});}
+\DoxyCodeLine{00191\ \ \ \doxymbox{\hyperlink{classana_1_1cfg__superedge}{cfg\_superedge}}\ *\doxymbox{\hyperlink{classana_1_1supergraph_a7aaafe89c14eb71ed794a5211ee4c999}{add\_cfg\_edge}}\ (\doxymbox{\hyperlink{classana_1_1supernode}{supernode}}\ *src,\ \doxymbox{\hyperlink{classana_1_1supernode}{supernode}}\ *dest,\ \doxymbox{\hyperlink{coretypes_8h_a44ae11f0c90646aa6208ad4bf486490b}{::edge}}\ e);}
+\DoxyCodeLine{00192\ \ \ \doxymbox{\hyperlink{classana_1_1call__superedge}{call\_superedge}}\ *\doxymbox{\hyperlink{classana_1_1supergraph_aaee9b46b3fe647c49ecd935bccaab32b}{add\_call\_superedge}}\ (\doxymbox{\hyperlink{classana_1_1supernode}{supernode}}\ *src,\ \doxymbox{\hyperlink{classana_1_1supernode}{supernode}}\ *dest,}
+\DoxyCodeLine{00193\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ cgraph\_edge\ *cedge);}
+\DoxyCodeLine{00194\ \ \ \doxymbox{\hyperlink{classana_1_1return__superedge}{return\_superedge}}\ *\doxymbox{\hyperlink{classana_1_1supergraph_a8107abc011971f5b23bb5d0313f3665d}{add\_return\_superedge}}\ (\doxymbox{\hyperlink{classana_1_1supernode}{supernode}}\ *src,\ \doxymbox{\hyperlink{classana_1_1supernode}{supernode}}\ *dest,}
+\DoxyCodeLine{00195\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ cgraph\_edge\ *cedge);}
+\DoxyCodeLine{00196\ }
+\DoxyCodeLine{00197\ \ \ \textcolor{comment}{/*\ Data.\ \ */}}
+\DoxyCodeLine{00198\ }
+\DoxyCodeLine{00199\ \ \ \textcolor{keyword}{typedef}\ \doxymbox{\hyperlink{classordered__hash__map}{ordered\_hash\_map<basic\_block,\ supernode\ *>}}\ \doxymbox{\hyperlink{classana_1_1supergraph_a86978c243775e4130605a60d1326e678}{bb\_to\_node\_t}};}
+\DoxyCodeLine{00200\ \ \ \doxymbox{\hyperlink{classana_1_1supergraph_a86978c243775e4130605a60d1326e678}{bb\_to\_node\_t}}\ \doxymbox{\hyperlink{classana_1_1supergraph_ab3df76d42cc2a56b1f4cb5ac8f6a151c}{m\_bb\_to\_initial\_node}};}
+\DoxyCodeLine{00201\ \ \ \doxymbox{\hyperlink{classana_1_1supergraph_a86978c243775e4130605a60d1326e678}{bb\_to\_node\_t}}\ \doxymbox{\hyperlink{classana_1_1supergraph_a62158e0e483fc0986bdc084b82d3580f}{m\_bb\_to\_final\_node}};}
+\DoxyCodeLine{00202\ }
+\DoxyCodeLine{00203\ \ \ \textcolor{keyword}{typedef}\ \doxymbox{\hyperlink{classordered__hash__map}{ordered\_hash\_map<cgraph\_edge\ *,\ supernode\ *>}}\ \doxymbox{\hyperlink{classana_1_1supergraph_a692d20e7c58bf6a6cae05ca0125a5bff}{cgraph\_edge\_to\_node\_t}};}
+\DoxyCodeLine{00204\ \ \ \doxymbox{\hyperlink{classana_1_1supergraph_a692d20e7c58bf6a6cae05ca0125a5bff}{cgraph\_edge\_to\_node\_t}}\ \doxymbox{\hyperlink{classana_1_1supergraph_af77842fd032b5cb0e4d8e66222415762}{m\_cgraph\_edge\_to\_caller\_prev\_node}};}
+\DoxyCodeLine{00205\ \ \ \doxymbox{\hyperlink{classana_1_1supergraph_a692d20e7c58bf6a6cae05ca0125a5bff}{cgraph\_edge\_to\_node\_t}}\ \doxymbox{\hyperlink{classana_1_1supergraph_a4a87b47d57d6af2f7ca36d279303fb9c}{m\_cgraph\_edge\_to\_caller\_next\_node}};}
+\DoxyCodeLine{00206\ }
+\DoxyCodeLine{00207\ \ \ \textcolor{keyword}{typedef}\ \doxymbox{\hyperlink{classordered__hash__map}{ordered\_hash\_map<\ ::edge,\ cfg\_superedge\ *>}}}
+\DoxyCodeLine{00208\ \ \ \ \ \doxymbox{\hyperlink{classana_1_1supergraph_a28530a893281da84692f59740fdffac1}{cfg\_edge\_to\_cfg\_superedge\_t}};}
+\DoxyCodeLine{00209\ \ \ \doxymbox{\hyperlink{classana_1_1supergraph_a28530a893281da84692f59740fdffac1}{cfg\_edge\_to\_cfg\_superedge\_t}}\ \doxymbox{\hyperlink{classana_1_1supergraph_a7f94363bacc640f2fcc3e28ac3d4200c}{m\_cfg\_edge\_to\_cfg\_superedge}};}
+\DoxyCodeLine{00210\ }
+\DoxyCodeLine{00211\ \ \ \textcolor{keyword}{typedef}\ \doxymbox{\hyperlink{classordered__hash__map}{ordered\_hash\_map<cgraph\_edge\ *,\ call\_superedge\ *>}}}
+\DoxyCodeLine{00212\ \ \ \ \ \doxymbox{\hyperlink{classana_1_1supergraph_a79dc914ee8530202bb0f573dcb712424}{cgraph\_edge\_to\_call\_superedge\_t}};}
+\DoxyCodeLine{00213\ \ \ \doxymbox{\hyperlink{classana_1_1supergraph_a79dc914ee8530202bb0f573dcb712424}{cgraph\_edge\_to\_call\_superedge\_t}}\ \doxymbox{\hyperlink{classana_1_1supergraph_a0fff91ae728bf6e93e400ebe48f72543}{m\_cgraph\_edge\_to\_call\_superedge}};}
+\DoxyCodeLine{00214\ }
+\DoxyCodeLine{00215\ \ \ \textcolor{keyword}{typedef}\ \doxymbox{\hyperlink{classordered__hash__map}{ordered\_hash\_map<cgraph\_edge\ *,\ return\_superedge\ *>}}}
+\DoxyCodeLine{00216\ \ \ \ \ \doxymbox{\hyperlink{classana_1_1supergraph_a06ca23db108a274d4264da5a136db113}{cgraph\_edge\_to\_return\_superedge\_t}};}
+\DoxyCodeLine{00217\ \ \ \doxymbox{\hyperlink{classana_1_1supergraph_a06ca23db108a274d4264da5a136db113}{cgraph\_edge\_to\_return\_superedge\_t}}\ \doxymbox{\hyperlink{classana_1_1supergraph_ad9fe4e5db0678bf55e5aa2c3d150b34b}{m\_cgraph\_edge\_to\_return\_superedge}};}
+\DoxyCodeLine{00218\ }
+\DoxyCodeLine{00219\ \ \ \textcolor{keyword}{typedef}\ \doxymbox{\hyperlink{classordered__hash__map}{ordered\_hash\_map<cgraph\_edge\ *,\ superedge\ *>}}}
+\DoxyCodeLine{00220\ \ \ \ \ \doxymbox{\hyperlink{classana_1_1supergraph_a752cf652919ddbe53c7925085727ed03}{cgraph\_edge\_to\_intraproc\_superedge\_t}};}
+\DoxyCodeLine{00221\ \ \ \doxymbox{\hyperlink{classana_1_1supergraph_a752cf652919ddbe53c7925085727ed03}{cgraph\_edge\_to\_intraproc\_superedge\_t}}\ \doxymbox{\hyperlink{classana_1_1supergraph_a43cd80ae1f14343305fd710a262273f6}{m\_cgraph\_edge\_to\_intraproc\_superedge}};}
+\DoxyCodeLine{00222\ }
+\DoxyCodeLine{00223\ \ \ \textcolor{keyword}{typedef}\ \doxymbox{\hyperlink{classordered__hash__map}{ordered\_hash\_map<gimple\ *,\ supernode\ *>}}\ \doxymbox{\hyperlink{classana_1_1supergraph_ac20eb137111c04eb825d71fe63401296}{stmt\_to\_node\_t}};}
+\DoxyCodeLine{00224\ \ \ \doxymbox{\hyperlink{classana_1_1supergraph_ac20eb137111c04eb825d71fe63401296}{stmt\_to\_node\_t}}\ \doxymbox{\hyperlink{classana_1_1supergraph_a1d2bfd544febfed447bed65de2e2842b}{m\_stmt\_to\_node\_t}};}
+\DoxyCodeLine{00225\ }
+\DoxyCodeLine{00226\ \ \ \textcolor{keyword}{typedef}\ \doxymbox{\hyperlink{classhash__map}{hash\_map<const\ function\ *,\ unsigned>}}\ \doxymbox{\hyperlink{classana_1_1supergraph_a9c2e75b9b4ebca96abf39eaffade4f93}{function\_to\_num\_snodes\_t}};}
+\DoxyCodeLine{00227\ \ \ \doxymbox{\hyperlink{classana_1_1supergraph_a9c2e75b9b4ebca96abf39eaffade4f93}{function\_to\_num\_snodes\_t}}\ \doxymbox{\hyperlink{classana_1_1supergraph_a939803b9f8d3de1b5fece1e7381e1086}{m\_function\_to\_num\_snodes}};}
+\DoxyCodeLine{00228\ }
+\DoxyCodeLine{00229\ \ \ \doxymbox{\hyperlink{classana_1_1saved__uids}{saved\_uids}}\ \doxymbox{\hyperlink{classana_1_1supergraph_af6a1d2839dc4adbe8a7f6548b9cb8d91}{m\_stmt\_uids}};}
+\DoxyCodeLine{00230\ \};}
+\DoxyCodeLine{00231\ }
+\DoxyCodeLine{00232\ \textcolor{comment}{/*\ A\ node\ within\ a\ supergraph.\ \ */}}
+\DoxyCodeLine{00233\ }
+\DoxyCodeLine{00234\ \textcolor{keyword}{class\ }\doxymbox{\hyperlink{classana_1_1supernode_ab132d0cfe0c38241da871c7396ae13b0}{supernode}}\ :\ \textcolor{keyword}{public}\ \doxymbox{\hyperlink{classdnode}{dnode}}<supergraph\_traits>}
+\DoxyCodeLine{00235\ \{}
+\DoxyCodeLine{00236\ \ \textcolor{keyword}{public}:}
+\DoxyCodeLine{00237\ \ \ \doxymbox{\hyperlink{classana_1_1supernode_ab132d0cfe0c38241da871c7396ae13b0}{supernode}}\ (function\ *fun,\ \doxymbox{\hyperlink{coretypes_8h_a0469df20b471a4cd7c81fbdce5027487}{basic\_block}}\ bb,\ gcall\ *returning\_call,}
+\DoxyCodeLine{00238\ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{coretypes_8h_a4b4e58d1e0dada604ccfc7965bb9a3df}{gimple\_seq}}\ \doxymbox{\hyperlink{gimple_8h_a39478f904547633e8186c33c7305be8e}{phi\_nodes}},\ \textcolor{keywordtype}{int}\ index)}
+\DoxyCodeLine{00239\ \ \ :\ \doxymbox{\hyperlink{classana_1_1supernode_afbeea63fa9e11be9bc1f511c1288982a}{m\_fun}}\ (fun),\ \doxymbox{\hyperlink{classana_1_1supernode_a4bff6f750081a532537a6d59234c197e}{m\_bb}}\ (bb),\ \doxymbox{\hyperlink{classana_1_1supernode_a7ae24d5e69749f9ef91f9f96689f9287}{m\_returning\_call}}\ (returning\_call),}
+\DoxyCodeLine{00240\ \ \ \ \ \doxymbox{\hyperlink{classana_1_1supernode_af7750b4195ce98c9c8df8cec094abf3e}{m\_phi\_nodes}}\ (\doxymbox{\hyperlink{gimple_8h_a39478f904547633e8186c33c7305be8e}{phi\_nodes}}),\ \doxymbox{\hyperlink{classana_1_1supernode_acaf21f94367e58d988f9d54fa6051830}{m\_index}}\ (index)}
+\DoxyCodeLine{00241\ \ \ \{\}}
+\DoxyCodeLine{00242\ }
+\DoxyCodeLine{00243\ \ \ function\ *\doxymbox{\hyperlink{classana_1_1supernode_aa9d26a7e6c959137fe901db81d25b930}{get\_function}}\ ()\textcolor{keyword}{\ const\ }\{\ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{classana_1_1supernode_afbeea63fa9e11be9bc1f511c1288982a}{m\_fun}};\ \}}
+\DoxyCodeLine{00244\ }
+\DoxyCodeLine{00245\ \ \ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{classana_1_1supernode_a1f9e6171e72c877121194fd55d29cb5b}{entry\_p}}\ ()\textcolor{keyword}{\ const}}
+\DoxyCodeLine{00246\ \textcolor{keyword}{\ \ }\{}
+\DoxyCodeLine{00247\ \ \ \ \ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{classana_1_1supernode_a4bff6f750081a532537a6d59234c197e}{m\_bb}}\ ==\ \doxymbox{\hyperlink{basic-block_8h_a743c03e2a046a2d900f2bd8c48f145f8}{ENTRY\_BLOCK\_PTR\_FOR\_FN}}\ (\doxymbox{\hyperlink{classana_1_1supernode_afbeea63fa9e11be9bc1f511c1288982a}{m\_fun}});}
+\DoxyCodeLine{00248\ \ \ \}}
+\DoxyCodeLine{00249\ }
+\DoxyCodeLine{00250\ \ \ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{classana_1_1supernode_a64b8d832c444c94bfa4d7f0540d339a0}{return\_p}}\ ()\textcolor{keyword}{\ const}}
+\DoxyCodeLine{00251\ \textcolor{keyword}{\ \ }\{}
+\DoxyCodeLine{00252\ \ \ \ \ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{classana_1_1supernode_a4bff6f750081a532537a6d59234c197e}{m\_bb}}\ ==\ \doxymbox{\hyperlink{basic-block_8h_ab0f26045d13e2d49d0006f6af2e12835}{EXIT\_BLOCK\_PTR\_FOR\_FN}}\ (\doxymbox{\hyperlink{classana_1_1supernode_afbeea63fa9e11be9bc1f511c1288982a}{m\_fun}});}
+\DoxyCodeLine{00253\ \ \ \}}
+\DoxyCodeLine{00254\ }
+\DoxyCodeLine{00255\ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classana_1_1supernode_a78406655a5604584a9bf5610743222fa}{dump\_dot}}\ (\doxymbox{\hyperlink{classgraphviz__out}{graphviz\_out}}\ *gv,\ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classdnode_aa3b3f98c829e25922819e271d99308eb}{dump\_args\_t}}\ \&args)\ \textcolor{keyword}{const\ override};}
+\DoxyCodeLine{00256\ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classana_1_1supernode_a59d99e0d4f2f9b42e505333988b1b595}{dump\_dot\_id}}\ (\doxymbox{\hyperlink{classpretty__printer}{pretty\_printer}}\ *pp)\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00257\ }
+\DoxyCodeLine{00258\ \ \ \doxymbox{\hyperlink{classjson_1_1object}{json::object}}\ *\doxymbox{\hyperlink{classana_1_1supernode_a4b7f7e4b120ca2afbaa0c9935f6a129b}{to\_json}}\ ()\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00259\ }
+\DoxyCodeLine{00260\ \ \ \doxymbox{\hyperlink{line-map_8h_aedf25620511d64e43327f1a229906a96}{location\_t}}\ \doxymbox{\hyperlink{classana_1_1supernode_a6cc6bb9accbda5b49085ebdf3ef5bc55}{get\_start\_location}}\ ()\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00261\ \ \ \doxymbox{\hyperlink{line-map_8h_aedf25620511d64e43327f1a229906a96}{location\_t}}\ \doxymbox{\hyperlink{classana_1_1supernode_a3d50040e94e8e3831ab66f28ca793f50}{get\_end\_location}}\ ()\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00262\ }
+\DoxyCodeLine{00263\ \ \ \textcolor{comment}{/*\ Returns\ iterator\ at\ the\ start\ of\ the\ list\ of\ phi\ nodes,\ if\ any.\ \ */}}
+\DoxyCodeLine{00264\ \ \ \doxymbox{\hyperlink{structgphi__iterator}{gphi\_iterator}}\ \doxymbox{\hyperlink{classana_1_1supernode_a3ef84ba3c84f151609a70359b92aea7b}{start\_phis}}\ ()}
+\DoxyCodeLine{00265\ \ \ \{}
+\DoxyCodeLine{00266\ \ \ \ \ \doxymbox{\hyperlink{coretypes_8h_a4b4e58d1e0dada604ccfc7965bb9a3df}{gimple\_seq}}\ *pseq\ =\ \&\doxymbox{\hyperlink{classana_1_1supernode_af7750b4195ce98c9c8df8cec094abf3e}{m\_phi\_nodes}};}
+\DoxyCodeLine{00267\ }
+\DoxyCodeLine{00268\ \ \ \ \ \textcolor{comment}{/*\ Adapted\ from\ gsi\_start\_1.\ */}}
+\DoxyCodeLine{00269\ \ \ \ \ \doxymbox{\hyperlink{structgphi__iterator}{gphi\_iterator}}\ \doxymbox{\hyperlink{poly-int_8h_a7e98b8a17c0aad30ba64d47b74e2a6c1}{i}};}
+\DoxyCodeLine{00270\ }
+\DoxyCodeLine{00271\ \ \ \ \ \doxymbox{\hyperlink{poly-int_8h_a7e98b8a17c0aad30ba64d47b74e2a6c1}{i}}.ptr\ =\ \doxymbox{\hyperlink{gimple_8h_aefb4f5d644243af127360b7595f63c14}{gimple\_seq\_first}}\ (*pseq);}
+\DoxyCodeLine{00272\ \ \ \ \ \doxymbox{\hyperlink{poly-int_8h_a7e98b8a17c0aad30ba64d47b74e2a6c1}{i}}.seq\ =\ pseq;}
+\DoxyCodeLine{00273\ \ \ \ \ \doxymbox{\hyperlink{poly-int_8h_a7e98b8a17c0aad30ba64d47b74e2a6c1}{i}}.bb\ =\ \doxymbox{\hyperlink{poly-int_8h_a7e98b8a17c0aad30ba64d47b74e2a6c1}{i}}.ptr\ ?\ \doxymbox{\hyperlink{gimple_8h_aa9d1c919bc5fba2f5851b1e342200e17}{gimple\_bb}}\ (\doxymbox{\hyperlink{poly-int_8h_a7e98b8a17c0aad30ba64d47b74e2a6c1}{i}}.ptr)\ :\ \doxymbox{\hyperlink{stddef_8h_a070d2ce7b6bb7e5c05602aa8c308d0c4}{NULL}};}
+\DoxyCodeLine{00274\ }
+\DoxyCodeLine{00275\ \ \ \ \ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{poly-int_8h_a7e98b8a17c0aad30ba64d47b74e2a6c1}{i}};}
+\DoxyCodeLine{00276\ \ \ \}}
+\DoxyCodeLine{00277\ }
+\DoxyCodeLine{00278\ \ \ gcall\ *\doxymbox{\hyperlink{classana_1_1supernode_a5a63d6c546ae1ce4403d47f47101dc49}{get\_returning\_call}}\ ()\textcolor{keyword}{\ const}}
+\DoxyCodeLine{00279\ \textcolor{keyword}{\ \ }\{}
+\DoxyCodeLine{00280\ \ \ \ \ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{classana_1_1supernode_a7ae24d5e69749f9ef91f9f96689f9287}{m\_returning\_call}};}
+\DoxyCodeLine{00281\ \ \ \}}
+\DoxyCodeLine{00282\ }
+\DoxyCodeLine{00283\ \ \ gimple\ *\doxymbox{\hyperlink{classana_1_1supernode_a29d4b4f65328bb26dc432758748ea4aa}{get\_last\_stmt}}\ ()\textcolor{keyword}{\ const}}
+\DoxyCodeLine{00284\ \textcolor{keyword}{\ \ }\{}
+\DoxyCodeLine{00285\ \ \ \ \ \textcolor{keywordflow}{if}\ (\doxymbox{\hyperlink{classana_1_1supernode_af1e3fe892c5053da27861d97cfa7fc95}{m\_stmts}}.length\ ()\ ==\ 0)}
+\DoxyCodeLine{00286\ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{stddef_8h_a070d2ce7b6bb7e5c05602aa8c308d0c4}{NULL}};}
+\DoxyCodeLine{00287\ \ \ \ \ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{classana_1_1supernode_af1e3fe892c5053da27861d97cfa7fc95}{m\_stmts}}[\doxymbox{\hyperlink{classana_1_1supernode_af1e3fe892c5053da27861d97cfa7fc95}{m\_stmts}}.length\ ()\ -\/\ 1];}
+\DoxyCodeLine{00288\ \ \ \}}
+\DoxyCodeLine{00289\ }
+\DoxyCodeLine{00290\ \ \ gcall\ *\doxymbox{\hyperlink{classana_1_1supernode_a2cc014584e0a9100d631504fbfa88b03}{get\_final\_call}}\ ()\textcolor{keyword}{\ const}}
+\DoxyCodeLine{00291\ \textcolor{keyword}{\ \ }\{}
+\DoxyCodeLine{00292\ \ \ \ \ gimple\ *stmt\ =\ \doxymbox{\hyperlink{classana_1_1supernode_a29d4b4f65328bb26dc432758748ea4aa}{get\_last\_stmt}}\ ();}
+\DoxyCodeLine{00293\ \ \ \ \ \textcolor{keywordflow}{if}\ (stmt\ ==\ \doxymbox{\hyperlink{stddef_8h_a070d2ce7b6bb7e5c05602aa8c308d0c4}{NULL}})}
+\DoxyCodeLine{00294\ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{stddef_8h_a070d2ce7b6bb7e5c05602aa8c308d0c4}{NULL}};}
+\DoxyCodeLine{00295\ \ \ \ \ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{is-a_8h_aea38ccb7ddbe54f14c7c56e9cffe887b}{dyn\_cast<gcall\ *>}}\ (stmt);}
+\DoxyCodeLine{00296\ \ \ \}}
+\DoxyCodeLine{00297\ }
+\DoxyCodeLine{00298\ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{classana_1_1supernode_aa681aea0b7a3025a3dbb10c1df061125}{get\_stmt\_index}}\ (\textcolor{keyword}{const}\ gimple\ *stmt)\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00299\ }
+\DoxyCodeLine{00300\ \ \ tree\ \doxymbox{\hyperlink{classana_1_1supernode_a67b83921722ffd7c7f0f5728b0a3564a}{get\_label}}\ ()\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00301\ }
+\DoxyCodeLine{00302\ \ \ function\ *\ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classana_1_1supernode_afbeea63fa9e11be9bc1f511c1288982a}{m\_fun}};\ \textcolor{comment}{//\ alternatively\ could\ be\ stored\ as\ runs\ of\ indices\ within\ the\ supergraph}}
+\DoxyCodeLine{00303\ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{coretypes_8h_a0469df20b471a4cd7c81fbdce5027487}{basic\_block}}\ \doxymbox{\hyperlink{classana_1_1supernode_a4bff6f750081a532537a6d59234c197e}{m\_bb}};}
+\DoxyCodeLine{00304\ \ \ gcall\ *\ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classana_1_1supernode_a7ae24d5e69749f9ef91f9f96689f9287}{m\_returning\_call}};\ \textcolor{comment}{//\ for\ handling\ the\ result\ of\ a\ returned\ call}}
+\DoxyCodeLine{00305\ \ \ \doxymbox{\hyperlink{coretypes_8h_a4b4e58d1e0dada604ccfc7965bb9a3df}{gimple\_seq}}\ \doxymbox{\hyperlink{classana_1_1supernode_af7750b4195ce98c9c8df8cec094abf3e}{m\_phi\_nodes}};\ \textcolor{comment}{//\ ptr\ to\ that\ of\ the\ underlying\ BB,\ for\ the\ first\ supernode\ for\ the\ BB}}
+\DoxyCodeLine{00306\ \ \ \doxymbox{\hyperlink{classauto__vec}{auto\_vec<gimple\ *>}}\ \doxymbox{\hyperlink{classana_1_1supernode_af1e3fe892c5053da27861d97cfa7fc95}{m\_stmts}};}
+\DoxyCodeLine{00307\ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{classana_1_1supernode_acaf21f94367e58d988f9d54fa6051830}{m\_index}};\ \textcolor{comment}{/*\ unique\ within\ the\ supergraph\ as\ a\ whole.\ \ */}}
+\DoxyCodeLine{00308\ \};}
+\DoxyCodeLine{00309\ }
+\DoxyCodeLine{00310\ \textcolor{comment}{/*\ An\ abstract\ base\ class\ encapsulating\ an\ edge\ within\ a\ supergraph.}}
+\DoxyCodeLine{00311\ \textcolor{comment}{\ \ \ Edges\ can\ be\ CFG\ edges,\ or\ calls/returns\ for\ callgraph\ edges.\ \ */}}
+\DoxyCodeLine{00312\ }
+\DoxyCodeLine{00313\ \textcolor{keyword}{class\ }\doxymbox{\hyperlink{classana_1_1superedge_a4aaa5145e6c0702519e458134f815558}{superedge}}\ :\ \textcolor{keyword}{public}\ \doxymbox{\hyperlink{classdedge_a9d78cc52331ccc4462589f1de0c7bb9d}{dedge}}<supergraph\_traits>}
+\DoxyCodeLine{00314\ \{}
+\DoxyCodeLine{00315\ \ \textcolor{keyword}{public}:}
+\DoxyCodeLine{00316\ \ \ \textcolor{keyword}{virtual}\ \doxymbox{\hyperlink{classana_1_1superedge_acd14bd15114098c58ee3943ee35284f5}{\string~superedge}}\ ()\ \{\}}
+\DoxyCodeLine{00317\ }
+\DoxyCodeLine{00318\ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classana_1_1superedge_a30271edb0ce83cd063467c6563253101}{dump}}\ (\doxymbox{\hyperlink{classpretty__printer}{pretty\_printer}}\ *pp)\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00319\ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classana_1_1superedge_acfecd3ba3637e273175084fe4c7cfd9a}{dump}}\ ()\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00320\ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classana_1_1superedge_a1a6d0364942b126eecf4d40b9b03bf70}{dump\_dot}}\ (\doxymbox{\hyperlink{classgraphviz__out}{graphviz\_out}}\ *gv,\ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classdedge_ae5ce0463f62eb10b8f70afa2c90527e8}{dump\_args\_t}}\ \&args)}
+\DoxyCodeLine{00321\ \ \ \ \ \textcolor{keyword}{const}\ \textcolor{keyword}{final}\ \textcolor{keyword}{override};}
+\DoxyCodeLine{00322\ }
+\DoxyCodeLine{00323\ \ \ \textcolor{keyword}{virtual}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classana_1_1superedge_ad493356054ac2ce14616660b4c4a6eda}{dump\_label\_to\_pp}}\ (\doxymbox{\hyperlink{classpretty__printer}{pretty\_printer}}\ *pp,}
+\DoxyCodeLine{00324\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{bool}\ user\_facing)\ \textcolor{keyword}{const}\ =\ 0;}
+\DoxyCodeLine{00325\ }
+\DoxyCodeLine{00326\ \ \ \doxymbox{\hyperlink{classjson_1_1object}{json::object}}\ *\doxymbox{\hyperlink{classana_1_1superedge_ad435e47eff2edf5aba06caee3cb820e2}{to\_json}}\ ()\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00327\ }
+\DoxyCodeLine{00328\ \ \ \textcolor{keyword}{enum}\ \doxymbox{\hyperlink{namespaceana_afcb9035fc2090ae0603cae240b3a00a1}{edge\_kind}}\ \doxymbox{\hyperlink{classana_1_1superedge_a2bb7aca2f68140615b1511c7e9efb084}{get\_kind}}\ ()\textcolor{keyword}{\ const\ }\{\ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{classana_1_1superedge_a9864c7c8af012e8271e9489b2da73fbb}{m\_kind}};\ \}}
+\DoxyCodeLine{00329\ }
+\DoxyCodeLine{00330\ \ \ \textcolor{keyword}{virtual}\ \doxymbox{\hyperlink{classana_1_1cfg__superedge}{cfg\_superedge}}\ *\doxymbox{\hyperlink{classana_1_1superedge_a68de713d2bd40f9dd74e28efa039ebf6}{dyn\_cast\_cfg\_superedge}}\ ()\ \{\ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{stddef_8h_a070d2ce7b6bb7e5c05602aa8c308d0c4}{NULL}};\ \}}
+\DoxyCodeLine{00331\ \ \ \textcolor{keyword}{virtual}\ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classana_1_1cfg__superedge}{cfg\_superedge}}\ *\doxymbox{\hyperlink{classana_1_1superedge_a6fa3c5f3624085b8ca2a2e61c136362b}{dyn\_cast\_cfg\_superedge}}\ ()\textcolor{keyword}{\ const\ }\{\ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{stddef_8h_a070d2ce7b6bb7e5c05602aa8c308d0c4}{NULL}};\ \}}
+\DoxyCodeLine{00332\ \ \ \textcolor{keyword}{virtual}\ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classana_1_1switch__cfg__superedge}{switch\_cfg\_superedge}}\ *\doxymbox{\hyperlink{classana_1_1superedge_a525c25e8129ca3369295b169f951e3fc}{dyn\_cast\_switch\_cfg\_superedge}}\ ()\textcolor{keyword}{\ const\ }\{\ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{stddef_8h_a070d2ce7b6bb7e5c05602aa8c308d0c4}{NULL}};\ \}}
+\DoxyCodeLine{00333\ \ \ \textcolor{keyword}{virtual}\ \doxymbox{\hyperlink{classana_1_1callgraph__superedge}{callgraph\_superedge}}\ *\doxymbox{\hyperlink{classana_1_1superedge_a67954ce4b0917d14f5f2df6fea20b294}{dyn\_cast\_callgraph\_superedge}}\ ()\ \{\ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{stddef_8h_a070d2ce7b6bb7e5c05602aa8c308d0c4}{NULL}};\ \}}
+\DoxyCodeLine{00334\ \ \ \textcolor{keyword}{virtual}\ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classana_1_1callgraph__superedge}{callgraph\_superedge}}\ *\doxymbox{\hyperlink{classana_1_1superedge_a4492bfce2588a3207e2c1816b3bc0d44}{dyn\_cast\_callgraph\_superedge}}\ ()\textcolor{keyword}{\ const\ }\{\ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{stddef_8h_a070d2ce7b6bb7e5c05602aa8c308d0c4}{NULL}};\ \}}
+\DoxyCodeLine{00335\ \ \ \textcolor{keyword}{virtual}\ \doxymbox{\hyperlink{classana_1_1call__superedge}{call\_superedge}}\ *\doxymbox{\hyperlink{classana_1_1superedge_ae4012f7168aaa02927b83fd31eced697}{dyn\_cast\_call\_superedge}}\ ()\ \{\ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{stddef_8h_a070d2ce7b6bb7e5c05602aa8c308d0c4}{NULL}};\ \}}
+\DoxyCodeLine{00336\ \ \ \textcolor{keyword}{virtual}\ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classana_1_1call__superedge}{call\_superedge}}\ *\doxymbox{\hyperlink{classana_1_1superedge_ace69ee966fd9dfc51e8dbd0d242e4f28}{dyn\_cast\_call\_superedge}}\ ()\textcolor{keyword}{\ const\ }\{\ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{stddef_8h_a070d2ce7b6bb7e5c05602aa8c308d0c4}{NULL}};\ \}}
+\DoxyCodeLine{00337\ \ \ \textcolor{keyword}{virtual}\ \doxymbox{\hyperlink{classana_1_1return__superedge}{return\_superedge}}\ *\doxymbox{\hyperlink{classana_1_1superedge_a3d5854a66614d554a7a319cf20fc2e35}{dyn\_cast\_return\_superedge}}\ ()\ \{\ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{stddef_8h_a070d2ce7b6bb7e5c05602aa8c308d0c4}{NULL}};\ \}}
+\DoxyCodeLine{00338\ \ \ \textcolor{keyword}{virtual}\ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classana_1_1return__superedge}{return\_superedge}}\ *\doxymbox{\hyperlink{classana_1_1superedge_aedbd2f38544edfa7bb9da3eb8db09d04}{dyn\_cast\_return\_superedge}}\ ()\textcolor{keyword}{\ const\ }\{\ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{stddef_8h_a070d2ce7b6bb7e5c05602aa8c308d0c4}{NULL}};\ \}}
+\DoxyCodeLine{00339\ }
+\DoxyCodeLine{00340\ \ \ \doxymbox{\hyperlink{coretypes_8h_a44ae11f0c90646aa6208ad4bf486490b}{::edge}}\ \doxymbox{\hyperlink{classana_1_1superedge_a337a7537ebbcdbfcee2c52ea529735d9}{get\_any\_cfg\_edge}}\ ()\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00341\ \ \ cgraph\_edge\ *\doxymbox{\hyperlink{classana_1_1superedge_a2661eaa3596f8461589f8c9676633f29}{get\_any\_callgraph\_edge}}\ ()\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00342\ }
+\DoxyCodeLine{00343\ \ \ \doxymbox{\hyperlink{classlabel__text}{label\_text}}\ \doxymbox{\hyperlink{classana_1_1superedge_a7bb4600881494664581b4ee536ce5f46}{get\_description}}\ (\textcolor{keywordtype}{bool}\ user\_facing)\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00344\ }
+\DoxyCodeLine{00345\ \ \textcolor{keyword}{protected}:}
+\DoxyCodeLine{00346\ \ \ \doxymbox{\hyperlink{classana_1_1superedge_a4aaa5145e6c0702519e458134f815558}{superedge}}\ (\doxymbox{\hyperlink{classana_1_1supernode}{supernode}}\ *src,\ \doxymbox{\hyperlink{classana_1_1supernode}{supernode}}\ *dest,\ \textcolor{keyword}{enum}\ \doxymbox{\hyperlink{namespaceana_afcb9035fc2090ae0603cae240b3a00a1}{edge\_kind}}\ kind)}
+\DoxyCodeLine{00347\ \ \ :\ \doxymbox{\hyperlink{classdedge_a9d78cc52331ccc4462589f1de0c7bb9d}{dedge}}<\doxymbox{\hyperlink{structana_1_1supergraph__traits}{supergraph\_traits}}>\ (src,\ dest),}
+\DoxyCodeLine{00348\ \ \ \ \ \doxymbox{\hyperlink{classana_1_1superedge_a9864c7c8af012e8271e9489b2da73fbb}{m\_kind}}\ (kind)}
+\DoxyCodeLine{00349\ \ \ \{\}}
+\DoxyCodeLine{00350\ }
+\DoxyCodeLine{00351\ \ \textcolor{keyword}{public}:}
+\DoxyCodeLine{00352\ \ \ \textcolor{keyword}{const}\ \textcolor{keyword}{enum}\ \doxymbox{\hyperlink{namespaceana_afcb9035fc2090ae0603cae240b3a00a1}{edge\_kind}}\ \doxymbox{\hyperlink{classana_1_1superedge_a9864c7c8af012e8271e9489b2da73fbb}{m\_kind}};}
+\DoxyCodeLine{00353\ \};}
+\DoxyCodeLine{00354\ }
+\DoxyCodeLine{00355\ \textcolor{comment}{/*\ An\ ID\ representing\ an\ expression\ at\ a\ callsite:}}
+\DoxyCodeLine{00356\ \textcolor{comment}{\ \ \ either\ a\ parameter\ index,\ or\ the\ return\ value\ (or\ unknown).\ \ */}}
+\DoxyCodeLine{00357\ }
+\DoxyCodeLine{00358\ \textcolor{keyword}{class\ }\doxymbox{\hyperlink{classana_1_1callsite__expr_a48965838e553264b3d4fdafa5e5e76e3}{callsite\_expr}}}
+\DoxyCodeLine{00359\ \{}
+\DoxyCodeLine{00360\ \ \textcolor{keyword}{public}:}
+\DoxyCodeLine{00361\ \ \ \doxymbox{\hyperlink{classana_1_1callsite__expr_a48965838e553264b3d4fdafa5e5e76e3}{callsite\_expr}}\ ()\ :\ \doxymbox{\hyperlink{classana_1_1callsite__expr_a59a4e00f82269faff2e7635026148b14}{m\_val}}\ (-\/1)\ \{\}}
+\DoxyCodeLine{00362\ }
+\DoxyCodeLine{00363\ \ \ \textcolor{keyword}{static}\ \doxymbox{\hyperlink{classana_1_1callsite__expr_a48965838e553264b3d4fdafa5e5e76e3}{callsite\_expr}}\ \doxymbox{\hyperlink{classana_1_1callsite__expr_a2d73a11ea0baa0d000ada47f7c3b5dab}{from\_zero\_based\_param}}\ (\textcolor{keywordtype}{int}\ idx)}
+\DoxyCodeLine{00364\ \ \ \{}
+\DoxyCodeLine{00365\ \ \ \ \ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{classana_1_1callsite__expr_a48965838e553264b3d4fdafa5e5e76e3}{callsite\_expr}}\ (idx\ +\ 1);}
+\DoxyCodeLine{00366\ \ \ \}}
+\DoxyCodeLine{00367\ }
+\DoxyCodeLine{00368\ \ \ \textcolor{keyword}{static}\ \doxymbox{\hyperlink{classana_1_1callsite__expr_a48965838e553264b3d4fdafa5e5e76e3}{callsite\_expr}}\ \doxymbox{\hyperlink{classana_1_1callsite__expr_a67780ca76a159ea2d228b58a50c5719f}{from\_return\_value}}\ ()}
+\DoxyCodeLine{00369\ \ \ \{}
+\DoxyCodeLine{00370\ \ \ \ \ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{classana_1_1callsite__expr_a48965838e553264b3d4fdafa5e5e76e3}{callsite\_expr}}\ (0);}
+\DoxyCodeLine{00371\ \ \ \}}
+\DoxyCodeLine{00372\ }
+\DoxyCodeLine{00373\ \ \ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{classana_1_1callsite__expr_a92bf186cc6519a892944511941f80442}{param\_p}}\ ()\textcolor{keyword}{\ const}}
+\DoxyCodeLine{00374\ \textcolor{keyword}{\ \ }\{}
+\DoxyCodeLine{00375\ \ \ \ \ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{classana_1_1callsite__expr_a59a4e00f82269faff2e7635026148b14}{m\_val}}\ >\ 0;}
+\DoxyCodeLine{00376\ \ \ \}}
+\DoxyCodeLine{00377\ }
+\DoxyCodeLine{00378\ \ \ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{classana_1_1callsite__expr_a7db8ea87f5bba6f9c5854936af149d63}{return\_value\_p}}\ ()\textcolor{keyword}{\ const}}
+\DoxyCodeLine{00379\ \textcolor{keyword}{\ \ }\{}
+\DoxyCodeLine{00380\ \ \ \ \ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{classana_1_1callsite__expr_a59a4e00f82269faff2e7635026148b14}{m\_val}}\ ==\ 0;}
+\DoxyCodeLine{00381\ \ \ \}}
+\DoxyCodeLine{00382\ }
+\DoxyCodeLine{00383\ \ \textcolor{keyword}{private}:}
+\DoxyCodeLine{00384\ \ \ \doxymbox{\hyperlink{classana_1_1callsite__expr_a7de0afe249b5e3f0dc892f0e0349c043}{callsite\_expr}}\ (\textcolor{keywordtype}{int}\ val)\ :\ \doxymbox{\hyperlink{classana_1_1callsite__expr_a59a4e00f82269faff2e7635026148b14}{m\_val}}\ (val)\ \{\}}
+\DoxyCodeLine{00385\ }
+\DoxyCodeLine{00386\ \ \ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{classana_1_1callsite__expr_a59a4e00f82269faff2e7635026148b14}{m\_val}};\ \textcolor{comment}{/*\ 1-\/based\ parm,\ 0\ for\ return\ value,\ or\ -\/1\ for\ "{}unknown"{}.\ \ */}}
+\DoxyCodeLine{00387\ \};}
+\DoxyCodeLine{00388\ }
+\DoxyCodeLine{00389\ \textcolor{comment}{/*\ A\ subclass\ of\ superedge\ with\ an\ associated\ callgraph\ edge\ (either\ a}}
+\DoxyCodeLine{00390\ \textcolor{comment}{\ \ \ call\ or\ a\ return).\ \ */}}
+\DoxyCodeLine{00391\ }
+\DoxyCodeLine{00392\ \textcolor{keyword}{class\ }\doxymbox{\hyperlink{classana_1_1callgraph__superedge_a65fcbd39e9b74f9d2352f4735d981305}{callgraph\_superedge}}\ :\ \textcolor{keyword}{public}\ \doxymbox{\hyperlink{classana_1_1superedge_a4aaa5145e6c0702519e458134f815558}{superedge}}}
+\DoxyCodeLine{00393\ \{}
+\DoxyCodeLine{00394\ \ \textcolor{keyword}{public}:}
+\DoxyCodeLine{00395\ \ \ \doxymbox{\hyperlink{classana_1_1callgraph__superedge_a65fcbd39e9b74f9d2352f4735d981305}{callgraph\_superedge}}\ (\doxymbox{\hyperlink{classana_1_1supernode}{supernode}}\ *src,\ \doxymbox{\hyperlink{classana_1_1supernode}{supernode}}\ *dst,\ \textcolor{keyword}{enum}\ \doxymbox{\hyperlink{namespaceana_afcb9035fc2090ae0603cae240b3a00a1}{edge\_kind}}\ kind,}
+\DoxyCodeLine{00396\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ cgraph\_edge\ *cedge)}
+\DoxyCodeLine{00397\ \ \ :\ \doxymbox{\hyperlink{classana_1_1superedge_a4aaa5145e6c0702519e458134f815558}{superedge}}\ (src,\ dst,\ kind),}
+\DoxyCodeLine{00398\ \ \ \ \ \doxymbox{\hyperlink{classana_1_1callgraph__superedge_a80b4ed1c736002b79f785df201a4e15a}{m\_cedge}}\ (cedge)}
+\DoxyCodeLine{00399\ \ \ \{\}}
+\DoxyCodeLine{00400\ }
+\DoxyCodeLine{00401\ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classana_1_1callgraph__superedge_ae19b6eb461ff088b8afaa081391efdab}{dump\_label\_to\_pp}}\ (\doxymbox{\hyperlink{classpretty__printer}{pretty\_printer}}\ *pp,\ \textcolor{keywordtype}{bool}\ user\_facing)\ \textcolor{keyword}{const}}
+\DoxyCodeLine{00402\ \ \ \ \ \textcolor{keyword}{final}\ \textcolor{keyword}{override};}
+\DoxyCodeLine{00403\ }
+\DoxyCodeLine{00404\ \ \ \doxymbox{\hyperlink{classana_1_1callgraph__superedge_a65fcbd39e9b74f9d2352f4735d981305}{callgraph\_superedge}}\ *\doxymbox{\hyperlink{classana_1_1callgraph__superedge_aa1c7be5d2411c07922d809fd6ded39c4}{dyn\_cast\_callgraph\_superedge}}\ ()\ \doxymbox{\hyperlink{output_8h_ab52ea22aac29575278d6a9e723d1d234}{final}}\textcolor{keyword}{\ override}}
+\DoxyCodeLine{00405\ \textcolor{keyword}{\ \ }\{}
+\DoxyCodeLine{00406\ \ \ \ \ \textcolor{keywordflow}{return}\ \textcolor{keyword}{this};}
+\DoxyCodeLine{00407\ \ \ \}}
+\DoxyCodeLine{00408\ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classana_1_1callgraph__superedge_a65fcbd39e9b74f9d2352f4735d981305}{callgraph\_superedge}}\ *\doxymbox{\hyperlink{classana_1_1callgraph__superedge_aec8382ace8a29200a7010163da175205}{dyn\_cast\_callgraph\_superedge}}\ ()\ const}
+\DoxyCodeLine{00409\ \ \ \ \ \doxymbox{\hyperlink{output_8h_ab52ea22aac29575278d6a9e723d1d234}{final}}\textcolor{keyword}{\ override}}
+\DoxyCodeLine{00410\ \textcolor{keyword}{\ \ }\{}
+\DoxyCodeLine{00411\ \ \ \ \ \textcolor{keywordflow}{return}\ \textcolor{keyword}{this};}
+\DoxyCodeLine{00412\ \ \ \}}
+\DoxyCodeLine{00413\ }
+\DoxyCodeLine{00414\ \ \ function\ *\doxymbox{\hyperlink{classana_1_1callgraph__superedge_ac7b4b453697e35df8a83c9aff664933c}{get\_callee\_function}}\ ()\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00415\ \ \ function\ *\doxymbox{\hyperlink{classana_1_1callgraph__superedge_a502488f5ae62b3dcc2c2ff2aafaa4b90}{get\_caller\_function}}\ ()\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00416\ \ \ tree\ \doxymbox{\hyperlink{classana_1_1callgraph__superedge_a53ff1e0c7ca6154dc4767d0197997c55}{get\_callee\_decl}}\ ()\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00417\ \ \ tree\ \doxymbox{\hyperlink{classana_1_1callgraph__superedge_ad03f2c42832fcc3945a5e415788f19d7}{get\_caller\_decl}}\ ()\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00418\ \ \ gcall\ *\doxymbox{\hyperlink{classana_1_1callgraph__superedge_a7e3af83cf0f2d3c8b5c21b6a66933c69}{get\_call\_stmt}}\ ()\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00419\ \ \ tree\ \doxymbox{\hyperlink{classana_1_1callgraph__superedge_a44ae6321b01dc9ac9817a4d865f795db}{get\_arg\_for\_parm}}\ (tree\ parm,\ \doxymbox{\hyperlink{classana_1_1callsite__expr}{callsite\_expr}}\ *out)\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00420\ \ \ tree\ \doxymbox{\hyperlink{classana_1_1callgraph__superedge_ac171e0df54c3f2033152fb55978c6228}{get\_parm\_for\_arg}}\ (tree\ arg,\ \doxymbox{\hyperlink{classana_1_1callsite__expr}{callsite\_expr}}\ *out)\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00421\ \ \ tree\ \doxymbox{\hyperlink{classana_1_1callgraph__superedge_aabfb14dbcf50150d7b384ddaf5a3291b}{map\_expr\_from\_caller\_to\_callee}}\ (tree\ caller\_expr,}
+\DoxyCodeLine{00422\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{classana_1_1callsite__expr}{callsite\_expr}}\ *out)\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00423\ \ \ tree\ \doxymbox{\hyperlink{classana_1_1callgraph__superedge_a1fc03b17fe19aa413a8653b04ce3bb18}{map\_expr\_from\_callee\_to\_caller}}\ (tree\ callee\_expr,}
+\DoxyCodeLine{00424\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{classana_1_1callsite__expr}{callsite\_expr}}\ *out)\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00425\ }
+\DoxyCodeLine{00426\ \ \ cgraph\_edge\ *\textcolor{keyword}{const}\ \doxymbox{\hyperlink{classana_1_1callgraph__superedge_a80b4ed1c736002b79f785df201a4e15a}{m\_cedge}};}
+\DoxyCodeLine{00427\ \};}
+\DoxyCodeLine{00428\ }
+\DoxyCodeLine{00429\ \}\ \textcolor{comment}{//\ namespace\ ana}}
+\DoxyCodeLine{00430\ }
+\DoxyCodeLine{00431\ \textcolor{keyword}{template}\ <>}
+\DoxyCodeLine{00432\ \textcolor{keyword}{template}\ <>}
+\DoxyCodeLine{00433\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{bool}}
+\DoxyCodeLine{00434\ \doxymbox{\hyperlink{structis__a__helper_ab2c6d014fcddabaca757e6ccfb696a1d}{is\_a\_helper\ <const\ callgraph\_superedge\ *>::test}}\ (\textcolor{keyword}{const}\ \doxymbox{\hyperlink{classana_1_1superedge}{superedge}}\ *sedge)}
+\DoxyCodeLine{00435\ \{}
+\DoxyCodeLine{00436\ \ \ \textcolor{keywordflow}{return}\ (sedge-\/>get\_kind\ ()\ ==\ \doxymbox{\hyperlink{namespaceana_afcb9035fc2090ae0603cae240b3a00a1aefb2aa9d75b02511e45c5b5ead152c23}{SUPEREDGE\_INTRAPROCEDURAL\_CALL}}}
+\DoxyCodeLine{00437\ \ \ \ \ \ \ ||\ sedge-\/>get\_kind\ ()\ ==\ \doxymbox{\hyperlink{namespaceana_afcb9035fc2090ae0603cae240b3a00a1a91d62d4f61c585f90f339c1caf884145}{SUPEREDGE\_CALL}}}
+\DoxyCodeLine{00438\ \ \ \ \ \ \ ||\ sedge-\/>get\_kind\ ()\ ==\ \doxymbox{\hyperlink{namespaceana_afcb9035fc2090ae0603cae240b3a00a1a7f9d5d3df331dd856bf105b5b4af1361}{SUPEREDGE\_RETURN}});}
+\DoxyCodeLine{00439\ \}}
+\DoxyCodeLine{00440\ }
+\DoxyCodeLine{00441\ \textcolor{keyword}{namespace\ }\doxymbox{\hyperlink{namespaceana}{ana}}\ \{}
+\DoxyCodeLine{00442\ }
+\DoxyCodeLine{00443\ \textcolor{comment}{/*\ A\ subclass\ of\ superedge\ representing\ an\ interprocedural\ call.\ \ */}}
+\DoxyCodeLine{00444\ }
+\DoxyCodeLine{00445\ \textcolor{keyword}{class\ }\doxymbox{\hyperlink{classana_1_1call__superedge_a333cef0b934e01397023801610e54d4c}{call\_superedge}}\ :\ \textcolor{keyword}{public}\ \doxymbox{\hyperlink{classana_1_1callgraph__superedge_a65fcbd39e9b74f9d2352f4735d981305}{callgraph\_superedge}}}
+\DoxyCodeLine{00446\ \{}
+\DoxyCodeLine{00447\ \ \textcolor{keyword}{public}:}
+\DoxyCodeLine{00448\ \ \ \doxymbox{\hyperlink{classana_1_1call__superedge_a333cef0b934e01397023801610e54d4c}{call\_superedge}}\ (\doxymbox{\hyperlink{classana_1_1supernode}{supernode}}\ *src,\ \doxymbox{\hyperlink{classana_1_1supernode}{supernode}}\ *dst,\ cgraph\_edge\ *cedge)}
+\DoxyCodeLine{00449\ \ \ :\ \doxymbox{\hyperlink{classana_1_1callgraph__superedge_a65fcbd39e9b74f9d2352f4735d981305}{callgraph\_superedge}}\ (src,\ dst,\ \doxymbox{\hyperlink{namespaceana_afcb9035fc2090ae0603cae240b3a00a1a91d62d4f61c585f90f339c1caf884145}{SUPEREDGE\_CALL}},\ cedge)}
+\DoxyCodeLine{00450\ \ \ \{\}}
+\DoxyCodeLine{00451\ }
+\DoxyCodeLine{00452\ \ \ \doxymbox{\hyperlink{classana_1_1call__superedge_a333cef0b934e01397023801610e54d4c}{call\_superedge}}\ *\doxymbox{\hyperlink{classana_1_1call__superedge_a143588a585460f404daaad505eb21828}{dyn\_cast\_call\_superedge}}\ ()\ \doxymbox{\hyperlink{output_8h_ab52ea22aac29575278d6a9e723d1d234}{final}}\textcolor{keyword}{\ override}}
+\DoxyCodeLine{00453\ \textcolor{keyword}{\ \ }\{}
+\DoxyCodeLine{00454\ \ \ \ \ \textcolor{keywordflow}{return}\ \textcolor{keyword}{this};}
+\DoxyCodeLine{00455\ \ \ \}}
+\DoxyCodeLine{00456\ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classana_1_1call__superedge_a333cef0b934e01397023801610e54d4c}{call\_superedge}}\ *\doxymbox{\hyperlink{classana_1_1call__superedge_a691c8bd55ec3600053d0c925bb446081}{dyn\_cast\_call\_superedge}}\ ()\ const\ \doxymbox{\hyperlink{output_8h_ab52ea22aac29575278d6a9e723d1d234}{final}}\textcolor{keyword}{\ override}}
+\DoxyCodeLine{00457\ \textcolor{keyword}{\ \ }\{}
+\DoxyCodeLine{00458\ \ \ \ \ \textcolor{keywordflow}{return}\ \textcolor{keyword}{this};}
+\DoxyCodeLine{00459\ \ \ \}}
+\DoxyCodeLine{00460\ }
+\DoxyCodeLine{00461\ \ \ \doxymbox{\hyperlink{classana_1_1return__superedge}{return\_superedge}}\ *\doxymbox{\hyperlink{classana_1_1call__superedge_ad27f29fc4e5845a80ca83c7db5089329}{get\_edge\_for\_return}}\ (\textcolor{keyword}{const}\ \doxymbox{\hyperlink{classana_1_1supergraph}{supergraph}}\ \&sg)\textcolor{keyword}{\ const}}
+\DoxyCodeLine{00462\ \textcolor{keyword}{\ \ }\{}
+\DoxyCodeLine{00463\ \ \ \ \ \textcolor{keywordflow}{return}\ sg.\doxymbox{\hyperlink{classana_1_1supergraph_af379069bd660f1fc8e64627f0ea5d56e}{get\_edge\_for\_return}}\ (\doxymbox{\hyperlink{classana_1_1callgraph__superedge_a80b4ed1c736002b79f785df201a4e15a}{m\_cedge}});}
+\DoxyCodeLine{00464\ \ \ \}}
+\DoxyCodeLine{00465\ \};}
+\DoxyCodeLine{00466\ }
+\DoxyCodeLine{00467\ \}\ \textcolor{comment}{//\ namespace\ ana}}
+\DoxyCodeLine{00468\ }
+\DoxyCodeLine{00469\ \textcolor{keyword}{template}\ <>}
+\DoxyCodeLine{00470\ \textcolor{keyword}{template}\ <>}
+\DoxyCodeLine{00471\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{bool}}
+\DoxyCodeLine{00472\ \doxymbox{\hyperlink{structis__a__helper_ab2c6d014fcddabaca757e6ccfb696a1d}{is\_a\_helper\ <const\ call\_superedge\ *>::test}}\ (\textcolor{keyword}{const}\ \doxymbox{\hyperlink{classana_1_1superedge}{superedge}}\ *sedge)}
+\DoxyCodeLine{00473\ \{}
+\DoxyCodeLine{00474\ \ \ \textcolor{keywordflow}{return}\ sedge-\/>get\_kind\ ()\ ==\ \doxymbox{\hyperlink{namespaceana_afcb9035fc2090ae0603cae240b3a00a1a91d62d4f61c585f90f339c1caf884145}{SUPEREDGE\_CALL}};}
+\DoxyCodeLine{00475\ \}}
+\DoxyCodeLine{00476\ }
+\DoxyCodeLine{00477\ \textcolor{keyword}{namespace\ }\doxymbox{\hyperlink{namespaceana}{ana}}\ \{}
+\DoxyCodeLine{00478\ }
+\DoxyCodeLine{00479\ \textcolor{comment}{/*\ A\ subclass\ of\ superedge\ represesnting\ an\ interprocedural\ return.\ \ */}}
+\DoxyCodeLine{00480\ }
+\DoxyCodeLine{00481\ \textcolor{keyword}{class\ }\doxymbox{\hyperlink{classana_1_1return__superedge_a9eeb31f9e39b0b6f065bdacc30612eeb}{return\_superedge}}\ :\ \textcolor{keyword}{public}\ \doxymbox{\hyperlink{classana_1_1callgraph__superedge_a65fcbd39e9b74f9d2352f4735d981305}{callgraph\_superedge}}}
+\DoxyCodeLine{00482\ \{}
+\DoxyCodeLine{00483\ \ \textcolor{keyword}{public}:}
+\DoxyCodeLine{00484\ \ \ \doxymbox{\hyperlink{classana_1_1return__superedge_a9eeb31f9e39b0b6f065bdacc30612eeb}{return\_superedge}}\ (\doxymbox{\hyperlink{classana_1_1supernode}{supernode}}\ *src,\ \doxymbox{\hyperlink{classana_1_1supernode}{supernode}}\ *dst,\ cgraph\_edge\ *cedge)}
+\DoxyCodeLine{00485\ \ \ :\ \doxymbox{\hyperlink{classana_1_1callgraph__superedge_a65fcbd39e9b74f9d2352f4735d981305}{callgraph\_superedge}}\ (src,\ dst,\ \doxymbox{\hyperlink{namespaceana_afcb9035fc2090ae0603cae240b3a00a1a7f9d5d3df331dd856bf105b5b4af1361}{SUPEREDGE\_RETURN}},\ cedge)}
+\DoxyCodeLine{00486\ \ \ \{\}}
+\DoxyCodeLine{00487\ }
+\DoxyCodeLine{00488\ \ \ \doxymbox{\hyperlink{classana_1_1return__superedge_a9eeb31f9e39b0b6f065bdacc30612eeb}{return\_superedge}}\ *\doxymbox{\hyperlink{classana_1_1return__superedge_a6a5e77e009d1c36efc1c56683557db93}{dyn\_cast\_return\_superedge}}\ ()\ \doxymbox{\hyperlink{output_8h_ab52ea22aac29575278d6a9e723d1d234}{final}}\textcolor{keyword}{\ override\ }\{\ \textcolor{keywordflow}{return}\ \textcolor{keyword}{this};\ \}}
+\DoxyCodeLine{00489\ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classana_1_1return__superedge_a9eeb31f9e39b0b6f065bdacc30612eeb}{return\_superedge}}\ *\doxymbox{\hyperlink{classana_1_1return__superedge_af030d75a7bf78936034ef4969439455f}{dyn\_cast\_return\_superedge}}\ ()\ const\ \doxymbox{\hyperlink{output_8h_ab52ea22aac29575278d6a9e723d1d234}{final}}\textcolor{keyword}{\ override}}
+\DoxyCodeLine{00490\ \textcolor{keyword}{\ \ }\{}
+\DoxyCodeLine{00491\ \ \ \ \ \textcolor{keywordflow}{return}\ \textcolor{keyword}{this};}
+\DoxyCodeLine{00492\ \ \ \}}
+\DoxyCodeLine{00493\ }
+\DoxyCodeLine{00494\ \ \ \doxymbox{\hyperlink{classana_1_1call__superedge}{call\_superedge}}\ *\doxymbox{\hyperlink{classana_1_1return__superedge_a1d3614adafdb2e2f9444b60868c16102}{get\_edge\_for\_call}}\ (\textcolor{keyword}{const}\ \doxymbox{\hyperlink{classana_1_1supergraph}{supergraph}}\ \&sg)\textcolor{keyword}{\ const}}
+\DoxyCodeLine{00495\ \textcolor{keyword}{\ \ }\{}
+\DoxyCodeLine{00496\ \ \ \ \ \textcolor{keywordflow}{return}\ sg.\doxymbox{\hyperlink{classana_1_1supergraph_adaabfe41941db1257da0a077282176c2}{get\_edge\_for\_call}}\ (\doxymbox{\hyperlink{classana_1_1callgraph__superedge_a80b4ed1c736002b79f785df201a4e15a}{m\_cedge}});}
+\DoxyCodeLine{00497\ \ \ \}}
+\DoxyCodeLine{00498\ \};}
+\DoxyCodeLine{00499\ }
+\DoxyCodeLine{00500\ \}\ \textcolor{comment}{//\ namespace\ ana}}
+\DoxyCodeLine{00501\ }
+\DoxyCodeLine{00502\ \textcolor{keyword}{template}\ <>}
+\DoxyCodeLine{00503\ \textcolor{keyword}{template}\ <>}
+\DoxyCodeLine{00504\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{bool}}
+\DoxyCodeLine{00505\ \doxymbox{\hyperlink{structis__a__helper_ab2c6d014fcddabaca757e6ccfb696a1d}{is\_a\_helper\ <const\ return\_superedge\ *>::test}}\ (\textcolor{keyword}{const}\ \doxymbox{\hyperlink{classana_1_1superedge}{superedge}}\ *sedge)}
+\DoxyCodeLine{00506\ \{}
+\DoxyCodeLine{00507\ \ \ \textcolor{keywordflow}{return}\ sedge-\/>get\_kind\ ()\ ==\ \doxymbox{\hyperlink{namespaceana_afcb9035fc2090ae0603cae240b3a00a1a7f9d5d3df331dd856bf105b5b4af1361}{SUPEREDGE\_RETURN}};}
+\DoxyCodeLine{00508\ \}}
+\DoxyCodeLine{00509\ }
+\DoxyCodeLine{00510\ \textcolor{keyword}{namespace\ }\doxymbox{\hyperlink{namespaceana}{ana}}\ \{}
+\DoxyCodeLine{00511\ }
+\DoxyCodeLine{00512\ \textcolor{comment}{/*\ A\ subclass\ of\ superedge\ that\ corresponds\ to\ a\ CFG\ edge.\ \ */}}
+\DoxyCodeLine{00513\ }
+\DoxyCodeLine{00514\ \textcolor{keyword}{class\ }\doxymbox{\hyperlink{classana_1_1cfg__superedge_a6f3b9c63415370c1416b8206d3265bde}{cfg\_superedge}}\ :\ \textcolor{keyword}{public}\ \doxymbox{\hyperlink{classana_1_1superedge_a4aaa5145e6c0702519e458134f815558}{superedge}}}
+\DoxyCodeLine{00515\ \{}
+\DoxyCodeLine{00516\ \ \textcolor{keyword}{public}:}
+\DoxyCodeLine{00517\ \ \ \doxymbox{\hyperlink{classana_1_1cfg__superedge_a6f3b9c63415370c1416b8206d3265bde}{cfg\_superedge}}\ (\doxymbox{\hyperlink{classana_1_1supernode}{supernode}}\ *src,\ \doxymbox{\hyperlink{classana_1_1supernode}{supernode}}\ *dst,\ \doxymbox{\hyperlink{coretypes_8h_a44ae11f0c90646aa6208ad4bf486490b}{::edge}}\ e)}
+\DoxyCodeLine{00518\ \ \ :\ \doxymbox{\hyperlink{classana_1_1superedge_a4aaa5145e6c0702519e458134f815558}{superedge}}\ (src,\ dst,\ \doxymbox{\hyperlink{namespaceana_afcb9035fc2090ae0603cae240b3a00a1aca71c61640c6716494adb1f9202da944}{SUPEREDGE\_CFG\_EDGE}}),}
+\DoxyCodeLine{00519\ \ \ \ \ \doxymbox{\hyperlink{classana_1_1cfg__superedge_a062bb850787f511ead86532555f7490f}{m\_cfg\_edge}}\ (e)}
+\DoxyCodeLine{00520\ \ \ \{\}}
+\DoxyCodeLine{00521\ }
+\DoxyCodeLine{00522\ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classana_1_1cfg__superedge_a2bec967394b1626de0fb253c78d15366}{dump\_label\_to\_pp}}\ (\doxymbox{\hyperlink{classpretty__printer}{pretty\_printer}}\ *pp,\ \textcolor{keywordtype}{bool}\ user\_facing)\ \textcolor{keyword}{const\ override};}
+\DoxyCodeLine{00523\ \ \ \doxymbox{\hyperlink{classana_1_1cfg__superedge_a6f3b9c63415370c1416b8206d3265bde}{cfg\_superedge}}\ *\doxymbox{\hyperlink{classana_1_1cfg__superedge_a452111683e95bec4b1bcf472d1f3d86b}{dyn\_cast\_cfg\_superedge}}\ ()\ \doxymbox{\hyperlink{output_8h_ab52ea22aac29575278d6a9e723d1d234}{final}}\textcolor{keyword}{\ override\ }\{\ \textcolor{keywordflow}{return}\ \textcolor{keyword}{this};\ \}}
+\DoxyCodeLine{00524\ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classana_1_1cfg__superedge_a6f3b9c63415370c1416b8206d3265bde}{cfg\_superedge}}\ *\doxymbox{\hyperlink{classana_1_1cfg__superedge_a72a4b78475ebdd4e5bca0c6e44d06722}{dyn\_cast\_cfg\_superedge}}\ ()\ const\ \doxymbox{\hyperlink{output_8h_ab52ea22aac29575278d6a9e723d1d234}{final}}\textcolor{keyword}{\ override\ }\{\ \textcolor{keywordflow}{return}\ \textcolor{keyword}{this};\ \}}
+\DoxyCodeLine{00525\ }
+\DoxyCodeLine{00526\ \ \ \doxymbox{\hyperlink{coretypes_8h_a44ae11f0c90646aa6208ad4bf486490b}{::edge}}\ \doxymbox{\hyperlink{classana_1_1cfg__superedge_af3f1310b328430c0ae482a05eaed5efe}{get\_cfg\_edge}}\ ()\textcolor{keyword}{\ const\ }\{\ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{classana_1_1cfg__superedge_a062bb850787f511ead86532555f7490f}{m\_cfg\_edge}};\ \}}
+\DoxyCodeLine{00527\ \ \ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{classana_1_1cfg__superedge_a5285461f0d6c5fd8e27a1ab9bd14011e}{get\_flags}}\ ()\textcolor{keyword}{\ const\ }\{\ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{classana_1_1cfg__superedge_a062bb850787f511ead86532555f7490f}{m\_cfg\_edge}}-\/>flags;\ \}}
+\DoxyCodeLine{00528\ \ \ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{classana_1_1cfg__superedge_a06f8e100c3e52760b340a03a59aa37ed}{true\_value\_p}}\ ()\textcolor{keyword}{\ const\ }\{\ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{classana_1_1cfg__superedge_a5285461f0d6c5fd8e27a1ab9bd14011e}{get\_flags}}\ ()\ \&\ EDGE\_TRUE\_VALUE;\ \}}
+\DoxyCodeLine{00529\ \ \ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{classana_1_1cfg__superedge_affa9e0be932800504b2fab141ff66a1c}{false\_value\_p}}\ ()\textcolor{keyword}{\ const\ }\{\ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{classana_1_1cfg__superedge_a5285461f0d6c5fd8e27a1ab9bd14011e}{get\_flags}}\ ()\ \&\ EDGE\_FALSE\_VALUE;\ \}}
+\DoxyCodeLine{00530\ \ \ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{classana_1_1cfg__superedge_a64b65088492831460534ad4d639484a8}{back\_edge\_p}}\ ()\textcolor{keyword}{\ const\ }\{\ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{classana_1_1cfg__superedge_a5285461f0d6c5fd8e27a1ab9bd14011e}{get\_flags}}\ ()\ \&\ EDGE\_DFS\_BACK;\ \}}
+\DoxyCodeLine{00531\ }
+\DoxyCodeLine{00532\ \ \ \textcolor{keywordtype}{size\_t}\ \doxymbox{\hyperlink{classana_1_1cfg__superedge_a42b68b50f7b881f16a76484282af312b}{get\_phi\_arg\_idx}}\ ()\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00533\ \ \ tree\ \doxymbox{\hyperlink{classana_1_1cfg__superedge_ae9944b3a62a9f17ef9d3be32d7a230fa}{get\_phi\_arg}}\ (\textcolor{keyword}{const}\ gphi\ *phi)\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00534\ }
+\DoxyCodeLine{00535\ \ \ \doxymbox{\hyperlink{line-map_8h_aedf25620511d64e43327f1a229906a96}{location\_t}}\ \doxymbox{\hyperlink{classana_1_1cfg__superedge_a08ffe9235f62cac09a84dee3d892f1f0}{get\_goto\_locus}}\ ()\textcolor{keyword}{\ const\ }\{\ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{classana_1_1cfg__superedge_a062bb850787f511ead86532555f7490f}{m\_cfg\_edge}}-\/>goto\_locus;\ \}}
+\DoxyCodeLine{00536\ }
+\DoxyCodeLine{00537\ \ \textcolor{keyword}{private}:}
+\DoxyCodeLine{00538\ \ \ const\ ::edge\ \doxymbox{\hyperlink{classana_1_1cfg__superedge_a062bb850787f511ead86532555f7490f}{m\_cfg\_edge}};}
+\DoxyCodeLine{00539\ \};}
+\DoxyCodeLine{00540\ }
+\DoxyCodeLine{00541\ \}\ \textcolor{comment}{//\ namespace\ ana}}
+\DoxyCodeLine{00542\ }
+\DoxyCodeLine{00543\ \textcolor{keyword}{template}\ <>}
+\DoxyCodeLine{00544\ \textcolor{keyword}{template}\ <>}
+\DoxyCodeLine{00545\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{bool}}
+\DoxyCodeLine{00546\ \doxymbox{\hyperlink{structis__a__helper_ab2c6d014fcddabaca757e6ccfb696a1d}{is\_a\_helper\ <const\ cfg\_superedge\ *>::test}}\ (\textcolor{keyword}{const}\ \doxymbox{\hyperlink{classana_1_1superedge}{superedge}}\ *sedge)}
+\DoxyCodeLine{00547\ \{}
+\DoxyCodeLine{00548\ \ \ \textcolor{keywordflow}{return}\ sedge-\/>get\_kind\ ()\ ==\ \doxymbox{\hyperlink{namespaceana_afcb9035fc2090ae0603cae240b3a00a1aca71c61640c6716494adb1f9202da944}{SUPEREDGE\_CFG\_EDGE}};}
+\DoxyCodeLine{00549\ \}}
+\DoxyCodeLine{00550\ }
+\DoxyCodeLine{00551\ \textcolor{keyword}{namespace\ }\doxymbox{\hyperlink{namespaceana}{ana}}\ \{}
+\DoxyCodeLine{00552\ }
+\DoxyCodeLine{00553\ \textcolor{comment}{/*\ A\ subclass\ for\ edges\ from\ switch\ statements,\ retaining\ enough}}
+\DoxyCodeLine{00554\ \textcolor{comment}{\ \ \ information\ to\ identify\ the\ pertinent\ cases,\ and\ for\ adding\ labels}}
+\DoxyCodeLine{00555\ \textcolor{comment}{\ \ \ when\ rendering\ via\ graphviz.\ \ */}}
+\DoxyCodeLine{00556\ }
+\DoxyCodeLine{00557\ \textcolor{keyword}{class\ }\doxymbox{\hyperlink{classana_1_1switch__cfg__superedge_a647c4837c9ebeb9bf48431cd4e097191}{switch\_cfg\_superedge}}\ :\ \textcolor{keyword}{public}\ \doxymbox{\hyperlink{classana_1_1cfg__superedge_a6f3b9c63415370c1416b8206d3265bde}{cfg\_superedge}}\ \{}
+\DoxyCodeLine{00558\ \ \textcolor{keyword}{public}:}
+\DoxyCodeLine{00559\ \ \ \doxymbox{\hyperlink{classana_1_1switch__cfg__superedge_a647c4837c9ebeb9bf48431cd4e097191}{switch\_cfg\_superedge}}\ (\doxymbox{\hyperlink{classana_1_1supernode}{supernode}}\ *src,\ \doxymbox{\hyperlink{classana_1_1supernode}{supernode}}\ *dst,\ \doxymbox{\hyperlink{coretypes_8h_a44ae11f0c90646aa6208ad4bf486490b}{::edge}}\ e);}
+\DoxyCodeLine{00560\ }
+\DoxyCodeLine{00561\ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classana_1_1switch__cfg__superedge_a647c4837c9ebeb9bf48431cd4e097191}{switch\_cfg\_superedge}}\ *\doxymbox{\hyperlink{classana_1_1switch__cfg__superedge_a3c9604e08299eccc5de799749988e0db}{dyn\_cast\_switch\_cfg\_superedge}}\ ()\ const}
+\DoxyCodeLine{00562\ \ \ \ \ \doxymbox{\hyperlink{output_8h_ab52ea22aac29575278d6a9e723d1d234}{final}}\textcolor{keyword}{\ override}}
+\DoxyCodeLine{00563\ \textcolor{keyword}{\ \ }\{}
+\DoxyCodeLine{00564\ \ \ \ \ \textcolor{keywordflow}{return}\ \textcolor{keyword}{this};}
+\DoxyCodeLine{00565\ \ \ \}}
+\DoxyCodeLine{00566\ }
+\DoxyCodeLine{00567\ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classana_1_1switch__cfg__superedge_a67b5bb319326eb21d303669008a1a4fe}{dump\_label\_to\_pp}}\ (\doxymbox{\hyperlink{classpretty__printer}{pretty\_printer}}\ *pp,\ \textcolor{keywordtype}{bool}\ user\_facing)\ \textcolor{keyword}{const}}
+\DoxyCodeLine{00568\ \ \ \ \ \textcolor{keyword}{final}\ \textcolor{keyword}{override};}
+\DoxyCodeLine{00569\ }
+\DoxyCodeLine{00570\ \ \ gswitch\ *\doxymbox{\hyperlink{classana_1_1switch__cfg__superedge_a8071852c9fad1434eb6585d0ed7b985a}{get\_switch\_stmt}}\ ()\textcolor{keyword}{\ const}}
+\DoxyCodeLine{00571\ \textcolor{keyword}{\ \ }\{}
+\DoxyCodeLine{00572\ \ \ \ \ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{is-a_8h_aca295849653a5caadba0a81a521dda2e}{as\_a\ <gswitch\ *>}}\ (\doxymbox{\hyperlink{classdedge_a4d920c5283744bc70f77a6c3a1984252}{m\_src}}-\/>get\_last\_stmt\ ());}
+\DoxyCodeLine{00573\ \ \ \}}
+\DoxyCodeLine{00574\ }
+\DoxyCodeLine{00575\ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{structvec}{vec<tree>}}\ \&\doxymbox{\hyperlink{classana_1_1switch__cfg__superedge_a6072704f5e66694ce32cd3fef2a5b2d8}{get\_case\_labels}}\ ()\textcolor{keyword}{\ const\ }\{\ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{classana_1_1switch__cfg__superedge_aac60ed8febca36b5a6739887fab4e8e1}{m\_case\_labels}};\ \}}
+\DoxyCodeLine{00576\ }
+\DoxyCodeLine{00577\ \ \ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{classana_1_1switch__cfg__superedge_a32e610972ed742bfa3cf6157a3c85a91}{implicitly\_created\_default\_p}}\ ()\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00578\ }
+\DoxyCodeLine{00579\ \textcolor{keyword}{private}:}
+\DoxyCodeLine{00580\ \ \ \doxymbox{\hyperlink{classauto__vec}{auto\_vec<tree>}}\ \doxymbox{\hyperlink{classana_1_1switch__cfg__superedge_aac60ed8febca36b5a6739887fab4e8e1}{m\_case\_labels}};}
+\DoxyCodeLine{00581\ \};}
+\DoxyCodeLine{00582\ }
+\DoxyCodeLine{00583\ \}\ \textcolor{comment}{//\ namespace\ ana}}
+\DoxyCodeLine{00584\ }
+\DoxyCodeLine{00585\ \textcolor{keyword}{template}\ <>}
+\DoxyCodeLine{00586\ \textcolor{keyword}{template}\ <>}
+\DoxyCodeLine{00587\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{bool}}
+\DoxyCodeLine{00588\ \doxymbox{\hyperlink{structis__a__helper_ab2c6d014fcddabaca757e6ccfb696a1d}{is\_a\_helper\ <const\ switch\_cfg\_superedge\ *>::test}}\ (\textcolor{keyword}{const}\ \doxymbox{\hyperlink{classana_1_1superedge}{superedge}}\ *sedge)}
+\DoxyCodeLine{00589\ \{}
+\DoxyCodeLine{00590\ \ \ \textcolor{keywordflow}{return}\ sedge-\/>dyn\_cast\_switch\_cfg\_superedge\ ()\ !=\ \doxymbox{\hyperlink{stddef_8h_a070d2ce7b6bb7e5c05602aa8c308d0c4}{NULL}};}
+\DoxyCodeLine{00591\ \}}
+\DoxyCodeLine{00592\ }
+\DoxyCodeLine{00593\ \textcolor{keyword}{namespace\ }\doxymbox{\hyperlink{namespaceana}{ana}}\ \{}
+\DoxyCodeLine{00594\ }
+\DoxyCodeLine{00595\ \textcolor{comment}{/*\ Base\ class\ for\ adding\ additional\ content\ to\ the\ .dot\ output}}
+\DoxyCodeLine{00596\ \textcolor{comment}{\ \ \ for\ a\ supergraph.\ \ */}}
+\DoxyCodeLine{00597\ }
+\DoxyCodeLine{00598\ \textcolor{keyword}{class\ }\doxymbox{\hyperlink{classana_1_1dot__annotator}{dot\_annotator}}}
+\DoxyCodeLine{00599\ \{}
+\DoxyCodeLine{00600\ \ \textcolor{keyword}{public}:}
+\DoxyCodeLine{00601\ \ \ \textcolor{keyword}{virtual}\ \doxymbox{\hyperlink{classana_1_1dot__annotator_ad68a077d8f1a2796b49a26ad4cf93801}{\string~dot\_annotator}}\ ()\ \{\}}
+\DoxyCodeLine{00602\ \ \ \textcolor{keyword}{virtual}\ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{classana_1_1dot__annotator_ad7fc8fc9f72bcda1be687de15a284e82}{add\_node\_annotations}}\ (\doxymbox{\hyperlink{classgraphviz__out}{graphviz\_out}}\ *gv\ \doxymbox{\hyperlink{ansidecl_8h_a635a8d08da53567d5c3b67deb7f98ed3}{ATTRIBUTE\_UNUSED}},}
+\DoxyCodeLine{00603\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classana_1_1supernode}{supernode}}\ \&n\ \doxymbox{\hyperlink{ansidecl_8h_a635a8d08da53567d5c3b67deb7f98ed3}{ATTRIBUTE\_UNUSED}},}
+\DoxyCodeLine{00604\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{bool}\ within\_table\ \doxymbox{\hyperlink{ansidecl_8h_a635a8d08da53567d5c3b67deb7f98ed3}{ATTRIBUTE\_UNUSED}})\textcolor{keyword}{}}
+\DoxyCodeLine{00605\ \textcolor{keyword}{\ \ \ \ const}}
+\DoxyCodeLine{00606\ \textcolor{keyword}{\ \ }\{}
+\DoxyCodeLine{00607\ \ \ \ \ \textcolor{keywordflow}{return}\ \textcolor{keyword}{false};}
+\DoxyCodeLine{00608\ \ \ \}}
+\DoxyCodeLine{00609\ \ \ \textcolor{keyword}{virtual}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classana_1_1dot__annotator_abb05808efa4f94da8d41fcea7a35a152}{add\_stmt\_annotations}}\ (\doxymbox{\hyperlink{classgraphviz__out}{graphviz\_out}}\ *gv\ \doxymbox{\hyperlink{ansidecl_8h_a635a8d08da53567d5c3b67deb7f98ed3}{ATTRIBUTE\_UNUSED}},}
+\DoxyCodeLine{00610\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ gimple\ *stmt\ \doxymbox{\hyperlink{ansidecl_8h_a635a8d08da53567d5c3b67deb7f98ed3}{ATTRIBUTE\_UNUSED}},}
+\DoxyCodeLine{00611\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{bool}\ within\_row\ \doxymbox{\hyperlink{ansidecl_8h_a635a8d08da53567d5c3b67deb7f98ed3}{ATTRIBUTE\_UNUSED}})\textcolor{keyword}{}}
+\DoxyCodeLine{00612\ \textcolor{keyword}{\ \ \ \ const\ }\{\}}
+\DoxyCodeLine{00613\ \ \ \textcolor{keyword}{virtual}\ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{classana_1_1dot__annotator_a80513c9319041425ee16a3d24a3c6be1}{add\_after\_node\_annotations}}\ (\doxymbox{\hyperlink{classgraphviz__out}{graphviz\_out}}\ *gv\ \doxymbox{\hyperlink{ansidecl_8h_a635a8d08da53567d5c3b67deb7f98ed3}{ATTRIBUTE\_UNUSED}},}
+\DoxyCodeLine{00614\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classana_1_1supernode}{supernode}}\ \&n\ \doxymbox{\hyperlink{ansidecl_8h_a635a8d08da53567d5c3b67deb7f98ed3}{ATTRIBUTE\_UNUSED}})\textcolor{keyword}{}}
+\DoxyCodeLine{00615\ \textcolor{keyword}{\ \ \ \ const}}
+\DoxyCodeLine{00616\ \textcolor{keyword}{\ \ }\{}
+\DoxyCodeLine{00617\ \ \ \ \ \textcolor{keywordflow}{return}\ \textcolor{keyword}{false};}
+\DoxyCodeLine{00618\ \ \ \}}
+\DoxyCodeLine{00619\ \};}
+\DoxyCodeLine{00620\ }
+\DoxyCodeLine{00621\ \textcolor{keyword}{extern}\ cgraph\_edge\ *\doxymbox{\hyperlink{namespaceana_a99ab504118f1830f99d71ae92ed16b58}{supergraph\_call\_edge}}\ (function\ *fun,\ \textcolor{keyword}{const}\ gimple\ *stmt);}
+\DoxyCodeLine{00622\ \textcolor{keyword}{extern}\ function\ *\doxymbox{\hyperlink{namespaceana_a0dd0d9ba6ca8b9a0781b833bba1beba8}{get\_ultimate\_function\_for\_cgraph\_edge}}\ (cgraph\_edge\ *\doxymbox{\hyperlink{coretypes_8h_a44ae11f0c90646aa6208ad4bf486490b}{edge}});}
+\DoxyCodeLine{00623\ }
+\DoxyCodeLine{00624\ \}\ \textcolor{comment}{//\ namespace\ ana}}
+\DoxyCodeLine{00625\ }
+\DoxyCodeLine{00626\ \textcolor{preprocessor}{\#endif\ }\textcolor{comment}{/*\ GCC\_ANALYZER\_SUPERGRAPH\_H\ */}\textcolor{preprocessor}{}}
+
+\end{DoxyCode}

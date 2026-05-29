@@ -1,0 +1,690 @@
+\doxysection{fibonacci\+\_\+heap.\+h}
+\hypertarget{fibonacci__heap_8h_source}{}\label{fibonacci__heap_8h_source}\index{toolchain/x86\_64-\/elf/lib/gcc/x86\_64-\/elf/14.2.0/plugin/include/fibonacci\_heap.h@{toolchain/x86\_64-\/elf/lib/gcc/x86\_64-\/elf/14.2.0/plugin/include/fibonacci\_heap.h}}
+\doxymbox{\hyperlink{fibonacci__heap_8h}{Go to the documentation of this file.}}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001\ \textcolor{comment}{/*\ Fibonacci\ heap\ for\ GNU\ compiler.}}
+\DoxyCodeLine{00002\ \textcolor{comment}{\ \ \ Copyright\ (C)\ 1998-\/2024\ Free\ Software\ Foundation,\ Inc.}}
+\DoxyCodeLine{00003\ \textcolor{comment}{\ \ \ Contributed\ by\ Daniel\ Berlin\ (dan@cgsoftware.com).}}
+\DoxyCodeLine{00004\ \textcolor{comment}{\ \ \ Re-\/implemented\ in\ C++\ by\ Martin\ Liska\ <mliska@suse.cz>}}
+\DoxyCodeLine{00005\ \textcolor{comment}{}}
+\DoxyCodeLine{00006\ \textcolor{comment}{This\ file\ is\ part\ of\ GCC.}}
+\DoxyCodeLine{00007\ \textcolor{comment}{}}
+\DoxyCodeLine{00008\ \textcolor{comment}{GCC\ is\ free\ software;\ you\ can\ redistribute\ it\ and/or\ modify\ it\ under}}
+\DoxyCodeLine{00009\ \textcolor{comment}{the\ terms\ of\ the\ GNU\ General\ Public\ License\ as\ published\ by\ the\ Free}}
+\DoxyCodeLine{00010\ \textcolor{comment}{Software\ Foundation;\ either\ version\ 3,\ or\ (at\ your\ option)\ any\ later}}
+\DoxyCodeLine{00011\ \textcolor{comment}{version.}}
+\DoxyCodeLine{00012\ \textcolor{comment}{}}
+\DoxyCodeLine{00013\ \textcolor{comment}{GCC\ is\ distributed\ in\ the\ hope\ that\ it\ will\ be\ useful,\ but\ WITHOUT\ ANY}}
+\DoxyCodeLine{00014\ \textcolor{comment}{WARRANTY;\ without\ even\ the\ implied\ warranty\ of\ MERCHANTABILITY\ or}}
+\DoxyCodeLine{00015\ \textcolor{comment}{FITNESS\ FOR\ A\ PARTICULAR\ PURPOSE.\ \ See\ the\ GNU\ General\ Public\ License}}
+\DoxyCodeLine{00016\ \textcolor{comment}{for\ more\ details.}}
+\DoxyCodeLine{00017\ \textcolor{comment}{}}
+\DoxyCodeLine{00018\ \textcolor{comment}{You\ should\ have\ received\ a\ copy\ of\ the\ GNU\ General\ Public\ License}}
+\DoxyCodeLine{00019\ \textcolor{comment}{along\ with\ GCC;\ see\ the\ file\ COPYING3.\ \ If\ not\ see}}
+\DoxyCodeLine{00020\ \textcolor{comment}{<http://www.gnu.org/licenses/>.\ \ */}}
+\DoxyCodeLine{00021\ }
+\DoxyCodeLine{00022\ \textcolor{comment}{/*\ Fibonacci\ heaps\ are\ somewhat\ complex,\ but,\ there's\ an\ article\ in}}
+\DoxyCodeLine{00023\ \textcolor{comment}{\ \ \ DDJ\ that\ explains\ them\ pretty\ well:}}
+\DoxyCodeLine{00024\ \textcolor{comment}{}}
+\DoxyCodeLine{00025\ \textcolor{comment}{\ \ \ http://www.ddj.com/articles/1997/9701/9701o/9701o.htm?topic=algoritms}}
+\DoxyCodeLine{00026\ \textcolor{comment}{}}
+\DoxyCodeLine{00027\ \textcolor{comment}{\ \ \ Introduction\ to\ algorithms\ by\ Corman\ and\ Rivest\ also\ goes\ over\ them.}}
+\DoxyCodeLine{00028\ \textcolor{comment}{}}
+\DoxyCodeLine{00029\ \textcolor{comment}{\ \ \ The\ original\ paper\ that\ introduced\ them\ is\ "{}Fibonacci\ heaps\ and\ their}}
+\DoxyCodeLine{00030\ \textcolor{comment}{\ \ \ uses\ in\ improved\ network\ optimization\ algorithms"{}\ by\ Tarjan\ and}}
+\DoxyCodeLine{00031\ \textcolor{comment}{\ \ \ Fredman\ (JACM\ 34(3),\ July\ 1987).}}
+\DoxyCodeLine{00032\ \textcolor{comment}{}}
+\DoxyCodeLine{00033\ \textcolor{comment}{\ \ \ Amortized\ and\ real\ worst\ case\ time\ for\ operations:}}
+\DoxyCodeLine{00034\ \textcolor{comment}{}}
+\DoxyCodeLine{00035\ \textcolor{comment}{\ \ \ ExtractMin:\ O(lg\ n)\ amortized.\ O(n)\ worst\ case.}}
+\DoxyCodeLine{00036\ \textcolor{comment}{\ \ \ DecreaseKey:\ O(1)\ amortized.\ \ O(lg\ n)\ worst\ case.}}
+\DoxyCodeLine{00037\ \textcolor{comment}{\ \ \ Insert:\ O(1)\ amortized.}}
+\DoxyCodeLine{00038\ \textcolor{comment}{\ \ \ Union:\ O(1)\ amortized.\ \ */}}
+\DoxyCodeLine{00039\ }
+\DoxyCodeLine{00040\ \textcolor{preprocessor}{\#ifndef\ GCC\_FIBONACCI\_HEAP\_H}}
+\DoxyCodeLine{00041\ \textcolor{preprocessor}{\#define\ GCC\_FIBONACCI\_HEAP\_H}}
+\DoxyCodeLine{00042\ }
+\DoxyCodeLine{00043\ \textcolor{comment}{/*\ Forward\ definition.\ \ */}}
+\DoxyCodeLine{00044\ }
+\DoxyCodeLine{00045\ \textcolor{keyword}{template}<\textcolor{keyword}{class}\ K,\ \textcolor{keyword}{class}\ V>}
+\DoxyCodeLine{00046\ \textcolor{keyword}{class\ }\doxymbox{\hyperlink{classfibonacci__heap}{fibonacci\_heap}};}
+\DoxyCodeLine{00047\ }
+\DoxyCodeLine{00048\ \textcolor{comment}{/*\ Fibonacci\ heap\ node\ class.\ \ */}}
+\DoxyCodeLine{00049\ }
+\DoxyCodeLine{00050\ \textcolor{keyword}{template}<\textcolor{keyword}{class}\ K,\ \textcolor{keyword}{class}\ V>}
+\DoxyCodeLine{00051\ \textcolor{keyword}{class\ }\doxymbox{\hyperlink{classfibonacci__node_a46b11f1abadb4c80a1c0f18873757763}{fibonacci\_node}}}
+\DoxyCodeLine{00052\ \{}
+\DoxyCodeLine{00053\ \ \ \textcolor{keyword}{typedef}\ \doxymbox{\hyperlink{classfibonacci__node_a46b11f1abadb4c80a1c0f18873757763}{fibonacci\_node<K,V>}}\ \doxymbox{\hyperlink{classfibonacci__node_a663617c03a9dbef5e8a3e9a39b791e4a}{fibonacci\_node\_t}};}
+\DoxyCodeLine{00054\ \ \ \textcolor{keyword}{friend}\ \textcolor{keyword}{class\ }\doxymbox{\hyperlink{classfibonacci__heap}{fibonacci\_heap}}<K,V>;}
+\DoxyCodeLine{00055\ }
+\DoxyCodeLine{00056\ \textcolor{keyword}{public}:}
+\DoxyCodeLine{00057\ \ \ \textcolor{comment}{/*\ Default\ constructor.\ \ */}}
+\DoxyCodeLine{00058\ \ \ \doxymbox{\hyperlink{classfibonacci__node_a46b11f1abadb4c80a1c0f18873757763}{fibonacci\_node}}\ ():\ \doxymbox{\hyperlink{classfibonacci__node_a034e0d4b03eb71c6f6ed47d675c05488}{m\_parent}}\ (\doxymbox{\hyperlink{stddef_8h_a070d2ce7b6bb7e5c05602aa8c308d0c4}{NULL}}),\ \doxymbox{\hyperlink{classfibonacci__node_a0ef91fbca07b841b1593b8d947a9bbc2}{m\_child}}\ (\doxymbox{\hyperlink{stddef_8h_a070d2ce7b6bb7e5c05602aa8c308d0c4}{NULL}}),\ \doxymbox{\hyperlink{classfibonacci__node_a0b128027b9e999e8da008107278d49ad}{m\_left}}\ (this),}
+\DoxyCodeLine{00059\ \ \ \ \ \doxymbox{\hyperlink{classfibonacci__node_a403fcd1010ea84d8524c41bb04189e8e}{m\_right}}\ (this),\ \doxymbox{\hyperlink{classfibonacci__node_a6f56a524c7e2c47045c70a81e3c5c276}{m\_data}}\ (\doxymbox{\hyperlink{stddef_8h_a070d2ce7b6bb7e5c05602aa8c308d0c4}{NULL}}),\ \doxymbox{\hyperlink{classfibonacci__node_aad98faa9aee18ff77d41e6f8fb9fc087}{m\_degree}}\ (0),\ \doxymbox{\hyperlink{classfibonacci__node_a9f728f2c52f6db885ce50bb7d762d466}{m\_mark}}\ (0)}
+\DoxyCodeLine{00060\ \ \ \{}
+\DoxyCodeLine{00061\ \ \ \}}
+\DoxyCodeLine{00062\ }
+\DoxyCodeLine{00063\ \ \ \textcolor{comment}{/*\ Constructor\ for\ a\ node\ with\ given\ KEY.\ \ */}}
+\DoxyCodeLine{00064\ \ \ \doxymbox{\hyperlink{classfibonacci__node_a288bc4045db2790aa0e4d2c0e2309e69}{fibonacci\_node}}\ (K\ key,\ V\ *data\ =\ \doxymbox{\hyperlink{stddef_8h_a070d2ce7b6bb7e5c05602aa8c308d0c4}{NULL}}):\ \doxymbox{\hyperlink{classfibonacci__node_a034e0d4b03eb71c6f6ed47d675c05488}{m\_parent}}\ (\doxymbox{\hyperlink{stddef_8h_a070d2ce7b6bb7e5c05602aa8c308d0c4}{NULL}}),\ \doxymbox{\hyperlink{classfibonacci__node_a0ef91fbca07b841b1593b8d947a9bbc2}{m\_child}}\ (\doxymbox{\hyperlink{stddef_8h_a070d2ce7b6bb7e5c05602aa8c308d0c4}{NULL}}),}
+\DoxyCodeLine{00065\ \ \ \ \ \doxymbox{\hyperlink{classfibonacci__node_a0b128027b9e999e8da008107278d49ad}{m\_left}}\ (this),\ \doxymbox{\hyperlink{classfibonacci__node_a403fcd1010ea84d8524c41bb04189e8e}{m\_right}}\ (this),\ \doxymbox{\hyperlink{classfibonacci__node_ad22672be6a46543720afcf124ff37ab7}{m\_key}}\ (key),\ \doxymbox{\hyperlink{classfibonacci__node_a6f56a524c7e2c47045c70a81e3c5c276}{m\_data}}\ (data),}
+\DoxyCodeLine{00066\ \ \ \ \ \doxymbox{\hyperlink{classfibonacci__node_aad98faa9aee18ff77d41e6f8fb9fc087}{m\_degree}}\ (0),\ \doxymbox{\hyperlink{classfibonacci__node_a9f728f2c52f6db885ce50bb7d762d466}{m\_mark}}\ (0)}
+\DoxyCodeLine{00067\ \ \ \{}
+\DoxyCodeLine{00068\ \ \ \}}
+\DoxyCodeLine{00069\ }
+\DoxyCodeLine{00070\ \ \ \textcolor{comment}{/*\ Compare\ fibonacci\ node\ with\ OTHER\ node.\ \ */}}
+\DoxyCodeLine{00071\ \ \ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{classfibonacci__node_ae5ed4ac1998859833ebb764911b61cc7}{compare}}\ (\doxymbox{\hyperlink{classfibonacci__node_a663617c03a9dbef5e8a3e9a39b791e4a}{fibonacci\_node\_t}}\ *other)}
+\DoxyCodeLine{00072\ \ \ \{}
+\DoxyCodeLine{00073\ \ \ \ \ \textcolor{keywordflow}{if}\ (\doxymbox{\hyperlink{classfibonacci__node_ad22672be6a46543720afcf124ff37ab7}{m\_key\ <\ other-\/>}}\doxymbox{\hyperlink{classfibonacci__node_ad22672be6a46543720afcf124ff37ab7}{m\_key}})}
+\DoxyCodeLine{00074\ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ -\/1;}
+\DoxyCodeLine{00075\ \ \ \ \ \textcolor{keywordflow}{if}\ (\doxymbox{\hyperlink{classfibonacci__node_ad22672be6a46543720afcf124ff37ab7}{m\_key}}\ >\ other-\/>\doxymbox{\hyperlink{classfibonacci__node_ad22672be6a46543720afcf124ff37ab7}{m\_key}})}
+\DoxyCodeLine{00076\ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ 1;}
+\DoxyCodeLine{00077\ \ \ \ \ \textcolor{keywordflow}{return}\ 0;}
+\DoxyCodeLine{00078\ \ \ \}}
+\DoxyCodeLine{00079\ }
+\DoxyCodeLine{00080\ \ \ \textcolor{comment}{/*\ Compare\ the\ node\ with\ a\ given\ KEY.\ \ */}}
+\DoxyCodeLine{00081\ \ \ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{classfibonacci__node_a6278ae313496c2bf407d0877305bfaf1}{compare\_data}}\ (K\ key)}
+\DoxyCodeLine{00082\ \ \ \{}
+\DoxyCodeLine{00083\ \ \ \ \ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{classfibonacci__node_a663617c03a9dbef5e8a3e9a39b791e4a}{fibonacci\_node\_t}}\ (key).compare\ (\textcolor{keyword}{this});}
+\DoxyCodeLine{00084\ \ \ \}}
+\DoxyCodeLine{00085\ }
+\DoxyCodeLine{00086\ \ \ \textcolor{comment}{/*\ Remove\ fibonacci\ heap\ node.\ \ */}}
+\DoxyCodeLine{00087\ \ \ \doxymbox{\hyperlink{classfibonacci__node_a663617c03a9dbef5e8a3e9a39b791e4a}{fibonacci\_node\_t}}\ *\doxymbox{\hyperlink{classfibonacci__node_ad09c709d4677c23eea7539326cd47325}{remove}}\ ();}
+\DoxyCodeLine{00088\ }
+\DoxyCodeLine{00089\ \ \ \textcolor{comment}{/*\ Link\ the\ node\ with\ PARENT.\ \ */}}
+\DoxyCodeLine{00090\ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classfibonacci__node_a47bd5e2e61e33cba7cecd15728a66c75}{link}}\ (\doxymbox{\hyperlink{classfibonacci__node_a663617c03a9dbef5e8a3e9a39b791e4a}{fibonacci\_node\_t}}\ *parent);}
+\DoxyCodeLine{00091\ }
+\DoxyCodeLine{00092\ \ \ \textcolor{comment}{/*\ Return\ key\ associated\ with\ the\ node.\ \ */}}
+\DoxyCodeLine{00093\ \ \ K\ \doxymbox{\hyperlink{classfibonacci__node_a622cdf7db2aa7b974d2dfc1cfdf79916}{get\_key}}\ ()}
+\DoxyCodeLine{00094\ \ \ \{}
+\DoxyCodeLine{00095\ \ \ \ \ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{classfibonacci__node_ad22672be6a46543720afcf124ff37ab7}{m\_key}};}
+\DoxyCodeLine{00096\ \ \ \}}
+\DoxyCodeLine{00097\ }
+\DoxyCodeLine{00098\ \ \ \textcolor{comment}{/*\ Return\ data\ associated\ with\ the\ node.\ \ */}}
+\DoxyCodeLine{00099\ \ \ V\ *\doxymbox{\hyperlink{classfibonacci__node_ac4cacb397029700995501c9f20f2f082}{get\_data}}\ ()}
+\DoxyCodeLine{00100\ \ \ \{}
+\DoxyCodeLine{00101\ \ \ \ \ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{classfibonacci__node_a6f56a524c7e2c47045c70a81e3c5c276}{m\_data}};}
+\DoxyCodeLine{00102\ \ \ \}}
+\DoxyCodeLine{00103\ }
+\DoxyCodeLine{00104\ \textcolor{keyword}{private}:}
+\DoxyCodeLine{00105\ \ \ \textcolor{comment}{/*\ Put\ node\ B\ after\ this\ node.\ \ */}}
+\DoxyCodeLine{00106\ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classfibonacci__node_ade20cc6f4af64b31323e242ecb1daebf}{insert\_after}}\ (\doxymbox{\hyperlink{classfibonacci__node_a663617c03a9dbef5e8a3e9a39b791e4a}{fibonacci\_node\_t}}\ *\doxymbox{\hyperlink{poly-int_8h_af3bb9d9df219585072cf9e4e95572f70}{b}});}
+\DoxyCodeLine{00107\ }
+\DoxyCodeLine{00108\ \ \ \textcolor{comment}{/*\ Insert\ fibonacci\ node\ B\ after\ this\ node.\ \ */}}
+\DoxyCodeLine{00109\ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classfibonacci__node_a74aa064bb0f9fd7678eaea22c7c05376}{insert\_before}}\ (\doxymbox{\hyperlink{classfibonacci__node_a663617c03a9dbef5e8a3e9a39b791e4a}{fibonacci\_node\_t}}\ *\doxymbox{\hyperlink{poly-int_8h_af3bb9d9df219585072cf9e4e95572f70}{b}})}
+\DoxyCodeLine{00110\ \ \ \{}
+\DoxyCodeLine{00111\ \ \ \ \ \doxymbox{\hyperlink{classfibonacci__node_a0b128027b9e999e8da008107278d49ad}{m\_left}}-\/>insert\_after\ (\doxymbox{\hyperlink{poly-int_8h_af3bb9d9df219585072cf9e4e95572f70}{b}});}
+\DoxyCodeLine{00112\ \ \ \}}
+\DoxyCodeLine{00113\ }
+\DoxyCodeLine{00114\ \ \ \textcolor{comment}{/*\ Parent\ node.\ \ */}}
+\DoxyCodeLine{00115\ \ \ \doxymbox{\hyperlink{classfibonacci__node_a46b11f1abadb4c80a1c0f18873757763}{fibonacci\_node}}\ *\doxymbox{\hyperlink{classfibonacci__node_a034e0d4b03eb71c6f6ed47d675c05488}{m\_parent}};}
+\DoxyCodeLine{00116\ \ \ \textcolor{comment}{/*\ Child\ node.\ \ */}}
+\DoxyCodeLine{00117\ \ \ \doxymbox{\hyperlink{classfibonacci__node_a46b11f1abadb4c80a1c0f18873757763}{fibonacci\_node}}\ *\doxymbox{\hyperlink{classfibonacci__node_a0ef91fbca07b841b1593b8d947a9bbc2}{m\_child}};}
+\DoxyCodeLine{00118\ \ \ \textcolor{comment}{/*\ Left\ sibling.\ \ */}}
+\DoxyCodeLine{00119\ \ \ \doxymbox{\hyperlink{classfibonacci__node_a46b11f1abadb4c80a1c0f18873757763}{fibonacci\_node}}\ *\doxymbox{\hyperlink{classfibonacci__node_a0b128027b9e999e8da008107278d49ad}{m\_left}};}
+\DoxyCodeLine{00120\ \ \ \textcolor{comment}{/*\ Right\ node.\ \ */}}
+\DoxyCodeLine{00121\ \ \ \doxymbox{\hyperlink{classfibonacci__node_a46b11f1abadb4c80a1c0f18873757763}{fibonacci\_node}}\ *\doxymbox{\hyperlink{classfibonacci__node_a403fcd1010ea84d8524c41bb04189e8e}{m\_right}};}
+\DoxyCodeLine{00122\ \ \ \textcolor{comment}{/*\ Key\ associated\ with\ node.\ \ */}}
+\DoxyCodeLine{00123\ \ \ K\ \doxymbox{\hyperlink{classfibonacci__node_ad22672be6a46543720afcf124ff37ab7}{m\_key}};}
+\DoxyCodeLine{00124\ \ \ \textcolor{comment}{/*\ Data\ associated\ with\ node.\ \ */}}
+\DoxyCodeLine{00125\ \ \ V\ *\doxymbox{\hyperlink{classfibonacci__node_a6f56a524c7e2c47045c70a81e3c5c276}{m\_data}};}
+\DoxyCodeLine{00126\ }
+\DoxyCodeLine{00127\ \textcolor{preprocessor}{\#if\ defined\ (\_\_GNUC\_\_)\ \&\&\ (!defined\ (SIZEOF\_INT)\ ||\ SIZEOF\_INT\ <\ 4)}}
+\DoxyCodeLine{00128\ \ \ \textcolor{comment}{/*\ Degree\ of\ the\ node.\ \ */}}
+\DoxyCodeLine{00129\ \ \ \doxymbox{\hyperlink{ansidecl_8h_a586c6a171eb0104d519dc0eda5284ef7}{\_\_extension\_\_}}\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{long}\ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{classfibonacci__node_aad98faa9aee18ff77d41e6f8fb9fc087}{m\_degree}}\ :\ 31;}
+\DoxyCodeLine{00130\ \ \ \textcolor{comment}{/*\ Mark\ of\ the\ node.\ \ */}}
+\DoxyCodeLine{00131\ \ \ \doxymbox{\hyperlink{ansidecl_8h_a586c6a171eb0104d519dc0eda5284ef7}{\_\_extension\_\_}}\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{long}\ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{classfibonacci__node_a9f728f2c52f6db885ce50bb7d762d466}{m\_mark}}\ :\ 1;}
+\DoxyCodeLine{00132\ \textcolor{preprocessor}{\#else}}
+\DoxyCodeLine{00133\ \ \ \textcolor{comment}{/*\ Degree\ of\ the\ node.\ \ */}}
+\DoxyCodeLine{00134\ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{classfibonacci__node_aad98faa9aee18ff77d41e6f8fb9fc087}{m\_degree}}\ :\ 31;}
+\DoxyCodeLine{00135\ \ \ \textcolor{comment}{/*\ Mark\ of\ the\ node.\ \ */}}
+\DoxyCodeLine{00136\ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{classfibonacci__node_a9f728f2c52f6db885ce50bb7d762d466}{m\_mark}}\ :\ 1;}
+\DoxyCodeLine{00137\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00138\ \};}
+\DoxyCodeLine{00139\ }
+\DoxyCodeLine{00140\ \textcolor{comment}{/*\ Fibonacci\ heap\ class.\ */}}
+\DoxyCodeLine{00141\ \textcolor{keyword}{template}<\textcolor{keyword}{class}\ K,\ \textcolor{keyword}{class}\ V>}
+\DoxyCodeLine{00142\ \textcolor{keyword}{class\ }\doxymbox{\hyperlink{classfibonacci__heap_af63720d2f7c3481a85f75166707a595b}{fibonacci\_heap}}}
+\DoxyCodeLine{00143\ \{}
+\DoxyCodeLine{00144\ \ \ \textcolor{keyword}{typedef}\ \doxymbox{\hyperlink{classfibonacci__node}{fibonacci\_node<K,V>}}\ \doxymbox{\hyperlink{classfibonacci__heap_aab280d4eedc716f36943c1f44cbe49ac}{fibonacci\_node\_t}};}
+\DoxyCodeLine{00145\ \ \ \textcolor{keyword}{friend}\ \textcolor{keyword}{class\ }\doxymbox{\hyperlink{classfibonacci__node}{fibonacci\_node}}<K,V>;}
+\DoxyCodeLine{00146\ }
+\DoxyCodeLine{00147\ \textcolor{keyword}{public}:}
+\DoxyCodeLine{00148\ \ \ \textcolor{comment}{/*\ Default\ constructor.\ \ ALLOCATOR\ is\ optional\ and\ is\ primarily\ useful}}
+\DoxyCodeLine{00149\ \textcolor{comment}{\ \ \ \ \ when\ heaps\ are\ going\ to\ be\ merged\ (in\ that\ case\ they\ need\ to\ be\ allocated}}
+\DoxyCodeLine{00150\ \textcolor{comment}{\ \ \ \ \ in\ same\ alloc\ pool).\ \ */}}
+\DoxyCodeLine{00151\ \ \ \doxymbox{\hyperlink{classfibonacci__heap_af63720d2f7c3481a85f75166707a595b}{fibonacci\_heap}}\ (K\ global\_min\_key,\ \doxymbox{\hyperlink{alloc-pool_8h_a50a821a61c709ef6d168f11e86709113}{pool\_allocator}}\ *allocator\ =\ \doxymbox{\hyperlink{stddef_8h_a070d2ce7b6bb7e5c05602aa8c308d0c4}{NULL}}):}
+\DoxyCodeLine{00152\ \ \ \ \ \doxymbox{\hyperlink{classfibonacci__heap_a0ba47be73a144abe048cf91942199d04}{m\_nodes}}\ (0),\ \doxymbox{\hyperlink{classfibonacci__heap_ab7c6e3cb8f983498c0ab2b88cf18ac28}{m\_min}}\ (\doxymbox{\hyperlink{stddef_8h_a070d2ce7b6bb7e5c05602aa8c308d0c4}{NULL}}),\ \doxymbox{\hyperlink{classfibonacci__heap_a6a9db31b3c864fb8d85bca9f23a25bb6}{m\_root}}\ (\doxymbox{\hyperlink{stddef_8h_a070d2ce7b6bb7e5c05602aa8c308d0c4}{NULL}}),}
+\DoxyCodeLine{00153\ \ \ \ \ \doxymbox{\hyperlink{classfibonacci__heap_ac3afaeecfec83be4e99fb6a18d03e1ed}{m\_global\_min\_key}}\ (global\_min\_key),}
+\DoxyCodeLine{00154\ \ \ \ \ \doxymbox{\hyperlink{classfibonacci__heap_a98bbfad962946ac85301f00cbd4cdba8}{m\_allocator}}\ (allocator),\ \doxymbox{\hyperlink{classfibonacci__heap_ac6493df847bdccc2626b51c86b6aab00}{m\_own\_allocator}}\ (\doxymbox{\hyperlink{stdbool_8h_a65e9886d74aaee76545e83dd09011727}{false}})}
+\DoxyCodeLine{00155\ \ \ \{}
+\DoxyCodeLine{00156\ \ \ \ \ \textcolor{keywordflow}{if}\ (!\doxymbox{\hyperlink{classfibonacci__heap_a98bbfad962946ac85301f00cbd4cdba8}{m\_allocator}})}
+\DoxyCodeLine{00157\ \ \ \ \ \ \ \{}
+\DoxyCodeLine{00158\ \ \ \ \ \doxymbox{\hyperlink{classfibonacci__heap_a98bbfad962946ac85301f00cbd4cdba8}{m\_allocator}}\ =\ \textcolor{keyword}{new}\ \doxymbox{\hyperlink{alloc-pool_8h_a50a821a61c709ef6d168f11e86709113}{pool\_allocator}}\ (\textcolor{stringliteral}{"{}Fibonacci\ heap"{}},}
+\DoxyCodeLine{00159\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{sizeof}\ (\doxymbox{\hyperlink{classfibonacci__heap_aab280d4eedc716f36943c1f44cbe49ac}{fibonacci\_node\_t}}));}
+\DoxyCodeLine{00160\ \ \ \ \ \doxymbox{\hyperlink{classfibonacci__heap_ac6493df847bdccc2626b51c86b6aab00}{m\_own\_allocator}}\ =\ \textcolor{keyword}{true};}
+\DoxyCodeLine{00161\ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00162\ \ \ \}}
+\DoxyCodeLine{00163\ }
+\DoxyCodeLine{00164\ \ \ \textcolor{comment}{/*\ Destructor.\ \ */}}
+\DoxyCodeLine{00165\ \ \ \doxymbox{\hyperlink{classfibonacci__heap_a838600de3c8e78a4141ddf368f69b013}{\string~fibonacci\_heap}}\ ()}
+\DoxyCodeLine{00166\ \ \ \{}
+\DoxyCodeLine{00167\ \ \ \ \ \textcolor{comment}{/*\ Actual\ memory\ will\ be\ released\ by\ the\ destructor\ of\ m\_allocator.\ \ */}}
+\DoxyCodeLine{00168\ \ \ \ \ \textcolor{keywordflow}{if}\ (\doxymbox{\hyperlink{ggc_8h_a905be3e30874db45bdc6586a8c2aa2de}{need\_finalization\_p<fibonacci\_node\_t>}}\ ()\ ||\ !\doxymbox{\hyperlink{classfibonacci__heap_ac6493df847bdccc2626b51c86b6aab00}{m\_own\_allocator}})}
+\DoxyCodeLine{00169\ \ \ \ \ \ \ \textcolor{keywordflow}{while}\ (\doxymbox{\hyperlink{classfibonacci__heap_ab7c6e3cb8f983498c0ab2b88cf18ac28}{m\_min}}\ !=\ \doxymbox{\hyperlink{stddef_8h_a070d2ce7b6bb7e5c05602aa8c308d0c4}{NULL}})}
+\DoxyCodeLine{00170\ \ \ \ \ \{}
+\DoxyCodeLine{00171\ \ \ \ \ \ \ \doxymbox{\hyperlink{classfibonacci__heap_aab280d4eedc716f36943c1f44cbe49ac}{fibonacci\_node\_t}}\ *n\ =\ \doxymbox{\hyperlink{classfibonacci__heap_acf138141ae7afa3ce929d9389b4907cf}{extract\_minimum\_node}}\ ();}
+\DoxyCodeLine{00172\ \ \ \ \ \ \ n-\/>\string~fibonacci\_node\_t\ ();}
+\DoxyCodeLine{00173\ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (!\doxymbox{\hyperlink{classfibonacci__heap_ac6493df847bdccc2626b51c86b6aab00}{m\_own\_allocator}})}
+\DoxyCodeLine{00174\ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{classfibonacci__heap_a98bbfad962946ac85301f00cbd4cdba8}{m\_allocator}}-\/>remove\ (n);}
+\DoxyCodeLine{00175\ \ \ \ \ \}}
+\DoxyCodeLine{00176\ \ \ \ \ \textcolor{keywordflow}{if}\ (\doxymbox{\hyperlink{classfibonacci__heap_ac6493df847bdccc2626b51c86b6aab00}{m\_own\_allocator}})}
+\DoxyCodeLine{00177\ \ \ \ \ \ \ \textcolor{keyword}{delete}\ \doxymbox{\hyperlink{classfibonacci__heap_a98bbfad962946ac85301f00cbd4cdba8}{m\_allocator}};}
+\DoxyCodeLine{00178\ \ \ \}}
+\DoxyCodeLine{00179\ }
+\DoxyCodeLine{00180\ \ \ \textcolor{comment}{/*\ Insert\ new\ node\ given\ by\ KEY\ and\ DATA\ associated\ with\ the\ key.\ \ */}}
+\DoxyCodeLine{00181\ \ \ \doxymbox{\hyperlink{classfibonacci__heap_aab280d4eedc716f36943c1f44cbe49ac}{fibonacci\_node\_t}}\ *\doxymbox{\hyperlink{classfibonacci__heap_af984ec239686defec30a170a32f6e1a9}{insert}}\ (K\ key,\ V\ *data);}
+\DoxyCodeLine{00182\ }
+\DoxyCodeLine{00183\ \ \ \textcolor{comment}{/*\ Return\ true\ if\ no\ entry\ is\ present.\ \ */}}
+\DoxyCodeLine{00184\ \ \ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{classfibonacci__heap_ab54b4bb86b47ac45ea3e64a1299ce8c4}{empty}}\ ()\textcolor{keyword}{\ const}}
+\DoxyCodeLine{00185\ \textcolor{keyword}{\ \ }\{}
+\DoxyCodeLine{00186\ \ \ \ \ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{classfibonacci__heap_a0ba47be73a144abe048cf91942199d04}{m\_nodes}}\ ==\ 0;}
+\DoxyCodeLine{00187\ \ \ \}}
+\DoxyCodeLine{00188\ }
+\DoxyCodeLine{00189\ \ \ \textcolor{comment}{/*\ Return\ the\ number\ of\ nodes.\ \ */}}
+\DoxyCodeLine{00190\ \ \ \textcolor{keywordtype}{size\_t}\ \doxymbox{\hyperlink{classfibonacci__heap_a0b359e9c3d751c61c0a30d4a01710227}{nodes}}\ ()\textcolor{keyword}{\ const}}
+\DoxyCodeLine{00191\ \textcolor{keyword}{\ \ }\{}
+\DoxyCodeLine{00192\ \ \ \ \ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{classfibonacci__heap_a0ba47be73a144abe048cf91942199d04}{m\_nodes}};}
+\DoxyCodeLine{00193\ \ \ \}}
+\DoxyCodeLine{00194\ }
+\DoxyCodeLine{00195\ \ \ \textcolor{comment}{/*\ Return\ minimal\ key\ presented\ in\ the\ heap.\ \ */}}
+\DoxyCodeLine{00196\ \ \ K\ \doxymbox{\hyperlink{classfibonacci__heap_ac7265687d504dd9890a7b28e21760756}{min\_key}}\ ()\textcolor{keyword}{\ const}}
+\DoxyCodeLine{00197\ \textcolor{keyword}{\ \ }\{}
+\DoxyCodeLine{00198\ \ \ \ \ \textcolor{keywordflow}{if}\ (\doxymbox{\hyperlink{classfibonacci__heap_ab7c6e3cb8f983498c0ab2b88cf18ac28}{m\_min}}\ ==\ \doxymbox{\hyperlink{stddef_8h_a070d2ce7b6bb7e5c05602aa8c308d0c4}{NULL}})}
+\DoxyCodeLine{00199\ \ \ \ \ \ \ \doxymbox{\hyperlink{system_8h_a32b3b26e9883686d3022c1ffe5ec3aa4}{gcc\_unreachable}}\ ();}
+\DoxyCodeLine{00200\ }
+\DoxyCodeLine{00201\ \ \ \ \ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{classfibonacci__heap_ab7c6e3cb8f983498c0ab2b88cf18ac28}{m\_min}}-\/>m\_key;}
+\DoxyCodeLine{00202\ \ \ \}}
+\DoxyCodeLine{00203\ }
+\DoxyCodeLine{00204\ \ \ \textcolor{comment}{/*\ For\ given\ NODE,\ set\ new\ KEY\ value.\ \ */}}
+\DoxyCodeLine{00205\ \ \ K\ \doxymbox{\hyperlink{classfibonacci__heap_afd620b3776aa197c30b299874bcc1f41}{replace\_key}}\ (\doxymbox{\hyperlink{classfibonacci__heap_aab280d4eedc716f36943c1f44cbe49ac}{fibonacci\_node\_t}}\ *node,\ K\ key)}
+\DoxyCodeLine{00206\ \ \ \{}
+\DoxyCodeLine{00207\ \ \ \ \ K\ okey\ =\ node-\/>\doxymbox{\hyperlink{classfibonacci__node_ad22672be6a46543720afcf124ff37ab7}{m\_key}};}
+\DoxyCodeLine{00208\ }
+\DoxyCodeLine{00209\ \ \ \ \ \doxymbox{\hyperlink{classfibonacci__heap_ab7ff7c5939127f579269631916fd9745}{replace\_key\_data}}\ (node,\ key,\ node-\/>\doxymbox{\hyperlink{classfibonacci__node_a6f56a524c7e2c47045c70a81e3c5c276}{m\_data}});}
+\DoxyCodeLine{00210\ \ \ \ \ \textcolor{keywordflow}{return}\ okey;}
+\DoxyCodeLine{00211\ \ \ \}}
+\DoxyCodeLine{00212\ }
+\DoxyCodeLine{00213\ \ \ \textcolor{comment}{/*\ For\ given\ NODE,\ decrease\ value\ to\ new\ KEY.\ \ */}}
+\DoxyCodeLine{00214\ \ \ K\ \doxymbox{\hyperlink{classfibonacci__heap_ab04cd2ea47f81d7b01a88dab2f2b618e}{decrease\_key}}\ (\doxymbox{\hyperlink{classfibonacci__heap_aab280d4eedc716f36943c1f44cbe49ac}{fibonacci\_node\_t}}\ *node,\ K\ key)}
+\DoxyCodeLine{00215\ \ \ \{}
+\DoxyCodeLine{00216\ \ \ \ \ \doxymbox{\hyperlink{system_8h_a0deee0ddaa8ce3bbd400ab5f75de06ff}{gcc\_assert}}\ (key\ <=\ node-\/>m\_key);}
+\DoxyCodeLine{00217\ \ \ \ \ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{classfibonacci__heap_afd620b3776aa197c30b299874bcc1f41}{replace\_key}}\ (node,\ key);}
+\DoxyCodeLine{00218\ \ \ \}}
+\DoxyCodeLine{00219\ }
+\DoxyCodeLine{00220\ \ \ \textcolor{comment}{/*\ For\ given\ NODE,\ set\ new\ KEY\ and\ DATA\ value.\ \ */}}
+\DoxyCodeLine{00221\ \ \ V\ *\doxymbox{\hyperlink{classfibonacci__heap_ab7ff7c5939127f579269631916fd9745}{replace\_key\_data}}\ (\doxymbox{\hyperlink{classfibonacci__heap_aab280d4eedc716f36943c1f44cbe49ac}{fibonacci\_node\_t}}\ *node,\ K\ key,\ V\ *data);}
+\DoxyCodeLine{00222\ }
+\DoxyCodeLine{00223\ \ \ \textcolor{comment}{/*\ Extract\ minimum\ node\ in\ the\ heap.\ If\ RELEASE\ is\ specified,}}
+\DoxyCodeLine{00224\ \textcolor{comment}{\ \ \ \ \ memory\ is\ released.\ \ */}}
+\DoxyCodeLine{00225\ \ \ V\ *\doxymbox{\hyperlink{classfibonacci__heap_aa71c376a10541b841cd874013f6dd8b5}{extract\_min}}\ (\textcolor{keywordtype}{bool}\ release\ =\ \textcolor{keyword}{true});}
+\DoxyCodeLine{00226\ }
+\DoxyCodeLine{00227\ \ \ \textcolor{comment}{/*\ Return\ value\ associated\ with\ minimum\ node\ in\ the\ heap.\ \ */}}
+\DoxyCodeLine{00228\ \ \ V\ *\doxymbox{\hyperlink{classfibonacci__heap_a1d86bc264c1ee9949bd4cbda7b138e06}{min}}\ ()\textcolor{keyword}{\ const}}
+\DoxyCodeLine{00229\ \textcolor{keyword}{\ \ }\{}
+\DoxyCodeLine{00230\ \ \ \ \ \textcolor{keywordflow}{if}\ (\doxymbox{\hyperlink{classfibonacci__heap_ab7c6e3cb8f983498c0ab2b88cf18ac28}{m\_min}}\ ==\ \doxymbox{\hyperlink{stddef_8h_a070d2ce7b6bb7e5c05602aa8c308d0c4}{NULL}})}
+\DoxyCodeLine{00231\ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{stddef_8h_a070d2ce7b6bb7e5c05602aa8c308d0c4}{NULL}};}
+\DoxyCodeLine{00232\ }
+\DoxyCodeLine{00233\ \ \ \ \ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{classfibonacci__heap_ab7c6e3cb8f983498c0ab2b88cf18ac28}{m\_min}}-\/>m\_data;}
+\DoxyCodeLine{00234\ \ \ \}}
+\DoxyCodeLine{00235\ }
+\DoxyCodeLine{00236\ \ \ \textcolor{comment}{/*\ Replace\ data\ associated\ with\ NODE\ and\ replace\ it\ with\ DATA.\ \ */}}
+\DoxyCodeLine{00237\ \ \ V\ *\doxymbox{\hyperlink{classfibonacci__heap_a5c65696d2eb5222ffee4a14e14eb96f0}{replace\_data}}\ (\doxymbox{\hyperlink{classfibonacci__heap_aab280d4eedc716f36943c1f44cbe49ac}{fibonacci\_node\_t}}\ *node,\ V\ *data)}
+\DoxyCodeLine{00238\ \ \ \{}
+\DoxyCodeLine{00239\ \ \ \ \ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{classfibonacci__heap_ab7ff7c5939127f579269631916fd9745}{replace\_key\_data}}\ (node,\ node-\/>\doxymbox{\hyperlink{classfibonacci__node_ad22672be6a46543720afcf124ff37ab7}{m\_key}},\ data);}
+\DoxyCodeLine{00240\ \ \ \}}
+\DoxyCodeLine{00241\ }
+\DoxyCodeLine{00242\ \ \ \textcolor{comment}{/*\ Delete\ NODE\ in\ the\ heap.\ \ */}}
+\DoxyCodeLine{00243\ \ \ V\ *\doxymbox{\hyperlink{classfibonacci__heap_a6a318479899a4ea0e0010c5aaab16c9d}{delete\_node}}\ (\doxymbox{\hyperlink{classfibonacci__heap_aab280d4eedc716f36943c1f44cbe49ac}{fibonacci\_node\_t}}\ *node,\ \textcolor{keywordtype}{bool}\ release\ =\ \textcolor{keyword}{true});}
+\DoxyCodeLine{00244\ }
+\DoxyCodeLine{00245\ \ \ \textcolor{comment}{/*\ Union\ the\ heap\ with\ HEAPB.\ \ */}}
+\DoxyCodeLine{00246\ \ \ \doxymbox{\hyperlink{classfibonacci__heap_af63720d2f7c3481a85f75166707a595b}{fibonacci\_heap}}\ *\doxymbox{\hyperlink{classfibonacci__heap_a0d765161c1d9764799ef4f9f9715f08d}{union\_with}}\ (\doxymbox{\hyperlink{classfibonacci__heap_af63720d2f7c3481a85f75166707a595b}{fibonacci\_heap}}\ *heapb);}
+\DoxyCodeLine{00247\ }
+\DoxyCodeLine{00248\ \textcolor{keyword}{private}:}
+\DoxyCodeLine{00249\ \ \ \textcolor{comment}{/*\ Insert\ new\ NODE\ given\ by\ KEY\ and\ DATA\ associated\ with\ the\ key.\ \ */}}
+\DoxyCodeLine{00250\ \ \ \doxymbox{\hyperlink{classfibonacci__heap_aab280d4eedc716f36943c1f44cbe49ac}{fibonacci\_node\_t}}\ *\doxymbox{\hyperlink{classfibonacci__heap_a9f724599a3208d45d36478d94481e2b9}{insert}}\ (\doxymbox{\hyperlink{classfibonacci__heap_aab280d4eedc716f36943c1f44cbe49ac}{fibonacci\_node\_t}}\ *node,\ K\ key,\ V\ *data);}
+\DoxyCodeLine{00251\ }
+\DoxyCodeLine{00252\ \ \ \textcolor{comment}{/*\ Insert\ new\ NODE\ that\ has\ already\ filled\ key\ and\ value.\ \ */}}
+\DoxyCodeLine{00253\ \ \ \doxymbox{\hyperlink{classfibonacci__heap_aab280d4eedc716f36943c1f44cbe49ac}{fibonacci\_node\_t}}\ *\doxymbox{\hyperlink{classfibonacci__heap_a738f7564fd22a4a7998bf6655760f348}{insert\_node}}\ (\doxymbox{\hyperlink{classfibonacci__heap_aab280d4eedc716f36943c1f44cbe49ac}{fibonacci\_node\_t}}\ *node);}
+\DoxyCodeLine{00254\ }
+\DoxyCodeLine{00255\ \ \ \textcolor{comment}{/*\ Insert\ it\ into\ the\ root\ list.\ \ */}}
+\DoxyCodeLine{00256\ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classfibonacci__heap_a0e74fbfe0e8b8cd5c8968018d4b32057}{insert\_root}}\ (\doxymbox{\hyperlink{classfibonacci__heap_aab280d4eedc716f36943c1f44cbe49ac}{fibonacci\_node\_t}}\ *node);}
+\DoxyCodeLine{00257\ }
+\DoxyCodeLine{00258\ \ \ \textcolor{comment}{/*\ Remove\ NODE\ from\ PARENT's\ child\ list.\ \ */}}
+\DoxyCodeLine{00259\ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classfibonacci__heap_a185d0ddfaf44b784b71de2dce043f06b}{cut}}\ (\doxymbox{\hyperlink{classfibonacci__heap_aab280d4eedc716f36943c1f44cbe49ac}{fibonacci\_node\_t}}\ *node,\ \doxymbox{\hyperlink{classfibonacci__heap_aab280d4eedc716f36943c1f44cbe49ac}{fibonacci\_node\_t}}\ *parent);}
+\DoxyCodeLine{00260\ }
+\DoxyCodeLine{00261\ \ \ \textcolor{comment}{/*\ Process\ cut\ of\ node\ Y\ and\ do\ it\ recursivelly.\ \ */}}
+\DoxyCodeLine{00262\ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classfibonacci__heap_acca72b898b3c54fa7005638af0af00ab}{cascading\_cut}}\ (\doxymbox{\hyperlink{classfibonacci__heap_aab280d4eedc716f36943c1f44cbe49ac}{fibonacci\_node\_t}}\ *\doxymbox{\hyperlink{wide-int_8h_aa0ab03c091e4ca9ca82306ad42c7dbfb}{y}});}
+\DoxyCodeLine{00263\ }
+\DoxyCodeLine{00264\ \ \ \textcolor{comment}{/*\ Extract\ minimum\ node\ from\ the\ heap.\ \ */}}
+\DoxyCodeLine{00265\ \ \ \doxymbox{\hyperlink{classfibonacci__heap_aab280d4eedc716f36943c1f44cbe49ac}{fibonacci\_node\_t}}\ *\ \doxymbox{\hyperlink{classfibonacci__heap_acf138141ae7afa3ce929d9389b4907cf}{extract\_minimum\_node}}\ ();}
+\DoxyCodeLine{00266\ }
+\DoxyCodeLine{00267\ \ \ \textcolor{comment}{/*\ Remove\ root\ NODE\ from\ the\ heap.\ \ */}}
+\DoxyCodeLine{00268\ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classfibonacci__heap_a1c33ac64ecc3ba7cc9f8136b5f2d19f0}{remove\_root}}\ (\doxymbox{\hyperlink{classfibonacci__heap_aab280d4eedc716f36943c1f44cbe49ac}{fibonacci\_node\_t}}\ *node);}
+\DoxyCodeLine{00269\ }
+\DoxyCodeLine{00270\ \ \ \textcolor{comment}{/*\ Consolidate\ heap.\ \ */}}
+\DoxyCodeLine{00271\ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classfibonacci__heap_a8b346708104c2ce70c1ce2c244f92c96}{consolidate}}\ ();}
+\DoxyCodeLine{00272\ }
+\DoxyCodeLine{00273\ \ \ \textcolor{comment}{/*\ Number\ of\ nodes.\ \ */}}
+\DoxyCodeLine{00274\ \ \ \textcolor{keywordtype}{size\_t}\ \doxymbox{\hyperlink{classfibonacci__heap_a0ba47be73a144abe048cf91942199d04}{m\_nodes}};}
+\DoxyCodeLine{00275\ \ \ \textcolor{comment}{/*\ Minimum\ node\ of\ the\ heap.\ \ */}}
+\DoxyCodeLine{00276\ \ \ \doxymbox{\hyperlink{classfibonacci__heap_aab280d4eedc716f36943c1f44cbe49ac}{fibonacci\_node\_t}}\ *\doxymbox{\hyperlink{classfibonacci__heap_ab7c6e3cb8f983498c0ab2b88cf18ac28}{m\_min}};}
+\DoxyCodeLine{00277\ \ \ \textcolor{comment}{/*\ Root\ node\ of\ the\ heap.\ \ */}}
+\DoxyCodeLine{00278\ \ \ \doxymbox{\hyperlink{classfibonacci__heap_aab280d4eedc716f36943c1f44cbe49ac}{fibonacci\_node\_t}}\ *\doxymbox{\hyperlink{classfibonacci__heap_a6a9db31b3c864fb8d85bca9f23a25bb6}{m\_root}};}
+\DoxyCodeLine{00279\ \ \ \textcolor{comment}{/*\ Global\ minimum\ given\ in\ the\ heap\ construction.\ \ */}}
+\DoxyCodeLine{00280\ \ \ K\ \doxymbox{\hyperlink{classfibonacci__heap_ac3afaeecfec83be4e99fb6a18d03e1ed}{m\_global\_min\_key}};}
+\DoxyCodeLine{00281\ }
+\DoxyCodeLine{00282\ \ \ \textcolor{comment}{/*\ Allocator\ used\ to\ hold\ nodes.\ \ */}}
+\DoxyCodeLine{00283\ \ \ \doxymbox{\hyperlink{alloc-pool_8h_a50a821a61c709ef6d168f11e86709113}{pool\_allocator}}\ *\doxymbox{\hyperlink{classfibonacci__heap_a98bbfad962946ac85301f00cbd4cdba8}{m\_allocator}};}
+\DoxyCodeLine{00284\ \ \ \textcolor{comment}{/*\ True\ if\ alocator\ is\ owned\ by\ the\ current\ heap\ only.\ \ */}}
+\DoxyCodeLine{00285\ \ \ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{classfibonacci__heap_ac6493df847bdccc2626b51c86b6aab00}{m\_own\_allocator}};}
+\DoxyCodeLine{00286\ \};}
+\DoxyCodeLine{00287\ }
+\DoxyCodeLine{00288\ \textcolor{comment}{/*\ Remove\ fibonacci\ heap\ node.\ \ */}}
+\DoxyCodeLine{00289\ }
+\DoxyCodeLine{00290\ \textcolor{keyword}{template}<\textcolor{keyword}{class}\ K,\ \textcolor{keyword}{class}\ V>}
+\DoxyCodeLine{00291\ \doxymbox{\hyperlink{classfibonacci__node}{fibonacci\_node<K,V>}}\ *}
+\DoxyCodeLine{00292\ \doxymbox{\hyperlink{classfibonacci__node_ad09c709d4677c23eea7539326cd47325}{fibonacci\_node<K,V>::remove}}\ ()}
+\DoxyCodeLine{00293\ \{}
+\DoxyCodeLine{00294\ \ \ \doxymbox{\hyperlink{classfibonacci__node_a46b11f1abadb4c80a1c0f18873757763}{fibonacci\_node<K,V>}}\ *ret;}
+\DoxyCodeLine{00295\ }
+\DoxyCodeLine{00296\ \ \ \textcolor{keywordflow}{if}\ (\textcolor{keyword}{this}\ ==\ \doxymbox{\hyperlink{classfibonacci__node_a0b128027b9e999e8da008107278d49ad}{m\_left}})}
+\DoxyCodeLine{00297\ \ \ \ \ ret\ =\ \doxymbox{\hyperlink{stddef_8h_a070d2ce7b6bb7e5c05602aa8c308d0c4}{NULL}};}
+\DoxyCodeLine{00298\ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00299\ \ \ \ \ ret\ =\ \doxymbox{\hyperlink{classfibonacci__node_a0b128027b9e999e8da008107278d49ad}{m\_left}};}
+\DoxyCodeLine{00300\ }
+\DoxyCodeLine{00301\ \ \ \textcolor{keywordflow}{if}\ (\doxymbox{\hyperlink{classfibonacci__node_a034e0d4b03eb71c6f6ed47d675c05488}{m\_parent}}\ !=\ \doxymbox{\hyperlink{stddef_8h_a070d2ce7b6bb7e5c05602aa8c308d0c4}{NULL}}\ \&\&\ \doxymbox{\hyperlink{classfibonacci__node_a034e0d4b03eb71c6f6ed47d675c05488}{m\_parent}}-\/>m\_child\ ==\ \textcolor{keyword}{this})}
+\DoxyCodeLine{00302\ \ \ \ \ \doxymbox{\hyperlink{classfibonacci__node_a034e0d4b03eb71c6f6ed47d675c05488}{m\_parent}}-\/>m\_child\ =\ ret;}
+\DoxyCodeLine{00303\ }
+\DoxyCodeLine{00304\ \ \ \doxymbox{\hyperlink{classfibonacci__node_a403fcd1010ea84d8524c41bb04189e8e}{m\_right}}-\/>m\_left\ =\ \doxymbox{\hyperlink{classfibonacci__node_a0b128027b9e999e8da008107278d49ad}{m\_left}};}
+\DoxyCodeLine{00305\ \ \ \doxymbox{\hyperlink{classfibonacci__node_a0b128027b9e999e8da008107278d49ad}{m\_left}}-\/>m\_right\ =\ \doxymbox{\hyperlink{classfibonacci__node_a403fcd1010ea84d8524c41bb04189e8e}{m\_right}};}
+\DoxyCodeLine{00306\ }
+\DoxyCodeLine{00307\ \ \ \doxymbox{\hyperlink{classfibonacci__node_a034e0d4b03eb71c6f6ed47d675c05488}{m\_parent}}\ =\ \doxymbox{\hyperlink{stddef_8h_a070d2ce7b6bb7e5c05602aa8c308d0c4}{NULL}};}
+\DoxyCodeLine{00308\ \ \ \doxymbox{\hyperlink{classfibonacci__node_a0b128027b9e999e8da008107278d49ad}{m\_left}}\ =\ \textcolor{keyword}{this};}
+\DoxyCodeLine{00309\ \ \ \doxymbox{\hyperlink{classfibonacci__node_a403fcd1010ea84d8524c41bb04189e8e}{m\_right}}\ =\ \textcolor{keyword}{this};}
+\DoxyCodeLine{00310\ }
+\DoxyCodeLine{00311\ \ \ \textcolor{keywordflow}{return}\ ret;}
+\DoxyCodeLine{00312\ \}}
+\DoxyCodeLine{00313\ }
+\DoxyCodeLine{00314\ \textcolor{comment}{/*\ Link\ the\ node\ with\ PARENT.\ \ */}}
+\DoxyCodeLine{00315\ }
+\DoxyCodeLine{00316\ \textcolor{keyword}{template}<\textcolor{keyword}{class}\ K,\ \textcolor{keyword}{class}\ V>}
+\DoxyCodeLine{00317\ \textcolor{keywordtype}{void}}
+\DoxyCodeLine{00318\ \doxymbox{\hyperlink{classfibonacci__node_a47bd5e2e61e33cba7cecd15728a66c75}{fibonacci\_node<K,V>::link}}\ (\doxymbox{\hyperlink{classfibonacci__node_a46b11f1abadb4c80a1c0f18873757763}{fibonacci\_node<K,V>}}\ *parent)}
+\DoxyCodeLine{00319\ \{}
+\DoxyCodeLine{00320\ \ \ \textcolor{keywordflow}{if}\ (parent-\/>\doxymbox{\hyperlink{classfibonacci__node_a0ef91fbca07b841b1593b8d947a9bbc2}{m\_child}}\ ==\ \doxymbox{\hyperlink{stddef_8h_a070d2ce7b6bb7e5c05602aa8c308d0c4}{NULL}})}
+\DoxyCodeLine{00321\ \ \ \ \ parent-\/>\doxymbox{\hyperlink{classfibonacci__node_a0ef91fbca07b841b1593b8d947a9bbc2}{m\_child}}\ =\ \textcolor{keyword}{this};}
+\DoxyCodeLine{00322\ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00323\ \ \ \ \ parent-\/>\doxymbox{\hyperlink{classfibonacci__node_a0ef91fbca07b841b1593b8d947a9bbc2}{m\_child}}-\/>\doxymbox{\hyperlink{classfibonacci__node_a74aa064bb0f9fd7678eaea22c7c05376}{insert\_before}}\ (\textcolor{keyword}{this});}
+\DoxyCodeLine{00324\ \ \ \doxymbox{\hyperlink{classfibonacci__node_a034e0d4b03eb71c6f6ed47d675c05488}{m\_parent}}\ =\ parent;}
+\DoxyCodeLine{00325\ \ \ parent-\/>\doxymbox{\hyperlink{classfibonacci__node_aad98faa9aee18ff77d41e6f8fb9fc087}{m\_degree}}++;}
+\DoxyCodeLine{00326\ \ \ \doxymbox{\hyperlink{classfibonacci__node_a9f728f2c52f6db885ce50bb7d762d466}{m\_mark}}\ =\ 0;}
+\DoxyCodeLine{00327\ \}}
+\DoxyCodeLine{00328\ }
+\DoxyCodeLine{00329\ \textcolor{comment}{/*\ Put\ node\ B\ after\ this\ node.\ \ */}}
+\DoxyCodeLine{00330\ }
+\DoxyCodeLine{00331\ \textcolor{keyword}{template}<\textcolor{keyword}{class}\ K,\ \textcolor{keyword}{class}\ V>}
+\DoxyCodeLine{00332\ \textcolor{keywordtype}{void}}
+\DoxyCodeLine{00333\ \doxymbox{\hyperlink{classfibonacci__node_ade20cc6f4af64b31323e242ecb1daebf}{fibonacci\_node<K,V>::insert\_after}}\ (\doxymbox{\hyperlink{classfibonacci__node_a46b11f1abadb4c80a1c0f18873757763}{fibonacci\_node<K,V>}}\ *\doxymbox{\hyperlink{poly-int_8h_af3bb9d9df219585072cf9e4e95572f70}{b}})}
+\DoxyCodeLine{00334\ \{}
+\DoxyCodeLine{00335\ \ \ \doxymbox{\hyperlink{classfibonacci__node_a46b11f1abadb4c80a1c0f18873757763}{fibonacci\_node<K,V>}}\ *\doxymbox{\hyperlink{poly-int_8h_af77c881600a14567e276ee17dfb8764f}{a}}\ =\ \textcolor{keyword}{this};}
+\DoxyCodeLine{00336\ }
+\DoxyCodeLine{00337\ \ \ \textcolor{keywordflow}{if}\ (\doxymbox{\hyperlink{poly-int_8h_af77c881600a14567e276ee17dfb8764f}{a}}\ ==\ \doxymbox{\hyperlink{poly-int_8h_af77c881600a14567e276ee17dfb8764f}{a}}-\/>m\_right)}
+\DoxyCodeLine{00338\ \ \ \ \ \{}
+\DoxyCodeLine{00339\ \ \ \ \ \ \ \doxymbox{\hyperlink{poly-int_8h_af77c881600a14567e276ee17dfb8764f}{a}}-\/>m\_right\ =\ \doxymbox{\hyperlink{poly-int_8h_af3bb9d9df219585072cf9e4e95572f70}{b}};}
+\DoxyCodeLine{00340\ \ \ \ \ \ \ \doxymbox{\hyperlink{poly-int_8h_af77c881600a14567e276ee17dfb8764f}{a}}-\/>m\_left\ =\ \doxymbox{\hyperlink{poly-int_8h_af3bb9d9df219585072cf9e4e95572f70}{b}};}
+\DoxyCodeLine{00341\ \ \ \ \ \ \ \doxymbox{\hyperlink{poly-int_8h_af3bb9d9df219585072cf9e4e95572f70}{b}}-\/>m\_right\ =\ \doxymbox{\hyperlink{poly-int_8h_af77c881600a14567e276ee17dfb8764f}{a}};}
+\DoxyCodeLine{00342\ \ \ \ \ \ \ \doxymbox{\hyperlink{poly-int_8h_af3bb9d9df219585072cf9e4e95572f70}{b}}-\/>m\_left\ =\ \doxymbox{\hyperlink{poly-int_8h_af77c881600a14567e276ee17dfb8764f}{a}};}
+\DoxyCodeLine{00343\ \ \ \ \ \}}
+\DoxyCodeLine{00344\ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00345\ \ \ \ \ \{}
+\DoxyCodeLine{00346\ \ \ \ \ \ \ \doxymbox{\hyperlink{poly-int_8h_af3bb9d9df219585072cf9e4e95572f70}{b}}-\/>m\_right\ =\ \doxymbox{\hyperlink{poly-int_8h_af77c881600a14567e276ee17dfb8764f}{a}}-\/>m\_right;}
+\DoxyCodeLine{00347\ \ \ \ \ \ \ \doxymbox{\hyperlink{poly-int_8h_af77c881600a14567e276ee17dfb8764f}{a}}-\/>m\_right-\/>m\_left\ =\ \doxymbox{\hyperlink{poly-int_8h_af3bb9d9df219585072cf9e4e95572f70}{b}};}
+\DoxyCodeLine{00348\ \ \ \ \ \ \ \doxymbox{\hyperlink{poly-int_8h_af77c881600a14567e276ee17dfb8764f}{a}}-\/>m\_right\ =\ \doxymbox{\hyperlink{poly-int_8h_af3bb9d9df219585072cf9e4e95572f70}{b}};}
+\DoxyCodeLine{00349\ \ \ \ \ \ \ \doxymbox{\hyperlink{poly-int_8h_af3bb9d9df219585072cf9e4e95572f70}{b}}-\/>m\_left\ =\ \doxymbox{\hyperlink{poly-int_8h_af77c881600a14567e276ee17dfb8764f}{a}};}
+\DoxyCodeLine{00350\ \ \ \ \ \}}
+\DoxyCodeLine{00351\ \}}
+\DoxyCodeLine{00352\ }
+\DoxyCodeLine{00353\ \textcolor{comment}{/*\ Insert\ new\ node\ given\ by\ KEY\ and\ DATA\ associated\ with\ the\ key.\ \ */}}
+\DoxyCodeLine{00354\ }
+\DoxyCodeLine{00355\ \textcolor{keyword}{template}<\textcolor{keyword}{class}\ K,\ \textcolor{keyword}{class}\ V>}
+\DoxyCodeLine{00356\ \doxymbox{\hyperlink{classfibonacci__node}{fibonacci\_node<K,V>}}*}
+\DoxyCodeLine{00357\ \doxymbox{\hyperlink{classfibonacci__heap_af984ec239686defec30a170a32f6e1a9}{fibonacci\_heap<K,V>::insert}}\ (K\ key,\ V\ *data)}
+\DoxyCodeLine{00358\ \{}
+\DoxyCodeLine{00359\ \ \ \textcolor{comment}{/*\ Create\ the\ new\ node.\ \ */}}
+\DoxyCodeLine{00360\ \ \ \doxymbox{\hyperlink{classfibonacci__node}{fibonacci\_node<K,V>}}\ *node\ =\ \textcolor{keyword}{new}\ (\doxymbox{\hyperlink{classfibonacci__heap_a98bbfad962946ac85301f00cbd4cdba8}{m\_allocator}}-\/>allocate\ ())}
+\DoxyCodeLine{00361\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{classfibonacci__node_a663617c03a9dbef5e8a3e9a39b791e4a}{fibonacci\_node\_t}}\ (key,\ data);}
+\DoxyCodeLine{00362\ }
+\DoxyCodeLine{00363\ \ \ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{classfibonacci__heap_a738f7564fd22a4a7998bf6655760f348}{insert\_node}}\ (node);}
+\DoxyCodeLine{00364\ \}}
+\DoxyCodeLine{00365\ }
+\DoxyCodeLine{00366\ \textcolor{comment}{/*\ Insert\ new\ NODE\ given\ by\ DATA\ associated\ with\ the\ key.\ \ */}}
+\DoxyCodeLine{00367\ }
+\DoxyCodeLine{00368\ \textcolor{keyword}{template}<\textcolor{keyword}{class}\ K,\ \textcolor{keyword}{class}\ V>}
+\DoxyCodeLine{00369\ \doxymbox{\hyperlink{classfibonacci__node}{fibonacci\_node<K,V>}}*}
+\DoxyCodeLine{00370\ \doxymbox{\hyperlink{classfibonacci__heap_af984ec239686defec30a170a32f6e1a9}{fibonacci\_heap<K,V>::insert}}\ (\doxymbox{\hyperlink{classfibonacci__heap_aab280d4eedc716f36943c1f44cbe49ac}{fibonacci\_node\_t}}\ *node,\ K\ key,\ V\ *data)}
+\DoxyCodeLine{00371\ \{}
+\DoxyCodeLine{00372\ \ \ \textcolor{comment}{/*\ Set\ the\ node's\ data.\ \ */}}
+\DoxyCodeLine{00373\ \ \ node-\/>\doxymbox{\hyperlink{classfibonacci__node_a6f56a524c7e2c47045c70a81e3c5c276}{m\_data}}\ =\ data;}
+\DoxyCodeLine{00374\ \ \ node-\/>\doxymbox{\hyperlink{classfibonacci__node_ad22672be6a46543720afcf124ff37ab7}{m\_key}}\ =\ key;}
+\DoxyCodeLine{00375\ }
+\DoxyCodeLine{00376\ \ \ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{classfibonacci__heap_a738f7564fd22a4a7998bf6655760f348}{insert\_node}}\ (node);}
+\DoxyCodeLine{00377\ \}}
+\DoxyCodeLine{00378\ }
+\DoxyCodeLine{00379\ \textcolor{comment}{/*\ Insert\ new\ NODE\ that\ has\ already\ filled\ key\ and\ value.\ \ */}}
+\DoxyCodeLine{00380\ }
+\DoxyCodeLine{00381\ \textcolor{keyword}{template}<\textcolor{keyword}{class}\ K,\ \textcolor{keyword}{class}\ V>}
+\DoxyCodeLine{00382\ \doxymbox{\hyperlink{classfibonacci__node}{fibonacci\_node<K,V>}}*}
+\DoxyCodeLine{00383\ \doxymbox{\hyperlink{classfibonacci__heap_a738f7564fd22a4a7998bf6655760f348}{fibonacci\_heap<K,V>::insert\_node}}\ (\doxymbox{\hyperlink{classfibonacci__heap_aab280d4eedc716f36943c1f44cbe49ac}{fibonacci\_node\_t}}\ *node)}
+\DoxyCodeLine{00384\ \{}
+\DoxyCodeLine{00385\ \ \ \textcolor{comment}{/*\ Insert\ it\ into\ the\ root\ list.\ \ */}}
+\DoxyCodeLine{00386\ \ \ \doxymbox{\hyperlink{classfibonacci__heap_a0e74fbfe0e8b8cd5c8968018d4b32057}{insert\_root}}\ (node);}
+\DoxyCodeLine{00387\ }
+\DoxyCodeLine{00388\ \ \ \textcolor{comment}{/*\ If\ their\ was\ no\ minimum,\ or\ this\ key\ is\ less\ than\ the\ min,}}
+\DoxyCodeLine{00389\ \textcolor{comment}{\ \ \ \ \ it's\ the\ new\ min.\ \ */}}
+\DoxyCodeLine{00390\ \ \ \textcolor{keywordflow}{if}\ (\doxymbox{\hyperlink{classfibonacci__heap_ab7c6e3cb8f983498c0ab2b88cf18ac28}{m\_min}}\ ==\ \doxymbox{\hyperlink{stddef_8h_a070d2ce7b6bb7e5c05602aa8c308d0c4}{NULL}}\ ||\ node-\/>\doxymbox{\hyperlink{classfibonacci__node_ad22672be6a46543720afcf124ff37ab7}{m\_key}}\ <\ \doxymbox{\hyperlink{classfibonacci__heap_ab7c6e3cb8f983498c0ab2b88cf18ac28}{m\_min}}-\/>m\_key)}
+\DoxyCodeLine{00391\ \ \ \ \ \doxymbox{\hyperlink{classfibonacci__heap_ab7c6e3cb8f983498c0ab2b88cf18ac28}{m\_min}}\ =\ node;}
+\DoxyCodeLine{00392\ }
+\DoxyCodeLine{00393\ \ \ \doxymbox{\hyperlink{classfibonacci__heap_a0ba47be73a144abe048cf91942199d04}{m\_nodes}}++;}
+\DoxyCodeLine{00394\ }
+\DoxyCodeLine{00395\ \ \ \textcolor{keywordflow}{return}\ node;}
+\DoxyCodeLine{00396\ \}}
+\DoxyCodeLine{00397\ }
+\DoxyCodeLine{00398\ \textcolor{comment}{/*\ For\ given\ NODE,\ set\ new\ KEY\ and\ DATA\ value.\ \ */}}
+\DoxyCodeLine{00399\ }
+\DoxyCodeLine{00400\ \textcolor{keyword}{template}<\textcolor{keyword}{class}\ K,\ \textcolor{keyword}{class}\ V>}
+\DoxyCodeLine{00401\ V*}
+\DoxyCodeLine{00402\ \doxymbox{\hyperlink{classfibonacci__heap_ab7ff7c5939127f579269631916fd9745}{fibonacci\_heap<K,V>::replace\_key\_data}}\ (\doxymbox{\hyperlink{classfibonacci__node}{fibonacci\_node<K,V>}}\ *node,\ K\ key,}
+\DoxyCodeLine{00403\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ V\ *data)}
+\DoxyCodeLine{00404\ \{}
+\DoxyCodeLine{00405\ \ \ K\ okey;}
+\DoxyCodeLine{00406\ \ \ \doxymbox{\hyperlink{classfibonacci__node}{fibonacci\_node<K,V>}}\ *\doxymbox{\hyperlink{wide-int_8h_aa0ab03c091e4ca9ca82306ad42c7dbfb}{y}};}
+\DoxyCodeLine{00407\ \ \ V\ *odata\ =\ node-\/>\doxymbox{\hyperlink{classfibonacci__node_a6f56a524c7e2c47045c70a81e3c5c276}{m\_data}};}
+\DoxyCodeLine{00408\ }
+\DoxyCodeLine{00409\ \ \ \textcolor{comment}{/*\ If\ we\ wanted\ to,\ we\ do\ a\ real\ increase\ by\ redeleting\ and}}
+\DoxyCodeLine{00410\ \textcolor{comment}{\ \ \ \ \ inserting.\ \ */}}
+\DoxyCodeLine{00411\ \ \ \textcolor{keywordflow}{if}\ (node-\/>\doxymbox{\hyperlink{classfibonacci__node_a6278ae313496c2bf407d0877305bfaf1}{compare\_data}}\ (key)\ >\ 0)}
+\DoxyCodeLine{00412\ \ \ \ \ \{}
+\DoxyCodeLine{00413\ \ \ \ \ \ \ \doxymbox{\hyperlink{classfibonacci__heap_a6a318479899a4ea0e0010c5aaab16c9d}{delete\_node}}\ (node,\ \textcolor{keyword}{false});}
+\DoxyCodeLine{00414\ }
+\DoxyCodeLine{00415\ \ \ \ \ \ \ node\ =\ \textcolor{keyword}{new}\ (node)\ \doxymbox{\hyperlink{classfibonacci__heap_aab280d4eedc716f36943c1f44cbe49ac}{fibonacci\_node\_t}}\ ();}
+\DoxyCodeLine{00416\ \ \ \ \ \ \ \doxymbox{\hyperlink{classfibonacci__heap_af984ec239686defec30a170a32f6e1a9}{insert}}\ (node,\ key,\ data);}
+\DoxyCodeLine{00417\ }
+\DoxyCodeLine{00418\ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ odata;}
+\DoxyCodeLine{00419\ \ \ \ \ \}}
+\DoxyCodeLine{00420\ }
+\DoxyCodeLine{00421\ \ \ okey\ =\ node-\/>\doxymbox{\hyperlink{classfibonacci__node_ad22672be6a46543720afcf124ff37ab7}{m\_key}};}
+\DoxyCodeLine{00422\ \ \ node-\/>\doxymbox{\hyperlink{classfibonacci__node_a6f56a524c7e2c47045c70a81e3c5c276}{m\_data}}\ =\ data;}
+\DoxyCodeLine{00423\ \ \ node-\/>\doxymbox{\hyperlink{classfibonacci__node_ad22672be6a46543720afcf124ff37ab7}{m\_key}}\ =\ key;}
+\DoxyCodeLine{00424\ \ \ \doxymbox{\hyperlink{wide-int_8h_aa0ab03c091e4ca9ca82306ad42c7dbfb}{y}}\ =\ node-\/>\doxymbox{\hyperlink{classfibonacci__node_a034e0d4b03eb71c6f6ed47d675c05488}{m\_parent}};}
+\DoxyCodeLine{00425\ }
+\DoxyCodeLine{00426\ \ \ \textcolor{comment}{/*\ Short-\/circuit\ if\ the\ key\ is\ the\ same,\ as\ we\ then\ don't\ have\ to}}
+\DoxyCodeLine{00427\ \textcolor{comment}{\ \ \ \ \ do\ anything.\ \ Except\ if\ we're\ trying\ to\ force\ the\ new\ node\ to}}
+\DoxyCodeLine{00428\ \textcolor{comment}{\ \ \ \ \ be\ the\ new\ minimum\ for\ delete.\ \ */}}
+\DoxyCodeLine{00429\ \ \ \textcolor{keywordflow}{if}\ (okey\ ==\ key\ \&\&\ okey\ !=\ \doxymbox{\hyperlink{classfibonacci__heap_ac3afaeecfec83be4e99fb6a18d03e1ed}{m\_global\_min\_key}})}
+\DoxyCodeLine{00430\ \ \ \ \ \textcolor{keywordflow}{return}\ odata;}
+\DoxyCodeLine{00431\ }
+\DoxyCodeLine{00432\ \ \ \textcolor{comment}{/*\ These\ two\ compares\ are\ specifically\ <=\ 0\ to\ make\ sure\ that\ in\ the\ case}}
+\DoxyCodeLine{00433\ \textcolor{comment}{\ \ \ \ \ of\ equality,\ a\ node\ we\ replaced\ the\ data\ on,\ becomes\ the\ new\ min.\ \ This}}
+\DoxyCodeLine{00434\ \textcolor{comment}{\ \ \ \ \ is\ needed\ so\ that\ delete's\ call\ to\ extractmin\ gets\ the\ right\ node.\ \ */}}
+\DoxyCodeLine{00435\ \ \ \textcolor{keywordflow}{if}\ (\doxymbox{\hyperlink{wide-int_8h_aa0ab03c091e4ca9ca82306ad42c7dbfb}{y}}\ !=\ \doxymbox{\hyperlink{stddef_8h_a070d2ce7b6bb7e5c05602aa8c308d0c4}{NULL}}\ \&\&\ node-\/>\doxymbox{\hyperlink{classfibonacci__node_ae5ed4ac1998859833ebb764911b61cc7}{compare}}\ (\doxymbox{\hyperlink{wide-int_8h_aa0ab03c091e4ca9ca82306ad42c7dbfb}{y}})\ <=\ 0)}
+\DoxyCodeLine{00436\ \ \ \ \ \{}
+\DoxyCodeLine{00437\ \ \ \ \ \ \ \doxymbox{\hyperlink{classfibonacci__heap_a185d0ddfaf44b784b71de2dce043f06b}{cut}}\ (node,\ \doxymbox{\hyperlink{wide-int_8h_aa0ab03c091e4ca9ca82306ad42c7dbfb}{y}});}
+\DoxyCodeLine{00438\ \ \ \ \ \ \ \doxymbox{\hyperlink{classfibonacci__heap_acca72b898b3c54fa7005638af0af00ab}{cascading\_cut}}\ (\doxymbox{\hyperlink{wide-int_8h_aa0ab03c091e4ca9ca82306ad42c7dbfb}{y}});}
+\DoxyCodeLine{00439\ \ \ \ \ \}}
+\DoxyCodeLine{00440\ }
+\DoxyCodeLine{00441\ \ \ \textcolor{keywordflow}{if}\ (node-\/>\doxymbox{\hyperlink{classfibonacci__node_ae5ed4ac1998859833ebb764911b61cc7}{compare}}\ (\doxymbox{\hyperlink{classfibonacci__heap_ab7c6e3cb8f983498c0ab2b88cf18ac28}{m\_min}})\ <=\ 0)}
+\DoxyCodeLine{00442\ \ \ \ \ \doxymbox{\hyperlink{classfibonacci__heap_ab7c6e3cb8f983498c0ab2b88cf18ac28}{m\_min}}\ =\ node;}
+\DoxyCodeLine{00443\ }
+\DoxyCodeLine{00444\ \ \ \textcolor{keywordflow}{return}\ odata;}
+\DoxyCodeLine{00445\ \}}
+\DoxyCodeLine{00446\ }
+\DoxyCodeLine{00447\ \textcolor{comment}{/*\ Extract\ minimum\ node\ in\ the\ heap.\ \ Delete\ fibonacci\ node\ if\ RELEASE}}
+\DoxyCodeLine{00448\ \textcolor{comment}{\ \ \ is\ true.\ \ */}}
+\DoxyCodeLine{00449\ }
+\DoxyCodeLine{00450\ \textcolor{keyword}{template}<\textcolor{keyword}{class}\ K,\ \textcolor{keyword}{class}\ V>}
+\DoxyCodeLine{00451\ V*}
+\DoxyCodeLine{00452\ \doxymbox{\hyperlink{classfibonacci__heap_aa71c376a10541b841cd874013f6dd8b5}{fibonacci\_heap<K,V>::extract\_min}}\ (\textcolor{keywordtype}{bool}\ release)}
+\DoxyCodeLine{00453\ \{}
+\DoxyCodeLine{00454\ \ \ \doxymbox{\hyperlink{classfibonacci__node}{fibonacci\_node<K,V>}}\ *z;}
+\DoxyCodeLine{00455\ \ \ V\ *ret\ =\ \doxymbox{\hyperlink{stddef_8h_a070d2ce7b6bb7e5c05602aa8c308d0c4}{NULL}};}
+\DoxyCodeLine{00456\ }
+\DoxyCodeLine{00457\ \ \ \textcolor{comment}{/*\ If\ we\ don't\ have\ a\ min\ set,\ it\ means\ we\ have\ no\ nodes.\ \ */}}
+\DoxyCodeLine{00458\ \ \ \textcolor{keywordflow}{if}\ (\doxymbox{\hyperlink{classfibonacci__heap_ab7c6e3cb8f983498c0ab2b88cf18ac28}{m\_min}}\ !=\ \doxymbox{\hyperlink{stddef_8h_a070d2ce7b6bb7e5c05602aa8c308d0c4}{NULL}})}
+\DoxyCodeLine{00459\ \ \ \ \ \{}
+\DoxyCodeLine{00460\ \ \ \ \ \ \ \textcolor{comment}{/*\ Otherwise,\ extract\ the\ min\ node,\ free\ the\ node,\ and\ return\ the}}
+\DoxyCodeLine{00461\ \textcolor{comment}{\ \ \ \ \ \ \ node's\ data.\ \ */}}
+\DoxyCodeLine{00462\ \ \ \ \ \ \ z\ =\ \doxymbox{\hyperlink{classfibonacci__heap_acf138141ae7afa3ce929d9389b4907cf}{extract\_minimum\_node}}\ ();}
+\DoxyCodeLine{00463\ \ \ \ \ \ \ ret\ =\ z-\/>\doxymbox{\hyperlink{classfibonacci__node_a6f56a524c7e2c47045c70a81e3c5c276}{m\_data}};}
+\DoxyCodeLine{00464\ }
+\DoxyCodeLine{00465\ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (release)}
+\DoxyCodeLine{00466\ \ \ \ \ \{}
+\DoxyCodeLine{00467\ \ \ \ \ \ \ z-\/>\string~fibonacci\_node\_t\ ();}
+\DoxyCodeLine{00468\ \ \ \ \ \ \ \doxymbox{\hyperlink{classfibonacci__heap_a98bbfad962946ac85301f00cbd4cdba8}{m\_allocator}}-\/>remove\ (z);}
+\DoxyCodeLine{00469\ \ \ \ \ \}}
+\DoxyCodeLine{00470\ \ \ \ \ \}}
+\DoxyCodeLine{00471\ }
+\DoxyCodeLine{00472\ \ \ \textcolor{keywordflow}{return}\ ret;}
+\DoxyCodeLine{00473\ \}}
+\DoxyCodeLine{00474\ }
+\DoxyCodeLine{00475\ \textcolor{comment}{/*\ Delete\ NODE\ in\ the\ heap,\ if\ RELEASE\ is\ specified\ memory\ is\ released.\ \ */}}
+\DoxyCodeLine{00476\ }
+\DoxyCodeLine{00477\ \textcolor{keyword}{template}<\textcolor{keyword}{class}\ K,\ \textcolor{keyword}{class}\ V>}
+\DoxyCodeLine{00478\ V*}
+\DoxyCodeLine{00479\ \doxymbox{\hyperlink{classfibonacci__heap_a6a318479899a4ea0e0010c5aaab16c9d}{fibonacci\_heap<K,V>::delete\_node}}\ (\doxymbox{\hyperlink{classfibonacci__node}{fibonacci\_node<K,V>}}\ *node,\ \textcolor{keywordtype}{bool}\ release)}
+\DoxyCodeLine{00480\ \{}
+\DoxyCodeLine{00481\ \ \ V\ *ret\ =\ node-\/>\doxymbox{\hyperlink{classfibonacci__node_a6f56a524c7e2c47045c70a81e3c5c276}{m\_data}};}
+\DoxyCodeLine{00482\ }
+\DoxyCodeLine{00483\ \ \ \textcolor{comment}{/*\ To\ perform\ delete,\ we\ just\ make\ it\ the\ min\ key,\ and\ extract.\ \ */}}
+\DoxyCodeLine{00484\ \ \ \doxymbox{\hyperlink{classfibonacci__heap_afd620b3776aa197c30b299874bcc1f41}{replace\_key}}\ (node,\ \doxymbox{\hyperlink{classfibonacci__heap_ac3afaeecfec83be4e99fb6a18d03e1ed}{m\_global\_min\_key}});}
+\DoxyCodeLine{00485\ \ \ \textcolor{keywordflow}{if}\ (node\ !=\ \doxymbox{\hyperlink{classfibonacci__heap_ab7c6e3cb8f983498c0ab2b88cf18ac28}{m\_min}})}
+\DoxyCodeLine{00486\ \ \ \ \ \{}
+\DoxyCodeLine{00487\ \ \ \ \ \ \ fprintf\ (stderr,\ \textcolor{stringliteral}{"{}Can't\ force\ minimum\ on\ fibheap.\(\backslash\)n"{}});}
+\DoxyCodeLine{00488\ \ \ \ \ \ \ \doxymbox{\hyperlink{system_8h_aef4ff7cf390aba5ab4172cca329a2c89}{abort}}\ ();}
+\DoxyCodeLine{00489\ \ \ \ \ \}}
+\DoxyCodeLine{00490\ \ \ \doxymbox{\hyperlink{classfibonacci__heap_aa71c376a10541b841cd874013f6dd8b5}{extract\_min}}\ (release);}
+\DoxyCodeLine{00491\ }
+\DoxyCodeLine{00492\ \ \ \textcolor{keywordflow}{return}\ ret;}
+\DoxyCodeLine{00493\ \}}
+\DoxyCodeLine{00494\ }
+\DoxyCodeLine{00495\ \textcolor{comment}{/*\ Union\ the\ heap\ with\ HEAPB.\ \ One\ of\ the\ heaps\ is\ going\ to\ be\ deleted.\ \ */}}
+\DoxyCodeLine{00496\ }
+\DoxyCodeLine{00497\ \textcolor{keyword}{template}<\textcolor{keyword}{class}\ K,\ \textcolor{keyword}{class}\ V>}
+\DoxyCodeLine{00498\ \doxymbox{\hyperlink{classfibonacci__heap}{fibonacci\_heap<K,V>}}*}
+\DoxyCodeLine{00499\ \doxymbox{\hyperlink{classfibonacci__heap_a0d765161c1d9764799ef4f9f9715f08d}{fibonacci\_heap<K,V>::union\_with}}\ (\doxymbox{\hyperlink{classfibonacci__heap_af63720d2f7c3481a85f75166707a595b}{fibonacci\_heap<K,V>}}\ *heapb)}
+\DoxyCodeLine{00500\ \{}
+\DoxyCodeLine{00501\ \ \ \doxymbox{\hyperlink{classfibonacci__heap_af63720d2f7c3481a85f75166707a595b}{fibonacci\_heap<K,V>}}\ *heapa\ =\ \textcolor{keyword}{this};}
+\DoxyCodeLine{00502\ }
+\DoxyCodeLine{00503\ \ \ \doxymbox{\hyperlink{classfibonacci__node}{fibonacci\_node<K,V>}}\ *a\_root,\ *b\_root;}
+\DoxyCodeLine{00504\ }
+\DoxyCodeLine{00505\ \ \ \textcolor{comment}{/*\ Both\ heaps\ must\ share\ allocator.\ \ */}}
+\DoxyCodeLine{00506\ \ \ \doxymbox{\hyperlink{system_8h_aff447899dc74d54931b2bc2d47de9423}{gcc\_checking\_assert}}\ (\doxymbox{\hyperlink{classfibonacci__heap_a98bbfad962946ac85301f00cbd4cdba8}{m\_allocator}}\ ==\ heapb-\/>\doxymbox{\hyperlink{classfibonacci__heap_a98bbfad962946ac85301f00cbd4cdba8}{m\_allocator}});}
+\DoxyCodeLine{00507\ }
+\DoxyCodeLine{00508\ \ \ \textcolor{comment}{/*\ If\ one\ of\ the\ heaps\ is\ empty,\ the\ union\ is\ just\ the\ other\ heap.\ \ */}}
+\DoxyCodeLine{00509\ \ \ \textcolor{keywordflow}{if}\ ((a\_root\ =\ heapa-\/>\doxymbox{\hyperlink{classfibonacci__heap_a6a9db31b3c864fb8d85bca9f23a25bb6}{m\_root}})\ ==\ \doxymbox{\hyperlink{stddef_8h_a070d2ce7b6bb7e5c05602aa8c308d0c4}{NULL}})}
+\DoxyCodeLine{00510\ \ \ \ \ \{}
+\DoxyCodeLine{00511\ \ \ \ \ \ \ \textcolor{keyword}{delete}\ (heapa);}
+\DoxyCodeLine{00512\ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ heapb;}
+\DoxyCodeLine{00513\ \ \ \ \ \}}
+\DoxyCodeLine{00514\ \ \ \textcolor{keywordflow}{if}\ ((b\_root\ =\ heapb-\/>\doxymbox{\hyperlink{classfibonacci__heap_a6a9db31b3c864fb8d85bca9f23a25bb6}{m\_root}})\ ==\ \doxymbox{\hyperlink{stddef_8h_a070d2ce7b6bb7e5c05602aa8c308d0c4}{NULL}})}
+\DoxyCodeLine{00515\ \ \ \ \ \{}
+\DoxyCodeLine{00516\ \ \ \ \ \ \ \textcolor{keyword}{delete}\ (heapb);}
+\DoxyCodeLine{00517\ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ heapa;}
+\DoxyCodeLine{00518\ \ \ \ \ \}}
+\DoxyCodeLine{00519\ }
+\DoxyCodeLine{00520\ \ \ \textcolor{comment}{/*\ Merge\ them\ to\ the\ next\ nodes\ on\ the\ opposite\ chain.\ \ */}}
+\DoxyCodeLine{00521\ \ \ a\_root-\/>\doxymbox{\hyperlink{classfibonacci__node_a0b128027b9e999e8da008107278d49ad}{m\_left}}-\/>\doxymbox{\hyperlink{classfibonacci__node_a403fcd1010ea84d8524c41bb04189e8e}{m\_right}}\ =\ b\_root;}
+\DoxyCodeLine{00522\ \ \ b\_root-\/>\doxymbox{\hyperlink{classfibonacci__node_a0b128027b9e999e8da008107278d49ad}{m\_left}}-\/>\doxymbox{\hyperlink{classfibonacci__node_a403fcd1010ea84d8524c41bb04189e8e}{m\_right}}\ =\ a\_root;}
+\DoxyCodeLine{00523\ \ \ std::swap\ (a\_root-\/>\doxymbox{\hyperlink{classfibonacci__node_a0b128027b9e999e8da008107278d49ad}{m\_left}},\ b\_root-\/>\doxymbox{\hyperlink{classfibonacci__node_a0b128027b9e999e8da008107278d49ad}{m\_left}});}
+\DoxyCodeLine{00524\ \ \ heapa-\/>\doxymbox{\hyperlink{classfibonacci__heap_a0ba47be73a144abe048cf91942199d04}{m\_nodes}}\ +=\ heapb-\/>\doxymbox{\hyperlink{classfibonacci__heap_a0ba47be73a144abe048cf91942199d04}{m\_nodes}};}
+\DoxyCodeLine{00525\ }
+\DoxyCodeLine{00526\ \ \ \textcolor{comment}{/*\ And\ set\ the\ new\ minimum,\ if\ it's\ changed.\ \ */}}
+\DoxyCodeLine{00527\ \ \ \textcolor{keywordflow}{if}\ (heapb-\/>\doxymbox{\hyperlink{classfibonacci__heap_ab7c6e3cb8f983498c0ab2b88cf18ac28}{m\_min}}-\/>\doxymbox{\hyperlink{classfibonacci__node_ae5ed4ac1998859833ebb764911b61cc7}{compare}}\ (heapa-\/>\doxymbox{\hyperlink{classfibonacci__heap_ab7c6e3cb8f983498c0ab2b88cf18ac28}{m\_min}})\ <\ 0)}
+\DoxyCodeLine{00528\ \ \ \ \ heapa-\/>\doxymbox{\hyperlink{classfibonacci__heap_ab7c6e3cb8f983498c0ab2b88cf18ac28}{m\_min}}\ =\ heapb-\/>\doxymbox{\hyperlink{classfibonacci__heap_ab7c6e3cb8f983498c0ab2b88cf18ac28}{m\_min}};}
+\DoxyCodeLine{00529\ }
+\DoxyCodeLine{00530\ \ \ \textcolor{comment}{/*\ Set\ m\_min\ to\ NULL\ to\ not\ to\ delete\ live\ fibonacci\ nodes.\ \ */}}
+\DoxyCodeLine{00531\ \ \ heapb-\/>\doxymbox{\hyperlink{classfibonacci__heap_ab7c6e3cb8f983498c0ab2b88cf18ac28}{m\_min}}\ =\ \doxymbox{\hyperlink{stddef_8h_a070d2ce7b6bb7e5c05602aa8c308d0c4}{NULL}};}
+\DoxyCodeLine{00532\ \ \ \textcolor{keyword}{delete}\ (heapb);}
+\DoxyCodeLine{00533\ }
+\DoxyCodeLine{00534\ \ \ \textcolor{keywordflow}{return}\ heapa;}
+\DoxyCodeLine{00535\ \}}
+\DoxyCodeLine{00536\ }
+\DoxyCodeLine{00537\ \textcolor{comment}{/*\ Insert\ it\ into\ the\ root\ list.\ \ */}}
+\DoxyCodeLine{00538\ }
+\DoxyCodeLine{00539\ \textcolor{keyword}{template}<\textcolor{keyword}{class}\ K,\ \textcolor{keyword}{class}\ V>}
+\DoxyCodeLine{00540\ \textcolor{keywordtype}{void}}
+\DoxyCodeLine{00541\ \doxymbox{\hyperlink{classfibonacci__heap_a0e74fbfe0e8b8cd5c8968018d4b32057}{fibonacci\_heap<K,V>::insert\_root}}\ (\doxymbox{\hyperlink{classfibonacci__heap_aab280d4eedc716f36943c1f44cbe49ac}{fibonacci\_node\_t}}\ *node)}
+\DoxyCodeLine{00542\ \{}
+\DoxyCodeLine{00543\ \ \ \textcolor{comment}{/*\ If\ the\ heap\ is\ currently\ empty,\ the\ new\ node\ becomes\ the\ singleton}}
+\DoxyCodeLine{00544\ \textcolor{comment}{\ \ \ \ \ circular\ root\ list.\ \ */}}
+\DoxyCodeLine{00545\ \ \ \textcolor{keywordflow}{if}\ (\doxymbox{\hyperlink{classfibonacci__heap_a6a9db31b3c864fb8d85bca9f23a25bb6}{m\_root}}\ ==\ \doxymbox{\hyperlink{stddef_8h_a070d2ce7b6bb7e5c05602aa8c308d0c4}{NULL}})}
+\DoxyCodeLine{00546\ \ \ \ \ \{}
+\DoxyCodeLine{00547\ \ \ \ \ \ \ \doxymbox{\hyperlink{classfibonacci__heap_a6a9db31b3c864fb8d85bca9f23a25bb6}{m\_root}}\ =\ node;}
+\DoxyCodeLine{00548\ \ \ \ \ \ \ node-\/>\doxymbox{\hyperlink{classfibonacci__node_a0b128027b9e999e8da008107278d49ad}{m\_left}}\ =\ node;}
+\DoxyCodeLine{00549\ \ \ \ \ \ \ node-\/>\doxymbox{\hyperlink{classfibonacci__node_a403fcd1010ea84d8524c41bb04189e8e}{m\_right}}\ =\ node;}
+\DoxyCodeLine{00550\ \ \ \ \ \ \ \textcolor{keywordflow}{return};}
+\DoxyCodeLine{00551\ \ \ \ \ \}}
+\DoxyCodeLine{00552\ }
+\DoxyCodeLine{00553\ \ \ \textcolor{comment}{/*\ Otherwise,\ insert\ it\ in\ the\ circular\ root\ list\ between\ the\ root}}
+\DoxyCodeLine{00554\ \textcolor{comment}{\ \ \ \ \ and\ it's\ right\ node.\ \ */}}
+\DoxyCodeLine{00555\ \ \ \doxymbox{\hyperlink{classfibonacci__heap_a6a9db31b3c864fb8d85bca9f23a25bb6}{m\_root}}-\/>insert\_after\ (node);}
+\DoxyCodeLine{00556\ \}}
+\DoxyCodeLine{00557\ }
+\DoxyCodeLine{00558\ \textcolor{comment}{/*\ Remove\ NODE\ from\ PARENT's\ child\ list.\ \ */}}
+\DoxyCodeLine{00559\ }
+\DoxyCodeLine{00560\ \textcolor{keyword}{template}<\textcolor{keyword}{class}\ K,\ \textcolor{keyword}{class}\ V>}
+\DoxyCodeLine{00561\ \textcolor{keywordtype}{void}}
+\DoxyCodeLine{00562\ \doxymbox{\hyperlink{classfibonacci__heap_a185d0ddfaf44b784b71de2dce043f06b}{fibonacci\_heap<K,V>::cut}}\ (\doxymbox{\hyperlink{classfibonacci__node}{fibonacci\_node<K,V>}}\ *node,}
+\DoxyCodeLine{00563\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{classfibonacci__node}{fibonacci\_node<K,V>}}\ *parent)}
+\DoxyCodeLine{00564\ \{}
+\DoxyCodeLine{00565\ \ \ node-\/>\doxymbox{\hyperlink{classfibonacci__node_ad09c709d4677c23eea7539326cd47325}{remove}}\ ();}
+\DoxyCodeLine{00566\ \ \ parent-\/>\doxymbox{\hyperlink{classfibonacci__node_aad98faa9aee18ff77d41e6f8fb9fc087}{m\_degree}}-\/-\/;}
+\DoxyCodeLine{00567\ \ \ \doxymbox{\hyperlink{classfibonacci__heap_a0e74fbfe0e8b8cd5c8968018d4b32057}{insert\_root}}\ (node);}
+\DoxyCodeLine{00568\ \ \ node-\/>\doxymbox{\hyperlink{classfibonacci__node_a034e0d4b03eb71c6f6ed47d675c05488}{m\_parent}}\ =\ \doxymbox{\hyperlink{stddef_8h_a070d2ce7b6bb7e5c05602aa8c308d0c4}{NULL}};}
+\DoxyCodeLine{00569\ \ \ node-\/>\doxymbox{\hyperlink{classfibonacci__node_a9f728f2c52f6db885ce50bb7d762d466}{m\_mark}}\ =\ 0;}
+\DoxyCodeLine{00570\ \}}
+\DoxyCodeLine{00571\ }
+\DoxyCodeLine{00572\ \textcolor{comment}{/*\ Process\ cut\ of\ node\ Y\ and\ do\ it\ recursivelly.\ \ */}}
+\DoxyCodeLine{00573\ }
+\DoxyCodeLine{00574\ \textcolor{keyword}{template}<\textcolor{keyword}{class}\ K,\ \textcolor{keyword}{class}\ V>}
+\DoxyCodeLine{00575\ \textcolor{keywordtype}{void}}
+\DoxyCodeLine{00576\ \doxymbox{\hyperlink{classfibonacci__heap_acca72b898b3c54fa7005638af0af00ab}{fibonacci\_heap<K,V>::cascading\_cut}}\ (\doxymbox{\hyperlink{classfibonacci__node}{fibonacci\_node<K,V>}}\ *\doxymbox{\hyperlink{wide-int_8h_aa0ab03c091e4ca9ca82306ad42c7dbfb}{y}})}
+\DoxyCodeLine{00577\ \{}
+\DoxyCodeLine{00578\ \ \ \doxymbox{\hyperlink{classfibonacci__node}{fibonacci\_node<K,V>}}\ *z;}
+\DoxyCodeLine{00579\ }
+\DoxyCodeLine{00580\ \ \ \textcolor{keywordflow}{while}\ ((z\ =\ \doxymbox{\hyperlink{wide-int_8h_aa0ab03c091e4ca9ca82306ad42c7dbfb}{y}}-\/>m\_parent)\ !=\ \doxymbox{\hyperlink{stddef_8h_a070d2ce7b6bb7e5c05602aa8c308d0c4}{NULL}})}
+\DoxyCodeLine{00581\ \ \ \ \ \{}
+\DoxyCodeLine{00582\ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (\doxymbox{\hyperlink{wide-int_8h_aa0ab03c091e4ca9ca82306ad42c7dbfb}{y}}-\/>m\_mark\ ==\ 0)}
+\DoxyCodeLine{00583\ \ \ \ \ \{}
+\DoxyCodeLine{00584\ \ \ \ \ \ \ \doxymbox{\hyperlink{wide-int_8h_aa0ab03c091e4ca9ca82306ad42c7dbfb}{y}}-\/>m\_mark\ =\ 1;}
+\DoxyCodeLine{00585\ \ \ \ \ \ \ \textcolor{keywordflow}{return};}
+\DoxyCodeLine{00586\ \ \ \ \ \}}
+\DoxyCodeLine{00587\ \ \ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00588\ \ \ \ \ \{}
+\DoxyCodeLine{00589\ \ \ \ \ \ \ \doxymbox{\hyperlink{classfibonacci__heap_a185d0ddfaf44b784b71de2dce043f06b}{cut}}\ (\doxymbox{\hyperlink{wide-int_8h_aa0ab03c091e4ca9ca82306ad42c7dbfb}{y}},\ z);}
+\DoxyCodeLine{00590\ \ \ \ \ \ \ \doxymbox{\hyperlink{wide-int_8h_aa0ab03c091e4ca9ca82306ad42c7dbfb}{y}}\ =\ z;}
+\DoxyCodeLine{00591\ \ \ \ \ \}}
+\DoxyCodeLine{00592\ \ \ \ \ \}}
+\DoxyCodeLine{00593\ \}}
+\DoxyCodeLine{00594\ }
+\DoxyCodeLine{00595\ \textcolor{comment}{/*\ Extract\ minimum\ node\ from\ the\ heap.\ \ */}}
+\DoxyCodeLine{00596\ }
+\DoxyCodeLine{00597\ \textcolor{keyword}{template}<\textcolor{keyword}{class}\ K,\ \textcolor{keyword}{class}\ V>}
+\DoxyCodeLine{00598\ \doxymbox{\hyperlink{classfibonacci__node}{fibonacci\_node<K,V>}}*}
+\DoxyCodeLine{00599\ \doxymbox{\hyperlink{classfibonacci__heap_acf138141ae7afa3ce929d9389b4907cf}{fibonacci\_heap<K,V>::extract\_minimum\_node}}\ ()}
+\DoxyCodeLine{00600\ \{}
+\DoxyCodeLine{00601\ \ \ \doxymbox{\hyperlink{classfibonacci__node}{fibonacci\_node<K,V>}}\ *ret\ =\ \doxymbox{\hyperlink{classfibonacci__heap_ab7c6e3cb8f983498c0ab2b88cf18ac28}{m\_min}};}
+\DoxyCodeLine{00602\ \ \ \doxymbox{\hyperlink{classfibonacci__node}{fibonacci\_node<K,V>}}\ *x,\ *\doxymbox{\hyperlink{wide-int_8h_aa0ab03c091e4ca9ca82306ad42c7dbfb}{y}},\ *orig;}
+\DoxyCodeLine{00603\ }
+\DoxyCodeLine{00604\ \ \ \textcolor{comment}{/*\ Attach\ the\ child\ list\ of\ the\ minimum\ node\ to\ the\ root\ list\ of\ the\ heap.}}
+\DoxyCodeLine{00605\ \textcolor{comment}{\ \ \ \ \ If\ there\ is\ no\ child\ list,\ we\ don't\ do\ squat.\ \ */}}
+\DoxyCodeLine{00606\ \ \ \textcolor{keywordflow}{for}\ (x\ =\ ret-\/>\doxymbox{\hyperlink{classfibonacci__node_a0ef91fbca07b841b1593b8d947a9bbc2}{m\_child}},\ orig\ =\ \doxymbox{\hyperlink{stddef_8h_a070d2ce7b6bb7e5c05602aa8c308d0c4}{NULL}};\ x\ !=\ orig\ \&\&\ x\ !=\ \doxymbox{\hyperlink{stddef_8h_a070d2ce7b6bb7e5c05602aa8c308d0c4}{NULL}};\ x\ =\ \doxymbox{\hyperlink{wide-int_8h_aa0ab03c091e4ca9ca82306ad42c7dbfb}{y}})}
+\DoxyCodeLine{00607\ \ \ \ \ \{}
+\DoxyCodeLine{00608\ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (orig\ ==\ \doxymbox{\hyperlink{stddef_8h_a070d2ce7b6bb7e5c05602aa8c308d0c4}{NULL}})}
+\DoxyCodeLine{00609\ \ \ \ \ orig\ =\ x;}
+\DoxyCodeLine{00610\ \ \ \ \ \ \ \doxymbox{\hyperlink{wide-int_8h_aa0ab03c091e4ca9ca82306ad42c7dbfb}{y}}\ =\ x-\/>\doxymbox{\hyperlink{classfibonacci__node_a403fcd1010ea84d8524c41bb04189e8e}{m\_right}};}
+\DoxyCodeLine{00611\ \ \ \ \ \ \ x-\/>\doxymbox{\hyperlink{classfibonacci__node_a034e0d4b03eb71c6f6ed47d675c05488}{m\_parent}}\ =\ \doxymbox{\hyperlink{stddef_8h_a070d2ce7b6bb7e5c05602aa8c308d0c4}{NULL}};}
+\DoxyCodeLine{00612\ \ \ \ \ \ \ \doxymbox{\hyperlink{classfibonacci__heap_a0e74fbfe0e8b8cd5c8968018d4b32057}{insert\_root}}\ (x);}
+\DoxyCodeLine{00613\ \ \ \ \ \}}
+\DoxyCodeLine{00614\ }
+\DoxyCodeLine{00615\ \ \ \textcolor{comment}{/*\ Remove\ the\ old\ root.\ \ */}}
+\DoxyCodeLine{00616\ \ \ \doxymbox{\hyperlink{classfibonacci__heap_a1c33ac64ecc3ba7cc9f8136b5f2d19f0}{remove\_root}}\ (ret);}
+\DoxyCodeLine{00617\ \ \ \doxymbox{\hyperlink{classfibonacci__heap_a0ba47be73a144abe048cf91942199d04}{m\_nodes}}-\/-\/;}
+\DoxyCodeLine{00618\ }
+\DoxyCodeLine{00619\ \ \ \textcolor{comment}{/*\ If\ we\ are\ left\ with\ no\ nodes,\ then\ the\ min\ is\ NULL.\ \ */}}
+\DoxyCodeLine{00620\ \ \ \textcolor{keywordflow}{if}\ (\doxymbox{\hyperlink{classfibonacci__heap_a0ba47be73a144abe048cf91942199d04}{m\_nodes}}\ ==\ 0)}
+\DoxyCodeLine{00621\ \ \ \ \ \doxymbox{\hyperlink{classfibonacci__heap_ab7c6e3cb8f983498c0ab2b88cf18ac28}{m\_min}}\ =\ \doxymbox{\hyperlink{stddef_8h_a070d2ce7b6bb7e5c05602aa8c308d0c4}{NULL}};}
+\DoxyCodeLine{00622\ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00623\ \ \ \ \ \{}
+\DoxyCodeLine{00624\ \ \ \ \ \ \ \textcolor{comment}{/*\ Otherwise,\ consolidate\ to\ find\ new\ minimum,\ as\ well\ as\ do\ the\ reorg}}
+\DoxyCodeLine{00625\ \textcolor{comment}{\ \ \ \ \ \ \ work\ that\ needs\ to\ be\ done.\ \ */}}
+\DoxyCodeLine{00626\ \ \ \ \ \ \ \doxymbox{\hyperlink{classfibonacci__heap_ab7c6e3cb8f983498c0ab2b88cf18ac28}{m\_min}}\ =\ ret-\/>\doxymbox{\hyperlink{classfibonacci__node_a403fcd1010ea84d8524c41bb04189e8e}{m\_right}};}
+\DoxyCodeLine{00627\ \ \ \ \ \ \ \doxymbox{\hyperlink{classfibonacci__heap_a8b346708104c2ce70c1ce2c244f92c96}{consolidate}}\ ();}
+\DoxyCodeLine{00628\ \ \ \ \ \}}
+\DoxyCodeLine{00629\ }
+\DoxyCodeLine{00630\ \ \ \textcolor{keywordflow}{return}\ ret;}
+\DoxyCodeLine{00631\ \}}
+\DoxyCodeLine{00632\ }
+\DoxyCodeLine{00633\ \textcolor{comment}{/*\ Remove\ root\ NODE\ from\ the\ heap.\ \ */}}
+\DoxyCodeLine{00634\ }
+\DoxyCodeLine{00635\ \textcolor{keyword}{template}<\textcolor{keyword}{class}\ K,\ \textcolor{keyword}{class}\ V>}
+\DoxyCodeLine{00636\ \textcolor{keywordtype}{void}}
+\DoxyCodeLine{00637\ \doxymbox{\hyperlink{classfibonacci__heap_a1c33ac64ecc3ba7cc9f8136b5f2d19f0}{fibonacci\_heap<K,V>::remove\_root}}\ (\doxymbox{\hyperlink{classfibonacci__node}{fibonacci\_node<K,V>}}\ *node)}
+\DoxyCodeLine{00638\ \{}
+\DoxyCodeLine{00639\ \ \ \textcolor{keywordflow}{if}\ (node-\/>\doxymbox{\hyperlink{classfibonacci__node_a0b128027b9e999e8da008107278d49ad}{m\_left}}\ ==\ node)}
+\DoxyCodeLine{00640\ \ \ \ \ \doxymbox{\hyperlink{classfibonacci__heap_a6a9db31b3c864fb8d85bca9f23a25bb6}{m\_root}}\ =\ \doxymbox{\hyperlink{stddef_8h_a070d2ce7b6bb7e5c05602aa8c308d0c4}{NULL}};}
+\DoxyCodeLine{00641\ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00642\ \ \ \ \ \doxymbox{\hyperlink{classfibonacci__heap_a6a9db31b3c864fb8d85bca9f23a25bb6}{m\_root}}\ =\ node-\/>\doxymbox{\hyperlink{classfibonacci__node_ad09c709d4677c23eea7539326cd47325}{remove}}\ ();}
+\DoxyCodeLine{00643\ \}}
+\DoxyCodeLine{00644\ }
+\DoxyCodeLine{00645\ \textcolor{comment}{/*\ Consolidate\ heap.\ \ */}}
+\DoxyCodeLine{00646\ }
+\DoxyCodeLine{00647\ \textcolor{keyword}{template}<\textcolor{keyword}{class}\ K,\ \textcolor{keyword}{class}\ V>}
+\DoxyCodeLine{00648\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classfibonacci__heap_a8b346708104c2ce70c1ce2c244f92c96}{fibonacci\_heap<K,V>::consolidate}}\ ()}
+\DoxyCodeLine{00649\ \{}
+\DoxyCodeLine{00650\ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{int}\ D\ =\ 1\ +\ 8\ *\ \textcolor{keyword}{sizeof}\ (long);}
+\DoxyCodeLine{00651\ \ \ \doxymbox{\hyperlink{classfibonacci__node}{fibonacci\_node<K,V>}}\ *\doxymbox{\hyperlink{poly-int_8h_af77c881600a14567e276ee17dfb8764f}{a}}[D];}
+\DoxyCodeLine{00652\ \ \ \doxymbox{\hyperlink{classfibonacci__node}{fibonacci\_node<K,V>}}\ *w,\ *x,\ *\doxymbox{\hyperlink{wide-int_8h_aa0ab03c091e4ca9ca82306ad42c7dbfb}{y}};}
+\DoxyCodeLine{00653\ \ \ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{poly-int_8h_a7e98b8a17c0aad30ba64d47b74e2a6c1}{i}},\ d;}
+\DoxyCodeLine{00654\ }
+\DoxyCodeLine{00655\ \ \ \doxymbox{\hyperlink{string_8cpp_a313175102214d45434bf045db18dddf0}{memset}}\ (\doxymbox{\hyperlink{poly-int_8h_af77c881600a14567e276ee17dfb8764f}{a}},\ 0,\ \textcolor{keyword}{sizeof}\ (\doxymbox{\hyperlink{poly-int_8h_af77c881600a14567e276ee17dfb8764f}{a}}));}
+\DoxyCodeLine{00656\ }
+\DoxyCodeLine{00657\ \ \ \textcolor{keywordflow}{while}\ ((w\ =\ \doxymbox{\hyperlink{classfibonacci__heap_a6a9db31b3c864fb8d85bca9f23a25bb6}{m\_root}})\ !=\ \doxymbox{\hyperlink{stddef_8h_a070d2ce7b6bb7e5c05602aa8c308d0c4}{NULL}})}
+\DoxyCodeLine{00658\ \ \ \ \ \{}
+\DoxyCodeLine{00659\ \ \ \ \ \ \ x\ =\ w;}
+\DoxyCodeLine{00660\ \ \ \ \ \ \ \doxymbox{\hyperlink{classfibonacci__heap_a1c33ac64ecc3ba7cc9f8136b5f2d19f0}{remove\_root}}\ (w);}
+\DoxyCodeLine{00661\ \ \ \ \ \ \ d\ =\ x-\/>\doxymbox{\hyperlink{classfibonacci__node_aad98faa9aee18ff77d41e6f8fb9fc087}{m\_degree}};}
+\DoxyCodeLine{00662\ \ \ \ \ \ \ \doxymbox{\hyperlink{system_8h_aff447899dc74d54931b2bc2d47de9423}{gcc\_checking\_assert}}\ (d\ <\ D);}
+\DoxyCodeLine{00663\ \ \ \ \ \ \ \textcolor{keywordflow}{while}\ (\doxymbox{\hyperlink{poly-int_8h_af77c881600a14567e276ee17dfb8764f}{a}}[d]\ !=\ \doxymbox{\hyperlink{stddef_8h_a070d2ce7b6bb7e5c05602aa8c308d0c4}{NULL}})}
+\DoxyCodeLine{00664\ \ \ \ \ \{}
+\DoxyCodeLine{00665\ \ \ \ \ \ \ \doxymbox{\hyperlink{wide-int_8h_aa0ab03c091e4ca9ca82306ad42c7dbfb}{y}}\ =\ \doxymbox{\hyperlink{poly-int_8h_af77c881600a14567e276ee17dfb8764f}{a}}[d];}
+\DoxyCodeLine{00666\ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (x-\/>\doxymbox{\hyperlink{classfibonacci__node_ae5ed4ac1998859833ebb764911b61cc7}{compare}}\ (\doxymbox{\hyperlink{wide-int_8h_aa0ab03c091e4ca9ca82306ad42c7dbfb}{y}})\ >\ 0)}
+\DoxyCodeLine{00667\ \ \ \ \ \ \ \ \ std::swap\ (x,\ \doxymbox{\hyperlink{wide-int_8h_aa0ab03c091e4ca9ca82306ad42c7dbfb}{y}});}
+\DoxyCodeLine{00668\ \ \ \ \ \ \ \doxymbox{\hyperlink{wide-int_8h_aa0ab03c091e4ca9ca82306ad42c7dbfb}{y}}-\/>link\ (x);}
+\DoxyCodeLine{00669\ \ \ \ \ \ \ \doxymbox{\hyperlink{poly-int_8h_af77c881600a14567e276ee17dfb8764f}{a}}[d]\ =\ \doxymbox{\hyperlink{stddef_8h_a070d2ce7b6bb7e5c05602aa8c308d0c4}{NULL}};}
+\DoxyCodeLine{00670\ \ \ \ \ \ \ d++;}
+\DoxyCodeLine{00671\ \ \ \ \ \}}
+\DoxyCodeLine{00672\ \ \ \ \ \ \ \doxymbox{\hyperlink{poly-int_8h_af77c881600a14567e276ee17dfb8764f}{a}}[d]\ =\ x;}
+\DoxyCodeLine{00673\ \ \ \ \ \}}
+\DoxyCodeLine{00674\ \ \ \doxymbox{\hyperlink{classfibonacci__heap_ab7c6e3cb8f983498c0ab2b88cf18ac28}{m\_min}}\ =\ \doxymbox{\hyperlink{stddef_8h_a070d2ce7b6bb7e5c05602aa8c308d0c4}{NULL}};}
+\DoxyCodeLine{00675\ \ \ \textcolor{keywordflow}{for}\ (\doxymbox{\hyperlink{poly-int_8h_a7e98b8a17c0aad30ba64d47b74e2a6c1}{i}}\ =\ 0;\ \doxymbox{\hyperlink{poly-int_8h_a7e98b8a17c0aad30ba64d47b74e2a6c1}{i}}\ <\ D;\ \doxymbox{\hyperlink{poly-int_8h_a7e98b8a17c0aad30ba64d47b74e2a6c1}{i}}++)}
+\DoxyCodeLine{00676\ \ \ \ \ \textcolor{keywordflow}{if}\ (\doxymbox{\hyperlink{poly-int_8h_af77c881600a14567e276ee17dfb8764f}{a}}[\doxymbox{\hyperlink{poly-int_8h_a7e98b8a17c0aad30ba64d47b74e2a6c1}{i}}]\ !=\ \doxymbox{\hyperlink{stddef_8h_a070d2ce7b6bb7e5c05602aa8c308d0c4}{NULL}})}
+\DoxyCodeLine{00677\ \ \ \ \ \ \ \{}
+\DoxyCodeLine{00678\ \ \ \ \ \doxymbox{\hyperlink{classfibonacci__heap_a0e74fbfe0e8b8cd5c8968018d4b32057}{insert\_root}}\ (\doxymbox{\hyperlink{poly-int_8h_af77c881600a14567e276ee17dfb8764f}{a}}[\doxymbox{\hyperlink{poly-int_8h_a7e98b8a17c0aad30ba64d47b74e2a6c1}{i}}]);}
+\DoxyCodeLine{00679\ \ \ \ \ \textcolor{keywordflow}{if}\ (\doxymbox{\hyperlink{classfibonacci__heap_ab7c6e3cb8f983498c0ab2b88cf18ac28}{m\_min}}\ ==\ \doxymbox{\hyperlink{stddef_8h_a070d2ce7b6bb7e5c05602aa8c308d0c4}{NULL}}\ ||\ \doxymbox{\hyperlink{poly-int_8h_af77c881600a14567e276ee17dfb8764f}{a}}[\doxymbox{\hyperlink{poly-int_8h_a7e98b8a17c0aad30ba64d47b74e2a6c1}{i}}]-\/>\doxymbox{\hyperlink{line-map_8h_a19c7af7e090b7982886c5c2f0ffef65a}{compare}}\ (\doxymbox{\hyperlink{classfibonacci__heap_ab7c6e3cb8f983498c0ab2b88cf18ac28}{m\_min}})\ <\ 0)}
+\DoxyCodeLine{00680\ \ \ \ \ \ \ \doxymbox{\hyperlink{classfibonacci__heap_ab7c6e3cb8f983498c0ab2b88cf18ac28}{m\_min}}\ =\ \doxymbox{\hyperlink{poly-int_8h_af77c881600a14567e276ee17dfb8764f}{a}}[\doxymbox{\hyperlink{poly-int_8h_a7e98b8a17c0aad30ba64d47b74e2a6c1}{i}}];}
+\DoxyCodeLine{00681\ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00682\ \}}
+\DoxyCodeLine{00683\ }
+\DoxyCodeLine{00684\ \textcolor{preprocessor}{\#endif\ \ }\textcolor{comment}{//\ GCC\_FIBONACCI\_HEAP\_H}}
+
+\end{DoxyCode}

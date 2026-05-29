@@ -1,0 +1,628 @@
+\doxysection{plugin-\/api.h}
+\hypertarget{plugin-api_8h_source}{}\label{plugin-api_8h_source}\index{toolchain/x86\_64-\/elf/lib/gcc/x86\_64-\/elf/14.2.0/plugin/include/plugin-\/api.h@{toolchain/x86\_64-\/elf/lib/gcc/x86\_64-\/elf/14.2.0/plugin/include/plugin-\/api.h}}
+\doxymbox{\hyperlink{plugin-api_8h}{Go to the documentation of this file.}}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001\ \textcolor{comment}{/*\ plugin-\/api.h\ -\/-\/\ External\ linker\ plugin\ API.\ \ */}}
+\DoxyCodeLine{00002\ }
+\DoxyCodeLine{00003\ \textcolor{comment}{/*\ Copyright\ (C)\ 2009-\/2024\ Free\ Software\ Foundation,\ Inc.}}
+\DoxyCodeLine{00004\ \textcolor{comment}{\ \ \ Written\ by\ Cary\ Coutant\ <ccoutant@google.com>.}}
+\DoxyCodeLine{00005\ \textcolor{comment}{}}
+\DoxyCodeLine{00006\ \textcolor{comment}{\ \ \ This\ file\ is\ part\ of\ binutils.}}
+\DoxyCodeLine{00007\ \textcolor{comment}{}}
+\DoxyCodeLine{00008\ \textcolor{comment}{\ \ \ This\ program\ is\ free\ software;\ you\ can\ redistribute\ it\ and/or\ modify}}
+\DoxyCodeLine{00009\ \textcolor{comment}{\ \ \ it\ under\ the\ terms\ of\ the\ GNU\ General\ Public\ License\ as\ published\ by}}
+\DoxyCodeLine{00010\ \textcolor{comment}{\ \ \ the\ Free\ Software\ Foundation;\ either\ version\ 3\ of\ the\ License,\ or}}
+\DoxyCodeLine{00011\ \textcolor{comment}{\ \ \ (at\ your\ option)\ any\ later\ version.}}
+\DoxyCodeLine{00012\ \textcolor{comment}{}}
+\DoxyCodeLine{00013\ \textcolor{comment}{\ \ \ This\ program\ is\ distributed\ in\ the\ hope\ that\ it\ will\ be\ useful,}}
+\DoxyCodeLine{00014\ \textcolor{comment}{\ \ \ but\ WITHOUT\ ANY\ WARRANTY;\ without\ even\ the\ implied\ warranty\ of}}
+\DoxyCodeLine{00015\ \textcolor{comment}{\ \ \ MERCHANTABILITY\ or\ FITNESS\ FOR\ A\ PARTICULAR\ PURPOSE.\ \ See\ the}}
+\DoxyCodeLine{00016\ \textcolor{comment}{\ \ \ GNU\ General\ Public\ License\ for\ more\ details.}}
+\DoxyCodeLine{00017\ \textcolor{comment}{}}
+\DoxyCodeLine{00018\ \textcolor{comment}{\ \ \ You\ should\ have\ received\ a\ copy\ of\ the\ GNU\ General\ Public\ License}}
+\DoxyCodeLine{00019\ \textcolor{comment}{\ \ \ along\ with\ this\ program;\ if\ not,\ write\ to\ the\ Free\ Software}}
+\DoxyCodeLine{00020\ \textcolor{comment}{\ \ \ Foundation,\ Inc.,\ 51\ Franklin\ Street\ -\/\ Fifth\ Floor,\ Boston,}}
+\DoxyCodeLine{00021\ \textcolor{comment}{\ \ \ MA\ 02110-\/1301,\ USA.\ \ */}}
+\DoxyCodeLine{00022\ }
+\DoxyCodeLine{00023\ \textcolor{comment}{/*\ This\ file\ defines\ the\ interface\ for\ writing\ a\ linker\ plugin,\ which\ is}}
+\DoxyCodeLine{00024\ \textcolor{comment}{\ \ \ described\ at\ <\ http://gcc.gnu.org/wiki/whopr/driver\ >.\ \ */}}
+\DoxyCodeLine{00025\ }
+\DoxyCodeLine{00026\ \textcolor{preprocessor}{\#ifndef\ PLUGIN\_API\_H}}
+\DoxyCodeLine{00027\ \textcolor{preprocessor}{\#define\ PLUGIN\_API\_H}}
+\DoxyCodeLine{00028\ }
+\DoxyCodeLine{00029\ \textcolor{preprocessor}{\#ifdef\ HAVE\_STDINT\_H}}
+\DoxyCodeLine{00030\ \textcolor{preprocessor}{\#include\ <\doxymbox{\hyperlink{stdint_8h}{stdint.h}}>}}
+\DoxyCodeLine{00031\ \textcolor{preprocessor}{\#elif\ defined(HAVE\_INTTYPES\_H)}}
+\DoxyCodeLine{00032\ \textcolor{preprocessor}{\#include\ <inttypes.h>}}
+\DoxyCodeLine{00033\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00034\ \textcolor{preprocessor}{\#include\ <sys/types.h>}}
+\DoxyCodeLine{00035\ \textcolor{preprocessor}{\#if\ !defined(HAVE\_STDINT\_H)\ \&\&\ !defined(HAVE\_INTTYPES\_H)\ \&\&\ \(\backslash\)}}
+\DoxyCodeLine{00036\ \textcolor{preprocessor}{\ \ \ \ !defined(UINT64\_MAX)\ \&\&\ !defined(uint64\_t)}}
+\DoxyCodeLine{00037\ \textcolor{preprocessor}{\#error\ cannot\ find\ uint64\_t\ type}}
+\DoxyCodeLine{00038\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00039\ }
+\DoxyCodeLine{00040\ \textcolor{comment}{/*\ Detect\ endianess\ based\ on\ gcc's\ (>=4.6.0)\ \_\_BYTE\_ORDER\_\_\ macro.\ \ */}}
+\DoxyCodeLine{00041\ \textcolor{preprocessor}{\#if\ defined(\_\_BYTE\_ORDER\_\_)\ \&\&\ defined(\_\_ORDER\_BIG\_ENDIAN\_\_)\ \&\&\ \(\backslash\)}}
+\DoxyCodeLine{00042\ \textcolor{preprocessor}{\ \ \ \ defined(\_\_ORDER\_LITTLE\_ENDIAN\_\_)\ \&\&\ defined(\_\_ORDER\_PDP\_ENDIAN\_\_)}}
+\DoxyCodeLine{00043\ \textcolor{preprocessor}{\#if\ \_\_BYTE\_ORDER\_\_\ ==\ \_\_ORDER\_LITTLE\_ENDIAN\_\_}}
+\DoxyCodeLine{00044\ \textcolor{preprocessor}{\#define\ PLUGIN\_LITTLE\_ENDIAN\ 1}}
+\DoxyCodeLine{00045\ \textcolor{preprocessor}{\#elif\ \_\_BYTE\_ORDER\_\_\ ==\ \_\_ORDER\_BIG\_ENDIAN\_\_}}
+\DoxyCodeLine{00046\ \textcolor{preprocessor}{\#define\ PLUGIN\_BIG\_ENDIAN\ 1}}
+\DoxyCodeLine{00047\ \textcolor{preprocessor}{\#elif\ \_\_BYTE\_ORDER\_\_\ ==\ \_\_ORDER\_PDP\_ENDIAN\_\_}}
+\DoxyCodeLine{00048\ \textcolor{preprocessor}{\#define\ PLUGIN\_PDP\_ENDIAN\ 1}}
+\DoxyCodeLine{00049\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00050\ }
+\DoxyCodeLine{00051\ \textcolor{preprocessor}{\#else}}
+\DoxyCodeLine{00052\ \textcolor{comment}{/*\ Include\ header\ files\ to\ define\ endian\ macros.\ \ */}}
+\DoxyCodeLine{00053\ \textcolor{preprocessor}{\#if\ defined(\_\_GLIBC\_\_)\ ||\ defined(\_\_GNU\_LIBRARY\_\_)\ ||\ defined(\_\_ANDROID\_\_)}}
+\DoxyCodeLine{00054\ \textcolor{preprocessor}{\#include\ <endian.h>}}
+\DoxyCodeLine{00055\ }
+\DoxyCodeLine{00056\ \textcolor{preprocessor}{\#elif\ defined(\_\_SVR4)\ \&\&\ defined(\_\_sun)}}
+\DoxyCodeLine{00057\ \textcolor{preprocessor}{\#include\ <sys/byteorder.h>}}
+\DoxyCodeLine{00058\ }
+\DoxyCodeLine{00059\ \textcolor{preprocessor}{\#elif\ defined(\_\_FreeBSD\_\_)\ ||\ defined(\_\_NetBSD\_\_)\ ||\ \(\backslash\)}}
+\DoxyCodeLine{00060\ \textcolor{preprocessor}{\ \ \ \ \ \ defined(\_\_DragonFly\_\_)\ ||\ defined(\_\_minix)}}
+\DoxyCodeLine{00061\ \textcolor{preprocessor}{\#include\ <sys/endian.h>}}
+\DoxyCodeLine{00062\ }
+\DoxyCodeLine{00063\ \textcolor{preprocessor}{\#elif\ defined(\_\_OpenBSD\_\_)}}
+\DoxyCodeLine{00064\ \textcolor{preprocessor}{\#include\ <machine/endian.h>}}
+\DoxyCodeLine{00065\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00066\ }
+\DoxyCodeLine{00067\ \textcolor{comment}{/*\ Detect\ endianess\ based\ on\ \_\_BYTE\_ORDER.\ \ */}}
+\DoxyCodeLine{00068\ \textcolor{preprocessor}{\#ifdef\ \_\_BYTE\_ORDER}}
+\DoxyCodeLine{00069\ \textcolor{preprocessor}{\#if\ \_\_BYTE\_ORDER\ ==\ \_\_LITTLE\_ENDIAN}}
+\DoxyCodeLine{00070\ \textcolor{preprocessor}{\#define\ PLUGIN\_LITTLE\_ENDIAN\ 1}}
+\DoxyCodeLine{00071\ \textcolor{preprocessor}{\#elif\ \_\_BYTE\_ORDER\ ==\ \_\_BIG\_ENDIAN}}
+\DoxyCodeLine{00072\ \textcolor{preprocessor}{\#define\ PLUGIN\_BIG\_ENDIAN\ 1}}
+\DoxyCodeLine{00073\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00074\ }
+\DoxyCodeLine{00075\ \textcolor{comment}{/*\ Detect\ endianess\ based\ on\ \_BYTE\_ORDER.\ \ */}}
+\DoxyCodeLine{00076\ \textcolor{preprocessor}{\#elif\ defined\ \_BYTE\_ORDER}}
+\DoxyCodeLine{00077\ \textcolor{preprocessor}{\#if\ \_BYTE\_ORDER\ ==\ \_LITTLE\_ENDIAN}}
+\DoxyCodeLine{00078\ \textcolor{preprocessor}{\#define\ PLUGIN\_LITTLE\_ENDIAN\ 1}}
+\DoxyCodeLine{00079\ \textcolor{preprocessor}{\#elif\ \_BYTE\_ORDER\ ==\ \_BIG\_ENDIAN}}
+\DoxyCodeLine{00080\ \textcolor{preprocessor}{\#define\ PLUGIN\_BIG\_ENDIAN\ 1}}
+\DoxyCodeLine{00081\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00082\ }
+\DoxyCodeLine{00083\ \textcolor{comment}{/*\ Detect\ based\ on\ \_WIN32.\ \ */}}
+\DoxyCodeLine{00084\ \textcolor{preprocessor}{\#elif\ defined\ \_WIN32}}
+\DoxyCodeLine{00085\ \textcolor{preprocessor}{\#define\ PLUGIN\_LITTLE\_ENDIAN\ 1}}
+\DoxyCodeLine{00086\ }
+\DoxyCodeLine{00087\ \textcolor{comment}{/*\ Detect\ based\ on\ \_\_BIG\_ENDIAN\_\_\ and\ \_\_LITTLE\_ENDIAN\_\_\ */}}
+\DoxyCodeLine{00088\ \textcolor{preprocessor}{\#elif\ defined\ \_\_LITTLE\_ENDIAN\_\_\ ||\ defined\ \_LITTLE\_ENDIAN}}
+\DoxyCodeLine{00089\ \textcolor{preprocessor}{\#define\ PLUGIN\_LITTLE\_ENDIAN\ 1}}
+\DoxyCodeLine{00090\ \textcolor{preprocessor}{\#elif\ defined\ \_\_BIG\_ENDIAN\_\_\ ||\ defined\ \_BIG\_ENDIAN}}
+\DoxyCodeLine{00091\ \textcolor{preprocessor}{\#define\ PLUGIN\_BIG\_ENDIAN\ 1}}
+\DoxyCodeLine{00092\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00093\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00094\ }
+\DoxyCodeLine{00095\ \textcolor{preprocessor}{\#ifdef\ \_\_cplusplus}}
+\DoxyCodeLine{00096\ \textcolor{keyword}{extern}\ \textcolor{stringliteral}{"{}C"{}}}
+\DoxyCodeLine{00097\ \{}
+\DoxyCodeLine{00098\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00099\ }
+\DoxyCodeLine{00100\ \textcolor{comment}{/*\ Status\ code\ returned\ by\ most\ API\ routines.\ \ */}}
+\DoxyCodeLine{00101\ }
+\DoxyCodeLine{00102\ \textcolor{keyword}{enum}\ \doxymbox{\hyperlink{plugin-api_8h_a4335d34beee0024e4558323c50fd3ac6}{ld\_plugin\_status}}}
+\DoxyCodeLine{00103\ \{}
+\DoxyCodeLine{00104\ \ \ \doxymbox{\hyperlink{plugin-api_8h_a4335d34beee0024e4558323c50fd3ac6ab0c2ab46673367a5951c2bc80f28c4d4}{LDPS\_OK}}\ =\ 0,}
+\DoxyCodeLine{00105\ \ \ \doxymbox{\hyperlink{plugin-api_8h_a4335d34beee0024e4558323c50fd3ac6ab3a903a9d093174c45faff7ded18ae22}{LDPS\_NO\_SYMS}},\ \ \ \ \ \ \ \ \ \textcolor{comment}{/*\ Attempt\ to\ get\ symbols\ that\ haven't\ been\ added.\ */}}
+\DoxyCodeLine{00106\ \ \ \doxymbox{\hyperlink{plugin-api_8h_a4335d34beee0024e4558323c50fd3ac6aee16f347ac24ad3c0cc82a165ea1a491}{LDPS\_BAD\_HANDLE}},\ \ \ \ \ \ \textcolor{comment}{/*\ No\ claimed\ object\ associated\ with\ given\ handle.\ */}}
+\DoxyCodeLine{00107\ \ \ \doxymbox{\hyperlink{plugin-api_8h_a4335d34beee0024e4558323c50fd3ac6a52da6fc7f3815189df93957cbbabeb41}{LDPS\_ERR}}}
+\DoxyCodeLine{00108\ \ \ \textcolor{comment}{/*\ Additional\ Error\ codes\ TBD.\ \ */}}
+\DoxyCodeLine{00109\ \};}
+\DoxyCodeLine{00110\ }
+\DoxyCodeLine{00111\ \textcolor{comment}{/*\ The\ version\ of\ the\ API\ specification.\ \ */}}
+\DoxyCodeLine{00112\ }
+\DoxyCodeLine{00113\ \textcolor{keyword}{enum}\ \doxymbox{\hyperlink{plugin-api_8h_ae7beda992dc0430bc054b87632450a33}{ld\_plugin\_api\_version}}}
+\DoxyCodeLine{00114\ \{}
+\DoxyCodeLine{00115\ \ \ \doxymbox{\hyperlink{plugin-api_8h_ae7beda992dc0430bc054b87632450a33a6ec8a9b96221f998e3dd1a1710452bcd}{LD\_PLUGIN\_API\_VERSION}}\ =\ 1}
+\DoxyCodeLine{00116\ \};}
+\DoxyCodeLine{00117\ }
+\DoxyCodeLine{00118\ \textcolor{comment}{/*\ The\ type\ of\ output\ file\ being\ generated\ by\ the\ linker.\ \ */}}
+\DoxyCodeLine{00119\ }
+\DoxyCodeLine{00120\ \textcolor{keyword}{enum}\ \doxymbox{\hyperlink{plugin-api_8h_a7059362753b94a871a0c4021ecd519cc}{ld\_plugin\_output\_file\_type}}}
+\DoxyCodeLine{00121\ \{}
+\DoxyCodeLine{00122\ \ \ \doxymbox{\hyperlink{plugin-api_8h_a7059362753b94a871a0c4021ecd519cca57f20f875ae83116aa204e375a8b071d}{LDPO\_REL}},}
+\DoxyCodeLine{00123\ \ \ \doxymbox{\hyperlink{plugin-api_8h_a7059362753b94a871a0c4021ecd519ccabf6f61256f06a839509244830257907a}{LDPO\_EXEC}},}
+\DoxyCodeLine{00124\ \ \ \doxymbox{\hyperlink{plugin-api_8h_a7059362753b94a871a0c4021ecd519cca6bd9aca6944af54cd379b17795ea2f6e}{LDPO\_DYN}},}
+\DoxyCodeLine{00125\ \ \ \doxymbox{\hyperlink{plugin-api_8h_a7059362753b94a871a0c4021ecd519cca39b7ecf2178035b40b9160761fc12d33}{LDPO\_PIE}}}
+\DoxyCodeLine{00126\ \};}
+\DoxyCodeLine{00127\ }
+\DoxyCodeLine{00128\ \textcolor{comment}{/*\ An\ input\ file\ managed\ by\ the\ plugin\ library.\ \ */}}
+\DoxyCodeLine{00129\ }
+\DoxyCodeLine{00130\ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{structld__plugin__input__file}{ld\_plugin\_input\_file}}}
+\DoxyCodeLine{00131\ \{}
+\DoxyCodeLine{00132\ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *\doxymbox{\hyperlink{structld__plugin__input__file_a3dc12fcd3dc08f4489de56620ebc05c9}{name}};}
+\DoxyCodeLine{00133\ \ \ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{structld__plugin__input__file_a8c4603ad4956e7367220f76ac6eef42a}{fd}};}
+\DoxyCodeLine{00134\ \ \ off\_t\ \doxymbox{\hyperlink{structld__plugin__input__file_a5124598e89c7d96106d04de4ff2cb19c}{offset}};}
+\DoxyCodeLine{00135\ \ \ off\_t\ \doxymbox{\hyperlink{structld__plugin__input__file_aa1d27b82cda8ee45ea66ee69116445db}{filesize}};}
+\DoxyCodeLine{00136\ \ \ \textcolor{keywordtype}{void}\ *\doxymbox{\hyperlink{structld__plugin__input__file_af2a58441d39b0e69c539955b277a1279}{handle}};}
+\DoxyCodeLine{00137\ \};}
+\DoxyCodeLine{00138\ }
+\DoxyCodeLine{00139\ \textcolor{comment}{/*\ A\ symbol\ belonging\ to\ an\ input\ file\ managed\ by\ the\ plugin\ library.\ \ */}}
+\DoxyCodeLine{00140\ }
+\DoxyCodeLine{00141\ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{structld__plugin__symbol}{ld\_plugin\_symbol}}}
+\DoxyCodeLine{00142\ \{}
+\DoxyCodeLine{00143\ \ \ \textcolor{keywordtype}{char}\ *\doxymbox{\hyperlink{structld__plugin__symbol_a13bf4070c88f0adfd762dfcf7782accd}{name}};}
+\DoxyCodeLine{00144\ \ \ \textcolor{keywordtype}{char}\ *\doxymbox{\hyperlink{structld__plugin__symbol_ae9d6bd2e0872a2928fb791c7dbb42965}{version}};}
+\DoxyCodeLine{00145\ \ \ \textcolor{comment}{/*\ This\ is\ for\ compatibility\ with\ older\ ABIs.\ \ The\ older\ ABI\ defined}}
+\DoxyCodeLine{00146\ \textcolor{comment}{\ \ \ \ \ only\ 'def'\ field.\ \ */}}
+\DoxyCodeLine{00147\ \textcolor{preprocessor}{\#if\ PLUGIN\_BIG\_ENDIAN\ ==\ 1}}
+\DoxyCodeLine{00148\ \ \ \textcolor{keywordtype}{char}\ unused;}
+\DoxyCodeLine{00149\ \ \ \textcolor{keywordtype}{char}\ section\_kind;}
+\DoxyCodeLine{00150\ \ \ \textcolor{keywordtype}{char}\ symbol\_type;}
+\DoxyCodeLine{00151\ \ \ \textcolor{keywordtype}{char}\ def;}
+\DoxyCodeLine{00152\ \textcolor{preprocessor}{\#elif\ PLUGIN\_LITTLE\_ENDIAN\ ==\ 1}}
+\DoxyCodeLine{00153\ \ \ \textcolor{keywordtype}{char}\ def;}
+\DoxyCodeLine{00154\ \ \ \textcolor{keywordtype}{char}\ symbol\_type;}
+\DoxyCodeLine{00155\ \ \ \textcolor{keywordtype}{char}\ section\_kind;}
+\DoxyCodeLine{00156\ \ \ \textcolor{keywordtype}{char}\ unused;}
+\DoxyCodeLine{00157\ \textcolor{preprocessor}{\#elif\ PLUGIN\_PDP\_ENDIAN\ ==\ 1}}
+\DoxyCodeLine{00158\ \ \ \textcolor{keywordtype}{char}\ symbol\_type;}
+\DoxyCodeLine{00159\ \ \ \textcolor{keywordtype}{char}\ def;}
+\DoxyCodeLine{00160\ \ \ \textcolor{keywordtype}{char}\ unused;}
+\DoxyCodeLine{00161\ \ \ \textcolor{keywordtype}{char}\ section\_kind;}
+\DoxyCodeLine{00162\ \textcolor{preprocessor}{\#else}}
+\DoxyCodeLine{00163\ \textcolor{preprocessor}{\#error\ "{}Could\ not\ detect\ architecture\ endianess"{}}}
+\DoxyCodeLine{00164\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00165\ \ \ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{structld__plugin__symbol_a1047c026de4f351a5b88804b00de5061}{visibility}};}
+\DoxyCodeLine{00166\ \ \ uint64\_t\ \doxymbox{\hyperlink{structld__plugin__symbol_ac8734812d8e728d7afd3b268d590af67}{size}};}
+\DoxyCodeLine{00167\ \ \ \textcolor{keywordtype}{char}\ *\doxymbox{\hyperlink{structld__plugin__symbol_a76ce3db2de45847cdcb4cb59273b76df}{comdat\_key}};}
+\DoxyCodeLine{00168\ \ \ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{structld__plugin__symbol_a0b2164aa64866d4d179f4b796c687da6}{resolution}};}
+\DoxyCodeLine{00169\ \};}
+\DoxyCodeLine{00170\ }
+\DoxyCodeLine{00171\ \textcolor{comment}{/*\ An\ object's\ section.\ \ */}}
+\DoxyCodeLine{00172\ }
+\DoxyCodeLine{00173\ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{structld__plugin__section}{ld\_plugin\_section}}}
+\DoxyCodeLine{00174\ \{}
+\DoxyCodeLine{00175\ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{void}*\ \doxymbox{\hyperlink{structld__plugin__section_a47974eacff2597059bc7f6264a38b882}{handle}};}
+\DoxyCodeLine{00176\ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{structld__plugin__section_aa380efde91babef541ad63919dfa7731}{shndx}};}
+\DoxyCodeLine{00177\ \};}
+\DoxyCodeLine{00178\ }
+\DoxyCodeLine{00179\ \textcolor{comment}{/*\ Whether\ the\ symbol\ is\ a\ definition,\ reference,\ or\ common,\ weak\ or\ not.\ \ */}}
+\DoxyCodeLine{00180\ }
+\DoxyCodeLine{00181\ \textcolor{keyword}{enum}\ \doxymbox{\hyperlink{plugin-api_8h_a14fb9c32d86777769c2c240bf4fe2619}{ld\_plugin\_symbol\_kind}}}
+\DoxyCodeLine{00182\ \{}
+\DoxyCodeLine{00183\ \ \ \doxymbox{\hyperlink{plugin-api_8h_a14fb9c32d86777769c2c240bf4fe2619a0123f631a590e666bfba671bba9ffe40}{LDPK\_DEF}},}
+\DoxyCodeLine{00184\ \ \ \doxymbox{\hyperlink{plugin-api_8h_a14fb9c32d86777769c2c240bf4fe2619a0b53aebe675c4d4f3bbeeac6120f1c09}{LDPK\_WEAKDEF}},}
+\DoxyCodeLine{00185\ \ \ \doxymbox{\hyperlink{plugin-api_8h_a14fb9c32d86777769c2c240bf4fe2619a1221cf6bf97ef0851df4f23ab1e69048}{LDPK\_UNDEF}},}
+\DoxyCodeLine{00186\ \ \ \doxymbox{\hyperlink{plugin-api_8h_a14fb9c32d86777769c2c240bf4fe2619a3b58103ae3c54b2b99445c0e58d7b209}{LDPK\_WEAKUNDEF}},}
+\DoxyCodeLine{00187\ \ \ \doxymbox{\hyperlink{plugin-api_8h_a14fb9c32d86777769c2c240bf4fe2619a14669df9f0e648bcaa6e880a5fd851eb}{LDPK\_COMMON}}}
+\DoxyCodeLine{00188\ \};}
+\DoxyCodeLine{00189\ }
+\DoxyCodeLine{00190\ \textcolor{comment}{/*\ The\ visibility\ of\ the\ symbol.\ \ */}}
+\DoxyCodeLine{00191\ }
+\DoxyCodeLine{00192\ \textcolor{keyword}{enum}\ \doxymbox{\hyperlink{plugin-api_8h_acb0260f56e4608a89f9e0468cf513c8f}{ld\_plugin\_symbol\_visibility}}}
+\DoxyCodeLine{00193\ \{}
+\DoxyCodeLine{00194\ \ \ \doxymbox{\hyperlink{plugin-api_8h_acb0260f56e4608a89f9e0468cf513c8fa6d439620ff953093d186b84ab8a1bd62}{LDPV\_DEFAULT}},}
+\DoxyCodeLine{00195\ \ \ \doxymbox{\hyperlink{plugin-api_8h_acb0260f56e4608a89f9e0468cf513c8fa5a486e27316214ad2e9f833bd3f3ee01}{LDPV\_PROTECTED}},}
+\DoxyCodeLine{00196\ \ \ \doxymbox{\hyperlink{plugin-api_8h_acb0260f56e4608a89f9e0468cf513c8fa317be261548771a630d4c09f5c418182}{LDPV\_INTERNAL}},}
+\DoxyCodeLine{00197\ \ \ \doxymbox{\hyperlink{plugin-api_8h_acb0260f56e4608a89f9e0468cf513c8fa3c6110ec905ba5785957490139e8db46}{LDPV\_HIDDEN}}}
+\DoxyCodeLine{00198\ \};}
+\DoxyCodeLine{00199\ }
+\DoxyCodeLine{00200\ \textcolor{comment}{/*\ The\ type\ of\ the\ symbol.\ \ */}}
+\DoxyCodeLine{00201\ }
+\DoxyCodeLine{00202\ \textcolor{keyword}{enum}\ \doxymbox{\hyperlink{plugin-api_8h_afe8bd7bf5bf96ac96cac12bbd34a21b5}{ld\_plugin\_symbol\_type}}}
+\DoxyCodeLine{00203\ \{}
+\DoxyCodeLine{00204\ \ \ \doxymbox{\hyperlink{plugin-api_8h_afe8bd7bf5bf96ac96cac12bbd34a21b5ae7a75178b5eefc6094dda7b5aad21930}{LDST\_UNKNOWN}},}
+\DoxyCodeLine{00205\ \ \ \doxymbox{\hyperlink{plugin-api_8h_afe8bd7bf5bf96ac96cac12bbd34a21b5a5fe5c08779c42392be717cfea1a0fa43}{LDST\_FUNCTION}},}
+\DoxyCodeLine{00206\ \ \ \doxymbox{\hyperlink{plugin-api_8h_afe8bd7bf5bf96ac96cac12bbd34a21b5a8acb718a9c356791c717f9d57bfe950e}{LDST\_VARIABLE}}}
+\DoxyCodeLine{00207\ \};}
+\DoxyCodeLine{00208\ }
+\DoxyCodeLine{00209\ \textcolor{keyword}{enum}\ \doxymbox{\hyperlink{plugin-api_8h_a1d3afe6d5abdaa213f28f3f927135db8}{ld\_plugin\_symbol\_section\_kind}}}
+\DoxyCodeLine{00210\ \{}
+\DoxyCodeLine{00211\ \ \ \doxymbox{\hyperlink{plugin-api_8h_a1d3afe6d5abdaa213f28f3f927135db8a2a58ca5c822f0502da9abfe836db8037}{LDSSK\_DEFAULT}},}
+\DoxyCodeLine{00212\ \ \ \doxymbox{\hyperlink{plugin-api_8h_a1d3afe6d5abdaa213f28f3f927135db8ac0443a931c6613ec79f556f89b892f89}{LDSSK\_BSS}}}
+\DoxyCodeLine{00213\ \};}
+\DoxyCodeLine{00214\ }
+\DoxyCodeLine{00215\ \textcolor{comment}{/*\ How\ a\ symbol\ is\ resolved.\ \ */}}
+\DoxyCodeLine{00216\ }
+\DoxyCodeLine{00217\ \textcolor{keyword}{enum}\ \doxymbox{\hyperlink{plugin-api_8h_ae8a95573c08683bcb79f9009902f372e}{ld\_plugin\_symbol\_resolution}}}
+\DoxyCodeLine{00218\ \{}
+\DoxyCodeLine{00219\ \ \ \doxymbox{\hyperlink{plugin-api_8h_ae8a95573c08683bcb79f9009902f372eae7afffef25cda9a8f79a7b51b191103b}{LDPR\_UNKNOWN}}\ =\ 0,}
+\DoxyCodeLine{00220\ }
+\DoxyCodeLine{00221\ \ \ \textcolor{comment}{/*\ Symbol\ is\ still\ undefined\ at\ this\ point.\ \ */}}
+\DoxyCodeLine{00222\ \ \ \doxymbox{\hyperlink{plugin-api_8h_ae8a95573c08683bcb79f9009902f372ea44b7fcd337168cd68666ad697cedcbf9}{LDPR\_UNDEF}},}
+\DoxyCodeLine{00223\ }
+\DoxyCodeLine{00224\ \ \ \textcolor{comment}{/*\ This\ is\ the\ prevailing\ definition\ of\ the\ symbol,\ with\ references\ from}}
+\DoxyCodeLine{00225\ \textcolor{comment}{\ \ \ \ \ regular\ object\ code.\ \ */}}
+\DoxyCodeLine{00226\ \ \ \doxymbox{\hyperlink{plugin-api_8h_ae8a95573c08683bcb79f9009902f372ea2eb40b429a032240f4058bdc847f2787}{LDPR\_PREVAILING\_DEF}},}
+\DoxyCodeLine{00227\ }
+\DoxyCodeLine{00228\ \ \ \textcolor{comment}{/*\ This\ is\ the\ prevailing\ definition\ of\ the\ symbol,\ with\ no}}
+\DoxyCodeLine{00229\ \textcolor{comment}{\ \ \ \ \ references\ from\ regular\ objects.\ \ It\ is\ only\ referenced\ from\ IR}}
+\DoxyCodeLine{00230\ \textcolor{comment}{\ \ \ \ \ code.\ \ */}}
+\DoxyCodeLine{00231\ \ \ \doxymbox{\hyperlink{plugin-api_8h_ae8a95573c08683bcb79f9009902f372ea3da8040c90e468a0adb8f853f28df5ef}{LDPR\_PREVAILING\_DEF\_IRONLY}},}
+\DoxyCodeLine{00232\ }
+\DoxyCodeLine{00233\ \ \ \textcolor{comment}{/*\ This\ definition\ was\ pre-\/empted\ by\ a\ definition\ in\ a\ regular}}
+\DoxyCodeLine{00234\ \textcolor{comment}{\ \ \ \ \ object\ file.\ \ */}}
+\DoxyCodeLine{00235\ \ \ \doxymbox{\hyperlink{plugin-api_8h_ae8a95573c08683bcb79f9009902f372eacde0770141885495799ae3bfe635f3e8}{LDPR\_PREEMPTED\_REG}},}
+\DoxyCodeLine{00236\ }
+\DoxyCodeLine{00237\ \ \ \textcolor{comment}{/*\ This\ definition\ was\ pre-\/empted\ by\ a\ definition\ in\ another\ IR\ file.\ \ */}}
+\DoxyCodeLine{00238\ \ \ \doxymbox{\hyperlink{plugin-api_8h_ae8a95573c08683bcb79f9009902f372ea1f342ce0b8d2c018bbb1e514502ed9bb}{LDPR\_PREEMPTED\_IR}},}
+\DoxyCodeLine{00239\ }
+\DoxyCodeLine{00240\ \ \ \textcolor{comment}{/*\ This\ symbol\ was\ resolved\ by\ a\ definition\ in\ another\ IR\ file.\ \ */}}
+\DoxyCodeLine{00241\ \ \ \doxymbox{\hyperlink{plugin-api_8h_ae8a95573c08683bcb79f9009902f372ea9f5a319e605ed1f6a3b5c6316a6edcfc}{LDPR\_RESOLVED\_IR}},}
+\DoxyCodeLine{00242\ }
+\DoxyCodeLine{00243\ \ \ \textcolor{comment}{/*\ This\ symbol\ was\ resolved\ by\ a\ definition\ in\ a\ regular\ object}}
+\DoxyCodeLine{00244\ \textcolor{comment}{\ \ \ \ \ linked\ into\ the\ main\ executable.\ \ */}}
+\DoxyCodeLine{00245\ \ \ \doxymbox{\hyperlink{plugin-api_8h_ae8a95573c08683bcb79f9009902f372ea12dc660bb2fd330bfb177526c3ccd557}{LDPR\_RESOLVED\_EXEC}},}
+\DoxyCodeLine{00246\ }
+\DoxyCodeLine{00247\ \ \ \textcolor{comment}{/*\ This\ symbol\ was\ resolved\ by\ a\ definition\ in\ a\ shared\ object.\ \ */}}
+\DoxyCodeLine{00248\ \ \ \doxymbox{\hyperlink{plugin-api_8h_ae8a95573c08683bcb79f9009902f372ea28033c36ca2a364a581b86609a18a356}{LDPR\_RESOLVED\_DYN}},}
+\DoxyCodeLine{00249\ }
+\DoxyCodeLine{00250\ \ \ \textcolor{comment}{/*\ This\ is\ the\ prevailing\ definition\ of\ the\ symbol,\ with\ no}}
+\DoxyCodeLine{00251\ \textcolor{comment}{\ \ \ \ \ references\ from\ regular\ objects.\ \ It\ is\ only\ referenced\ from\ IR}}
+\DoxyCodeLine{00252\ \textcolor{comment}{\ \ \ \ \ code,\ but\ the\ symbol\ is\ exported\ and\ may\ be\ referenced\ from}}
+\DoxyCodeLine{00253\ \textcolor{comment}{\ \ \ \ \ a\ dynamic\ object\ (not\ seen\ at\ link\ time).\ \ */}}
+\DoxyCodeLine{00254\ \ \ \doxymbox{\hyperlink{plugin-api_8h_ae8a95573c08683bcb79f9009902f372eaa015bf7202594c3e0db8ef9ec29bba63}{LDPR\_PREVAILING\_DEF\_IRONLY\_EXP}}}
+\DoxyCodeLine{00255\ \};}
+\DoxyCodeLine{00256\ }
+\DoxyCodeLine{00257\ \textcolor{comment}{/*\ The\ plugin\ library's\ "{}claim\ file"{}\ handler.\ \ */}}
+\DoxyCodeLine{00258\ }
+\DoxyCodeLine{00259\ \textcolor{keyword}{typedef}}
+\DoxyCodeLine{00260\ \textcolor{keyword}{enum}\ \doxymbox{\hyperlink{plugin-api_8h_a4335d34beee0024e4558323c50fd3ac6}{ld\_plugin\_status}}}
+\DoxyCodeLine{00261\ (*\doxymbox{\hyperlink{plugin-api_8h_ac48d0bfaafa6477529221cdb613d3cc1}{ld\_plugin\_claim\_file\_handler}})\ (}
+\DoxyCodeLine{00262\ \ \ \textcolor{keyword}{const}\ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{structld__plugin__input__file}{ld\_plugin\_input\_file}}\ *file,\ \textcolor{keywordtype}{int}\ *claimed);}
+\DoxyCodeLine{00263\ }
+\DoxyCodeLine{00264\ \textcolor{comment}{/*\ The\ plugin\ library's\ "{}claim\ file"{}\ handler,\ version\ 2.\ \ */}}
+\DoxyCodeLine{00265\ }
+\DoxyCodeLine{00266\ \textcolor{keyword}{typedef}}
+\DoxyCodeLine{00267\ \textcolor{keyword}{enum}\ \doxymbox{\hyperlink{plugin-api_8h_a4335d34beee0024e4558323c50fd3ac6}{ld\_plugin\_status}}}
+\DoxyCodeLine{00268\ (*\doxymbox{\hyperlink{plugin-api_8h_a0f0e7bd6f34f27f5f83de3504cbd578a}{ld\_plugin\_claim\_file\_handler\_v2}})\ (}
+\DoxyCodeLine{00269\ \ \ \textcolor{keyword}{const}\ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{structld__plugin__input__file}{ld\_plugin\_input\_file}}\ *file,\ \textcolor{keywordtype}{int}\ *claimed,\ \textcolor{keywordtype}{int}\ known\_used);}
+\DoxyCodeLine{00270\ }
+\DoxyCodeLine{00271\ \textcolor{comment}{/*\ The\ plugin\ library's\ "{}all\ symbols\ read"{}\ handler.\ \ */}}
+\DoxyCodeLine{00272\ }
+\DoxyCodeLine{00273\ \textcolor{keyword}{typedef}}
+\DoxyCodeLine{00274\ \textcolor{keyword}{enum}\ \doxymbox{\hyperlink{plugin-api_8h_a4335d34beee0024e4558323c50fd3ac6}{ld\_plugin\_status}}}
+\DoxyCodeLine{00275\ (*\doxymbox{\hyperlink{plugin-api_8h_a74683bcc8b04ec857f09ce092b4a2534}{ld\_plugin\_all\_symbols\_read\_handler}})\ (void);}
+\DoxyCodeLine{00276\ }
+\DoxyCodeLine{00277\ \textcolor{comment}{/*\ The\ plugin\ library's\ cleanup\ handler.\ \ */}}
+\DoxyCodeLine{00278\ }
+\DoxyCodeLine{00279\ \textcolor{keyword}{typedef}}
+\DoxyCodeLine{00280\ \textcolor{keyword}{enum}\ \doxymbox{\hyperlink{plugin-api_8h_a4335d34beee0024e4558323c50fd3ac6}{ld\_plugin\_status}}}
+\DoxyCodeLine{00281\ (*\doxymbox{\hyperlink{plugin-api_8h_abc6131eb5f59a423cadc6d7529513a18}{ld\_plugin\_cleanup\_handler}})\ (void);}
+\DoxyCodeLine{00282\ }
+\DoxyCodeLine{00283\ \textcolor{comment}{/*\ The\ linker's\ interface\ for\ registering\ the\ "{}claim\ file"{}\ handler.\ \ */}}
+\DoxyCodeLine{00284\ }
+\DoxyCodeLine{00285\ \textcolor{keyword}{typedef}}
+\DoxyCodeLine{00286\ \textcolor{keyword}{enum}\ \doxymbox{\hyperlink{plugin-api_8h_a4335d34beee0024e4558323c50fd3ac6}{ld\_plugin\_status}}}
+\DoxyCodeLine{00287\ (*\doxymbox{\hyperlink{plugin-api_8h_ad37d1f36a52cff49df14276894118161}{ld\_plugin\_register\_claim\_file}})\ (\doxymbox{\hyperlink{plugin-api_8h_ac48d0bfaafa6477529221cdb613d3cc1}{ld\_plugin\_claim\_file\_handler}}\ handler);}
+\DoxyCodeLine{00288\ }
+\DoxyCodeLine{00289\ \textcolor{comment}{/*\ The\ linker's\ interface\ for\ registering\ the\ "{}claim\ file"{}\ handler,}}
+\DoxyCodeLine{00290\ \textcolor{comment}{\ \ \ version\ 2.\ \ */}}
+\DoxyCodeLine{00291\ }
+\DoxyCodeLine{00292\ \textcolor{keyword}{typedef}}
+\DoxyCodeLine{00293\ \textcolor{keyword}{enum}\ \doxymbox{\hyperlink{plugin-api_8h_a4335d34beee0024e4558323c50fd3ac6}{ld\_plugin\_status}}}
+\DoxyCodeLine{00294\ (*\doxymbox{\hyperlink{plugin-api_8h_afa8ad35db271c9e1dc70642662362a65}{ld\_plugin\_register\_claim\_file\_v2}})\ (\doxymbox{\hyperlink{plugin-api_8h_a0f0e7bd6f34f27f5f83de3504cbd578a}{ld\_plugin\_claim\_file\_handler\_v2}}\ handler);}
+\DoxyCodeLine{00295\ }
+\DoxyCodeLine{00296\ \textcolor{comment}{/*\ The\ linker's\ interface\ for\ registering\ the\ "{}all\ symbols\ read"{}\ handler.\ \ */}}
+\DoxyCodeLine{00297\ }
+\DoxyCodeLine{00298\ \textcolor{keyword}{typedef}}
+\DoxyCodeLine{00299\ \textcolor{keyword}{enum}\ \doxymbox{\hyperlink{plugin-api_8h_a4335d34beee0024e4558323c50fd3ac6}{ld\_plugin\_status}}}
+\DoxyCodeLine{00300\ (*\doxymbox{\hyperlink{plugin-api_8h_a4998ed8414b5bd77e87dd13a035a67c8}{ld\_plugin\_register\_all\_symbols\_read}})\ (}
+\DoxyCodeLine{00301\ \ \ \doxymbox{\hyperlink{plugin-api_8h_a74683bcc8b04ec857f09ce092b4a2534}{ld\_plugin\_all\_symbols\_read\_handler}}\ handler);}
+\DoxyCodeLine{00302\ }
+\DoxyCodeLine{00303\ \textcolor{comment}{/*\ The\ linker's\ interface\ for\ registering\ the\ cleanup\ handler.\ \ */}}
+\DoxyCodeLine{00304\ }
+\DoxyCodeLine{00305\ \textcolor{keyword}{typedef}}
+\DoxyCodeLine{00306\ \textcolor{keyword}{enum}\ \doxymbox{\hyperlink{plugin-api_8h_a4335d34beee0024e4558323c50fd3ac6}{ld\_plugin\_status}}}
+\DoxyCodeLine{00307\ (*\doxymbox{\hyperlink{plugin-api_8h_ac33cf5056c5774ba4b4d8aa78c3c091a}{ld\_plugin\_register\_cleanup}})\ (\doxymbox{\hyperlink{plugin-api_8h_abc6131eb5f59a423cadc6d7529513a18}{ld\_plugin\_cleanup\_handler}}\ handler);}
+\DoxyCodeLine{00308\ }
+\DoxyCodeLine{00309\ \textcolor{comment}{/*\ The\ linker's\ interface\ for\ adding\ symbols\ from\ a\ claimed\ input\ file.\ \ */}}
+\DoxyCodeLine{00310\ }
+\DoxyCodeLine{00311\ \textcolor{keyword}{typedef}}
+\DoxyCodeLine{00312\ \textcolor{keyword}{enum}\ \doxymbox{\hyperlink{plugin-api_8h_a4335d34beee0024e4558323c50fd3ac6}{ld\_plugin\_status}}}
+\DoxyCodeLine{00313\ (*\doxymbox{\hyperlink{plugin-api_8h_ad0f676abf1647b144679e8607207475c}{ld\_plugin\_add\_symbols}})\ (\textcolor{keywordtype}{void}\ *\doxymbox{\hyperlink{structld__plugin__input__file_af2a58441d39b0e69c539955b277a1279}{handle}},\ \textcolor{keywordtype}{int}\ nsyms,}
+\DoxyCodeLine{00314\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{structld__plugin__symbol}{ld\_plugin\_symbol}}\ *syms);}
+\DoxyCodeLine{00315\ }
+\DoxyCodeLine{00316\ \textcolor{comment}{/*\ The\ linker's\ interface\ for\ getting\ the\ input\ file\ information\ with}}
+\DoxyCodeLine{00317\ \textcolor{comment}{\ \ \ an\ open\ (possibly\ re-\/opened)\ file\ descriptor.\ \ */}}
+\DoxyCodeLine{00318\ }
+\DoxyCodeLine{00319\ \textcolor{keyword}{typedef}}
+\DoxyCodeLine{00320\ \textcolor{keyword}{enum}\ \doxymbox{\hyperlink{plugin-api_8h_a4335d34beee0024e4558323c50fd3ac6}{ld\_plugin\_status}}}
+\DoxyCodeLine{00321\ (*\doxymbox{\hyperlink{plugin-api_8h_a789191edc1637f2d5c2206d11ca2c1a8}{ld\_plugin\_get\_input\_file}})\ (\textcolor{keyword}{const}\ \textcolor{keywordtype}{void}\ *handle,}
+\DoxyCodeLine{00322\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{structld__plugin__input__file}{ld\_plugin\_input\_file}}\ *file);}
+\DoxyCodeLine{00323\ }
+\DoxyCodeLine{00324\ \textcolor{keyword}{typedef}}
+\DoxyCodeLine{00325\ \textcolor{keyword}{enum}\ \doxymbox{\hyperlink{plugin-api_8h_a4335d34beee0024e4558323c50fd3ac6}{ld\_plugin\_status}}}
+\DoxyCodeLine{00326\ (*\doxymbox{\hyperlink{plugin-api_8h_a2f195a093344bfb27a942928d1184adc}{ld\_plugin\_get\_view}})\ (\textcolor{keyword}{const}\ \textcolor{keywordtype}{void}\ *\doxymbox{\hyperlink{structld__plugin__input__file_af2a58441d39b0e69c539955b277a1279}{handle}},\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{void}\ **viewp);}
+\DoxyCodeLine{00327\ }
+\DoxyCodeLine{00328\ \textcolor{comment}{/*\ The\ linker's\ interface\ for\ releasing\ the\ input\ file.\ \ */}}
+\DoxyCodeLine{00329\ }
+\DoxyCodeLine{00330\ \textcolor{keyword}{typedef}}
+\DoxyCodeLine{00331\ \textcolor{keyword}{enum}\ \doxymbox{\hyperlink{plugin-api_8h_a4335d34beee0024e4558323c50fd3ac6}{ld\_plugin\_status}}}
+\DoxyCodeLine{00332\ (*\doxymbox{\hyperlink{plugin-api_8h_ae9fa21c7efca1778cbfbce321daa7c69}{ld\_plugin\_release\_input\_file}})\ (\textcolor{keyword}{const}\ \textcolor{keywordtype}{void}\ *\doxymbox{\hyperlink{structld__plugin__input__file_af2a58441d39b0e69c539955b277a1279}{handle}});}
+\DoxyCodeLine{00333\ }
+\DoxyCodeLine{00334\ \textcolor{comment}{/*\ The\ linker's\ interface\ for\ retrieving\ symbol\ resolution\ information.\ \ */}}
+\DoxyCodeLine{00335\ }
+\DoxyCodeLine{00336\ \textcolor{keyword}{typedef}}
+\DoxyCodeLine{00337\ \textcolor{keyword}{enum}\ \doxymbox{\hyperlink{plugin-api_8h_a4335d34beee0024e4558323c50fd3ac6}{ld\_plugin\_status}}}
+\DoxyCodeLine{00338\ (*\doxymbox{\hyperlink{plugin-api_8h_adb30349cba34df1e747e91425475def6}{ld\_plugin\_get\_symbols}})\ (\textcolor{keyword}{const}\ \textcolor{keywordtype}{void}\ *\doxymbox{\hyperlink{structld__plugin__input__file_af2a58441d39b0e69c539955b277a1279}{handle}},\ \textcolor{keywordtype}{int}\ nsyms,}
+\DoxyCodeLine{00339\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{structld__plugin__symbol}{ld\_plugin\_symbol}}\ *syms);}
+\DoxyCodeLine{00340\ }
+\DoxyCodeLine{00341\ \textcolor{comment}{/*\ The\ linker's\ interface\ for\ adding\ a\ compiled\ input\ file.\ \ */}}
+\DoxyCodeLine{00342\ }
+\DoxyCodeLine{00343\ \textcolor{keyword}{typedef}}
+\DoxyCodeLine{00344\ \textcolor{keyword}{enum}\ \doxymbox{\hyperlink{plugin-api_8h_a4335d34beee0024e4558323c50fd3ac6}{ld\_plugin\_status}}}
+\DoxyCodeLine{00345\ (*\doxymbox{\hyperlink{plugin-api_8h_ab2a6832287fa981ae6dafc650782ee69}{ld\_plugin\_add\_input\_file}})\ (\textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *pathname);}
+\DoxyCodeLine{00346\ }
+\DoxyCodeLine{00347\ \textcolor{comment}{/*\ The\ linker's\ interface\ for\ adding\ a\ library\ that\ should\ be\ searched.\ \ */}}
+\DoxyCodeLine{00348\ }
+\DoxyCodeLine{00349\ \textcolor{keyword}{typedef}}
+\DoxyCodeLine{00350\ \textcolor{keyword}{enum}\ \doxymbox{\hyperlink{plugin-api_8h_a4335d34beee0024e4558323c50fd3ac6}{ld\_plugin\_status}}}
+\DoxyCodeLine{00351\ (*\doxymbox{\hyperlink{plugin-api_8h_a8e50d57bafd16415e382a9d9d99792c6}{ld\_plugin\_add\_input\_library}})\ (\textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *libname);}
+\DoxyCodeLine{00352\ }
+\DoxyCodeLine{00353\ \textcolor{comment}{/*\ The\ linker's\ interface\ for\ adding\ a\ library\ path\ that\ should\ be\ searched.\ \ */}}
+\DoxyCodeLine{00354\ }
+\DoxyCodeLine{00355\ \textcolor{keyword}{typedef}}
+\DoxyCodeLine{00356\ \textcolor{keyword}{enum}\ \doxymbox{\hyperlink{plugin-api_8h_a4335d34beee0024e4558323c50fd3ac6}{ld\_plugin\_status}}}
+\DoxyCodeLine{00357\ (*\doxymbox{\hyperlink{plugin-api_8h_a0f563ee74535c47f756667ce5e59093c}{ld\_plugin\_set\_extra\_library\_path}})\ (\textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *path);}
+\DoxyCodeLine{00358\ }
+\DoxyCodeLine{00359\ \textcolor{comment}{/*\ The\ linker's\ interface\ for\ issuing\ a\ warning\ or\ error\ message.\ \ */}}
+\DoxyCodeLine{00360\ }
+\DoxyCodeLine{00361\ \textcolor{keyword}{typedef}}
+\DoxyCodeLine{00362\ \textcolor{keyword}{enum}\ \doxymbox{\hyperlink{plugin-api_8h_a4335d34beee0024e4558323c50fd3ac6}{ld\_plugin\_status}}}
+\DoxyCodeLine{00363\ (*\doxymbox{\hyperlink{plugin-api_8h_a1170bfd2366a3ddcc5a5f27813c6ef58}{ld\_plugin\_message}})\ (\textcolor{keywordtype}{int}\ level,\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *format,\ ...);}
+\DoxyCodeLine{00364\ }
+\DoxyCodeLine{00365\ \textcolor{comment}{/*\ The\ linker's\ interface\ for\ retrieving\ the\ number\ of\ sections\ in\ an\ object.}}
+\DoxyCodeLine{00366\ \textcolor{comment}{\ \ \ The\ handle\ is\ obtained\ in\ the\ claim\_file\ handler.\ \ This\ interface\ should}}
+\DoxyCodeLine{00367\ \textcolor{comment}{\ \ \ only\ be\ invoked\ in\ the\ claim\_file\ handler.\ \ \ This\ function\ sets\ *COUNT\ to}}
+\DoxyCodeLine{00368\ \textcolor{comment}{\ \ \ the\ number\ of\ sections\ in\ the\ object.\ \ */}}
+\DoxyCodeLine{00369\ }
+\DoxyCodeLine{00370\ \textcolor{keyword}{typedef}}
+\DoxyCodeLine{00371\ \textcolor{keyword}{enum}\ \doxymbox{\hyperlink{plugin-api_8h_a4335d34beee0024e4558323c50fd3ac6}{ld\_plugin\_status}}}
+\DoxyCodeLine{00372\ (*\doxymbox{\hyperlink{plugin-api_8h_aaec0e1696a1ceaf06b0f00d5b26edf77}{ld\_plugin\_get\_input\_section\_count}})\ (\textcolor{keyword}{const}\ \textcolor{keywordtype}{void}*\ handle,\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ *count);}
+\DoxyCodeLine{00373\ }
+\DoxyCodeLine{00374\ \textcolor{comment}{/*\ The\ linker's\ interface\ for\ retrieving\ the\ section\ type\ of\ a\ specific}}
+\DoxyCodeLine{00375\ \textcolor{comment}{\ \ \ section\ in\ an\ object.\ \ This\ interface\ should\ only\ be\ invoked\ in\ the}}
+\DoxyCodeLine{00376\ \textcolor{comment}{\ \ \ claim\_file\ handler.\ \ This\ function\ sets\ *TYPE\ to\ an\ ELF\ SHT\_xxx\ value.\ \ */}}
+\DoxyCodeLine{00377\ }
+\DoxyCodeLine{00378\ \textcolor{keyword}{typedef}}
+\DoxyCodeLine{00379\ \textcolor{keyword}{enum}\ \doxymbox{\hyperlink{plugin-api_8h_a4335d34beee0024e4558323c50fd3ac6}{ld\_plugin\_status}}}
+\DoxyCodeLine{00380\ (*\doxymbox{\hyperlink{plugin-api_8h_a4093be004dbad8de6a17665b4e73f0a6}{ld\_plugin\_get\_input\_section\_type}})\ (\textcolor{keyword}{const}\ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{structld__plugin__section}{ld\_plugin\_section}}\ \doxymbox{\hyperlink{coretypes_8h_a658efd90fe0e5cfd2afa58a22152e206}{section}},}
+\DoxyCodeLine{00381\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ unsigned\ int\ *\doxymbox{\hyperlink{structtype}{type}});}
+\DoxyCodeLine{00382\ }
+\DoxyCodeLine{00383\ \textcolor{comment}{/*\ The\ linker's\ interface\ for\ retrieving\ the\ name\ of\ a\ specific\ section\ in}}
+\DoxyCodeLine{00384\ \textcolor{comment}{\ \ \ an\ object.\ This\ interface\ should\ only\ be\ invoked\ in\ the\ claim\_file\ handler.}}
+\DoxyCodeLine{00385\ \textcolor{comment}{\ \ \ This\ function\ sets\ *SECTION\_NAME\_PTR\ to\ a\ null-\/terminated\ buffer\ allocated}}
+\DoxyCodeLine{00386\ \textcolor{comment}{\ \ \ by\ malloc.\ \ The\ plugin\ must\ free\ *SECTION\_NAME\_PTR.\ \ */}}
+\DoxyCodeLine{00387\ }
+\DoxyCodeLine{00388\ \textcolor{keyword}{typedef}}
+\DoxyCodeLine{00389\ \textcolor{keyword}{enum}\ \doxymbox{\hyperlink{plugin-api_8h_a4335d34beee0024e4558323c50fd3ac6}{ld\_plugin\_status}}}
+\DoxyCodeLine{00390\ (*\doxymbox{\hyperlink{plugin-api_8h_a2e97321f53581f1f5e2a46f7cbd96455}{ld\_plugin\_get\_input\_section\_name}})\ (\textcolor{keyword}{const}\ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{structld__plugin__section}{ld\_plugin\_section}}\ \doxymbox{\hyperlink{coretypes_8h_a658efd90fe0e5cfd2afa58a22152e206}{section}},}
+\DoxyCodeLine{00391\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ char\ **section\_name\_ptr);}
+\DoxyCodeLine{00392\ }
+\DoxyCodeLine{00393\ \textcolor{comment}{/*\ The\ linker's\ interface\ for\ retrieving\ the\ contents\ of\ a\ specific\ section}}
+\DoxyCodeLine{00394\ \textcolor{comment}{\ \ \ in\ an\ object.\ \ This\ interface\ should\ only\ be\ invoked\ in\ the\ claim\_file}}
+\DoxyCodeLine{00395\ \textcolor{comment}{\ \ \ handler.\ \ This\ function\ sets\ *SECTION\_CONTENTS\ to\ point\ to\ a\ buffer\ that\ is}}
+\DoxyCodeLine{00396\ \textcolor{comment}{\ \ \ valid\ until\ clam\_file\ handler\ returns.\ \ It\ sets\ *LEN\ to\ the\ size\ of\ the}}
+\DoxyCodeLine{00397\ \textcolor{comment}{\ \ \ buffer.\ \ */}}
+\DoxyCodeLine{00398\ }
+\DoxyCodeLine{00399\ \textcolor{keyword}{typedef}}
+\DoxyCodeLine{00400\ \textcolor{keyword}{enum}\ \doxymbox{\hyperlink{plugin-api_8h_a4335d34beee0024e4558323c50fd3ac6}{ld\_plugin\_status}}}
+\DoxyCodeLine{00401\ (*\doxymbox{\hyperlink{plugin-api_8h_acd699c4806321573342201934808822c}{ld\_plugin\_get\_input\_section\_contents}})\ (\textcolor{keyword}{const}\ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{structld__plugin__section}{ld\_plugin\_section}}\ \doxymbox{\hyperlink{coretypes_8h_a658efd90fe0e5cfd2afa58a22152e206}{section}},}
+\DoxyCodeLine{00402\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ const\ unsigned\ char\ **section\_contents,}
+\DoxyCodeLine{00403\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{size\_t}*\ len);}
+\DoxyCodeLine{00404\ }
+\DoxyCodeLine{00405\ \textcolor{comment}{/*\ The\ linker's\ interface\ for\ specifying\ the\ desired\ order\ of\ sections.}}
+\DoxyCodeLine{00406\ \textcolor{comment}{\ \ \ The\ sections\ should\ be\ specifed\ using\ the\ array\ SECTION\_LIST\ in\ the}}
+\DoxyCodeLine{00407\ \textcolor{comment}{\ \ \ order\ in\ which\ they\ should\ appear\ in\ the\ final\ layout.\ \ NUM\_SECTIONS}}
+\DoxyCodeLine{00408\ \textcolor{comment}{\ \ \ specifies\ the\ number\ of\ entries\ in\ each\ array.\ \ This\ should\ be\ invoked}}
+\DoxyCodeLine{00409\ \textcolor{comment}{\ \ \ in\ the\ all\_symbols\_read\ handler.\ \ */}}
+\DoxyCodeLine{00410\ }
+\DoxyCodeLine{00411\ \textcolor{keyword}{typedef}}
+\DoxyCodeLine{00412\ \textcolor{keyword}{enum}\ \doxymbox{\hyperlink{plugin-api_8h_a4335d34beee0024e4558323c50fd3ac6}{ld\_plugin\_status}}}
+\DoxyCodeLine{00413\ (*\doxymbox{\hyperlink{plugin-api_8h_a88ae99fd5199329526a66bd7f0e4119d}{ld\_plugin\_update\_section\_order}})\ (\textcolor{keyword}{const}\ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{structld__plugin__section}{ld\_plugin\_section}}\ *section\_list,}
+\DoxyCodeLine{00414\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ num\_sections);}
+\DoxyCodeLine{00415\ }
+\DoxyCodeLine{00416\ \textcolor{comment}{/*\ The\ linker's\ interface\ for\ specifying\ that\ reordering\ of\ sections\ is}}
+\DoxyCodeLine{00417\ \textcolor{comment}{\ \ \ desired\ so\ that\ the\ linker\ can\ prepare\ for\ it.\ \ This\ should\ be\ invoked}}
+\DoxyCodeLine{00418\ \textcolor{comment}{\ \ \ before\ update\_section\_order,\ preferably\ in\ the\ claim\_file\ handler.\ \ */}}
+\DoxyCodeLine{00419\ }
+\DoxyCodeLine{00420\ \textcolor{keyword}{typedef}}
+\DoxyCodeLine{00421\ \textcolor{keyword}{enum}\ \doxymbox{\hyperlink{plugin-api_8h_a4335d34beee0024e4558323c50fd3ac6}{ld\_plugin\_status}}}
+\DoxyCodeLine{00422\ (*\doxymbox{\hyperlink{plugin-api_8h_a2578dacad7b7435e3bac6f32ad4a2993}{ld\_plugin\_allow\_section\_ordering}})\ (void);}
+\DoxyCodeLine{00423\ }
+\DoxyCodeLine{00424\ \textcolor{comment}{/*\ The\ linker's\ interface\ for\ specifying\ that\ a\ subset\ of\ sections\ is}}
+\DoxyCodeLine{00425\ \textcolor{comment}{\ \ \ to\ be\ mapped\ to\ a\ unique\ segment.\ \ If\ the\ plugin\ wants\ to\ call}}
+\DoxyCodeLine{00426\ \textcolor{comment}{\ \ \ unique\_segment\_for\_sections,\ it\ must\ call\ this\ function\ from\ a}}
+\DoxyCodeLine{00427\ \textcolor{comment}{\ \ \ claim\_file\_handler\ or\ when\ it\ is\ first\ loaded.\ \ */}}
+\DoxyCodeLine{00428\ }
+\DoxyCodeLine{00429\ \textcolor{keyword}{typedef}}
+\DoxyCodeLine{00430\ \textcolor{keyword}{enum}\ \doxymbox{\hyperlink{plugin-api_8h_a4335d34beee0024e4558323c50fd3ac6}{ld\_plugin\_status}}}
+\DoxyCodeLine{00431\ (*\doxymbox{\hyperlink{plugin-api_8h_a189d6c459731f3715faf506eedac7a1e}{ld\_plugin\_allow\_unique\_segment\_for\_sections}})\ (void);}
+\DoxyCodeLine{00432\ }
+\DoxyCodeLine{00433\ \textcolor{comment}{/*\ The\ linker's\ interface\ for\ specifying\ that\ a\ specific\ set\ of\ sections}}
+\DoxyCodeLine{00434\ \textcolor{comment}{\ \ \ must\ be\ mapped\ to\ a\ unique\ segment.\ \ ELF\ segments\ do\ not\ have\ names}}
+\DoxyCodeLine{00435\ \textcolor{comment}{\ \ \ and\ the\ NAME\ is\ used\ as\ the\ name\ of\ the\ newly\ created\ output\ section}}
+\DoxyCodeLine{00436\ \textcolor{comment}{\ \ \ that\ is\ then\ placed\ in\ the\ unique\ PT\_LOAD\ segment.\ \ FLAGS\ is\ used\ to}}
+\DoxyCodeLine{00437\ \textcolor{comment}{\ \ \ specify\ if\ any\ additional\ segment\ flags\ need\ to\ be\ set.\ \ For\ instance,}}
+\DoxyCodeLine{00438\ \textcolor{comment}{\ \ \ a\ specific\ segment\ flag\ can\ be\ set\ to\ identify\ this\ segment.\ \ Unsetting}}
+\DoxyCodeLine{00439\ \textcolor{comment}{\ \ \ segment\ flags\ that\ would\ be\ set\ by\ default\ is\ not\ possible.\ \ The}}
+\DoxyCodeLine{00440\ \textcolor{comment}{\ \ \ parameter\ SEGMENT\_ALIGNMENT\ when\ non-\/zero\ will\ override\ the\ default.\ \ */}}
+\DoxyCodeLine{00441\ }
+\DoxyCodeLine{00442\ \textcolor{keyword}{typedef}}
+\DoxyCodeLine{00443\ \textcolor{keyword}{enum}\ \doxymbox{\hyperlink{plugin-api_8h_a4335d34beee0024e4558323c50fd3ac6}{ld\_plugin\_status}}}
+\DoxyCodeLine{00444\ (*\doxymbox{\hyperlink{plugin-api_8h_ac75215d96d16d1a744af3eedbf39681e}{ld\_plugin\_unique\_segment\_for\_sections}})\ (}
+\DoxyCodeLine{00445\ \ \ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}*\ segment\_name,}
+\DoxyCodeLine{00446\ \ \ \ \ uint64\_t\ segment\_flags,}
+\DoxyCodeLine{00447\ \ \ \ \ uint64\_t\ segment\_alignment,}
+\DoxyCodeLine{00448\ \ \ \ \ \textcolor{keyword}{const}\ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{structld__plugin__section}{ld\_plugin\_section}}\ *\ section\_list,}
+\DoxyCodeLine{00449\ \ \ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ num\_sections);}
+\DoxyCodeLine{00450\ }
+\DoxyCodeLine{00451\ \textcolor{comment}{/*\ The\ linker's\ interface\ for\ retrieving\ the\ section\ alignment\ requirement}}
+\DoxyCodeLine{00452\ \textcolor{comment}{\ \ \ of\ a\ specific\ section\ in\ an\ object.\ \ This\ interface\ should\ only\ be\ invoked\ in\ the}}
+\DoxyCodeLine{00453\ \textcolor{comment}{\ \ \ claim\_file\ handler.\ \ This\ function\ sets\ *ADDRALIGN\ to\ the\ ELF\ sh\_addralign}}
+\DoxyCodeLine{00454\ \textcolor{comment}{\ \ \ value\ of\ the\ input\ section.\ \ */}}
+\DoxyCodeLine{00455\ }
+\DoxyCodeLine{00456\ \textcolor{keyword}{typedef}}
+\DoxyCodeLine{00457\ \textcolor{keyword}{enum}\ \doxymbox{\hyperlink{plugin-api_8h_a4335d34beee0024e4558323c50fd3ac6}{ld\_plugin\_status}}}
+\DoxyCodeLine{00458\ (*\doxymbox{\hyperlink{plugin-api_8h_a2a984fa663e78de6f3db87a0f7438bff}{ld\_plugin\_get\_input\_section\_alignment}})\ (\textcolor{keyword}{const}\ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{structld__plugin__section}{ld\_plugin\_section}}\ \doxymbox{\hyperlink{coretypes_8h_a658efd90fe0e5cfd2afa58a22152e206}{section}},}
+\DoxyCodeLine{00459\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ unsigned\ int\ *addralign);}
+\DoxyCodeLine{00460\ }
+\DoxyCodeLine{00461\ \textcolor{comment}{/*\ The\ linker's\ interface\ for\ retrieving\ the\ section\ size\ of\ a\ specific\ section}}
+\DoxyCodeLine{00462\ \textcolor{comment}{\ \ \ in\ an\ object.\ \ This\ interface\ should\ only\ be\ invoked\ in\ the\ claim\_file\ handler.}}
+\DoxyCodeLine{00463\ \textcolor{comment}{\ \ \ This\ function\ sets\ *SECSIZE\ to\ the\ ELF\ sh\_size}}
+\DoxyCodeLine{00464\ \textcolor{comment}{\ \ \ value\ of\ the\ input\ section.\ \ */}}
+\DoxyCodeLine{00465\ }
+\DoxyCodeLine{00466\ \textcolor{keyword}{typedef}}
+\DoxyCodeLine{00467\ \textcolor{keyword}{enum}\ \doxymbox{\hyperlink{plugin-api_8h_a4335d34beee0024e4558323c50fd3ac6}{ld\_plugin\_status}}}
+\DoxyCodeLine{00468\ (*\doxymbox{\hyperlink{plugin-api_8h_ad984763479915d6e8d4e3fab243f7ee0}{ld\_plugin\_get\_input\_section\_size}})\ (\textcolor{keyword}{const}\ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{structld__plugin__section}{ld\_plugin\_section}}\ \doxymbox{\hyperlink{coretypes_8h_a658efd90fe0e5cfd2afa58a22152e206}{section}},}
+\DoxyCodeLine{00469\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ uint64\_t\ *secsize);}
+\DoxyCodeLine{00470\ }
+\DoxyCodeLine{00471\ \textcolor{keyword}{typedef}}
+\DoxyCodeLine{00472\ \textcolor{keyword}{enum}\ \doxymbox{\hyperlink{plugin-api_8h_a4335d34beee0024e4558323c50fd3ac6}{ld\_plugin\_status}}}
+\DoxyCodeLine{00473\ (*\doxymbox{\hyperlink{plugin-api_8h_ab710d41bcfb2ba3e017b97817ab8ff4a}{ld\_plugin\_new\_input\_handler}})\ (\textcolor{keyword}{const}\ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{structld__plugin__input__file}{ld\_plugin\_input\_file}}\ *file);}
+\DoxyCodeLine{00474\ }
+\DoxyCodeLine{00475\ \textcolor{comment}{/*\ The\ linker's\ interface\ for\ registering\ the\ "{}new\_input"{}\ handler.\ This\ handler}}
+\DoxyCodeLine{00476\ \textcolor{comment}{\ \ \ will\ be\ notified\ when\ a\ new\ input\ file\ has\ been\ added\ after\ the}}
+\DoxyCodeLine{00477\ \textcolor{comment}{\ \ \ all\_symbols\_read\ event,\ allowing\ the\ plugin\ to,\ for\ example,\ set\ a\ unique}}
+\DoxyCodeLine{00478\ \textcolor{comment}{\ \ \ segment\ for\ sections\ in\ plugin-\/generated\ input\ files.\ */}}
+\DoxyCodeLine{00479\ }
+\DoxyCodeLine{00480\ \textcolor{keyword}{typedef}}
+\DoxyCodeLine{00481\ \textcolor{keyword}{enum}\ \doxymbox{\hyperlink{plugin-api_8h_a4335d34beee0024e4558323c50fd3ac6}{ld\_plugin\_status}}}
+\DoxyCodeLine{00482\ (*\doxymbox{\hyperlink{plugin-api_8h_a7f40299c09240ccae865a86249779c1c}{ld\_plugin\_register\_new\_input}})\ (\doxymbox{\hyperlink{plugin-api_8h_ab710d41bcfb2ba3e017b97817ab8ff4a}{ld\_plugin\_new\_input\_handler}}\ handler);}
+\DoxyCodeLine{00483\ }
+\DoxyCodeLine{00484\ \textcolor{comment}{/*\ The\ linker's\ interface\ for\ getting\ the\ list\ of\ wrapped\ symbols\ using\ the}}
+\DoxyCodeLine{00485\ \textcolor{comment}{\ \ \ -\/-\/wrap\ option.\ This\ sets\ *NUM\_SYMBOLS\ to\ number\ of\ wrapped\ symbols\ and}}
+\DoxyCodeLine{00486\ \textcolor{comment}{\ \ \ *WRAP\_SYMBOL\_LIST\ to\ the\ list\ of\ wrapped\ symbols.\ */}}
+\DoxyCodeLine{00487\ }
+\DoxyCodeLine{00488\ \textcolor{keyword}{typedef}}
+\DoxyCodeLine{00489\ \textcolor{keyword}{enum}\ \doxymbox{\hyperlink{plugin-api_8h_a4335d34beee0024e4558323c50fd3ac6}{ld\_plugin\_status}}}
+\DoxyCodeLine{00490\ (*\doxymbox{\hyperlink{plugin-api_8h_aa3f31f03d94f740e8d8583f8f7bd681a}{ld\_plugin\_get\_wrap\_symbols}})\ (uint64\_t\ *num\_symbols,}
+\DoxyCodeLine{00491\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ ***wrap\_symbol\_list);}
+\DoxyCodeLine{00492\ }
+\DoxyCodeLine{00493\ \textcolor{keyword}{enum}\ \doxymbox{\hyperlink{plugin-api_8h_a5eca55fdfb82c4fc2da7f118e156706c}{ld\_plugin\_level}}}
+\DoxyCodeLine{00494\ \{}
+\DoxyCodeLine{00495\ \ \ \doxymbox{\hyperlink{plugin-api_8h_a5eca55fdfb82c4fc2da7f118e156706ca61e84ace3aa1b505c4c9f0a3704023a4}{LDPL\_INFO}},}
+\DoxyCodeLine{00496\ \ \ \doxymbox{\hyperlink{plugin-api_8h_a5eca55fdfb82c4fc2da7f118e156706ca3e8a67906f572ca19c1cbafe32773780}{LDPL\_WARNING}},}
+\DoxyCodeLine{00497\ \ \ \doxymbox{\hyperlink{plugin-api_8h_a5eca55fdfb82c4fc2da7f118e156706cad19b54854cdacfa9b067b8706c021e59}{LDPL\_ERROR}},}
+\DoxyCodeLine{00498\ \ \ \doxymbox{\hyperlink{plugin-api_8h_a5eca55fdfb82c4fc2da7f118e156706ca40da75a56e6cb89e8c6d308fb9b2084e}{LDPL\_FATAL}}}
+\DoxyCodeLine{00499\ \};}
+\DoxyCodeLine{00500\ }
+\DoxyCodeLine{00501\ \textcolor{comment}{/*\ Contract\ between\ a\ plug-\/in\ and\ a\ linker.\ \ */}}
+\DoxyCodeLine{00502\ }
+\DoxyCodeLine{00503\ \textcolor{keyword}{enum}\ \doxymbox{\hyperlink{plugin-api_8h_a1873344b0675c030934f29fefd959b75}{linker\_api\_version}}}
+\DoxyCodeLine{00504\ \{}
+\DoxyCodeLine{00505\ \ \ \ \textcolor{comment}{/*\ The\ linker/plugin\ do\ not\ implement\ any\ of\ the\ API\ levels\ below,\ the\ API}}
+\DoxyCodeLine{00506\ \textcolor{comment}{\ \ \ \ \ \ \ is\ determined\ solely\ via\ the\ transfer\ vector.\ \ */}}
+\DoxyCodeLine{00507\ \ \ \ \doxymbox{\hyperlink{plugin-api_8h_a1873344b0675c030934f29fefd959b75ac93d24813608633111e6f42a31492c7b}{LAPI\_V0}},}
+\DoxyCodeLine{00508\ }
+\DoxyCodeLine{00509\ \ \ \ \textcolor{comment}{/*\ API\ level\ v1.\ \ The\ linker\ provides\ get\_symbols\_v3,\ add\_symbols\_v2,}}
+\DoxyCodeLine{00510\ \textcolor{comment}{\ \ \ \ \ \ the\ plugin\ will\ use\ that\ and\ not\ any\ lower\ versions.}}
+\DoxyCodeLine{00511\ \textcolor{comment}{\ \ \ \ \ \ claim\_file\ is\ thread-\/safe\ on\ the\ plugin\ side\ and}}
+\DoxyCodeLine{00512\ \textcolor{comment}{\ \ \ \ \ \ add\_symbols\ on\ the\ linker\ side.\ \ */}}
+\DoxyCodeLine{00513\ \ \ \ \doxymbox{\hyperlink{plugin-api_8h_a1873344b0675c030934f29fefd959b75a2a2fc128685f08ef5deb20d1e9f45c48}{LAPI\_V1}}}
+\DoxyCodeLine{00514\ \};}
+\DoxyCodeLine{00515\ }
+\DoxyCodeLine{00516\ \textcolor{comment}{/*\ The\ linker's\ interface\ for\ API\ version\ negotiation.\ \ A\ plug-\/in\ calls}}
+\DoxyCodeLine{00517\ \textcolor{comment}{\ \ the\ function\ (with\ its\ IDENTIFIER\ and\ VERSION),\ plus\ minimal\ and\ maximal}}
+\DoxyCodeLine{00518\ \textcolor{comment}{\ \ version\ of\ linker\_api\_version\ is\ provided.\ \ Linker\ then\ returns\ selected}}
+\DoxyCodeLine{00519\ \textcolor{comment}{\ \ API\ version\ and\ provides\ its\ IDENTIFIER\ and\ VERSION.\ \ The\ returned\ value}}
+\DoxyCodeLine{00520\ \textcolor{comment}{\ \ by\ linker\ must\ be\ in\ range\ [MINIMAL\_API\_SUPPORTED,\ MAXIMAL\_API\_SUPPORTED].}}
+\DoxyCodeLine{00521\ \textcolor{comment}{\ \ Identifier\ pointers\ remain\ valid\ as\ long\ as\ the\ plugin\ is\ loaded.\ \ */}}
+\DoxyCodeLine{00522\ }
+\DoxyCodeLine{00523\ \textcolor{keyword}{typedef}}
+\DoxyCodeLine{00524\ int}
+\DoxyCodeLine{00525\ (*\doxymbox{\hyperlink{plugin-api_8h_a8d36a88fba3c9db3fb3cea2d7b6589cb}{ld\_plugin\_get\_api\_version}})\ (\textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *plugin\_identifier,}
+\DoxyCodeLine{00526\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *plugin\_version,}
+\DoxyCodeLine{00527\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{int}\ minimal\_api\_supported,}
+\DoxyCodeLine{00528\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{int}\ maximal\_api\_supported,}
+\DoxyCodeLine{00529\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ **linker\_identifier,}
+\DoxyCodeLine{00530\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ **linker\_version);}
+\DoxyCodeLine{00531\ }
+\DoxyCodeLine{00532\ \textcolor{comment}{/*\ Values\ for\ the\ tv\_tag\ field\ of\ the\ transfer\ vector.\ \ */}}
+\DoxyCodeLine{00533\ }
+\DoxyCodeLine{00534\ \textcolor{keyword}{enum}\ \doxymbox{\hyperlink{plugin-api_8h_a14c9fd478853137daebcf950a46ccc92}{ld\_plugin\_tag}}}
+\DoxyCodeLine{00535\ \{}
+\DoxyCodeLine{00536\ \ \ \doxymbox{\hyperlink{plugin-api_8h_a14c9fd478853137daebcf950a46ccc92a9c5b9635700494fe3222a992793be0c6}{LDPT\_NULL}},}
+\DoxyCodeLine{00537\ \ \ \doxymbox{\hyperlink{plugin-api_8h_a14c9fd478853137daebcf950a46ccc92af532a189da38d9c1c4a7d63819f42863}{LDPT\_API\_VERSION}},}
+\DoxyCodeLine{00538\ \ \ \doxymbox{\hyperlink{plugin-api_8h_a14c9fd478853137daebcf950a46ccc92afa310d489cf3fc478253d84eba2174b9}{LDPT\_GOLD\_VERSION}},}
+\DoxyCodeLine{00539\ \ \ \doxymbox{\hyperlink{plugin-api_8h_a14c9fd478853137daebcf950a46ccc92ab9a9768805a8648e3f7545daf6a81592}{LDPT\_LINKER\_OUTPUT}},}
+\DoxyCodeLine{00540\ \ \ \doxymbox{\hyperlink{plugin-api_8h_a14c9fd478853137daebcf950a46ccc92a60d08e83097bb93d197bd5023573a736}{LDPT\_OPTION}},}
+\DoxyCodeLine{00541\ \ \ \doxymbox{\hyperlink{plugin-api_8h_a14c9fd478853137daebcf950a46ccc92adf2d3a46efb2c72f003302919741cc03}{LDPT\_REGISTER\_CLAIM\_FILE\_HOOK}},}
+\DoxyCodeLine{00542\ \ \ \doxymbox{\hyperlink{plugin-api_8h_a14c9fd478853137daebcf950a46ccc92ab94b5ea9fe4e2b366f6c3575d44cfeb9}{LDPT\_REGISTER\_ALL\_SYMBOLS\_READ\_HOOK}},}
+\DoxyCodeLine{00543\ \ \ \doxymbox{\hyperlink{plugin-api_8h_a14c9fd478853137daebcf950a46ccc92ab46b8e11fc44e3606fe16577a405cabc}{LDPT\_REGISTER\_CLEANUP\_HOOK}},}
+\DoxyCodeLine{00544\ \ \ \doxymbox{\hyperlink{plugin-api_8h_a14c9fd478853137daebcf950a46ccc92ab5ce53d8efb89529f8f1b9629af32486}{LDPT\_ADD\_SYMBOLS}},}
+\DoxyCodeLine{00545\ \ \ \doxymbox{\hyperlink{plugin-api_8h_a14c9fd478853137daebcf950a46ccc92a11956e5b290a20fb26880fa6b96947b1}{LDPT\_GET\_SYMBOLS}},}
+\DoxyCodeLine{00546\ \ \ \doxymbox{\hyperlink{plugin-api_8h_a14c9fd478853137daebcf950a46ccc92a39063d83303b220694647576e17e94b8}{LDPT\_ADD\_INPUT\_FILE}},}
+\DoxyCodeLine{00547\ \ \ \doxymbox{\hyperlink{plugin-api_8h_a14c9fd478853137daebcf950a46ccc92a4bebc25c1a8ffa405d018ae029e7d2b1}{LDPT\_MESSAGE}},}
+\DoxyCodeLine{00548\ \ \ \doxymbox{\hyperlink{plugin-api_8h_a14c9fd478853137daebcf950a46ccc92ad7798283adb37d24a5c86c5404bc5a5f}{LDPT\_GET\_INPUT\_FILE}},}
+\DoxyCodeLine{00549\ \ \ \doxymbox{\hyperlink{plugin-api_8h_a14c9fd478853137daebcf950a46ccc92a6d1157d1738db3bff92a5d2c5e7618b3}{LDPT\_RELEASE\_INPUT\_FILE}},}
+\DoxyCodeLine{00550\ \ \ \doxymbox{\hyperlink{plugin-api_8h_a14c9fd478853137daebcf950a46ccc92af817305e616930d025d0b0a016831702}{LDPT\_ADD\_INPUT\_LIBRARY}},}
+\DoxyCodeLine{00551\ \ \ \doxymbox{\hyperlink{plugin-api_8h_a14c9fd478853137daebcf950a46ccc92a3213a3e8eef692829b5afb615d386cd1}{LDPT\_OUTPUT\_NAME}},}
+\DoxyCodeLine{00552\ \ \ \doxymbox{\hyperlink{plugin-api_8h_a14c9fd478853137daebcf950a46ccc92a7be1774bf9f8e073ec16f5ff65d9d68a}{LDPT\_SET\_EXTRA\_LIBRARY\_PATH}},}
+\DoxyCodeLine{00553\ \ \ \doxymbox{\hyperlink{plugin-api_8h_a14c9fd478853137daebcf950a46ccc92a472dde9e5ca364577597de701b2de5ea}{LDPT\_GNU\_LD\_VERSION}},}
+\DoxyCodeLine{00554\ \ \ \doxymbox{\hyperlink{plugin-api_8h_a14c9fd478853137daebcf950a46ccc92a77da39075018b77ea1880c76cdbeaa6f}{LDPT\_GET\_VIEW}},}
+\DoxyCodeLine{00555\ \ \ \doxymbox{\hyperlink{plugin-api_8h_a14c9fd478853137daebcf950a46ccc92a14d779988177f08453cd2a99bde5fbb9}{LDPT\_GET\_INPUT\_SECTION\_COUNT}},}
+\DoxyCodeLine{00556\ \ \ \doxymbox{\hyperlink{plugin-api_8h_a14c9fd478853137daebcf950a46ccc92ab87349fec3512f30cbfd1b4e1fe5018d}{LDPT\_GET\_INPUT\_SECTION\_TYPE}},}
+\DoxyCodeLine{00557\ \ \ \doxymbox{\hyperlink{plugin-api_8h_a14c9fd478853137daebcf950a46ccc92a069e852123df0e0eaffa92722876699f}{LDPT\_GET\_INPUT\_SECTION\_NAME}},}
+\DoxyCodeLine{00558\ \ \ \doxymbox{\hyperlink{plugin-api_8h_a14c9fd478853137daebcf950a46ccc92aaac998860ec5430312daccb83e906dfc}{LDPT\_GET\_INPUT\_SECTION\_CONTENTS}},}
+\DoxyCodeLine{00559\ \ \ \doxymbox{\hyperlink{plugin-api_8h_a14c9fd478853137daebcf950a46ccc92a4f9452e955eab39045c6dbdeff063480}{LDPT\_UPDATE\_SECTION\_ORDER}},}
+\DoxyCodeLine{00560\ \ \ \doxymbox{\hyperlink{plugin-api_8h_a14c9fd478853137daebcf950a46ccc92abfb6deef025edd2256aeb4b042214f8d}{LDPT\_ALLOW\_SECTION\_ORDERING}},}
+\DoxyCodeLine{00561\ \ \ \doxymbox{\hyperlink{plugin-api_8h_a14c9fd478853137daebcf950a46ccc92acd587445645391439f1528caa53f4643}{LDPT\_GET\_SYMBOLS\_V2}},}
+\DoxyCodeLine{00562\ \ \ \doxymbox{\hyperlink{plugin-api_8h_a14c9fd478853137daebcf950a46ccc92a11123a0a85f03efc630a87c0c55a63aa}{LDPT\_ALLOW\_UNIQUE\_SEGMENT\_FOR\_SECTIONS}},}
+\DoxyCodeLine{00563\ \ \ \doxymbox{\hyperlink{plugin-api_8h_a14c9fd478853137daebcf950a46ccc92a5c03a88f2cac7dcbb7bfee0521db679b}{LDPT\_UNIQUE\_SEGMENT\_FOR\_SECTIONS}},}
+\DoxyCodeLine{00564\ \ \ \doxymbox{\hyperlink{plugin-api_8h_a14c9fd478853137daebcf950a46ccc92a84b21ec9d3a2bdd3867a42bcfa6ca762}{LDPT\_GET\_SYMBOLS\_V3}},}
+\DoxyCodeLine{00565\ \ \ \doxymbox{\hyperlink{plugin-api_8h_a14c9fd478853137daebcf950a46ccc92a0088de24b40cbf94341104880f45ae4c}{LDPT\_GET\_INPUT\_SECTION\_ALIGNMENT}},}
+\DoxyCodeLine{00566\ \ \ \doxymbox{\hyperlink{plugin-api_8h_a14c9fd478853137daebcf950a46ccc92a787354c4274656444ee30563da358a2d}{LDPT\_GET\_INPUT\_SECTION\_SIZE}},}
+\DoxyCodeLine{00567\ \ \ \doxymbox{\hyperlink{plugin-api_8h_a14c9fd478853137daebcf950a46ccc92ae8f97f791c7426c23398c6687d54ea7c}{LDPT\_REGISTER\_NEW\_INPUT\_HOOK}},}
+\DoxyCodeLine{00568\ \ \ \doxymbox{\hyperlink{plugin-api_8h_a14c9fd478853137daebcf950a46ccc92a20bf6129c0bb37d52d7f14948319f5a7}{LDPT\_GET\_WRAP\_SYMBOLS}},}
+\DoxyCodeLine{00569\ \ \ \doxymbox{\hyperlink{plugin-api_8h_a14c9fd478853137daebcf950a46ccc92a7fe42596f1c1c535691d5ffccf867ba2}{LDPT\_ADD\_SYMBOLS\_V2}},}
+\DoxyCodeLine{00570\ \ \ \doxymbox{\hyperlink{plugin-api_8h_a14c9fd478853137daebcf950a46ccc92ae1665c14a437a42196d5cc61492b39f4}{LDPT\_GET\_API\_VERSION}},}
+\DoxyCodeLine{00571\ \ \ \doxymbox{\hyperlink{plugin-api_8h_a14c9fd478853137daebcf950a46ccc92a72d85e8c4deb2402bdb574610457bedf}{LDPT\_REGISTER\_CLAIM\_FILE\_HOOK\_V2}}}
+\DoxyCodeLine{00572\ \};}
+\DoxyCodeLine{00573\ }
+\DoxyCodeLine{00574\ \textcolor{comment}{/*\ The\ plugin\ transfer\ vector.\ \ */}}
+\DoxyCodeLine{00575\ }
+\DoxyCodeLine{00576\ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{structld__plugin__tv}{ld\_plugin\_tv}}}
+\DoxyCodeLine{00577\ \{}
+\DoxyCodeLine{00578\ \ \ \textcolor{keyword}{enum}\ \doxymbox{\hyperlink{plugin-api_8h_a14c9fd478853137daebcf950a46ccc92}{ld\_plugin\_tag}}\ \doxymbox{\hyperlink{structld__plugin__tv_a9f6274ac10214a7895cac43df9ec467f}{tv\_tag}};}
+\DoxyCodeLine{00579\ \ \ \textcolor{keyword}{union}}
+\DoxyCodeLine{00580\ \ \ \{}
+\DoxyCodeLine{00581\ \ \ \ \ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{structld__plugin__tv_aa6d90261f69f532cd86eae6529ddb57c}{tv\_val}};}
+\DoxyCodeLine{00582\ \ \ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *\doxymbox{\hyperlink{structld__plugin__tv_a2e5bbdc2883ffcf83db5e7f00a66469a}{tv\_string}};}
+\DoxyCodeLine{00583\ \ \ \ \ \doxymbox{\hyperlink{plugin-api_8h_ad37d1f36a52cff49df14276894118161}{ld\_plugin\_register\_claim\_file}}\ \doxymbox{\hyperlink{structld__plugin__tv_a60f8488e7f4f3fd008c3a9db627adaea}{tv\_register\_claim\_file}};}
+\DoxyCodeLine{00584\ \ \ \ \ \doxymbox{\hyperlink{plugin-api_8h_afa8ad35db271c9e1dc70642662362a65}{ld\_plugin\_register\_claim\_file\_v2}}\ \doxymbox{\hyperlink{structld__plugin__tv_ac6305de0e31ee44d0882724791d01391}{tv\_register\_claim\_file\_v2}};}
+\DoxyCodeLine{00585\ \ \ \ \ \doxymbox{\hyperlink{plugin-api_8h_a4998ed8414b5bd77e87dd13a035a67c8}{ld\_plugin\_register\_all\_symbols\_read}}\ \doxymbox{\hyperlink{structld__plugin__tv_a64a5f26e9e9c9e1ae5262e3016867bc4}{tv\_register\_all\_symbols\_read}};}
+\DoxyCodeLine{00586\ \ \ \ \ \doxymbox{\hyperlink{plugin-api_8h_ac33cf5056c5774ba4b4d8aa78c3c091a}{ld\_plugin\_register\_cleanup}}\ \doxymbox{\hyperlink{structld__plugin__tv_ac06385e12d8a4404068ff845a06da30c}{tv\_register\_cleanup}};}
+\DoxyCodeLine{00587\ \ \ \ \ \doxymbox{\hyperlink{plugin-api_8h_ad0f676abf1647b144679e8607207475c}{ld\_plugin\_add\_symbols}}\ \doxymbox{\hyperlink{structld__plugin__tv_a1cec53330db529398a9c3a50ec9e6e01}{tv\_add\_symbols}};}
+\DoxyCodeLine{00588\ \ \ \ \ \doxymbox{\hyperlink{plugin-api_8h_adb30349cba34df1e747e91425475def6}{ld\_plugin\_get\_symbols}}\ \doxymbox{\hyperlink{structld__plugin__tv_a472ef817efad185133397ef6af359b29}{tv\_get\_symbols}};}
+\DoxyCodeLine{00589\ \ \ \ \ \doxymbox{\hyperlink{plugin-api_8h_ab2a6832287fa981ae6dafc650782ee69}{ld\_plugin\_add\_input\_file}}\ \doxymbox{\hyperlink{structld__plugin__tv_a35f90f0736dcb45f8fe217c350c3a364}{tv\_add\_input\_file}};}
+\DoxyCodeLine{00590\ \ \ \ \ \doxymbox{\hyperlink{plugin-api_8h_a1170bfd2366a3ddcc5a5f27813c6ef58}{ld\_plugin\_message}}\ \doxymbox{\hyperlink{structld__plugin__tv_aea37b0948a1ebff1919364cddf62853a}{tv\_message}};}
+\DoxyCodeLine{00591\ \ \ \ \ \doxymbox{\hyperlink{plugin-api_8h_a789191edc1637f2d5c2206d11ca2c1a8}{ld\_plugin\_get\_input\_file}}\ \doxymbox{\hyperlink{structld__plugin__tv_a61fc5bbf79de2f093a9fff3a19beae40}{tv\_get\_input\_file}};}
+\DoxyCodeLine{00592\ \ \ \ \ \doxymbox{\hyperlink{plugin-api_8h_a2f195a093344bfb27a942928d1184adc}{ld\_plugin\_get\_view}}\ \doxymbox{\hyperlink{structld__plugin__tv_a2701e30e5b6336f0e9bf30110c7ce472}{tv\_get\_view}};}
+\DoxyCodeLine{00593\ \ \ \ \ \doxymbox{\hyperlink{plugin-api_8h_ae9fa21c7efca1778cbfbce321daa7c69}{ld\_plugin\_release\_input\_file}}\ \doxymbox{\hyperlink{structld__plugin__tv_a2ad23e8bae1e75adedf1a7ff5ef5df81}{tv\_release\_input\_file}};}
+\DoxyCodeLine{00594\ \ \ \ \ \doxymbox{\hyperlink{plugin-api_8h_a8e50d57bafd16415e382a9d9d99792c6}{ld\_plugin\_add\_input\_library}}\ \doxymbox{\hyperlink{structld__plugin__tv_af067c2284b6c876de016299bec097cc8}{tv\_add\_input\_library}};}
+\DoxyCodeLine{00595\ \ \ \ \ \doxymbox{\hyperlink{plugin-api_8h_a0f563ee74535c47f756667ce5e59093c}{ld\_plugin\_set\_extra\_library\_path}}\ \doxymbox{\hyperlink{structld__plugin__tv_a1f3074bf8f8161afc4693ba699bc018b}{tv\_set\_extra\_library\_path}};}
+\DoxyCodeLine{00596\ \ \ \ \ \doxymbox{\hyperlink{plugin-api_8h_aaec0e1696a1ceaf06b0f00d5b26edf77}{ld\_plugin\_get\_input\_section\_count}}\ \doxymbox{\hyperlink{structld__plugin__tv_a16543939aeaab18710ac0f53caefc5b8}{tv\_get\_input\_section\_count}};}
+\DoxyCodeLine{00597\ \ \ \ \ \doxymbox{\hyperlink{plugin-api_8h_a4093be004dbad8de6a17665b4e73f0a6}{ld\_plugin\_get\_input\_section\_type}}\ \doxymbox{\hyperlink{structld__plugin__tv_a4570054161f68e981a0ef7df1243a88d}{tv\_get\_input\_section\_type}};}
+\DoxyCodeLine{00598\ \ \ \ \ \doxymbox{\hyperlink{plugin-api_8h_a2e97321f53581f1f5e2a46f7cbd96455}{ld\_plugin\_get\_input\_section\_name}}\ \doxymbox{\hyperlink{structld__plugin__tv_aac944af76705611ffb9b3020663e3537}{tv\_get\_input\_section\_name}};}
+\DoxyCodeLine{00599\ \ \ \ \ \doxymbox{\hyperlink{plugin-api_8h_acd699c4806321573342201934808822c}{ld\_plugin\_get\_input\_section\_contents}}\ \doxymbox{\hyperlink{structld__plugin__tv_acee47fef03212690586d6239ef068071}{tv\_get\_input\_section\_contents}};}
+\DoxyCodeLine{00600\ \ \ \ \ \doxymbox{\hyperlink{plugin-api_8h_a88ae99fd5199329526a66bd7f0e4119d}{ld\_plugin\_update\_section\_order}}\ \doxymbox{\hyperlink{structld__plugin__tv_ada3402850de7a86999b77aac43809098}{tv\_update\_section\_order}};}
+\DoxyCodeLine{00601\ \ \ \ \ \doxymbox{\hyperlink{plugin-api_8h_a2578dacad7b7435e3bac6f32ad4a2993}{ld\_plugin\_allow\_section\_ordering}}\ \doxymbox{\hyperlink{structld__plugin__tv_a84e1acf9fc142d798441c0098cda5930}{tv\_allow\_section\_ordering}};}
+\DoxyCodeLine{00602\ \ \ \ \ \doxymbox{\hyperlink{plugin-api_8h_a189d6c459731f3715faf506eedac7a1e}{ld\_plugin\_allow\_unique\_segment\_for\_sections}}\ \doxymbox{\hyperlink{structld__plugin__tv_a574794fbd7d4eff8ade4c7023dcb6788}{tv\_allow\_unique\_segment\_for\_sections}};\ }
+\DoxyCodeLine{00603\ \ \ \ \ \doxymbox{\hyperlink{plugin-api_8h_ac75215d96d16d1a744af3eedbf39681e}{ld\_plugin\_unique\_segment\_for\_sections}}\ \doxymbox{\hyperlink{structld__plugin__tv_a77ba654750e25dd3033baabba7ed3da4}{tv\_unique\_segment\_for\_sections}};}
+\DoxyCodeLine{00604\ \ \ \ \ \doxymbox{\hyperlink{plugin-api_8h_a2a984fa663e78de6f3db87a0f7438bff}{ld\_plugin\_get\_input\_section\_alignment}}\ \doxymbox{\hyperlink{structld__plugin__tv_ac3ab733a9e1c96c0ce55e024c1903697}{tv\_get\_input\_section\_alignment}};}
+\DoxyCodeLine{00605\ \ \ \ \ \doxymbox{\hyperlink{plugin-api_8h_ad984763479915d6e8d4e3fab243f7ee0}{ld\_plugin\_get\_input\_section\_size}}\ \doxymbox{\hyperlink{structld__plugin__tv_aec7c408f771e09e3baf97bd66458e5dd}{tv\_get\_input\_section\_size}};}
+\DoxyCodeLine{00606\ \ \ \ \ \doxymbox{\hyperlink{plugin-api_8h_a7f40299c09240ccae865a86249779c1c}{ld\_plugin\_register\_new\_input}}\ \doxymbox{\hyperlink{structld__plugin__tv_a66ad2a44aa1d9fc9cb24e51b3810420c}{tv\_register\_new\_input}};}
+\DoxyCodeLine{00607\ \ \ \ \ \doxymbox{\hyperlink{plugin-api_8h_aa3f31f03d94f740e8d8583f8f7bd681a}{ld\_plugin\_get\_wrap\_symbols}}\ \doxymbox{\hyperlink{structld__plugin__tv_a31380430033c23cc816a60f50fa83550}{tv\_get\_wrap\_symbols}};}
+\DoxyCodeLine{00608\ \ \ \ \ \doxymbox{\hyperlink{plugin-api_8h_a8d36a88fba3c9db3fb3cea2d7b6589cb}{ld\_plugin\_get\_api\_version}}\ \doxymbox{\hyperlink{structld__plugin__tv_a7a3c05493baa0b3d42a550cada152baa}{tv\_get\_api\_version}};}
+\DoxyCodeLine{00609\ \ \ \}\ \doxymbox{\hyperlink{structld__plugin__tv_acb7895c9f2372cf992c68f1eb0b894d6}{tv\_u}};}
+\DoxyCodeLine{00610\ \};}
+\DoxyCodeLine{00611\ }
+\DoxyCodeLine{00612\ \textcolor{comment}{/*\ The\ plugin\ library's\ "{}onload"{}\ entry\ point.\ \ */}}
+\DoxyCodeLine{00613\ }
+\DoxyCodeLine{00614\ \textcolor{keyword}{typedef}}
+\DoxyCodeLine{00615\ \textcolor{keyword}{enum}\ \doxymbox{\hyperlink{plugin-api_8h_a4335d34beee0024e4558323c50fd3ac6}{ld\_plugin\_status}}}
+\DoxyCodeLine{00616\ (*\doxymbox{\hyperlink{plugin-api_8h_ade5ed1bee5cca34bc15bd39aa2fa87ea}{ld\_plugin\_onload}})\ (\textcolor{keyword}{struct\ }\doxymbox{\hyperlink{structld__plugin__tv}{ld\_plugin\_tv}}\ *tv);}
+\DoxyCodeLine{00617\ }
+\DoxyCodeLine{00618\ \textcolor{preprocessor}{\#ifdef\ \_\_cplusplus}}
+\DoxyCodeLine{00619\ \}}
+\DoxyCodeLine{00620\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00621\ }
+\DoxyCodeLine{00622\ \textcolor{preprocessor}{\#endif\ }\textcolor{comment}{/*\ !defined(PLUGIN\_API\_H)\ */}\textcolor{preprocessor}{}}
+
+\end{DoxyCode}

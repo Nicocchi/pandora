@@ -1,0 +1,26 @@
+var flags_8h =
+[
+    [ "target_flag_state", "classtarget__flag__state.html", "classtarget__flag__state" ],
+    [ "abi_version_at_least", "flags_8h.html#a7d03c0c1d7950b4bd1a9855c4322f496", null ],
+    [ "align_functions", "flags_8h.html#ab0fa7e8e01ff7775d2256dac1f7d7b8a", null ],
+    [ "align_jumps", "flags_8h.html#a2151122249fe83d21ae8b27319601b9c", null ],
+    [ "align_labels", "flags_8h.html#a590541727311ddafba1d187f157410b9", null ],
+    [ "align_loops", "flags_8h.html#a5cbc6c5df4944cc63732716e49d8b262", null ],
+    [ "issue_strict_overflow_warning", "flags_8h.html#ad9fa7d46c8ace67b70272edd41d026d0", null ],
+    [ "this_target_flag_state", "flags_8h.html#a2607000a6158f59a2bce5f3f606b0a5c", null ],
+    [ "base_of_path", "flags_8h.html#ad3ecab1c8d56860cb7eaa9dbc8cc7e4f", null ],
+    [ "btf_debuginfo_p", "flags_8h.html#a75fc806c75004e5c90f346b9e8aeffcc", null ],
+    [ "btf_with_core_debuginfo_p", "flags_8h.html#a9f535ccca86e72ccc23f73614601b18c", null ],
+    [ "ctf_debuginfo_p", "flags_8h.html#abc88e81afbd579611d5fc81aed93a80c", null ],
+    [ "debug_set_count", "flags_8h.html#ad5ef57c23f4d6fc9cdd0fedf7200ba9a", null ],
+    [ "debug_set_names", "flags_8h.html#aab1687014423ea2e7973336d85a9f8e6", null ],
+    [ "debug_set_to_format", "flags_8h.html#af0dfe4c09fea881b6601cf4323fe1f0a", null ],
+    [ "dwarf_based_debuginfo_p", "flags_8h.html#af44ff8005dcf7d2c3f0ffe8b6aff7fd6", null ],
+    [ "dwarf_debuginfo_p", "flags_8h.html#ab3a400e809ed3eac1fb520af8291b19a", null ],
+    [ "fast_math_flags_set_p", "flags_8h.html#adcfe06624ff90623f6c5ba8a1719aee1", null ],
+    [ "fast_math_flags_struct_set_p", "flags_8h.html#a3a3d32ca27f303cb76cc9eebbae01fb1", null ],
+    [ "strip_off_ending", "flags_8h.html#a53d79668a15fbbd2a5da5bdc1b6ea5c8", null ],
+    [ "debug_type_names", "flags_8h.html#aede1040b8fb2bf193f7aa1de3f82aaf5", null ],
+    [ "default_target_flag_state", "flags_8h.html#aa2f4f702c096bcb9fcfc78684bbe339a", null ],
+    [ "final_insns_dump_p", "flags_8h.html#ac0a5070572a6fb8a6b8efb1904610e12", null ]
+];

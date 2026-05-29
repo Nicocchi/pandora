@@ -1,0 +1,107 @@
+\doxysection{gimple-\/walk.h}
+\hypertarget{gimple-walk_8h_source}{}\label{gimple-walk_8h_source}\index{toolchain/x86\_64-\/elf/lib/gcc/x86\_64-\/elf/14.2.0/plugin/include/gimple-\/walk.h@{toolchain/x86\_64-\/elf/lib/gcc/x86\_64-\/elf/14.2.0/plugin/include/gimple-\/walk.h}}
+\doxymbox{\hyperlink{gimple-walk_8h}{Go to the documentation of this file.}}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001\ \textcolor{comment}{/*\ Header\ file\ for\ gimple\ statement\ walk\ support.}}
+\DoxyCodeLine{00002\ \textcolor{comment}{\ \ \ Copyright\ (C)\ 2013-\/2024\ Free\ Software\ Foundation,\ Inc.}}
+\DoxyCodeLine{00003\ \textcolor{comment}{}}
+\DoxyCodeLine{00004\ \textcolor{comment}{This\ file\ is\ part\ of\ GCC.}}
+\DoxyCodeLine{00005\ \textcolor{comment}{}}
+\DoxyCodeLine{00006\ \textcolor{comment}{GCC\ is\ free\ software;\ you\ can\ redistribute\ it\ and/or\ modify\ it\ under}}
+\DoxyCodeLine{00007\ \textcolor{comment}{the\ terms\ of\ the\ GNU\ General\ Public\ License\ as\ published\ by\ the\ Free}}
+\DoxyCodeLine{00008\ \textcolor{comment}{Software\ Foundation;\ either\ version\ 3,\ or\ (at\ your\ option)\ any\ later}}
+\DoxyCodeLine{00009\ \textcolor{comment}{version.}}
+\DoxyCodeLine{00010\ \textcolor{comment}{}}
+\DoxyCodeLine{00011\ \textcolor{comment}{GCC\ is\ distributed\ in\ the\ hope\ that\ it\ will\ be\ useful,\ but\ WITHOUT\ ANY}}
+\DoxyCodeLine{00012\ \textcolor{comment}{WARRANTY;\ without\ even\ the\ implied\ warranty\ of\ MERCHANTABILITY\ or}}
+\DoxyCodeLine{00013\ \textcolor{comment}{FITNESS\ FOR\ A\ PARTICULAR\ PURPOSE.\ \ See\ the\ GNU\ General\ Public\ License}}
+\DoxyCodeLine{00014\ \textcolor{comment}{\ for\ more\ details.}}
+\DoxyCodeLine{00015\ \textcolor{comment}{}}
+\DoxyCodeLine{00016\ \textcolor{comment}{You\ should\ have\ received\ a\ copy\ of\ the\ GNU\ General\ Public\ License}}
+\DoxyCodeLine{00017\ \textcolor{comment}{along\ with\ GCC;\ see\ the\ file\ COPYING3.\ \ If\ not\ see}}
+\DoxyCodeLine{00018\ \textcolor{comment}{<http://www.gnu.org/licenses/>.\ \ */}}
+\DoxyCodeLine{00019\ }
+\DoxyCodeLine{00020\ \textcolor{preprocessor}{\#ifndef\ GCC\_GIMPLE\_WALK\_H}}
+\DoxyCodeLine{00021\ \textcolor{preprocessor}{\#define\ GCC\_GIMPLE\_WALK\_H}}
+\DoxyCodeLine{00022\ }
+\DoxyCodeLine{00023\ \textcolor{comment}{/*\ Convenience\ routines\ to\ walk\ all\ statements\ of\ a\ gimple\ function.}}
+\DoxyCodeLine{00024\ \textcolor{comment}{\ \ \ Note\ that\ this\ is\ useful\ exclusively\ before\ the\ code\ is\ converted}}
+\DoxyCodeLine{00025\ \textcolor{comment}{\ \ \ into\ SSA\ form.\ \ Once\ the\ program\ is\ in\ SSA\ form,\ the\ standard}}
+\DoxyCodeLine{00026\ \textcolor{comment}{\ \ \ operand\ interface\ should\ be\ used\ to\ analyze/modify\ statements.\ \ */}}
+\DoxyCodeLine{00027\ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{structwalk__stmt__info}{walk\_stmt\_info}}}
+\DoxyCodeLine{00028\ \{}
+\DoxyCodeLine{00029\ \ \ \textcolor{comment}{/*\ Points\ to\ the\ current\ statement\ being\ walked.\ \ */}}
+\DoxyCodeLine{00030\ \ \ \doxymbox{\hyperlink{structgimple__stmt__iterator}{gimple\_stmt\_iterator}}\ \doxymbox{\hyperlink{structwalk__stmt__info_ab514b0f423579b5627ede2c7efacdbbc}{gsi}};}
+\DoxyCodeLine{00031\ \ \ gimple\ *\doxymbox{\hyperlink{structwalk__stmt__info_a6de9b134093b81b126e7c54d90440761}{stmt}};}
+\DoxyCodeLine{00032\ }
+\DoxyCodeLine{00033\ \ \ \textcolor{comment}{/*\ Additional\ data\ that\ the\ callback\ functions\ may\ want\ to\ carry}}
+\DoxyCodeLine{00034\ \textcolor{comment}{\ \ \ \ \ through\ the\ recursion.\ \ */}}
+\DoxyCodeLine{00035\ \ \ \textcolor{keywordtype}{void}\ *\doxymbox{\hyperlink{structwalk__stmt__info_acaec79e926be6a43717cc52831f4957c}{info}};}
+\DoxyCodeLine{00036\ }
+\DoxyCodeLine{00037\ \ \ \textcolor{comment}{/*\ Pointer\ map\ used\ to\ mark\ visited\ tree\ nodes\ when\ calling}}
+\DoxyCodeLine{00038\ \textcolor{comment}{\ \ \ \ \ walk\_tree\ on\ each\ operand.\ \ If\ set\ to\ NULL,\ duplicate\ tree\ nodes}}
+\DoxyCodeLine{00039\ \textcolor{comment}{\ \ \ \ \ will\ be\ visited\ more\ than\ once.\ \ */}}
+\DoxyCodeLine{00040\ \ \ \doxymbox{\hyperlink{classhash__set}{hash\_set<tree>}}\ *\doxymbox{\hyperlink{structwalk__stmt__info_a7b1b32556b852f1dd5cbe0f3c6758b3a}{pset}};}
+\DoxyCodeLine{00041\ }
+\DoxyCodeLine{00042\ \ \ \textcolor{comment}{/*\ Operand\ returned\ by\ the\ callbacks.\ \ This\ is\ set\ when\ calling}}
+\DoxyCodeLine{00043\ \textcolor{comment}{\ \ \ \ \ walk\_gimple\_seq.\ \ If\ the\ walk\_stmt\_fn\ or\ walk\_tree\_fn\ callback}}
+\DoxyCodeLine{00044\ \textcolor{comment}{\ \ \ \ \ returns\ non-\/NULL,\ this\ field\ will\ contain\ the\ tree\ returned\ by}}
+\DoxyCodeLine{00045\ \textcolor{comment}{\ \ \ \ \ the\ last\ callback.\ \ */}}
+\DoxyCodeLine{00046\ \ \ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ \doxymbox{\hyperlink{structwalk__stmt__info_ad5a2b718f0908a8637f050746dce9e0b}{callback\_result}};}
+\DoxyCodeLine{00047\ }
+\DoxyCodeLine{00048\ \ \ \textcolor{comment}{/*\ Indicates\ whether\ the\ operand\ being\ examined\ may\ be\ replaced}}
+\DoxyCodeLine{00049\ \textcolor{comment}{\ \ \ \ \ with\ something\ that\ matches\ is\_gimple\_val\ (if\ true)\ or\ something}}
+\DoxyCodeLine{00050\ \textcolor{comment}{\ \ \ \ \ slightly\ more\ complicated\ (if\ false).\ \ "{}Something"{}\ technically}}
+\DoxyCodeLine{00051\ \textcolor{comment}{\ \ \ \ \ means\ the\ common\ subset\ of\ is\_gimple\_lvalue\ and\ is\_gimple\_rhs,}}
+\DoxyCodeLine{00052\ \textcolor{comment}{\ \ \ \ \ but\ we\ never\ try\ to\ form\ anything\ more\ complicated\ than\ that,\ so}}
+\DoxyCodeLine{00053\ \textcolor{comment}{\ \ \ \ \ we\ don't\ bother\ checking.}}
+\DoxyCodeLine{00054\ \textcolor{comment}{}}
+\DoxyCodeLine{00055\ \textcolor{comment}{\ \ \ \ \ Also\ note\ that\ CALLBACK\ should\ update\ this\ flag\ while\ walking\ the}}
+\DoxyCodeLine{00056\ \textcolor{comment}{\ \ \ \ \ sub-\/expressions\ of\ a\ statement.\ \ For\ instance,\ when\ walking\ the}}
+\DoxyCodeLine{00057\ \textcolor{comment}{\ \ \ \ \ statement\ 'foo\ (\&var)',\ the\ flag\ VAL\_ONLY\ will\ initially\ be\ set}}
+\DoxyCodeLine{00058\ \textcolor{comment}{\ \ \ \ \ to\ true,\ however,\ when\ walking\ \&var,\ the\ operand\ of\ that}}
+\DoxyCodeLine{00059\ \textcolor{comment}{\ \ \ \ \ ADDR\_EXPR\ does\ not\ need\ to\ be\ a\ GIMPLE\ value.\ \ */}}
+\DoxyCodeLine{00060\ \ \ \doxymbox{\hyperlink{system_8h_a4e2bfb0cb3835aa91a62a553a53e9763}{BOOL\_BITFIELD}}\ \doxymbox{\hyperlink{structwalk__stmt__info_a42dc07d9e4fc27a117a5b0a748b19a8d}{val\_only}}\ :\ 1;}
+\DoxyCodeLine{00061\ }
+\DoxyCodeLine{00062\ \ \ \textcolor{comment}{/*\ True\ if\ we\ are\ currently\ walking\ the\ LHS\ of\ an\ assignment.\ \ */}}
+\DoxyCodeLine{00063\ \ \ \doxymbox{\hyperlink{system_8h_a4e2bfb0cb3835aa91a62a553a53e9763}{BOOL\_BITFIELD}}\ \doxymbox{\hyperlink{structwalk__stmt__info_afbff0009aad8fe53f7dc65fc06debb5d}{is\_lhs}}\ :\ 1;}
+\DoxyCodeLine{00064\ }
+\DoxyCodeLine{00065\ \ \ \textcolor{comment}{/*\ Optional.\ \ Set\ to\ true\ by\ the\ callback\ functions\ if\ they\ made\ any}}
+\DoxyCodeLine{00066\ \textcolor{comment}{\ \ \ \ \ changes.\ \ */}}
+\DoxyCodeLine{00067\ \ \ \doxymbox{\hyperlink{system_8h_a4e2bfb0cb3835aa91a62a553a53e9763}{BOOL\_BITFIELD}}\ \doxymbox{\hyperlink{structwalk__stmt__info_a0fe9e1f2c136ad7c5705b1afdb6b5256}{changed}}\ :\ 1;}
+\DoxyCodeLine{00068\ }
+\DoxyCodeLine{00069\ \ \ \textcolor{comment}{/*\ True\ if\ we're\ interested\ in\ location\ information.\ \ */}}
+\DoxyCodeLine{00070\ \ \ \doxymbox{\hyperlink{system_8h_a4e2bfb0cb3835aa91a62a553a53e9763}{BOOL\_BITFIELD}}\ \doxymbox{\hyperlink{structwalk__stmt__info_af4901019431d615b6603823e20319606}{want\_locations}}\ :\ 1;}
+\DoxyCodeLine{00071\ }
+\DoxyCodeLine{00072\ \ \ \textcolor{comment}{/*\ True\ if\ we've\ removed\ the\ statement\ that\ was\ processed.\ \ */}}
+\DoxyCodeLine{00073\ \ \ \doxymbox{\hyperlink{system_8h_a4e2bfb0cb3835aa91a62a553a53e9763}{BOOL\_BITFIELD}}\ \doxymbox{\hyperlink{structwalk__stmt__info_a46da371ee3af4d59d49a73e334f93647}{removed\_stmt}}\ :\ 1;}
+\DoxyCodeLine{00074\ \};}
+\DoxyCodeLine{00075\ }
+\DoxyCodeLine{00076\ \textcolor{comment}{/*\ Callback\ for\ walk\_gimple\_stmt.\ \ Called\ for\ every\ statement\ found}}
+\DoxyCodeLine{00077\ \textcolor{comment}{\ \ \ during\ traversal.\ \ The\ first\ argument\ points\ to\ the\ statement\ to}}
+\DoxyCodeLine{00078\ \textcolor{comment}{\ \ \ walk.\ \ The\ second\ argument\ is\ a\ flag\ that\ the\ callback\ sets\ to}}
+\DoxyCodeLine{00079\ \textcolor{comment}{\ \ \ 'true'\ if\ it\ the\ callback\ handled\ all\ the\ operands\ and}}
+\DoxyCodeLine{00080\ \textcolor{comment}{\ \ \ sub-\/statements\ of\ the\ statement\ (the\ default\ value\ of\ this\ flag\ is}}
+\DoxyCodeLine{00081\ \textcolor{comment}{\ \ \ 'false').\ \ The\ third\ argument\ is\ an\ anonymous\ pointer\ to\ data}}
+\DoxyCodeLine{00082\ \textcolor{comment}{\ \ \ to\ be\ used\ by\ the\ callback.\ \ */}}
+\DoxyCodeLine{00083\ \textcolor{keyword}{typedef}\ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ (*\doxymbox{\hyperlink{gimple-walk_8h_a6da2aee5aa128d5c6be5b85f4293220c}{walk\_stmt\_fn}})\ (\doxymbox{\hyperlink{structgimple__stmt__iterator}{gimple\_stmt\_iterator}}\ *,\ \textcolor{keywordtype}{bool}\ *,}
+\DoxyCodeLine{00084\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{structwalk__stmt__info}{walk\_stmt\_info}}\ *);}
+\DoxyCodeLine{00085\ }
+\DoxyCodeLine{00086\ \textcolor{keyword}{extern}\ gimple\ *\doxymbox{\hyperlink{gimple-walk_8h_a23ccf272594b40e32725352289b5225d}{walk\_gimple\_seq\_mod}}\ (\doxymbox{\hyperlink{coretypes_8h_a4b4e58d1e0dada604ccfc7965bb9a3df}{gimple\_seq}}\ *,\ \doxymbox{\hyperlink{gimple-walk_8h_a6da2aee5aa128d5c6be5b85f4293220c}{walk\_stmt\_fn}},\ \doxymbox{\hyperlink{tree-core_8h_a0438c481102af581c624e61089e92c0e}{walk\_tree\_fn}},}
+\DoxyCodeLine{00087\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{struct}\ \doxymbox{\hyperlink{structwalk__stmt__info}{walk\_stmt\_info}}\ *);}
+\DoxyCodeLine{00088\ \textcolor{keyword}{extern}\ gimple\ *\doxymbox{\hyperlink{gimple-walk_8h_a6e4f77a602f9f1893b1ef0c90664e004}{walk\_gimple\_seq}}\ (\doxymbox{\hyperlink{coretypes_8h_a4b4e58d1e0dada604ccfc7965bb9a3df}{gimple\_seq}},\ \doxymbox{\hyperlink{gimple-walk_8h_a6da2aee5aa128d5c6be5b85f4293220c}{walk\_stmt\_fn}},\ \doxymbox{\hyperlink{tree-core_8h_a0438c481102af581c624e61089e92c0e}{walk\_tree\_fn}},}
+\DoxyCodeLine{00089\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{struct}\ \doxymbox{\hyperlink{structwalk__stmt__info}{walk\_stmt\_info}}\ *);}
+\DoxyCodeLine{00090\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ \doxymbox{\hyperlink{gimple-walk_8h_a0fce34de3340bda6e9563ca89d3e2784}{walk\_gimple\_op}}\ (gimple\ *,\ \doxymbox{\hyperlink{tree-core_8h_a0438c481102af581c624e61089e92c0e}{walk\_tree\_fn}},\ \textcolor{keyword}{struct}\ \doxymbox{\hyperlink{structwalk__stmt__info}{walk\_stmt\_info}}\ *);}
+\DoxyCodeLine{00091\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ \doxymbox{\hyperlink{gimple-walk_8h_a4dbedba256af4c5593e9d33a4566a3ad}{walk\_gimple\_stmt}}\ (\doxymbox{\hyperlink{structgimple__stmt__iterator}{gimple\_stmt\_iterator}}\ *,\ \doxymbox{\hyperlink{gimple-walk_8h_a6da2aee5aa128d5c6be5b85f4293220c}{walk\_stmt\_fn}},}
+\DoxyCodeLine{00092\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{tree-core_8h_a0438c481102af581c624e61089e92c0e}{walk\_tree\_fn}},\ \textcolor{keyword}{struct}\ \doxymbox{\hyperlink{structwalk__stmt__info}{walk\_stmt\_info}}\ *);}
+\DoxyCodeLine{00093\ \textcolor{keyword}{typedef}\ \doxymbox{\hyperlink{stdbool_8h_abb452686968e48b67397da5f97445f5b}{bool}}\ (*\doxymbox{\hyperlink{gimple-walk_8h_ae9ac567f4597419df0b7cbaed30e4316}{walk\_stmt\_load\_store\_addr\_fn}})\ (gimple\ *,\ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}},\ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}},\ \textcolor{keywordtype}{void}\ *);}
+\DoxyCodeLine{00094\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{gimple-walk_8h_ae0d4b78dbc1ef6bdd463b822488ed4c4}{walk\_stmt\_load\_store\_addr\_ops}}\ (gimple\ *,\ \textcolor{keywordtype}{void}\ *,}
+\DoxyCodeLine{00095\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{gimple-walk_8h_ae9ac567f4597419df0b7cbaed30e4316}{walk\_stmt\_load\_store\_addr\_fn}},}
+\DoxyCodeLine{00096\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{gimple-walk_8h_ae9ac567f4597419df0b7cbaed30e4316}{walk\_stmt\_load\_store\_addr\_fn}},}
+\DoxyCodeLine{00097\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{gimple-walk_8h_ae9ac567f4597419df0b7cbaed30e4316}{walk\_stmt\_load\_store\_addr\_fn}});}
+\DoxyCodeLine{00098\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{gimple-walk_8h_a340fb7c9e46117e77f4e4c35b40ceb7b}{walk\_stmt\_load\_store\_ops}}\ (gimple\ *,\ \textcolor{keywordtype}{void}\ *,}
+\DoxyCodeLine{00099\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{gimple-walk_8h_ae9ac567f4597419df0b7cbaed30e4316}{walk\_stmt\_load\_store\_addr\_fn}},}
+\DoxyCodeLine{00100\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{gimple-walk_8h_ae9ac567f4597419df0b7cbaed30e4316}{walk\_stmt\_load\_store\_addr\_fn}});}
+\DoxyCodeLine{00101\ \textcolor{preprocessor}{\#endif\ }\textcolor{comment}{/*\ GCC\_GIMPLE\_WALK\_H\ */}\textcolor{preprocessor}{}}
+
+\end{DoxyCode}

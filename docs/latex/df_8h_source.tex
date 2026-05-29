@@ -1,0 +1,1259 @@
+\doxysection{df.\+h}
+\hypertarget{df_8h_source}{}\label{df_8h_source}\index{toolchain/x86\_64-\/elf/lib/gcc/x86\_64-\/elf/14.2.0/plugin/include/df.h@{toolchain/x86\_64-\/elf/lib/gcc/x86\_64-\/elf/14.2.0/plugin/include/df.h}}
+\doxymbox{\hyperlink{df_8h}{Go to the documentation of this file.}}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001\ \textcolor{comment}{/*\ Form\ lists\ of\ pseudo\ register\ references\ for\ autoinc\ optimization}}
+\DoxyCodeLine{00002\ \textcolor{comment}{\ \ \ for\ GNU\ compiler.\ \ This\ is\ part\ of\ flow\ optimization.}}
+\DoxyCodeLine{00003\ \textcolor{comment}{\ \ \ Copyright\ (C)\ 1999-\/2024\ Free\ Software\ Foundation,\ Inc.}}
+\DoxyCodeLine{00004\ \textcolor{comment}{\ \ \ Originally\ contributed\ by\ Michael\ P.\ Hayes}}
+\DoxyCodeLine{00005\ \textcolor{comment}{\ \ \ \ \ \ \ \ \ \ \ \ \ (m.hayes@elec.canterbury.ac.nz,\ mhayes@redhat.com)}}
+\DoxyCodeLine{00006\ \textcolor{comment}{\ \ \ Major\ rewrite\ contributed\ by\ Danny\ Berlin\ (dberlin@dberlin.org)}}
+\DoxyCodeLine{00007\ \textcolor{comment}{\ \ \ \ \ \ \ \ \ \ \ \ \ and\ Kenneth\ Zadeck\ (zadeck@naturalbridge.com).}}
+\DoxyCodeLine{00008\ \textcolor{comment}{}}
+\DoxyCodeLine{00009\ \textcolor{comment}{This\ file\ is\ part\ of\ GCC.}}
+\DoxyCodeLine{00010\ \textcolor{comment}{}}
+\DoxyCodeLine{00011\ \textcolor{comment}{GCC\ is\ free\ software;\ you\ can\ redistribute\ it\ and/or\ modify\ it\ under}}
+\DoxyCodeLine{00012\ \textcolor{comment}{the\ terms\ of\ the\ GNU\ General\ Public\ License\ as\ published\ by\ the\ Free}}
+\DoxyCodeLine{00013\ \textcolor{comment}{Software\ Foundation;\ either\ version\ 3,\ or\ (at\ your\ option)\ any\ later}}
+\DoxyCodeLine{00014\ \textcolor{comment}{version.}}
+\DoxyCodeLine{00015\ \textcolor{comment}{}}
+\DoxyCodeLine{00016\ \textcolor{comment}{GCC\ is\ distributed\ in\ the\ hope\ that\ it\ will\ be\ useful,\ but\ WITHOUT\ ANY}}
+\DoxyCodeLine{00017\ \textcolor{comment}{WARRANTY;\ without\ even\ the\ implied\ warranty\ of\ MERCHANTABILITY\ or}}
+\DoxyCodeLine{00018\ \textcolor{comment}{FITNESS\ FOR\ A\ PARTICULAR\ PURPOSE.\ \ See\ the\ GNU\ General\ Public\ License}}
+\DoxyCodeLine{00019\ \textcolor{comment}{for\ more\ details.}}
+\DoxyCodeLine{00020\ \textcolor{comment}{}}
+\DoxyCodeLine{00021\ \textcolor{comment}{You\ should\ have\ received\ a\ copy\ of\ the\ GNU\ General\ Public\ License}}
+\DoxyCodeLine{00022\ \textcolor{comment}{along\ with\ GCC;\ see\ the\ file\ COPYING3.\ \ If\ not\ see}}
+\DoxyCodeLine{00023\ \textcolor{comment}{<http://www.gnu.org/licenses/>.\ \ */}}
+\DoxyCodeLine{00024\ }
+\DoxyCodeLine{00025\ \textcolor{preprocessor}{\#ifndef\ GCC\_DF\_H}}
+\DoxyCodeLine{00026\ \textcolor{preprocessor}{\#define\ GCC\_DF\_H}}
+\DoxyCodeLine{00027\ }
+\DoxyCodeLine{00028\ \textcolor{preprocessor}{\#include\ "{}\doxymbox{\hyperlink{regset_8h}{regset.h}}"{}}}
+\DoxyCodeLine{00029\ \textcolor{preprocessor}{\#include\ "{}\doxymbox{\hyperlink{alloc-pool_8h}{alloc-\/pool.h}}"{}}}
+\DoxyCodeLine{00030\ \textcolor{preprocessor}{\#include\ "{}\doxymbox{\hyperlink{timevar_8h}{timevar.h}}"{}}}
+\DoxyCodeLine{00031\ }
+\DoxyCodeLine{00032\ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{structdataflow}{dataflow}};}
+\DoxyCodeLine{00033\ \textcolor{keyword}{class\ }\doxymbox{\hyperlink{classdf__d}{df\_d}};}
+\DoxyCodeLine{00034\ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{structdf__problem}{df\_problem}};}
+\DoxyCodeLine{00035\ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{structdf__link}{df\_link}};}
+\DoxyCodeLine{00036\ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{structdf__insn__info}{df\_insn\_info}};}
+\DoxyCodeLine{00037\ \textcolor{keyword}{union\ }\doxymbox{\hyperlink{uniondf__ref__d}{df\_ref\_d}};}
+\DoxyCodeLine{00038\ }
+\DoxyCodeLine{00039\ \textcolor{comment}{/*\ Data\ flow\ problems.\ \ All\ problems\ must\ have\ a\ unique\ id\ here.\ \ */}}
+\DoxyCodeLine{00040\ }
+\DoxyCodeLine{00041\ \textcolor{comment}{/*\ Scanning\ is\ not\ really\ a\ dataflow\ problem,\ but\ it\ is\ useful\ to\ have}}
+\DoxyCodeLine{00042\ \textcolor{comment}{\ \ \ the\ basic\ block\ functions\ in\ the\ vector\ so\ that\ things\ get\ done\ in}}
+\DoxyCodeLine{00043\ \textcolor{comment}{\ \ \ a\ uniform\ manner.\ \ The\ last\ four\ problems\ can\ be\ added\ or\ deleted}}
+\DoxyCodeLine{00044\ \textcolor{comment}{\ \ \ at\ any\ time\ are\ always\ defined\ (though\ LIVE\ is\ always\ there\ at\ -\/O2}}
+\DoxyCodeLine{00045\ \textcolor{comment}{\ \ \ or\ higher);\ the\ others\ are\ always\ there.\ \ */}}
+\DoxyCodeLine{00046\ \textcolor{keyword}{enum}\ \doxymbox{\hyperlink{df_8h_a5fca6fb54c205dab61f5f54d0a4706d5}{df\_problem\_id}}}
+\DoxyCodeLine{00047\ \ \ \{}
+\DoxyCodeLine{00048\ \ \ \ \ \doxymbox{\hyperlink{df_8h_a5fca6fb54c205dab61f5f54d0a4706d5aced9462dbb5d4c8b394a8f37b917d2b7}{DF\_SCAN}},}
+\DoxyCodeLine{00049\ \ \ \ \ \doxymbox{\hyperlink{df_8h_a5fca6fb54c205dab61f5f54d0a4706d5a37c80355b890b9daa531d4e96543017a}{DF\_LR}},\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{/*\ Live\ Registers\ backward.\ */}}
+\DoxyCodeLine{00050\ \ \ \ \ \doxymbox{\hyperlink{df_8h_a5fca6fb54c205dab61f5f54d0a4706d5a81c0273156b184640bd82c726b0cbf24}{DF\_LIVE}},\ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{/*\ Live\ Registers\ \&\ Uninitialized\ Registers\ */}}
+\DoxyCodeLine{00051\ \ \ \ \ \doxymbox{\hyperlink{df_8h_a5fca6fb54c205dab61f5f54d0a4706d5ac9edc332f30b5c0fc97725155b12ab9c}{DF\_RD}},\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{/*\ Reaching\ Defs.\ */}}
+\DoxyCodeLine{00052\ \ \ \ \ \doxymbox{\hyperlink{df_8h_a5fca6fb54c205dab61f5f54d0a4706d5a8eb594af98bf51a092b8b1385885d8cf}{DF\_CHAIN}},\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{/*\ Def-\/Use\ and/or\ Use-\/Def\ Chains.\ */}}
+\DoxyCodeLine{00053\ \ \ \ \ \doxymbox{\hyperlink{df_8h_a5fca6fb54c205dab61f5f54d0a4706d5a2194a29db3697f2cb07298ff9bc707cb}{DF\_WORD\_LR}},\ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{/*\ Subreg\ tracking\ lr.\ \ */}}
+\DoxyCodeLine{00054\ \ \ \ \ \doxymbox{\hyperlink{df_8h_a5fca6fb54c205dab61f5f54d0a4706d5ad97d2003db9e313ea00d93b3329a6a9e}{DF\_NOTE}},\ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{/*\ REG\_DEAD\ and\ REG\_UNUSED\ notes.\ \ */}}
+\DoxyCodeLine{00055\ \ \ \ \ \doxymbox{\hyperlink{df_8h_a5fca6fb54c205dab61f5f54d0a4706d5aecfe78c790a3909f3035425a84cd4b8e}{DF\_MD}},\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{/*\ Multiple\ Definitions.\ */}}
+\DoxyCodeLine{00056\ \ \ \ \ \doxymbox{\hyperlink{df_8h_a5fca6fb54c205dab61f5f54d0a4706d5adb75c82f29bd094d5ead1445a742a06f}{DF\_MIR}},\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{/*\ Must-\/initialized\ Registers.\ \ */}}
+\DoxyCodeLine{00057\ }
+\DoxyCodeLine{00058\ \ \ \ \ \doxymbox{\hyperlink{df_8h_a5fca6fb54c205dab61f5f54d0a4706d5a4e461505de72d2581ee641141d4ebdca}{DF\_LAST\_PROBLEM\_PLUS1}}}
+\DoxyCodeLine{00059\ \ \ \};}
+\DoxyCodeLine{00060\ }
+\DoxyCodeLine{00061\ \textcolor{comment}{/*\ Dataflow\ direction.\ \ */}}
+\DoxyCodeLine{00062\ \textcolor{keyword}{enum}\ \doxymbox{\hyperlink{df_8h_ac9be5bafa54c1f1ce69e80770e151b5a}{df\_flow\_dir}}}
+\DoxyCodeLine{00063\ \ \ \{}
+\DoxyCodeLine{00064\ \ \ \ \ \doxymbox{\hyperlink{df_8h_ac9be5bafa54c1f1ce69e80770e151b5aa6109a7e72cb6b45a63a7ab6bb5452818}{DF\_NONE}},}
+\DoxyCodeLine{00065\ \ \ \ \ \doxymbox{\hyperlink{df_8h_ac9be5bafa54c1f1ce69e80770e151b5aa113d68f1fd4f7ff3c5e17fc678a97cba}{DF\_FORWARD}},}
+\DoxyCodeLine{00066\ \ \ \ \ \doxymbox{\hyperlink{df_8h_ac9be5bafa54c1f1ce69e80770e151b5aa758631292eb98b333d5bbc078d6b3c34}{DF\_BACKWARD}}}
+\DoxyCodeLine{00067\ \ \ \};}
+\DoxyCodeLine{00068\ }
+\DoxyCodeLine{00069\ \textcolor{comment}{/*\ Descriminator\ for\ the\ various\ df\_ref\ types.\ \ */}}
+\DoxyCodeLine{00070\ \textcolor{keyword}{enum}\ \doxymbox{\hyperlink{df_8h_a62ea026e4c873db7851a8b655dacfe57}{df\_ref\_class}}\ \{\doxymbox{\hyperlink{df_8h_a62ea026e4c873db7851a8b655dacfe57a443bcb22b928c60a34b7ee75dc51aa18}{DF\_REF\_BASE}},\ \doxymbox{\hyperlink{df_8h_a62ea026e4c873db7851a8b655dacfe57ac647be333d65d706daf5ff541c569b38}{DF\_REF\_ARTIFICIAL}},\ \doxymbox{\hyperlink{df_8h_a62ea026e4c873db7851a8b655dacfe57a82bebca132b071e9526b9e3ed1abe77b}{DF\_REF\_REGULAR}}\};}
+\DoxyCodeLine{00071\ }
+\DoxyCodeLine{00072\ \textcolor{comment}{/*\ The\ first\ of\ these\ us\ a\ set\ of\ a\ registers.\ \ The\ remaining\ three}}
+\DoxyCodeLine{00073\ \textcolor{comment}{\ \ \ are\ all\ uses\ of\ a\ register\ (the\ mem\_load\ and\ mem\_store\ relate\ to}}
+\DoxyCodeLine{00074\ \textcolor{comment}{\ \ \ how\ the\ register\ as\ an\ addressing\ operand).\ \ */}}
+\DoxyCodeLine{00075\ \textcolor{keyword}{enum}\ \doxymbox{\hyperlink{df_8h_a248303fb01a9b8e5487d84a3235de454}{df\_ref\_type}}\ \{\doxymbox{\hyperlink{df_8h_a248303fb01a9b8e5487d84a3235de454a21060fb37ddb353b05bd6c29254115e3}{DF\_REF\_REG\_DEF}},\ \doxymbox{\hyperlink{df_8h_a248303fb01a9b8e5487d84a3235de454a9976ebc2f22a23aaf36ebf0a4a2f8fdb}{DF\_REF\_REG\_USE}},}
+\DoxyCodeLine{00076\ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{df_8h_a248303fb01a9b8e5487d84a3235de454ad85727e773aefa76d0b55154dd37761b}{DF\_REF\_REG\_MEM\_LOAD}},\ \doxymbox{\hyperlink{df_8h_a248303fb01a9b8e5487d84a3235de454a0f5a774004b9f34dfce65fc2cefdc83a}{DF\_REF\_REG\_MEM\_STORE}}\};}
+\DoxyCodeLine{00077\ }
+\DoxyCodeLine{00078\ \textcolor{keyword}{enum}\ \doxymbox{\hyperlink{df_8h_aa8955285c92de912cb5e0fb2c977a7d2}{df\_ref\_flags}}}
+\DoxyCodeLine{00079\ \ \ \{}
+\DoxyCodeLine{00080\ \ \ \ \ \textcolor{comment}{/*\ This\ flag\ is\ set\ if\ this\ ref\ occurs\ inside\ of\ a\ conditional}}
+\DoxyCodeLine{00081\ \textcolor{comment}{\ \ \ \ \ \ \ execution\ instruction.\ \ */}}
+\DoxyCodeLine{00082\ \ \ \ \ \doxymbox{\hyperlink{df_8h_aa8955285c92de912cb5e0fb2c977a7d2a188d608cd81b69a599ab824b0fbe55f1}{DF\_REF\_CONDITIONAL}}\ =\ 1\ <<\ 0,}
+\DoxyCodeLine{00083\ }
+\DoxyCodeLine{00084\ \ \ \ \ \textcolor{comment}{/*\ If\ this\ flag\ is\ set\ for\ an\ artificial\ use\ or\ def,\ that\ ref}}
+\DoxyCodeLine{00085\ \textcolor{comment}{\ \ \ \ \ \ \ logically\ happens\ at\ the\ top\ of\ the\ block.\ \ If\ it\ is\ not\ set}}
+\DoxyCodeLine{00086\ \textcolor{comment}{\ \ \ \ \ \ \ for\ an\ artificial\ use\ or\ def,\ that\ ref\ logically\ happens\ at\ the}}
+\DoxyCodeLine{00087\ \textcolor{comment}{\ \ \ \ \ \ \ bottom\ of\ the\ block.\ \ This\ is\ never\ set\ for\ regular\ refs.\ \ */}}
+\DoxyCodeLine{00088\ \ \ \ \ \doxymbox{\hyperlink{df_8h_aa8955285c92de912cb5e0fb2c977a7d2a8b02487ce021702a683adf1d52130de1}{DF\_REF\_AT\_TOP}}\ =\ 1\ <<\ 1,}
+\DoxyCodeLine{00089\ }
+\DoxyCodeLine{00090\ \ \ \ \ \textcolor{comment}{/*\ This\ flag\ is\ set\ if\ the\ use\ is\ inside\ a\ REG\_EQUAL\ or\ REG\_EQUIV}}
+\DoxyCodeLine{00091\ \textcolor{comment}{\ \ \ \ \ \ \ note.\ \ */}}
+\DoxyCodeLine{00092\ \ \ \ \ \doxymbox{\hyperlink{df_8h_aa8955285c92de912cb5e0fb2c977a7d2af9d013610c1218b57dc4f0573ad9326e}{DF\_REF\_IN\_NOTE}}\ =\ 1\ <<\ 2,}
+\DoxyCodeLine{00093\ }
+\DoxyCodeLine{00094\ \ \ \ \ \textcolor{comment}{/*\ This\ bit\ is\ true\ if\ this\ ref\ can\ make\ regs\_ever\_live\ true\ for}}
+\DoxyCodeLine{00095\ \textcolor{comment}{\ \ \ \ \ \ \ this\ regno.\ \ */}}
+\DoxyCodeLine{00096\ \ \ \ \ \doxymbox{\hyperlink{df_8h_aa8955285c92de912cb5e0fb2c977a7d2a590328cc9f4d5a43a17ce6da93387345}{DF\_HARD\_REG\_LIVE}}\ =\ 1\ <<\ 3,}
+\DoxyCodeLine{00097\ }
+\DoxyCodeLine{00098\ }
+\DoxyCodeLine{00099\ \ \ \ \ \textcolor{comment}{/*\ This\ flag\ is\ set\ if\ this\ ref\ is\ a\ partial\ use\ or\ def\ of\ the}}
+\DoxyCodeLine{00100\ \textcolor{comment}{\ \ \ \ \ \ \ associated\ register.\ \ */}}
+\DoxyCodeLine{00101\ \ \ \ \ \doxymbox{\hyperlink{df_8h_aa8955285c92de912cb5e0fb2c977a7d2a6abf431a7634d52204d4ff06525ef71b}{DF\_REF\_PARTIAL}}\ =\ 1\ <<\ 4,}
+\DoxyCodeLine{00102\ }
+\DoxyCodeLine{00103\ \ \ \ \ \textcolor{comment}{/*\ Read-\/modify-\/write\ refs\ generate\ both\ a\ use\ and\ a\ def\ and}}
+\DoxyCodeLine{00104\ \textcolor{comment}{\ \ \ \ \ \ \ these\ are\ marked\ with\ this\ flag\ to\ show\ that\ they\ are\ not}}
+\DoxyCodeLine{00105\ \textcolor{comment}{\ \ \ \ \ \ \ independent.\ \ */}}
+\DoxyCodeLine{00106\ \ \ \ \ \doxymbox{\hyperlink{df_8h_aa8955285c92de912cb5e0fb2c977a7d2a89a5c8b829a224f6b3a41f837d5a43b1}{DF\_REF\_READ\_WRITE}}\ =\ 1\ <<\ 5,}
+\DoxyCodeLine{00107\ }
+\DoxyCodeLine{00108\ \ \ \ \ \textcolor{comment}{/*\ This\ flag\ is\ set\ if\ this\ ref,\ generally\ a\ def,\ may\ clobber\ the}}
+\DoxyCodeLine{00109\ \textcolor{comment}{\ \ \ \ \ \ \ referenced\ register.\ \ This\ is\ generally\ only\ set\ for\ hard}}
+\DoxyCodeLine{00110\ \textcolor{comment}{\ \ \ \ \ \ \ registers\ that\ cross\ a\ call\ site.\ \ With\ better\ information}}
+\DoxyCodeLine{00111\ \textcolor{comment}{\ \ \ \ \ \ \ about\ calls,\ some\ of\ these\ could\ be\ changed\ in\ the\ future\ to}}
+\DoxyCodeLine{00112\ \textcolor{comment}{\ \ \ \ \ \ \ DF\_REF\_MUST\_CLOBBER.\ \ */}}
+\DoxyCodeLine{00113\ \ \ \ \ \doxymbox{\hyperlink{df_8h_aa8955285c92de912cb5e0fb2c977a7d2a42fbcc04ba262323a24d7cc6867c6171}{DF\_REF\_MAY\_CLOBBER}}\ =\ 1\ <<\ 6,}
+\DoxyCodeLine{00114\ }
+\DoxyCodeLine{00115\ \ \ \ \ \textcolor{comment}{/*\ This\ flag\ is\ set\ if\ this\ ref,\ generally\ a\ def,\ is\ a\ real}}
+\DoxyCodeLine{00116\ \textcolor{comment}{\ \ \ \ \ \ \ clobber.\ This\ is\ not\ currently\ set\ for\ registers\ live\ across\ a}}
+\DoxyCodeLine{00117\ \textcolor{comment}{\ \ \ \ \ \ \ call\ because\ that\ clobbering\ may\ or\ may\ not\ happen.}}
+\DoxyCodeLine{00118\ \textcolor{comment}{}}
+\DoxyCodeLine{00119\ \textcolor{comment}{\ \ \ \ \ \ \ Most\ of\ the\ uses\ of\ this\ are\ with\ sets\ that\ have\ a}}
+\DoxyCodeLine{00120\ \textcolor{comment}{\ \ \ \ \ \ \ GET\_CODE(..)==CLOBBER.\ \ Note\ that\ this\ is\ set\ even\ if\ the}}
+\DoxyCodeLine{00121\ \textcolor{comment}{\ \ \ \ \ \ \ clobber\ is\ to\ a\ subreg.\ \ So\ in\ order\ to\ tell\ if\ the\ clobber}}
+\DoxyCodeLine{00122\ \textcolor{comment}{\ \ \ \ \ \ \ wipes\ out\ the\ entire\ register,\ it\ is\ necessary\ to\ also\ check}}
+\DoxyCodeLine{00123\ \textcolor{comment}{\ \ \ \ \ \ \ the\ DF\_REF\_PARTIAL\ flag.\ \ */}}
+\DoxyCodeLine{00124\ \ \ \ \ \doxymbox{\hyperlink{df_8h_aa8955285c92de912cb5e0fb2c977a7d2a8496c02522fa8c5199075ace3e10b22e}{DF\_REF\_MUST\_CLOBBER}}\ =\ 1\ <<\ 7,}
+\DoxyCodeLine{00125\ }
+\DoxyCodeLine{00126\ }
+\DoxyCodeLine{00127\ \ \ \ \ \textcolor{comment}{/*\ If\ the\ ref\ has\ one\ of\ the\ following\ two\ flags\ set,\ then\ the}}
+\DoxyCodeLine{00128\ \textcolor{comment}{\ \ \ \ \ \ \ struct\ df\_ref\ can\ be\ cast\ to\ struct\ df\_ref\_extract\ to\ access}}
+\DoxyCodeLine{00129\ \textcolor{comment}{\ \ \ \ \ \ \ the\ width\ and\ offset\ fields.\ \ */}}
+\DoxyCodeLine{00130\ }
+\DoxyCodeLine{00131\ \ \ \ \ \textcolor{comment}{/*\ This\ flag\ is\ set\ if\ the\ ref\ contains\ a\ SIGN\_EXTRACT.\ \ */}}
+\DoxyCodeLine{00132\ \ \ \ \ \doxymbox{\hyperlink{df_8h_aa8955285c92de912cb5e0fb2c977a7d2ae3f052453bb67980fd57d97132a4b791}{DF\_REF\_SIGN\_EXTRACT}}\ =\ 1\ <<\ 8,}
+\DoxyCodeLine{00133\ }
+\DoxyCodeLine{00134\ \ \ \ \ \textcolor{comment}{/*\ This\ flag\ is\ set\ if\ the\ ref\ contains\ a\ ZERO\_EXTRACT.\ \ */}}
+\DoxyCodeLine{00135\ \ \ \ \ \doxymbox{\hyperlink{df_8h_aa8955285c92de912cb5e0fb2c977a7d2a5f436cafe08765a058c7ccf282582469}{DF\_REF\_ZERO\_EXTRACT}}\ =\ 1\ <<\ 9,}
+\DoxyCodeLine{00136\ }
+\DoxyCodeLine{00137\ \ \ \ \ \textcolor{comment}{/*\ This\ flag\ is\ set\ if\ the\ ref\ contains\ a\ STRICT\_LOW\_PART.\ \ */}}
+\DoxyCodeLine{00138\ \ \ \ \ \doxymbox{\hyperlink{df_8h_aa8955285c92de912cb5e0fb2c977a7d2a6865bb3043706e4c3eb92209edcfd5d7}{DF\_REF\_STRICT\_LOW\_PART}}\ =\ 1\ <<\ 10,}
+\DoxyCodeLine{00139\ }
+\DoxyCodeLine{00140\ \ \ \ \ \textcolor{comment}{/*\ This\ flag\ is\ set\ if\ the\ ref\ contains\ a\ SUBREG.\ \ */}}
+\DoxyCodeLine{00141\ \ \ \ \ \doxymbox{\hyperlink{df_8h_aa8955285c92de912cb5e0fb2c977a7d2a6d67b421afb552b8322f10dcd5f94635}{DF\_REF\_SUBREG}}\ =\ 1\ <<\ 11,}
+\DoxyCodeLine{00142\ }
+\DoxyCodeLine{00143\ }
+\DoxyCodeLine{00144\ \ \ \ \ \textcolor{comment}{/*\ This\ bit\ is\ true\ if\ this\ ref\ is\ part\ of\ a\ multiword\ hardreg.\ \ */}}
+\DoxyCodeLine{00145\ \ \ \ \ \doxymbox{\hyperlink{df_8h_aa8955285c92de912cb5e0fb2c977a7d2a0b7212674243c54ee616221d6ae28ff9}{DF\_REF\_MW\_HARDREG}}\ =\ 1\ <<\ 12,}
+\DoxyCodeLine{00146\ }
+\DoxyCodeLine{00147\ \ \ \ \ \textcolor{comment}{/*\ This\ flag\ is\ set\ if\ this\ ref\ is\ a\ usage\ of\ the\ stack\ pointer\ by}}
+\DoxyCodeLine{00148\ \textcolor{comment}{\ \ \ \ \ \ \ a\ function\ call.\ \ */}}
+\DoxyCodeLine{00149\ \ \ \ \ \doxymbox{\hyperlink{df_8h_aa8955285c92de912cb5e0fb2c977a7d2a481986a683742265a53c9f20611ce727}{DF\_REF\_CALL\_STACK\_USAGE}}\ =\ 1\ <<\ 13,}
+\DoxyCodeLine{00150\ }
+\DoxyCodeLine{00151\ \ \ \ \ \textcolor{comment}{/*\ This\ flag\ is\ used\ for\ verification\ of\ existing\ refs.\ */}}
+\DoxyCodeLine{00152\ \ \ \ \ \doxymbox{\hyperlink{df_8h_aa8955285c92de912cb5e0fb2c977a7d2a05467b23a045e9e27a9d778e79e6ebba}{DF\_REF\_REG\_MARKER}}\ =\ 1\ <<\ 14,}
+\DoxyCodeLine{00153\ }
+\DoxyCodeLine{00154\ \ \ \ \ \textcolor{comment}{/*\ This\ flag\ is\ set\ if\ this\ ref\ is\ inside\ a\ pre/post\ modify.\ \ */}}
+\DoxyCodeLine{00155\ \ \ \ \ \doxymbox{\hyperlink{df_8h_aa8955285c92de912cb5e0fb2c977a7d2ac06cca4709e21bf332f0d64b0bdbd56c}{DF\_REF\_PRE\_POST\_MODIFY}}\ =\ 1\ <<\ 15}
+\DoxyCodeLine{00156\ }
+\DoxyCodeLine{00157\ \ \ \};}
+\DoxyCodeLine{00158\ }
+\DoxyCodeLine{00159\ \textcolor{comment}{/*\ The\ possible\ ordering\ of\ refs\ within\ the\ df\_ref\_info.\ \ */}}
+\DoxyCodeLine{00160\ \textcolor{keyword}{enum}\ \doxymbox{\hyperlink{df_8h_a8295fc9895cfee63806cee35b272c802}{df\_ref\_order}}}
+\DoxyCodeLine{00161\ \ \ \{}
+\DoxyCodeLine{00162\ \ \ \ \ \textcolor{comment}{/*\ There\ is\ not\ table.\ \ */}}
+\DoxyCodeLine{00163\ \ \ \ \ \doxymbox{\hyperlink{df_8h_a8295fc9895cfee63806cee35b272c802ae0ac36eb059578e707fe7feb99b83419}{DF\_REF\_ORDER\_NO\_TABLE}},}
+\DoxyCodeLine{00164\ }
+\DoxyCodeLine{00165\ \ \ \ \ \textcolor{comment}{/*\ There\ is\ a\ table\ of\ refs\ but\ it\ is\ not\ (or\ no\ longer)\ organized}}
+\DoxyCodeLine{00166\ \textcolor{comment}{\ \ \ \ \ \ \ by\ one\ of\ the\ following\ methods.\ \ */}}
+\DoxyCodeLine{00167\ \ \ \ \ \doxymbox{\hyperlink{df_8h_a8295fc9895cfee63806cee35b272c802a65d3de98e3af28fb74f7e651cc1538e0}{DF\_REF\_ORDER\_UNORDERED}},}
+\DoxyCodeLine{00168\ \ \ \ \ \doxymbox{\hyperlink{df_8h_a8295fc9895cfee63806cee35b272c802a51ae3d50a0524ceb85e7ff39389b988b}{DF\_REF\_ORDER\_UNORDERED\_WITH\_NOTES}},}
+\DoxyCodeLine{00169\ }
+\DoxyCodeLine{00170\ \ \ \ \ \textcolor{comment}{/*\ Organize\ the\ table\ by\ reg\ order,\ all\ of\ the\ refs\ with\ regno\ 0}}
+\DoxyCodeLine{00171\ \textcolor{comment}{\ \ \ \ \ \ \ followed\ by\ all\ of\ the\ refs\ with\ regno\ 1\ ...\ .\ \ Within\ all\ of}}
+\DoxyCodeLine{00172\ \textcolor{comment}{\ \ \ \ \ \ \ the\ regs\ for\ a\ particular\ regno,\ the\ refs\ are\ unordered.\ \ */}}
+\DoxyCodeLine{00173\ \ \ \ \ \doxymbox{\hyperlink{df_8h_a8295fc9895cfee63806cee35b272c802ac3c73a9d4473fe267990f80f958e2e9f}{DF\_REF\_ORDER\_BY\_REG}},}
+\DoxyCodeLine{00174\ }
+\DoxyCodeLine{00175\ \ \ \ \ \textcolor{comment}{/*\ For\ uses,\ the\ refs\ within\ eq\ notes\ may\ be\ added\ for}}
+\DoxyCodeLine{00176\ \textcolor{comment}{\ \ \ \ \ \ \ DF\_REF\_ORDER\_BY\_REG.\ \ */}}
+\DoxyCodeLine{00177\ \ \ \ \ \doxymbox{\hyperlink{df_8h_a8295fc9895cfee63806cee35b272c802a26895587b935a8869c1c89597fd03f0f}{DF\_REF\_ORDER\_BY\_REG\_WITH\_NOTES}},}
+\DoxyCodeLine{00178\ }
+\DoxyCodeLine{00179\ \ \ \ \ \textcolor{comment}{/*\ Organize\ the\ refs\ in\ insn\ order.\ \ The\ insns\ are\ ordered\ within\ a}}
+\DoxyCodeLine{00180\ \textcolor{comment}{\ \ \ \ \ \ \ block,\ and\ the\ blocks\ are\ ordered\ by\ FOR\_ALL\_BB\_FN.\ \ */}}
+\DoxyCodeLine{00181\ \ \ \ \ \doxymbox{\hyperlink{df_8h_a8295fc9895cfee63806cee35b272c802ac2d17d04fe64244083e21a7c4bc4b90c}{DF\_REF\_ORDER\_BY\_INSN}},}
+\DoxyCodeLine{00182\ }
+\DoxyCodeLine{00183\ \ \ \ \ \textcolor{comment}{/*\ For\ uses,\ the\ refs\ within\ eq\ notes\ may\ be\ added\ for}}
+\DoxyCodeLine{00184\ \textcolor{comment}{\ \ \ \ \ \ \ DF\_REF\_ORDER\_BY\_INSN.\ \ */}}
+\DoxyCodeLine{00185\ \ \ \ \ \doxymbox{\hyperlink{df_8h_a8295fc9895cfee63806cee35b272c802abe03f628ec17c4e1bb77ae06332998c1}{DF\_REF\_ORDER\_BY\_INSN\_WITH\_NOTES}}}
+\DoxyCodeLine{00186\ \ \ \};}
+\DoxyCodeLine{00187\ }
+\DoxyCodeLine{00188\ \textcolor{comment}{/*\ Function\ prototypes\ added\ to\ df\_problem\ instance.\ \ */}}
+\DoxyCodeLine{00189\ }
+\DoxyCodeLine{00190\ \textcolor{comment}{/*\ Allocate\ the\ problem\ specific\ data.\ \ */}}
+\DoxyCodeLine{00191\ \textcolor{keyword}{typedef}\ void\ (*\doxymbox{\hyperlink{df_8h_a516f03786ff423c1b797a571d46c6f13}{df\_alloc\_function}})\ (\doxymbox{\hyperlink{coretypes_8h_ae7ea3a04cabf8964dc6e8e95a9cde1b8}{bitmap}});}
+\DoxyCodeLine{00192\ }
+\DoxyCodeLine{00193\ \textcolor{comment}{/*\ This\ function\ is\ called\ if\ the\ problem\ has\ global\ data\ that\ needs}}
+\DoxyCodeLine{00194\ \textcolor{comment}{\ \ \ to\ be\ cleared\ when\ ever\ the\ set\ of\ blocks\ changes.\ \ The\ bitmap}}
+\DoxyCodeLine{00195\ \textcolor{comment}{\ \ \ contains\ the\ set\ of\ blocks\ that\ may\ require\ special\ attention.}}
+\DoxyCodeLine{00196\ \textcolor{comment}{\ \ \ This\ call\ is\ only\ made\ if\ some\ of\ the\ blocks\ are\ going\ to\ change.}}
+\DoxyCodeLine{00197\ \textcolor{comment}{\ \ \ If\ everything\ is\ to\ be\ deleted,\ the\ wholesale\ deletion\ mechanisms}}
+\DoxyCodeLine{00198\ \textcolor{comment}{\ \ \ apply.\ */}}
+\DoxyCodeLine{00199\ \textcolor{keyword}{typedef}\ void\ (*\doxymbox{\hyperlink{df_8h_ad6b9ad563805f322dc091115fed09110}{df\_reset\_function}})\ (\doxymbox{\hyperlink{coretypes_8h_ae7ea3a04cabf8964dc6e8e95a9cde1b8}{bitmap}});}
+\DoxyCodeLine{00200\ }
+\DoxyCodeLine{00201\ \textcolor{comment}{/*\ Free\ the\ basic\ block\ info.\ \ Called\ from\ the\ block\ reordering\ code}}
+\DoxyCodeLine{00202\ \textcolor{comment}{\ \ \ to\ get\ rid\ of\ the\ blocks\ that\ have\ been\ squished\ down.\ \ \ */}}
+\DoxyCodeLine{00203\ \textcolor{keyword}{typedef}\ void\ (*\doxymbox{\hyperlink{df_8h_ab80abd1d5e53f1d8463b9e5049d9157b}{df\_free\_bb\_function}})\ (\doxymbox{\hyperlink{coretypes_8h_a0469df20b471a4cd7c81fbdce5027487}{basic\_block}},\ \textcolor{keywordtype}{void}\ *);}
+\DoxyCodeLine{00204\ }
+\DoxyCodeLine{00205\ \textcolor{comment}{/*\ Local\ compute\ function.\ \ */}}
+\DoxyCodeLine{00206\ \textcolor{keyword}{typedef}\ void\ (*\doxymbox{\hyperlink{df_8h_ab2a3d10d7342f0a4cdf9ca9f21aa0507}{df\_local\_compute\_function}})\ (\doxymbox{\hyperlink{coretypes_8h_ae7ea3a04cabf8964dc6e8e95a9cde1b8}{bitmap}});}
+\DoxyCodeLine{00207\ }
+\DoxyCodeLine{00208\ \textcolor{comment}{/*\ Init\ the\ solution\ specific\ data.\ \ */}}
+\DoxyCodeLine{00209\ \textcolor{keyword}{typedef}\ void\ (*\doxymbox{\hyperlink{df_8h_a3f03b4616aeaa7595cf45a90bf78bab8}{df\_init\_function}})\ (\doxymbox{\hyperlink{coretypes_8h_ae7ea3a04cabf8964dc6e8e95a9cde1b8}{bitmap}});}
+\DoxyCodeLine{00210\ }
+\DoxyCodeLine{00211\ \textcolor{comment}{/*\ Iterative\ dataflow\ function.\ \ */}}
+\DoxyCodeLine{00212\ \textcolor{keyword}{typedef}\ void\ (*\doxymbox{\hyperlink{df_8h_a4bc9433a7b6fbd37dfaa62698c87b7d3}{df\_dataflow\_function}})\ (\textcolor{keyword}{struct\ }\doxymbox{\hyperlink{structdataflow}{dataflow}}\ *,\ \doxymbox{\hyperlink{coretypes_8h_ae7ea3a04cabf8964dc6e8e95a9cde1b8}{bitmap}},\ \textcolor{keywordtype}{int}\ *,\ int);}
+\DoxyCodeLine{00213\ }
+\DoxyCodeLine{00214\ \textcolor{comment}{/*\ Confluence\ operator\ for\ blocks\ with\ 0\ out\ (or\ in)\ edges.\ \ */}}
+\DoxyCodeLine{00215\ \textcolor{keyword}{typedef}\ void\ (*\doxymbox{\hyperlink{df_8h_aa97f7689d54ba298fd8651e3897422b2}{df\_confluence\_function\_0}})\ (\doxymbox{\hyperlink{coretypes_8h_a0469df20b471a4cd7c81fbdce5027487}{basic\_block}});}
+\DoxyCodeLine{00216\ }
+\DoxyCodeLine{00217\ \textcolor{comment}{/*\ Confluence\ operator\ for\ blocks\ with\ 1\ or\ more\ out\ (or\ in)\ edges.}}
+\DoxyCodeLine{00218\ \textcolor{comment}{\ \ \ Return\ true\ if\ BB\ input\ data\ has\ changed.\ \ */}}
+\DoxyCodeLine{00219\ \textcolor{keyword}{typedef}\ \doxymbox{\hyperlink{stdbool_8h_abb452686968e48b67397da5f97445f5b}{bool}}\ (*\doxymbox{\hyperlink{df_8h_ac63b1f72d6e7e484e28476e121ac6e48}{df\_confluence\_function\_n}})\ (\doxymbox{\hyperlink{coretypes_8h_a44ae11f0c90646aa6208ad4bf486490b}{edge}});}
+\DoxyCodeLine{00220\ }
+\DoxyCodeLine{00221\ \textcolor{comment}{/*\ Transfer\ function\ for\ blocks.\ }}
+\DoxyCodeLine{00222\ \textcolor{comment}{\ \ \ Return\ true\ if\ BB\ output\ data\ has\ changed.\ \ */}}
+\DoxyCodeLine{00223\ \textcolor{keyword}{typedef}\ \doxymbox{\hyperlink{stdbool_8h_abb452686968e48b67397da5f97445f5b}{bool}}\ (*\doxymbox{\hyperlink{df_8h_a9ef453301ec75985cda90c6d16e94db7}{df\_transfer\_function}})\ (int);}
+\DoxyCodeLine{00224\ }
+\DoxyCodeLine{00225\ \textcolor{comment}{/*\ Function\ to\ massage\ the\ information\ after\ the\ problem\ solving.\ \ */}}
+\DoxyCodeLine{00226\ \textcolor{keyword}{typedef}\ void\ (*\doxymbox{\hyperlink{df_8h_ae36f5b0ca5d70388534e139163fbad24}{df\_finalizer\_function}})\ (\doxymbox{\hyperlink{coretypes_8h_ae7ea3a04cabf8964dc6e8e95a9cde1b8}{bitmap}});}
+\DoxyCodeLine{00227\ }
+\DoxyCodeLine{00228\ \textcolor{comment}{/*\ Function\ to\ free\ all\ of\ the\ problem\ specific\ datastructures.\ \ */}}
+\DoxyCodeLine{00229\ \textcolor{keyword}{typedef}\ void\ (*\doxymbox{\hyperlink{df_8h_a4be5f0835905356aaeba15bb091e6781}{df\_free\_function}})\ (void);}
+\DoxyCodeLine{00230\ }
+\DoxyCodeLine{00231\ \textcolor{comment}{/*\ Function\ to\ remove\ this\ problem\ from\ the\ stack\ of\ dataflow\ problems}}
+\DoxyCodeLine{00232\ \textcolor{comment}{\ \ \ without\ effecting\ the\ other\ problems\ in\ the\ stack\ except\ for\ those}}
+\DoxyCodeLine{00233\ \textcolor{comment}{\ \ \ that\ depend\ on\ this\ problem.\ \ */}}
+\DoxyCodeLine{00234\ \textcolor{keyword}{typedef}\ void\ (*\doxymbox{\hyperlink{df_8h_aafdbaffda8a37b5f807b71207961d650}{df\_remove\_problem\_function}})\ (void);}
+\DoxyCodeLine{00235\ }
+\DoxyCodeLine{00236\ \textcolor{comment}{/*\ Function\ to\ dump\ basic\ block\ independent\ results\ to\ FILE.\ \ */}}
+\DoxyCodeLine{00237\ \textcolor{keyword}{typedef}\ void\ (*\doxymbox{\hyperlink{df_8h_a6a4db3467eb88b92b2299833d5575257}{df\_dump\_problem\_function}})\ (FILE\ *);}
+\DoxyCodeLine{00238\ }
+\DoxyCodeLine{00239\ \textcolor{comment}{/*\ Function\ to\ dump\ top\ or\ bottom\ of\ basic\ block\ results\ to\ FILE.\ \ */}}
+\DoxyCodeLine{00240\ \textcolor{keyword}{typedef}\ void\ (*\doxymbox{\hyperlink{df_8h_aca06e21f87a998f060773f04f9f1d83d}{df\_dump\_bb\_problem\_function}})\ (\doxymbox{\hyperlink{coretypes_8h_a0469df20b471a4cd7c81fbdce5027487}{basic\_block}},\ FILE\ *);}
+\DoxyCodeLine{00241\ }
+\DoxyCodeLine{00242\ \textcolor{comment}{/*\ Function\ to\ dump\ before\ or\ after\ an\ insn\ to\ FILE.\ \ */}}
+\DoxyCodeLine{00243\ \textcolor{keyword}{typedef}\ void\ (*\doxymbox{\hyperlink{df_8h_a5e5794a4309b6736e5ff74366afd05f1}{df\_dump\_insn\_problem\_function}})\ (\textcolor{keyword}{const}\ rtx\_insn\ *,\ FILE\ *);}
+\DoxyCodeLine{00244\ }
+\DoxyCodeLine{00245\ \textcolor{comment}{/*\ Function\ to\ dump\ top\ or\ bottom\ of\ basic\ block\ results\ to\ FILE.\ \ */}}
+\DoxyCodeLine{00246\ \textcolor{keyword}{typedef}\ void\ (*\doxymbox{\hyperlink{df_8h_ac819a18f13705107d905eec172032d95}{df\_verify\_solution\_start}})\ (void);}
+\DoxyCodeLine{00247\ }
+\DoxyCodeLine{00248\ \textcolor{comment}{/*\ Function\ to\ dump\ top\ or\ bottom\ of\ basic\ block\ results\ to\ FILE.\ \ */}}
+\DoxyCodeLine{00249\ \textcolor{keyword}{typedef}\ void\ (*\doxymbox{\hyperlink{df_8h_a4cd0c3f5b62bee620c551aefeb8c87e2}{df\_verify\_solution\_end}})\ (void);}
+\DoxyCodeLine{00250\ }
+\DoxyCodeLine{00251\ \textcolor{comment}{/*\ The\ static\ description\ of\ a\ dataflow\ problem\ to\ solve.\ \ See\ above}}
+\DoxyCodeLine{00252\ \textcolor{comment}{\ \ \ typedefs\ for\ doc\ for\ the\ function\ fields.\ \ */}}
+\DoxyCodeLine{00253\ }
+\DoxyCodeLine{00254\ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{structdf__problem}{df\_problem}}\ \{}
+\DoxyCodeLine{00255\ \ \ \textcolor{comment}{/*\ The\ unique\ id\ of\ the\ problem.\ \ This\ is\ used\ it\ index\ into}}
+\DoxyCodeLine{00256\ \textcolor{comment}{\ \ \ \ \ df-\/>defined\_problems\ to\ make\ accessing\ the\ problem\ data\ easy.\ \ */}}
+\DoxyCodeLine{00257\ \ \ \textcolor{keyword}{enum}\ \doxymbox{\hyperlink{df_8h_a5fca6fb54c205dab61f5f54d0a4706d5}{df\_problem\_id}}\ \doxymbox{\hyperlink{structdf__problem_a46cd1c2c4c693202463aab9fbf17b0ea}{id}};}
+\DoxyCodeLine{00258\ \ \ \textcolor{keyword}{enum}\ \doxymbox{\hyperlink{df_8h_ac9be5bafa54c1f1ce69e80770e151b5a}{df\_flow\_dir}}\ \doxymbox{\hyperlink{structdf__problem_ae034d312befa855aaf27543eaf147946}{dir}};\ \ \ \ \ \ \ \ \ \textcolor{comment}{/*\ Dataflow\ direction.\ \ */}}
+\DoxyCodeLine{00259\ \ \ \doxymbox{\hyperlink{df_8h_a516f03786ff423c1b797a571d46c6f13}{df\_alloc\_function}}\ \doxymbox{\hyperlink{structdf__problem_ae6183986f67fe7ea438f25a0d6bccbc2}{alloc\_fun}};}
+\DoxyCodeLine{00260\ \ \ \doxymbox{\hyperlink{df_8h_ad6b9ad563805f322dc091115fed09110}{df\_reset\_function}}\ \doxymbox{\hyperlink{structdf__problem_ae3d938bc4c83aa5f3530a97107b0d489}{reset\_fun}};}
+\DoxyCodeLine{00261\ \ \ \doxymbox{\hyperlink{df_8h_ab80abd1d5e53f1d8463b9e5049d9157b}{df\_free\_bb\_function}}\ \doxymbox{\hyperlink{structdf__problem_ac318ddb6547988f62e62baf8cb2b085d}{free\_bb\_fun}};}
+\DoxyCodeLine{00262\ \ \ \doxymbox{\hyperlink{df_8h_ab2a3d10d7342f0a4cdf9ca9f21aa0507}{df\_local\_compute\_function}}\ \doxymbox{\hyperlink{structdf__problem_a9dc9b4bb07bd53070148c3fc91431fb0}{local\_compute\_fun}};}
+\DoxyCodeLine{00263\ \ \ \doxymbox{\hyperlink{df_8h_a3f03b4616aeaa7595cf45a90bf78bab8}{df\_init\_function}}\ \doxymbox{\hyperlink{structdf__problem_a9ef27b7c406ad7ab7a61928000df9978}{init\_fun}};}
+\DoxyCodeLine{00264\ \ \ \doxymbox{\hyperlink{df_8h_a4bc9433a7b6fbd37dfaa62698c87b7d3}{df\_dataflow\_function}}\ \doxymbox{\hyperlink{structdf__problem_a2a2e6368ad7c972752b7d65f26adfa33}{dataflow\_fun}};}
+\DoxyCodeLine{00265\ \ \ \doxymbox{\hyperlink{df_8h_aa97f7689d54ba298fd8651e3897422b2}{df\_confluence\_function\_0}}\ \doxymbox{\hyperlink{structdf__problem_a7869af711640c4a23be52353acd63173}{con\_fun\_0}};}
+\DoxyCodeLine{00266\ \ \ \doxymbox{\hyperlink{df_8h_ac63b1f72d6e7e484e28476e121ac6e48}{df\_confluence\_function\_n}}\ \doxymbox{\hyperlink{structdf__problem_aa3f339852c707cbeecfe418e29802b2d}{con\_fun\_n}};}
+\DoxyCodeLine{00267\ \ \ \doxymbox{\hyperlink{df_8h_a9ef453301ec75985cda90c6d16e94db7}{df\_transfer\_function}}\ \doxymbox{\hyperlink{structdf__problem_af64368543caf74498a1c94925070844a}{trans\_fun}};}
+\DoxyCodeLine{00268\ \ \ \doxymbox{\hyperlink{df_8h_ae36f5b0ca5d70388534e139163fbad24}{df\_finalizer\_function}}\ \doxymbox{\hyperlink{structdf__problem_a2a72bf04d8f683a684d3e3475830c274}{finalize\_fun}};}
+\DoxyCodeLine{00269\ \ \ \doxymbox{\hyperlink{df_8h_a4be5f0835905356aaeba15bb091e6781}{df\_free\_function}}\ \doxymbox{\hyperlink{structdf__problem_aaeb6a39aa3687e9249e9171062083991}{free\_fun}};}
+\DoxyCodeLine{00270\ \ \ \doxymbox{\hyperlink{df_8h_aafdbaffda8a37b5f807b71207961d650}{df\_remove\_problem\_function}}\ \doxymbox{\hyperlink{structdf__problem_a2dcdc89de33366026b7c001d24292abf}{remove\_problem\_fun}};}
+\DoxyCodeLine{00271\ \ \ \doxymbox{\hyperlink{df_8h_a6a4db3467eb88b92b2299833d5575257}{df\_dump\_problem\_function}}\ \doxymbox{\hyperlink{structdf__problem_ac8313760745e4bc72cf8fc13eb4e41e7}{dump\_start\_fun}};}
+\DoxyCodeLine{00272\ \ \ \doxymbox{\hyperlink{df_8h_aca06e21f87a998f060773f04f9f1d83d}{df\_dump\_bb\_problem\_function}}\ \doxymbox{\hyperlink{structdf__problem_a4ae00e10a9f1f42aaef8c07a737fb699}{dump\_top\_fun}};}
+\DoxyCodeLine{00273\ \ \ \doxymbox{\hyperlink{df_8h_aca06e21f87a998f060773f04f9f1d83d}{df\_dump\_bb\_problem\_function}}\ \doxymbox{\hyperlink{structdf__problem_ac821d8ee094c017bee2565911f86903b}{dump\_bottom\_fun}};}
+\DoxyCodeLine{00274\ \ \ \doxymbox{\hyperlink{df_8h_a5e5794a4309b6736e5ff74366afd05f1}{df\_dump\_insn\_problem\_function}}\ \doxymbox{\hyperlink{structdf__problem_a5330b90842820a9968bb1251158567fe}{dump\_insn\_top\_fun}};}
+\DoxyCodeLine{00275\ \ \ \doxymbox{\hyperlink{df_8h_a5e5794a4309b6736e5ff74366afd05f1}{df\_dump\_insn\_problem\_function}}\ \doxymbox{\hyperlink{structdf__problem_aafcd46b6e214ee11f1d4fb5ed8897d8b}{dump\_insn\_bottom\_fun}};}
+\DoxyCodeLine{00276\ \ \ \doxymbox{\hyperlink{df_8h_ac819a18f13705107d905eec172032d95}{df\_verify\_solution\_start}}\ \doxymbox{\hyperlink{structdf__problem_a5cc4e13db606af5a3285050183396ad4}{verify\_start\_fun}};}
+\DoxyCodeLine{00277\ \ \ \doxymbox{\hyperlink{df_8h_a4cd0c3f5b62bee620c551aefeb8c87e2}{df\_verify\_solution\_end}}\ \doxymbox{\hyperlink{structdf__problem_a8c5f7899806777218e7aed8259116cd6}{verify\_end\_fun}};}
+\DoxyCodeLine{00278\ \ \ \textcolor{keyword}{const}\ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{structdf__problem}{df\_problem}}\ *\doxymbox{\hyperlink{structdf__problem_a8a22d083e717c0fa63b4bc2d649c7d1f}{dependent\_problem}};}
+\DoxyCodeLine{00279\ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{structdf__problem_a15c7e1b769b05be84b849a9536accfd0}{block\_info\_elt\_size}};}
+\DoxyCodeLine{00280\ }
+\DoxyCodeLine{00281\ \ \ \textcolor{comment}{/*\ The\ timevar\ id\ associated\ with\ this\ pass.\ \ */}}
+\DoxyCodeLine{00282\ \ \ \doxymbox{\hyperlink{timevar_8h_acccab19270de2ddc66108651820950fd}{timevar\_id\_t}}\ \doxymbox{\hyperlink{structdf__problem_ab618b080fc91e833a605588b1e7ad797}{tv\_id}};}
+\DoxyCodeLine{00283\ }
+\DoxyCodeLine{00284\ \ \ \textcolor{comment}{/*\ True\ if\ the\ df\_set\_blocks\ should\ null\ out\ the\ basic\ block\ info\ if}}
+\DoxyCodeLine{00285\ \textcolor{comment}{\ \ \ \ \ this\ block\ drops\ out\ of\ df-\/>blocks\_to\_analyze.\ \ */}}
+\DoxyCodeLine{00286\ \ \ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{structdf__problem_abd2bc78d8b8db4cb9246cbcb00ce11df}{free\_blocks\_on\_set\_blocks}};}
+\DoxyCodeLine{00287\ \};}
+\DoxyCodeLine{00288\ }
+\DoxyCodeLine{00289\ }
+\DoxyCodeLine{00290\ \textcolor{comment}{/*\ The\ specific\ instance\ of\ the\ problem\ to\ solve.\ \ */}}
+\DoxyCodeLine{00291\ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{structdataflow}{dataflow}}}
+\DoxyCodeLine{00292\ \{}
+\DoxyCodeLine{00293\ \ \ \textcolor{keyword}{const}\ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{structdf__problem}{df\_problem}}\ *\doxymbox{\hyperlink{structdataflow_a2bea40234baaab3634d0c9bf22cfb39e}{problem}};\ \ \ \ \ \textcolor{comment}{/*\ The\ problem\ to\ be\ solved.\ \ */}}
+\DoxyCodeLine{00294\ }
+\DoxyCodeLine{00295\ \ \ \textcolor{comment}{/*\ Array\ indexed\ by\ bb-\/>index,\ that\ contains\ basic\ block\ problem\ and}}
+\DoxyCodeLine{00296\ \textcolor{comment}{\ \ \ \ \ solution\ specific\ information.\ \ */}}
+\DoxyCodeLine{00297\ \ \ \textcolor{keywordtype}{void}\ *\doxymbox{\hyperlink{structdataflow_afebebc6224d3ab6b1f2eb6cdf320a50b}{block\_info}};}
+\DoxyCodeLine{00298\ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{structdataflow_a63fed25e6bb2b3b7c5ef3b2470c0a3e6}{block\_info\_size}};}
+\DoxyCodeLine{00299\ }
+\DoxyCodeLine{00300\ \ \ \textcolor{comment}{/*\ The\ pool\ to\ allocate\ the\ block\_info\ from.\ */}}
+\DoxyCodeLine{00301\ \ \ \doxymbox{\hyperlink{classobject__allocator}{object\_allocator<df\_link>}}\ *\doxymbox{\hyperlink{structdataflow_a7eb14e8413f35465871a7bb4a3f26237}{block\_pool}};}
+\DoxyCodeLine{00302\ }
+\DoxyCodeLine{00303\ \ \ \textcolor{comment}{/*\ The\ lr\ and\ live\ problems\ have\ their\ transfer\ functions\ recomputed}}
+\DoxyCodeLine{00304\ \textcolor{comment}{\ \ \ \ \ only\ if\ necessary.\ \ This\ is\ possible\ for\ them\ because,\ the}}
+\DoxyCodeLine{00305\ \textcolor{comment}{\ \ \ \ \ problems\ are\ kept\ active\ for\ the\ entire\ backend\ and\ their}}
+\DoxyCodeLine{00306\ \textcolor{comment}{\ \ \ \ \ transfer\ functions\ are\ indexed\ by\ the\ REGNO.\ \ These\ are\ not}}
+\DoxyCodeLine{00307\ \textcolor{comment}{\ \ \ \ \ defined\ for\ any\ other\ problem.\ \ */}}
+\DoxyCodeLine{00308\ \ \ \doxymbox{\hyperlink{coretypes_8h_ae7ea3a04cabf8964dc6e8e95a9cde1b8}{bitmap}}\ \doxymbox{\hyperlink{structdataflow_a7be9642c81fd241d37b2722098892da6}{out\_of\_date\_transfer\_functions}};}
+\DoxyCodeLine{00309\ }
+\DoxyCodeLine{00310\ \ \ \textcolor{comment}{/*\ Other\ problem\ specific\ data\ that\ is\ not\ on\ a\ per\ basic\ block}}
+\DoxyCodeLine{00311\ \textcolor{comment}{\ \ \ \ \ basis.\ \ The\ structure\ is\ generally\ defined\ privately\ for\ the}}
+\DoxyCodeLine{00312\ \textcolor{comment}{\ \ \ \ \ problem.\ \ The\ exception\ being\ the\ scanning\ problem\ where\ it\ is}}
+\DoxyCodeLine{00313\ \textcolor{comment}{\ \ \ \ \ fully\ public.\ \ */}}
+\DoxyCodeLine{00314\ \ \ \textcolor{keywordtype}{void}\ *\doxymbox{\hyperlink{structdataflow_adf45233b407c29a2a921f94c0014985f}{problem\_data}};}
+\DoxyCodeLine{00315\ }
+\DoxyCodeLine{00316\ \ \ \textcolor{comment}{/*\ Local\ flags\ for\ some\ of\ the\ problems.\ */}}
+\DoxyCodeLine{00317\ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{structdataflow_a67a8714115321833f7d1139f7dcf48d9}{local\_flags}};}
+\DoxyCodeLine{00318\ }
+\DoxyCodeLine{00319\ \ \ \textcolor{comment}{/*\ True\ if\ this\ problem\ of\ this\ instance\ has\ been\ initialized.\ \ This}}
+\DoxyCodeLine{00320\ \textcolor{comment}{\ \ \ \ \ is\ used\ by\ the\ dumpers\ to\ keep\ garbage\ out\ of\ the\ dumps\ if,\ for}}
+\DoxyCodeLine{00321\ \textcolor{comment}{\ \ \ \ \ debugging\ a\ dump\ is\ produced\ before\ the\ first\ call\ to}}
+\DoxyCodeLine{00322\ \textcolor{comment}{\ \ \ \ \ df\_analyze\ after\ a\ new\ problem\ is\ added.\ \ */}}
+\DoxyCodeLine{00323\ \ \ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{structdataflow_a7ae0d69a9ff418045f460c690cf67b51}{computed}};}
+\DoxyCodeLine{00324\ }
+\DoxyCodeLine{00325\ \ \ \textcolor{comment}{/*\ True\ if\ the\ something\ has\ changed\ which\ invalidates\ the\ dataflow}}
+\DoxyCodeLine{00326\ \textcolor{comment}{\ \ \ \ \ solutions.\ \ Note\ that\ this\ bit\ is\ always\ true\ for\ all\ problems\ except}}
+\DoxyCodeLine{00327\ \textcolor{comment}{\ \ \ \ \ lr\ and\ live.\ \ */}}
+\DoxyCodeLine{00328\ \ \ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{structdataflow_a2c6b814181cd4819380de21d946f45c8}{solutions\_dirty}};}
+\DoxyCodeLine{00329\ }
+\DoxyCodeLine{00330\ \ \ \textcolor{comment}{/*\ If\ true,\ this\ pass\ is\ deleted\ by\ df\_finish\_pass.\ \ This\ is\ never}}
+\DoxyCodeLine{00331\ \textcolor{comment}{\ \ \ \ \ true\ for\ DF\_SCAN\ and\ DF\_LR.\ \ It\ is\ true\ for\ DF\_LIVE\ if\ optimize\ >}}
+\DoxyCodeLine{00332\ \textcolor{comment}{\ \ \ \ \ 1.\ \ It\ is\ always\ true\ for\ the\ other\ problems.\ \ */}}
+\DoxyCodeLine{00333\ \ \ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{structdataflow_a50e5af101cfa41eb42a5e3d63bdcb9cf}{optional\_p}};}
+\DoxyCodeLine{00334\ \};}
+\DoxyCodeLine{00335\ }
+\DoxyCodeLine{00336\ }
+\DoxyCodeLine{00337\ \textcolor{comment}{/*\ The\ set\ of\ multiword\ hardregs\ used\ as\ operands\ to\ this}}
+\DoxyCodeLine{00338\ \textcolor{comment}{\ \ \ instruction.\ These\ are\ factored\ into\ individual\ uses\ and\ defs\ but}}
+\DoxyCodeLine{00339\ \textcolor{comment}{\ \ \ the\ aggregate\ is\ still\ needed\ to\ service\ the\ REG\_DEAD\ and}}
+\DoxyCodeLine{00340\ \textcolor{comment}{\ \ \ REG\_UNUSED\ notes.\ \ */}}
+\DoxyCodeLine{00341\ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{structdf__mw__hardreg}{df\_mw\_hardreg}}}
+\DoxyCodeLine{00342\ \{}
+\DoxyCodeLine{00343\ \ \ \doxymbox{\hyperlink{structdf__mw__hardreg}{df\_mw\_hardreg}}\ *\doxymbox{\hyperlink{structdf__mw__hardreg_a1ed361572d9224bc937046467d3ac46d}{next}};\ \ \ \ \ \ \textcolor{comment}{/*\ Next\ entry\ for\ this\ instruction.\ \ */}}
+\DoxyCodeLine{00344\ \ \ \doxymbox{\hyperlink{coretypes_8h_a20e671ce9e7827268658cff844f4281c}{rtx}}\ \doxymbox{\hyperlink{structdf__mw__hardreg_a425b298093468589ecd15b87cf444814}{mw\_reg}};\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{/*\ The\ multiword\ hardreg.\ \ */}}
+\DoxyCodeLine{00345\ \ \ \textcolor{comment}{/*\ These\ two\ bitfields\ are\ intentionally\ oversized,\ in\ the\ hope\ that}}
+\DoxyCodeLine{00346\ \textcolor{comment}{\ \ \ \ \ accesses\ to\ 16-\/bit\ fields\ will\ usually\ be\ quicker.\ \ */}}
+\DoxyCodeLine{00347\ \ \ \doxymbox{\hyperlink{ansidecl_8h_a2934559f672ebd88a0459d0fe40faff2}{ENUM\_BITFIELD}}(\doxymbox{\hyperlink{df_8h_a248303fb01a9b8e5487d84a3235de454}{df\_ref\_type}})\ \doxymbox{\hyperlink{structtype}{type}}\ :\ 16;}
+\DoxyCodeLine{00348\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{/*\ Used\ to\ see\ if\ the\ ref\ is\ read\ or\ write.\ \ */}}
+\DoxyCodeLine{00349\ \ \ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{structdf__mw__hardreg_a192e56b3baad6473588a69b1b7fb973c}{flags}}\ :\ 16;\ \ \ \ \ \ \ \textcolor{comment}{/*\ Various\ df\_ref\_flags.\ \ */}}
+\DoxyCodeLine{00350\ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{structdf__mw__hardreg_a85e6d363365feac41ecb12e26088c2fe}{start\_regno}};\ \ \ \ \ \textcolor{comment}{/*\ First\ word\ of\ the\ multi\ word\ subreg.\ \ */}}
+\DoxyCodeLine{00351\ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{structdf__mw__hardreg_ae0c0b77b2c657878897a6f8e56ca3864}{end\_regno}};\ \ \ \ \ \ \ \textcolor{comment}{/*\ Last\ word\ of\ the\ multi\ word\ subreg.\ \ */}}
+\DoxyCodeLine{00352\ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{structdf__mw__hardreg_ab61b46de846b5b659914277c86af8caa}{mw\_order}};\ \ \ \ \ \ \ \ \textcolor{comment}{/*\ Same\ as\ df\_ref.ref\_order.\ \ */}}
+\DoxyCodeLine{00353\ \};}
+\DoxyCodeLine{00354\ }
+\DoxyCodeLine{00355\ }
+\DoxyCodeLine{00356\ \textcolor{comment}{/*\ Define\ a\ register\ reference\ structure.\ \ One\ of\ these\ is\ allocated}}
+\DoxyCodeLine{00357\ \textcolor{comment}{\ \ \ \ for\ every\ register\ reference\ (use\ or\ def).\ \ Note\ some\ register}}
+\DoxyCodeLine{00358\ \textcolor{comment}{\ \ \ \ references\ (e.g.,\ post\_inc,\ subreg)\ generate\ both\ a\ def\ and\ a\ use.\ \ */}}
+\DoxyCodeLine{00359\ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{structdf__base__ref}{df\_base\_ref}}}
+\DoxyCodeLine{00360\ \{}
+\DoxyCodeLine{00361\ \ \ \textcolor{comment}{/*\ These\ three\ bitfields\ are\ intentionally\ oversized,\ in\ the\ hope\ that}}
+\DoxyCodeLine{00362\ \textcolor{comment}{\ \ \ \ \ accesses\ to\ 8\ and\ 16-\/bit\ fields\ will\ usually\ be\ quicker.\ \ */}}
+\DoxyCodeLine{00363\ \ \ \doxymbox{\hyperlink{ansidecl_8h_a2934559f672ebd88a0459d0fe40faff2}{ENUM\_BITFIELD}}(\doxymbox{\hyperlink{df_8h_a62ea026e4c873db7851a8b655dacfe57}{df\_ref\_class}})\ cl\ :\ 8;}
+\DoxyCodeLine{00364\ }
+\DoxyCodeLine{00365\ \ \ \doxymbox{\hyperlink{ansidecl_8h_a2934559f672ebd88a0459d0fe40faff2}{ENUM\_BITFIELD}}(\doxymbox{\hyperlink{df_8h_a248303fb01a9b8e5487d84a3235de454}{df\_ref\_type}})\ \doxymbox{\hyperlink{structtype}{type}}\ :\ 8;}
+\DoxyCodeLine{00366\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{/*\ Type\ of\ ref.\ \ */}}
+\DoxyCodeLine{00367\ \ \ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{structdf__base__ref_afe60c2aacb1b9a97782a9f1d5cb9386a}{flags}}\ :\ 16;\ \ \ \ \ \ \ \textcolor{comment}{/*\ Various\ df\_ref\_flags.\ \ */}}
+\DoxyCodeLine{00368\ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{structdf__base__ref_a41262be991944f267ac36704cb7eee2d}{regno}};\ \ \ \ \ \ \ \textcolor{comment}{/*\ The\ register\ number\ referenced.\ \ */}}
+\DoxyCodeLine{00369\ \ \ \doxymbox{\hyperlink{coretypes_8h_a20e671ce9e7827268658cff844f4281c}{rtx}}\ \doxymbox{\hyperlink{structdf__base__ref_acb29d5416e572e227f4330b5b054b2b0}{reg}};\ \ \ \ \ \ \ \ \ \ \textcolor{comment}{/*\ The\ register\ referenced.\ \ */}}
+\DoxyCodeLine{00370\ \ \ \textcolor{keyword}{union\ }\doxymbox{\hyperlink{uniondf__ref__d}{df\_ref\_d}}\ *\doxymbox{\hyperlink{structdf__base__ref_af93e144a6361cf899756ae3136247943}{next\_loc}};\ \textcolor{comment}{/*\ Next\ ref\ for\ same\ insn\ or\ bb.\ \ */}}
+\DoxyCodeLine{00371\ \ \ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{structdf__link}{df\_link}}\ *\doxymbox{\hyperlink{structdf__base__ref_a34d3f933b004ab4f76eac4c788dbc8fe}{chain}};\ \ \ \ \textcolor{comment}{/*\ Head\ of\ def-\/use,\ use-\/def.\ \ */}}
+\DoxyCodeLine{00372\ \ \ \textcolor{comment}{/*\ Pointer\ to\ the\ insn\ info\ of\ the\ containing\ instruction.\ \ FIXME!}}
+\DoxyCodeLine{00373\ \textcolor{comment}{\ \ \ \ \ Currently\ this\ is\ NULL\ for\ artificial\ refs\ but\ this\ will\ be\ used}}
+\DoxyCodeLine{00374\ \textcolor{comment}{\ \ \ \ \ when\ FUDs\ are\ added.\ \ */}}
+\DoxyCodeLine{00375\ \ \ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{structdf__insn__info}{df\_insn\_info}}\ *\doxymbox{\hyperlink{structdf__base__ref_a43d2b37c0357c2e85fec11a390a4c65a}{insn\_info}};}
+\DoxyCodeLine{00376\ \ \ \textcolor{comment}{/*\ For\ each\ regno,\ there\ are\ three\ chains\ of\ refs,\ one\ for\ the\ uses,}}
+\DoxyCodeLine{00377\ \textcolor{comment}{\ \ \ \ \ the\ eq\_uses\ and\ the\ defs.\ \ These\ chains\ go\ through\ the\ refs}}
+\DoxyCodeLine{00378\ \textcolor{comment}{\ \ \ \ \ themselves\ rather\ than\ using\ an\ external\ structure.\ \ */}}
+\DoxyCodeLine{00379\ \ \ \textcolor{keyword}{union\ }\doxymbox{\hyperlink{uniondf__ref__d}{df\_ref\_d}}\ *\doxymbox{\hyperlink{structdf__base__ref_ad490606df2cb49d92291d980078fa58f}{next\_reg}};\ \ \ \ \ \textcolor{comment}{/*\ Next\ ref\ with\ same\ regno\ and\ type.\ \ */}}
+\DoxyCodeLine{00380\ \ \ \textcolor{keyword}{union\ }\doxymbox{\hyperlink{uniondf__ref__d}{df\_ref\_d}}\ *\doxymbox{\hyperlink{structdf__base__ref_ac8b08a8cbd5871c0a93c1b912d347725}{prev\_reg}};\ \ \ \ \ \textcolor{comment}{/*\ Prev\ ref\ with\ same\ regno\ and\ type.\ \ */}}
+\DoxyCodeLine{00381\ \ \ \textcolor{comment}{/*\ Location\ in\ the\ ref\ table.\ \ This\ is\ only\ valid\ after\ a\ call\ to}}
+\DoxyCodeLine{00382\ \textcolor{comment}{\ \ \ \ \ df\_maybe\_reorganize\_[use,def]\_refs\ which\ is\ an\ expensive\ operation.\ \ */}}
+\DoxyCodeLine{00383\ \ \ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{structdf__base__ref_afc2d146a5681d5dfa09eb60ceb443b89}{id}};}
+\DoxyCodeLine{00384\ \ \ \textcolor{comment}{/*\ The\ index\ at\ which\ the\ operand\ was\ scanned\ in\ the\ insn.\ \ This\ is}}
+\DoxyCodeLine{00385\ \textcolor{comment}{\ \ \ \ \ used\ to\ totally\ order\ the\ refs\ in\ an\ insn.\ \ */}}
+\DoxyCodeLine{00386\ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{structdf__base__ref_a050e787d4656fe971778186c0533c8f8}{ref\_order}};}
+\DoxyCodeLine{00387\ \};}
+\DoxyCodeLine{00388\ }
+\DoxyCodeLine{00389\ }
+\DoxyCodeLine{00390\ \textcolor{comment}{/*\ The\ three\ types\ of\ df\_refs.\ \ Note\ that\ the\ df\_ref\_extract\ is\ an}}
+\DoxyCodeLine{00391\ \textcolor{comment}{\ \ \ extension\ of\ the\ df\_regular\_ref,\ not\ the\ df\_base\_ref.\ \ */}}
+\DoxyCodeLine{00392\ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{structdf__artificial__ref}{df\_artificial\_ref}}}
+\DoxyCodeLine{00393\ \{}
+\DoxyCodeLine{00394\ \ \ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{structdf__base__ref}{df\_base\_ref}}\ \doxymbox{\hyperlink{structdf__artificial__ref_ac2fb21ab9c7c71285a68ee060ec262be}{base}};}
+\DoxyCodeLine{00395\ }
+\DoxyCodeLine{00396\ \ \ \textcolor{comment}{/*\ Artificial\ refs\ do\ not\ have\ an\ insn,\ so\ to\ get\ the\ basic\ block,}}
+\DoxyCodeLine{00397\ \textcolor{comment}{\ \ \ \ \ it\ must\ be\ explicitly\ here.\ \ */}}
+\DoxyCodeLine{00398\ \ \ \doxymbox{\hyperlink{coretypes_8h_a0469df20b471a4cd7c81fbdce5027487}{basic\_block}}\ \doxymbox{\hyperlink{structdf__artificial__ref_ac4377d76aedd8d3f7d4066eebc484dfd}{bb}};}
+\DoxyCodeLine{00399\ \};}
+\DoxyCodeLine{00400\ }
+\DoxyCodeLine{00401\ }
+\DoxyCodeLine{00402\ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{structdf__regular__ref}{df\_regular\_ref}}}
+\DoxyCodeLine{00403\ \{}
+\DoxyCodeLine{00404\ \ \ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{structdf__base__ref}{df\_base\_ref}}\ \doxymbox{\hyperlink{structdf__regular__ref_a9ab732af6f0823dc341e244ef7787af1}{base}};}
+\DoxyCodeLine{00405\ \ \ \textcolor{comment}{/*\ The\ loc\ is\ the\ address\ in\ the\ insn\ of\ the\ reg.\ \ This\ is\ not}}
+\DoxyCodeLine{00406\ \textcolor{comment}{\ \ \ \ \ defined\ for\ special\ registers,\ such\ as\ clobbers\ and\ stack}}
+\DoxyCodeLine{00407\ \textcolor{comment}{\ \ \ \ \ pointers\ that\ are\ also\ associated\ with\ call\ insns\ and\ so\ those}}
+\DoxyCodeLine{00408\ \textcolor{comment}{\ \ \ \ \ just\ use\ the\ base.\ \ */}}
+\DoxyCodeLine{00409\ \ \ \doxymbox{\hyperlink{coretypes_8h_a20e671ce9e7827268658cff844f4281c}{rtx}}\ *\doxymbox{\hyperlink{structdf__regular__ref_ac6960bc9aef02d512951ab4f5be08b9e}{loc}};}
+\DoxyCodeLine{00410\ \};}
+\DoxyCodeLine{00411\ }
+\DoxyCodeLine{00412\ \textcolor{comment}{/*\ Union\ of\ the\ different\ kinds\ of\ defs/uses\ placeholders.\ \ */}}
+\DoxyCodeLine{00413\ \textcolor{keyword}{union\ }\doxymbox{\hyperlink{uniondf__ref__d}{df\_ref\_d}}}
+\DoxyCodeLine{00414\ \{}
+\DoxyCodeLine{00415\ \ \ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{structdf__base__ref}{df\_base\_ref}}\ \doxymbox{\hyperlink{uniondf__ref__d_a9cc51c8b0ced22c3c6b66e1d931bc091}{base}};}
+\DoxyCodeLine{00416\ \ \ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{structdf__regular__ref}{df\_regular\_ref}}\ \doxymbox{\hyperlink{uniondf__ref__d_aeecaa5c8042206c284d6796c80a29aac}{regular\_ref}};}
+\DoxyCodeLine{00417\ \ \ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{structdf__artificial__ref}{df\_artificial\_ref}}\ \doxymbox{\hyperlink{uniondf__ref__d_a48d2ddcba15644165f7aef22c61f5cfb}{artificial\_ref}};}
+\DoxyCodeLine{00418\ \};}
+\DoxyCodeLine{00419\ \textcolor{keyword}{typedef}\ \textcolor{keyword}{union\ }\doxymbox{\hyperlink{uniondf__ref__d}{df\_ref\_d}}\ *\doxymbox{\hyperlink{df_8h_a2e31e87468476f9209292e78ed33bda1}{df\_ref}};}
+\DoxyCodeLine{00420\ }
+\DoxyCodeLine{00421\ }
+\DoxyCodeLine{00422\ \textcolor{comment}{/*\ One\ of\ these\ structures\ is\ allocated\ for\ every\ insn.\ \ */}}
+\DoxyCodeLine{00423\ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{structdf__insn__info}{df\_insn\_info}}}
+\DoxyCodeLine{00424\ \{}
+\DoxyCodeLine{00425\ \ \ rtx\_insn\ *\doxymbox{\hyperlink{structdf__insn__info_a9d6d705f6cf17b1134fb415f53f7a079}{insn}};\ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{/*\ The\ insn\ this\ info\ comes\ from.\ \ */}}
+\DoxyCodeLine{00426\ \ \ \doxymbox{\hyperlink{df_8h_a2e31e87468476f9209292e78ed33bda1}{df\_ref}}\ \doxymbox{\hyperlink{structdf__insn__info_add2943ea3240308de84fc067391b55f6}{defs}};\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{/*\ Head\ of\ insn-\/def\ chain.\ \ */}}
+\DoxyCodeLine{00427\ \ \ \doxymbox{\hyperlink{df_8h_a2e31e87468476f9209292e78ed33bda1}{df\_ref}}\ \doxymbox{\hyperlink{structdf__insn__info_aa0b3dc1858e231d1df1401f445dcfecd}{uses}};\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{/*\ Head\ of\ insn-\/use\ chain.\ \ */}}
+\DoxyCodeLine{00428\ \ \ \textcolor{comment}{/*\ Head\ of\ insn-\/use\ chain\ for\ uses\ in\ REG\_EQUAL/EQUIV\ notes.\ \ */}}
+\DoxyCodeLine{00429\ \ \ \doxymbox{\hyperlink{df_8h_a2e31e87468476f9209292e78ed33bda1}{df\_ref}}\ \doxymbox{\hyperlink{structdf__insn__info_a1f43a1d851eb6de75f49c62be8dc3954}{eq\_uses}};}
+\DoxyCodeLine{00430\ \ \ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{structdf__mw__hardreg}{df\_mw\_hardreg}}\ *\doxymbox{\hyperlink{structdf__insn__info_a08d11d1c52abf5f764e878acea119887}{mw\_hardregs}};}
+\DoxyCodeLine{00431\ \ \ \textcolor{comment}{/*\ The\ logical\ uid\ of\ the\ insn\ in\ the\ basic\ block.\ \ This\ is\ valid}}
+\DoxyCodeLine{00432\ \textcolor{comment}{\ \ \ \ \ after\ any\ call\ to\ df\_analyze\ but\ may\ rot\ after\ insns\ are\ added,}}
+\DoxyCodeLine{00433\ \textcolor{comment}{\ \ \ \ \ deleted\ or\ moved.\ */}}
+\DoxyCodeLine{00434\ \ \ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{structdf__insn__info_a2086984ad999d18dd82460f35cc0ce54}{luid}};}
+\DoxyCodeLine{00435\ \};}
+\DoxyCodeLine{00436\ }
+\DoxyCodeLine{00437\ \textcolor{comment}{/*\ These\ links\ are\ used\ for\ ref-\/ref\ chains.\ \ Currently\ only\ DEF-\/USE\ and}}
+\DoxyCodeLine{00438\ \textcolor{comment}{\ \ \ USE-\/DEF\ chains\ can\ be\ built\ by\ DF.\ \ */}}
+\DoxyCodeLine{00439\ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{structdf__link}{df\_link}}}
+\DoxyCodeLine{00440\ \{}
+\DoxyCodeLine{00441\ \ \ \doxymbox{\hyperlink{df_8h_a2e31e87468476f9209292e78ed33bda1}{df\_ref}}\ \doxymbox{\hyperlink{structdf__link_a7b6d8d9991b2ebd28d970f5d3e9cce30}{ref}};}
+\DoxyCodeLine{00442\ \ \ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{structdf__link}{df\_link}}\ *\doxymbox{\hyperlink{structdf__link_a1098e7a0aa70f9d596483a55a10f13d3}{next}};}
+\DoxyCodeLine{00443\ \};}
+\DoxyCodeLine{00444\ }
+\DoxyCodeLine{00445\ }
+\DoxyCodeLine{00446\ \textcolor{keyword}{enum}\ \doxymbox{\hyperlink{df_8h_ad138b79f0a43213e0ec72487c2ead051}{df\_chain\_flags}}}
+\DoxyCodeLine{00447\ \{}
+\DoxyCodeLine{00448\ \ \ \textcolor{comment}{/*\ Flags\ that\ control\ the\ building\ of\ chains.\ \ */}}
+\DoxyCodeLine{00449\ \ \ \doxymbox{\hyperlink{df_8h_ad138b79f0a43213e0ec72487c2ead051a41464c71fd54ee428014fd0bd416caf3}{DF\_DU\_CHAIN}}\ \ \ \ \ \ =\ \ 1,\ \textcolor{comment}{/*\ Build\ DU\ chains.\ \ */}}
+\DoxyCodeLine{00450\ \ \ \doxymbox{\hyperlink{df_8h_ad138b79f0a43213e0ec72487c2ead051a6ed6d0a10157a907c76ea37f27dae15a}{DF\_UD\_CHAIN}}\ \ \ \ \ \ =\ \ 2\ \ \textcolor{comment}{/*\ Build\ UD\ chains.\ \ */}}
+\DoxyCodeLine{00451\ \};}
+\DoxyCodeLine{00452\ }
+\DoxyCodeLine{00453\ \textcolor{keyword}{enum}\ \doxymbox{\hyperlink{df_8h_adf76fcc8a78a85f3c5f317c86ba62174}{df\_scan\_flags}}}
+\DoxyCodeLine{00454\ \{}
+\DoxyCodeLine{00455\ \ \ \textcolor{comment}{/*\ Flags\ for\ the\ SCAN\ problem.\ \ */}}
+\DoxyCodeLine{00456\ \ \ \doxymbox{\hyperlink{df_8h_adf76fcc8a78a85f3c5f317c86ba62174abeb2ebc698ccc4669bc775983306ccaf}{DF\_SCAN\_EMPTY\_ENTRY\_EXIT}}\ =\ 1\ \ \textcolor{comment}{/*\ Don't\ define\ any\ registers\ in\ the\ entry}}
+\DoxyCodeLine{00457\ \textcolor{comment}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ block;\ don't\ use\ any\ in\ the\ exit\ block.\ \ */}}
+\DoxyCodeLine{00458\ \};}
+\DoxyCodeLine{00459\ }
+\DoxyCodeLine{00460\ \textcolor{keyword}{enum}\ \doxymbox{\hyperlink{df_8h_a5bd91924bc15d2aafc7b77e746088e20}{df\_changeable\_flags}}}
+\DoxyCodeLine{00461\ \{}
+\DoxyCodeLine{00462\ \ \ \textcolor{comment}{/*\ Scanning\ flags.\ \ */}}
+\DoxyCodeLine{00463\ \ \ \textcolor{comment}{/*\ Flag\ to\ control\ the\ running\ of\ dce\ as\ a\ side\ effect\ of\ building\ LR.\ \ */}}
+\DoxyCodeLine{00464\ \ \ \doxymbox{\hyperlink{df_8h_a5bd91924bc15d2aafc7b77e746088e20ad922507107927892908791132cc9d980}{DF\_LR\_RUN\_DCE}}\ \ \ \ \ \ \ \ \ \ \ =\ 1\ <<\ 0,\ \textcolor{comment}{/*\ Run\ DCE.\ \ */}}
+\DoxyCodeLine{00465\ \ \ \doxymbox{\hyperlink{df_8h_a5bd91924bc15d2aafc7b77e746088e20ae1cda306429bd073f38570c62707f8f9}{DF\_NO\_HARD\_REGS}}\ \ \ \ \ \ \ \ \ =\ 1\ <<\ 1,\ \textcolor{comment}{/*\ Skip\ hard\ registers\ in\ RD\ and\ CHAIN\ Building.\ \ */}}
+\DoxyCodeLine{00466\ }
+\DoxyCodeLine{00467\ \ \ \doxymbox{\hyperlink{df_8h_a5bd91924bc15d2aafc7b77e746088e20a3050e87590cac5f08c26d6ef7679f8e0}{DF\_EQ\_NOTES}}\ \ \ \ \ \ \ \ \ \ \ \ \ =\ 1\ <<\ 2,\ \textcolor{comment}{/*\ Build\ chains\ with\ uses\ present\ in\ EQUIV/EQUAL\ notes.\ */}}
+\DoxyCodeLine{00468\ \ \ \doxymbox{\hyperlink{df_8h_a5bd91924bc15d2aafc7b77e746088e20aa32d0ac55c41a5f6e62dc8c33573c7b0}{DF\_NO\_REGS\_EVER\_LIVE}}\ \ \ \ =\ 1\ <<\ 3,\ \textcolor{comment}{/*\ Do\ not\ compute\ the\ regs\_ever\_live.\ \ */}}
+\DoxyCodeLine{00469\ }
+\DoxyCodeLine{00470\ \ \ \textcolor{comment}{/*\ Cause\ df\_insn\_rescan\ df\_notes\_rescan\ and\ df\_insn\_delete,\ to}}
+\DoxyCodeLine{00471\ \textcolor{comment}{\ \ return\ immediately.\ \ This\ is\ used\ by\ passes\ that\ know\ how\ to\ update}}
+\DoxyCodeLine{00472\ \textcolor{comment}{\ \ the\ scanning\ them\ selves.\ \ */}}
+\DoxyCodeLine{00473\ \ \ \doxymbox{\hyperlink{df_8h_a5bd91924bc15d2aafc7b77e746088e20a4a428ce682b7c761c0eb63345c7f9bd6}{DF\_NO\_INSN\_RESCAN}}\ \ \ \ \ \ \ =\ 1\ <<\ 4,}
+\DoxyCodeLine{00474\ }
+\DoxyCodeLine{00475\ \ \ \textcolor{comment}{/*\ Cause\ df\_insn\_rescan\ df\_notes\_rescan\ and\ df\_insn\_delete,\ to}}
+\DoxyCodeLine{00476\ \textcolor{comment}{\ \ return\ after\ marking\ the\ insn\ for\ later\ processing.\ \ This\ allows\ all}}
+\DoxyCodeLine{00477\ \textcolor{comment}{\ \ rescans\ to\ be\ batched.\ \ */}}
+\DoxyCodeLine{00478\ \ \ \doxymbox{\hyperlink{df_8h_a5bd91924bc15d2aafc7b77e746088e20a0d6781741d1a7a619f6dda06b03ac9db}{DF\_DEFER\_INSN\_RESCAN}}\ \ \ \ =\ 1\ <<\ 5,}
+\DoxyCodeLine{00479\ }
+\DoxyCodeLine{00480\ \ \ \textcolor{comment}{/*\ Compute\ the\ reaching\ defs\ problem\ as\ "{}live\ and\ reaching\ defs"{}\ (LR\&RD).}}
+\DoxyCodeLine{00481\ \textcolor{comment}{\ \ \ \ \ A\ DEF\ is\ reaching\ and\ live\ at\ insn\ I\ if\ DEF\ reaches\ I\ and\ REGNO(DEF)}}
+\DoxyCodeLine{00482\ \textcolor{comment}{\ \ \ \ \ is\ in\ LR\_IN\ of\ the\ basic\ block\ containing\ I.\ \ */}}
+\DoxyCodeLine{00483\ \ \ \doxymbox{\hyperlink{df_8h_a5bd91924bc15d2aafc7b77e746088e20a09498968f641a79d646bd760a34ffda5}{DF\_RD\_PRUNE\_DEAD\_DEFS}}\ \ \ =\ 1\ <<\ 6,}
+\DoxyCodeLine{00484\ }
+\DoxyCodeLine{00485\ \ \ \doxymbox{\hyperlink{df_8h_a5bd91924bc15d2aafc7b77e746088e20a26e6e7e350f8e4269de54f004835fd2e}{DF\_VERIFY\_SCHEDULED}}\ \ \ \ \ =\ 1\ <<\ 7}
+\DoxyCodeLine{00486\ \};}
+\DoxyCodeLine{00487\ }
+\DoxyCodeLine{00488\ \textcolor{comment}{/*\ Two\ of\ these\ structures\ are\ inline\ in\ df,\ one\ for\ the\ uses\ and\ one}}
+\DoxyCodeLine{00489\ \textcolor{comment}{\ \ \ for\ the\ defs.\ \ This\ structure\ is\ only\ contains\ the\ refs\ within\ the}}
+\DoxyCodeLine{00490\ \textcolor{comment}{\ \ \ boundary\ of\ the\ df\_set\_blocks\ if\ that\ has\ been\ defined.\ \ */}}
+\DoxyCodeLine{00491\ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{structdf__ref__info}{df\_ref\_info}}}
+\DoxyCodeLine{00492\ \{}
+\DoxyCodeLine{00493\ \ \ \doxymbox{\hyperlink{df_8h_a2e31e87468476f9209292e78ed33bda1}{df\_ref}}\ *\doxymbox{\hyperlink{structdf__ref__info_ad984c937983502573f24020030a220e4}{refs}};\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{/*\ Ref\ table,\ indexed\ by\ id.\ \ */}}
+\DoxyCodeLine{00494\ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ *\doxymbox{\hyperlink{structdf__ref__info_ac015cc324c37f0a19dda24a5af9bf1bf}{begin}};\ \ \ \ \ \ \ \ \ \ \textcolor{comment}{/*\ First\ ref\_index\ for\ this\ pseudo.\ \ */}}
+\DoxyCodeLine{00495\ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ *\doxymbox{\hyperlink{structdf__ref__info_ae1ea879326d5dcee60e14192eb752b49}{count}};\ \ \ \ \ \ \ \ \ \ \textcolor{comment}{/*\ Count\ of\ refs\ for\ this\ pseudo.\ \ */}}
+\DoxyCodeLine{00496\ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{structdf__ref__info_a1f05b7bb90b6ca1bf7ca47f1bd760148}{refs\_size}};\ \ \ \ \ \ \ \textcolor{comment}{/*\ Size\ of\ currently\ allocated\ refs\ table.\ \ */}}
+\DoxyCodeLine{00497\ }
+\DoxyCodeLine{00498\ \ \ \textcolor{comment}{/*\ Table\_size\ is\ the\ number\ of\ elements\ in\ the\ refs\ table.\ \ This}}
+\DoxyCodeLine{00499\ \textcolor{comment}{\ \ \ \ \ will\ also\ be\ the\ width\ of\ the\ bitvectors\ in\ the\ rd\ and\ ru}}
+\DoxyCodeLine{00500\ \textcolor{comment}{\ \ \ \ \ problems.\ \ Total\_size\ is\ the\ number\ of\ refs.\ \ These\ will\ be\ the}}
+\DoxyCodeLine{00501\ \textcolor{comment}{\ \ \ \ \ same\ if\ the\ focus\ has\ not\ been\ reduced\ by\ df\_set\_blocks.\ \ If\ the}}
+\DoxyCodeLine{00502\ \textcolor{comment}{\ \ \ \ \ focus\ has\ been\ reduced,\ table\_size\ will\ be\ smaller\ since\ it\ only}}
+\DoxyCodeLine{00503\ \textcolor{comment}{\ \ \ \ \ contains\ the\ refs\ in\ the\ set\ blocks.\ \ */}}
+\DoxyCodeLine{00504\ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{structdf__ref__info_ab5ab2149d71a213a2df489458caffe9e}{table\_size}};}
+\DoxyCodeLine{00505\ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{structdf__ref__info_afe0e968c410b9d868c42c7624a0e29ee}{total\_size}};}
+\DoxyCodeLine{00506\ }
+\DoxyCodeLine{00507\ \ \ \textcolor{keyword}{enum}\ \doxymbox{\hyperlink{df_8h_a8295fc9895cfee63806cee35b272c802}{df\_ref\_order}}\ \doxymbox{\hyperlink{structdf__ref__info_a16a019bfbdb30bdaf856ad7149c993f5}{ref\_order}};}
+\DoxyCodeLine{00508\ \};}
+\DoxyCodeLine{00509\ }
+\DoxyCodeLine{00510\ \textcolor{comment}{/*\ Three\ of\ these\ structures\ are\ allocated\ for\ every\ pseudo\ reg.\ One}}
+\DoxyCodeLine{00511\ \textcolor{comment}{\ \ \ for\ the\ uses,\ one\ for\ the\ eq\_uses\ and\ one\ for\ the\ defs.\ \ */}}
+\DoxyCodeLine{00512\ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{structdf__reg__info}{df\_reg\_info}}}
+\DoxyCodeLine{00513\ \{}
+\DoxyCodeLine{00514\ \ \ \textcolor{comment}{/*\ Head\ of\ chain\ for\ refs\ of\ that\ type\ and\ regno.\ \ */}}
+\DoxyCodeLine{00515\ \ \ \doxymbox{\hyperlink{df_8h_a2e31e87468476f9209292e78ed33bda1}{df\_ref}}\ \doxymbox{\hyperlink{structdf__reg__info_a337a88fec4271eb3cf0f6470e348bf9a}{reg\_chain}};}
+\DoxyCodeLine{00516\ \ \ \textcolor{comment}{/*\ Number\ of\ refs\ in\ the\ chain.\ \ */}}
+\DoxyCodeLine{00517\ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{structdf__reg__info_ab2c81782bf2bc51c68270bb762e93d27}{n\_refs}};}
+\DoxyCodeLine{00518\ \};}
+\DoxyCodeLine{00519\ }
+\DoxyCodeLine{00520\ }
+\DoxyCodeLine{00521\ \textcolor{comment}{/*-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{00522\ \textcolor{comment}{\ \ \ Problem\ data\ for\ the\ scanning\ dataflow\ problem.\ \ Unlike\ the\ other}}
+\DoxyCodeLine{00523\ \textcolor{comment}{\ \ \ dataflow\ problems,\ the\ problem\ data\ for\ scanning\ is\ fully\ exposed\ and}}
+\DoxyCodeLine{00524\ \textcolor{comment}{\ \ \ used\ by\ owners\ of\ the\ problem.}}
+\DoxyCodeLine{00525\ \textcolor{comment}{-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/*/}}
+\DoxyCodeLine{00526\ }
+\DoxyCodeLine{00527\ \textcolor{keyword}{class\ }\doxymbox{\hyperlink{classdf__d}{df\_d}}}
+\DoxyCodeLine{00528\ \{}
+\DoxyCodeLine{00529\ \textcolor{keyword}{public}:}
+\DoxyCodeLine{00530\ }
+\DoxyCodeLine{00531\ \ \ \textcolor{comment}{/*\ The\ set\ of\ problems\ to\ be\ solved\ is\ stored\ in\ two\ arrays.\ \ In}}
+\DoxyCodeLine{00532\ \textcolor{comment}{\ \ \ \ \ PROBLEMS\_IN\_ORDER,\ the\ problems\ are\ stored\ in\ the\ order\ that\ they}}
+\DoxyCodeLine{00533\ \textcolor{comment}{\ \ \ \ \ are\ solved.\ \ This\ is\ an\ internally\ dense\ array\ that\ may\ have}}
+\DoxyCodeLine{00534\ \textcolor{comment}{\ \ \ \ \ nulls\ at\ the\ end\ of\ it.\ \ In\ PROBLEMS\_BY\_INDEX,\ the\ problem\ is}}
+\DoxyCodeLine{00535\ \textcolor{comment}{\ \ \ \ \ stored\ by\ the\ value\ in\ df\_problem.id.\ \ These\ are\ used\ to\ access}}
+\DoxyCodeLine{00536\ \textcolor{comment}{\ \ \ \ \ the\ problem\ local\ data\ without\ having\ to\ search\ the\ first}}
+\DoxyCodeLine{00537\ \textcolor{comment}{\ \ \ \ \ array.\ \ */}}
+\DoxyCodeLine{00538\ }
+\DoxyCodeLine{00539\ \ \ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{structdataflow}{dataflow}}\ *\doxymbox{\hyperlink{classdf__d_a73ef624bad0da24263aac0c2d61d8d66}{problems\_in\_order}}[\doxymbox{\hyperlink{df_8h_a5fca6fb54c205dab61f5f54d0a4706d5a4e461505de72d2581ee641141d4ebdca}{DF\_LAST\_PROBLEM\_PLUS1}}];}
+\DoxyCodeLine{00540\ \ \ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{structdataflow}{dataflow}}\ *\doxymbox{\hyperlink{classdf__d_a91c016e01864f2813c0271cbba413aa3}{problems\_by\_index}}[\doxymbox{\hyperlink{df_8h_a5fca6fb54c205dab61f5f54d0a4706d5a4e461505de72d2581ee641141d4ebdca}{DF\_LAST\_PROBLEM\_PLUS1}}];}
+\DoxyCodeLine{00541\ }
+\DoxyCodeLine{00542\ \ \ \textcolor{comment}{/*\ If\ not\ NULL,\ this\ subset\ of\ blocks\ of\ the\ program\ to\ be}}
+\DoxyCodeLine{00543\ \textcolor{comment}{\ \ \ \ \ considered\ for\ analysis.\ \ At\ certain\ times,\ this\ will\ contain\ all}}
+\DoxyCodeLine{00544\ \textcolor{comment}{\ \ \ \ \ the\ blocks\ in\ the\ function\ so\ it\ cannot\ be\ used\ as\ an\ indicator}}
+\DoxyCodeLine{00545\ \textcolor{comment}{\ \ \ \ \ of\ if\ we\ are\ analyzing\ a\ subset.\ \ See\ analyze\_subset.\ \ */}}
+\DoxyCodeLine{00546\ \ \ \doxymbox{\hyperlink{coretypes_8h_ae7ea3a04cabf8964dc6e8e95a9cde1b8}{bitmap}}\ \doxymbox{\hyperlink{classdf__d_a44d1196345fa350169c3a83328cb6b48}{blocks\_to\_analyze}};}
+\DoxyCodeLine{00547\ }
+\DoxyCodeLine{00548\ \ \ \textcolor{comment}{/*\ The\ following\ information\ is\ really\ the\ problem\ data\ for\ the}}
+\DoxyCodeLine{00549\ \textcolor{comment}{\ \ \ \ \ scanning\ instance\ but\ it\ is\ used\ too\ often\ by\ the\ other\ problems}}
+\DoxyCodeLine{00550\ \textcolor{comment}{\ \ \ \ \ to\ keep\ getting\ it\ from\ there.\ \ */}}
+\DoxyCodeLine{00551\ \ \ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{structdf__ref__info}{df\_ref\_info}}\ \doxymbox{\hyperlink{classdf__d_a929ec673354a1e34da0680d29ff6795e}{def\_info}};\ \ \ \textcolor{comment}{/*\ Def\ info.\ \ */}}
+\DoxyCodeLine{00552\ \ \ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{structdf__ref__info}{df\_ref\_info}}\ \doxymbox{\hyperlink{classdf__d_a93e160c0e8352d20cf9c259d68337b21}{use\_info}};\ \ \ \textcolor{comment}{/*\ Use\ info.\ \ */}}
+\DoxyCodeLine{00553\ }
+\DoxyCodeLine{00554\ \ \ \textcolor{comment}{/*\ The\ following\ three\ arrays\ are\ allocated\ in\ parallel.\ \ \ They\ contain}}
+\DoxyCodeLine{00555\ \textcolor{comment}{\ \ \ \ \ the\ sets\ of\ refs\ of\ each\ type\ for\ each\ reg.\ \ */}}
+\DoxyCodeLine{00556\ \ \ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{structdf__reg__info}{df\_reg\_info}}\ **\doxymbox{\hyperlink{classdf__d_aa01827d8196dd8a472e3aa8e5297c422}{def\_regs}};\ \ \ \ \ \ \ \textcolor{comment}{/*\ Def\ reg\ info.\ \ */}}
+\DoxyCodeLine{00557\ \ \ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{structdf__reg__info}{df\_reg\_info}}\ **\doxymbox{\hyperlink{classdf__d_a887c241d339dcc684307dd063b986af9}{use\_regs}};\ \ \ \ \ \ \ \textcolor{comment}{/*\ Eq\_use\ reg\ info.\ \ */}}
+\DoxyCodeLine{00558\ \ \ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{structdf__reg__info}{df\_reg\_info}}\ **\doxymbox{\hyperlink{classdf__d_a961778a0f05c0c589247d8aae6ab78ef}{eq\_use\_regs}};\ \ \ \ \textcolor{comment}{/*\ Eq\_use\ info.\ \ */}}
+\DoxyCodeLine{00559\ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{classdf__d_ac676089c419780bd0eb8244e446d5c48}{regs\_size}};\ \ \ \ \ \ \ \textcolor{comment}{/*\ Size\ of\ currently\ allocated\ regs\ table.\ \ */}}
+\DoxyCodeLine{00560\ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{classdf__d_a2eed98a1f741e420890be2126eddedb3}{regs\_inited}};\ \ \ \ \ \textcolor{comment}{/*\ Number\ of\ regs\ with\ reg\_infos\ allocated.\ \ */}}
+\DoxyCodeLine{00561\ }
+\DoxyCodeLine{00562\ }
+\DoxyCodeLine{00563\ \ \ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{structdf__insn__info}{df\_insn\_info}}\ **\doxymbox{\hyperlink{classdf__d_a8bbff554c7f6f21a1dd1a9837a40b982}{insns}};\ \ \ \textcolor{comment}{/*\ Insn\ table,\ indexed\ by\ insn\ UID.\ \ */}}
+\DoxyCodeLine{00564\ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{classdf__d_ad82dde9b78ce7f98262ab14347efbecd}{insns\_size}};\ \ \ \ \ \ \ \textcolor{comment}{/*\ Size\ of\ insn\ table.\ \ */}}
+\DoxyCodeLine{00565\ }
+\DoxyCodeLine{00566\ \ \ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{classdf__d_a04af9332cbd08e8e4999ea22507f1e70}{num\_problems\_defined}};}
+\DoxyCodeLine{00567\ }
+\DoxyCodeLine{00568\ \ \ bitmap\_head\ \doxymbox{\hyperlink{classdf__d_a023f0ff62275c2f5ba28f486fed751d5}{hardware\_regs\_used}};\ \ \ \ \ \textcolor{comment}{/*\ The\ set\ of\ hardware\ registers\ used.\ \ */}}
+\DoxyCodeLine{00569\ \ \ \textcolor{comment}{/*\ The\ set\ of\ hard\ regs\ that\ are\ in\ the\ artificial\ uses\ at\ the\ end}}
+\DoxyCodeLine{00570\ \textcolor{comment}{\ \ \ \ \ of\ a\ regular\ basic\ block.\ \ */}}
+\DoxyCodeLine{00571\ \ \ bitmap\_head\ \doxymbox{\hyperlink{classdf__d_a1ca108fe602f5e9216d4cfe51c833346}{regular\_block\_artificial\_uses}};}
+\DoxyCodeLine{00572\ \ \ \textcolor{comment}{/*\ The\ set\ of\ hard\ regs\ that\ are\ in\ the\ artificial\ uses\ at\ the\ end}}
+\DoxyCodeLine{00573\ \textcolor{comment}{\ \ \ \ \ of\ a\ basic\ block\ that\ has\ an\ EH\ pred.\ \ */}}
+\DoxyCodeLine{00574\ \ \ bitmap\_head\ \doxymbox{\hyperlink{classdf__d_ab62b8e7df2342064c5b4553c4c160568}{eh\_block\_artificial\_uses}};}
+\DoxyCodeLine{00575\ \ \ \textcolor{comment}{/*\ The\ set\ of\ hardware\ registers\ live\ on\ entry\ to\ the\ function.\ \ */}}
+\DoxyCodeLine{00576\ \ \ \doxymbox{\hyperlink{coretypes_8h_ae7ea3a04cabf8964dc6e8e95a9cde1b8}{bitmap}}\ \doxymbox{\hyperlink{classdf__d_a5a0cdab09bbe02979cd1fd8aa03fddff}{entry\_block\_defs}};}
+\DoxyCodeLine{00577\ \ \ \doxymbox{\hyperlink{coretypes_8h_ae7ea3a04cabf8964dc6e8e95a9cde1b8}{bitmap}}\ \doxymbox{\hyperlink{classdf__d_aefb54afc17543de6bd292908413a50da}{exit\_block\_uses}};\ \ \ \ \ \ \ \ \textcolor{comment}{/*\ The\ set\ of\ hardware\ registers\ used\ in\ exit\ block.\ \ */}}
+\DoxyCodeLine{00578\ }
+\DoxyCodeLine{00579\ \ \ \textcolor{comment}{/*\ Insns\ to\ delete,\ rescan\ or\ reprocess\ the\ notes\ at\ next}}
+\DoxyCodeLine{00580\ \textcolor{comment}{\ \ \ \ \ df\_rescan\_all\ or\ df\_process\_deferred\_rescans.\ */}}
+\DoxyCodeLine{00581\ \ \ bitmap\_head\ \doxymbox{\hyperlink{classdf__d_a65c9f07061c9b531415eb185735ed132}{insns\_to\_delete}};}
+\DoxyCodeLine{00582\ \ \ bitmap\_head\ \doxymbox{\hyperlink{classdf__d_a4a839f6c4ad15fd5506ee78e04d78f05}{insns\_to\_rescan}};}
+\DoxyCodeLine{00583\ \ \ bitmap\_head\ \doxymbox{\hyperlink{classdf__d_ab35da6b22aa04e64e7399823b7011527}{insns\_to\_notes\_rescan}};}
+\DoxyCodeLine{00584\ \ \ \textcolor{keywordtype}{int}\ *\doxymbox{\hyperlink{classdf__d_a2eb873e6e55bb46f9a5e84f976a7d26a}{postorder}};\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{/*\ The\ current\ set\ of\ basic\ blocks\ in\ reverse}}
+\DoxyCodeLine{00585\ \textcolor{comment}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ postorder\ for\ DF\_BACKWARD\ problems.\ \ */}}
+\DoxyCodeLine{00586\ \ \ \textcolor{keywordtype}{int}\ *\doxymbox{\hyperlink{classdf__d_a770a7cd1a03976f4e0354feb22349ea9}{postorder\_inverted}};\ \ \ \ \ \ \ \textcolor{comment}{/*\ The\ current\ set\ of\ basic\ blocks\ in\ reverse}}
+\DoxyCodeLine{00587\ \textcolor{comment}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ postorder\ for\ DF\_FORWARD\ problems.\ */}}
+\DoxyCodeLine{00588\ \ \ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{classdf__d_a89f2c832472e4d64819777f7da70c2bf}{n\_blocks}};\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{/*\ The\ number\ of\ blocks\ in\ reverse\ postorder.\ \ */}}
+\DoxyCodeLine{00589\ }
+\DoxyCodeLine{00590\ \ \ \textcolor{comment}{/*\ An\ array\ [FIRST\_PSEUDO\_REGISTER],\ indexed\ by\ regno,\ of\ the\ number}}
+\DoxyCodeLine{00591\ \textcolor{comment}{\ \ \ \ \ of\ refs\ that\ qualify\ as\ being\ real\ hard\ regs\ uses.\ \ Artificial}}
+\DoxyCodeLine{00592\ \textcolor{comment}{\ \ \ \ \ uses\ and\ defs\ as\ well\ as\ refs\ in\ eq\ notes\ are\ ignored.\ \ If\ the}}
+\DoxyCodeLine{00593\ \textcolor{comment}{\ \ \ \ \ ref\ is\ a\ def,\ it\ cannot\ be\ a\ MAY\_CLOBBER\ def.\ \ If\ the\ ref\ is\ a}}
+\DoxyCodeLine{00594\ \textcolor{comment}{\ \ \ \ \ use,\ it\ cannot\ be\ the\ emim\_reg\_set\ or\ be\ the\ frame\ or\ arg\ pointer}}
+\DoxyCodeLine{00595\ \textcolor{comment}{\ \ \ \ \ register.\ \ Uses\ in\ debug\ insns\ are\ ignored.}}
+\DoxyCodeLine{00596\ \textcolor{comment}{}}
+\DoxyCodeLine{00597\ \textcolor{comment}{\ \ \ \ \ IT\ IS\ NOT\ ACCEPTABLE\ TO\ MANUALLY\ CHANGE\ THIS\ ARRAY.\ \ This\ array}}
+\DoxyCodeLine{00598\ \textcolor{comment}{\ \ \ \ \ always\ reflects\ the\ actual\ number\ of\ refs\ in\ the\ insn\ stream\ that}}
+\DoxyCodeLine{00599\ \textcolor{comment}{\ \ \ \ \ satisfy\ the\ above\ criteria.\ \ */}}
+\DoxyCodeLine{00600\ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ *\doxymbox{\hyperlink{classdf__d_a70c4d09e4ebdca0686baf58b615e39cb}{hard\_regs\_live\_count}};}
+\DoxyCodeLine{00601\ }
+\DoxyCodeLine{00602\ \ \ \textcolor{comment}{/*\ This\ counter\ provides\ a\ way\ to\ totally\ order\ refs\ without\ using}}
+\DoxyCodeLine{00603\ \textcolor{comment}{\ \ \ \ \ addresses.\ \ It\ is\ incremented\ whenever\ a\ ref\ is\ created.\ \ */}}
+\DoxyCodeLine{00604\ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{classdf__d_ae10472d5dd24f23efcc8c63bafeabdd5}{ref\_order}};}
+\DoxyCodeLine{00605\ }
+\DoxyCodeLine{00606\ \ \ \textcolor{comment}{/*\ Problem\ specific\ control\ information.\ \ This\ is\ a\ combination\ of}}
+\DoxyCodeLine{00607\ \textcolor{comment}{\ \ \ \ \ enum\ df\_changeable\_flags\ values.\ \ */}}
+\DoxyCodeLine{00608\ \ \ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{classdf__d_aef7241ef8d2d6773f10497da97fdd17d}{changeable\_flags}}\ :\ 8;}
+\DoxyCodeLine{00609\ }
+\DoxyCodeLine{00610\ \ \ \textcolor{comment}{/*\ If\ this\ is\ true,\ then\ only\ a\ subset\ of\ the\ blocks\ of\ the\ program}}
+\DoxyCodeLine{00611\ \textcolor{comment}{\ \ \ \ \ is\ considered\ to\ compute\ the\ solutions\ of\ dataflow\ problems.\ \ */}}
+\DoxyCodeLine{00612\ \ \ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{classdf__d_a2f3da5c3fd5e7e9465b6d3691d14e92c}{analyze\_subset}};}
+\DoxyCodeLine{00613\ }
+\DoxyCodeLine{00614\ \ \ \textcolor{comment}{/*\ True\ if\ someone\ added\ or\ deleted\ something\ from\ regs\_ever\_live\ so}}
+\DoxyCodeLine{00615\ \textcolor{comment}{\ \ \ \ \ that\ the\ entry\ and\ exit\ blocks\ need\ be\ reprocessed.\ \ */}}
+\DoxyCodeLine{00616\ \ \ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{classdf__d_a96a066a0ed8981bacb11f15b7cbddbcc}{redo\_entry\_and\_exit}};}
+\DoxyCodeLine{00617\ \};}
+\DoxyCodeLine{00618\ }
+\DoxyCodeLine{00619\ \textcolor{preprocessor}{\#define\ DF\_SCAN\_BB\_INFO(BB)\ (df\_scan\_get\_bb\_info\ ((BB)-\/>index))}}
+\DoxyCodeLine{00620\ \textcolor{preprocessor}{\#define\ DF\_RD\_BB\_INFO(BB)\ (df\_rd\_get\_bb\_info\ ((BB)-\/>index))}}
+\DoxyCodeLine{00621\ \textcolor{preprocessor}{\#define\ DF\_LR\_BB\_INFO(BB)\ (df\_lr\_get\_bb\_info\ ((BB)-\/>index))}}
+\DoxyCodeLine{00622\ \textcolor{preprocessor}{\#define\ DF\_LIVE\_BB\_INFO(BB)\ (df\_live\_get\_bb\_info\ ((BB)-\/>index))}}
+\DoxyCodeLine{00623\ \textcolor{preprocessor}{\#define\ DF\_WORD\_LR\_BB\_INFO(BB)\ (df\_word\_lr\_get\_bb\_info\ ((BB)-\/>index))}}
+\DoxyCodeLine{00624\ \textcolor{preprocessor}{\#define\ DF\_MD\_BB\_INFO(BB)\ (df\_md\_get\_bb\_info\ ((BB)-\/>index))}}
+\DoxyCodeLine{00625\ \textcolor{preprocessor}{\#define\ DF\_MIR\_BB\_INFO(BB)\ (df\_mir\_get\_bb\_info\ ((BB)-\/>index))}}
+\DoxyCodeLine{00626\ }
+\DoxyCodeLine{00627\ \textcolor{comment}{/*\ Most\ transformations\ that\ wish\ to\ use\ live\ register\ analysis\ will}}
+\DoxyCodeLine{00628\ \textcolor{comment}{\ \ \ use\ these\ macros.\ \ This\ info\ is\ the\ and\ of\ the\ lr\ and\ live\ sets.\ \ */}}
+\DoxyCodeLine{00629\ \textcolor{preprocessor}{\#define\ DF\_LIVE\_IN(BB)\ (\&DF\_LIVE\_BB\_INFO\ (BB)-\/>in)}}
+\DoxyCodeLine{00630\ \textcolor{preprocessor}{\#define\ DF\_LIVE\_OUT(BB)\ (\&DF\_LIVE\_BB\_INFO\ (BB)-\/>out)}}
+\DoxyCodeLine{00631\ }
+\DoxyCodeLine{00632\ \textcolor{preprocessor}{\#define\ DF\_MIR\_IN(BB)\ (\&DF\_MIR\_BB\_INFO\ (BB)-\/>in)}}
+\DoxyCodeLine{00633\ \textcolor{preprocessor}{\#define\ DF\_MIR\_OUT(BB)\ (\&DF\_MIR\_BB\_INFO\ (BB)-\/>out)}}
+\DoxyCodeLine{00634\ }
+\DoxyCodeLine{00635\ \textcolor{comment}{/*\ These\ macros\ are\ used\ by\ passes\ that\ are\ not\ tolerant\ of}}
+\DoxyCodeLine{00636\ \textcolor{comment}{\ \ \ uninitialized\ variables.\ \ This\ intolerance\ should\ eventually}}
+\DoxyCodeLine{00637\ \textcolor{comment}{\ \ \ be\ fixed.\ \ */}}
+\DoxyCodeLine{00638\ \textcolor{preprocessor}{\#define\ DF\_LR\_IN(BB)\ (\&DF\_LR\_BB\_INFO\ (BB)-\/>in)}}
+\DoxyCodeLine{00639\ \textcolor{preprocessor}{\#define\ DF\_LR\_OUT(BB)\ (\&DF\_LR\_BB\_INFO\ (BB)-\/>out)}}
+\DoxyCodeLine{00640\ }
+\DoxyCodeLine{00641\ \textcolor{comment}{/*\ These\ macros\ are\ used\ by\ passes\ that\ are\ not\ tolerant\ of}}
+\DoxyCodeLine{00642\ \textcolor{comment}{\ \ \ uninitialized\ variables.\ \ This\ intolerance\ should\ eventually}}
+\DoxyCodeLine{00643\ \textcolor{comment}{\ \ \ be\ fixed.\ \ */}}
+\DoxyCodeLine{00644\ \textcolor{preprocessor}{\#define\ DF\_WORD\_LR\_IN(BB)\ (\&DF\_WORD\_LR\_BB\_INFO\ (BB)-\/>in)}}
+\DoxyCodeLine{00645\ \textcolor{preprocessor}{\#define\ DF\_WORD\_LR\_OUT(BB)\ (\&DF\_WORD\_LR\_BB\_INFO\ (BB)-\/>out)}}
+\DoxyCodeLine{00646\ }
+\DoxyCodeLine{00647\ \textcolor{comment}{/*\ Macros\ to\ access\ the\ elements\ within\ the\ ref\ structure.\ \ */}}
+\DoxyCodeLine{00648\ }
+\DoxyCodeLine{00649\ }
+\DoxyCodeLine{00650\ \textcolor{preprocessor}{\#define\ DF\_REF\_REAL\_REG(REF)\ (GET\_CODE\ ((REF)-\/>base.reg)\ ==\ SUBREG\ \(\backslash\)}}
+\DoxyCodeLine{00651\ \textcolor{preprocessor}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ ?\ SUBREG\_REG\ ((REF)-\/>base.reg)\ :\ ((REF)-\/>base.reg))}}
+\DoxyCodeLine{00652\ \textcolor{preprocessor}{\#define\ DF\_REF\_REGNO(REF)\ ((REF)-\/>base.regno)}}
+\DoxyCodeLine{00653\ \textcolor{preprocessor}{\#define\ DF\_REF\_REAL\_LOC(REF)\ (GET\_CODE\ (*((REF)-\/>regular\_ref.loc))\ ==\ SUBREG\ \(\backslash\)}}
+\DoxyCodeLine{00654\ \textcolor{preprocessor}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ ?\ \&SUBREG\_REG\ (*((REF)-\/>regular\_ref.loc))\ :\ ((REF)-\/>regular\_ref.loc))}}
+\DoxyCodeLine{00655\ \textcolor{preprocessor}{\#define\ DF\_REF\_REG(REF)\ ((REF)-\/>base.reg)}}
+\DoxyCodeLine{00656\ \textcolor{preprocessor}{\#define\ DF\_REF\_LOC(REF)\ (DF\_REF\_CLASS\ (REF)\ ==\ DF\_REF\_REGULAR\ ?\ \(\backslash\)}}
+\DoxyCodeLine{00657\ \textcolor{preprocessor}{\ \ \ \ \ \ \ \ \ \ \ \ \ (REF)-\/>regular\_ref.loc\ :\ NULL)}}
+\DoxyCodeLine{00658\ \textcolor{preprocessor}{\#define\ DF\_REF\_BB(REF)\ (DF\_REF\_IS\_ARTIFICIAL\ (REF)\ \(\backslash\)}}
+\DoxyCodeLine{00659\ \textcolor{preprocessor}{\ \ \ \ \ \ \ \ \ \ \ \ ?\ (REF)-\/>artificial\_ref.bb\ \(\backslash\)}}
+\DoxyCodeLine{00660\ \textcolor{preprocessor}{\ \ \ \ \ \ \ \ \ \ \ \ :\ BLOCK\_FOR\_INSN\ (DF\_REF\_INSN\ (REF)))}}
+\DoxyCodeLine{00661\ \textcolor{preprocessor}{\#define\ DF\_REF\_BBNO(REF)\ (DF\_REF\_BB\ (REF)-\/>index)}}
+\DoxyCodeLine{00662\ \textcolor{preprocessor}{\#define\ DF\_REF\_INSN\_INFO(REF)\ ((REF)-\/>base.insn\_info)}}
+\DoxyCodeLine{00663\ \textcolor{preprocessor}{\#define\ DF\_REF\_INSN(REF)\ ((REF)-\/>base.insn\_info-\/>insn)}}
+\DoxyCodeLine{00664\ \textcolor{preprocessor}{\#define\ DF\_REF\_INSN\_UID(REF)\ (INSN\_UID\ (DF\_REF\_INSN(REF)))}}
+\DoxyCodeLine{00665\ \textcolor{preprocessor}{\#define\ DF\_REF\_CLASS(REF)\ ((REF)-\/>base.cl)}}
+\DoxyCodeLine{00666\ \textcolor{preprocessor}{\#define\ DF\_REF\_TYPE(REF)\ ((REF)-\/>base.type)}}
+\DoxyCodeLine{00667\ \textcolor{preprocessor}{\#define\ DF\_REF\_CHAIN(REF)\ ((REF)-\/>base.chain)}}
+\DoxyCodeLine{00668\ \textcolor{preprocessor}{\#define\ DF\_REF\_ID(REF)\ ((REF)-\/>base.id)}}
+\DoxyCodeLine{00669\ \textcolor{preprocessor}{\#define\ DF\_REF\_FLAGS(REF)\ ((REF)-\/>base.flags)}}
+\DoxyCodeLine{00670\ \textcolor{preprocessor}{\#define\ DF\_REF\_FLAGS\_IS\_SET(REF,\ v)\ ((DF\_REF\_FLAGS\ (REF)\ \&\ (v))\ !=\ 0)}}
+\DoxyCodeLine{00671\ \textcolor{preprocessor}{\#define\ DF\_REF\_FLAGS\_SET(REF,\ v)\ (DF\_REF\_FLAGS\ (REF)\ |=\ (v))}}
+\DoxyCodeLine{00672\ \textcolor{preprocessor}{\#define\ DF\_REF\_FLAGS\_CLEAR(REF,\ v)\ (DF\_REF\_FLAGS\ (REF)\ \&=\ \string~(v))}}
+\DoxyCodeLine{00673\ \textcolor{preprocessor}{\#define\ DF\_REF\_ORDER(REF)\ ((REF)-\/>base.ref\_order)}}
+\DoxyCodeLine{00674\ \textcolor{comment}{/*\ If\ DF\_REF\_IS\_ARTIFICIAL\ ()\ is\ true,\ this\ is\ not\ a\ real}}
+\DoxyCodeLine{00675\ \textcolor{comment}{\ \ \ definition/use,\ but\ an\ artificial\ one\ created\ to\ model\ always\ live}}
+\DoxyCodeLine{00676\ \textcolor{comment}{\ \ \ registers,\ eh\ uses,\ etc.\ \ */}}
+\DoxyCodeLine{00677\ \textcolor{preprocessor}{\#define\ DF\_REF\_IS\_ARTIFICIAL(REF)\ (DF\_REF\_CLASS\ (REF)\ ==\ DF\_REF\_ARTIFICIAL)}}
+\DoxyCodeLine{00678\ \textcolor{preprocessor}{\#define\ DF\_REF\_REG\_MARK(REF)\ (DF\_REF\_FLAGS\_SET\ ((REF),DF\_REF\_REG\_MARKER))}}
+\DoxyCodeLine{00679\ \textcolor{preprocessor}{\#define\ DF\_REF\_REG\_UNMARK(REF)\ (DF\_REF\_FLAGS\_CLEAR\ ((REF),DF\_REF\_REG\_MARKER))}}
+\DoxyCodeLine{00680\ \textcolor{preprocessor}{\#define\ DF\_REF\_IS\_REG\_MARKED(REF)\ (DF\_REF\_FLAGS\_IS\_SET\ ((REF),DF\_REF\_REG\_MARKER))}}
+\DoxyCodeLine{00681\ \textcolor{preprocessor}{\#define\ DF\_REF\_NEXT\_LOC(REF)\ ((REF)-\/>base.next\_loc)}}
+\DoxyCodeLine{00682\ \textcolor{preprocessor}{\#define\ DF\_REF\_NEXT\_REG(REF)\ ((REF)-\/>base.next\_reg)}}
+\DoxyCodeLine{00683\ \textcolor{preprocessor}{\#define\ DF\_REF\_PREV\_REG(REF)\ ((REF)-\/>base.prev\_reg)}}
+\DoxyCodeLine{00684\ \textcolor{comment}{/*\ The\ following\ two\ macros\ may\ only\ be\ applied\ if\ one\ of}}
+\DoxyCodeLine{00685\ \textcolor{comment}{\ \ \ DF\_REF\_SIGN\_EXTRACT\ |\ DF\_REF\_ZERO\_EXTRACT\ is\ true.\ */}}
+\DoxyCodeLine{00686\ \textcolor{preprocessor}{\#define\ DF\_REF\_EXTRACT\_WIDTH(REF)\ ((REF)-\/>extract\_ref.width)}}
+\DoxyCodeLine{00687\ \textcolor{preprocessor}{\#define\ DF\_REF\_EXTRACT\_OFFSET(REF)\ ((REF)-\/>extract\_ref.offset)}}
+\DoxyCodeLine{00688\ \textcolor{preprocessor}{\#define\ DF\_REF\_EXTRACT\_MODE(REF)\ ((REF)-\/>extract\_ref.mode)}}
+\DoxyCodeLine{00689\ }
+\DoxyCodeLine{00690\ \textcolor{comment}{/*\ Macros\ to\ determine\ the\ reference\ type.\ \ */}}
+\DoxyCodeLine{00691\ \textcolor{preprocessor}{\#define\ DF\_REF\_REG\_DEF\_P(REF)\ (DF\_REF\_TYPE\ (REF)\ ==\ DF\_REF\_REG\_DEF)}}
+\DoxyCodeLine{00692\ \textcolor{preprocessor}{\#define\ DF\_REF\_REG\_USE\_P(REF)\ (!DF\_REF\_REG\_DEF\_P\ (REF))}}
+\DoxyCodeLine{00693\ \textcolor{preprocessor}{\#define\ DF\_REF\_REG\_MEM\_STORE\_P(REF)\ (DF\_REF\_TYPE\ (REF)\ ==\ DF\_REF\_REG\_MEM\_STORE)}}
+\DoxyCodeLine{00694\ \textcolor{preprocessor}{\#define\ DF\_REF\_REG\_MEM\_LOAD\_P(REF)\ (DF\_REF\_TYPE\ (REF)\ ==\ DF\_REF\_REG\_MEM\_LOAD)}}
+\DoxyCodeLine{00695\ \textcolor{preprocessor}{\#define\ DF\_REF\_REG\_MEM\_P(REF)\ (DF\_REF\_REG\_MEM\_STORE\_P\ (REF)\ \(\backslash\)}}
+\DoxyCodeLine{00696\ \textcolor{preprocessor}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ ||\ DF\_REF\_REG\_MEM\_LOAD\_P\ (REF))}}
+\DoxyCodeLine{00697\ }
+\DoxyCodeLine{00698\ \textcolor{preprocessor}{\#define\ DF\_MWS\_REG\_DEF\_P(MREF)\ (DF\_MWS\_TYPE\ (MREF)\ ==\ DF\_REF\_REG\_DEF)}}
+\DoxyCodeLine{00699\ \textcolor{preprocessor}{\#define\ DF\_MWS\_REG\_USE\_P(MREF)\ (!DF\_MWS\_REG\_DEF\_P\ (MREF))}}
+\DoxyCodeLine{00700\ \textcolor{preprocessor}{\#define\ DF\_MWS\_NEXT(MREF)\ ((MREF)-\/>next)}}
+\DoxyCodeLine{00701\ \textcolor{preprocessor}{\#define\ DF\_MWS\_TYPE(MREF)\ ((MREF)-\/>type)}}
+\DoxyCodeLine{00702\ }
+\DoxyCodeLine{00703\ \textcolor{comment}{/*\ Macros\ to\ get\ the\ refs\ out\ of\ def\_info\ or\ use\_info\ refs\ table.\ \ If}}
+\DoxyCodeLine{00704\ \textcolor{comment}{\ \ \ the\ focus\ of\ the\ dataflow\ has\ been\ set\ to\ some\ subset\ of\ blocks}}
+\DoxyCodeLine{00705\ \textcolor{comment}{\ \ \ with\ df\_set\_blocks,\ these\ macros\ will\ only\ find\ the\ uses\ and\ defs}}
+\DoxyCodeLine{00706\ \textcolor{comment}{\ \ \ in\ that\ subset\ of\ blocks.}}
+\DoxyCodeLine{00707\ \textcolor{comment}{}}
+\DoxyCodeLine{00708\ \textcolor{comment}{\ \ \ These\ macros\ should\ be\ used\ with\ care.\ \ The\ def\ macros\ are\ only}}
+\DoxyCodeLine{00709\ \textcolor{comment}{\ \ \ usable\ after\ a\ call\ to\ df\_maybe\_reorganize\_def\_refs\ and\ the\ use}}
+\DoxyCodeLine{00710\ \textcolor{comment}{\ \ \ macros\ are\ only\ usable\ after\ a\ call\ to}}
+\DoxyCodeLine{00711\ \textcolor{comment}{\ \ \ df\_maybe\_reorganize\_use\_refs.\ \ HOWEVER,\ BUILDING\ AND\ USING\ THESE}}
+\DoxyCodeLine{00712\ \textcolor{comment}{\ \ \ ARRAYS\ ARE\ A\ CACHE\ LOCALITY\ KILLER.\ \ */}}
+\DoxyCodeLine{00713\ }
+\DoxyCodeLine{00714\ \textcolor{preprocessor}{\#define\ DF\_DEFS\_TABLE\_SIZE()\ (df-\/>def\_info.table\_size)}}
+\DoxyCodeLine{00715\ \textcolor{preprocessor}{\#define\ DF\_DEFS\_GET(ID)\ (df-\/>def\_info.refs[(ID)])}}
+\DoxyCodeLine{00716\ \textcolor{preprocessor}{\#define\ DF\_DEFS\_SET(ID,VAL)\ (df-\/>def\_info.refs[(ID)]=(VAL))}}
+\DoxyCodeLine{00717\ \textcolor{preprocessor}{\#define\ DF\_DEFS\_COUNT(ID)\ (df-\/>def\_info.count[(ID)])}}
+\DoxyCodeLine{00718\ \textcolor{preprocessor}{\#define\ DF\_DEFS\_BEGIN(ID)\ (df-\/>def\_info.begin[(ID)])}}
+\DoxyCodeLine{00719\ \textcolor{preprocessor}{\#define\ DF\_USES\_TABLE\_SIZE()\ (df-\/>use\_info.table\_size)}}
+\DoxyCodeLine{00720\ \textcolor{preprocessor}{\#define\ DF\_USES\_GET(ID)\ (df-\/>use\_info.refs[(ID)])}}
+\DoxyCodeLine{00721\ \textcolor{preprocessor}{\#define\ DF\_USES\_SET(ID,VAL)\ (df-\/>use\_info.refs[(ID)]=(VAL))}}
+\DoxyCodeLine{00722\ \textcolor{preprocessor}{\#define\ DF\_USES\_COUNT(ID)\ (df-\/>use\_info.count[(ID)])}}
+\DoxyCodeLine{00723\ \textcolor{preprocessor}{\#define\ DF\_USES\_BEGIN(ID)\ (df-\/>use\_info.begin[(ID)])}}
+\DoxyCodeLine{00724\ }
+\DoxyCodeLine{00725\ \textcolor{comment}{/*\ Macros\ to\ access\ the\ register\ information\ from\ scan\ dataflow\ record.\ \ */}}
+\DoxyCodeLine{00726\ }
+\DoxyCodeLine{00727\ \textcolor{preprocessor}{\#define\ DF\_REG\_SIZE(DF)\ (df-\/>regs\_inited)}}
+\DoxyCodeLine{00728\ \textcolor{preprocessor}{\#define\ DF\_REG\_DEF\_GET(REG)\ (df-\/>def\_regs[(REG)])}}
+\DoxyCodeLine{00729\ \textcolor{preprocessor}{\#define\ DF\_REG\_DEF\_CHAIN(REG)\ (df-\/>def\_regs[(REG)]-\/>reg\_chain)}}
+\DoxyCodeLine{00730\ \textcolor{preprocessor}{\#define\ DF\_REG\_DEF\_COUNT(REG)\ (df-\/>def\_regs[(REG)]-\/>n\_refs)}}
+\DoxyCodeLine{00731\ \textcolor{preprocessor}{\#define\ DF\_REG\_USE\_GET(REG)\ (df-\/>use\_regs[(REG)])}}
+\DoxyCodeLine{00732\ \textcolor{preprocessor}{\#define\ DF\_REG\_USE\_CHAIN(REG)\ (df-\/>use\_regs[(REG)]-\/>reg\_chain)}}
+\DoxyCodeLine{00733\ \textcolor{preprocessor}{\#define\ DF\_REG\_USE\_COUNT(REG)\ (df-\/>use\_regs[(REG)]-\/>n\_refs)}}
+\DoxyCodeLine{00734\ \textcolor{preprocessor}{\#define\ DF\_REG\_EQ\_USE\_GET(REG)\ (df-\/>eq\_use\_regs[(REG)])}}
+\DoxyCodeLine{00735\ \textcolor{preprocessor}{\#define\ DF\_REG\_EQ\_USE\_CHAIN(REG)\ (df-\/>eq\_use\_regs[(REG)]-\/>reg\_chain)}}
+\DoxyCodeLine{00736\ \textcolor{preprocessor}{\#define\ DF\_REG\_EQ\_USE\_COUNT(REG)\ (df-\/>eq\_use\_regs[(REG)]-\/>n\_refs)}}
+\DoxyCodeLine{00737\ }
+\DoxyCodeLine{00738\ \textcolor{comment}{/*\ Macros\ to\ access\ the\ elements\ within\ the\ reg\_info\ structure\ table.\ \ */}}
+\DoxyCodeLine{00739\ }
+\DoxyCodeLine{00740\ \textcolor{preprocessor}{\#define\ DF\_REGNO\_FIRST\_DEF(REGNUM)\ \(\backslash\)}}
+\DoxyCodeLine{00741\ \textcolor{preprocessor}{(DF\_REG\_DEF\_GET(REGNUM)\ ?\ DF\_REG\_DEF\_GET\ (REGNUM)\ :\ 0)}}
+\DoxyCodeLine{00742\ \textcolor{preprocessor}{\#define\ DF\_REGNO\_LAST\_USE(REGNUM)\ \(\backslash\)}}
+\DoxyCodeLine{00743\ \textcolor{preprocessor}{(DF\_REG\_USE\_GET(REGNUM)\ ?\ DF\_REG\_USE\_GET\ (REGNUM)\ :\ 0)}}
+\DoxyCodeLine{00744\ }
+\DoxyCodeLine{00745\ \textcolor{comment}{/*\ Macros\ to\ access\ the\ elements\ within\ the\ insn\_info\ structure\ table.\ \ */}}
+\DoxyCodeLine{00746\ }
+\DoxyCodeLine{00747\ \textcolor{preprocessor}{\#define\ DF\_INSN\_SIZE()\ ((df)-\/>insns\_size)}}
+\DoxyCodeLine{00748\ \textcolor{preprocessor}{\#define\ DF\_INSN\_INFO\_GET(INSN)\ (df-\/>insns[(INSN\_UID\ (INSN))])}}
+\DoxyCodeLine{00749\ \textcolor{preprocessor}{\#define\ DF\_INSN\_INFO\_SET(INSN,VAL)\ (df-\/>insns[(INSN\_UID\ (INSN))]=(VAL))}}
+\DoxyCodeLine{00750\ \textcolor{preprocessor}{\#define\ DF\_INSN\_INFO\_LUID(II)\ ((II)-\/>luid)}}
+\DoxyCodeLine{00751\ \textcolor{preprocessor}{\#define\ DF\_INSN\_INFO\_DEFS(II)\ ((II)-\/>defs)}}
+\DoxyCodeLine{00752\ \textcolor{preprocessor}{\#define\ DF\_INSN\_INFO\_USES(II)\ ((II)-\/>uses)}}
+\DoxyCodeLine{00753\ \textcolor{preprocessor}{\#define\ DF\_INSN\_INFO\_EQ\_USES(II)\ ((II)-\/>eq\_uses)}}
+\DoxyCodeLine{00754\ \textcolor{preprocessor}{\#define\ DF\_INSN\_INFO\_MWS(II)\ ((II)-\/>mw\_hardregs)}}
+\DoxyCodeLine{00755\ }
+\DoxyCodeLine{00756\ \textcolor{preprocessor}{\#define\ DF\_INSN\_LUID(INSN)\ (DF\_INSN\_INFO\_LUID\ (DF\_INSN\_INFO\_GET\ (INSN)))}}
+\DoxyCodeLine{00757\ \textcolor{preprocessor}{\#define\ DF\_INSN\_DEFS(INSN)\ (DF\_INSN\_INFO\_DEFS\ (DF\_INSN\_INFO\_GET\ (INSN)))}}
+\DoxyCodeLine{00758\ \textcolor{preprocessor}{\#define\ DF\_INSN\_USES(INSN)\ (DF\_INSN\_INFO\_USES\ (DF\_INSN\_INFO\_GET\ (INSN)))}}
+\DoxyCodeLine{00759\ \textcolor{preprocessor}{\#define\ DF\_INSN\_EQ\_USES(INSN)\ (DF\_INSN\_INFO\_EQ\_USES\ (DF\_INSN\_INFO\_GET\ (INSN)))}}
+\DoxyCodeLine{00760\ }
+\DoxyCodeLine{00761\ \textcolor{preprocessor}{\#define\ DF\_INSN\_UID\_GET(UID)\ (df-\/>insns[(UID)])}}
+\DoxyCodeLine{00762\ \textcolor{preprocessor}{\#define\ DF\_INSN\_UID\_SET(UID,VAL)\ (df-\/>insns[(UID)]=(VAL))}}
+\DoxyCodeLine{00763\ \textcolor{preprocessor}{\#define\ DF\_INSN\_UID\_SAFE\_GET(UID)\ (((unsigned)(UID)\ <\ DF\_INSN\_SIZE\ ())\ \ \(\backslash\)}}
+\DoxyCodeLine{00764\ \textcolor{preprocessor}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ ?\ DF\_INSN\_UID\_GET\ (UID)\ \(\backslash\)}}
+\DoxyCodeLine{00765\ \textcolor{preprocessor}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ :\ NULL)}}
+\DoxyCodeLine{00766\ \textcolor{preprocessor}{\#define\ DF\_INSN\_UID\_LUID(INSN)\ (DF\_INSN\_UID\_GET\ (INSN)-\/>luid)}}
+\DoxyCodeLine{00767\ \textcolor{preprocessor}{\#define\ DF\_INSN\_UID\_DEFS(INSN)\ (DF\_INSN\_UID\_GET\ (INSN)-\/>defs)}}
+\DoxyCodeLine{00768\ \textcolor{preprocessor}{\#define\ DF\_INSN\_UID\_USES(INSN)\ (DF\_INSN\_UID\_GET\ (INSN)-\/>uses)}}
+\DoxyCodeLine{00769\ \textcolor{preprocessor}{\#define\ DF\_INSN\_UID\_EQ\_USES(INSN)\ (DF\_INSN\_UID\_GET\ (INSN)-\/>eq\_uses)}}
+\DoxyCodeLine{00770\ \textcolor{preprocessor}{\#define\ DF\_INSN\_UID\_MWS(INSN)\ (DF\_INSN\_UID\_GET\ (INSN)-\/>mw\_hardregs)}}
+\DoxyCodeLine{00771\ }
+\DoxyCodeLine{00772\ \textcolor{preprocessor}{\#define\ FOR\_EACH\_INSN\_INFO\_DEF(ITER,\ INSN)\ \(\backslash\)}}
+\DoxyCodeLine{00773\ \textcolor{preprocessor}{\ \ for\ (ITER\ =\ DF\_INSN\_INFO\_DEFS\ (INSN);\ ITER;\ ITER\ =\ DF\_REF\_NEXT\_LOC\ (ITER))}}
+\DoxyCodeLine{00774\ }
+\DoxyCodeLine{00775\ \textcolor{preprocessor}{\#define\ FOR\_EACH\_INSN\_INFO\_USE(ITER,\ INSN)\ \(\backslash\)}}
+\DoxyCodeLine{00776\ \textcolor{preprocessor}{\ \ for\ (ITER\ =\ DF\_INSN\_INFO\_USES\ (INSN);\ ITER;\ ITER\ =\ DF\_REF\_NEXT\_LOC\ (ITER))}}
+\DoxyCodeLine{00777\ }
+\DoxyCodeLine{00778\ \textcolor{preprocessor}{\#define\ FOR\_EACH\_INSN\_INFO\_EQ\_USE(ITER,\ INSN)\ \(\backslash\)}}
+\DoxyCodeLine{00779\ \textcolor{preprocessor}{\ \ for\ (ITER\ =\ DF\_INSN\_INFO\_EQ\_USES\ (INSN);\ ITER;\ ITER\ =\ DF\_REF\_NEXT\_LOC\ (ITER))}}
+\DoxyCodeLine{00780\ }
+\DoxyCodeLine{00781\ \textcolor{preprocessor}{\#define\ FOR\_EACH\_INSN\_INFO\_MW(ITER,\ INSN)\ \(\backslash\)}}
+\DoxyCodeLine{00782\ \textcolor{preprocessor}{\ \ for\ (ITER\ =\ DF\_INSN\_INFO\_MWS\ (INSN);\ ITER;\ ITER\ =\ DF\_MWS\_NEXT\ (ITER))}}
+\DoxyCodeLine{00783\ }
+\DoxyCodeLine{00784\ \textcolor{preprocessor}{\#define\ FOR\_EACH\_INSN\_DEF(ITER,\ INSN)\ \(\backslash\)}}
+\DoxyCodeLine{00785\ \textcolor{preprocessor}{\ \ FOR\_EACH\_INSN\_INFO\_DEF(ITER,\ DF\_INSN\_INFO\_GET\ (INSN))}}
+\DoxyCodeLine{00786\ }
+\DoxyCodeLine{00787\ \textcolor{preprocessor}{\#define\ FOR\_EACH\_INSN\_USE(ITER,\ INSN)\ \(\backslash\)}}
+\DoxyCodeLine{00788\ \textcolor{preprocessor}{\ \ FOR\_EACH\_INSN\_INFO\_USE(ITER,\ DF\_INSN\_INFO\_GET\ (INSN))}}
+\DoxyCodeLine{00789\ }
+\DoxyCodeLine{00790\ \textcolor{preprocessor}{\#define\ FOR\_EACH\_INSN\_EQ\_USE(ITER,\ INSN)\ \(\backslash\)}}
+\DoxyCodeLine{00791\ \textcolor{preprocessor}{\ \ FOR\_EACH\_INSN\_INFO\_EQ\_USE(ITER,\ DF\_INSN\_INFO\_GET\ (INSN))}}
+\DoxyCodeLine{00792\ }
+\DoxyCodeLine{00793\ \textcolor{preprocessor}{\#define\ FOR\_EACH\_ARTIFICIAL\_USE(ITER,\ BB\_INDEX)\ \(\backslash\)}}
+\DoxyCodeLine{00794\ \textcolor{preprocessor}{\ \ for\ (ITER\ =\ df\_get\_artificial\_uses\ (BB\_INDEX);\ ITER;\ \(\backslash\)}}
+\DoxyCodeLine{00795\ \textcolor{preprocessor}{\ \ \ \ \ \ \ ITER\ =\ DF\_REF\_NEXT\_LOC\ (ITER))}}
+\DoxyCodeLine{00796\ }
+\DoxyCodeLine{00797\ \textcolor{preprocessor}{\#define\ FOR\_EACH\_ARTIFICIAL\_DEF(ITER,\ BB\_INDEX)\ \(\backslash\)}}
+\DoxyCodeLine{00798\ \textcolor{preprocessor}{\ \ for\ (ITER\ =\ df\_get\_artificial\_defs\ (BB\_INDEX);\ ITER;\ \(\backslash\)}}
+\DoxyCodeLine{00799\ \textcolor{preprocessor}{\ \ \ \ \ \ \ ITER\ =\ DF\_REF\_NEXT\_LOC\ (ITER))}}
+\DoxyCodeLine{00800\ }
+\DoxyCodeLine{00801\ \textcolor{comment}{/*\ An\ obstack\ for\ bitmap\ not\ related\ to\ specific\ dataflow\ problems.}}
+\DoxyCodeLine{00802\ \textcolor{comment}{\ \ \ This\ obstack\ should\ e.g.\ be\ used\ for\ bitmaps\ with\ a\ short\ life\ time}}
+\DoxyCodeLine{00803\ \textcolor{comment}{\ \ \ such\ as\ temporary\ bitmaps.\ \ This\ obstack\ is\ declared\ in\ df-\/core.cc.\ \ */}}
+\DoxyCodeLine{00804\ }
+\DoxyCodeLine{00805\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{structbitmap__obstack}{bitmap\_obstack}}\ \doxymbox{\hyperlink{df_8h_a68a08c8eda588dd15eaf24961c9b7e83}{df\_bitmap\_obstack}};}
+\DoxyCodeLine{00806\ }
+\DoxyCodeLine{00807\ }
+\DoxyCodeLine{00808\ \textcolor{comment}{/*\ One\ of\ these\ structures\ is\ allocated\ for\ every\ basic\ block.\ \ */}}
+\DoxyCodeLine{00809\ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{structdf__scan__bb__info}{df\_scan\_bb\_info}}}
+\DoxyCodeLine{00810\ \{}
+\DoxyCodeLine{00811\ \ \ \textcolor{comment}{/*\ The\ entry\ block\ has\ many\ artificial\ defs\ and\ these\ are\ at\ the}}
+\DoxyCodeLine{00812\ \textcolor{comment}{\ \ \ \ \ bottom\ of\ the\ block.}}
+\DoxyCodeLine{00813\ \textcolor{comment}{}}
+\DoxyCodeLine{00814\ \textcolor{comment}{\ \ \ \ \ Blocks\ that\ are\ targets\ of\ exception\ edges\ may\ have\ some}}
+\DoxyCodeLine{00815\ \textcolor{comment}{\ \ \ \ \ artificial\ defs.\ \ These\ are\ logically\ located\ at\ the\ top\ of\ the}}
+\DoxyCodeLine{00816\ \textcolor{comment}{\ \ \ \ \ block.}}
+\DoxyCodeLine{00817\ \textcolor{comment}{}}
+\DoxyCodeLine{00818\ \textcolor{comment}{\ \ \ \ \ Blocks\ that\ are\ the\ targets\ of\ non-\/local\ goto's\ have\ the\ hard}}
+\DoxyCodeLine{00819\ \textcolor{comment}{\ \ \ \ \ frame\ pointer\ defined\ at\ the\ top\ of\ the\ block.\ \ */}}
+\DoxyCodeLine{00820\ \ \ \doxymbox{\hyperlink{df_8h_a2e31e87468476f9209292e78ed33bda1}{df\_ref}}\ \doxymbox{\hyperlink{structdf__scan__bb__info_a554dc734be8ed79972fd4bac268f755d}{artificial\_defs}};}
+\DoxyCodeLine{00821\ }
+\DoxyCodeLine{00822\ \ \ \textcolor{comment}{/*\ Blocks\ that\ are\ targets\ of\ exception\ edges\ may\ have\ some}}
+\DoxyCodeLine{00823\ \textcolor{comment}{\ \ \ \ \ artificial\ uses.\ \ These\ are\ logically\ at\ the\ top\ of\ the\ block.}}
+\DoxyCodeLine{00824\ \textcolor{comment}{}}
+\DoxyCodeLine{00825\ \textcolor{comment}{\ \ \ \ \ Most\ blocks\ have\ artificial\ uses\ at\ the\ bottom\ of\ the\ block.\ \ */}}
+\DoxyCodeLine{00826\ \ \ \doxymbox{\hyperlink{df_8h_a2e31e87468476f9209292e78ed33bda1}{df\_ref}}\ \doxymbox{\hyperlink{structdf__scan__bb__info_a6c1a99bb25d0689a7ce4dafb075ec164}{artificial\_uses}};}
+\DoxyCodeLine{00827\ \};}
+\DoxyCodeLine{00828\ }
+\DoxyCodeLine{00829\ }
+\DoxyCodeLine{00830\ \textcolor{comment}{/*\ Reaching\ definitions.\ \ All\ bitmaps\ are\ indexed\ by\ the\ id\ field\ of}}
+\DoxyCodeLine{00831\ \textcolor{comment}{\ \ \ the\ ref\ except\ sparse\_kill\ which\ is\ indexed\ by\ regno.\ \ For\ the}}
+\DoxyCodeLine{00832\ \textcolor{comment}{\ \ \ LR\&RD\ problem,\ the\ kill\ set\ is\ not\ complete:\ It\ does\ not\ contain}}
+\DoxyCodeLine{00833\ \textcolor{comment}{\ \ \ DEFs\ killed\ because\ the\ set\ register\ has\ died\ in\ the\ LR\ set.\ \ */}}
+\DoxyCodeLine{00834\ \textcolor{keyword}{class\ }\doxymbox{\hyperlink{classdf__rd__bb__info}{df\_rd\_bb\_info}}}
+\DoxyCodeLine{00835\ \{}
+\DoxyCodeLine{00836\ \textcolor{keyword}{public}:}
+\DoxyCodeLine{00837\ \ \ \textcolor{comment}{/*\ Local\ sets\ to\ describe\ the\ basic\ blocks.\ \ \ */}}
+\DoxyCodeLine{00838\ \ \ bitmap\_head\ \doxymbox{\hyperlink{classdf__rd__bb__info_ad97e81db81a398c9597b97fd0fd9a200}{kill}};}
+\DoxyCodeLine{00839\ \ \ bitmap\_head\ \doxymbox{\hyperlink{classdf__rd__bb__info_a7a0e094fa92238305df78d2b558dce36}{sparse\_kill}};}
+\DoxyCodeLine{00840\ \ \ bitmap\_head\ \doxymbox{\hyperlink{classdf__rd__bb__info_a7d50bf34d25f5dba530832afe689dac9}{gen}};\ \ \ \textcolor{comment}{/*\ The\ set\ of\ defs\ generated\ in\ this\ block.\ \ */}}
+\DoxyCodeLine{00841\ }
+\DoxyCodeLine{00842\ \ \ \textcolor{comment}{/*\ The\ results\ of\ the\ dataflow\ problem.\ \ */}}
+\DoxyCodeLine{00843\ \ \ bitmap\_head\ \doxymbox{\hyperlink{classdf__rd__bb__info_a22ee59e189805da32c08ff42ba7aaa12}{in}};\ \ \ \ \textcolor{comment}{/*\ At\ the\ top\ of\ the\ block.\ \ */}}
+\DoxyCodeLine{00844\ \ \ bitmap\_head\ \doxymbox{\hyperlink{classdf__rd__bb__info_ad9a5aa9d4ec6d35c89adade8e91cf8e0}{out}};\ \ \ \textcolor{comment}{/*\ At\ the\ bottom\ of\ the\ block.\ \ */}}
+\DoxyCodeLine{00845\ \};}
+\DoxyCodeLine{00846\ }
+\DoxyCodeLine{00847\ }
+\DoxyCodeLine{00848\ \textcolor{comment}{/*\ Multiple\ reaching\ definitions.\ \ All\ bitmaps\ are\ referenced\ by\ the}}
+\DoxyCodeLine{00849\ \textcolor{comment}{\ \ \ register\ number.\ \ */}}
+\DoxyCodeLine{00850\ }
+\DoxyCodeLine{00851\ \textcolor{keyword}{class\ }\doxymbox{\hyperlink{classdf__md__bb__info}{df\_md\_bb\_info}}}
+\DoxyCodeLine{00852\ \{}
+\DoxyCodeLine{00853\ \textcolor{keyword}{public}:}
+\DoxyCodeLine{00854\ \ \ \textcolor{comment}{/*\ Local\ sets\ to\ describe\ the\ basic\ blocks.\ \ */}}
+\DoxyCodeLine{00855\ \ \ bitmap\_head\ \doxymbox{\hyperlink{classdf__md__bb__info_a3123424dce81092d1dbefbe7be563897}{gen}};\ \ \ \ \textcolor{comment}{/*\ Partial/conditional\ definitions\ live\ at\ BB\ out.\ \ */}}
+\DoxyCodeLine{00856\ \ \ bitmap\_head\ \doxymbox{\hyperlink{classdf__md__bb__info_aa2414336eb959f815e796071e191e362}{kill}};\ \ \ \textcolor{comment}{/*\ Other\ definitions\ that\ are\ live\ at\ BB\ out.\ \ */}}
+\DoxyCodeLine{00857\ \ \ bitmap\_head\ \doxymbox{\hyperlink{classdf__md__bb__info_aff35ff223d20ba2d246ba5b34634599e}{init}};\ \ \ \textcolor{comment}{/*\ Definitions\ coming\ from\ dominance\ frontier\ edges.\ */}}
+\DoxyCodeLine{00858\ }
+\DoxyCodeLine{00859\ \ \ \textcolor{comment}{/*\ The\ results\ of\ the\ dataflow\ problem.\ \ */}}
+\DoxyCodeLine{00860\ \ \ bitmap\_head\ \doxymbox{\hyperlink{classdf__md__bb__info_a7f896faeef8fd32835afe81ff9c912bd}{in}};\ \ \ \ \textcolor{comment}{/*\ Just\ before\ the\ block\ itself.\ */}}
+\DoxyCodeLine{00861\ \ \ bitmap\_head\ \doxymbox{\hyperlink{classdf__md__bb__info_affa0b18f7d711215d13b303b39e0895c}{out}};\ \ \ \textcolor{comment}{/*\ At\ the\ bottom\ of\ the\ block.\ \ */}}
+\DoxyCodeLine{00862\ \};}
+\DoxyCodeLine{00863\ }
+\DoxyCodeLine{00864\ }
+\DoxyCodeLine{00865\ \textcolor{comment}{/*\ Live\ registers,\ a\ backwards\ dataflow\ problem.\ \ All\ bitmaps\ are}}
+\DoxyCodeLine{00866\ \textcolor{comment}{\ \ \ referenced\ by\ the\ register\ number.\ \ */}}
+\DoxyCodeLine{00867\ }
+\DoxyCodeLine{00868\ \textcolor{keyword}{class\ }\doxymbox{\hyperlink{classdf__lr__bb__info}{df\_lr\_bb\_info}}}
+\DoxyCodeLine{00869\ \{}
+\DoxyCodeLine{00870\ \textcolor{keyword}{public}:}
+\DoxyCodeLine{00871\ \ \ \textcolor{comment}{/*\ Local\ sets\ to\ describe\ the\ basic\ blocks.\ \ */}}
+\DoxyCodeLine{00872\ \ \ bitmap\_head\ \doxymbox{\hyperlink{classdf__lr__bb__info_a1736add3fc6d37e1cf418b38273a76ae}{def}};\ \ \ \textcolor{comment}{/*\ The\ set\ of\ registers\ set\ in\ this\ block}}
+\DoxyCodeLine{00873\ \textcolor{comment}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ -\/\ except\ artificial\ defs\ at\ the\ top.\ \ */}}
+\DoxyCodeLine{00874\ \ \ bitmap\_head\ \doxymbox{\hyperlink{classdf__lr__bb__info_abffc1ab8fcb70a6c6650cc360448f01d}{use}};\ \ \ \textcolor{comment}{/*\ The\ set\ of\ registers\ used\ in\ this\ block.\ \ */}}
+\DoxyCodeLine{00875\ }
+\DoxyCodeLine{00876\ \ \ \textcolor{comment}{/*\ The\ results\ of\ the\ dataflow\ problem.\ \ */}}
+\DoxyCodeLine{00877\ \ \ bitmap\_head\ \doxymbox{\hyperlink{classdf__lr__bb__info_abde88573ad6c027140e28d66d2c43d33}{in}};\ \ \ \ \textcolor{comment}{/*\ Just\ before\ the\ block\ itself.\ */}}
+\DoxyCodeLine{00878\ \ \ bitmap\_head\ \doxymbox{\hyperlink{classdf__lr__bb__info_ac820d40ad96db3989d592ae30b920f77}{out}};\ \ \ \textcolor{comment}{/*\ At\ the\ bottom\ of\ the\ block.\ \ */}}
+\DoxyCodeLine{00879\ \};}
+\DoxyCodeLine{00880\ }
+\DoxyCodeLine{00881\ }
+\DoxyCodeLine{00882\ \textcolor{comment}{/*\ Uninitialized\ registers.\ \ All\ bitmaps\ are\ referenced\ by\ the}}
+\DoxyCodeLine{00883\ \textcolor{comment}{\ \ \ register\ number.\ \ Anded\ results\ of\ the\ forwards\ and\ backward\ live}}
+\DoxyCodeLine{00884\ \textcolor{comment}{\ \ \ info.\ \ Note\ that\ the\ forwards\ live\ information\ is\ not\ available}}
+\DoxyCodeLine{00885\ \textcolor{comment}{\ \ \ separately.\ \ */}}
+\DoxyCodeLine{00886\ \textcolor{keyword}{class\ }\doxymbox{\hyperlink{classdf__live__bb__info}{df\_live\_bb\_info}}}
+\DoxyCodeLine{00887\ \{}
+\DoxyCodeLine{00888\ \textcolor{keyword}{public}:}
+\DoxyCodeLine{00889\ \ \ \textcolor{comment}{/*\ Local\ sets\ to\ describe\ the\ basic\ blocks.\ \ */}}
+\DoxyCodeLine{00890\ \ \ bitmap\_head\ \doxymbox{\hyperlink{classdf__live__bb__info_a475ca031ebf4a5ddaae8bd8c20c2e2e1}{kill}};\ \ \textcolor{comment}{/*\ The\ set\ of\ registers\ unset\ in\ this\ block.\ \ Calls,}}
+\DoxyCodeLine{00891\ \textcolor{comment}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ for\ instance,\ unset\ registers.\ \ */}}
+\DoxyCodeLine{00892\ \ \ bitmap\_head\ \doxymbox{\hyperlink{classdf__live__bb__info_ade8dcf0662d2c2f304e7bc8fd6b2e61d}{gen}};\ \ \ \textcolor{comment}{/*\ The\ set\ of\ registers\ set\ in\ this\ block.\ \ */}}
+\DoxyCodeLine{00893\ }
+\DoxyCodeLine{00894\ \ \ \textcolor{comment}{/*\ The\ results\ of\ the\ dataflow\ problem.\ \ */}}
+\DoxyCodeLine{00895\ \ \ bitmap\_head\ \doxymbox{\hyperlink{classdf__live__bb__info_af4519551aab182058177010f03a02df6}{in}};\ \ \ \ \textcolor{comment}{/*\ At\ the\ top\ of\ the\ block.\ \ */}}
+\DoxyCodeLine{00896\ \ \ bitmap\_head\ \doxymbox{\hyperlink{classdf__live__bb__info_a77ef1931e32b67d13da17fa43a0abc98}{out}};\ \ \ \textcolor{comment}{/*\ At\ the\ bottom\ of\ the\ block.\ \ */}}
+\DoxyCodeLine{00897\ \};}
+\DoxyCodeLine{00898\ }
+\DoxyCodeLine{00899\ }
+\DoxyCodeLine{00900\ \textcolor{comment}{/*\ Live\ registers,\ a\ backwards\ dataflow\ problem.\ \ These\ bitmaps\ are}}
+\DoxyCodeLine{00901\ \textcolor{comment}{\ \ \ indexed\ by\ 2\ *\ regno\ for\ each\ pseudo\ and\ have\ two\ entries\ for\ each}}
+\DoxyCodeLine{00902\ \textcolor{comment}{\ \ \ pseudo.\ \ Only\ pseudos\ that\ have\ a\ size\ of\ 2\ *\ UNITS\_PER\_WORD\ are}}
+\DoxyCodeLine{00903\ \textcolor{comment}{\ \ \ meaningfully\ tracked.\ \ */}}
+\DoxyCodeLine{00904\ }
+\DoxyCodeLine{00905\ \textcolor{keyword}{class\ }\doxymbox{\hyperlink{classdf__word__lr__bb__info}{df\_word\_lr\_bb\_info}}}
+\DoxyCodeLine{00906\ \{}
+\DoxyCodeLine{00907\ \textcolor{keyword}{public}:}
+\DoxyCodeLine{00908\ \ \ \textcolor{comment}{/*\ Local\ sets\ to\ describe\ the\ basic\ blocks.\ \ */}}
+\DoxyCodeLine{00909\ \ \ bitmap\_head\ \doxymbox{\hyperlink{classdf__word__lr__bb__info_a454a1379ccffbb17aeec2a2db1690265}{def}};\ \ \ \textcolor{comment}{/*\ The\ set\ of\ registers\ set\ in\ this\ block}}
+\DoxyCodeLine{00910\ \textcolor{comment}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ -\/\ except\ artificial\ defs\ at\ the\ top.\ \ */}}
+\DoxyCodeLine{00911\ \ \ bitmap\_head\ \doxymbox{\hyperlink{classdf__word__lr__bb__info_a8fe24b2bb0b5d5470edcfb6c82c7ff82}{use}};\ \ \ \textcolor{comment}{/*\ The\ set\ of\ registers\ used\ in\ this\ block.\ \ */}}
+\DoxyCodeLine{00912\ }
+\DoxyCodeLine{00913\ \ \ \textcolor{comment}{/*\ The\ results\ of\ the\ dataflow\ problem.\ \ */}}
+\DoxyCodeLine{00914\ \ \ bitmap\_head\ \doxymbox{\hyperlink{classdf__word__lr__bb__info_ad1bbc28ea013d4dc8f061e7c9967abc6}{in}};\ \ \ \ \textcolor{comment}{/*\ Just\ before\ the\ block\ itself.\ */}}
+\DoxyCodeLine{00915\ \ \ bitmap\_head\ \doxymbox{\hyperlink{classdf__word__lr__bb__info_a492e787a21deab1a713d5599baedd2b9}{out}};\ \ \ \textcolor{comment}{/*\ At\ the\ bottom\ of\ the\ block.\ \ */}}
+\DoxyCodeLine{00916\ \};}
+\DoxyCodeLine{00917\ }
+\DoxyCodeLine{00918\ \textcolor{comment}{/*\ Must-\/initialized\ registers.\ \ All\ bitmaps\ are\ referenced\ by\ the}}
+\DoxyCodeLine{00919\ \textcolor{comment}{\ \ \ register\ number.\ \ */}}
+\DoxyCodeLine{00920\ \textcolor{keyword}{class\ }\doxymbox{\hyperlink{classdf__mir__bb__info}{df\_mir\_bb\_info}}}
+\DoxyCodeLine{00921\ \{}
+\DoxyCodeLine{00922\ \textcolor{keyword}{public}:}
+\DoxyCodeLine{00923\ \ \ \textcolor{comment}{/*\ Local\ sets\ to\ describe\ the\ basic\ blocks.\ \ */}}
+\DoxyCodeLine{00924\ \ \ bitmap\_head\ \doxymbox{\hyperlink{classdf__mir__bb__info_a67361af7b86dcc88cf842a42e1d417f6}{kill}};\ \ \textcolor{comment}{/*\ The\ set\ of\ registers\ unset\ in\ this\ block.\ \ Calls,}}
+\DoxyCodeLine{00925\ \textcolor{comment}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ for\ instance,\ unset\ registers.\ \ */}}
+\DoxyCodeLine{00926\ \ \ bitmap\_head\ \doxymbox{\hyperlink{classdf__mir__bb__info_a8dbff85e13442661121af494aaea049e}{gen}};\ \ \ \textcolor{comment}{/*\ The\ set\ of\ registers\ set\ in\ this\ block,\ excluding\ the}}
+\DoxyCodeLine{00927\ \textcolor{comment}{\ \ \ \ \ \ \ \ \ \ \ \ ones\ killed\ later\ on\ in\ this\ block.\ \ */}}
+\DoxyCodeLine{00928\ }
+\DoxyCodeLine{00929\ \ \ \textcolor{comment}{/*\ The\ results\ of\ the\ dataflow\ problem.\ \ */}}
+\DoxyCodeLine{00930\ \ \ bitmap\_head\ \doxymbox{\hyperlink{classdf__mir__bb__info_a798977d90020792e8187cd67c24d8501}{in}};\ \ \ \ \textcolor{comment}{/*\ At\ the\ top\ of\ the\ block.\ \ */}}
+\DoxyCodeLine{00931\ \ \ bitmap\_head\ \doxymbox{\hyperlink{classdf__mir__bb__info_ad58e9aeb284a5d2cdd15102154be48c1}{out}};\ \ \ \textcolor{comment}{/*\ At\ the\ bottom\ of\ the\ block.\ \ */}}
+\DoxyCodeLine{00932\ \ \ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{classdf__mir__bb__info_ad210c62248015da5ee685a39c15ac563}{con\_visited}};\ \ \textcolor{comment}{/*\ Visited\ by\ con\_fun\_\{0,n\}.\ \ */}}
+\DoxyCodeLine{00933\ \};}
+\DoxyCodeLine{00934\ }
+\DoxyCodeLine{00935\ }
+\DoxyCodeLine{00936\ \textcolor{comment}{/*\ This\ is\ used\ for\ debugging\ and\ for\ the\ dumpers\ to\ find\ the\ latest}}
+\DoxyCodeLine{00937\ \textcolor{comment}{\ \ \ instance\ so\ that\ the\ df\ info\ can\ be\ added\ to\ the\ dumps.\ \ This}}
+\DoxyCodeLine{00938\ \textcolor{comment}{\ \ \ should\ not\ be\ used\ by\ regular\ code.\ \ */}}
+\DoxyCodeLine{00939\ \textcolor{keyword}{extern}\ \textcolor{keyword}{class\ }\doxymbox{\hyperlink{classdf__d}{df\_d}}\ *\doxymbox{\hyperlink{df_8h_a56713f5ab7930da542a8e58803b9bcb5}{df}};}
+\DoxyCodeLine{00940\ \textcolor{preprocessor}{\#define\ df\_scan\ \ \ \ (df-\/>problems\_by\_index[DF\_SCAN])}}
+\DoxyCodeLine{00941\ \textcolor{preprocessor}{\#define\ df\_rd\ \ \ \ \ \ (df-\/>problems\_by\_index[DF\_RD])}}
+\DoxyCodeLine{00942\ \textcolor{preprocessor}{\#define\ df\_lr\ \ \ \ \ \ (df-\/>problems\_by\_index[DF\_LR])}}
+\DoxyCodeLine{00943\ \textcolor{preprocessor}{\#define\ df\_live\ \ \ \ (df-\/>problems\_by\_index[DF\_LIVE])}}
+\DoxyCodeLine{00944\ \textcolor{preprocessor}{\#define\ df\_chain\ \ \ (df-\/>problems\_by\_index[DF\_CHAIN])}}
+\DoxyCodeLine{00945\ \textcolor{preprocessor}{\#define\ df\_word\_lr\ (df-\/>problems\_by\_index[DF\_WORD\_LR])}}
+\DoxyCodeLine{00946\ \textcolor{preprocessor}{\#define\ df\_note\ \ \ \ (df-\/>problems\_by\_index[DF\_NOTE])}}
+\DoxyCodeLine{00947\ \textcolor{preprocessor}{\#define\ df\_md\ \ \ \ \ \ (df-\/>problems\_by\_index[DF\_MD])}}
+\DoxyCodeLine{00948\ \textcolor{preprocessor}{\#define\ df\_mir\ \ \ \ \ (df-\/>problems\_by\_index[DF\_MIR])}}
+\DoxyCodeLine{00949\ }
+\DoxyCodeLine{00950\ \textcolor{comment}{/*\ This\ symbol\ turns\ on\ checking\ that\ each\ modification\ of\ the\ cfg\ has}}
+\DoxyCodeLine{00951\ \textcolor{comment}{\ \ been\ identified\ to\ the\ appropriate\ df\ routines.\ \ It\ is\ not\ part\ of}}
+\DoxyCodeLine{00952\ \textcolor{comment}{\ \ verification\ per\ se\ because\ the\ check\ that\ the\ final\ solution\ has}}
+\DoxyCodeLine{00953\ \textcolor{comment}{\ \ not\ changed\ covers\ this.\ \ However,\ if\ the\ solution\ is\ not\ being}}
+\DoxyCodeLine{00954\ \textcolor{comment}{\ \ properly\ recomputed\ because\ the\ cfg\ is\ being\ modified,\ adding\ in}}
+\DoxyCodeLine{00955\ \textcolor{comment}{\ \ calls\ to\ df\_check\_cfg\_clean\ can\ be\ used\ to\ find\ the\ source\ of\ that}}
+\DoxyCodeLine{00956\ \textcolor{comment}{\ \ kind\ of\ problem.\ \ */}}
+\DoxyCodeLine{00957\ \textcolor{preprocessor}{\#if\ 0}}
+\DoxyCodeLine{00958\ \textcolor{preprocessor}{\#define\ DF\_DEBUG\_CFG}}
+\DoxyCodeLine{00959\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00960\ }
+\DoxyCodeLine{00961\ }
+\DoxyCodeLine{00962\ \textcolor{comment}{/*\ Functions\ defined\ in\ df-\/core.cc.\ \ */}}
+\DoxyCodeLine{00963\ }
+\DoxyCodeLine{00964\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{df_8h_a951acb55bfde92ed382de4234c0360bd}{df\_add\_problem}}\ (\textcolor{keyword}{const}\ \textcolor{keyword}{struct}\ \doxymbox{\hyperlink{structdf__problem}{df\_problem}}\ *);}
+\DoxyCodeLine{00965\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{df_8h_a39a3b67405485f0d0dfed6cda3aa3629}{df\_set\_flags}}\ (\textcolor{keywordtype}{int});}
+\DoxyCodeLine{00966\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{df_8h_acbea6dd28c8bd6653cf3db0efd3b13ea}{df\_clear\_flags}}\ (\textcolor{keywordtype}{int});}
+\DoxyCodeLine{00967\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{df_8h_a40941a95f6ee83d32076f666a5578ccf}{df\_set\_blocks}}\ (\doxymbox{\hyperlink{coretypes_8h_ae7ea3a04cabf8964dc6e8e95a9cde1b8}{bitmap}});}
+\DoxyCodeLine{00968\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{df_8h_acb91edefbd4f353b75dac0daa9be05e4}{df\_remove\_problem}}\ (\textcolor{keyword}{struct}\ \doxymbox{\hyperlink{structdataflow}{dataflow}}\ *);}
+\DoxyCodeLine{00969\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{df_8h_a3d5a0f25effc46ccc2733eb7da170926}{df\_finish\_pass}}\ (\textcolor{keywordtype}{bool});}
+\DoxyCodeLine{00970\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{df_8h_a8dee79117012e0f08615ec958f5c9182}{df\_analyze\_problem}}\ (\textcolor{keyword}{struct}\ \doxymbox{\hyperlink{structdataflow}{dataflow}}\ *,\ \doxymbox{\hyperlink{coretypes_8h_ae7ea3a04cabf8964dc6e8e95a9cde1b8}{bitmap}},\ \textcolor{keywordtype}{int}\ *,\ \textcolor{keywordtype}{int});}
+\DoxyCodeLine{00971\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{df_8h_a61a3eed8ed1577bccc1fc7fec5fe2399}{df\_analyze}}\ ();}
+\DoxyCodeLine{00972\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{df_8h_aadffc21b9a88272f4d1f791522766c56}{df\_analyze\_loop}}\ (\textcolor{keyword}{class}\ loop\ *);}
+\DoxyCodeLine{00973\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{df_8h_a237a55bce585e3a10e3112115246532f}{df\_get\_n\_blocks}}\ (\textcolor{keyword}{enum}\ \doxymbox{\hyperlink{df_8h_ac9be5bafa54c1f1ce69e80770e151b5a}{df\_flow\_dir}});}
+\DoxyCodeLine{00974\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{int}\ *\doxymbox{\hyperlink{df_8h_aba43822223095390e9cca23895c510f6}{df\_get\_postorder}}\ (\textcolor{keyword}{enum}\ \doxymbox{\hyperlink{df_8h_ac9be5bafa54c1f1ce69e80770e151b5a}{df\_flow\_dir}});}
+\DoxyCodeLine{00975\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{df_8h_aa8329246ccdca16b73dffd146cf22f37}{df\_simple\_dataflow}}\ (\textcolor{keyword}{enum}\ \doxymbox{\hyperlink{df_8h_ac9be5bafa54c1f1ce69e80770e151b5a}{df\_flow\_dir}},\ \doxymbox{\hyperlink{df_8h_a3f03b4616aeaa7595cf45a90bf78bab8}{df\_init\_function}},}
+\DoxyCodeLine{00976\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{df_8h_aa97f7689d54ba298fd8651e3897422b2}{df\_confluence\_function\_0}},\ \doxymbox{\hyperlink{df_8h_ac63b1f72d6e7e484e28476e121ac6e48}{df\_confluence\_function\_n}},}
+\DoxyCodeLine{00977\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{df_8h_a9ef453301ec75985cda90c6d16e94db7}{df\_transfer\_function}},\ \doxymbox{\hyperlink{coretypes_8h_ae7ea3a04cabf8964dc6e8e95a9cde1b8}{bitmap}},\ \textcolor{keywordtype}{int}\ *,\ \textcolor{keywordtype}{int});}
+\DoxyCodeLine{00978\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{df_8h_aa59c4de8679450f210c55ccd6eecbdf7}{df\_mark\_solutions\_dirty}}\ (\textcolor{keywordtype}{void});}
+\DoxyCodeLine{00979\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{df_8h_a37513d308f530e018272880561c9fabb}{df\_get\_bb\_dirty}}\ (\doxymbox{\hyperlink{coretypes_8h_a0469df20b471a4cd7c81fbdce5027487}{basic\_block}});}
+\DoxyCodeLine{00980\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{df_8h_a18a984f80428ed006254229edd545645}{df\_set\_bb\_dirty}}\ (\doxymbox{\hyperlink{coretypes_8h_a0469df20b471a4cd7c81fbdce5027487}{basic\_block}});}
+\DoxyCodeLine{00981\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{df_8h_afbe88600a1bb7e19dfd3c800e327da96}{df\_compact\_blocks}}\ (\textcolor{keywordtype}{void});}
+\DoxyCodeLine{00982\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{df_8h_abf71fdae8c03f75b803e54edd802b5b7}{df\_bb\_replace}}\ (\textcolor{keywordtype}{int},\ \doxymbox{\hyperlink{coretypes_8h_a0469df20b471a4cd7c81fbdce5027487}{basic\_block}});}
+\DoxyCodeLine{00983\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{df_8h_a2978d1e21d239defc32dfd66b94c1c6d}{df\_bb\_delete}}\ (\textcolor{keywordtype}{int});}
+\DoxyCodeLine{00984\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{df_8h_aeba4835e5a2e59280504ca990d23dd67}{df\_verify}}\ (\textcolor{keywordtype}{void});}
+\DoxyCodeLine{00985\ \textcolor{preprocessor}{\#ifdef\ DF\_DEBUG\_CFG}}
+\DoxyCodeLine{00986\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ df\_check\_cfg\_clean\ (\textcolor{keywordtype}{void});}
+\DoxyCodeLine{00987\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00988\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{df_8h_a2e31e87468476f9209292e78ed33bda1}{df\_ref}}\ \doxymbox{\hyperlink{df_8h_a4d89fd59cfb951cbd5d5aa9c11338a06}{df\_bb\_regno\_first\_def\_find}}\ (\doxymbox{\hyperlink{coretypes_8h_a0469df20b471a4cd7c81fbdce5027487}{basic\_block}},\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int});}
+\DoxyCodeLine{00989\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{df_8h_a2e31e87468476f9209292e78ed33bda1}{df\_ref}}\ \doxymbox{\hyperlink{df_8h_a2fd1505486ea0c86b46fb32c834b4162}{df\_bb\_regno\_last\_def\_find}}\ (\doxymbox{\hyperlink{coretypes_8h_a0469df20b471a4cd7c81fbdce5027487}{basic\_block}},\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int});}
+\DoxyCodeLine{00990\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{df_8h_a2e31e87468476f9209292e78ed33bda1}{df\_ref}}\ \doxymbox{\hyperlink{df_8h_a72816a2a93009e47788768e9e671c3bd}{df\_find\_def}}\ (rtx\_insn\ *,\ \doxymbox{\hyperlink{coretypes_8h_a20e671ce9e7827268658cff844f4281c}{rtx}});}
+\DoxyCodeLine{00991\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{df_8h_aaf142e6e3fc9b3612a0358910b03835c}{df\_reg\_defined}}\ (rtx\_insn\ *,\ \doxymbox{\hyperlink{coretypes_8h_a20e671ce9e7827268658cff844f4281c}{rtx}});}
+\DoxyCodeLine{00992\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{df_8h_a2e31e87468476f9209292e78ed33bda1}{df\_ref}}\ \doxymbox{\hyperlink{df_8h_addee085a02645d1a7ea3fa3ac8b61bca}{df\_find\_use}}\ (rtx\_insn\ *,\ \doxymbox{\hyperlink{coretypes_8h_a20e671ce9e7827268658cff844f4281c}{rtx}});}
+\DoxyCodeLine{00993\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{df_8h_a2e23c1890bc5113b7f31e729f773cd27}{df\_reg\_used}}\ (rtx\_insn\ *,\ \doxymbox{\hyperlink{coretypes_8h_a20e671ce9e7827268658cff844f4281c}{rtx}});}
+\DoxyCodeLine{00994\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{coretypes_8h_a20e671ce9e7827268658cff844f4281c}{rtx}}\ \doxymbox{\hyperlink{df_8h_acb021c98738fa7e5e5efccc104982b7c}{df\_find\_single\_def\_src}}\ (\doxymbox{\hyperlink{coretypes_8h_a20e671ce9e7827268658cff844f4281c}{rtx}});}
+\DoxyCodeLine{00995\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{df_8h_adfc5ffc2274d812927fece4c79fecb4b}{df\_worklist\_dataflow}}\ (\textcolor{keyword}{struct}\ \doxymbox{\hyperlink{structdataflow}{dataflow}}\ *,\doxymbox{\hyperlink{coretypes_8h_ae7ea3a04cabf8964dc6e8e95a9cde1b8}{bitmap}},\ \textcolor{keywordtype}{int}\ *,\ \textcolor{keywordtype}{int});}
+\DoxyCodeLine{00996\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{df_8h_a24c733a2cf9c47a371e3e6ba9149fd61}{df\_print\_regset}}\ (FILE\ *file,\ \doxymbox{\hyperlink{coretypes_8h_ac1b200ce036f141b63e8c4e2855c9d40}{const\_bitmap}}\ \doxymbox{\hyperlink{poly-int_8h_a3ecac2571dcdc8050989339124f1bd26}{r}});}
+\DoxyCodeLine{00997\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{df_8h_a16cf0c99c49c2ddb29f68df575103c3a}{df\_print\_word\_regset}}\ (FILE\ *file,\ \doxymbox{\hyperlink{coretypes_8h_ac1b200ce036f141b63e8c4e2855c9d40}{const\_bitmap}}\ \doxymbox{\hyperlink{poly-int_8h_a3ecac2571dcdc8050989339124f1bd26}{r}});}
+\DoxyCodeLine{00998\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{df_8h_a7c36127df3ae69234796b88de0a389e6}{df\_dump}}\ (FILE\ *);}
+\DoxyCodeLine{00999\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{df_8h_aa7db3ded3e10eb7c6b9277b08e6eaf04}{df\_dump\_region}}\ (FILE\ *);}
+\DoxyCodeLine{01000\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{df_8h_aae21cbfe2060384e1d5467c986298c9b}{df\_dump\_start}}\ (FILE\ *);}
+\DoxyCodeLine{01001\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{df_8h_a6978b2cee82fa59607a3cd33a01be185}{df\_dump\_top}}\ (\doxymbox{\hyperlink{coretypes_8h_a0469df20b471a4cd7c81fbdce5027487}{basic\_block}},\ FILE\ *);}
+\DoxyCodeLine{01002\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{df_8h_ac573d41c9effd87d974f1fc854958ce5}{df\_dump\_bottom}}\ (\doxymbox{\hyperlink{coretypes_8h_a0469df20b471a4cd7c81fbdce5027487}{basic\_block}},\ FILE\ *);}
+\DoxyCodeLine{01003\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{df_8h_a54aaa519b7c87bb7a3421228ea259f0f}{df\_dump\_insn\_top}}\ (\textcolor{keyword}{const}\ rtx\_insn\ *,\ FILE\ *);}
+\DoxyCodeLine{01004\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{df_8h_af461873c27fa19c19cb1ddb202b89119}{df\_dump\_insn\_bottom}}\ (\textcolor{keyword}{const}\ rtx\_insn\ *,\ FILE\ *);}
+\DoxyCodeLine{01005\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{df_8h_a9be62a047e9ca54cef6c7f1be9a709e3}{df\_refs\_chain\_dump}}\ (\doxymbox{\hyperlink{df_8h_a2e31e87468476f9209292e78ed33bda1}{df\_ref}},\ \textcolor{keywordtype}{bool},\ FILE\ *);}
+\DoxyCodeLine{01006\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{df_8h_a7ddb20f83b774359a614c6ffeb7a9b9b}{df\_regs\_chain\_dump}}\ (\doxymbox{\hyperlink{df_8h_a2e31e87468476f9209292e78ed33bda1}{df\_ref}},\ \ FILE\ *);}
+\DoxyCodeLine{01007\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{df_8h_ab007bb0ee901bd30d3ec75733feaffd3}{df\_insn\_debug}}\ (rtx\_insn\ *,\ \textcolor{keywordtype}{bool},\ FILE\ *);}
+\DoxyCodeLine{01008\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{df_8h_a37d64ef1c36587c7a0eede294718de00}{df\_insn\_debug\_regno}}\ (rtx\_insn\ *,\ FILE\ *);}
+\DoxyCodeLine{01009\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{df_8h_a568eee27bc24bacf9824b996a52f72e3}{df\_regno\_debug}}\ (\textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int},\ FILE\ *);}
+\DoxyCodeLine{01010\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{df_8h_acdd79ff631cfea10d12bdaadbeed5ce2}{df\_ref\_debug}}\ (\doxymbox{\hyperlink{df_8h_a2e31e87468476f9209292e78ed33bda1}{df\_ref}},\ FILE\ *);}
+\DoxyCodeLine{01011\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{df_8h_a460450ffb80a7c2960299636edc54247}{debug\_df\_insn}}\ (rtx\_insn\ *);}
+\DoxyCodeLine{01012\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{df_8h_ae6f50702dfc1e6d37b4973aa0d569da6}{debug\_df\_regno}}\ (\textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int});}
+\DoxyCodeLine{01013\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{df_8h_ad6a7897eeb9b95813ca66c2e4258a2a0}{debug\_df\_reg}}\ (\doxymbox{\hyperlink{coretypes_8h_a20e671ce9e7827268658cff844f4281c}{rtx}});}
+\DoxyCodeLine{01014\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{df_8h_a7ab36580ab30625a4eb56abc934a5895}{debug\_df\_defno}}\ (\textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int});}
+\DoxyCodeLine{01015\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{df_8h_a8071732bef074ab1f1bde156a1434f71}{debug\_df\_useno}}\ (\textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int});}
+\DoxyCodeLine{01016\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{df_8h_a75e121da16a0ea79a3f2ee567214d4b3}{debug\_df\_ref}}\ (\doxymbox{\hyperlink{df_8h_a2e31e87468476f9209292e78ed33bda1}{df\_ref}});}
+\DoxyCodeLine{01017\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{df_8h_ae1a795c8937bf9a09f6418a52e4f1610}{debug\_df\_chain}}\ (\textcolor{keyword}{struct}\ \doxymbox{\hyperlink{structdf__link}{df\_link}}\ *);}
+\DoxyCodeLine{01018\ }
+\DoxyCodeLine{01019\ \textcolor{comment}{/*\ Functions\ defined\ in\ df-\/problems.cc.\ */}}
+\DoxyCodeLine{01020\ }
+\DoxyCodeLine{01021\ \textcolor{keyword}{extern}\ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{structdf__link}{df\_link}}\ *\doxymbox{\hyperlink{df_8h_aa3492b4ee5c68e2661bd2d5531b60248}{df\_chain\_create}}\ (\doxymbox{\hyperlink{df_8h_a2e31e87468476f9209292e78ed33bda1}{df\_ref}},\ \doxymbox{\hyperlink{df_8h_a2e31e87468476f9209292e78ed33bda1}{df\_ref}});}
+\DoxyCodeLine{01022\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{df_8h_adb80a4704acc0118ae64bce4d4c9603d}{df\_chain\_unlink}}\ (\doxymbox{\hyperlink{df_8h_a2e31e87468476f9209292e78ed33bda1}{df\_ref}});}
+\DoxyCodeLine{01023\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{df_8h_a2ef14aa2dab86a2d95c1c66a676d588b}{df\_chain\_copy}}\ (\doxymbox{\hyperlink{df_8h_a2e31e87468476f9209292e78ed33bda1}{df\_ref}},\ \textcolor{keyword}{struct}\ \doxymbox{\hyperlink{structdf__link}{df\_link}}\ *);}
+\DoxyCodeLine{01024\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{df_8h_a7eff3e4d8d9123e41ae580e2ac5def8e}{df\_grow\_bb\_info}}\ (\textcolor{keyword}{struct}\ \doxymbox{\hyperlink{structdataflow}{dataflow}}\ *);}
+\DoxyCodeLine{01025\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{df_8h_a02cecb309973ee39395f9ca5343b1ce8}{df\_chain\_dump}}\ (\textcolor{keyword}{struct}\ \doxymbox{\hyperlink{structdf__link}{df\_link}}\ *,\ FILE\ *);}
+\DoxyCodeLine{01026\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{df_8h_a9bb1f363741e07dba80b236d0b0a349d}{df\_print\_bb\_index}}\ (\doxymbox{\hyperlink{coretypes_8h_a0469df20b471a4cd7c81fbdce5027487}{basic\_block}}\ bb,\ FILE\ *file);}
+\DoxyCodeLine{01027\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{df_8h_a128baa2d271a94aac4500477597575bb}{df\_rd\_add\_problem}}\ (\textcolor{keywordtype}{void});}
+\DoxyCodeLine{01028\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{df_8h_a21ffd982e9625612102dc1a50e5e2c2e}{df\_rd\_simulate\_artificial\_defs\_at\_top}}\ (\doxymbox{\hyperlink{coretypes_8h_a0469df20b471a4cd7c81fbdce5027487}{basic\_block}},\ \doxymbox{\hyperlink{coretypes_8h_ae7ea3a04cabf8964dc6e8e95a9cde1b8}{bitmap}});}
+\DoxyCodeLine{01029\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{df_8h_a4baab0f37d92e402dd253fa1a3ea7382}{df\_rd\_simulate\_one\_insn}}\ (\doxymbox{\hyperlink{coretypes_8h_a0469df20b471a4cd7c81fbdce5027487}{basic\_block}},\ rtx\_insn\ *,\ \doxymbox{\hyperlink{coretypes_8h_ae7ea3a04cabf8964dc6e8e95a9cde1b8}{bitmap}});}
+\DoxyCodeLine{01030\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{df_8h_a501b6d9d67a6c4bbabb521f62a3a885c}{df\_lr\_add\_problem}}\ (\textcolor{keywordtype}{void});}
+\DoxyCodeLine{01031\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{df_8h_ad45c3b0dd2440a9e7e7174205a1e1fb7}{df\_lr\_verify\_transfer\_functions}}\ (\textcolor{keywordtype}{void});}
+\DoxyCodeLine{01032\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{df_8h_acae9ed805dd934c3dd876b4300cc64d0}{df\_live\_verify\_transfer\_functions}}\ (\textcolor{keywordtype}{void});}
+\DoxyCodeLine{01033\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{df_8h_aedadafb45a2dd0e36937f682226b4d1c}{df\_live\_add\_problem}}\ (\textcolor{keywordtype}{void});}
+\DoxyCodeLine{01034\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{df_8h_ac39caed6e4bde97e510dc38010410d1d}{df\_live\_set\_all\_dirty}}\ (\textcolor{keywordtype}{void});}
+\DoxyCodeLine{01035\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{df_8h_a14da7180a437a844c1a0cae978097c5f}{df\_chain\_add\_problem}}\ (\textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int});}
+\DoxyCodeLine{01036\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{df_8h_a454a2b50f9f31a1913352d3b5c3ebbbb}{df\_word\_lr\_add\_problem}}\ (\textcolor{keywordtype}{void});}
+\DoxyCodeLine{01037\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{df_8h_a1ef9cc100c697466b1f48e7ec59c1799}{df\_word\_lr\_mark\_ref}}\ (\doxymbox{\hyperlink{df_8h_a2e31e87468476f9209292e78ed33bda1}{df\_ref}},\ \textcolor{keywordtype}{bool},\ \doxymbox{\hyperlink{coretypes_8h_ae7ea3a04cabf8964dc6e8e95a9cde1b8}{bitmap}});}
+\DoxyCodeLine{01038\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{df_8h_ad307bb3f74acf3d53133edfb68251016}{df\_word\_lr\_simulate\_defs}}\ (rtx\_insn\ *,\ \doxymbox{\hyperlink{coretypes_8h_ae7ea3a04cabf8964dc6e8e95a9cde1b8}{bitmap}});}
+\DoxyCodeLine{01039\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{df_8h_a4169c2d1b008d1dd97be753a2662f2b4}{df\_word\_lr\_simulate\_uses}}\ (rtx\_insn\ *,\ \doxymbox{\hyperlink{coretypes_8h_ae7ea3a04cabf8964dc6e8e95a9cde1b8}{bitmap}});}
+\DoxyCodeLine{01040\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{df_8h_aec780ea1815918ff42c66990ac50ef3c}{df\_word\_lr\_simulate\_artificial\_refs\_at\_top}}\ (\doxymbox{\hyperlink{coretypes_8h_a0469df20b471a4cd7c81fbdce5027487}{basic\_block}},\ \doxymbox{\hyperlink{coretypes_8h_ae7ea3a04cabf8964dc6e8e95a9cde1b8}{bitmap}});}
+\DoxyCodeLine{01041\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{df_8h_ab3c80a9220ae3d288e98603bfdea810a}{df\_word\_lr\_simulate\_artificial\_refs\_at\_end}}\ (\doxymbox{\hyperlink{coretypes_8h_a0469df20b471a4cd7c81fbdce5027487}{basic\_block}},\ \doxymbox{\hyperlink{coretypes_8h_ae7ea3a04cabf8964dc6e8e95a9cde1b8}{bitmap}});}
+\DoxyCodeLine{01042\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{df_8h_ae960922db2cd980bbfd198bbf2156048}{df\_note\_add\_problem}}\ (\textcolor{keywordtype}{void});}
+\DoxyCodeLine{01043\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{df_8h_a1d256a35ffd3c4bc9dc6d723a585c7b6}{df\_md\_add\_problem}}\ (\textcolor{keywordtype}{void});}
+\DoxyCodeLine{01044\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{df_8h_a0cf6b5b2b1fe54d22c08f6e63fdb12a0}{df\_md\_simulate\_artificial\_defs\_at\_top}}\ (\doxymbox{\hyperlink{coretypes_8h_a0469df20b471a4cd7c81fbdce5027487}{basic\_block}},\ \doxymbox{\hyperlink{coretypes_8h_ae7ea3a04cabf8964dc6e8e95a9cde1b8}{bitmap}});}
+\DoxyCodeLine{01045\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{df_8h_ad685cf62a11b37cd2006025389b584d8}{df\_md\_simulate\_one\_insn}}\ (\doxymbox{\hyperlink{coretypes_8h_a0469df20b471a4cd7c81fbdce5027487}{basic\_block}},\ rtx\_insn\ *,\ \doxymbox{\hyperlink{coretypes_8h_ae7ea3a04cabf8964dc6e8e95a9cde1b8}{bitmap}});}
+\DoxyCodeLine{01046\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{df_8h_adaafaf278b546278e9726ca8e36a12e8}{df\_mir\_add\_problem}}\ (\textcolor{keywordtype}{void});}
+\DoxyCodeLine{01047\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{df_8h_a18a09765a49eac15083a6ce3430ea42f}{df\_mir\_simulate\_one\_insn}}\ (\doxymbox{\hyperlink{coretypes_8h_a0469df20b471a4cd7c81fbdce5027487}{basic\_block}},\ rtx\_insn\ *,\ \doxymbox{\hyperlink{coretypes_8h_ae7ea3a04cabf8964dc6e8e95a9cde1b8}{bitmap}},\ \doxymbox{\hyperlink{coretypes_8h_ae7ea3a04cabf8964dc6e8e95a9cde1b8}{bitmap}});}
+\DoxyCodeLine{01048\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{df_8h_acc936170b7adb80993302b787ea93ecb}{df\_simulate\_find\_noclobber\_defs}}\ (rtx\_insn\ *,\ \doxymbox{\hyperlink{coretypes_8h_ae7ea3a04cabf8964dc6e8e95a9cde1b8}{bitmap}});}
+\DoxyCodeLine{01049\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{df_8h_a21b5dc35a80f844a489e50eaf0c9bde7}{df\_simulate\_find\_defs}}\ (rtx\_insn\ *,\ \doxymbox{\hyperlink{coretypes_8h_ae7ea3a04cabf8964dc6e8e95a9cde1b8}{bitmap}});}
+\DoxyCodeLine{01050\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{df_8h_a7cf3192cdacf78c00b7a0cdc8b2c5194}{df\_simulate\_defs}}\ (rtx\_insn\ *,\ \doxymbox{\hyperlink{coretypes_8h_ae7ea3a04cabf8964dc6e8e95a9cde1b8}{bitmap}});}
+\DoxyCodeLine{01051\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{df_8h_a5e24c16bd61c410859f628fd294d17c9}{df\_simulate\_uses}}\ (rtx\_insn\ *,\ \doxymbox{\hyperlink{coretypes_8h_ae7ea3a04cabf8964dc6e8e95a9cde1b8}{bitmap}});}
+\DoxyCodeLine{01052\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{df_8h_aca58398128c7f99cc07571aa277075bb}{df\_simulate\_initialize\_backwards}}\ (\doxymbox{\hyperlink{coretypes_8h_a0469df20b471a4cd7c81fbdce5027487}{basic\_block}},\ \doxymbox{\hyperlink{coretypes_8h_ae7ea3a04cabf8964dc6e8e95a9cde1b8}{bitmap}});}
+\DoxyCodeLine{01053\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{df_8h_ae23029c921aeff9d2180d9d9b4ed202c}{df\_simulate\_one\_insn\_backwards}}\ (\doxymbox{\hyperlink{coretypes_8h_a0469df20b471a4cd7c81fbdce5027487}{basic\_block}},\ rtx\_insn\ *,\ \doxymbox{\hyperlink{coretypes_8h_ae7ea3a04cabf8964dc6e8e95a9cde1b8}{bitmap}});}
+\DoxyCodeLine{01054\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{df_8h_a546c96822e52f7d44159f7918f436010}{df\_simulate\_finalize\_backwards}}\ (\doxymbox{\hyperlink{coretypes_8h_a0469df20b471a4cd7c81fbdce5027487}{basic\_block}},\ \doxymbox{\hyperlink{coretypes_8h_ae7ea3a04cabf8964dc6e8e95a9cde1b8}{bitmap}});}
+\DoxyCodeLine{01055\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{df_8h_a9731567ef43d0866695477f039f02ea2}{df\_simulate\_initialize\_forwards}}\ (\doxymbox{\hyperlink{coretypes_8h_a0469df20b471a4cd7c81fbdce5027487}{basic\_block}},\ \doxymbox{\hyperlink{coretypes_8h_ae7ea3a04cabf8964dc6e8e95a9cde1b8}{bitmap}});}
+\DoxyCodeLine{01056\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{df_8h_a439e2e90443c2ce5a717b30dcfadd14b}{df\_simulate\_one\_insn\_forwards}}\ (\doxymbox{\hyperlink{coretypes_8h_a0469df20b471a4cd7c81fbdce5027487}{basic\_block}},\ rtx\_insn\ *,\ \doxymbox{\hyperlink{coretypes_8h_ae7ea3a04cabf8964dc6e8e95a9cde1b8}{bitmap}});}
+\DoxyCodeLine{01057\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{df_8h_ae7d3356008ac0c877bc0850d2d87b59d}{simulate\_backwards\_to\_point}}\ (\doxymbox{\hyperlink{coretypes_8h_a0469df20b471a4cd7c81fbdce5027487}{basic\_block}},\ \doxymbox{\hyperlink{regset_8h_a1e655e49d778df881b7c96f82f84e3c7}{regset}},\ \doxymbox{\hyperlink{coretypes_8h_a20e671ce9e7827268658cff844f4281c}{rtx}});}
+\DoxyCodeLine{01058\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{df_8h_acabd32f9b920eaba1bb5752b2583006b}{can\_move\_insns\_across}}\ (rtx\_insn\ *,\ rtx\_insn\ *,}
+\DoxyCodeLine{01059\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ rtx\_insn\ *,\ rtx\_insn\ *,}
+\DoxyCodeLine{01060\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{coretypes_8h_a0469df20b471a4cd7c81fbdce5027487}{basic\_block}},\ \doxymbox{\hyperlink{regset_8h_a1e655e49d778df881b7c96f82f84e3c7}{regset}},}
+\DoxyCodeLine{01061\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{regset_8h_a1e655e49d778df881b7c96f82f84e3c7}{regset}},\ rtx\_insn\ **);}
+\DoxyCodeLine{01062\ \textcolor{comment}{/*\ Functions\ defined\ in\ df-\/scan.cc.\ \ */}}
+\DoxyCodeLine{01063\ }
+\DoxyCodeLine{01064\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{df_8h_a6f47bdc9b789d33394075eae1600f580}{df\_scan\_alloc}}\ (\doxymbox{\hyperlink{coretypes_8h_ae7ea3a04cabf8964dc6e8e95a9cde1b8}{bitmap}});}
+\DoxyCodeLine{01065\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{df_8h_a4484646775b079b58cf0167c35193718}{df\_scan\_add\_problem}}\ (\textcolor{keywordtype}{void});}
+\DoxyCodeLine{01066\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{df_8h_a33467c0bfaaf90fa2433580431af168b}{df\_grow\_reg\_info}}\ (\textcolor{keywordtype}{void});}
+\DoxyCodeLine{01067\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{df_8h_ace11afdee2ca21c8136ddfa871788c49}{df\_grow\_insn\_info}}\ (\textcolor{keywordtype}{void});}
+\DoxyCodeLine{01068\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{df_8h_a0bb16cbf68f6b02ec772132d582fdf2d}{df\_scan\_blocks}}\ (\textcolor{keywordtype}{void});}
+\DoxyCodeLine{01069\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{df_8h_ac78ea75c0b43ce0a483a20a59970f803}{df\_uses\_create}}\ (\doxymbox{\hyperlink{coretypes_8h_a20e671ce9e7827268658cff844f4281c}{rtx}}\ *,\ rtx\_insn\ *,\ \textcolor{keywordtype}{int});}
+\DoxyCodeLine{01070\ \textcolor{keyword}{extern}\ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{structdf__insn__info}{df\_insn\_info}}\ *\ \doxymbox{\hyperlink{df_8h_a67d8de748f76ef5ae6b13fbb4cb6e10b}{df\_insn\_create\_insn\_record}}\ (rtx\_insn\ *);}
+\DoxyCodeLine{01071\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{df_8h_a9be572590814713ca9e34dfdf597d9f7}{df\_insn\_delete}}\ (rtx\_insn\ *);}
+\DoxyCodeLine{01072\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{df_8h_a4763b649d2adb147abbac150e0f4291a}{df\_bb\_refs\_record}}\ (\textcolor{keywordtype}{int},\ \textcolor{keywordtype}{bool});}
+\DoxyCodeLine{01073\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{df_8h_a026b247654baa451f3644f7555ecbadd}{df\_insn\_rescan}}\ (rtx\_insn\ *);}
+\DoxyCodeLine{01074\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{df_8h_a5458f6bd67e80d778d439d8c612aa882}{df\_insn\_rescan\_debug\_internal}}\ (rtx\_insn\ *);}
+\DoxyCodeLine{01075\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{df_8h_ac7f93788abc5934722e28bd56d6a6efa}{df\_insn\_rescan\_all}}\ (\textcolor{keywordtype}{void});}
+\DoxyCodeLine{01076\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{df_8h_a0b41f12d791a19bf493001876d97976f}{df\_process\_deferred\_rescans}}\ (\textcolor{keywordtype}{void});}
+\DoxyCodeLine{01077\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{df_8h_a1d9bab4f5ff3211c7899d630b9381d33}{df\_recompute\_luids}}\ (\doxymbox{\hyperlink{coretypes_8h_a0469df20b471a4cd7c81fbdce5027487}{basic\_block}});}
+\DoxyCodeLine{01078\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{df_8h_a680d7c2460338a0d30ded88fd83a4746}{df\_insn\_change\_bb}}\ (rtx\_insn\ *,\ \doxymbox{\hyperlink{coretypes_8h_a0469df20b471a4cd7c81fbdce5027487}{basic\_block}});}
+\DoxyCodeLine{01079\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{df_8h_acfed8fe3c5f6ac11bca09e8bdc210f06}{df\_maybe\_reorganize\_use\_refs}}\ (\textcolor{keyword}{enum}\ \doxymbox{\hyperlink{df_8h_a8295fc9895cfee63806cee35b272c802}{df\_ref\_order}});}
+\DoxyCodeLine{01080\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{df_8h_a8024f4528c6ebb2d07ace2906dfd6372}{df\_maybe\_reorganize\_def\_refs}}\ (\textcolor{keyword}{enum}\ \doxymbox{\hyperlink{df_8h_a8295fc9895cfee63806cee35b272c802}{df\_ref\_order}});}
+\DoxyCodeLine{01081\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{df_8h_a6ec8c5655cfb90131467bb03f377a6af}{df\_ref\_change\_reg\_with\_loc}}\ (\doxymbox{\hyperlink{coretypes_8h_a20e671ce9e7827268658cff844f4281c}{rtx}},\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int});}
+\DoxyCodeLine{01082\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{df_8h_a1a1748564186d99a9c41b395f0250221}{df\_notes\_rescan}}\ (rtx\_insn\ *);}
+\DoxyCodeLine{01083\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{df_8h_ab090fa1e8daa89e817d0231b04c7310f}{df\_hard\_reg\_init}}\ (\textcolor{keywordtype}{void});}
+\DoxyCodeLine{01084\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{df_8h_a66355cb8dbb01e77588c1215f83ed759}{df\_update\_entry\_block\_defs}}\ (\textcolor{keywordtype}{void});}
+\DoxyCodeLine{01085\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{df_8h_a0caf58b51358ac5ba25635eb941e3e01}{df\_update\_exit\_block\_uses}}\ (\textcolor{keywordtype}{void});}
+\DoxyCodeLine{01086\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{df_8h_aec30d320e2e7ac6d6516eb9d759dd2e1}{df\_update\_entry\_exit\_and\_calls}}\ (\textcolor{keywordtype}{void});}
+\DoxyCodeLine{01087\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{df_8h_af46607d525ee357e77259865e16f8c70}{df\_hard\_reg\_used\_p}}\ (\textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int});}
+\DoxyCodeLine{01088\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{df_8h_a82a59db9028d38469aef79c2e05f06db}{df\_hard\_reg\_used\_count}}\ (\textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int});}
+\DoxyCodeLine{01089\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{df_8h_a9d96e31cb8720db8500eac62640f1444}{df\_regs\_ever\_live\_p}}\ (\textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int});}
+\DoxyCodeLine{01090\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{df_8h_a95d52a2725cbe67bb0ff2d2c93fd0273}{df\_epilogue\_uses\_p}}\ (\textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int});}
+\DoxyCodeLine{01091\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{df_8h_ab340235b800c84ca9768b4fbcbe48414}{df\_set\_regs\_ever\_live}}\ (\textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int},\ \textcolor{keywordtype}{bool});}
+\DoxyCodeLine{01092\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{df_8h_adb7e782c250cfd5b7100c18686077437}{df\_compute\_regs\_ever\_live}}\ (\textcolor{keywordtype}{bool});}
+\DoxyCodeLine{01093\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{df_8h_ac5eeb623cc67605f210cfe5754969c35}{df\_scan\_verify}}\ (\textcolor{keywordtype}{void});}
+\DoxyCodeLine{01094\ }
+\DoxyCodeLine{01095\ }
+\DoxyCodeLine{01096\ \textcolor{comment}{/*-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{01097\ \textcolor{comment}{\ \ \ Public\ functions\ access\ functions\ for\ the\ dataflow\ problems.}}
+\DoxyCodeLine{01098\ \textcolor{comment}{-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/*/}}
+\DoxyCodeLine{01099\ }
+\DoxyCodeLine{01100\ \textcolor{keyword}{inline}\ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{structdf__scan__bb__info}{df\_scan\_bb\_info}}\ *}
+\DoxyCodeLine{01101\ \doxymbox{\hyperlink{df_8h_af1f7059f74275adc647931923854d2a1}{df\_scan\_get\_bb\_info}}\ (\textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ index)}
+\DoxyCodeLine{01102\ \{}
+\DoxyCodeLine{01103\ \ \ \textcolor{keywordflow}{if}\ (index\ <\ df\_scan-\/>block\_info\_size)}
+\DoxyCodeLine{01104\ \ \ \ \ \textcolor{keywordflow}{return}\ \&((\textcolor{keyword}{struct\ }\doxymbox{\hyperlink{structdf__scan__bb__info}{df\_scan\_bb\_info}}\ *)\ \doxymbox{\hyperlink{df_8h_a279cc8fbd8fe805c41406cb65e4d1311}{df\_scan}}-\/>block\_info)[index];}
+\DoxyCodeLine{01105\ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{01106\ \ \ \ \ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{stddef_8h_a070d2ce7b6bb7e5c05602aa8c308d0c4}{NULL}};}
+\DoxyCodeLine{01107\ \}}
+\DoxyCodeLine{01108\ }
+\DoxyCodeLine{01109\ \textcolor{keyword}{inline}\ \textcolor{keyword}{class\ }\doxymbox{\hyperlink{classdf__rd__bb__info}{df\_rd\_bb\_info}}\ *}
+\DoxyCodeLine{01110\ \doxymbox{\hyperlink{df_8h_a7a8e6864bf22b73902fe8e38fb04cf32}{df\_rd\_get\_bb\_info}}\ (\textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ index)}
+\DoxyCodeLine{01111\ \{}
+\DoxyCodeLine{01112\ \ \ \textcolor{keywordflow}{if}\ (index\ <\ df\_rd-\/>block\_info\_size)}
+\DoxyCodeLine{01113\ \ \ \ \ \textcolor{keywordflow}{return}\ \&((\textcolor{keyword}{class\ }\doxymbox{\hyperlink{classdf__rd__bb__info}{df\_rd\_bb\_info}}\ *)\ \doxymbox{\hyperlink{df_8h_a17f54f6e2bf5a3142fe06fb34cc63c3c}{df\_rd}}-\/>block\_info)[index];}
+\DoxyCodeLine{01114\ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{01115\ \ \ \ \ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{stddef_8h_a070d2ce7b6bb7e5c05602aa8c308d0c4}{NULL}};}
+\DoxyCodeLine{01116\ \}}
+\DoxyCodeLine{01117\ }
+\DoxyCodeLine{01118\ \textcolor{keyword}{inline}\ \textcolor{keyword}{class\ }\doxymbox{\hyperlink{classdf__lr__bb__info}{df\_lr\_bb\_info}}\ *}
+\DoxyCodeLine{01119\ \doxymbox{\hyperlink{df_8h_ad830ad55b712a9770b71f6de31053c33}{df\_lr\_get\_bb\_info}}\ (\textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ index)}
+\DoxyCodeLine{01120\ \{}
+\DoxyCodeLine{01121\ \ \ \textcolor{keywordflow}{if}\ (index\ <\ df\_lr-\/>block\_info\_size)}
+\DoxyCodeLine{01122\ \ \ \ \ \textcolor{keywordflow}{return}\ \&((\textcolor{keyword}{class\ }\doxymbox{\hyperlink{classdf__lr__bb__info}{df\_lr\_bb\_info}}\ *)\ \doxymbox{\hyperlink{df_8h_aa26c81be680983d7f78b1e4c8a9e1735}{df\_lr}}-\/>block\_info)[index];}
+\DoxyCodeLine{01123\ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{01124\ \ \ \ \ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{stddef_8h_a070d2ce7b6bb7e5c05602aa8c308d0c4}{NULL}};}
+\DoxyCodeLine{01125\ \}}
+\DoxyCodeLine{01126\ }
+\DoxyCodeLine{01127\ \textcolor{keyword}{inline}\ \textcolor{keyword}{class\ }\doxymbox{\hyperlink{classdf__md__bb__info}{df\_md\_bb\_info}}\ *}
+\DoxyCodeLine{01128\ \doxymbox{\hyperlink{df_8h_a4ad76d91f66a2bb8992737498b5bb089}{df\_md\_get\_bb\_info}}\ (\textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ index)}
+\DoxyCodeLine{01129\ \{}
+\DoxyCodeLine{01130\ \ \ \textcolor{keywordflow}{if}\ (index\ <\ df\_md-\/>block\_info\_size)}
+\DoxyCodeLine{01131\ \ \ \ \ \textcolor{keywordflow}{return}\ \&((\textcolor{keyword}{class\ }\doxymbox{\hyperlink{classdf__md__bb__info}{df\_md\_bb\_info}}\ *)\ \doxymbox{\hyperlink{df_8h_ad4af6212553c68b25bdfdd8fd5fc4f67}{df\_md}}-\/>block\_info)[index];}
+\DoxyCodeLine{01132\ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{01133\ \ \ \ \ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{stddef_8h_a070d2ce7b6bb7e5c05602aa8c308d0c4}{NULL}};}
+\DoxyCodeLine{01134\ \}}
+\DoxyCodeLine{01135\ }
+\DoxyCodeLine{01136\ \textcolor{keyword}{inline}\ \textcolor{keyword}{class\ }\doxymbox{\hyperlink{classdf__live__bb__info}{df\_live\_bb\_info}}\ *}
+\DoxyCodeLine{01137\ \doxymbox{\hyperlink{df_8h_af79476ce08db770ec804cc20d7af6ef7}{df\_live\_get\_bb\_info}}\ (\textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ index)}
+\DoxyCodeLine{01138\ \{}
+\DoxyCodeLine{01139\ \ \ \textcolor{keywordflow}{if}\ (index\ <\ df\_live-\/>block\_info\_size)}
+\DoxyCodeLine{01140\ \ \ \ \ \textcolor{keywordflow}{return}\ \&((\textcolor{keyword}{class\ }\doxymbox{\hyperlink{classdf__live__bb__info}{df\_live\_bb\_info}}\ *)\ \doxymbox{\hyperlink{df_8h_af5183539bcbdb9fa1939b88ca28a14bf}{df\_live}}-\/>block\_info)[index];}
+\DoxyCodeLine{01141\ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{01142\ \ \ \ \ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{stddef_8h_a070d2ce7b6bb7e5c05602aa8c308d0c4}{NULL}};}
+\DoxyCodeLine{01143\ \}}
+\DoxyCodeLine{01144\ }
+\DoxyCodeLine{01145\ \textcolor{keyword}{inline}\ \textcolor{keyword}{class\ }\doxymbox{\hyperlink{classdf__word__lr__bb__info}{df\_word\_lr\_bb\_info}}\ *}
+\DoxyCodeLine{01146\ \doxymbox{\hyperlink{df_8h_a2bb634e4589dbe3d08041f5ac00e6f29}{df\_word\_lr\_get\_bb\_info}}\ (\textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ index)}
+\DoxyCodeLine{01147\ \{}
+\DoxyCodeLine{01148\ \ \ \textcolor{keywordflow}{if}\ (index\ <\ df\_word\_lr-\/>block\_info\_size)}
+\DoxyCodeLine{01149\ \ \ \ \ \textcolor{keywordflow}{return}\ \&((\textcolor{keyword}{class\ }\doxymbox{\hyperlink{classdf__word__lr__bb__info}{df\_word\_lr\_bb\_info}}\ *)\ \doxymbox{\hyperlink{df_8h_a6db67883afb8c131656d3a7cc2eb14c6}{df\_word\_lr}}-\/>block\_info)[index];}
+\DoxyCodeLine{01150\ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{01151\ \ \ \ \ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{stddef_8h_a070d2ce7b6bb7e5c05602aa8c308d0c4}{NULL}};}
+\DoxyCodeLine{01152\ \}}
+\DoxyCodeLine{01153\ }
+\DoxyCodeLine{01154\ \textcolor{keyword}{inline}\ \textcolor{keyword}{class\ }\doxymbox{\hyperlink{classdf__mir__bb__info}{df\_mir\_bb\_info}}\ *}
+\DoxyCodeLine{01155\ \doxymbox{\hyperlink{df_8h_af8cb484a78f9f3f6674b7830f2bb8756}{df\_mir\_get\_bb\_info}}\ (\textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ index)}
+\DoxyCodeLine{01156\ \{}
+\DoxyCodeLine{01157\ \ \ \textcolor{keywordflow}{if}\ (index\ <\ df\_mir-\/>block\_info\_size)}
+\DoxyCodeLine{01158\ \ \ \ \ \textcolor{keywordflow}{return}\ \&((\textcolor{keyword}{class\ }\doxymbox{\hyperlink{classdf__mir__bb__info}{df\_mir\_bb\_info}}\ *)\ \doxymbox{\hyperlink{df_8h_a7a524b47284ca7c8808f276ec93bc027}{df\_mir}}-\/>block\_info)[index];}
+\DoxyCodeLine{01159\ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{01160\ \ \ \ \ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{stddef_8h_a070d2ce7b6bb7e5c05602aa8c308d0c4}{NULL}};}
+\DoxyCodeLine{01161\ \}}
+\DoxyCodeLine{01162\ }
+\DoxyCodeLine{01163\ \textcolor{comment}{/*\ Get\ the\ live\ at\ out\ set\ for\ BB\ no\ matter\ what\ problem\ happens\ to\ be}}
+\DoxyCodeLine{01164\ \textcolor{comment}{\ \ \ defined.\ \ This\ function\ is\ used\ by\ the\ register\ allocators\ who}}
+\DoxyCodeLine{01165\ \textcolor{comment}{\ \ \ choose\ different\ dataflow\ problems\ depending\ on\ the\ optimization}}
+\DoxyCodeLine{01166\ \textcolor{comment}{\ \ \ level.\ \ */}}
+\DoxyCodeLine{01167\ }
+\DoxyCodeLine{01168\ \textcolor{keyword}{inline}\ \doxymbox{\hyperlink{coretypes_8h_ae7ea3a04cabf8964dc6e8e95a9cde1b8}{bitmap}}}
+\DoxyCodeLine{01169\ \doxymbox{\hyperlink{df_8h_aeafdba7fda457d56de5153e3c096363a}{df\_get\_live\_out}}\ (\doxymbox{\hyperlink{coretypes_8h_a0469df20b471a4cd7c81fbdce5027487}{basic\_block}}\ bb)}
+\DoxyCodeLine{01170\ \{}
+\DoxyCodeLine{01171\ \ \ \doxymbox{\hyperlink{system_8h_aff447899dc74d54931b2bc2d47de9423}{gcc\_checking\_assert}}\ (\doxymbox{\hyperlink{df_8h_aa26c81be680983d7f78b1e4c8a9e1735}{df\_lr}});}
+\DoxyCodeLine{01172\ }
+\DoxyCodeLine{01173\ \ \ \textcolor{keywordflow}{if}\ (\doxymbox{\hyperlink{df_8h_af5183539bcbdb9fa1939b88ca28a14bf}{df\_live}})}
+\DoxyCodeLine{01174\ \ \ \ \ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{df_8h_a8e5562d1d64eed5696f5c89e2708d7fc}{DF\_LIVE\_OUT}}\ (bb);}
+\DoxyCodeLine{01175\ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{01176\ \ \ \ \ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{df_8h_ab8e8de24392bec1554418dba34199ce8}{DF\_LR\_OUT}}\ (bb);}
+\DoxyCodeLine{01177\ \}}
+\DoxyCodeLine{01178\ }
+\DoxyCodeLine{01179\ \textcolor{comment}{/*\ Get\ the\ live\ at\ in\ set\ for\ BB\ no\ matter\ what\ problem\ happens\ to\ be}}
+\DoxyCodeLine{01180\ \textcolor{comment}{\ \ \ defined.\ \ This\ function\ is\ used\ by\ the\ register\ allocators\ who}}
+\DoxyCodeLine{01181\ \textcolor{comment}{\ \ \ choose\ different\ dataflow\ problems\ depending\ on\ the\ optimization}}
+\DoxyCodeLine{01182\ \textcolor{comment}{\ \ \ level.\ \ */}}
+\DoxyCodeLine{01183\ }
+\DoxyCodeLine{01184\ \textcolor{keyword}{inline}\ \doxymbox{\hyperlink{coretypes_8h_ae7ea3a04cabf8964dc6e8e95a9cde1b8}{bitmap}}}
+\DoxyCodeLine{01185\ \doxymbox{\hyperlink{df_8h_a406308d69e8af7f9c2eeda2213ab6c32}{df\_get\_live\_in}}\ (\doxymbox{\hyperlink{coretypes_8h_a0469df20b471a4cd7c81fbdce5027487}{basic\_block}}\ bb)}
+\DoxyCodeLine{01186\ \{}
+\DoxyCodeLine{01187\ \ \ \doxymbox{\hyperlink{system_8h_aff447899dc74d54931b2bc2d47de9423}{gcc\_checking\_assert}}\ (\doxymbox{\hyperlink{df_8h_aa26c81be680983d7f78b1e4c8a9e1735}{df\_lr}});}
+\DoxyCodeLine{01188\ }
+\DoxyCodeLine{01189\ \ \ \textcolor{keywordflow}{if}\ (\doxymbox{\hyperlink{df_8h_af5183539bcbdb9fa1939b88ca28a14bf}{df\_live}})}
+\DoxyCodeLine{01190\ \ \ \ \ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{df_8h_a76a78b511c083715ae9a65b189ffdfba}{DF\_LIVE\_IN}}\ (bb);}
+\DoxyCodeLine{01191\ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{01192\ \ \ \ \ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{df_8h_a63f3811cc4f20fb78476bb331b604df0}{DF\_LR\_IN}}\ (bb);}
+\DoxyCodeLine{01193\ \}}
+\DoxyCodeLine{01194\ }
+\DoxyCodeLine{01195\ \textcolor{comment}{/*\ Get\ basic\ block\ info.\ \ */}}
+\DoxyCodeLine{01196\ \textcolor{comment}{/*\ Get\ the\ artificial\ defs\ for\ a\ basic\ block.\ \ */}}
+\DoxyCodeLine{01197\ }
+\DoxyCodeLine{01198\ \textcolor{keyword}{inline}\ \doxymbox{\hyperlink{df_8h_a2e31e87468476f9209292e78ed33bda1}{df\_ref}}}
+\DoxyCodeLine{01199\ \doxymbox{\hyperlink{df_8h_aa9a3c709f75a4ab831ae25c4b91d30c0}{df\_get\_artificial\_defs}}\ (\textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ bb\_index)}
+\DoxyCodeLine{01200\ \{}
+\DoxyCodeLine{01201\ \ \ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{df_8h_af1f7059f74275adc647931923854d2a1}{df\_scan\_get\_bb\_info}}\ (bb\_index)-\/>\doxymbox{\hyperlink{structdf__scan__bb__info_a554dc734be8ed79972fd4bac268f755d}{artificial\_defs}};}
+\DoxyCodeLine{01202\ \}}
+\DoxyCodeLine{01203\ }
+\DoxyCodeLine{01204\ }
+\DoxyCodeLine{01205\ \textcolor{comment}{/*\ Get\ the\ artificial\ uses\ for\ a\ basic\ block.\ \ */}}
+\DoxyCodeLine{01206\ }
+\DoxyCodeLine{01207\ \textcolor{keyword}{inline}\ \doxymbox{\hyperlink{df_8h_a2e31e87468476f9209292e78ed33bda1}{df\_ref}}}
+\DoxyCodeLine{01208\ \doxymbox{\hyperlink{df_8h_a0d4ea75f6a9d1350c8721914fbbebe34}{df\_get\_artificial\_uses}}\ (\textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ bb\_index)}
+\DoxyCodeLine{01209\ \{}
+\DoxyCodeLine{01210\ \ \ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{df_8h_af1f7059f74275adc647931923854d2a1}{df\_scan\_get\_bb\_info}}\ (bb\_index)-\/>\doxymbox{\hyperlink{structdf__scan__bb__info_a6c1a99bb25d0689a7ce4dafb075ec164}{artificial\_uses}};}
+\DoxyCodeLine{01211\ \}}
+\DoxyCodeLine{01212\ }
+\DoxyCodeLine{01213\ \textcolor{comment}{/*\ If\ INSN\ defines\ exactly\ one\ register,\ return\ the\ associated\ reference,}}
+\DoxyCodeLine{01214\ \textcolor{comment}{\ \ \ otherwise\ return\ null.\ \ */}}
+\DoxyCodeLine{01215\ }
+\DoxyCodeLine{01216\ \textcolor{keyword}{inline}\ \doxymbox{\hyperlink{df_8h_a2e31e87468476f9209292e78ed33bda1}{df\_ref}}}
+\DoxyCodeLine{01217\ \doxymbox{\hyperlink{df_8h_abd33b9411c60c1fac3befdbc3cae9635}{df\_single\_def}}\ (\textcolor{keyword}{const}\ \doxymbox{\hyperlink{structdf__insn__info}{df\_insn\_info}}\ *info)}
+\DoxyCodeLine{01218\ \{}
+\DoxyCodeLine{01219\ \ \ \doxymbox{\hyperlink{df_8h_a2e31e87468476f9209292e78ed33bda1}{df\_ref}}\ defs\ =\ \doxymbox{\hyperlink{df_8h_a7a12b45c375c3a824d521094fa09c2ae}{DF\_INSN\_INFO\_DEFS}}\ (info);}
+\DoxyCodeLine{01220\ \ \ \textcolor{keywordflow}{return}\ defs\ \&\&\ !\doxymbox{\hyperlink{df_8h_aaf028a5406fdd8a5deb32e82bc0dfac8}{DF\_REF\_NEXT\_LOC}}\ (defs)\ ?\ defs\ :\ \doxymbox{\hyperlink{stddef_8h_a070d2ce7b6bb7e5c05602aa8c308d0c4}{NULL}};}
+\DoxyCodeLine{01221\ \}}
+\DoxyCodeLine{01222\ }
+\DoxyCodeLine{01223\ \textcolor{comment}{/*\ If\ INSN\ uses\ exactly\ one\ register,\ return\ the\ associated\ reference,}}
+\DoxyCodeLine{01224\ \textcolor{comment}{\ \ \ otherwise\ return\ null.\ \ */}}
+\DoxyCodeLine{01225\ }
+\DoxyCodeLine{01226\ \textcolor{keyword}{inline}\ \doxymbox{\hyperlink{df_8h_a2e31e87468476f9209292e78ed33bda1}{df\_ref}}}
+\DoxyCodeLine{01227\ \doxymbox{\hyperlink{df_8h_a3438d0b310cd8cab13e49815d2f29c53}{df\_single\_use}}\ (\textcolor{keyword}{const}\ \doxymbox{\hyperlink{structdf__insn__info}{df\_insn\_info}}\ *info)}
+\DoxyCodeLine{01228\ \{}
+\DoxyCodeLine{01229\ \ \ \doxymbox{\hyperlink{df_8h_a2e31e87468476f9209292e78ed33bda1}{df\_ref}}\ uses\ =\ \doxymbox{\hyperlink{df_8h_ae0c9459291dc119f9ef79f4236e7d9e7}{DF\_INSN\_INFO\_USES}}\ (info);}
+\DoxyCodeLine{01230\ \ \ \textcolor{keywordflow}{return}\ uses\ \&\&\ !\doxymbox{\hyperlink{df_8h_aaf028a5406fdd8a5deb32e82bc0dfac8}{DF\_REF\_NEXT\_LOC}}\ (uses)\ ?\ uses\ :\ \doxymbox{\hyperlink{stddef_8h_a070d2ce7b6bb7e5c05602aa8c308d0c4}{NULL}};}
+\DoxyCodeLine{01231\ \}}
+\DoxyCodeLine{01232\ }
+\DoxyCodeLine{01233\ \textcolor{comment}{/*\ web\ */}}
+\DoxyCodeLine{01234\ }
+\DoxyCodeLine{01235\ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{structweb__entry__base}{web\_entry\_base}}}
+\DoxyCodeLine{01236\ \{}
+\DoxyCodeLine{01237\ \ \textcolor{keyword}{private}:}
+\DoxyCodeLine{01238\ \ \ \textcolor{comment}{/*\ Reference\ to\ the\ parent\ in\ the\ union/find\ tree.\ \ */}}
+\DoxyCodeLine{01239\ \ \ \doxymbox{\hyperlink{structweb__entry__base}{web\_entry\_base}}\ *\doxymbox{\hyperlink{structweb__entry__base_adb4030a38b2490f728cb55479acefdad}{pred\_pvt}};}
+\DoxyCodeLine{01240\ }
+\DoxyCodeLine{01241\ \ \textcolor{keyword}{public}:}
+\DoxyCodeLine{01242\ \ \ \textcolor{comment}{/*\ Accessors.\ \ */}}
+\DoxyCodeLine{01243\ \ \ \doxymbox{\hyperlink{structweb__entry__base}{web\_entry\_base}}\ *\doxymbox{\hyperlink{structweb__entry__base_a7dde194589d454b2e47920c46915012b}{pred}}\ ()\ \{\ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{structweb__entry__base_adb4030a38b2490f728cb55479acefdad}{pred\_pvt}};\ \}}
+\DoxyCodeLine{01244\ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{structweb__entry__base_a55c771b1d6ee0b2943eba05788d27017}{set\_pred}}\ (\doxymbox{\hyperlink{structweb__entry__base}{web\_entry\_base}}\ *p)\ \{\ \doxymbox{\hyperlink{structweb__entry__base_adb4030a38b2490f728cb55479acefdad}{pred\_pvt}}\ =\ p;\ \}}
+\DoxyCodeLine{01245\ }
+\DoxyCodeLine{01246\ \ \ \textcolor{comment}{/*\ Find\ representative\ in\ union-\/find\ tree.\ \ */}}
+\DoxyCodeLine{01247\ \ \ \doxymbox{\hyperlink{structweb__entry__base}{web\_entry\_base}}\ *\doxymbox{\hyperlink{structweb__entry__base_a99f4052b72a85416a3e233684b34277d}{unionfind\_root}}\ ();}
+\DoxyCodeLine{01248\ }
+\DoxyCodeLine{01249\ \ \ \textcolor{comment}{/*\ Union\ with\ another\ set,\ returning\ TRUE\ if\ they\ are\ already\ unioned.\ \ */}}
+\DoxyCodeLine{01250\ \ \ \textcolor{keyword}{friend}\ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{structweb__entry__base_a2abf2482c4882f76dc3edb973c360622}{unionfind\_union}}\ (\doxymbox{\hyperlink{structweb__entry__base}{web\_entry\_base}}\ *first,\ \doxymbox{\hyperlink{structweb__entry__base}{web\_entry\_base}}\ *second);}
+\DoxyCodeLine{01251\ \};}
+\DoxyCodeLine{01252\ }
+\DoxyCodeLine{01253\ \textcolor{preprocessor}{\#endif\ }\textcolor{comment}{/*\ GCC\_DF\_H\ */}\textcolor{preprocessor}{}}
+
+\end{DoxyCode}

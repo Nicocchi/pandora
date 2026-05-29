@@ -1,0 +1,27 @@
+var trans_mem_8h =
+[
+    [ "PR_AWBARRIERSOMITTED", "trans-mem_8h.html#a3aa76133c08a07e1e37c228a10e9d568", null ],
+    [ "PR_DOESGOIRREVOCABLE", "trans-mem_8h.html#ac3eeead66558e68e23b57e1b14a0d411", null ],
+    [ "PR_EXCEPTIONBLOCK", "trans-mem_8h.html#a034f8ec4e6725ddcef322402c9e5e970", null ],
+    [ "PR_HASELSE", "trans-mem_8h.html#a00347df0a5c0cd993c2e4012411593b4", null ],
+    [ "PR_HASNOABORT", "trans-mem_8h.html#a1b3a19bbff5d8ca889683fdbc2e56395", null ],
+    [ "PR_HASNOIRREVOCABLE", "trans-mem_8h.html#af5fd3f085407664c99c82019d5a59d26", null ],
+    [ "PR_HASNOSIMPLEREADS", "trans-mem_8h.html#a0875498dbe2e5e411811bced4b2b3215", null ],
+    [ "PR_HASNOXMMUPDATE", "trans-mem_8h.html#a1d264c04293250dbbd63e415a37daa87", null ],
+    [ "PR_INSTRUMENTEDCODE", "trans-mem_8h.html#a32f9e2e666124e5646299e413fd83f16", null ],
+    [ "PR_MULTIWAYCODE", "trans-mem_8h.html#aca7c35d26241405da79b0926b12f0dc7", null ],
+    [ "PR_PREFERUNINSTRUMENTED", "trans-mem_8h.html#a392a6d63041f661295338fe62bbc2571", null ],
+    [ "PR_RARBARRIERSOMITTED", "trans-mem_8h.html#ac42625e7fc812a9f0096b6eaae4d4cf0", null ],
+    [ "PR_READONLY", "trans-mem_8h.html#ac08a46669e6788355d7687011ce48638", null ],
+    [ "PR_UNDOLOGCODE", "trans-mem_8h.html#a71baa32cecdcd261c5241c3525d64fa7", null ],
+    [ "PR_UNINSTRUMENTEDCODE", "trans-mem_8h.html#a04e35e2ac388c00fe39a670ddd65608b", null ],
+    [ "build_tm_abort_call", "trans-mem_8h.html#a21736b392157eeecfc1b218a849f766a", null ],
+    [ "compute_transaction_bits", "trans-mem_8h.html#a06400fc226b1a3c81fdc3d1f7b43d0ca", null ],
+    [ "is_tm_ending", "trans-mem_8h.html#a79263e9e4b2e576cf8ea5ca04bf4a8b5", null ],
+    [ "is_tm_ending_fndecl", "trans-mem_8h.html#af12b18537becba397a252790838c791c", null ],
+    [ "is_tm_may_cancel_outer", "trans-mem_8h.html#a374753026562613f9b285783c16dc76b", null ],
+    [ "is_tm_pure", "trans-mem_8h.html#ab97e0f8e3d71027ab109f56dac7e0015", null ],
+    [ "is_tm_safe", "trans-mem_8h.html#ae2bd1c0b44bbc59a3566bd4d115871cc", null ],
+    [ "record_tm_replacement", "trans-mem_8h.html#af6dcc275ea6e4d52760edc0d37d74981", null ],
+    [ "tm_malloc_replacement", "trans-mem_8h.html#a216072925c583a9c8c870917691369bb", null ]
+];

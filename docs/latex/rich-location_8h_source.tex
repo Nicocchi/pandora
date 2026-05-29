@@ -1,0 +1,701 @@
+\doxysection{rich-\/location.h}
+\hypertarget{rich-location_8h_source}{}\label{rich-location_8h_source}\index{toolchain/x86\_64-\/elf/lib/gcc/x86\_64-\/elf/14.2.0/plugin/include/rich-\/location.h@{toolchain/x86\_64-\/elf/lib/gcc/x86\_64-\/elf/14.2.0/plugin/include/rich-\/location.h}}
+\doxymbox{\hyperlink{rich-location_8h}{Go to the documentation of this file.}}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001\ \textcolor{comment}{/*\ Bundles\ of\ location\ information\ used\ when\ printing\ diagnostics.}}
+\DoxyCodeLine{00002\ \textcolor{comment}{\ \ \ Copyright\ (C)\ 2015-\/2024\ Free\ Software\ Foundation,\ Inc.}}
+\DoxyCodeLine{00003\ \textcolor{comment}{}}
+\DoxyCodeLine{00004\ \textcolor{comment}{This\ program\ is\ free\ software;\ you\ can\ redistribute\ it\ and/or\ modify\ it}}
+\DoxyCodeLine{00005\ \textcolor{comment}{under\ the\ terms\ of\ the\ GNU\ General\ Public\ License\ as\ published\ by\ the}}
+\DoxyCodeLine{00006\ \textcolor{comment}{Free\ Software\ Foundation;\ either\ version\ 3,\ or\ (at\ your\ option)\ any}}
+\DoxyCodeLine{00007\ \textcolor{comment}{later\ version.}}
+\DoxyCodeLine{00008\ \textcolor{comment}{}}
+\DoxyCodeLine{00009\ \textcolor{comment}{This\ program\ is\ distributed\ in\ the\ hope\ that\ it\ will\ be\ useful,}}
+\DoxyCodeLine{00010\ \textcolor{comment}{but\ WITHOUT\ ANY\ WARRANTY;\ without\ even\ the\ implied\ warranty\ of}}
+\DoxyCodeLine{00011\ \textcolor{comment}{MERCHANTABILITY\ or\ FITNESS\ FOR\ A\ PARTICULAR\ PURPOSE.\ \ See\ the}}
+\DoxyCodeLine{00012\ \textcolor{comment}{GNU\ General\ Public\ License\ for\ more\ details.}}
+\DoxyCodeLine{00013\ \textcolor{comment}{}}
+\DoxyCodeLine{00014\ \textcolor{comment}{You\ should\ have\ received\ a\ copy\ of\ the\ GNU\ General\ Public\ License}}
+\DoxyCodeLine{00015\ \textcolor{comment}{along\ with\ this\ program;\ see\ the\ file\ COPYING3.\ \ If\ not\ see}}
+\DoxyCodeLine{00016\ \textcolor{comment}{<http://www.gnu.org/licenses/>.}}
+\DoxyCodeLine{00017\ \textcolor{comment}{}}
+\DoxyCodeLine{00018\ \textcolor{comment}{\ In\ other\ words,\ you\ are\ welcome\ to\ use,\ share\ and\ improve\ this\ program.}}
+\DoxyCodeLine{00019\ \textcolor{comment}{\ You\ are\ forbidden\ to\ forbid\ anyone\ else\ to\ use,\ share\ and\ improve}}
+\DoxyCodeLine{00020\ \textcolor{comment}{\ what\ you\ give\ them.\ \ \ Help\ stamp\ out\ software-\/hoarding!\ \ */}}
+\DoxyCodeLine{00021\ }
+\DoxyCodeLine{00022\ \textcolor{preprocessor}{\#ifndef\ LIBCPP\_RICH\_LOCATION\_H}}
+\DoxyCodeLine{00023\ \textcolor{preprocessor}{\#define\ LIBCPP\_RICH\_LOCATION\_H}}
+\DoxyCodeLine{00024\ }
+\DoxyCodeLine{00025\ \textcolor{keyword}{class\ }\doxymbox{\hyperlink{classrange__label}{range\_label}};}
+\DoxyCodeLine{00026\ }
+\DoxyCodeLine{00027\ \textcolor{comment}{/*\ A\ hint\ to\ diagnostic\_show\_locus\ on\ how\ to\ print\ a\ source\ range\ within\ a}}
+\DoxyCodeLine{00028\ \textcolor{comment}{\ \ \ rich\_location.}}
+\DoxyCodeLine{00029\ \textcolor{comment}{}}
+\DoxyCodeLine{00030\ \textcolor{comment}{\ \ \ Typically\ this\ is\ SHOW\_RANGE\_WITH\_CARET\ for\ the\ 0th\ range,\ and}}
+\DoxyCodeLine{00031\ \textcolor{comment}{\ \ \ SHOW\_RANGE\_WITHOUT\_CARET\ for\ subsequent\ ranges,}}
+\DoxyCodeLine{00032\ \textcolor{comment}{\ \ \ but\ the\ Fortran\ frontend\ uses\ SHOW\_RANGE\_WITH\_CARET\ repeatedly\ for}}
+\DoxyCodeLine{00033\ \textcolor{comment}{\ \ \ printing\ things\ like:}}
+\DoxyCodeLine{00034\ \textcolor{comment}{}}
+\DoxyCodeLine{00035\ \textcolor{comment}{\ \ \ \ \ \ \ x\ =\ x\ +\ y}}
+\DoxyCodeLine{00036\ \textcolor{comment}{\ \ \ \ \ \ \ \ \ \ \ 1\ \ \ 2}}
+\DoxyCodeLine{00037\ \textcolor{comment}{\ \ \ \ \ \ \ Error:\ Shapes\ for\ operands\ at\ (1)\ and\ (2)\ are\ not\ conformable}}
+\DoxyCodeLine{00038\ \textcolor{comment}{}}
+\DoxyCodeLine{00039\ \textcolor{comment}{\ \ \ where\ "{}1"{}\ and\ "{}2"{}\ are\ notionally\ carets.\ \ */}}
+\DoxyCodeLine{00040\ }
+\DoxyCodeLine{00041\ \textcolor{keyword}{enum}\ \doxymbox{\hyperlink{rich-location_8h_a05ed39905087d34395b59587f558f155}{range\_display\_kind}}}
+\DoxyCodeLine{00042\ \{}
+\DoxyCodeLine{00043\ \ \ \textcolor{comment}{/*\ Show\ the\ pertinent\ source\ line(s),\ the\ caret,\ and\ underline(s).\ \ */}}
+\DoxyCodeLine{00044\ \ \ \doxymbox{\hyperlink{rich-location_8h_a05ed39905087d34395b59587f558f155afa82a3fef3e7351d19a547802c98a03e}{SHOW\_RANGE\_WITH\_CARET}},}
+\DoxyCodeLine{00045\ }
+\DoxyCodeLine{00046\ \ \ \textcolor{comment}{/*\ Show\ the\ pertinent\ source\ line(s)\ and\ underline(s),\ but\ don't}}
+\DoxyCodeLine{00047\ \textcolor{comment}{\ \ \ \ \ show\ the\ caret\ (just\ an\ underline).\ \ */}}
+\DoxyCodeLine{00048\ \ \ \doxymbox{\hyperlink{rich-location_8h_a05ed39905087d34395b59587f558f155aa6e7ac1357fa0737df9896683861d049}{SHOW\_RANGE\_WITHOUT\_CARET}},}
+\DoxyCodeLine{00049\ }
+\DoxyCodeLine{00050\ \ \ \textcolor{comment}{/*\ Just\ show\ the\ source\ lines;\ don't\ show\ the\ range\ itself.}}
+\DoxyCodeLine{00051\ \textcolor{comment}{\ \ \ \ \ This\ is\ for\ use\ when\ displaying\ some\ line-\/insertion\ fix-\/it\ hints\ (for}}
+\DoxyCodeLine{00052\ \textcolor{comment}{\ \ \ \ \ showing\ the\ user\ context\ on\ the\ change,\ for\ when\ it\ doesn't\ make\ sense}}
+\DoxyCodeLine{00053\ \textcolor{comment}{\ \ \ \ \ to\ highlight\ the\ first\ column\ on\ the\ next\ line).\ \ */}}
+\DoxyCodeLine{00054\ \ \ \doxymbox{\hyperlink{rich-location_8h_a05ed39905087d34395b59587f558f155a985a78313cc98ba6d0c0ce8d35bd5055}{SHOW\_LINES\_WITHOUT\_RANGE}}}
+\DoxyCodeLine{00055\ \};}
+\DoxyCodeLine{00056\ }
+\DoxyCodeLine{00057\ \textcolor{comment}{/*\ A\ location\ within\ a\ rich\_location:\ a\ caret\&range,\ with}}
+\DoxyCodeLine{00058\ \textcolor{comment}{\ \ \ the\ caret\ potentially\ flagged\ for\ display,\ and\ an\ optional}}
+\DoxyCodeLine{00059\ \textcolor{comment}{\ \ \ label.\ \ */}}
+\DoxyCodeLine{00060\ }
+\DoxyCodeLine{00061\ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{structlocation__range}{location\_range}}}
+\DoxyCodeLine{00062\ \{}
+\DoxyCodeLine{00063\ \ \ \doxymbox{\hyperlink{line-map_8h_aedf25620511d64e43327f1a229906a96}{location\_t}}\ \doxymbox{\hyperlink{structlocation__range_a60bb85e9b91d37b5f07a3a7c5d5b5f47}{m\_loc}};}
+\DoxyCodeLine{00064\ }
+\DoxyCodeLine{00065\ \ \ \textcolor{keyword}{enum}\ \doxymbox{\hyperlink{rich-location_8h_a05ed39905087d34395b59587f558f155}{range\_display\_kind}}\ \doxymbox{\hyperlink{structlocation__range_ab8f91c21505d9f45e9fe174cf9ce6bbe}{m\_range\_display\_kind}};}
+\DoxyCodeLine{00066\ }
+\DoxyCodeLine{00067\ \ \ \textcolor{comment}{/*\ If\ non-\/NULL,\ the\ label\ for\ this\ range.\ \ */}}
+\DoxyCodeLine{00068\ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classrange__label}{range\_label}}\ *\doxymbox{\hyperlink{structlocation__range_aa80d59c572c391f6d3e5e9df9cbf6192}{m\_label}};}
+\DoxyCodeLine{00069\ \};}
+\DoxyCodeLine{00070\ }
+\DoxyCodeLine{00071\ \textcolor{comment}{/*\ A\ partially-\/embedded\ vec\ for\ use\ within\ rich\_location\ for\ storing}}
+\DoxyCodeLine{00072\ \textcolor{comment}{\ \ \ ranges\ and\ fix-\/it\ hints.}}
+\DoxyCodeLine{00073\ \textcolor{comment}{}}
+\DoxyCodeLine{00074\ \textcolor{comment}{\ \ \ Elements\ [0..NUM\_EMBEDDED)\ are\ allocated\ within\ m\_embed,\ after}}
+\DoxyCodeLine{00075\ \textcolor{comment}{\ \ \ that\ they\ are\ within\ the\ dynamically-\/allocated\ m\_extra.}}
+\DoxyCodeLine{00076\ \textcolor{comment}{}}
+\DoxyCodeLine{00077\ \textcolor{comment}{\ \ \ This\ allows\ for\ static\ allocation\ in\ the\ common\ case,\ whilst}}
+\DoxyCodeLine{00078\ \textcolor{comment}{\ \ \ supporting\ the\ rarer\ case\ of\ an\ arbitrary\ number\ of\ elements.}}
+\DoxyCodeLine{00079\ \textcolor{comment}{}}
+\DoxyCodeLine{00080\ \textcolor{comment}{\ \ \ Dynamic\ allocation\ is\ not\ performed\ unless\ it's\ needed.\ \ */}}
+\DoxyCodeLine{00081\ }
+\DoxyCodeLine{00082\ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ T,\ \textcolor{keywordtype}{int}\ NUM\_EMBEDDED>}
+\DoxyCodeLine{00083\ \textcolor{keyword}{class\ }\doxymbox{\hyperlink{classsemi__embedded__vec_aefcc535247afa66a7095c6c73c8bc1f3}{semi\_embedded\_vec}}}
+\DoxyCodeLine{00084\ \{}
+\DoxyCodeLine{00085\ \ \textcolor{keyword}{public}:}
+\DoxyCodeLine{00086\ \ \ \doxymbox{\hyperlink{classsemi__embedded__vec_aefcc535247afa66a7095c6c73c8bc1f3}{semi\_embedded\_vec}}\ ();}
+\DoxyCodeLine{00087\ \ \ \doxymbox{\hyperlink{classsemi__embedded__vec_ae74aa98f672d089073c27fd454340f10}{\string~semi\_embedded\_vec}}\ ();}
+\DoxyCodeLine{00088\ }
+\DoxyCodeLine{00089\ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{classsemi__embedded__vec_a663ae70e2b7cd730bde86f387afcf7f4}{count}}\ ()\textcolor{keyword}{\ const\ }\{\ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{classsemi__embedded__vec_a1e6b9d2cfca857c1d56525fccea07b13}{m\_num}};\ \}}
+\DoxyCodeLine{00090\ \ \ T\&\ \doxymbox{\hyperlink{classsemi__embedded__vec_ac866f236565203e2b0a193307f2818f9}{operator[]\ }}(\textcolor{keywordtype}{int}\ idx);}
+\DoxyCodeLine{00091\ \ \ \textcolor{keyword}{const}\ T\&\ \doxymbox{\hyperlink{classsemi__embedded__vec_ac866f236565203e2b0a193307f2818f9}{operator[]\ }}(\textcolor{keywordtype}{int}\ idx)\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00092\ }
+\DoxyCodeLine{00093\ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classsemi__embedded__vec_a1896675f506686de677409186282f46b}{push}}\ (\textcolor{keyword}{const}\ T\&);}
+\DoxyCodeLine{00094\ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classsemi__embedded__vec_a09ec467d8c7deb12a815e8dba563052b}{truncate}}\ (\textcolor{keywordtype}{int}\ len);}
+\DoxyCodeLine{00095\ }
+\DoxyCodeLine{00096\ \ \textcolor{keyword}{private}:}
+\DoxyCodeLine{00097\ \ \ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{classsemi__embedded__vec_a1e6b9d2cfca857c1d56525fccea07b13}{m\_num}};}
+\DoxyCodeLine{00098\ \ \ T\ \doxymbox{\hyperlink{classsemi__embedded__vec_ae7baf7178db3006e31216b75c1071846}{m\_embedded}}[NUM\_EMBEDDED];}
+\DoxyCodeLine{00099\ \ \ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{classsemi__embedded__vec_a6b050848c777b08d5f503542d6499e50}{m\_alloc}};}
+\DoxyCodeLine{00100\ \ \ T\ *\doxymbox{\hyperlink{classsemi__embedded__vec_aa6d4eee744f6719b14515a0272798273}{m\_extra}};}
+\DoxyCodeLine{00101\ \};}
+\DoxyCodeLine{00102\ }
+\DoxyCodeLine{00103\ \textcolor{comment}{/*\ Constructor\ for\ semi\_embedded\_vec.\ \ In\ particular,\ no\ dynamic\ allocation}}
+\DoxyCodeLine{00104\ \textcolor{comment}{\ \ \ is\ done.\ \ */}}
+\DoxyCodeLine{00105\ }
+\DoxyCodeLine{00106\ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ T,\ \textcolor{keywordtype}{int}\ NUM\_EMBEDDED>}
+\DoxyCodeLine{00107\ \doxymbox{\hyperlink{classsemi__embedded__vec_aefcc535247afa66a7095c6c73c8bc1f3}{semi\_embedded\_vec<T,\ NUM\_EMBEDDED>::semi\_embedded\_vec}}\ ()}
+\DoxyCodeLine{00108\ :\ \doxymbox{\hyperlink{classsemi__embedded__vec_a1e6b9d2cfca857c1d56525fccea07b13}{m\_num}}\ (0),\ \doxymbox{\hyperlink{classsemi__embedded__vec_a6b050848c777b08d5f503542d6499e50}{m\_alloc}}\ (0),\ \doxymbox{\hyperlink{classsemi__embedded__vec_aa6d4eee744f6719b14515a0272798273}{m\_extra}}\ (\doxymbox{\hyperlink{stddef_8h_a070d2ce7b6bb7e5c05602aa8c308d0c4}{NULL}})}
+\DoxyCodeLine{00109\ \{}
+\DoxyCodeLine{00110\ \}}
+\DoxyCodeLine{00111\ }
+\DoxyCodeLine{00112\ \textcolor{comment}{/*\ semi\_embedded\_vec's\ dtor.\ \ Release\ any\ dynamically-\/allocated\ memory.\ \ */}}
+\DoxyCodeLine{00113\ }
+\DoxyCodeLine{00114\ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ T,\ \textcolor{keywordtype}{int}\ NUM\_EMBEDDED>}
+\DoxyCodeLine{00115\ \doxymbox{\hyperlink{classsemi__embedded__vec_ae74aa98f672d089073c27fd454340f10}{semi\_embedded\_vec<T,\ NUM\_EMBEDDED>::\string~semi\_embedded\_vec}}\ ()}
+\DoxyCodeLine{00116\ \{}
+\DoxyCodeLine{00117\ \ \ \doxymbox{\hyperlink{libiberty_8h_a383edbfc2f7d01cc32edb6ed1337c600}{XDELETEVEC}}\ (\doxymbox{\hyperlink{classsemi__embedded__vec_aa6d4eee744f6719b14515a0272798273}{m\_extra}});}
+\DoxyCodeLine{00118\ \}}
+\DoxyCodeLine{00119\ }
+\DoxyCodeLine{00120\ \textcolor{comment}{/*\ Look\ up\ element\ IDX,\ mutably.\ \ */}}
+\DoxyCodeLine{00121\ }
+\DoxyCodeLine{00122\ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ T,\ \textcolor{keywordtype}{int}\ NUM\_EMBEDDED>}
+\DoxyCodeLine{00123\ T\&}
+\DoxyCodeLine{00124\ \doxymbox{\hyperlink{classsemi__embedded__vec_ac866f236565203e2b0a193307f2818f9}{semi\_embedded\_vec<T,\ NUM\_EMBEDDED>::operator[]\ }}(\textcolor{keywordtype}{int}\ idx)}
+\DoxyCodeLine{00125\ \{}
+\DoxyCodeLine{00126\ \ \ \doxymbox{\hyperlink{line-map_8h_a83ca2aa7d18f905ed60fcf3c07287a19}{linemap\_assert}}\ (idx\ <\ \doxymbox{\hyperlink{classsemi__embedded__vec_a1e6b9d2cfca857c1d56525fccea07b13}{m\_num}});}
+\DoxyCodeLine{00127\ \ \ \textcolor{keywordflow}{if}\ (idx\ <\ NUM\_EMBEDDED)}
+\DoxyCodeLine{00128\ \ \ \ \ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{classsemi__embedded__vec_ae7baf7178db3006e31216b75c1071846}{m\_embedded}}[idx];}
+\DoxyCodeLine{00129\ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00130\ \ \ \ \ \{}
+\DoxyCodeLine{00131\ \ \ \ \ \ \ \doxymbox{\hyperlink{line-map_8h_a83ca2aa7d18f905ed60fcf3c07287a19}{linemap\_assert}}\ (\doxymbox{\hyperlink{classsemi__embedded__vec_aa6d4eee744f6719b14515a0272798273}{m\_extra}}\ !=\ \doxymbox{\hyperlink{stddef_8h_a070d2ce7b6bb7e5c05602aa8c308d0c4}{NULL}});}
+\DoxyCodeLine{00132\ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{classsemi__embedded__vec_aa6d4eee744f6719b14515a0272798273}{m\_extra}}[idx\ -\/\ NUM\_EMBEDDED];}
+\DoxyCodeLine{00133\ \ \ \ \ \}}
+\DoxyCodeLine{00134\ \}}
+\DoxyCodeLine{00135\ }
+\DoxyCodeLine{00136\ \textcolor{comment}{/*\ Look\ up\ element\ IDX\ (const).\ \ */}}
+\DoxyCodeLine{00137\ }
+\DoxyCodeLine{00138\ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ T,\ \textcolor{keywordtype}{int}\ NUM\_EMBEDDED>}
+\DoxyCodeLine{00139\ \textcolor{keyword}{const}\ T\&}
+\DoxyCodeLine{00140\ \doxymbox{\hyperlink{classsemi__embedded__vec_ac866f236565203e2b0a193307f2818f9}{semi\_embedded\_vec<T,\ NUM\_EMBEDDED>::operator[]\ }}(\textcolor{keywordtype}{int}\ idx)\textcolor{keyword}{\ const}}
+\DoxyCodeLine{00141\ \textcolor{keyword}{}\{}
+\DoxyCodeLine{00142\ \ \ \doxymbox{\hyperlink{line-map_8h_a83ca2aa7d18f905ed60fcf3c07287a19}{linemap\_assert}}\ (idx\ <\ \doxymbox{\hyperlink{classsemi__embedded__vec_a1e6b9d2cfca857c1d56525fccea07b13}{m\_num}});}
+\DoxyCodeLine{00143\ \ \ \textcolor{keywordflow}{if}\ (idx\ <\ NUM\_EMBEDDED)}
+\DoxyCodeLine{00144\ \ \ \ \ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{classsemi__embedded__vec_ae7baf7178db3006e31216b75c1071846}{m\_embedded}}[idx];}
+\DoxyCodeLine{00145\ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00146\ \ \ \ \ \{}
+\DoxyCodeLine{00147\ \ \ \ \ \ \ \doxymbox{\hyperlink{line-map_8h_a83ca2aa7d18f905ed60fcf3c07287a19}{linemap\_assert}}\ (\doxymbox{\hyperlink{classsemi__embedded__vec_aa6d4eee744f6719b14515a0272798273}{m\_extra}}\ !=\ \doxymbox{\hyperlink{stddef_8h_a070d2ce7b6bb7e5c05602aa8c308d0c4}{NULL}});}
+\DoxyCodeLine{00148\ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{classsemi__embedded__vec_aa6d4eee744f6719b14515a0272798273}{m\_extra}}[idx\ -\/\ NUM\_EMBEDDED];}
+\DoxyCodeLine{00149\ \ \ \ \ \}}
+\DoxyCodeLine{00150\ \}}
+\DoxyCodeLine{00151\ }
+\DoxyCodeLine{00152\ \textcolor{comment}{/*\ Append\ VALUE\ to\ the\ end\ of\ the\ semi\_embedded\_vec.\ \ */}}
+\DoxyCodeLine{00153\ }
+\DoxyCodeLine{00154\ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ T,\ \textcolor{keywordtype}{int}\ NUM\_EMBEDDED>}
+\DoxyCodeLine{00155\ \textcolor{keywordtype}{void}}
+\DoxyCodeLine{00156\ \doxymbox{\hyperlink{classsemi__embedded__vec_a1896675f506686de677409186282f46b}{semi\_embedded\_vec<T,\ NUM\_EMBEDDED>::push}}\ (\textcolor{keyword}{const}\ T\&\ \doxymbox{\hyperlink{configargs_8h_a92d544bd66c050551f3d87fa55eb3f5d}{value}})}
+\DoxyCodeLine{00157\ \{}
+\DoxyCodeLine{00158\ \ \ \textcolor{keywordtype}{int}\ idx\ =\ \doxymbox{\hyperlink{classsemi__embedded__vec_a1e6b9d2cfca857c1d56525fccea07b13}{m\_num}}++;}
+\DoxyCodeLine{00159\ \ \ \textcolor{keywordflow}{if}\ (idx\ <\ NUM\_EMBEDDED)}
+\DoxyCodeLine{00160\ \ \ \ \ \doxymbox{\hyperlink{classsemi__embedded__vec_ae7baf7178db3006e31216b75c1071846}{m\_embedded}}[idx]\ =\ \doxymbox{\hyperlink{configargs_8h_a92d544bd66c050551f3d87fa55eb3f5d}{value}};}
+\DoxyCodeLine{00161\ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00162\ \ \ \ \ \{}
+\DoxyCodeLine{00163\ \ \ \ \ \ \ \textcolor{comment}{/*\ Offset\ "{}idx"{}\ to\ be\ an\ index\ within\ m\_extra.\ \ */}}
+\DoxyCodeLine{00164\ \ \ \ \ \ \ idx\ -\/=\ NUM\_EMBEDDED;}
+\DoxyCodeLine{00165\ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (\doxymbox{\hyperlink{stddef_8h_a070d2ce7b6bb7e5c05602aa8c308d0c4}{NULL}}\ ==\ \doxymbox{\hyperlink{classsemi__embedded__vec_aa6d4eee744f6719b14515a0272798273}{m\_extra}})}
+\DoxyCodeLine{00166\ \ \ \ \ \{}
+\DoxyCodeLine{00167\ \ \ \ \ \ \ \doxymbox{\hyperlink{line-map_8h_a83ca2aa7d18f905ed60fcf3c07287a19}{linemap\_assert}}\ (\doxymbox{\hyperlink{classsemi__embedded__vec_a6b050848c777b08d5f503542d6499e50}{m\_alloc}}\ ==\ 0);}
+\DoxyCodeLine{00168\ \ \ \ \ \ \ \doxymbox{\hyperlink{classsemi__embedded__vec_a6b050848c777b08d5f503542d6499e50}{m\_alloc}}\ =\ 16;}
+\DoxyCodeLine{00169\ \ \ \ \ \ \ \doxymbox{\hyperlink{classsemi__embedded__vec_aa6d4eee744f6719b14515a0272798273}{m\_extra}}\ =\ \doxymbox{\hyperlink{libiberty_8h_a68af31d7426d8cb576b61256e77a3f33}{XNEWVEC}}\ (T,\ \doxymbox{\hyperlink{classsemi__embedded__vec_a6b050848c777b08d5f503542d6499e50}{m\_alloc}});}
+\DoxyCodeLine{00170\ \ \ \ \ \}}
+\DoxyCodeLine{00171\ \ \ \ \ \ \ \textcolor{keywordflow}{else}\ \textcolor{keywordflow}{if}\ (idx\ >=\ \doxymbox{\hyperlink{classsemi__embedded__vec_a6b050848c777b08d5f503542d6499e50}{m\_alloc}})}
+\DoxyCodeLine{00172\ \ \ \ \ \{}
+\DoxyCodeLine{00173\ \ \ \ \ \ \ \doxymbox{\hyperlink{line-map_8h_a83ca2aa7d18f905ed60fcf3c07287a19}{linemap\_assert}}\ (\doxymbox{\hyperlink{classsemi__embedded__vec_a6b050848c777b08d5f503542d6499e50}{m\_alloc}}\ >\ 0);}
+\DoxyCodeLine{00174\ \ \ \ \ \ \ \doxymbox{\hyperlink{classsemi__embedded__vec_a6b050848c777b08d5f503542d6499e50}{m\_alloc}}\ *=\ 2;}
+\DoxyCodeLine{00175\ \ \ \ \ \ \ \doxymbox{\hyperlink{classsemi__embedded__vec_aa6d4eee744f6719b14515a0272798273}{m\_extra}}\ =\ \doxymbox{\hyperlink{libiberty_8h_af11dc7623e48b6578eec1070ad156b71}{XRESIZEVEC}}\ (T,\ \doxymbox{\hyperlink{classsemi__embedded__vec_aa6d4eee744f6719b14515a0272798273}{m\_extra}},\ \doxymbox{\hyperlink{classsemi__embedded__vec_a6b050848c777b08d5f503542d6499e50}{m\_alloc}});}
+\DoxyCodeLine{00176\ \ \ \ \ \}}
+\DoxyCodeLine{00177\ \ \ \ \ \ \ \doxymbox{\hyperlink{line-map_8h_a83ca2aa7d18f905ed60fcf3c07287a19}{linemap\_assert}}\ (\doxymbox{\hyperlink{classsemi__embedded__vec_aa6d4eee744f6719b14515a0272798273}{m\_extra}});}
+\DoxyCodeLine{00178\ \ \ \ \ \ \ \doxymbox{\hyperlink{line-map_8h_a83ca2aa7d18f905ed60fcf3c07287a19}{linemap\_assert}}\ (idx\ <\ \doxymbox{\hyperlink{classsemi__embedded__vec_a6b050848c777b08d5f503542d6499e50}{m\_alloc}});}
+\DoxyCodeLine{00179\ \ \ \ \ \ \ \doxymbox{\hyperlink{classsemi__embedded__vec_aa6d4eee744f6719b14515a0272798273}{m\_extra}}[idx]\ =\ \doxymbox{\hyperlink{configargs_8h_a92d544bd66c050551f3d87fa55eb3f5d}{value}};}
+\DoxyCodeLine{00180\ \ \ \ \ \}}
+\DoxyCodeLine{00181\ \}}
+\DoxyCodeLine{00182\ }
+\DoxyCodeLine{00183\ \textcolor{comment}{/*\ Truncate\ to\ length\ LEN.\ \ No\ deallocation\ is\ performed.\ \ */}}
+\DoxyCodeLine{00184\ }
+\DoxyCodeLine{00185\ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ T,\ \textcolor{keywordtype}{int}\ NUM\_EMBEDDED>}
+\DoxyCodeLine{00186\ \textcolor{keywordtype}{void}}
+\DoxyCodeLine{00187\ \doxymbox{\hyperlink{classsemi__embedded__vec_a09ec467d8c7deb12a815e8dba563052b}{semi\_embedded\_vec<T,\ NUM\_EMBEDDED>::truncate}}\ (\textcolor{keywordtype}{int}\ len)}
+\DoxyCodeLine{00188\ \{}
+\DoxyCodeLine{00189\ \ \ \doxymbox{\hyperlink{line-map_8h_a83ca2aa7d18f905ed60fcf3c07287a19}{linemap\_assert}}\ (len\ <=\ \doxymbox{\hyperlink{classsemi__embedded__vec_a1e6b9d2cfca857c1d56525fccea07b13}{m\_num}});}
+\DoxyCodeLine{00190\ \ \ \doxymbox{\hyperlink{classsemi__embedded__vec_a1e6b9d2cfca857c1d56525fccea07b13}{m\_num}}\ =\ len;}
+\DoxyCodeLine{00191\ \}}
+\DoxyCodeLine{00192\ }
+\DoxyCodeLine{00193\ \textcolor{keyword}{class\ }\doxymbox{\hyperlink{classfixit__hint}{fixit\_hint}};}
+\DoxyCodeLine{00194\ \textcolor{keyword}{class\ }\doxymbox{\hyperlink{classdiagnostic__path}{diagnostic\_path}};}
+\DoxyCodeLine{00195\ }
+\DoxyCodeLine{00196\ \textcolor{comment}{/*\ A\ "{}rich"{}\ source\ code\ location,\ for\ use\ when\ printing\ diagnostics.}}
+\DoxyCodeLine{00197\ \textcolor{comment}{\ \ \ A\ rich\_location\ has\ one\ or\ more\ carets\&ranges,\ where\ the\ carets}}
+\DoxyCodeLine{00198\ \textcolor{comment}{\ \ \ are\ optional.\ \ These\ are\ referred\ to\ as\ "{}ranges"{}\ from\ here.}}
+\DoxyCodeLine{00199\ \textcolor{comment}{\ \ \ Typically\ the\ zeroth\ range\ has\ a\ caret;\ other\ ranges\ sometimes}}
+\DoxyCodeLine{00200\ \textcolor{comment}{\ \ \ have\ carets.}}
+\DoxyCodeLine{00201\ \textcolor{comment}{}}
+\DoxyCodeLine{00202\ \textcolor{comment}{\ \ \ The\ "{}primary"{}\ location\ of\ a\ rich\_location\ is\ the\ caret\ of\ range\ 0,}}
+\DoxyCodeLine{00203\ \textcolor{comment}{\ \ \ used\ for\ determining\ the\ line/column\ when\ printing\ diagnostic}}
+\DoxyCodeLine{00204\ \textcolor{comment}{\ \ \ text,\ such\ as:}}
+\DoxyCodeLine{00205\ \textcolor{comment}{}}
+\DoxyCodeLine{00206\ \textcolor{comment}{\ \ \ \ \ \ some-\/file.c:3:1:\ error:\ ...etc...}}
+\DoxyCodeLine{00207\ \textcolor{comment}{}}
+\DoxyCodeLine{00208\ \textcolor{comment}{\ \ \ Additional\ ranges\ may\ be\ added\ to\ help\ the\ user\ identify\ other}}
+\DoxyCodeLine{00209\ \textcolor{comment}{\ \ \ pertinent\ clauses\ in\ a\ diagnostic.}}
+\DoxyCodeLine{00210\ \textcolor{comment}{}}
+\DoxyCodeLine{00211\ \textcolor{comment}{\ \ \ Ranges\ can\ (optionally)\ be\ given\ labels\ via\ class\ range\_label.}}
+\DoxyCodeLine{00212\ \textcolor{comment}{}}
+\DoxyCodeLine{00213\ \textcolor{comment}{\ \ \ rich\_location\ instances\ are\ intended\ to\ be\ allocated\ on\ the\ stack}}
+\DoxyCodeLine{00214\ \textcolor{comment}{\ \ \ when\ generating\ diagnostics,\ and\ to\ be\ short-\/lived.}}
+\DoxyCodeLine{00215\ \textcolor{comment}{}}
+\DoxyCodeLine{00216\ \textcolor{comment}{\ \ \ Examples\ of\ rich\ locations}}
+\DoxyCodeLine{00217\ \textcolor{comment}{\ \ \ -\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{00218\ \textcolor{comment}{}}
+\DoxyCodeLine{00219\ \textcolor{comment}{\ \ \ Example\ A}}
+\DoxyCodeLine{00220\ \textcolor{comment}{\ \ \ *********}}
+\DoxyCodeLine{00221\ \textcolor{comment}{\ \ \ \ \ \ int\ i\ =\ "{}foo"{};}}
+\DoxyCodeLine{00222\ \textcolor{comment}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \string^}}
+\DoxyCodeLine{00223\ \textcolor{comment}{\ \ \ This\ "{}rich"{}\ location\ is\ simply\ a\ single\ range\ (range\ 0),\ with}}
+\DoxyCodeLine{00224\ \textcolor{comment}{\ \ \ caret\ =\ start\ =\ finish\ at\ the\ given\ point.}}
+\DoxyCodeLine{00225\ \textcolor{comment}{}}
+\DoxyCodeLine{00226\ \textcolor{comment}{\ \ \ Example\ B}}
+\DoxyCodeLine{00227\ \textcolor{comment}{\ \ \ *********}}
+\DoxyCodeLine{00228\ \textcolor{comment}{\ \ \ \ \ \ a\ =\ (foo\ \&\&\ bar)}}
+\DoxyCodeLine{00229\ \textcolor{comment}{\ \ \ \ \ \ \ \ \ \ \string~\string~\string~\string~\string~\string^\string~\string~\string~\string~\string~\string~}}
+\DoxyCodeLine{00230\ \textcolor{comment}{\ \ \ This\ rich\ location\ has\ a\ single\ range\ (range\ 0),\ with\ the\ caret}}
+\DoxyCodeLine{00231\ \textcolor{comment}{\ \ \ at\ the\ first\ "{}\&"{},\ and\ the\ start/finish\ at\ the\ parentheses.}}
+\DoxyCodeLine{00232\ \textcolor{comment}{\ \ \ Compare\ with\ example\ C\ below.}}
+\DoxyCodeLine{00233\ \textcolor{comment}{}}
+\DoxyCodeLine{00234\ \textcolor{comment}{\ \ \ Example\ C}}
+\DoxyCodeLine{00235\ \textcolor{comment}{\ \ \ *********}}
+\DoxyCodeLine{00236\ \textcolor{comment}{\ \ \ \ \ \ a\ =\ (foo\ \&\&\ bar)}}
+\DoxyCodeLine{00237\ \textcolor{comment}{\ \ \ \ \ \ \ \ \ \ \ \string~\string~\string~\ \string^\string~\ \string~\string~\string~}}
+\DoxyCodeLine{00238\ \textcolor{comment}{\ \ \ This\ rich\ location\ has\ three\ ranges:}}
+\DoxyCodeLine{00239\ \textcolor{comment}{\ \ \ -\/\ Range\ 0\ has\ its\ caret\ and\ start\ location\ at\ the\ first\ "{}\&"{}\ and}}
+\DoxyCodeLine{00240\ \textcolor{comment}{\ \ \ \ \ end\ at\ the\ second\ "{}\&.}}
+\DoxyCodeLine{00241\ \textcolor{comment}{\ \ \ -\/\ Range\ 1\ has\ its\ start\ and\ finish\ at\ the\ "{}f"{}\ and\ "{}o"{}\ of\ "{}foo"{};}}
+\DoxyCodeLine{00242\ \textcolor{comment}{\ \ \ \ \ the\ caret\ is\ not\ flagged\ for\ display,\ but\ is\ perhaps\ at\ the\ "{}f"{}}}
+\DoxyCodeLine{00243\ \textcolor{comment}{\ \ \ \ \ of\ "{}foo"{}.}}
+\DoxyCodeLine{00244\ \textcolor{comment}{\ \ \ -\/\ Similarly,\ range\ 2\ has\ its\ start\ and\ finish\ at\ the\ "{}b"{}\ and\ "{}r"{}\ of}}
+\DoxyCodeLine{00245\ \textcolor{comment}{\ \ \ \ \ "{}bar"{};\ the\ caret\ is\ not\ flagged\ for\ display,\ but\ is\ perhaps\ at\ the}}
+\DoxyCodeLine{00246\ \textcolor{comment}{\ \ \ \ \ "{}b"{}\ of\ "{}bar"{}.}}
+\DoxyCodeLine{00247\ \textcolor{comment}{\ \ \ Compare\ with\ example\ B\ above.}}
+\DoxyCodeLine{00248\ \textcolor{comment}{}}
+\DoxyCodeLine{00249\ \textcolor{comment}{\ \ \ Example\ D\ (Fortran\ frontend)}}
+\DoxyCodeLine{00250\ \textcolor{comment}{\ \ \ ****************************}}
+\DoxyCodeLine{00251\ \textcolor{comment}{\ \ \ \ \ \ \ x\ =\ x\ +\ y}}
+\DoxyCodeLine{00252\ \textcolor{comment}{\ \ \ \ \ \ \ \ \ \ \ 1\ \ \ 2}}
+\DoxyCodeLine{00253\ \textcolor{comment}{\ \ \ This\ rich\ location\ has\ range\ 0\ at\ "{}1"{},\ and\ range\ 1\ at\ "{}2"{}.}}
+\DoxyCodeLine{00254\ \textcolor{comment}{\ \ \ Both\ are\ flagged\ for\ caret\ display.\ \ Both\ ranges\ have\ start/finish}}
+\DoxyCodeLine{00255\ \textcolor{comment}{\ \ \ equal\ to\ their\ caret\ point.\ \ The\ frontend\ overrides\ the\ diagnostic}}
+\DoxyCodeLine{00256\ \textcolor{comment}{\ \ \ context's\ default\ caret\ character\ for\ these\ ranges.}}
+\DoxyCodeLine{00257\ \textcolor{comment}{}}
+\DoxyCodeLine{00258\ \textcolor{comment}{\ \ \ Example\ E\ (range\ labels)}}
+\DoxyCodeLine{00259\ \textcolor{comment}{\ \ \ ************************}}
+\DoxyCodeLine{00260\ \textcolor{comment}{\ \ \ \ \ \ printf\ ("{}arg0:\ \%i\ \ arg1:\ \%s\ arg2:\ \%i"{},}}
+\DoxyCodeLine{00261\ \textcolor{comment}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \string^\string~}}
+\DoxyCodeLine{00262\ \textcolor{comment}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ |}}
+\DoxyCodeLine{00263\ \textcolor{comment}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ const\ char\ *}}
+\DoxyCodeLine{00264\ \textcolor{comment}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ 100,\ 101,\ 102);}}
+\DoxyCodeLine{00265\ \textcolor{comment}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \string~\string~\string~}}
+\DoxyCodeLine{00266\ \textcolor{comment}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ |}}
+\DoxyCodeLine{00267\ \textcolor{comment}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ int}}
+\DoxyCodeLine{00268\ \textcolor{comment}{\ \ \ This\ rich\ location\ has\ two\ ranges:}}
+\DoxyCodeLine{00269\ \textcolor{comment}{\ \ \ -\/\ range\ 0\ is\ at\ the\ "{}\%s"{}\ with\ start\ =\ caret\ =\ "{}\%"{}\ and\ finish\ at}}
+\DoxyCodeLine{00270\ \textcolor{comment}{\ \ \ \ \ the\ "{}s"{}.\ \ It\ has\ a\ range\_label\ ("{}const\ char\ *"{}).}}
+\DoxyCodeLine{00271\ \textcolor{comment}{\ \ \ -\/\ range\ 1\ has\ start/finish\ covering\ the\ "{}101"{}\ and\ is\ not\ flagged\ for}}
+\DoxyCodeLine{00272\ \textcolor{comment}{\ \ \ \ \ caret\ printing.\ \ The\ caret\ is\ at\ the\ start\ of\ "{}101"{},\ where\ its}}
+\DoxyCodeLine{00273\ \textcolor{comment}{\ \ \ \ \ range\_label\ is\ printed\ ("{}int"{}).}}
+\DoxyCodeLine{00274\ \textcolor{comment}{}}
+\DoxyCodeLine{00275\ \textcolor{comment}{\ \ \ Fix-\/it\ hints}}
+\DoxyCodeLine{00276\ \textcolor{comment}{\ \ \ -\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{00277\ \textcolor{comment}{}}
+\DoxyCodeLine{00278\ \textcolor{comment}{\ \ \ Rich\ locations\ can\ also\ contain\ "{}fix-\/it\ hints"{},\ giving\ suggestions}}
+\DoxyCodeLine{00279\ \textcolor{comment}{\ \ \ for\ the\ user\ on\ how\ to\ edit\ their\ code\ to\ fix\ a\ problem.\ \ These}}
+\DoxyCodeLine{00280\ \textcolor{comment}{\ \ \ can\ be\ expressed\ as\ insertions,\ replacements,\ and\ removals\ of\ text.}}
+\DoxyCodeLine{00281\ \textcolor{comment}{\ \ \ The\ edits\ by\ default\ are\ relative\ to\ the\ zeroth\ range\ within\ the}}
+\DoxyCodeLine{00282\ \textcolor{comment}{\ \ \ rich\_location,\ but\ optionally\ they\ can\ be\ expressed\ relative\ to}}
+\DoxyCodeLine{00283\ \textcolor{comment}{\ \ \ other\ locations\ (using\ various\ overloaded\ methods\ of\ the\ form}}
+\DoxyCodeLine{00284\ \textcolor{comment}{\ \ \ rich\_location::add\_fixit\_*).}}
+\DoxyCodeLine{00285\ \textcolor{comment}{}}
+\DoxyCodeLine{00286\ \textcolor{comment}{\ \ \ For\ example:}}
+\DoxyCodeLine{00287\ \textcolor{comment}{}}
+\DoxyCodeLine{00288\ \textcolor{comment}{\ \ \ Example\ F:\ fix-\/it\ hint:\ insert\_before}}
+\DoxyCodeLine{00289\ \textcolor{comment}{\ \ \ *************************************}}
+\DoxyCodeLine{00290\ \textcolor{comment}{\ \ \ \ \ \ ptr\ =\ arr[0];}}
+\DoxyCodeLine{00291\ \textcolor{comment}{\ \ \ \ \ \ \ \ \string^\string~\string~\string~\string~\string~}}
+\DoxyCodeLine{00292\ \textcolor{comment}{\ \ \ \ \ \ \ \ \&}}
+\DoxyCodeLine{00293\ \textcolor{comment}{\ \ \ This\ rich\ location\ has\ a\ single\ range\ (range\ 0)\ covering\ "{}arr[0]"{},}}
+\DoxyCodeLine{00294\ \textcolor{comment}{\ \ \ with\ the\ caret\ at\ the\ start.\ \ The\ rich\ location\ has\ a\ single}}
+\DoxyCodeLine{00295\ \textcolor{comment}{\ \ \ insertion\ fix-\/it\ hint,\ inserted\ before\ range\ 0,\ added\ via}}
+\DoxyCodeLine{00296\ \textcolor{comment}{\ \ \ \ \ richloc.add\_fixit\_insert\_before\ ("{}\&"{});}}
+\DoxyCodeLine{00297\ \textcolor{comment}{}}
+\DoxyCodeLine{00298\ \textcolor{comment}{\ \ \ Example\ G:\ multiple\ fix-\/it\ hints:\ insert\_before\ and\ insert\_after}}
+\DoxyCodeLine{00299\ \textcolor{comment}{\ \ \ ****************************************************************}}
+\DoxyCodeLine{00300\ \textcolor{comment}{\ \ \ \ \ \ \#define\ FN(ARG0,\ ARG1,\ ARG2)\ fn(ARG0,\ ARG1,\ ARG2)}}
+\DoxyCodeLine{00301\ \textcolor{comment}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \string^\string~\string~\string~\ \ \string^\string~\string~\string~\ \ \string^\string~\string~\string~}}
+\DoxyCodeLine{00302\ \textcolor{comment}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ (\ \ \ )\ (\ \ \ )\ (\ \ \ )}}
+\DoxyCodeLine{00303\ \textcolor{comment}{\ \ \ This\ rich\ location\ has\ three\ ranges,\ covering\ "{}arg0"{},\ "{}arg1"{},}}
+\DoxyCodeLine{00304\ \textcolor{comment}{\ \ \ and\ "{}arg2"{},\ all\ with\ caret-\/printing\ enabled.}}
+\DoxyCodeLine{00305\ \textcolor{comment}{\ \ \ The\ rich\ location\ has\ 6\ insertion\ fix-\/it\ hints:\ each\ arg}}
+\DoxyCodeLine{00306\ \textcolor{comment}{\ \ \ has\ a\ pair\ of\ insertion\ fix-\/it\ hints,\ suggesting\ wrapping}}
+\DoxyCodeLine{00307\ \textcolor{comment}{\ \ \ them\ with\ parentheses:\ one\ a\ '('\ inserted\ before,}}
+\DoxyCodeLine{00308\ \textcolor{comment}{\ \ \ the\ other\ a\ ')'\ inserted\ after,\ added\ via}}
+\DoxyCodeLine{00309\ \textcolor{comment}{\ \ \ \ \ richloc.add\_fixit\_insert\_before\ (LOC,\ "{}("{});}}
+\DoxyCodeLine{00310\ \textcolor{comment}{\ \ \ and}}
+\DoxyCodeLine{00311\ \textcolor{comment}{\ \ \ \ \ richloc.add\_fixit\_insert\_after\ (LOC,\ "{})"{});}}
+\DoxyCodeLine{00312\ \textcolor{comment}{}}
+\DoxyCodeLine{00313\ \textcolor{comment}{\ \ \ Example\ H:\ fix-\/it\ hint:\ removal}}
+\DoxyCodeLine{00314\ \textcolor{comment}{\ \ \ *******************************}}
+\DoxyCodeLine{00315\ \textcolor{comment}{\ \ \ \ \ struct\ s\ \{int\ i\};;}}
+\DoxyCodeLine{00316\ \textcolor{comment}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \string^}}
+\DoxyCodeLine{00317\ \textcolor{comment}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ -\/}}
+\DoxyCodeLine{00318\ \textcolor{comment}{\ \ \ This\ rich\ location\ has\ a\ single\ range\ at\ the\ stray\ trailing}}
+\DoxyCodeLine{00319\ \textcolor{comment}{\ \ \ semicolon,\ along\ with\ a\ single\ removal\ fix-\/it\ hint,\ covering}}
+\DoxyCodeLine{00320\ \textcolor{comment}{\ \ \ the\ same\ range,\ added\ via:}}
+\DoxyCodeLine{00321\ \textcolor{comment}{\ \ \ \ \ richloc.add\_fixit\_remove\ ();}}
+\DoxyCodeLine{00322\ \textcolor{comment}{}}
+\DoxyCodeLine{00323\ \textcolor{comment}{\ \ \ Example\ I:\ fix-\/it\ hint:\ replace}}
+\DoxyCodeLine{00324\ \textcolor{comment}{\ \ \ *******************************}}
+\DoxyCodeLine{00325\ \textcolor{comment}{\ \ \ \ \ \ c\ =\ s.colour;}}
+\DoxyCodeLine{00326\ \textcolor{comment}{\ \ \ \ \ \ \ \ \string^\string~\string~\string~\string~\string~}}
+\DoxyCodeLine{00327\ \textcolor{comment}{\ \ \ \ \ \ \ \ color}}
+\DoxyCodeLine{00328\ \textcolor{comment}{\ \ \ This\ rich\ location\ has\ a\ single\ range\ (range\ 0)\ covering\ "{}colour"{},}}
+\DoxyCodeLine{00329\ \textcolor{comment}{\ \ \ and\ a\ single\ "{}replace"{}\ fix-\/it\ hint,\ covering\ the\ same\ range,}}
+\DoxyCodeLine{00330\ \textcolor{comment}{\ \ \ added\ via}}
+\DoxyCodeLine{00331\ \textcolor{comment}{\ \ \ \ \ richloc.add\_fixit\_replace\ ("{}color"{});}}
+\DoxyCodeLine{00332\ \textcolor{comment}{}}
+\DoxyCodeLine{00333\ \textcolor{comment}{\ \ \ Example\ J:\ fix-\/it\ hint:\ line\ insertion}}
+\DoxyCodeLine{00334\ \textcolor{comment}{\ \ \ **************************************}}
+\DoxyCodeLine{00335\ \textcolor{comment}{}}
+\DoxyCodeLine{00336\ \textcolor{comment}{\ \ \ \ \ 3\ |\ \#include\ <stddef.h>}}
+\DoxyCodeLine{00337\ \textcolor{comment}{\ \ \ \ \ +\ |+\#include\ <stdio.h>}}
+\DoxyCodeLine{00338\ \textcolor{comment}{\ \ \ \ \ 4\ |\ int\ the\_next\_line;}}
+\DoxyCodeLine{00339\ \textcolor{comment}{}}
+\DoxyCodeLine{00340\ \textcolor{comment}{\ \ \ This\ rich\ location\ has\ a\ single\ range\ at\ line\ 4\ column\ 1,\ marked}}
+\DoxyCodeLine{00341\ \textcolor{comment}{\ \ \ with\ SHOW\_LINES\_WITHOUT\_RANGE\ (to\ avoid\ printing\ a\ meaningless\ caret}}
+\DoxyCodeLine{00342\ \textcolor{comment}{\ \ \ on\ the\ "{}i"{}\ of\ int).\ \ It\ has\ a\ insertion\ fix-\/it\ hint\ of\ the\ string}}
+\DoxyCodeLine{00343\ \textcolor{comment}{\ \ \ "{}\#include\ <stdio.h>\(\backslash\)n"{}.}}
+\DoxyCodeLine{00344\ \textcolor{comment}{}}
+\DoxyCodeLine{00345\ \textcolor{comment}{\ \ \ Adding\ a\ fix-\/it\ hint\ can\ fail:\ for\ example,\ attempts\ to\ insert\ content}}
+\DoxyCodeLine{00346\ \textcolor{comment}{\ \ \ at\ the\ transition\ between\ two\ line\ maps\ may\ fail\ due\ to\ there\ being\ no}}
+\DoxyCodeLine{00347\ \textcolor{comment}{\ \ \ location\_t\ value\ to\ express\ the\ new\ location.}}
+\DoxyCodeLine{00348\ \textcolor{comment}{}}
+\DoxyCodeLine{00349\ \textcolor{comment}{\ \ \ Attempts\ to\ add\ a\ fix-\/it\ hint\ within\ a\ macro\ expansion\ will\ fail.}}
+\DoxyCodeLine{00350\ \textcolor{comment}{}}
+\DoxyCodeLine{00351\ \textcolor{comment}{\ \ \ There\ is\ only\ limited\ support\ for\ newline\ characters\ in\ fix-\/it\ hints:}}
+\DoxyCodeLine{00352\ \textcolor{comment}{\ \ \ only\ hints\ with\ newlines\ which\ insert\ an\ entire\ new\ line\ are\ permitted,}}
+\DoxyCodeLine{00353\ \textcolor{comment}{\ \ \ inserting\ at\ the\ start\ of\ a\ line,\ and\ finishing\ with\ a\ newline}}
+\DoxyCodeLine{00354\ \textcolor{comment}{\ \ \ (with\ no\ interior\ newline\ characters).\ \ Other\ attempts\ to\ add}}
+\DoxyCodeLine{00355\ \textcolor{comment}{\ \ \ fix-\/it\ hints\ containing\ newline\ characters\ will\ fail.}}
+\DoxyCodeLine{00356\ \textcolor{comment}{\ \ \ Similarly,\ attempts\ to\ delete\ or\ replace\ a\ range\ *affecting*\ multiple}}
+\DoxyCodeLine{00357\ \textcolor{comment}{\ \ \ lines\ will\ fail.}}
+\DoxyCodeLine{00358\ \textcolor{comment}{}}
+\DoxyCodeLine{00359\ \textcolor{comment}{\ \ \ The\ rich\_location\ API\ handles\ these\ failures\ gracefully,\ so\ that}}
+\DoxyCodeLine{00360\ \textcolor{comment}{\ \ \ diagnostics\ can\ attempt\ to\ add\ fix-\/it\ hints\ without\ each\ needing}}
+\DoxyCodeLine{00361\ \textcolor{comment}{\ \ \ extensive\ checking.}}
+\DoxyCodeLine{00362\ \textcolor{comment}{}}
+\DoxyCodeLine{00363\ \textcolor{comment}{\ \ \ Fix-\/it\ hints\ within\ a\ rich\_location\ are\ "{}atomic"{}:\ if\ any\ hints\ can't}}
+\DoxyCodeLine{00364\ \textcolor{comment}{\ \ \ be\ applied,\ none\ of\ them\ will\ be\ (tracked\ by\ the\ m\_seen\_impossible\_fixit}}
+\DoxyCodeLine{00365\ \textcolor{comment}{\ \ \ flag),\ and\ no\ fix-\/its\ hints\ will\ be\ displayed\ for\ that\ rich\_location.}}
+\DoxyCodeLine{00366\ \textcolor{comment}{\ \ \ This\ implies\ that\ diagnostic\ messages\ need\ to\ be\ worded\ in\ such\ a\ way}}
+\DoxyCodeLine{00367\ \textcolor{comment}{\ \ \ that\ they\ make\ sense\ whether\ or\ not\ the\ fix-\/it\ hints\ are\ displayed,}}
+\DoxyCodeLine{00368\ \textcolor{comment}{\ \ \ or\ that\ richloc.seen\_impossible\_fixit\_p\ ()\ should\ be\ checked\ before}}
+\DoxyCodeLine{00369\ \textcolor{comment}{\ \ \ issuing\ the\ diagnostics.\ \ */}}
+\DoxyCodeLine{00370\ }
+\DoxyCodeLine{00371\ \textcolor{keyword}{class\ }\doxymbox{\hyperlink{classrich__location_a0d4a54e1ec527c34967699e89ec3fe97}{rich\_location}}}
+\DoxyCodeLine{00372\ \{}
+\DoxyCodeLine{00373\ \ \textcolor{keyword}{public}:}
+\DoxyCodeLine{00374\ \ \ \textcolor{comment}{/*\ Constructors.\ \ */}}
+\DoxyCodeLine{00375\ }
+\DoxyCodeLine{00376\ \ \ \textcolor{comment}{/*\ Constructing\ from\ a\ location.\ \ */}}
+\DoxyCodeLine{00377\ \ \ \doxymbox{\hyperlink{classrich__location_a0d4a54e1ec527c34967699e89ec3fe97}{rich\_location}}\ (line\_maps\ *set,\ \doxymbox{\hyperlink{line-map_8h_aedf25620511d64e43327f1a229906a96}{location\_t}}\ loc,}
+\DoxyCodeLine{00378\ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classrange__label}{range\_label}}\ *label\ =\ \doxymbox{\hyperlink{stddef_8h_a070d2ce7b6bb7e5c05602aa8c308d0c4}{NULL}});}
+\DoxyCodeLine{00379\ }
+\DoxyCodeLine{00380\ \ \ \textcolor{comment}{/*\ Destructor.\ \ */}}
+\DoxyCodeLine{00381\ \ \ \doxymbox{\hyperlink{classrich__location_a0002f192e070437c9402eb2959e4cb86}{\string~rich\_location}}\ ();}
+\DoxyCodeLine{00382\ }
+\DoxyCodeLine{00383\ \ \ \textcolor{comment}{/*\ The\ class\ manages\ the\ memory\ pointed\ to\ by\ the\ elements\ of}}
+\DoxyCodeLine{00384\ \textcolor{comment}{\ \ \ \ \ the\ M\_FIXIT\_HINTS\ vector\ and\ is\ not\ meant\ to\ be\ copied\ or}}
+\DoxyCodeLine{00385\ \textcolor{comment}{\ \ \ \ \ assigned.\ \ */}}
+\DoxyCodeLine{00386\ \ \ \doxymbox{\hyperlink{classrich__location_a7ff3600be5506fda92cd11e8a970cbc9}{rich\_location}}\ (\textcolor{keyword}{const}\ \doxymbox{\hyperlink{classrich__location_a0d4a54e1ec527c34967699e89ec3fe97}{rich\_location}}\ \&)\ =\ \textcolor{keyword}{delete};}
+\DoxyCodeLine{00387\ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classrich__location_a30fbe0fbcc430ff9fe27fdb9a3c8d7c6}{operator=\ }}(\textcolor{keyword}{const}\ \doxymbox{\hyperlink{classrich__location_a0d4a54e1ec527c34967699e89ec3fe97}{rich\_location}}\ \&)\ =\ \textcolor{keyword}{delete};}
+\DoxyCodeLine{00388\ }
+\DoxyCodeLine{00389\ \ \ \textcolor{comment}{/*\ Accessors.\ \ */}}
+\DoxyCodeLine{00390\ \ \ \doxymbox{\hyperlink{line-map_8h_aedf25620511d64e43327f1a229906a96}{location\_t}}\ \doxymbox{\hyperlink{classrich__location_af90912d08faee25b12e0bb848fab8e3f}{get\_loc}}\ ()\textcolor{keyword}{\ const\ }\{\ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{classrich__location_af90912d08faee25b12e0bb848fab8e3f}{get\_loc}}\ (0);\ \}}
+\DoxyCodeLine{00391\ \ \ \doxymbox{\hyperlink{line-map_8h_aedf25620511d64e43327f1a229906a96}{location\_t}}\ \doxymbox{\hyperlink{classrich__location_a275f0546ff9363f3eb3a546f2708b030}{get\_loc}}\ (\textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ idx)\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00392\ }
+\DoxyCodeLine{00393\ \ \ \textcolor{keywordtype}{void}}
+\DoxyCodeLine{00394\ \ \ \doxymbox{\hyperlink{classrich__location_a61e24db5dc744c01bf9a4bb2400707f8}{add\_range}}\ (\doxymbox{\hyperlink{line-map_8h_aedf25620511d64e43327f1a229906a96}{location\_t}}\ loc,}
+\DoxyCodeLine{00395\ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{enum}\ \doxymbox{\hyperlink{rich-location_8h_a05ed39905087d34395b59587f558f155}{range\_display\_kind}}\ \doxymbox{\hyperlink{rich-location_8h_a05ed39905087d34395b59587f558f155}{range\_display\_kind}}}
+\DoxyCodeLine{00396\ \ \ \ \ \ \ \ \ \ \ \ =\ \doxymbox{\hyperlink{rich-location_8h_a05ed39905087d34395b59587f558f155aa6e7ac1357fa0737df9896683861d049}{SHOW\_RANGE\_WITHOUT\_CARET}},}
+\DoxyCodeLine{00397\ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classrange__label}{range\_label}}\ *label\ =\ \doxymbox{\hyperlink{stddef_8h_a070d2ce7b6bb7e5c05602aa8c308d0c4}{NULL}});}
+\DoxyCodeLine{00398\ }
+\DoxyCodeLine{00399\ \ \ \textcolor{keywordtype}{void}}
+\DoxyCodeLine{00400\ \ \ \doxymbox{\hyperlink{classrich__location_aa4f3af539cee085900e49aaa366596e7}{set\_range}}\ (\textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ idx,\ \doxymbox{\hyperlink{line-map_8h_aedf25620511d64e43327f1a229906a96}{location\_t}}\ loc,}
+\DoxyCodeLine{00401\ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{enum}\ \doxymbox{\hyperlink{rich-location_8h_a05ed39905087d34395b59587f558f155}{range\_display\_kind}}\ \doxymbox{\hyperlink{rich-location_8h_a05ed39905087d34395b59587f558f155}{range\_display\_kind}});}
+\DoxyCodeLine{00402\ }
+\DoxyCodeLine{00403\ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{classrich__location_a17e00e6651e2d2a64465c10326f4366b}{get\_num\_locations}}\ ()\textcolor{keyword}{\ const\ }\{\ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{classrich__location_aa77f9b1d157ddff4a3bc146cfe821dc7}{m\_ranges}}.count\ ();\ \}}
+\DoxyCodeLine{00404\ }
+\DoxyCodeLine{00405\ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{structlocation__range}{location\_range}}\ *\doxymbox{\hyperlink{classrich__location_ad649bc1d0ccf1dbee885a16470749c60}{get\_range}}\ (\textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ idx)\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00406\ \ \ \doxymbox{\hyperlink{structlocation__range}{location\_range}}\ *\doxymbox{\hyperlink{classrich__location_a13f4444b84a712a58cb286f7b6f579f7}{get\_range}}\ (\textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ idx);}
+\DoxyCodeLine{00407\ }
+\DoxyCodeLine{00408\ \ \ \doxymbox{\hyperlink{structexpanded__location}{expanded\_location}}\ \doxymbox{\hyperlink{classrich__location_a45d22397d2d633b7f96aac0f6974f502}{get\_expanded\_location}}\ (\textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ idx)\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00409\ }
+\DoxyCodeLine{00410\ \ \ \textcolor{keywordtype}{void}}
+\DoxyCodeLine{00411\ \ \ \doxymbox{\hyperlink{classrich__location_a8ca2d8d8ee184396582e6048efb801be}{override\_column}}\ (\textcolor{keywordtype}{int}\ column);}
+\DoxyCodeLine{00412\ }
+\DoxyCodeLine{00413\ \ \ \textcolor{comment}{/*\ Fix-\/it\ hints.\ \ */}}
+\DoxyCodeLine{00414\ }
+\DoxyCodeLine{00415\ \ \ \textcolor{comment}{/*\ Methods\ for\ adding\ insertion\ fix-\/it\ hints.\ \ */}}
+\DoxyCodeLine{00416\ }
+\DoxyCodeLine{00417\ \ \ \textcolor{comment}{/*\ Suggest\ inserting\ NEW\_CONTENT\ immediately\ before\ the\ primary}}
+\DoxyCodeLine{00418\ \textcolor{comment}{\ \ \ \ \ range's\ start.\ \ */}}
+\DoxyCodeLine{00419\ \ \ \textcolor{keywordtype}{void}}
+\DoxyCodeLine{00420\ \ \ \doxymbox{\hyperlink{classrich__location_a3115992f899df4cbe459d166940c77d7}{add\_fixit\_insert\_before}}\ (\textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *new\_content);}
+\DoxyCodeLine{00421\ }
+\DoxyCodeLine{00422\ \ \ \textcolor{comment}{/*\ Suggest\ inserting\ NEW\_CONTENT\ immediately\ before\ the\ start\ of\ WHERE.\ \ */}}
+\DoxyCodeLine{00423\ \ \ \textcolor{keywordtype}{void}}
+\DoxyCodeLine{00424\ \ \ \doxymbox{\hyperlink{classrich__location_a9a37799c64ef4953c2607ddba152f4ee}{add\_fixit\_insert\_before}}\ (\doxymbox{\hyperlink{line-map_8h_aedf25620511d64e43327f1a229906a96}{location\_t}}\ where,}
+\DoxyCodeLine{00425\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *new\_content);}
+\DoxyCodeLine{00426\ }
+\DoxyCodeLine{00427\ \ \ \textcolor{comment}{/*\ Suggest\ inserting\ NEW\_CONTENT\ immediately\ after\ the\ end\ of\ the\ primary}}
+\DoxyCodeLine{00428\ \textcolor{comment}{\ \ \ \ \ range.\ \ */}}
+\DoxyCodeLine{00429\ \ \ \textcolor{keywordtype}{void}}
+\DoxyCodeLine{00430\ \ \ \doxymbox{\hyperlink{classrich__location_a11bb85fcf6c4ea5168162ff05558d6d7}{add\_fixit\_insert\_after}}\ (\textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *new\_content);}
+\DoxyCodeLine{00431\ }
+\DoxyCodeLine{00432\ \ \ \textcolor{comment}{/*\ Suggest\ inserting\ NEW\_CONTENT\ immediately\ after\ the\ end\ of\ WHERE.\ \ */}}
+\DoxyCodeLine{00433\ \ \ \textcolor{keywordtype}{void}}
+\DoxyCodeLine{00434\ \ \ \doxymbox{\hyperlink{classrich__location_ace2f4c6e531fa7a5f54b2810a196d2f7}{add\_fixit\_insert\_after}}\ (\doxymbox{\hyperlink{line-map_8h_aedf25620511d64e43327f1a229906a96}{location\_t}}\ where,}
+\DoxyCodeLine{00435\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *new\_content);}
+\DoxyCodeLine{00436\ }
+\DoxyCodeLine{00437\ \ \ \textcolor{comment}{/*\ Methods\ for\ adding\ removal\ fix-\/it\ hints.\ \ */}}
+\DoxyCodeLine{00438\ }
+\DoxyCodeLine{00439\ \ \ \textcolor{comment}{/*\ Suggest\ removing\ the\ content\ covered\ by\ range\ 0.\ \ */}}
+\DoxyCodeLine{00440\ \ \ \textcolor{keywordtype}{void}}
+\DoxyCodeLine{00441\ \ \ \doxymbox{\hyperlink{classrich__location_a597dea5faa89f28a5e64803c9c2bb9e1}{add\_fixit\_remove}}\ ();}
+\DoxyCodeLine{00442\ }
+\DoxyCodeLine{00443\ \ \ \textcolor{comment}{/*\ Suggest\ removing\ the\ content\ covered\ between\ the\ start\ and\ finish}}
+\DoxyCodeLine{00444\ \textcolor{comment}{\ \ \ \ \ of\ WHERE.\ \ */}}
+\DoxyCodeLine{00445\ \ \ \textcolor{keywordtype}{void}}
+\DoxyCodeLine{00446\ \ \ \doxymbox{\hyperlink{classrich__location_ad0ba2edb0516a99771321714790627e7}{add\_fixit\_remove}}\ (\doxymbox{\hyperlink{line-map_8h_aedf25620511d64e43327f1a229906a96}{location\_t}}\ where);}
+\DoxyCodeLine{00447\ }
+\DoxyCodeLine{00448\ \ \ \textcolor{comment}{/*\ Suggest\ removing\ the\ content\ covered\ by\ SRC\_RANGE.\ \ */}}
+\DoxyCodeLine{00449\ \ \ \textcolor{keywordtype}{void}}
+\DoxyCodeLine{00450\ \ \ \doxymbox{\hyperlink{classrich__location_ac61dcb6682476e8073b041511e398889}{add\_fixit\_remove}}\ (source\_range\ src\_range);}
+\DoxyCodeLine{00451\ }
+\DoxyCodeLine{00452\ \ \ \textcolor{comment}{/*\ Methods\ for\ adding\ "{}replace"{}\ fix-\/it\ hints.\ \ */}}
+\DoxyCodeLine{00453\ }
+\DoxyCodeLine{00454\ \ \ \textcolor{comment}{/*\ Suggest\ replacing\ the\ content\ covered\ by\ range\ 0\ with\ NEW\_CONTENT.\ \ */}}
+\DoxyCodeLine{00455\ \ \ \textcolor{keywordtype}{void}}
+\DoxyCodeLine{00456\ \ \ \doxymbox{\hyperlink{classrich__location_a6b9f221d7a2b0698267f3f4144ab43fe}{add\_fixit\_replace}}\ (\textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *new\_content);}
+\DoxyCodeLine{00457\ }
+\DoxyCodeLine{00458\ \ \ \textcolor{comment}{/*\ Suggest\ replacing\ the\ content\ between\ the\ start\ and\ finish\ of}}
+\DoxyCodeLine{00459\ \textcolor{comment}{\ \ \ \ \ WHERE\ with\ NEW\_CONTENT.\ \ */}}
+\DoxyCodeLine{00460\ \ \ \textcolor{keywordtype}{void}}
+\DoxyCodeLine{00461\ \ \ \doxymbox{\hyperlink{classrich__location_ad8b018de954c1449d8d689e97a9def2b}{add\_fixit\_replace}}\ (\doxymbox{\hyperlink{line-map_8h_aedf25620511d64e43327f1a229906a96}{location\_t}}\ where,}
+\DoxyCodeLine{00462\ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *new\_content);}
+\DoxyCodeLine{00463\ }
+\DoxyCodeLine{00464\ \ \ \textcolor{comment}{/*\ Suggest\ replacing\ the\ content\ covered\ by\ SRC\_RANGE\ with}}
+\DoxyCodeLine{00465\ \textcolor{comment}{\ \ \ \ \ NEW\_CONTENT.\ \ */}}
+\DoxyCodeLine{00466\ \ \ \textcolor{keywordtype}{void}}
+\DoxyCodeLine{00467\ \ \ \doxymbox{\hyperlink{classrich__location_a9be9b9d1cb39b763c54929fadaa7f028}{add\_fixit\_replace}}\ (source\_range\ src\_range,}
+\DoxyCodeLine{00468\ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *new\_content);}
+\DoxyCodeLine{00469\ }
+\DoxyCodeLine{00470\ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{classrich__location_a2d0c1067ca5aecc39ee54e3ff21d727f}{get\_num\_fixit\_hints}}\ ()\textcolor{keyword}{\ const\ }\{\ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{classrich__location_abcd347ed0baeee7675073a67a861c60c}{m\_fixit\_hints}}.count\ ();\ \}}
+\DoxyCodeLine{00471\ \ \ \doxymbox{\hyperlink{classfixit__hint}{fixit\_hint}}\ *\doxymbox{\hyperlink{classrich__location_acab495c0a5bedbbc0d6d00d365d90c61}{get\_fixit\_hint}}\ (\textcolor{keywordtype}{int}\ idx)\textcolor{keyword}{\ const\ }\{\ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{classrich__location_abcd347ed0baeee7675073a67a861c60c}{m\_fixit\_hints}}[idx];\ \}}
+\DoxyCodeLine{00472\ \ \ \doxymbox{\hyperlink{classfixit__hint}{fixit\_hint}}\ *\doxymbox{\hyperlink{classrich__location_add42c17d8fdb934c92ad90c7b2f9a20b}{get\_last\_fixit\_hint}}\ ()\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00473\ \ \ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{classrich__location_a3dc10c30a593aa5158fb2ee0e96286e2}{seen\_impossible\_fixit\_p}}\ ()\textcolor{keyword}{\ const\ }\{\ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{classrich__location_abc31fb3ee63d382e490d2f949a735ac6}{m\_seen\_impossible\_fixit}};\ \}}
+\DoxyCodeLine{00474\ }
+\DoxyCodeLine{00475\ \ \ \textcolor{comment}{/*\ Set\ this\ if\ the\ fix-\/it\ hints\ are\ not\ suitable\ to\ be}}
+\DoxyCodeLine{00476\ \textcolor{comment}{\ \ \ \ \ automatically\ applied.}}
+\DoxyCodeLine{00477\ \textcolor{comment}{}}
+\DoxyCodeLine{00478\ \textcolor{comment}{\ \ \ \ \ For\ example,\ if\ you\ are\ suggesting\ more\ than\ one}}
+\DoxyCodeLine{00479\ \textcolor{comment}{\ \ \ \ \ mutually\ exclusive\ solution\ to\ a\ problem,\ then}}
+\DoxyCodeLine{00480\ \textcolor{comment}{\ \ \ \ \ it\ doesn't\ make\ sense\ to\ apply\ all\ of\ the\ solutions;}}
+\DoxyCodeLine{00481\ \textcolor{comment}{\ \ \ \ \ manual\ intervention\ is\ required.}}
+\DoxyCodeLine{00482\ \textcolor{comment}{}}
+\DoxyCodeLine{00483\ \textcolor{comment}{\ \ \ \ \ If\ set,\ then\ the\ fix-\/it\ hints\ in\ the\ rich\_location\ will}}
+\DoxyCodeLine{00484\ \textcolor{comment}{\ \ \ \ \ be\ printed,\ but\ will\ not\ be\ added\ to\ generated\ patches,}}
+\DoxyCodeLine{00485\ \textcolor{comment}{\ \ \ \ \ or\ affect\ the\ modified\ version\ of\ the\ file.\ \ */}}
+\DoxyCodeLine{00486\ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classrich__location_a529cbcd317ea18ec5e3dfbf62bc6710a}{fixits\_cannot\_be\_auto\_applied}}\ ()}
+\DoxyCodeLine{00487\ \ \ \{}
+\DoxyCodeLine{00488\ \ \ \ \ \doxymbox{\hyperlink{classrich__location_a08e8b5d05c1150372dd6f5d3e9dfff80}{m\_fixits\_cannot\_be\_auto\_applied}}\ =\ \textcolor{keyword}{true};}
+\DoxyCodeLine{00489\ \ \ \}}
+\DoxyCodeLine{00490\ }
+\DoxyCodeLine{00491\ \ \ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{classrich__location_a1ffdf62e425e4e617acd8fae48806538}{fixits\_can\_be\_auto\_applied\_p}}\ ()\textcolor{keyword}{\ const}}
+\DoxyCodeLine{00492\ \textcolor{keyword}{\ \ }\{}
+\DoxyCodeLine{00493\ \ \ \ \ \textcolor{keywordflow}{return}\ !\doxymbox{\hyperlink{classrich__location_a08e8b5d05c1150372dd6f5d3e9dfff80}{m\_fixits\_cannot\_be\_auto\_applied}};}
+\DoxyCodeLine{00494\ \ \ \}}
+\DoxyCodeLine{00495\ }
+\DoxyCodeLine{00496\ \ \ \textcolor{comment}{/*\ An\ optional\ path\ through\ the\ code.\ \ */}}
+\DoxyCodeLine{00497\ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classdiagnostic__path}{diagnostic\_path}}\ *\doxymbox{\hyperlink{classrich__location_a0fe54c86c1926cd2dee296de9226d409}{get\_path}}\ ()\textcolor{keyword}{\ const\ }\{\ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{classrich__location_a2e56d0970652fe5b6f54fe2ab4995e36}{m\_path}};\ \}}
+\DoxyCodeLine{00498\ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classrich__location_a2338edf27252b02276369e76239f0eff}{set\_path}}\ (\textcolor{keyword}{const}\ \doxymbox{\hyperlink{classdiagnostic__path}{diagnostic\_path}}\ *path)\ \{\ \doxymbox{\hyperlink{classrich__location_a2e56d0970652fe5b6f54fe2ab4995e36}{m\_path}}\ =\ path;\ \}}
+\DoxyCodeLine{00499\ }
+\DoxyCodeLine{00500\ \ \ \textcolor{comment}{/*\ A\ flag\ for\ hinting\ that\ the\ diagnostic\ involves\ character\ encoding}}
+\DoxyCodeLine{00501\ \textcolor{comment}{\ \ \ \ \ issues,\ and\ thus\ that\ it\ will\ be\ helpful\ to\ the\ user\ if\ we\ show\ some}}
+\DoxyCodeLine{00502\ \textcolor{comment}{\ \ \ \ \ representation\ of\ how\ the\ characters\ in\ the\ pertinent\ source\ lines}}
+\DoxyCodeLine{00503\ \textcolor{comment}{\ \ \ \ \ are\ encoded.}}
+\DoxyCodeLine{00504\ \textcolor{comment}{\ \ \ \ \ The\ default\ is\ false\ (i.e.\ do\ not\ escape).}}
+\DoxyCodeLine{00505\ \textcolor{comment}{\ \ \ \ \ When\ set\ to\ true,\ non-\/ASCII\ bytes\ in\ the\ pertinent\ source\ lines\ will}}
+\DoxyCodeLine{00506\ \textcolor{comment}{\ \ \ \ \ be\ escaped\ in\ a\ manner\ controlled\ by\ the\ user-\/supplied\ option}}
+\DoxyCodeLine{00507\ \textcolor{comment}{\ \ \ \ \ -\/fdiagnostics-\/escape-\/format=,\ so\ that\ the\ user\ can\ better\ understand}}
+\DoxyCodeLine{00508\ \textcolor{comment}{\ \ \ \ \ what's\ going\ on\ with\ the\ encoding\ in\ their\ source\ file.\ \ */}}
+\DoxyCodeLine{00509\ \ \ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{classrich__location_a50a506fd4601d3493574470ad6104595}{escape\_on\_output\_p}}\ ()\textcolor{keyword}{\ const\ }\{\ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{classrich__location_abb2ae151210c8eae9bbcc84de0a91cf3}{m\_escape\_on\_output}};\ \}}
+\DoxyCodeLine{00510\ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classrich__location_a0571a35c3e2316aa89b6251af3f38fcc}{set\_escape\_on\_output}}\ (\textcolor{keywordtype}{bool}\ flag)\ \{\ \doxymbox{\hyperlink{classrich__location_abb2ae151210c8eae9bbcc84de0a91cf3}{m\_escape\_on\_output}}\ =\ flag;\ \}}
+\DoxyCodeLine{00511\ }
+\DoxyCodeLine{00512\ \ \ \textcolor{keyword}{const}\ line\_maps\ *\doxymbox{\hyperlink{classrich__location_aa3be89818e3454090c974c64fbaac1d6}{get\_line\_table}}\ ()\textcolor{keyword}{\ const\ }\{\ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{classrich__location_a834c507881ec0803ce52951d366b9d9e}{m\_line\_table}};\ \}}
+\DoxyCodeLine{00513\ }
+\DoxyCodeLine{00514\ \textcolor{keyword}{private}:}
+\DoxyCodeLine{00515\ \ \ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{classrich__location_a72e1516f82d7eec5a5c0cc518202479d}{reject\_impossible\_fixit}}\ (\doxymbox{\hyperlink{line-map_8h_aedf25620511d64e43327f1a229906a96}{location\_t}}\ where);}
+\DoxyCodeLine{00516\ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classrich__location_a1913430f04d06ca8dde97248baf1dc21}{stop\_supporting\_fixits}}\ ();}
+\DoxyCodeLine{00517\ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classrich__location_ab4a63843d0053f9bd414b2d7e3d29667}{maybe\_add\_fixit}}\ (\doxymbox{\hyperlink{line-map_8h_aedf25620511d64e43327f1a229906a96}{location\_t}}\ start,}
+\DoxyCodeLine{00518\ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{line-map_8h_aedf25620511d64e43327f1a229906a96}{location\_t}}\ next\_loc,}
+\DoxyCodeLine{00519\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *new\_content);}
+\DoxyCodeLine{00520\ }
+\DoxyCodeLine{00521\ \textcolor{keyword}{public}:}
+\DoxyCodeLine{00522\ \ \ \textcolor{keyword}{static}\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{classrich__location_ab44948522dc0f2833dfc0a2de3aa9e0c}{STATICALLY\_ALLOCATED\_RANGES}}\ =\ 3;}
+\DoxyCodeLine{00523\ }
+\DoxyCodeLine{00524\ \textcolor{keyword}{protected}:}
+\DoxyCodeLine{00525\ \ \ line\_maps\ *\ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classrich__location_a834c507881ec0803ce52951d366b9d9e}{m\_line\_table}};}
+\DoxyCodeLine{00526\ \ \ semi\_embedded\_vec\ <location\_range,\ STATICALLY\_ALLOCATED\_RANGES>\ \doxymbox{\hyperlink{classrich__location_aa77f9b1d157ddff4a3bc146cfe821dc7}{m\_ranges}};}
+\DoxyCodeLine{00527\ }
+\DoxyCodeLine{00528\ \ \ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{classrich__location_a9df6e3f9e10a9956f81c0ce49ba8eee2}{m\_column\_override}};}
+\DoxyCodeLine{00529\ }
+\DoxyCodeLine{00530\ \ \ \textcolor{keyword}{mutable}\ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{classrich__location_a074c6b9922f92389e1ddf5127ae6b9c9}{m\_have\_expanded\_location}};}
+\DoxyCodeLine{00531\ \ \ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{classrich__location_abc31fb3ee63d382e490d2f949a735ac6}{m\_seen\_impossible\_fixit}};}
+\DoxyCodeLine{00532\ \ \ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{classrich__location_a08e8b5d05c1150372dd6f5d3e9dfff80}{m\_fixits\_cannot\_be\_auto\_applied}};}
+\DoxyCodeLine{00533\ \ \ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{classrich__location_abb2ae151210c8eae9bbcc84de0a91cf3}{m\_escape\_on\_output}};}
+\DoxyCodeLine{00534\ }
+\DoxyCodeLine{00535\ \ \ \textcolor{keyword}{mutable}\ \doxymbox{\hyperlink{structexpanded__location}{expanded\_location}}\ \doxymbox{\hyperlink{classrich__location_a7e004e9295fd6dc57e88404b7f5a0378}{m\_expanded\_location}};}
+\DoxyCodeLine{00536\ }
+\DoxyCodeLine{00537\ \ \ \textcolor{keyword}{static}\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{classrich__location_aff5bdd394b20f06acbc6322ffb8d7370}{MAX\_STATIC\_FIXIT\_HINTS}}\ =\ 2;}
+\DoxyCodeLine{00538\ \ \ semi\_embedded\_vec\ <fixit\_hint\ *,\ MAX\_STATIC\_FIXIT\_HINTS>\ \doxymbox{\hyperlink{classrich__location_abcd347ed0baeee7675073a67a861c60c}{m\_fixit\_hints}};}
+\DoxyCodeLine{00539\ }
+\DoxyCodeLine{00540\ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classdiagnostic__path}{diagnostic\_path}}\ *\doxymbox{\hyperlink{classrich__location_a2e56d0970652fe5b6f54fe2ab4995e36}{m\_path}};}
+\DoxyCodeLine{00541\ \};}
+\DoxyCodeLine{00542\ }
+\DoxyCodeLine{00543\ \textcolor{comment}{/*\ A\ struct\ for\ the\ result\ of\ range\_label::get\_text:\ a\ NUL-\/terminated\ buffer}}
+\DoxyCodeLine{00544\ \textcolor{comment}{\ \ \ of\ localized\ text,\ and\ a\ flag\ to\ determine\ if\ the\ caller\ should\ "{}free"{}\ the}}
+\DoxyCodeLine{00545\ \textcolor{comment}{\ \ \ buffer.\ \ */}}
+\DoxyCodeLine{00546\ }
+\DoxyCodeLine{00547\ \textcolor{keyword}{class\ }\doxymbox{\hyperlink{classlabel__text_ae9ab923b3be1d0fe47fc036582d4e307}{label\_text}}}
+\DoxyCodeLine{00548\ \{}
+\DoxyCodeLine{00549\ \textcolor{keyword}{public}:}
+\DoxyCodeLine{00550\ \ \ \doxymbox{\hyperlink{classlabel__text_ae9ab923b3be1d0fe47fc036582d4e307}{label\_text}}\ ()}
+\DoxyCodeLine{00551\ \ \ :\ \doxymbox{\hyperlink{classlabel__text_afcca6ef94403c60e86fb15b787943b17}{m\_buffer}}\ (\doxymbox{\hyperlink{stddef_8h_a070d2ce7b6bb7e5c05602aa8c308d0c4}{NULL}}),\ \doxymbox{\hyperlink{classlabel__text_a7b5715baa48587c2ad1fcdf741f13ed0}{m\_owned}}\ (\doxymbox{\hyperlink{stdbool_8h_a65e9886d74aaee76545e83dd09011727}{false}})}
+\DoxyCodeLine{00552\ \ \ \{\}}
+\DoxyCodeLine{00553\ }
+\DoxyCodeLine{00554\ \ \ \doxymbox{\hyperlink{classlabel__text_a0c44ce62d91b1dd3e2397eb9940174e7}{\string~label\_text}}\ ()}
+\DoxyCodeLine{00555\ \ \ \{}
+\DoxyCodeLine{00556\ \ \ \ \ \textcolor{keywordflow}{if}\ (\doxymbox{\hyperlink{classlabel__text_a7b5715baa48587c2ad1fcdf741f13ed0}{m\_owned}})}
+\DoxyCodeLine{00557\ \ \ \ \ \ \ free\ (\doxymbox{\hyperlink{classlabel__text_afcca6ef94403c60e86fb15b787943b17}{m\_buffer}});}
+\DoxyCodeLine{00558\ \ \ \}}
+\DoxyCodeLine{00559\ }
+\DoxyCodeLine{00560\ \ \ \textcolor{comment}{/*\ Move\ ctor.\ \ */}}
+\DoxyCodeLine{00561\ \ \ \doxymbox{\hyperlink{classlabel__text_a8f87826663f01fb9bc5bface74567b9d}{label\_text}}\ (\doxymbox{\hyperlink{classlabel__text_ae9ab923b3be1d0fe47fc036582d4e307}{label\_text}}\ \&\&other)}
+\DoxyCodeLine{00562\ \ \ :\ \doxymbox{\hyperlink{classlabel__text_afcca6ef94403c60e86fb15b787943b17}{m\_buffer}}\ (other.\doxymbox{\hyperlink{classlabel__text_afcca6ef94403c60e86fb15b787943b17}{m\_buffer}}),\ \doxymbox{\hyperlink{classlabel__text_a7b5715baa48587c2ad1fcdf741f13ed0}{m\_owned}}\ (other.\doxymbox{\hyperlink{classlabel__text_a7b5715baa48587c2ad1fcdf741f13ed0}{m\_owned}})}
+\DoxyCodeLine{00563\ \ \ \{}
+\DoxyCodeLine{00564\ \ \ \ \ other.release\ ();}
+\DoxyCodeLine{00565\ \ \ \}}
+\DoxyCodeLine{00566\ }
+\DoxyCodeLine{00567\ \ \ \textcolor{comment}{/*\ Move\ assignment.\ \ */}}
+\DoxyCodeLine{00568\ \ \ \doxymbox{\hyperlink{classlabel__text_ae9ab923b3be1d0fe47fc036582d4e307}{label\_text}}\ \&\ \doxymbox{\hyperlink{classlabel__text_a5d7573ce90b0f893f4b588bcba427dfa}{operator=\ }}(\doxymbox{\hyperlink{classlabel__text_ae9ab923b3be1d0fe47fc036582d4e307}{label\_text}}\ \&\&other)}
+\DoxyCodeLine{00569\ \ \ \{}
+\DoxyCodeLine{00570\ \ \ \ \ \textcolor{keywordflow}{if}\ (\doxymbox{\hyperlink{classlabel__text_a7b5715baa48587c2ad1fcdf741f13ed0}{m\_owned}})}
+\DoxyCodeLine{00571\ \ \ \ \ \ \ free\ (\doxymbox{\hyperlink{classlabel__text_afcca6ef94403c60e86fb15b787943b17}{m\_buffer}});}
+\DoxyCodeLine{00572\ \ \ \ \ \doxymbox{\hyperlink{classlabel__text_afcca6ef94403c60e86fb15b787943b17}{m\_buffer}}\ =\ other.m\_buffer;}
+\DoxyCodeLine{00573\ \ \ \ \ \doxymbox{\hyperlink{classlabel__text_a7b5715baa48587c2ad1fcdf741f13ed0}{m\_owned}}\ =\ other.m\_owned;}
+\DoxyCodeLine{00574\ \ \ \ \ other.release\ ();}
+\DoxyCodeLine{00575\ \ \ \ \ \textcolor{keywordflow}{return}\ *\textcolor{keyword}{this};}
+\DoxyCodeLine{00576\ \ \ \}}
+\DoxyCodeLine{00577\ }
+\DoxyCodeLine{00578\ \ \ \textcolor{comment}{/*\ Delete\ the\ copy\ ctor\ and\ copy-\/assignment\ operator.\ \ */}}
+\DoxyCodeLine{00579\ \ \ \doxymbox{\hyperlink{classlabel__text_aeef534739145e6f9ce3b79ea4cf97958}{label\_text}}\ (\textcolor{keyword}{const}\ \doxymbox{\hyperlink{classlabel__text_ae9ab923b3be1d0fe47fc036582d4e307}{label\_text}}\ \&)\ =\ \textcolor{keyword}{delete};}
+\DoxyCodeLine{00580\ \ \ \doxymbox{\hyperlink{classlabel__text_ae9ab923b3be1d0fe47fc036582d4e307}{label\_text}}\ \&\ \doxymbox{\hyperlink{classlabel__text_a5d7573ce90b0f893f4b588bcba427dfa}{operator=\ }}(\textcolor{keyword}{const}\ \doxymbox{\hyperlink{classlabel__text_ae9ab923b3be1d0fe47fc036582d4e307}{label\_text}}\ \&)\ =\ \textcolor{keyword}{delete};}
+\DoxyCodeLine{00581\ }
+\DoxyCodeLine{00582\ \ \ \textcolor{comment}{/*\ Create\ a\ label\_text\ instance\ that\ borrows\ BUFFER\ from\ a}}
+\DoxyCodeLine{00583\ \textcolor{comment}{\ \ \ \ \ longer-\/lived\ owner.\ \ */}}
+\DoxyCodeLine{00584\ \ \ \textcolor{keyword}{static}\ \doxymbox{\hyperlink{classlabel__text_ae9ab923b3be1d0fe47fc036582d4e307}{label\_text}}\ \doxymbox{\hyperlink{classlabel__text_ac7d0bbcef549005c9b8c032d86018506}{borrow}}\ (\textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *buffer)}
+\DoxyCodeLine{00585\ \ \ \{}
+\DoxyCodeLine{00586\ \ \ \ \ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{classlabel__text_ae9ab923b3be1d0fe47fc036582d4e307}{label\_text}}\ (\textcolor{keyword}{const\_cast\ <}\textcolor{keywordtype}{char}\ *\textcolor{keyword}{>}\ (buffer),\ \textcolor{keyword}{false});}
+\DoxyCodeLine{00587\ \ \ \}}
+\DoxyCodeLine{00588\ }
+\DoxyCodeLine{00589\ \ \ \textcolor{comment}{/*\ Create\ a\ label\_text\ instance\ that\ takes\ ownership\ of\ BUFFER.\ \ */}}
+\DoxyCodeLine{00590\ \ \ \textcolor{keyword}{static}\ \doxymbox{\hyperlink{classlabel__text_ae9ab923b3be1d0fe47fc036582d4e307}{label\_text}}\ \doxymbox{\hyperlink{classlabel__text_a1d26d5a004b33f56763857ca342c929b}{take}}\ (\textcolor{keywordtype}{char}\ *buffer)}
+\DoxyCodeLine{00591\ \ \ \{}
+\DoxyCodeLine{00592\ \ \ \ \ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{classlabel__text_ae9ab923b3be1d0fe47fc036582d4e307}{label\_text}}\ (buffer,\ \textcolor{keyword}{true});}
+\DoxyCodeLine{00593\ \ \ \}}
+\DoxyCodeLine{00594\ }
+\DoxyCodeLine{00595\ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classlabel__text_ac52dd6c14137a391fdd52e1ed8934316}{release}}\ ()}
+\DoxyCodeLine{00596\ \ \ \{}
+\DoxyCodeLine{00597\ \ \ \ \ \doxymbox{\hyperlink{classlabel__text_afcca6ef94403c60e86fb15b787943b17}{m\_buffer}}\ =\ \doxymbox{\hyperlink{stddef_8h_a070d2ce7b6bb7e5c05602aa8c308d0c4}{NULL}};}
+\DoxyCodeLine{00598\ \ \ \ \ \doxymbox{\hyperlink{classlabel__text_a7b5715baa48587c2ad1fcdf741f13ed0}{m\_owned}}\ =\ \textcolor{keyword}{false};}
+\DoxyCodeLine{00599\ \ \ \}}
+\DoxyCodeLine{00600\ }
+\DoxyCodeLine{00601\ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *\doxymbox{\hyperlink{classlabel__text_aff681a4a9ecef92d07e6fcf6d134e359}{get}}\ ()\textcolor{keyword}{\ const}}
+\DoxyCodeLine{00602\ \textcolor{keyword}{\ \ }\{}
+\DoxyCodeLine{00603\ \ \ \ \ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{classlabel__text_afcca6ef94403c60e86fb15b787943b17}{m\_buffer}};}
+\DoxyCodeLine{00604\ \ \ \}}
+\DoxyCodeLine{00605\ }
+\DoxyCodeLine{00606\ \ \ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{classlabel__text_a651d3f841b4bd5a842738c8daa4fcc4e}{is\_owner}}\ ()\textcolor{keyword}{\ const}}
+\DoxyCodeLine{00607\ \textcolor{keyword}{\ \ }\{}
+\DoxyCodeLine{00608\ \ \ \ \ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{classlabel__text_a7b5715baa48587c2ad1fcdf741f13ed0}{m\_owned}};}
+\DoxyCodeLine{00609\ \ \ \}}
+\DoxyCodeLine{00610\ }
+\DoxyCodeLine{00611\ \textcolor{keyword}{private}:}
+\DoxyCodeLine{00612\ \ \ \textcolor{keywordtype}{char}\ *\doxymbox{\hyperlink{classlabel__text_afcca6ef94403c60e86fb15b787943b17}{m\_buffer}};}
+\DoxyCodeLine{00613\ \ \ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{classlabel__text_a7b5715baa48587c2ad1fcdf741f13ed0}{m\_owned}};}
+\DoxyCodeLine{00614\ }
+\DoxyCodeLine{00615\ \ \ \doxymbox{\hyperlink{classlabel__text_ac85a67c51ef4290e2311fc99d521e4b3}{label\_text}}\ (\textcolor{keywordtype}{char}\ *buffer,\ \textcolor{keywordtype}{bool}\ owned)}
+\DoxyCodeLine{00616\ \ \ :\ \doxymbox{\hyperlink{classlabel__text_afcca6ef94403c60e86fb15b787943b17}{m\_buffer}}\ (buffer),\ \doxymbox{\hyperlink{classlabel__text_a7b5715baa48587c2ad1fcdf741f13ed0}{m\_owned}}\ (owned)}
+\DoxyCodeLine{00617\ \ \ \{\}}
+\DoxyCodeLine{00618\ \};}
+\DoxyCodeLine{00619\ }
+\DoxyCodeLine{00620\ \textcolor{comment}{/*\ Abstract\ base\ class\ for\ labelling\ a\ range\ within\ a\ rich\_location}}
+\DoxyCodeLine{00621\ \textcolor{comment}{\ \ \ (e.g.\ for\ labelling\ expressions\ with\ their\ type).}}
+\DoxyCodeLine{00622\ \textcolor{comment}{}}
+\DoxyCodeLine{00623\ \textcolor{comment}{\ \ \ Generating\ the\ text\ could\ require\ non-\/trivial\ work,\ so\ this\ work}}
+\DoxyCodeLine{00624\ \textcolor{comment}{\ \ \ is\ delayed\ (via\ the\ "{}get\_text"{}\ virtual\ function)\ until\ the\ diagnostic}}
+\DoxyCodeLine{00625\ \textcolor{comment}{\ \ \ printing\ code\ "{}knows"{}\ it\ needs\ it,\ thus\ avoiding\ doing\ it\ e.g.\ for}}
+\DoxyCodeLine{00626\ \textcolor{comment}{\ \ \ warnings\ that\ are\ filtered\ by\ command-\/line\ flags.\ \ This\ virtual}}
+\DoxyCodeLine{00627\ \textcolor{comment}{\ \ \ function\ also\ isolates\ libcpp\ and\ the\ diagnostics\ subsystem\ from}}
+\DoxyCodeLine{00628\ \textcolor{comment}{\ \ \ the\ front-\/end\ and\ middle-\/end-\/specific\ code\ for\ generating\ the\ text}}
+\DoxyCodeLine{00629\ \textcolor{comment}{\ \ \ for\ the\ labels.}}
+\DoxyCodeLine{00630\ \textcolor{comment}{}}
+\DoxyCodeLine{00631\ \textcolor{comment}{\ \ \ Like\ the\ rich\_location\ instances\ they\ annotate,\ range\_label\ instances}}
+\DoxyCodeLine{00632\ \textcolor{comment}{\ \ \ are\ intended\ to\ be\ allocated\ on\ the\ stack\ when\ generating\ diagnostics,}}
+\DoxyCodeLine{00633\ \textcolor{comment}{\ \ \ and\ to\ be\ short-\/lived.\ \ */}}
+\DoxyCodeLine{00634\ }
+\DoxyCodeLine{00635\ \textcolor{keyword}{class\ }\doxymbox{\hyperlink{classrange__label}{range\_label}}}
+\DoxyCodeLine{00636\ \{}
+\DoxyCodeLine{00637\ \ \textcolor{keyword}{public}:}
+\DoxyCodeLine{00638\ \ \ \textcolor{keyword}{virtual}\ \doxymbox{\hyperlink{classrange__label_a442ad0316e0336e5359794bae797daca}{\string~range\_label}}\ ()\ \{\}}
+\DoxyCodeLine{00639\ }
+\DoxyCodeLine{00640\ \ \ \textcolor{comment}{/*\ Get\ localized\ text\ for\ the\ label.}}
+\DoxyCodeLine{00641\ \textcolor{comment}{\ \ \ \ \ The\ RANGE\_IDX\ is\ provided,\ allowing\ for\ range\_label\ instances\ to\ be}}
+\DoxyCodeLine{00642\ \textcolor{comment}{\ \ \ \ \ shared\ by\ multiple\ ranges\ if\ need\ be\ (the\ "{}flyweight"{}\ design\ pattern).\ \ */}}
+\DoxyCodeLine{00643\ \ \ \textcolor{keyword}{virtual}\ \doxymbox{\hyperlink{classlabel__text}{label\_text}}\ \doxymbox{\hyperlink{classrange__label_a4473ca30bdafd75853cc414392f8c356}{get\_text}}\ (\textcolor{keywordtype}{unsigned}\ range\_idx)\ \textcolor{keyword}{const}\ =\ 0;}
+\DoxyCodeLine{00644\ \};}
+\DoxyCodeLine{00645\ }
+\DoxyCodeLine{00646\ \textcolor{comment}{/*\ A\ fix-\/it\ hint:\ a\ suggested\ insertion,\ replacement,\ or\ deletion\ of\ text.}}
+\DoxyCodeLine{00647\ \textcolor{comment}{\ \ \ We\ handle\ these\ three\ types\ of\ edit\ with\ one\ class,\ by\ representing}}
+\DoxyCodeLine{00648\ \textcolor{comment}{\ \ \ them\ as\ replacement\ of\ a\ half-\/open\ range:}}
+\DoxyCodeLine{00649\ \textcolor{comment}{\ \ \ \ \ \ \ [start,\ next\_loc)}}
+\DoxyCodeLine{00650\ \textcolor{comment}{\ \ \ Insertions\ have\ start\ ==\ next\_loc:\ "{}replace"{}\ the\ empty\ string\ at\ the}}
+\DoxyCodeLine{00651\ \textcolor{comment}{\ \ \ start\ location\ with\ the\ new\ string.}}
+\DoxyCodeLine{00652\ \textcolor{comment}{\ \ \ Deletions\ are\ replacement\ with\ the\ empty\ string.}}
+\DoxyCodeLine{00653\ \textcolor{comment}{}}
+\DoxyCodeLine{00654\ \textcolor{comment}{\ \ \ There\ is\ only\ limited\ support\ for\ newline\ characters\ in\ fix-\/it\ hints}}
+\DoxyCodeLine{00655\ \textcolor{comment}{\ \ \ as\ noted\ above\ in\ the\ comment\ for\ class\ rich\_location.}}
+\DoxyCodeLine{00656\ \textcolor{comment}{\ \ \ A\ fixit\_hint\ instance\ can\ have\ at\ most\ one\ newline\ character;\ if}}
+\DoxyCodeLine{00657\ \textcolor{comment}{\ \ \ present,\ the\ newline\ character\ must\ be\ the\ final\ character\ of}}
+\DoxyCodeLine{00658\ \textcolor{comment}{\ \ \ the\ content\ (preventing\ e.g.\ fix-\/its\ that\ split\ a\ pre-\/existing\ line).\ \ */}}
+\DoxyCodeLine{00659\ }
+\DoxyCodeLine{00660\ \textcolor{keyword}{class\ }\doxymbox{\hyperlink{classfixit__hint_a9925b47dce7f4f4ae9660ed241ad4806}{fixit\_hint}}}
+\DoxyCodeLine{00661\ \{}
+\DoxyCodeLine{00662\ \ \textcolor{keyword}{public}:}
+\DoxyCodeLine{00663\ \ \ \doxymbox{\hyperlink{classfixit__hint_a9925b47dce7f4f4ae9660ed241ad4806}{fixit\_hint}}\ (\doxymbox{\hyperlink{line-map_8h_aedf25620511d64e43327f1a229906a96}{location\_t}}\ start,}
+\DoxyCodeLine{00664\ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{line-map_8h_aedf25620511d64e43327f1a229906a96}{location\_t}}\ next\_loc,}
+\DoxyCodeLine{00665\ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *new\_content);}
+\DoxyCodeLine{00666\ \ \ \doxymbox{\hyperlink{classfixit__hint_af7289d93143436a97f0b4b4eefdaf4cd}{\string~fixit\_hint}}\ ()\ \{\ free\ (\doxymbox{\hyperlink{classfixit__hint_a841cba61610b7395006661df1e4a5505}{m\_bytes}});\ \}}
+\DoxyCodeLine{00667\ }
+\DoxyCodeLine{00668\ \ \ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{classfixit__hint_aa9ded622a227d7c75d524510ef8d7b3e}{affects\_line\_p}}\ (\textcolor{keyword}{const}\ line\_maps\ *set,}
+\DoxyCodeLine{00669\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *file,}
+\DoxyCodeLine{00670\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{int}\ line)\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00671\ \ \ \doxymbox{\hyperlink{line-map_8h_aedf25620511d64e43327f1a229906a96}{location\_t}}\ \doxymbox{\hyperlink{classfixit__hint_aea3f6ef22a7a2406c496632ac912f072}{get\_start\_loc}}\ ()\textcolor{keyword}{\ const\ }\{\ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{classfixit__hint_a3b4ce707eae173b3061debfaff9c191a}{m\_start}};\ \}}
+\DoxyCodeLine{00672\ \ \ \doxymbox{\hyperlink{line-map_8h_aedf25620511d64e43327f1a229906a96}{location\_t}}\ \doxymbox{\hyperlink{classfixit__hint_a723ddb0cfe74ad117fa963e7cce55d96}{get\_next\_loc}}\ ()\textcolor{keyword}{\ const\ }\{\ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{classfixit__hint_af3e8a21f930a402bbe0c58adcc9a92b4}{m\_next\_loc}};\ \}}
+\DoxyCodeLine{00673\ \ \ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{classfixit__hint_af7fb212842e6d416104d570b94acb13e}{maybe\_append}}\ (\doxymbox{\hyperlink{line-map_8h_aedf25620511d64e43327f1a229906a96}{location\_t}}\ start,}
+\DoxyCodeLine{00674\ \ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{line-map_8h_aedf25620511d64e43327f1a229906a96}{location\_t}}\ next\_loc,}
+\DoxyCodeLine{00675\ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *new\_content);}
+\DoxyCodeLine{00676\ }
+\DoxyCodeLine{00677\ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *\doxymbox{\hyperlink{classfixit__hint_a075da83443c7ce606cdcc6302187d9d1}{get\_string}}\ ()\textcolor{keyword}{\ const\ }\{\ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{classfixit__hint_a841cba61610b7395006661df1e4a5505}{m\_bytes}};\ \}}
+\DoxyCodeLine{00678\ \ \ \textcolor{keywordtype}{size\_t}\ \doxymbox{\hyperlink{classfixit__hint_a98f0b5c08cdd2d27327e85440f897b1c}{get\_length}}\ ()\textcolor{keyword}{\ const\ }\{\ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{classfixit__hint_ac34a3ee0b5de9d1dcfd4e50165586cc6}{m\_len}};\ \}}
+\DoxyCodeLine{00679\ }
+\DoxyCodeLine{00680\ \ \ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{classfixit__hint_ab91ab36c1d6fc9569e8c673f65448bd6}{insertion\_p}}\ ()\textcolor{keyword}{\ const\ }\{\ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{classfixit__hint_a3b4ce707eae173b3061debfaff9c191a}{m\_start}}\ ==\ \doxymbox{\hyperlink{classfixit__hint_af3e8a21f930a402bbe0c58adcc9a92b4}{m\_next\_loc}};\ \}}
+\DoxyCodeLine{00681\ }
+\DoxyCodeLine{00682\ \ \ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{classfixit__hint_aeddaa3acbfb566c4dbb1f8583980034b}{ends\_with\_newline\_p}}\ ()\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00683\ }
+\DoxyCodeLine{00684\ \ \textcolor{keyword}{private}:}
+\DoxyCodeLine{00685\ \ \ \textcolor{comment}{/*\ We\ don't\ use\ source\_range\ here\ since,\ unlike\ most\ places,}}
+\DoxyCodeLine{00686\ \textcolor{comment}{\ \ \ \ \ this\ is\ a\ half-\/open/half-\/closed\ range:}}
+\DoxyCodeLine{00687\ \textcolor{comment}{\ \ \ \ \ \ \ [start,\ next\_loc)}}
+\DoxyCodeLine{00688\ \textcolor{comment}{\ \ \ \ \ so\ that\ we\ can\ support\ insertion\ via\ start\ ==\ next\_loc.\ \ */}}
+\DoxyCodeLine{00689\ \ \ \doxymbox{\hyperlink{line-map_8h_aedf25620511d64e43327f1a229906a96}{location\_t}}\ \doxymbox{\hyperlink{classfixit__hint_a3b4ce707eae173b3061debfaff9c191a}{m\_start}};}
+\DoxyCodeLine{00690\ \ \ \doxymbox{\hyperlink{line-map_8h_aedf25620511d64e43327f1a229906a96}{location\_t}}\ \doxymbox{\hyperlink{classfixit__hint_af3e8a21f930a402bbe0c58adcc9a92b4}{m\_next\_loc}};}
+\DoxyCodeLine{00691\ \ \ \textcolor{keywordtype}{char}\ *\doxymbox{\hyperlink{classfixit__hint_a841cba61610b7395006661df1e4a5505}{m\_bytes}};}
+\DoxyCodeLine{00692\ \ \ \textcolor{keywordtype}{size\_t}\ \doxymbox{\hyperlink{classfixit__hint_ac34a3ee0b5de9d1dcfd4e50165586cc6}{m\_len}};}
+\DoxyCodeLine{00693\ \};}
+\DoxyCodeLine{00694\ }
+\DoxyCodeLine{00695\ \textcolor{preprocessor}{\#endif\ }\textcolor{comment}{/*\ !LIBCPP\_RICH\_LOCATION\_H\ \ */}\textcolor{preprocessor}{}}
+
+\end{DoxyCode}

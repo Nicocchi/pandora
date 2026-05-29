@@ -1,0 +1,477 @@
+\doxysection{double-\/int.h}
+\hypertarget{double-int_8h_source}{}\label{double-int_8h_source}\index{toolchain/x86\_64-\/elf/lib/gcc/x86\_64-\/elf/14.2.0/plugin/include/double-\/int.h@{toolchain/x86\_64-\/elf/lib/gcc/x86\_64-\/elf/14.2.0/plugin/include/double-\/int.h}}
+\doxymbox{\hyperlink{double-int_8h}{Go to the documentation of this file.}}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001\ \textcolor{comment}{/*\ Operations\ with\ long\ integers.}}
+\DoxyCodeLine{00002\ \textcolor{comment}{\ \ \ Copyright\ (C)\ 2006-\/2024\ Free\ Software\ Foundation,\ Inc.}}
+\DoxyCodeLine{00003\ \textcolor{comment}{}}
+\DoxyCodeLine{00004\ \textcolor{comment}{This\ file\ is\ part\ of\ GCC.}}
+\DoxyCodeLine{00005\ \textcolor{comment}{}}
+\DoxyCodeLine{00006\ \textcolor{comment}{GCC\ is\ free\ software;\ you\ can\ redistribute\ it\ and/or\ modify\ it}}
+\DoxyCodeLine{00007\ \textcolor{comment}{under\ the\ terms\ of\ the\ GNU\ General\ Public\ License\ as\ published\ by\ the}}
+\DoxyCodeLine{00008\ \textcolor{comment}{Free\ Software\ Foundation;\ either\ version\ 3,\ or\ (at\ your\ option)\ any}}
+\DoxyCodeLine{00009\ \textcolor{comment}{later\ version.}}
+\DoxyCodeLine{00010\ \textcolor{comment}{}}
+\DoxyCodeLine{00011\ \textcolor{comment}{GCC\ is\ distributed\ in\ the\ hope\ that\ it\ will\ be\ useful,\ but\ WITHOUT}}
+\DoxyCodeLine{00012\ \textcolor{comment}{ANY\ WARRANTY;\ without\ even\ the\ implied\ warranty\ of\ MERCHANTABILITY\ or}}
+\DoxyCodeLine{00013\ \textcolor{comment}{FITNESS\ FOR\ A\ PARTICULAR\ PURPOSE.\ \ See\ the\ GNU\ General\ Public\ License}}
+\DoxyCodeLine{00014\ \textcolor{comment}{for\ more\ details.}}
+\DoxyCodeLine{00015\ \textcolor{comment}{}}
+\DoxyCodeLine{00016\ \textcolor{comment}{You\ should\ have\ received\ a\ copy\ of\ the\ GNU\ General\ Public\ License}}
+\DoxyCodeLine{00017\ \textcolor{comment}{along\ with\ GCC;\ see\ the\ file\ COPYING3.\ \ If\ not\ see}}
+\DoxyCodeLine{00018\ \textcolor{comment}{<http://www.gnu.org/licenses/>.\ \ */}}
+\DoxyCodeLine{00019\ }
+\DoxyCodeLine{00020\ \textcolor{preprocessor}{\#ifndef\ DOUBLE\_INT\_H}}
+\DoxyCodeLine{00021\ \textcolor{preprocessor}{\#define\ DOUBLE\_INT\_H}}
+\DoxyCodeLine{00022\ }
+\DoxyCodeLine{00023\ \textcolor{comment}{/*\ A\ large\ integer\ is\ currently\ represented\ as\ a\ pair\ of\ HOST\_WIDE\_INTs.}}
+\DoxyCodeLine{00024\ \textcolor{comment}{\ \ \ It\ therefore\ represents\ a\ number\ with\ precision\ of}}
+\DoxyCodeLine{00025\ \textcolor{comment}{\ \ \ 2\ *\ HOST\_BITS\_PER\_WIDE\_INT\ bits\ (it\ is\ however\ possible\ that\ the}}
+\DoxyCodeLine{00026\ \textcolor{comment}{\ \ \ internal\ representation\ will\ change,\ if\ numbers\ with\ greater\ precision}}
+\DoxyCodeLine{00027\ \textcolor{comment}{\ \ \ are\ needed,\ so\ the\ users\ should\ not\ rely\ on\ it).\ \ The\ representation\ does}}
+\DoxyCodeLine{00028\ \textcolor{comment}{\ \ \ not\ contain\ any\ information\ about\ signedness\ of\ the\ represented\ value,\ so}}
+\DoxyCodeLine{00029\ \textcolor{comment}{\ \ \ it\ can\ be\ used\ to\ represent\ both\ signed\ and\ unsigned\ numbers.\ \ For}}
+\DoxyCodeLine{00030\ \textcolor{comment}{\ \ \ operations\ where\ the\ results\ depend\ on\ signedness\ (division,\ comparisons),}}
+\DoxyCodeLine{00031\ \textcolor{comment}{\ \ \ it\ must\ be\ specified\ separately.\ \ For\ each\ such\ operation,\ there\ are\ three}}
+\DoxyCodeLine{00032\ \textcolor{comment}{\ \ \ versions\ of\ the\ function\ -\/-\/\ double\_int\_op,\ that\ takes\ an\ extra\ UNS\ argument}}
+\DoxyCodeLine{00033\ \textcolor{comment}{\ \ \ giving\ the\ signedness\ of\ the\ values,\ and\ double\_int\_sop\ and\ double\_int\_uop}}
+\DoxyCodeLine{00034\ \textcolor{comment}{\ \ \ that\ stand\ for\ its\ specializations\ for\ signed\ and\ unsigned\ values.}}
+\DoxyCodeLine{00035\ \textcolor{comment}{}}
+\DoxyCodeLine{00036\ \textcolor{comment}{\ \ \ You\ may\ also\ represent\ with\ numbers\ in\ smaller\ precision\ using\ double\_int.}}
+\DoxyCodeLine{00037\ \textcolor{comment}{\ \ \ You\ however\ need\ to\ use\ double\_int\_ext\ (that\ fills\ in\ the\ bits\ of\ the}}
+\DoxyCodeLine{00038\ \textcolor{comment}{\ \ \ number\ over\ the\ prescribed\ precision\ with\ zeros\ or\ with\ the\ sign\ bit)\ before}}
+\DoxyCodeLine{00039\ \textcolor{comment}{\ \ \ operations\ that\ do\ not\ perform\ arithmetics\ modulo\ 2\string^precision\ (comparisons,}}
+\DoxyCodeLine{00040\ \textcolor{comment}{\ \ \ division),\ and\ possibly\ before\ storing\ the\ results,\ if\ you\ want\ to\ keep}}
+\DoxyCodeLine{00041\ \textcolor{comment}{\ \ \ them\ in\ some\ canonical\ form).\ \ In\ general,\ the\ signedness\ of\ double\_int\_ext}}
+\DoxyCodeLine{00042\ \textcolor{comment}{\ \ \ should\ match\ the\ signedness\ of\ the\ operation.}}
+\DoxyCodeLine{00043\ \textcolor{comment}{}}
+\DoxyCodeLine{00044\ \textcolor{comment}{\ \ \ ???\ The\ components\ of\ double\_int\ differ\ in\ signedness\ mostly\ for}}
+\DoxyCodeLine{00045\ \textcolor{comment}{\ \ \ historical\ reasons\ (they\ replace\ an\ older\ structure\ used\ to\ represent}}
+\DoxyCodeLine{00046\ \textcolor{comment}{\ \ \ numbers\ with\ precision\ higher\ than\ HOST\_WIDE\_INT).\ \ It\ might\ be\ less}}
+\DoxyCodeLine{00047\ \textcolor{comment}{\ \ \ confusing\ to\ have\ them\ both\ signed\ or\ both\ unsigned.\ \ */}}
+\DoxyCodeLine{00048\ }
+\DoxyCodeLine{00049\ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{structdouble__int}{double\_int}}}
+\DoxyCodeLine{00050\ \{}
+\DoxyCodeLine{00051\ \ \ \textcolor{comment}{/*\ Normally,\ we\ would\ define\ constructors\ to\ create\ instances.}}
+\DoxyCodeLine{00052\ \textcolor{comment}{\ \ \ \ \ Two\ things\ prevent\ us\ from\ doing\ so.}}
+\DoxyCodeLine{00053\ \textcolor{comment}{\ \ \ \ \ First,\ defining\ a\ constructor\ makes\ the\ class\ non-\/POD\ in\ C++03,}}
+\DoxyCodeLine{00054\ \textcolor{comment}{\ \ \ \ \ and\ we\ certainly\ want\ double\_int\ to\ be\ a\ POD.}}
+\DoxyCodeLine{00055\ \textcolor{comment}{\ \ \ \ \ Second,\ the\ GCC\ conding\ conventions\ prefer\ explicit\ conversion,}}
+\DoxyCodeLine{00056\ \textcolor{comment}{\ \ \ \ \ and\ explicit\ conversion\ operators\ are\ not\ available\ until\ C++11.\ \ */}}
+\DoxyCodeLine{00057\ }
+\DoxyCodeLine{00058\ \ \ \textcolor{keyword}{static}\ \doxymbox{\hyperlink{structdouble__int}{double\_int}}\ \doxymbox{\hyperlink{structdouble__int_a78b62520b3d104af713df3df3a98e6df}{from\_uhwi}}\ (\textcolor{keywordtype}{unsigned}\ HOST\_WIDE\_INT\ cst);}
+\DoxyCodeLine{00059\ \ \ \textcolor{keyword}{static}\ \doxymbox{\hyperlink{structdouble__int}{double\_int}}\ \doxymbox{\hyperlink{structdouble__int_a6573e2b7edc66e020c587413d6b63eff}{from\_shwi}}\ (HOST\_WIDE\_INT\ cst);}
+\DoxyCodeLine{00060\ \ \ \textcolor{keyword}{static}\ \doxymbox{\hyperlink{structdouble__int}{double\_int}}\ \doxymbox{\hyperlink{structdouble__int_adafaa230d7feab10dc8413c9ba93e37d}{from\_pair}}\ (HOST\_WIDE\_INT\ \doxymbox{\hyperlink{structdouble__int_a1775a472385dd2067a43e138b1d08e73}{high}},\ \textcolor{keywordtype}{unsigned}\ HOST\_WIDE\_INT\ \doxymbox{\hyperlink{structdouble__int_a95b9c25a66923fce622428040c94df13}{low}});}
+\DoxyCodeLine{00061\ }
+\DoxyCodeLine{00062\ \ \ \textcolor{comment}{/*\ Construct\ from\ a\ fuffer\ of\ length\ LEN.\ \ BUFFER\ will\ be\ read\ according}}
+\DoxyCodeLine{00063\ \textcolor{comment}{\ \ \ \ \ to\ byte\ endianness\ and\ word\ endianness.\ \ */}}
+\DoxyCodeLine{00064\ \ \ \textcolor{keyword}{static}\ \doxymbox{\hyperlink{structdouble__int}{double\_int}}\ \doxymbox{\hyperlink{structdouble__int_a25009e288bc80bbbb89d78a1a9d6ed69}{from\_buffer}}\ (\textcolor{keyword}{const}\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{char}\ *buffer,\ \textcolor{keywordtype}{int}\ len);}
+\DoxyCodeLine{00065\ }
+\DoxyCodeLine{00066\ \ \ \textcolor{comment}{/*\ No\ copy\ assignment\ operator\ or\ destructor\ to\ keep\ the\ type\ a\ POD.\ \ */}}
+\DoxyCodeLine{00067\ }
+\DoxyCodeLine{00068\ \ \ \textcolor{comment}{/*\ There\ are\ some\ special\ value-\/creation\ static\ member\ functions.\ \ */}}
+\DoxyCodeLine{00069\ }
+\DoxyCodeLine{00070\ \ \ \textcolor{keyword}{static}\ \doxymbox{\hyperlink{structdouble__int}{double\_int}}\ \doxymbox{\hyperlink{structdouble__int_a42bf08d8f71dfdfcbd173e0dddaf6ab0}{mask}}\ (\textcolor{keywordtype}{unsigned}\ prec);}
+\DoxyCodeLine{00071\ \ \ \textcolor{keyword}{static}\ \doxymbox{\hyperlink{structdouble__int}{double\_int}}\ \doxymbox{\hyperlink{structdouble__int_a694ce1cb88fdeec6a628b79f5136f34b}{max\_value}}\ (\textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ prec,\ \textcolor{keywordtype}{bool}\ uns);}
+\DoxyCodeLine{00072\ \ \ \textcolor{keyword}{static}\ \doxymbox{\hyperlink{structdouble__int}{double\_int}}\ \doxymbox{\hyperlink{structdouble__int_a11f73c2ac354994a2f6b09871daee44c}{min\_value}}\ (\textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ prec,\ \textcolor{keywordtype}{bool}\ uns);}
+\DoxyCodeLine{00073\ }
+\DoxyCodeLine{00074\ \ \ \textcolor{comment}{/*\ The\ following\ functions\ are\ mutating\ operations.\ \ */}}
+\DoxyCodeLine{00075\ }
+\DoxyCodeLine{00076\ \ \ \doxymbox{\hyperlink{structdouble__int}{double\_int}}\ \&\doxymbox{\hyperlink{structdouble__int_a1be2284bc0b8f8591ba407aea01f9ee4}{operator\ ++\ }}();\ \textcolor{comment}{//\ prefix}}
+\DoxyCodeLine{00077\ \ \ \doxymbox{\hyperlink{structdouble__int}{double\_int}}\ \&\doxymbox{\hyperlink{structdouble__int_a1812ce991e630d88730029905f44084f}{operator\ -\/-\/\ }}();\ \textcolor{comment}{//\ prefix}}
+\DoxyCodeLine{00078\ \ \ \doxymbox{\hyperlink{structdouble__int}{double\_int}}\ \&\doxymbox{\hyperlink{structdouble__int_a5cc1abba01e00bfc26da9ed732fa3f4a}{operator\ *=\ }}(\doxymbox{\hyperlink{structdouble__int}{double\_int}});}
+\DoxyCodeLine{00079\ \ \ \doxymbox{\hyperlink{structdouble__int}{double\_int}}\ \&\doxymbox{\hyperlink{structdouble__int_aedc01b0bc301dcae36cf41f4f715f4ce}{operator\ +=\ }}(\doxymbox{\hyperlink{structdouble__int}{double\_int}});}
+\DoxyCodeLine{00080\ \ \ \doxymbox{\hyperlink{structdouble__int}{double\_int}}\ \&\doxymbox{\hyperlink{structdouble__int_ae9f3724cdde52b72369380b924f50d77}{operator\ -\/=\ }}(\doxymbox{\hyperlink{structdouble__int}{double\_int}});}
+\DoxyCodeLine{00081\ \ \ \doxymbox{\hyperlink{structdouble__int}{double\_int}}\ \&\doxymbox{\hyperlink{structdouble__int_aad5ffd9a4258501619873f057d469bde}{operator\ \&=\ }}(\doxymbox{\hyperlink{structdouble__int}{double\_int}});}
+\DoxyCodeLine{00082\ \ \ \doxymbox{\hyperlink{structdouble__int}{double\_int}}\ \&\doxymbox{\hyperlink{structdouble__int_ac6381fa5c5c88a9fe770f3415e1e4af3}{operator\ \string^=\ }}(\doxymbox{\hyperlink{structdouble__int}{double\_int}});}
+\DoxyCodeLine{00083\ \ \ \doxymbox{\hyperlink{structdouble__int}{double\_int}}\ \&\doxymbox{\hyperlink{structdouble__int_aa12641f2371f90427efcbbf1f424bd0a}{operator\ |=\ }}(\doxymbox{\hyperlink{structdouble__int}{double\_int}});}
+\DoxyCodeLine{00084\ }
+\DoxyCodeLine{00085\ \ \ \textcolor{comment}{/*\ The\ following\ functions\ are\ non-\/mutating\ operations.\ \ */}}
+\DoxyCodeLine{00086\ }
+\DoxyCodeLine{00087\ \ \ \textcolor{comment}{/*\ Conversion\ functions.\ \ */}}
+\DoxyCodeLine{00088\ }
+\DoxyCodeLine{00089\ \ \ HOST\_WIDE\_INT\ \doxymbox{\hyperlink{structdouble__int_a42f57c2c1678293baca9a57e93632297}{to\_shwi}}\ ()\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00090\ \ \ \textcolor{keywordtype}{unsigned}\ HOST\_WIDE\_INT\ \doxymbox{\hyperlink{structdouble__int_a10f849fe4af003d8c199071d48d794c3}{to\_uhwi}}\ ()\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00091\ }
+\DoxyCodeLine{00092\ \ \ \textcolor{comment}{/*\ Conversion\ query\ functions.\ \ */}}
+\DoxyCodeLine{00093\ }
+\DoxyCodeLine{00094\ \ \ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{structdouble__int_ab3955ed36b5ed8b1582ba259df2443bc}{fits\_uhwi}}\ ()\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00095\ \ \ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{structdouble__int_a5302ca55638f2785febbd58a8fdf4216}{fits\_shwi}}\ ()\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00096\ \ \ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{structdouble__int_a00c19ab277a9fb2473a5c96204d52b82}{fits\_hwi}}\ (\textcolor{keywordtype}{bool}\ uns)\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00097\ }
+\DoxyCodeLine{00098\ \ \ \textcolor{comment}{/*\ Attribute\ query\ functions.\ \ */}}
+\DoxyCodeLine{00099\ }
+\DoxyCodeLine{00100\ \ \ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{structdouble__int_a4cf05f9e19c41201db21d06e6fd0a852}{trailing\_zeros}}\ ()\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00101\ \ \ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{structdouble__int_aec037b95c233bfd68a212342320e8c83}{popcount}}\ ()\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00102\ }
+\DoxyCodeLine{00103\ \ \ \textcolor{comment}{/*\ Arithmetic\ query\ operations.\ \ */}}
+\DoxyCodeLine{00104\ }
+\DoxyCodeLine{00105\ \ \ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{structdouble__int_af0bb2ca0b1e5d98cf93c1414f859d61a}{multiple\_of}}\ (\doxymbox{\hyperlink{structdouble__int}{double\_int}},\ \textcolor{keywordtype}{bool},\ \doxymbox{\hyperlink{structdouble__int}{double\_int}}\ *)\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00106\ }
+\DoxyCodeLine{00107\ \ \ \textcolor{comment}{/*\ Arithmetic\ operation\ functions.\ \ */}}
+\DoxyCodeLine{00108\ }
+\DoxyCodeLine{00109\ \ \ \textcolor{comment}{/*\ The\ following\ operations\ perform\ arithmetics\ modulo\ 2\string^precision,\ so\ you}}
+\DoxyCodeLine{00110\ \textcolor{comment}{\ \ \ \ \ do\ not\ need\ to\ call\ .ext\ between\ them,\ even\ if\ you\ are\ representing}}
+\DoxyCodeLine{00111\ \textcolor{comment}{\ \ \ \ \ numbers\ with\ precision\ less\ than\ HOST\_BITS\_PER\_DOUBLE\_INT\ bits.\ \ */}}
+\DoxyCodeLine{00112\ }
+\DoxyCodeLine{00113\ \ \ \doxymbox{\hyperlink{structdouble__int}{double\_int}}\ \doxymbox{\hyperlink{structdouble__int_a2b6f46e1fb852cc585ffeb9f1f8a1111}{set\_bit}}\ (\textcolor{keywordtype}{unsigned})\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00114\ \ \ \doxymbox{\hyperlink{structdouble__int}{double\_int}}\ \doxymbox{\hyperlink{structdouble__int_ad00307bf613987e7e1d2720190d61c7b}{mul\_with\_sign}}\ (\doxymbox{\hyperlink{structdouble__int}{double\_int}},\ \textcolor{keywordtype}{bool}\ unsigned\_p,\ \textcolor{keywordtype}{bool}\ *overflow)\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00115\ \ \ \doxymbox{\hyperlink{structdouble__int}{double\_int}}\ \doxymbox{\hyperlink{structdouble__int_a19265558f1af17a8d71b8bc0ad99c596}{wide\_mul\_with\_sign}}\ (\doxymbox{\hyperlink{structdouble__int}{double\_int}},\ \textcolor{keywordtype}{bool}\ unsigned\_p,}
+\DoxyCodeLine{00116\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{structdouble__int}{double\_int}}\ *higher,\ \textcolor{keywordtype}{bool}\ *overflow)\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00117\ \ \ \doxymbox{\hyperlink{structdouble__int}{double\_int}}\ \doxymbox{\hyperlink{structdouble__int_a6e8f64d2b31e50dc8dd0094d9491c6fa}{add\_with\_sign}}\ (\doxymbox{\hyperlink{structdouble__int}{double\_int}},\ \textcolor{keywordtype}{bool}\ unsigned\_p,\ \textcolor{keywordtype}{bool}\ *overflow)\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00118\ \ \ \doxymbox{\hyperlink{structdouble__int}{double\_int}}\ \doxymbox{\hyperlink{structdouble__int_ac923fdca3c451a68c2306f49c117e2c4}{sub\_with\_overflow}}\ (\doxymbox{\hyperlink{structdouble__int}{double\_int}},\ \textcolor{keywordtype}{bool}\ *overflow)\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00119\ \ \ \doxymbox{\hyperlink{structdouble__int}{double\_int}}\ \doxymbox{\hyperlink{structdouble__int_a9c68c6970e57af8b4501ada7c1db10bd}{neg\_with\_overflow}}\ (\textcolor{keywordtype}{bool}\ *overflow)\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00120\ }
+\DoxyCodeLine{00121\ \ \ \doxymbox{\hyperlink{structdouble__int}{double\_int}}\ \doxymbox{\hyperlink{structdouble__int_a85a8bbfeba0eb246ab392e0646fa4f5c}{operator\ *\ }}(\doxymbox{\hyperlink{structdouble__int}{double\_int}})\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00122\ \ \ \doxymbox{\hyperlink{structdouble__int}{double\_int}}\ \doxymbox{\hyperlink{structdouble__int_ad8eab5a7a8bf167c9de1df2a5a27d545}{operator\ +\ }}(\doxymbox{\hyperlink{structdouble__int}{double\_int}})\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00123\ \ \ \doxymbox{\hyperlink{structdouble__int}{double\_int}}\ \doxymbox{\hyperlink{structdouble__int_a4393fda48b2ec3055dc6c104b4cf3122}{operator\ -\/\ }}(\doxymbox{\hyperlink{structdouble__int}{double\_int}})\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00124\ \ \ \doxymbox{\hyperlink{structdouble__int}{double\_int}}\ \doxymbox{\hyperlink{structdouble__int_a4393fda48b2ec3055dc6c104b4cf3122}{operator\ -\/\ }}()\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00125\ \ \ \doxymbox{\hyperlink{structdouble__int}{double\_int}}\ \doxymbox{\hyperlink{structdouble__int_a72c175faec92d13e87900d6a8f5d0e1d}{operator\ \string~\ }}()\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00126\ \ \ \doxymbox{\hyperlink{structdouble__int}{double\_int}}\ \doxymbox{\hyperlink{structdouble__int_ac4b6fc2093dedb82c4fc9c59ccff12d7}{operator\ \&\ }}(\doxymbox{\hyperlink{structdouble__int}{double\_int}})\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00127\ \ \ \doxymbox{\hyperlink{structdouble__int}{double\_int}}\ \doxymbox{\hyperlink{structdouble__int_a1925ecec0b03dcd30e04feb4d2de21d1}{operator\ |\ }}(\doxymbox{\hyperlink{structdouble__int}{double\_int}})\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00128\ \ \ \doxymbox{\hyperlink{structdouble__int}{double\_int}}\ \doxymbox{\hyperlink{structdouble__int_a2205b21c40e7f010a117da63d4d68c67}{operator\ \string^\ }}(\doxymbox{\hyperlink{structdouble__int}{double\_int}})\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00129\ \ \ \doxymbox{\hyperlink{structdouble__int}{double\_int}}\ \doxymbox{\hyperlink{structdouble__int_a96229a8f261c1c0a75f1189ef97bd3e7}{and\_not}}\ (\doxymbox{\hyperlink{structdouble__int}{double\_int}})\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00130\ }
+\DoxyCodeLine{00131\ \ \ \doxymbox{\hyperlink{structdouble__int}{double\_int}}\ \doxymbox{\hyperlink{structdouble__int_a6bd0bc23cd10444ad28408c57d0ea5c8}{lshift}}\ (HOST\_WIDE\_INT\ count)\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00132\ \ \ \doxymbox{\hyperlink{structdouble__int}{double\_int}}\ \doxymbox{\hyperlink{structdouble__int_a9926c4b98c45bde1619e31239e21a521}{lshift}}\ (HOST\_WIDE\_INT\ count,\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ prec,\ \textcolor{keywordtype}{bool}\ arith)\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00133\ \ \ \doxymbox{\hyperlink{structdouble__int}{double\_int}}\ \doxymbox{\hyperlink{structdouble__int_a4964b86325bbd8a30154857cd79e90c8}{rshift}}\ (HOST\_WIDE\_INT\ count)\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00134\ \ \ \doxymbox{\hyperlink{structdouble__int}{double\_int}}\ \doxymbox{\hyperlink{structdouble__int_a7463aa93dc50c8fa21ed3cc1773034a7}{rshift}}\ (HOST\_WIDE\_INT\ count,\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ prec,\ \textcolor{keywordtype}{bool}\ arith)\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00135\ \ \ \doxymbox{\hyperlink{structdouble__int}{double\_int}}\ \doxymbox{\hyperlink{structdouble__int_a72463e751153e79f957186132104426a}{alshift}}\ (HOST\_WIDE\_INT\ count,\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ prec)\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00136\ \ \ \doxymbox{\hyperlink{structdouble__int}{double\_int}}\ \doxymbox{\hyperlink{structdouble__int_a0b39e7dcaddab30e10a2449e8226047d}{arshift}}\ (HOST\_WIDE\_INT\ count,\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ prec)\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00137\ \ \ \doxymbox{\hyperlink{structdouble__int}{double\_int}}\ \doxymbox{\hyperlink{structdouble__int_a4da4c49d4a11f4355c0ca581341acd24}{llshift}}\ (HOST\_WIDE\_INT\ count,\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ prec)\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00138\ \ \ \doxymbox{\hyperlink{structdouble__int}{double\_int}}\ \doxymbox{\hyperlink{structdouble__int_ad8131f4914117cf392614d8f0977d177}{lrshift}}\ (HOST\_WIDE\_INT\ count,\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ prec)\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00139\ \ \ \doxymbox{\hyperlink{structdouble__int}{double\_int}}\ \doxymbox{\hyperlink{structdouble__int_a88d821c2f6159de9d9b4219fb43a153e}{lrotate}}\ (HOST\_WIDE\_INT\ count,\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ prec)\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00140\ \ \ \doxymbox{\hyperlink{structdouble__int}{double\_int}}\ \doxymbox{\hyperlink{structdouble__int_a0ca9804712f08263559330cacb278a3c}{rrotate}}\ (HOST\_WIDE\_INT\ count,\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ prec)\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00141\ }
+\DoxyCodeLine{00142\ \ \ \textcolor{comment}{/*\ You\ must\ ensure\ that\ double\_int::ext\ is\ called\ on\ the\ operands}}
+\DoxyCodeLine{00143\ \textcolor{comment}{\ \ \ \ \ of\ the\ following\ operations,\ if\ the\ precision\ of\ the\ numbers}}
+\DoxyCodeLine{00144\ \textcolor{comment}{\ \ \ \ \ is\ less\ than\ HOST\_BITS\_PER\_DOUBLE\_INT\ bits.\ \ */}}
+\DoxyCodeLine{00145\ }
+\DoxyCodeLine{00146\ \ \ \doxymbox{\hyperlink{structdouble__int}{double\_int}}\ \doxymbox{\hyperlink{structdouble__int_ab7a1e9d531c0e5122f2a4de9d82a287d}{div}}\ (\doxymbox{\hyperlink{structdouble__int}{double\_int}},\ \textcolor{keywordtype}{bool},\ \textcolor{keywordtype}{unsigned})\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00147\ \ \ \doxymbox{\hyperlink{structdouble__int}{double\_int}}\ \doxymbox{\hyperlink{structdouble__int_a19ba28e6ec136c685de7748e95b0b56e}{sdiv}}\ (\doxymbox{\hyperlink{structdouble__int}{double\_int}},\ \textcolor{keywordtype}{unsigned})\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00148\ \ \ \doxymbox{\hyperlink{structdouble__int}{double\_int}}\ \doxymbox{\hyperlink{structdouble__int_a29937aa9c40e6d63ae19a2fb8b88c0d4}{udiv}}\ (\doxymbox{\hyperlink{structdouble__int}{double\_int}},\ \textcolor{keywordtype}{unsigned})\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00149\ \ \ \doxymbox{\hyperlink{structdouble__int}{double\_int}}\ \doxymbox{\hyperlink{structdouble__int_a582c00c3d7ffe1b5bdb1b451c98a1a52}{mod}}\ (\doxymbox{\hyperlink{structdouble__int}{double\_int}},\ \textcolor{keywordtype}{bool},\ \textcolor{keywordtype}{unsigned})\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00150\ \ \ \doxymbox{\hyperlink{structdouble__int}{double\_int}}\ \doxymbox{\hyperlink{structdouble__int_ad309537d89f158662e99c0c6d2ec724f}{smod}}\ (\doxymbox{\hyperlink{structdouble__int}{double\_int}},\ \textcolor{keywordtype}{unsigned})\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00151\ \ \ \doxymbox{\hyperlink{structdouble__int}{double\_int}}\ \doxymbox{\hyperlink{structdouble__int_ae3fb809100225f8eb013f61e89763e19}{umod}}\ (\doxymbox{\hyperlink{structdouble__int}{double\_int}},\ \textcolor{keywordtype}{unsigned})\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00152\ \ \ \doxymbox{\hyperlink{structdouble__int}{double\_int}}\ \doxymbox{\hyperlink{structdouble__int_a60e29b7cdc36869a2b6c75b409afcb47}{divmod\_with\_overflow}}\ (\doxymbox{\hyperlink{structdouble__int}{double\_int}},\ \textcolor{keywordtype}{bool},\ \textcolor{keywordtype}{unsigned},}
+\DoxyCodeLine{00153\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{structdouble__int}{double\_int}}\ *,\ \textcolor{keywordtype}{bool}\ *)\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00154\ \ \ \doxymbox{\hyperlink{structdouble__int}{double\_int}}\ \doxymbox{\hyperlink{structdouble__int_a67bc030d196aa6dd3c6bb60d21c7d395}{divmod}}\ (\doxymbox{\hyperlink{structdouble__int}{double\_int}},\ \textcolor{keywordtype}{bool},\ \textcolor{keywordtype}{unsigned},\ \doxymbox{\hyperlink{structdouble__int}{double\_int}}\ *)\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00155\ \ \ \doxymbox{\hyperlink{structdouble__int}{double\_int}}\ \doxymbox{\hyperlink{structdouble__int_ab0925c7bb751b5475d4e6be7a7b65af2}{sdivmod}}\ (\doxymbox{\hyperlink{structdouble__int}{double\_int}},\ \textcolor{keywordtype}{unsigned},\ \doxymbox{\hyperlink{structdouble__int}{double\_int}}\ *)\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00156\ \ \ \doxymbox{\hyperlink{structdouble__int}{double\_int}}\ \doxymbox{\hyperlink{structdouble__int_af1b4149c6e9eb964999ec91b4b22e607}{udivmod}}\ (\doxymbox{\hyperlink{structdouble__int}{double\_int}},\ \textcolor{keywordtype}{unsigned},\ \doxymbox{\hyperlink{structdouble__int}{double\_int}}\ *)\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00157\ }
+\DoxyCodeLine{00158\ \ \ \textcolor{comment}{/*\ Precision\ control\ functions.\ \ */}}
+\DoxyCodeLine{00159\ }
+\DoxyCodeLine{00160\ \ \ \doxymbox{\hyperlink{structdouble__int}{double\_int}}\ \doxymbox{\hyperlink{structdouble__int_afb15288b99256e566f1eac0b31bd67b4}{ext}}\ (\textcolor{keywordtype}{unsigned}\ prec,\ \textcolor{keywordtype}{bool}\ uns)\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00161\ \ \ \doxymbox{\hyperlink{structdouble__int}{double\_int}}\ \doxymbox{\hyperlink{structdouble__int_a3aaf99a8c589614b3339092acac9b17d}{zext}}\ (\textcolor{keywordtype}{unsigned}\ prec)\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00162\ \ \ \doxymbox{\hyperlink{structdouble__int}{double\_int}}\ \doxymbox{\hyperlink{structdouble__int_a42915b2d0a4669d72b003f1cd66d1d1e}{sext}}\ (\textcolor{keywordtype}{unsigned}\ prec)\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00163\ }
+\DoxyCodeLine{00164\ \ \ \textcolor{comment}{/*\ Comparative\ functions.\ \ */}}
+\DoxyCodeLine{00165\ }
+\DoxyCodeLine{00166\ \ \ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{structdouble__int_a661e15986fa48de530ba800f7fccfeee}{is\_zero}}\ ()\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00167\ \ \ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{structdouble__int_ac4fa46349845361f9fc24a5e2d75e48a}{is\_one}}\ ()\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00168\ \ \ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{structdouble__int_acba826bd133064f5e77e1472eef53fcd}{is\_minus\_one}}\ ()\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00169\ \ \ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{structdouble__int_a3e562b5bea947609ddc7724f34d7244b}{is\_negative}}\ ()\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00170\ }
+\DoxyCodeLine{00171\ \ \ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{structdouble__int_a459848f5c2937bc3320635cbf977f4e7}{cmp}}\ (\doxymbox{\hyperlink{structdouble__int}{double\_int}}\ \doxymbox{\hyperlink{poly-int_8h_af3bb9d9df219585072cf9e4e95572f70}{b}},\ \textcolor{keywordtype}{bool}\ uns)\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00172\ \ \ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{structdouble__int_a03c62ed8d1a64bfb71ee34797a72d3fd}{ucmp}}\ (\doxymbox{\hyperlink{structdouble__int}{double\_int}}\ \doxymbox{\hyperlink{poly-int_8h_af3bb9d9df219585072cf9e4e95572f70}{b}})\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00173\ \ \ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{structdouble__int_a3b7cc7458529477918f9ab4cde130e28}{scmp}}\ (\doxymbox{\hyperlink{structdouble__int}{double\_int}}\ \doxymbox{\hyperlink{poly-int_8h_af3bb9d9df219585072cf9e4e95572f70}{b}})\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00174\ }
+\DoxyCodeLine{00175\ \ \ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{structdouble__int_ad01c92f6e36e91d13ed8fe2bdb111182}{ult}}\ (\doxymbox{\hyperlink{structdouble__int}{double\_int}}\ \doxymbox{\hyperlink{poly-int_8h_af3bb9d9df219585072cf9e4e95572f70}{b}})\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00176\ \ \ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{structdouble__int_a4997d522a25c8ec71be46c23a94f0cca}{ule}}\ (\doxymbox{\hyperlink{structdouble__int}{double\_int}}\ \doxymbox{\hyperlink{poly-int_8h_af3bb9d9df219585072cf9e4e95572f70}{b}})\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00177\ \ \ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{structdouble__int_add67a4d3a94b8ed30fa643de845830da}{ugt}}\ (\doxymbox{\hyperlink{structdouble__int}{double\_int}}\ \doxymbox{\hyperlink{poly-int_8h_af3bb9d9df219585072cf9e4e95572f70}{b}})\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00178\ \ \ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{structdouble__int_a17f9b0564f1adedafe806bb09b7e88b8}{slt}}\ (\doxymbox{\hyperlink{structdouble__int}{double\_int}}\ \doxymbox{\hyperlink{poly-int_8h_af3bb9d9df219585072cf9e4e95572f70}{b}})\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00179\ \ \ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{structdouble__int_afd208aa44d484223476b627052933db6}{sle}}\ (\doxymbox{\hyperlink{structdouble__int}{double\_int}}\ \doxymbox{\hyperlink{poly-int_8h_af3bb9d9df219585072cf9e4e95572f70}{b}})\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00180\ \ \ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{structdouble__int_afe23ea3ca96b6e58836964de97e3eeac}{sgt}}\ (\doxymbox{\hyperlink{structdouble__int}{double\_int}}\ \doxymbox{\hyperlink{poly-int_8h_af3bb9d9df219585072cf9e4e95572f70}{b}})\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00181\ }
+\DoxyCodeLine{00182\ \ \ \doxymbox{\hyperlink{structdouble__int}{double\_int}}\ \doxymbox{\hyperlink{structdouble__int_a04069230822d5057ef7db34f78e3bdd7}{max}}\ (\doxymbox{\hyperlink{structdouble__int}{double\_int}}\ \doxymbox{\hyperlink{poly-int_8h_af3bb9d9df219585072cf9e4e95572f70}{b}},\ \textcolor{keywordtype}{bool}\ uns);}
+\DoxyCodeLine{00183\ \ \ \doxymbox{\hyperlink{structdouble__int}{double\_int}}\ \doxymbox{\hyperlink{structdouble__int_a916da547dd7a0183e5e12f2f91846a0a}{smax}}\ (\doxymbox{\hyperlink{structdouble__int}{double\_int}}\ \doxymbox{\hyperlink{poly-int_8h_af3bb9d9df219585072cf9e4e95572f70}{b}});}
+\DoxyCodeLine{00184\ \ \ \doxymbox{\hyperlink{structdouble__int}{double\_int}}\ \doxymbox{\hyperlink{structdouble__int_a029c710384d8302bc58642d1e2bd2202}{umax}}\ (\doxymbox{\hyperlink{structdouble__int}{double\_int}}\ \doxymbox{\hyperlink{poly-int_8h_af3bb9d9df219585072cf9e4e95572f70}{b}});}
+\DoxyCodeLine{00185\ }
+\DoxyCodeLine{00186\ \ \ \doxymbox{\hyperlink{structdouble__int}{double\_int}}\ \doxymbox{\hyperlink{structdouble__int_a34f62299b9df4008852dbd322a15ff58}{min}}\ (\doxymbox{\hyperlink{structdouble__int}{double\_int}}\ \doxymbox{\hyperlink{poly-int_8h_af3bb9d9df219585072cf9e4e95572f70}{b}},\ \textcolor{keywordtype}{bool}\ uns);}
+\DoxyCodeLine{00187\ \ \ \doxymbox{\hyperlink{structdouble__int}{double\_int}}\ \doxymbox{\hyperlink{structdouble__int_acf0d0f3f16548cd1caf8a841064bd791}{smin}}\ (\doxymbox{\hyperlink{structdouble__int}{double\_int}}\ \doxymbox{\hyperlink{poly-int_8h_af3bb9d9df219585072cf9e4e95572f70}{b}});}
+\DoxyCodeLine{00188\ \ \ \doxymbox{\hyperlink{structdouble__int}{double\_int}}\ \doxymbox{\hyperlink{structdouble__int_a42a0d54967c30b0743a71098fb55cd53}{umin}}\ (\doxymbox{\hyperlink{structdouble__int}{double\_int}}\ \doxymbox{\hyperlink{poly-int_8h_af3bb9d9df219585072cf9e4e95572f70}{b}});}
+\DoxyCodeLine{00189\ }
+\DoxyCodeLine{00190\ \ \ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{structdouble__int_a96e02ba5c5a6f18a43eef469c82ec8a6}{operator\ ==\ }}(\doxymbox{\hyperlink{structdouble__int}{double\_int}}\ cst2)\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00191\ \ \ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{structdouble__int_a85a895fe800fad9d012435dab99aad36}{operator\ !=\ }}(\doxymbox{\hyperlink{structdouble__int}{double\_int}}\ cst2)\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00192\ }
+\DoxyCodeLine{00193\ \ \ \textcolor{comment}{/*\ Please\ migrate\ away\ from\ using\ these\ member\ variables\ publicly.\ \ */}}
+\DoxyCodeLine{00194\ }
+\DoxyCodeLine{00195\ \ \ \textcolor{keywordtype}{unsigned}\ HOST\_WIDE\_INT\ \doxymbox{\hyperlink{structdouble__int_a95b9c25a66923fce622428040c94df13}{low}};}
+\DoxyCodeLine{00196\ \ \ HOST\_WIDE\_INT\ \doxymbox{\hyperlink{structdouble__int_a1775a472385dd2067a43e138b1d08e73}{high}};}
+\DoxyCodeLine{00197\ }
+\DoxyCodeLine{00198\ \};}
+\DoxyCodeLine{00199\ }
+\DoxyCodeLine{00200\ \textcolor{preprocessor}{\#define\ HOST\_BITS\_PER\_DOUBLE\_INT\ (2\ *\ HOST\_BITS\_PER\_WIDE\_INT)}}
+\DoxyCodeLine{00201\ }
+\DoxyCodeLine{00202\ \textcolor{comment}{/*\ Constructors\ and\ conversions.\ \ */}}
+\DoxyCodeLine{00203\ }
+\DoxyCodeLine{00204\ \textcolor{comment}{/*\ Constructs\ double\_int\ from\ integer\ CST.\ \ The\ bits\ over\ the\ precision\ of}}
+\DoxyCodeLine{00205\ \textcolor{comment}{\ \ \ HOST\_WIDE\_INT\ are\ filled\ with\ the\ sign\ bit.\ \ */}}
+\DoxyCodeLine{00206\ }
+\DoxyCodeLine{00207\ \textcolor{keyword}{inline}\ \doxymbox{\hyperlink{structdouble__int}{double\_int}}}
+\DoxyCodeLine{00208\ \doxymbox{\hyperlink{structdouble__int_a6573e2b7edc66e020c587413d6b63eff}{double\_int::from\_shwi}}\ (HOST\_WIDE\_INT\ cst)}
+\DoxyCodeLine{00209\ \{}
+\DoxyCodeLine{00210\ \ \ \doxymbox{\hyperlink{structdouble__int}{double\_int}}\ \doxymbox{\hyperlink{poly-int_8h_a3ecac2571dcdc8050989339124f1bd26}{r}};}
+\DoxyCodeLine{00211\ \ \ \doxymbox{\hyperlink{poly-int_8h_a3ecac2571dcdc8050989339124f1bd26}{r}}.low\ =\ (\textcolor{keywordtype}{unsigned}\ HOST\_WIDE\_INT)\ cst;}
+\DoxyCodeLine{00212\ \ \ \doxymbox{\hyperlink{poly-int_8h_a3ecac2571dcdc8050989339124f1bd26}{r}}.high\ =\ cst\ <\ 0\ ?\ -\/1\ :\ 0;}
+\DoxyCodeLine{00213\ \ \ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{poly-int_8h_a3ecac2571dcdc8050989339124f1bd26}{r}};}
+\DoxyCodeLine{00214\ \}}
+\DoxyCodeLine{00215\ }
+\DoxyCodeLine{00216\ \textcolor{comment}{/*\ Some\ useful\ constants.\ \ */}}
+\DoxyCodeLine{00217\ \textcolor{comment}{/*\ FIXME(crowl):\ Maybe\ remove\ after\ converting\ callers?}}
+\DoxyCodeLine{00218\ \textcolor{comment}{\ \ \ The\ problem\ is\ that\ a\ named\ constant\ would\ not\ be\ as\ optimizable,}}
+\DoxyCodeLine{00219\ \textcolor{comment}{\ \ \ while\ the\ functional\ syntax\ is\ more\ verbose.\ \ */}}
+\DoxyCodeLine{00220\ }
+\DoxyCodeLine{00221\ \textcolor{preprocessor}{\#define\ double\_int\_minus\_one\ (double\_int::from\_shwi\ (-\/1))}}
+\DoxyCodeLine{00222\ \textcolor{preprocessor}{\#define\ double\_int\_zero\ (double\_int::from\_shwi\ (0))}}
+\DoxyCodeLine{00223\ \textcolor{preprocessor}{\#define\ double\_int\_one\ (double\_int::from\_shwi\ (1))}}
+\DoxyCodeLine{00224\ \textcolor{preprocessor}{\#define\ double\_int\_two\ (double\_int::from\_shwi\ (2))}}
+\DoxyCodeLine{00225\ \textcolor{preprocessor}{\#define\ double\_int\_ten\ (double\_int::from\_shwi\ (10))}}
+\DoxyCodeLine{00226\ }
+\DoxyCodeLine{00227\ \textcolor{comment}{/*\ Constructs\ double\_int\ from\ unsigned\ integer\ CST.\ \ The\ bits\ over\ the}}
+\DoxyCodeLine{00228\ \textcolor{comment}{\ \ \ precision\ of\ HOST\_WIDE\_INT\ are\ filled\ with\ zeros.\ \ */}}
+\DoxyCodeLine{00229\ }
+\DoxyCodeLine{00230\ \textcolor{keyword}{inline}\ \doxymbox{\hyperlink{structdouble__int}{double\_int}}}
+\DoxyCodeLine{00231\ \doxymbox{\hyperlink{structdouble__int_a78b62520b3d104af713df3df3a98e6df}{double\_int::from\_uhwi}}\ (\textcolor{keywordtype}{unsigned}\ HOST\_WIDE\_INT\ cst)}
+\DoxyCodeLine{00232\ \{}
+\DoxyCodeLine{00233\ \ \ \doxymbox{\hyperlink{structdouble__int}{double\_int}}\ \doxymbox{\hyperlink{poly-int_8h_a3ecac2571dcdc8050989339124f1bd26}{r}};}
+\DoxyCodeLine{00234\ \ \ \doxymbox{\hyperlink{poly-int_8h_a3ecac2571dcdc8050989339124f1bd26}{r}}.low\ =\ cst;}
+\DoxyCodeLine{00235\ \ \ \doxymbox{\hyperlink{poly-int_8h_a3ecac2571dcdc8050989339124f1bd26}{r}}.high\ =\ 0;}
+\DoxyCodeLine{00236\ \ \ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{poly-int_8h_a3ecac2571dcdc8050989339124f1bd26}{r}};}
+\DoxyCodeLine{00237\ \}}
+\DoxyCodeLine{00238\ }
+\DoxyCodeLine{00239\ \textcolor{keyword}{inline}\ \doxymbox{\hyperlink{structdouble__int}{double\_int}}}
+\DoxyCodeLine{00240\ \doxymbox{\hyperlink{structdouble__int_adafaa230d7feab10dc8413c9ba93e37d}{double\_int::from\_pair}}\ (HOST\_WIDE\_INT\ \doxymbox{\hyperlink{structdouble__int_a1775a472385dd2067a43e138b1d08e73}{high}},\ \textcolor{keywordtype}{unsigned}\ HOST\_WIDE\_INT\ \doxymbox{\hyperlink{structdouble__int_a95b9c25a66923fce622428040c94df13}{low}})}
+\DoxyCodeLine{00241\ \{}
+\DoxyCodeLine{00242\ \ \ \doxymbox{\hyperlink{structdouble__int}{double\_int}}\ \doxymbox{\hyperlink{poly-int_8h_a3ecac2571dcdc8050989339124f1bd26}{r}};}
+\DoxyCodeLine{00243\ \ \ \doxymbox{\hyperlink{poly-int_8h_a3ecac2571dcdc8050989339124f1bd26}{r}}.low\ =\ \doxymbox{\hyperlink{structdouble__int_a95b9c25a66923fce622428040c94df13}{low}};}
+\DoxyCodeLine{00244\ \ \ \doxymbox{\hyperlink{poly-int_8h_a3ecac2571dcdc8050989339124f1bd26}{r}}.high\ =\ \doxymbox{\hyperlink{structdouble__int_a1775a472385dd2067a43e138b1d08e73}{high}};}
+\DoxyCodeLine{00245\ \ \ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{poly-int_8h_a3ecac2571dcdc8050989339124f1bd26}{r}};}
+\DoxyCodeLine{00246\ \}}
+\DoxyCodeLine{00247\ }
+\DoxyCodeLine{00248\ \textcolor{keyword}{inline}\ \doxymbox{\hyperlink{structdouble__int}{double\_int}}\ \&}
+\DoxyCodeLine{00249\ \doxymbox{\hyperlink{structdouble__int_a1be2284bc0b8f8591ba407aea01f9ee4}{double\_int::operator\ ++\ }}()}
+\DoxyCodeLine{00250\ \{}
+\DoxyCodeLine{00251\ \ \ *\textcolor{keyword}{this}\ +=\ \doxymbox{\hyperlink{double-int_8h_ae193618055b4b5fa6c27b0ea5fb8f23e}{double\_int\_one}};}
+\DoxyCodeLine{00252\ \ \ \textcolor{keywordflow}{return}\ *\textcolor{keyword}{this};}
+\DoxyCodeLine{00253\ \}}
+\DoxyCodeLine{00254\ }
+\DoxyCodeLine{00255\ \textcolor{keyword}{inline}\ \doxymbox{\hyperlink{structdouble__int}{double\_int}}\ \&}
+\DoxyCodeLine{00256\ \doxymbox{\hyperlink{structdouble__int_a1812ce991e630d88730029905f44084f}{double\_int::operator\ -\/-\/\ }}()}
+\DoxyCodeLine{00257\ \{}
+\DoxyCodeLine{00258\ \ \ *\textcolor{keyword}{this}\ -\/=\ \doxymbox{\hyperlink{double-int_8h_ae193618055b4b5fa6c27b0ea5fb8f23e}{double\_int\_one}};}
+\DoxyCodeLine{00259\ \ \ \textcolor{keywordflow}{return}\ *\textcolor{keyword}{this};}
+\DoxyCodeLine{00260\ \}}
+\DoxyCodeLine{00261\ }
+\DoxyCodeLine{00262\ \textcolor{keyword}{inline}\ \doxymbox{\hyperlink{structdouble__int}{double\_int}}\ \&}
+\DoxyCodeLine{00263\ \doxymbox{\hyperlink{structdouble__int_aad5ffd9a4258501619873f057d469bde}{double\_int::operator\ \&=\ }}(\doxymbox{\hyperlink{structdouble__int}{double\_int}}\ \doxymbox{\hyperlink{poly-int_8h_af3bb9d9df219585072cf9e4e95572f70}{b}})}
+\DoxyCodeLine{00264\ \{}
+\DoxyCodeLine{00265\ \ \ *\textcolor{keyword}{this}\ =\ *\textcolor{keyword}{this}\ \&\ \doxymbox{\hyperlink{poly-int_8h_af3bb9d9df219585072cf9e4e95572f70}{b}};}
+\DoxyCodeLine{00266\ \ \ \textcolor{keywordflow}{return}\ *\textcolor{keyword}{this};}
+\DoxyCodeLine{00267\ \}}
+\DoxyCodeLine{00268\ }
+\DoxyCodeLine{00269\ \textcolor{keyword}{inline}\ \doxymbox{\hyperlink{structdouble__int}{double\_int}}\ \&}
+\DoxyCodeLine{00270\ \doxymbox{\hyperlink{structdouble__int_ac6381fa5c5c88a9fe770f3415e1e4af3}{double\_int::operator\ \string^=\ }}(\doxymbox{\hyperlink{structdouble__int}{double\_int}}\ \doxymbox{\hyperlink{poly-int_8h_af3bb9d9df219585072cf9e4e95572f70}{b}})}
+\DoxyCodeLine{00271\ \{}
+\DoxyCodeLine{00272\ \ \ *\textcolor{keyword}{this}\ =\ *\textcolor{keyword}{this}\ \string^\ \doxymbox{\hyperlink{poly-int_8h_af3bb9d9df219585072cf9e4e95572f70}{b}};}
+\DoxyCodeLine{00273\ \ \ \textcolor{keywordflow}{return}\ *\textcolor{keyword}{this};}
+\DoxyCodeLine{00274\ \}}
+\DoxyCodeLine{00275\ }
+\DoxyCodeLine{00276\ \textcolor{keyword}{inline}\ \doxymbox{\hyperlink{structdouble__int}{double\_int}}\ \&}
+\DoxyCodeLine{00277\ \doxymbox{\hyperlink{structdouble__int_aa12641f2371f90427efcbbf1f424bd0a}{double\_int::operator\ |=\ }}(\doxymbox{\hyperlink{structdouble__int}{double\_int}}\ \doxymbox{\hyperlink{poly-int_8h_af3bb9d9df219585072cf9e4e95572f70}{b}})}
+\DoxyCodeLine{00278\ \{}
+\DoxyCodeLine{00279\ \ \ *\textcolor{keyword}{this}\ =\ *\textcolor{keyword}{this}\ |\ \doxymbox{\hyperlink{poly-int_8h_af3bb9d9df219585072cf9e4e95572f70}{b}};}
+\DoxyCodeLine{00280\ \ \ \textcolor{keywordflow}{return}\ *\textcolor{keyword}{this};}
+\DoxyCodeLine{00281\ \}}
+\DoxyCodeLine{00282\ }
+\DoxyCodeLine{00283\ \textcolor{comment}{/*\ Returns\ value\ of\ CST\ as\ a\ signed\ number.\ \ CST\ must\ satisfy}}
+\DoxyCodeLine{00284\ \textcolor{comment}{\ \ \ double\_int::fits\_signed.\ \ */}}
+\DoxyCodeLine{00285\ }
+\DoxyCodeLine{00286\ \textcolor{keyword}{inline}\ HOST\_WIDE\_INT}
+\DoxyCodeLine{00287\ \doxymbox{\hyperlink{structdouble__int_a42f57c2c1678293baca9a57e93632297}{double\_int::to\_shwi}}\ ()\textcolor{keyword}{\ const}}
+\DoxyCodeLine{00288\ \textcolor{keyword}{}\{}
+\DoxyCodeLine{00289\ \ \ \textcolor{keywordflow}{return}\ (HOST\_WIDE\_INT)\ \doxymbox{\hyperlink{structdouble__int_a95b9c25a66923fce622428040c94df13}{low}};}
+\DoxyCodeLine{00290\ \}}
+\DoxyCodeLine{00291\ }
+\DoxyCodeLine{00292\ \textcolor{comment}{/*\ Returns\ value\ of\ CST\ as\ an\ unsigned\ number.\ \ CST\ must\ satisfy}}
+\DoxyCodeLine{00293\ \textcolor{comment}{\ \ \ double\_int::fits\_unsigned.\ \ */}}
+\DoxyCodeLine{00294\ }
+\DoxyCodeLine{00295\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{unsigned}\ HOST\_WIDE\_INT}
+\DoxyCodeLine{00296\ \doxymbox{\hyperlink{structdouble__int_a10f849fe4af003d8c199071d48d794c3}{double\_int::to\_uhwi}}\ ()\textcolor{keyword}{\ const}}
+\DoxyCodeLine{00297\ \textcolor{keyword}{}\{}
+\DoxyCodeLine{00298\ \ \ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{structdouble__int_a95b9c25a66923fce622428040c94df13}{low}};}
+\DoxyCodeLine{00299\ \}}
+\DoxyCodeLine{00300\ }
+\DoxyCodeLine{00301\ \textcolor{comment}{/*\ Returns\ true\ if\ CST\ fits\ in\ unsigned\ HOST\_WIDE\_INT.\ \ */}}
+\DoxyCodeLine{00302\ }
+\DoxyCodeLine{00303\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{bool}}
+\DoxyCodeLine{00304\ \doxymbox{\hyperlink{structdouble__int_ab3955ed36b5ed8b1582ba259df2443bc}{double\_int::fits\_uhwi}}\ ()\textcolor{keyword}{\ const}}
+\DoxyCodeLine{00305\ \textcolor{keyword}{}\{}
+\DoxyCodeLine{00306\ \ \ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{structdouble__int_a1775a472385dd2067a43e138b1d08e73}{high}}\ ==\ 0;}
+\DoxyCodeLine{00307\ \}}
+\DoxyCodeLine{00308\ }
+\DoxyCodeLine{00309\ \textcolor{comment}{/*\ Logical\ operations.\ \ */}}
+\DoxyCodeLine{00310\ }
+\DoxyCodeLine{00311\ \textcolor{comment}{/*\ Returns\ \string~A.\ \ */}}
+\DoxyCodeLine{00312\ }
+\DoxyCodeLine{00313\ \textcolor{keyword}{inline}\ \doxymbox{\hyperlink{structdouble__int}{double\_int}}}
+\DoxyCodeLine{00314\ \doxymbox{\hyperlink{structdouble__int_a72c175faec92d13e87900d6a8f5d0e1d}{double\_int::operator\ \string~\ }}()\textcolor{keyword}{\ const}}
+\DoxyCodeLine{00315\ \textcolor{keyword}{}\{}
+\DoxyCodeLine{00316\ \ \ \doxymbox{\hyperlink{structdouble__int}{double\_int}}\ result;}
+\DoxyCodeLine{00317\ \ \ result.\doxymbox{\hyperlink{structdouble__int_a95b9c25a66923fce622428040c94df13}{low}}\ =\ \doxymbox{\hyperlink{structdouble__int_a95b9c25a66923fce622428040c94df13}{\string~low}};}
+\DoxyCodeLine{00318\ \ \ result.\doxymbox{\hyperlink{structdouble__int_a1775a472385dd2067a43e138b1d08e73}{high}}\ =\ \doxymbox{\hyperlink{structdouble__int_a1775a472385dd2067a43e138b1d08e73}{\string~high}};}
+\DoxyCodeLine{00319\ \ \ \textcolor{keywordflow}{return}\ result;}
+\DoxyCodeLine{00320\ \}}
+\DoxyCodeLine{00321\ }
+\DoxyCodeLine{00322\ \textcolor{comment}{/*\ Returns\ A\ |\ B.\ \ */}}
+\DoxyCodeLine{00323\ }
+\DoxyCodeLine{00324\ \textcolor{keyword}{inline}\ \doxymbox{\hyperlink{structdouble__int}{double\_int}}}
+\DoxyCodeLine{00325\ \doxymbox{\hyperlink{structdouble__int_a1925ecec0b03dcd30e04feb4d2de21d1}{double\_int::operator\ |\ }}(\doxymbox{\hyperlink{structdouble__int}{double\_int}}\ \doxymbox{\hyperlink{poly-int_8h_af3bb9d9df219585072cf9e4e95572f70}{b}})\textcolor{keyword}{\ const}}
+\DoxyCodeLine{00326\ \textcolor{keyword}{}\{}
+\DoxyCodeLine{00327\ \ \ \doxymbox{\hyperlink{structdouble__int}{double\_int}}\ result;}
+\DoxyCodeLine{00328\ \ \ result.\doxymbox{\hyperlink{structdouble__int_a95b9c25a66923fce622428040c94df13}{low}}\ =\ \doxymbox{\hyperlink{structdouble__int_a95b9c25a66923fce622428040c94df13}{low}}\ |\ \doxymbox{\hyperlink{poly-int_8h_af3bb9d9df219585072cf9e4e95572f70}{b}}.low;}
+\DoxyCodeLine{00329\ \ \ result.\doxymbox{\hyperlink{structdouble__int_a1775a472385dd2067a43e138b1d08e73}{high}}\ =\ \doxymbox{\hyperlink{structdouble__int_a1775a472385dd2067a43e138b1d08e73}{high}}\ |\ \doxymbox{\hyperlink{poly-int_8h_af3bb9d9df219585072cf9e4e95572f70}{b}}.high;}
+\DoxyCodeLine{00330\ \ \ \textcolor{keywordflow}{return}\ result;}
+\DoxyCodeLine{00331\ \}}
+\DoxyCodeLine{00332\ }
+\DoxyCodeLine{00333\ \textcolor{comment}{/*\ Returns\ A\ \&\ B.\ \ */}}
+\DoxyCodeLine{00334\ }
+\DoxyCodeLine{00335\ \textcolor{keyword}{inline}\ \doxymbox{\hyperlink{structdouble__int}{double\_int}}}
+\DoxyCodeLine{00336\ \doxymbox{\hyperlink{structdouble__int_ac4b6fc2093dedb82c4fc9c59ccff12d7}{double\_int::operator\ \&\ }}(\doxymbox{\hyperlink{structdouble__int}{double\_int}}\ \doxymbox{\hyperlink{poly-int_8h_af3bb9d9df219585072cf9e4e95572f70}{b}})\textcolor{keyword}{\ const}}
+\DoxyCodeLine{00337\ \textcolor{keyword}{}\{}
+\DoxyCodeLine{00338\ \ \ \doxymbox{\hyperlink{structdouble__int}{double\_int}}\ result;}
+\DoxyCodeLine{00339\ \ \ result.\doxymbox{\hyperlink{structdouble__int_a95b9c25a66923fce622428040c94df13}{low}}\ =\ \doxymbox{\hyperlink{structdouble__int_a95b9c25a66923fce622428040c94df13}{low}}\ \&\ \doxymbox{\hyperlink{poly-int_8h_af3bb9d9df219585072cf9e4e95572f70}{b}}.low;}
+\DoxyCodeLine{00340\ \ \ result.\doxymbox{\hyperlink{structdouble__int_a1775a472385dd2067a43e138b1d08e73}{high}}\ =\ \doxymbox{\hyperlink{structdouble__int_a1775a472385dd2067a43e138b1d08e73}{high}}\ \&\ \doxymbox{\hyperlink{poly-int_8h_af3bb9d9df219585072cf9e4e95572f70}{b}}.high;}
+\DoxyCodeLine{00341\ \ \ \textcolor{keywordflow}{return}\ result;}
+\DoxyCodeLine{00342\ \}}
+\DoxyCodeLine{00343\ }
+\DoxyCodeLine{00344\ \textcolor{comment}{/*\ Returns\ A\ \&\ \string~B.\ \ */}}
+\DoxyCodeLine{00345\ }
+\DoxyCodeLine{00346\ \textcolor{keyword}{inline}\ \doxymbox{\hyperlink{structdouble__int}{double\_int}}}
+\DoxyCodeLine{00347\ \doxymbox{\hyperlink{structdouble__int_a96229a8f261c1c0a75f1189ef97bd3e7}{double\_int::and\_not}}\ (\doxymbox{\hyperlink{structdouble__int}{double\_int}}\ \doxymbox{\hyperlink{poly-int_8h_af3bb9d9df219585072cf9e4e95572f70}{b}})\textcolor{keyword}{\ const}}
+\DoxyCodeLine{00348\ \textcolor{keyword}{}\{}
+\DoxyCodeLine{00349\ \ \ \doxymbox{\hyperlink{structdouble__int}{double\_int}}\ result;}
+\DoxyCodeLine{00350\ \ \ result.\doxymbox{\hyperlink{structdouble__int_a95b9c25a66923fce622428040c94df13}{low}}\ =\ \doxymbox{\hyperlink{structdouble__int_a95b9c25a66923fce622428040c94df13}{low}}\ \&\ \doxymbox{\hyperlink{poly-int_8h_af3bb9d9df219585072cf9e4e95572f70}{\string~b}}.low;}
+\DoxyCodeLine{00351\ \ \ result.\doxymbox{\hyperlink{structdouble__int_a1775a472385dd2067a43e138b1d08e73}{high}}\ =\ \doxymbox{\hyperlink{structdouble__int_a1775a472385dd2067a43e138b1d08e73}{high}}\ \&\ \doxymbox{\hyperlink{poly-int_8h_af3bb9d9df219585072cf9e4e95572f70}{\string~b}}.high;}
+\DoxyCodeLine{00352\ \ \ \textcolor{keywordflow}{return}\ result;}
+\DoxyCodeLine{00353\ \}}
+\DoxyCodeLine{00354\ }
+\DoxyCodeLine{00355\ \textcolor{comment}{/*\ Returns\ A\ \string^\ B.\ \ */}}
+\DoxyCodeLine{00356\ }
+\DoxyCodeLine{00357\ \textcolor{keyword}{inline}\ \doxymbox{\hyperlink{structdouble__int}{double\_int}}}
+\DoxyCodeLine{00358\ \doxymbox{\hyperlink{structdouble__int_a2205b21c40e7f010a117da63d4d68c67}{double\_int::operator\ \string^\ }}(\doxymbox{\hyperlink{structdouble__int}{double\_int}}\ \doxymbox{\hyperlink{poly-int_8h_af3bb9d9df219585072cf9e4e95572f70}{b}})\textcolor{keyword}{\ const}}
+\DoxyCodeLine{00359\ \textcolor{keyword}{}\{}
+\DoxyCodeLine{00360\ \ \ \doxymbox{\hyperlink{structdouble__int}{double\_int}}\ result;}
+\DoxyCodeLine{00361\ \ \ result.\doxymbox{\hyperlink{structdouble__int_a95b9c25a66923fce622428040c94df13}{low}}\ =\ \doxymbox{\hyperlink{structdouble__int_a95b9c25a66923fce622428040c94df13}{low}}\ \string^\ \doxymbox{\hyperlink{poly-int_8h_af3bb9d9df219585072cf9e4e95572f70}{b}}.low;}
+\DoxyCodeLine{00362\ \ \ result.\doxymbox{\hyperlink{structdouble__int_a1775a472385dd2067a43e138b1d08e73}{high}}\ =\ \doxymbox{\hyperlink{structdouble__int_a1775a472385dd2067a43e138b1d08e73}{high}}\ \string^\ \doxymbox{\hyperlink{poly-int_8h_af3bb9d9df219585072cf9e4e95572f70}{b}}.high;}
+\DoxyCodeLine{00363\ \ \ \textcolor{keywordflow}{return}\ result;}
+\DoxyCodeLine{00364\ \}}
+\DoxyCodeLine{00365\ }
+\DoxyCodeLine{00366\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{double-int_8h_ad3ff0c5694ed6797a09a26b218d7dc56}{dump\_double\_int}}\ (FILE\ *,\ \doxymbox{\hyperlink{structdouble__int}{double\_int}},\ \textcolor{keywordtype}{bool});}
+\DoxyCodeLine{00367\ }
+\DoxyCodeLine{00368\ \textcolor{preprocessor}{\#define\ ALL\_ONES\ HOST\_WIDE\_INT\_M1U}}
+\DoxyCodeLine{00369\ }
+\DoxyCodeLine{00370\ \textcolor{comment}{/*\ The\ operands\ of\ the\ following\ comparison\ functions\ must\ be\ processed}}
+\DoxyCodeLine{00371\ \textcolor{comment}{\ \ \ with\ double\_int\_ext,\ if\ their\ precision\ is\ less\ than}}
+\DoxyCodeLine{00372\ \textcolor{comment}{\ \ \ HOST\_BITS\_PER\_DOUBLE\_INT\ bits.\ \ */}}
+\DoxyCodeLine{00373\ }
+\DoxyCodeLine{00374\ \textcolor{comment}{/*\ Returns\ true\ if\ CST\ is\ zero.\ \ */}}
+\DoxyCodeLine{00375\ }
+\DoxyCodeLine{00376\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{bool}}
+\DoxyCodeLine{00377\ \doxymbox{\hyperlink{structdouble__int_a661e15986fa48de530ba800f7fccfeee}{double\_int::is\_zero}}\ ()\textcolor{keyword}{\ const}}
+\DoxyCodeLine{00378\ \textcolor{keyword}{}\{}
+\DoxyCodeLine{00379\ \ \ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{structdouble__int_a95b9c25a66923fce622428040c94df13}{low}}\ ==\ 0\ \&\&\ \doxymbox{\hyperlink{structdouble__int_a1775a472385dd2067a43e138b1d08e73}{high}}\ ==\ 0;}
+\DoxyCodeLine{00380\ \}}
+\DoxyCodeLine{00381\ }
+\DoxyCodeLine{00382\ \textcolor{comment}{/*\ Returns\ true\ if\ CST\ is\ one.\ \ */}}
+\DoxyCodeLine{00383\ }
+\DoxyCodeLine{00384\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{bool}}
+\DoxyCodeLine{00385\ \doxymbox{\hyperlink{structdouble__int_ac4fa46349845361f9fc24a5e2d75e48a}{double\_int::is\_one}}\ ()\textcolor{keyword}{\ const}}
+\DoxyCodeLine{00386\ \textcolor{keyword}{}\{}
+\DoxyCodeLine{00387\ \ \ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{structdouble__int_a95b9c25a66923fce622428040c94df13}{low}}\ ==\ 1\ \&\&\ \doxymbox{\hyperlink{structdouble__int_a1775a472385dd2067a43e138b1d08e73}{high}}\ ==\ 0;}
+\DoxyCodeLine{00388\ \}}
+\DoxyCodeLine{00389\ }
+\DoxyCodeLine{00390\ \textcolor{comment}{/*\ Returns\ true\ if\ CST\ is\ minus\ one.\ \ */}}
+\DoxyCodeLine{00391\ }
+\DoxyCodeLine{00392\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{bool}}
+\DoxyCodeLine{00393\ \doxymbox{\hyperlink{structdouble__int_acba826bd133064f5e77e1472eef53fcd}{double\_int::is\_minus\_one}}\ ()\textcolor{keyword}{\ const}}
+\DoxyCodeLine{00394\ \textcolor{keyword}{}\{}
+\DoxyCodeLine{00395\ \ \ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{structdouble__int_a95b9c25a66923fce622428040c94df13}{low}}\ ==\ \doxymbox{\hyperlink{double-int_8h_ab4d5467e7346c7c18fc838e34e27db23}{ALL\_ONES}}\ \&\&\ \doxymbox{\hyperlink{structdouble__int_a1775a472385dd2067a43e138b1d08e73}{high}}\ ==\ -\/1;}
+\DoxyCodeLine{00396\ \}}
+\DoxyCodeLine{00397\ }
+\DoxyCodeLine{00398\ \textcolor{comment}{/*\ Returns\ true\ if\ CST\ is\ negative.\ \ */}}
+\DoxyCodeLine{00399\ }
+\DoxyCodeLine{00400\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{bool}}
+\DoxyCodeLine{00401\ \doxymbox{\hyperlink{structdouble__int_a3e562b5bea947609ddc7724f34d7244b}{double\_int::is\_negative}}\ ()\textcolor{keyword}{\ const}}
+\DoxyCodeLine{00402\ \textcolor{keyword}{}\{}
+\DoxyCodeLine{00403\ \ \ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{structdouble__int_a1775a472385dd2067a43e138b1d08e73}{high}}\ <\ 0;}
+\DoxyCodeLine{00404\ \}}
+\DoxyCodeLine{00405\ }
+\DoxyCodeLine{00406\ \textcolor{comment}{/*\ Returns\ true\ if\ CST1\ ==\ CST2.\ \ */}}
+\DoxyCodeLine{00407\ }
+\DoxyCodeLine{00408\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{bool}}
+\DoxyCodeLine{00409\ \doxymbox{\hyperlink{structdouble__int_a96e02ba5c5a6f18a43eef469c82ec8a6}{double\_int::operator\ ==\ }}(\doxymbox{\hyperlink{structdouble__int}{double\_int}}\ cst2)\textcolor{keyword}{\ const}}
+\DoxyCodeLine{00410\ \textcolor{keyword}{}\{}
+\DoxyCodeLine{00411\ \ \ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{structdouble__int_a95b9c25a66923fce622428040c94df13}{low}}\ ==\ cst2.\doxymbox{\hyperlink{structdouble__int_a95b9c25a66923fce622428040c94df13}{low}}\ \&\&\ \doxymbox{\hyperlink{structdouble__int_a1775a472385dd2067a43e138b1d08e73}{high}}\ ==\ cst2.\doxymbox{\hyperlink{structdouble__int_a1775a472385dd2067a43e138b1d08e73}{high}};}
+\DoxyCodeLine{00412\ \}}
+\DoxyCodeLine{00413\ }
+\DoxyCodeLine{00414\ \textcolor{comment}{/*\ Returns\ true\ if\ CST1\ !=\ CST2.\ \ */}}
+\DoxyCodeLine{00415\ }
+\DoxyCodeLine{00416\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{bool}}
+\DoxyCodeLine{00417\ \doxymbox{\hyperlink{structdouble__int_a85a895fe800fad9d012435dab99aad36}{double\_int::operator\ !=\ }}(\doxymbox{\hyperlink{structdouble__int}{double\_int}}\ cst2)\textcolor{keyword}{\ const}}
+\DoxyCodeLine{00418\ \textcolor{keyword}{}\{}
+\DoxyCodeLine{00419\ \ \ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{structdouble__int_a95b9c25a66923fce622428040c94df13}{low}}\ !=\ cst2.\doxymbox{\hyperlink{structdouble__int_a95b9c25a66923fce622428040c94df13}{low}}\ ||\ \doxymbox{\hyperlink{structdouble__int_a1775a472385dd2067a43e138b1d08e73}{high}}\ !=\ cst2.\doxymbox{\hyperlink{structdouble__int_a1775a472385dd2067a43e138b1d08e73}{high}};}
+\DoxyCodeLine{00420\ \}}
+\DoxyCodeLine{00421\ }
+\DoxyCodeLine{00422\ \textcolor{comment}{/*\ Return\ number\ of\ set\ bits\ of\ CST.\ \ */}}
+\DoxyCodeLine{00423\ }
+\DoxyCodeLine{00424\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{int}}
+\DoxyCodeLine{00425\ \doxymbox{\hyperlink{structdouble__int_aec037b95c233bfd68a212342320e8c83}{double\_int::popcount}}\ ()\textcolor{keyword}{\ const}}
+\DoxyCodeLine{00426\ \textcolor{keyword}{}\{}
+\DoxyCodeLine{00427\ \ \ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{hwint_8h_af60c56bd4c08f401752bb8142598b4dc}{popcount\_hwi}}\ (\doxymbox{\hyperlink{structdouble__int_a1775a472385dd2067a43e138b1d08e73}{high}})\ +\ \doxymbox{\hyperlink{hwint_8h_af60c56bd4c08f401752bb8142598b4dc}{popcount\_hwi}}\ (\doxymbox{\hyperlink{structdouble__int_a95b9c25a66923fce622428040c94df13}{low}});}
+\DoxyCodeLine{00428\ \}}
+\DoxyCodeLine{00429\ }
+\DoxyCodeLine{00430\ }
+\DoxyCodeLine{00431\ \textcolor{preprocessor}{\#ifndef\ GENERATOR\_FILE}}
+\DoxyCodeLine{00432\ \textcolor{comment}{/*\ Conversion\ to\ and\ from\ GMP\ integer\ representations.\ \ */}}
+\DoxyCodeLine{00433\ }
+\DoxyCodeLine{00434\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{double-int_8h_a631df940adf8525a012433aac4357ed8}{mpz\_set\_double\_int}}\ (mpz\_t,\ \doxymbox{\hyperlink{structdouble__int}{double\_int}},\ \textcolor{keywordtype}{bool});}
+\DoxyCodeLine{00435\ \doxymbox{\hyperlink{structdouble__int}{double\_int}}\ \doxymbox{\hyperlink{double-int_8h_a9b6bf364f890d46e49413a59b70c83dc}{mpz\_get\_double\_int}}\ (\doxymbox{\hyperlink{coretypes_8h_ad41eb6a6028ff5b3fd00b1ee9f35ed46}{const\_tree}},\ mpz\_t,\ \textcolor{keywordtype}{bool});}
+\DoxyCodeLine{00436\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00437\ }
+\DoxyCodeLine{00438\ \textcolor{keyword}{namespace\ }\doxymbox{\hyperlink{namespacewi}{wi}}}
+\DoxyCodeLine{00439\ \{}
+\DoxyCodeLine{00440\ \ \ \textcolor{keyword}{template}\ <>}
+\DoxyCodeLine{00441\ \ \ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{structwi_1_1int__traits}{int\_traits}}\ <\doxymbox{\hyperlink{structdouble__int}{double\_int}}>}
+\DoxyCodeLine{00442\ \ \ \{}
+\DoxyCodeLine{00443\ \ \ \ \ \textcolor{keyword}{static}\ \textcolor{keyword}{const}\ \textcolor{keyword}{enum}\ \doxymbox{\hyperlink{structwi_1_1int__traits_3_01double__int_01_4_a4686d0285504549a488ca37ad13e0e5b}{precision\_type}}\ \doxymbox{\hyperlink{structwi_1_1int__traits_3_01double__int_01_4_a4686d0285504549a488ca37ad13e0e5b}{precision\_type}}\ =\ \doxymbox{\hyperlink{namespacewi_a1d51fb16527a86c4aea43f6589fdc5fba03ffe070260e216cf33c73af23e1c324}{INL\_CONST\_PRECISION}};}
+\DoxyCodeLine{00444\ \ \ \ \ \textcolor{keyword}{static}\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{structwi_1_1int__traits_3_01double__int_01_4_ade1c1d96c23792b9c777da1f11e710cd}{host\_dependent\_precision}}\ =\ \textcolor{keyword}{true};}
+\DoxyCodeLine{00445\ \ \ \ \ \textcolor{keyword}{static}\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{structwi_1_1int__traits_3_01double__int_01_4_a885d62a2a7c51e891d8a6dda61af8d2f}{needs\_write\_val\_arg}}\ =\ \textcolor{keyword}{false};}
+\DoxyCodeLine{00446\ \ \ \ \ \textcolor{keyword}{static}\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{structwi_1_1int__traits_3_01double__int_01_4_a86f1a2e6e97208774e366e2999d717f2}{precision}}\ =\ \doxymbox{\hyperlink{double-int_8h_a825f59cb02830602bf1401e8f5455ed0}{HOST\_BITS\_PER\_DOUBLE\_INT}};}
+\DoxyCodeLine{00447\ \ \ \ \ \textcolor{keyword}{static}\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{namespacewi_a7b6fed285d47bc562c42d80140d29be5}{get\_precision}}\ (\textcolor{keyword}{const}\ \doxymbox{\hyperlink{structdouble__int}{double\_int}}\ \&);}
+\DoxyCodeLine{00448\ \ \ \ \ \textcolor{keyword}{static}\ \doxymbox{\hyperlink{classwi_1_1storage__ref}{wi::storage\_ref}}\ \doxymbox{\hyperlink{structwi_1_1int__traits_3_01double__int_01_4_adbb17b1b0d3127c5e712796e63e87f1e}{decompose}}\ (HOST\_WIDE\_INT\ *,\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int},}
+\DoxyCodeLine{00449\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{structdouble__int}{double\_int}}\ \&);}
+\DoxyCodeLine{00450\ \ \ \};}
+\DoxyCodeLine{00451\ \}}
+\DoxyCodeLine{00452\ }
+\DoxyCodeLine{00453\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}}
+\DoxyCodeLine{00454\ \doxymbox{\hyperlink{structwi_1_1int__traits_3_01double__int_01_4_a3b38462315631d94067e2974fab646b8}{wi::int\_traits\ <double\_int>::get\_precision}}\ (\textcolor{keyword}{const}\ \doxymbox{\hyperlink{structdouble__int}{double\_int}}\ \&)}
+\DoxyCodeLine{00455\ \{}
+\DoxyCodeLine{00456\ \ \ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{structwi_1_1int__traits_3_01double__int_01_4_a86f1a2e6e97208774e366e2999d717f2}{precision}};}
+\DoxyCodeLine{00457\ \}}
+\DoxyCodeLine{00458\ }
+\DoxyCodeLine{00459\ \textcolor{keyword}{inline}\ \doxymbox{\hyperlink{classwi_1_1storage__ref}{wi::storage\_ref}}}
+\DoxyCodeLine{00460\ \doxymbox{\hyperlink{structwi_1_1int__traits_3_01double__int_01_4_adbb17b1b0d3127c5e712796e63e87f1e}{wi::int\_traits\ <double\_int>::decompose}}\ (HOST\_WIDE\_INT\ *scratch,\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ p,}
+\DoxyCodeLine{00461\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{structdouble__int}{double\_int}}\ \&x)}
+\DoxyCodeLine{00462\ \{}
+\DoxyCodeLine{00463\ \ \ \doxymbox{\hyperlink{system_8h_aff447899dc74d54931b2bc2d47de9423}{gcc\_checking\_assert}}\ (\doxymbox{\hyperlink{structwi_1_1int__traits_3_01double__int_01_4_a86f1a2e6e97208774e366e2999d717f2}{precision}}\ ==\ p);}
+\DoxyCodeLine{00464\ \ \ scratch[0]\ =\ x.low;}
+\DoxyCodeLine{00465\ \ \ \textcolor{keywordflow}{if}\ ((x.high\ ==\ 0\ \&\&\ scratch[0]\ >=\ 0)\ ||\ (x.high\ ==\ -\/1\ \&\&\ scratch[0]\ <\ 0))}
+\DoxyCodeLine{00466\ \ \ \ \ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{classwi_1_1storage__ref}{wi::storage\_ref}}\ (scratch,\ 1,\ \doxymbox{\hyperlink{structwi_1_1int__traits_3_01double__int_01_4_a86f1a2e6e97208774e366e2999d717f2}{precision}});}
+\DoxyCodeLine{00467\ \ \ scratch[1]\ =\ x.high;}
+\DoxyCodeLine{00468\ \ \ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{classwi_1_1storage__ref}{wi::storage\_ref}}\ (scratch,\ 2,\ \doxymbox{\hyperlink{structwi_1_1int__traits_3_01double__int_01_4_a86f1a2e6e97208774e366e2999d717f2}{precision}});}
+\DoxyCodeLine{00469\ \}}
+\DoxyCodeLine{00470\ }
+\DoxyCodeLine{00471\ \textcolor{preprocessor}{\#endif\ }\textcolor{comment}{/*\ DOUBLE\_INT\_H\ */}\textcolor{preprocessor}{}}
+
+\end{DoxyCode}

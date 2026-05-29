@@ -1,5 +1,4 @@
 var searchData=
 [
-  ['kframebuffer_0',['KFramebuffer',['../structKFramebuffer.html',1,'']]],
-  ['krenderer_1',['KRenderer',['../structKRenderer.html',1,'']]]
+  ['gdtdescriptor_0',['GDTDescriptor',['../structGDTDescriptor.html',1,'']]]
 ];

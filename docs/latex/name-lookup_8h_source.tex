@@ -1,0 +1,514 @@
+\doxysection{name-\/lookup.h}
+\hypertarget{name-lookup_8h_source}{}\label{name-lookup_8h_source}\index{toolchain/x86\_64-\/elf/lib/gcc/x86\_64-\/elf/14.2.0/plugin/include/cp/name-\/lookup.h@{toolchain/x86\_64-\/elf/lib/gcc/x86\_64-\/elf/14.2.0/plugin/include/cp/name-\/lookup.h}}
+\doxymbox{\hyperlink{name-lookup_8h}{Go to the documentation of this file.}}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001\ \textcolor{comment}{/*\ Declarations\ for\ -\/*-\/\ C++\ -\/*-\/\ name\ lookup\ routines.}}
+\DoxyCodeLine{00002\ \textcolor{comment}{\ \ \ Copyright\ (C)\ 2003-\/2024\ Free\ Software\ Foundation,\ Inc.}}
+\DoxyCodeLine{00003\ \textcolor{comment}{\ \ \ Contributed\ by\ Gabriel\ Dos\ Reis\ <gdr@integrable-\/solutions.net>}}
+\DoxyCodeLine{00004\ \textcolor{comment}{}}
+\DoxyCodeLine{00005\ \textcolor{comment}{This\ file\ is\ part\ of\ GCC.}}
+\DoxyCodeLine{00006\ \textcolor{comment}{}}
+\DoxyCodeLine{00007\ \textcolor{comment}{GCC\ is\ free\ software;\ you\ can\ redistribute\ it\ and/or\ modify}}
+\DoxyCodeLine{00008\ \textcolor{comment}{it\ under\ the\ terms\ of\ the\ GNU\ General\ Public\ License\ as\ published\ by}}
+\DoxyCodeLine{00009\ \textcolor{comment}{the\ Free\ Software\ Foundation;\ either\ version\ 3,\ or\ (at\ your\ option)}}
+\DoxyCodeLine{00010\ \textcolor{comment}{any\ later\ version.}}
+\DoxyCodeLine{00011\ \textcolor{comment}{}}
+\DoxyCodeLine{00012\ \textcolor{comment}{GCC\ is\ distributed\ in\ the\ hope\ that\ it\ will\ be\ useful,}}
+\DoxyCodeLine{00013\ \textcolor{comment}{but\ WITHOUT\ ANY\ WARRANTY;\ without\ even\ the\ implied\ warranty\ of}}
+\DoxyCodeLine{00014\ \textcolor{comment}{MERCHANTABILITY\ or\ FITNESS\ FOR\ A\ PARTICULAR\ PURPOSE.\ \ See\ the}}
+\DoxyCodeLine{00015\ \textcolor{comment}{GNU\ General\ Public\ License\ for\ more\ details.}}
+\DoxyCodeLine{00016\ \textcolor{comment}{}}
+\DoxyCodeLine{00017\ \textcolor{comment}{You\ should\ have\ received\ a\ copy\ of\ the\ GNU\ General\ Public\ License}}
+\DoxyCodeLine{00018\ \textcolor{comment}{along\ with\ GCC;\ see\ the\ file\ COPYING3.\ \ If\ not\ see}}
+\DoxyCodeLine{00019\ \textcolor{comment}{<http://www.gnu.org/licenses/>.\ \ */}}
+\DoxyCodeLine{00020\ }
+\DoxyCodeLine{00021\ \textcolor{preprocessor}{\#ifndef\ GCC\_CP\_NAME\_LOOKUP\_H}}
+\DoxyCodeLine{00022\ \textcolor{preprocessor}{\#define\ GCC\_CP\_NAME\_LOOKUP\_H}}
+\DoxyCodeLine{00023\ }
+\DoxyCodeLine{00024\ \textcolor{preprocessor}{\#include\ "{}\doxymbox{\hyperlink{c-common_8h}{c-\/family/c-\/common.h}}"{}}}
+\DoxyCodeLine{00025\ }
+\DoxyCodeLine{00026\ }
+\DoxyCodeLine{00027\ \textcolor{comment}{/*\ The\ datatype\ used\ to\ implement\ C++\ scope.\ \ */}}
+\DoxyCodeLine{00028\ \textcolor{keyword}{struct\ }cp\_binding\_level;}
+\DoxyCodeLine{00029\ }
+\DoxyCodeLine{00030\ \textcolor{comment}{/*\ Nonzero\ if\ this\ binding\ is\ for\ a\ local\ scope,\ as\ opposed\ to\ a\ class}}
+\DoxyCodeLine{00031\ \textcolor{comment}{\ \ \ or\ namespace\ scope.\ \ */}}
+\DoxyCodeLine{00032\ \textcolor{preprocessor}{\#define\ LOCAL\_BINDING\_P(NODE)\ ((NODE)-\/>is\_local)}}
+\DoxyCodeLine{00033\ }
+\DoxyCodeLine{00034\ \textcolor{comment}{/*\ True\ if\ NODE-\/>value\ is\ from\ a\ base\ class\ of\ the\ class\ which\ is}}
+\DoxyCodeLine{00035\ \textcolor{comment}{\ \ \ currently\ being\ defined.\ \ */}}
+\DoxyCodeLine{00036\ \textcolor{preprocessor}{\#define\ INHERITED\_VALUE\_BINDING\_P(NODE)\ ((NODE)-\/>value\_is\_inherited)}}
+\DoxyCodeLine{00037\ }
+\DoxyCodeLine{00038\ \textcolor{comment}{/*\ The\ IMPLICIT\_TYPEDEF\ is\ hidden\ from\ ordinary\ name\ lookup\ (it\ was}}
+\DoxyCodeLine{00039\ \textcolor{comment}{\ \ \ injected\ via\ a\ local\ class's\ friend\ decl).\ The\ typdef\ may\ be\ in\ the}}
+\DoxyCodeLine{00040\ \textcolor{comment}{\ \ \ VALUE\ or\ the\ TYPE\ slot.\ \ We\ do\ not\ get\ the\ situation\ where\ the}}
+\DoxyCodeLine{00041\ \textcolor{comment}{\ \ \ value\ and\ type\ slots\ are\ both\ filled\ and\ both\ hidden.\ \ */}}
+\DoxyCodeLine{00042\ \textcolor{preprocessor}{\#define\ HIDDEN\_TYPE\_BINDING\_P(NODE)\ ((NODE)-\/>type\_is\_hidden)}}
+\DoxyCodeLine{00043\ }
+\DoxyCodeLine{00044\ \textcolor{comment}{/*\ Datatype\ that\ represents\ binding\ established\ by\ a\ declaration\ between}}
+\DoxyCodeLine{00045\ \textcolor{comment}{\ \ \ a\ name\ and\ a\ C++\ entity.\ \ */}}
+\DoxyCodeLine{00046\ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{coretypes_8h_ae5708c4d4b300570eebe0bc0c78facbc}{GTY}}(())\ cxx\_binding\ \{}
+\DoxyCodeLine{00047\ \ \ \textcolor{comment}{/*\ Link\ to\ chain\ together\ various\ bindings\ for\ this\ name.\ \ */}}
+\DoxyCodeLine{00048\ \ \ cxx\_binding\ *previous;}
+\DoxyCodeLine{00049\ \ \ \textcolor{comment}{/*\ The\ non-\/type\ entity\ this\ name\ is\ bound\ to.\ \ */}}
+\DoxyCodeLine{00050\ \ \ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ \doxymbox{\hyperlink{configargs_8h_a92d544bd66c050551f3d87fa55eb3f5d}{value}};}
+\DoxyCodeLine{00051\ \ \ \textcolor{comment}{/*\ The\ type\ entity\ this\ name\ is\ bound\ to.\ \ */}}
+\DoxyCodeLine{00052\ \ \ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ \doxymbox{\hyperlink{structtype}{type}};}
+\DoxyCodeLine{00053\ \ \ \textcolor{comment}{/*\ The\ scope\ at\ which\ this\ binding\ was\ made.\ \ */}}
+\DoxyCodeLine{00054\ \ \ cp\_binding\_level\ *scope;}
+\DoxyCodeLine{00055\ }
+\DoxyCodeLine{00056\ \ \ \textcolor{keywordtype}{bool}\ value\_is\_inherited\ :\ 1;}
+\DoxyCodeLine{00057\ \ \ \textcolor{keywordtype}{bool}\ is\_local\ :\ 1;}
+\DoxyCodeLine{00058\ \ \ \textcolor{keywordtype}{bool}\ type\_is\_hidden\ :\ 1;}
+\DoxyCodeLine{00059\ \};}
+\DoxyCodeLine{00060\ }
+\DoxyCodeLine{00061\ \textcolor{comment}{/*\ Datatype\ used\ to\ temporarily\ save\ C++\ bindings\ (for\ implicit}}
+\DoxyCodeLine{00062\ \textcolor{comment}{\ \ \ instantiations\ purposes\ and\ like).\ \ Implemented\ in\ decl.cc.\ \ */}}
+\DoxyCodeLine{00063\ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{coretypes_8h_ae5708c4d4b300570eebe0bc0c78facbc}{GTY}}(())\ cxx\_saved\_binding\ \{}
+\DoxyCodeLine{00064\ \ \ \textcolor{comment}{/*\ The\ name\ of\ the\ current\ binding.\ \ */}}
+\DoxyCodeLine{00065\ \ \ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ identifier;}
+\DoxyCodeLine{00066\ \ \ \textcolor{comment}{/*\ The\ binding\ we're\ saving.\ \ */}}
+\DoxyCodeLine{00067\ \ \ cxx\_binding\ *binding;}
+\DoxyCodeLine{00068\ \ \ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ real\_type\_value;}
+\DoxyCodeLine{00069\ \};}
+\DoxyCodeLine{00070\ }
+\DoxyCodeLine{00071\ \textcolor{comment}{/*\ To\ support\ lazy\ module\ loading,\ we\ squirrel\ away\ a\ section\ number}}
+\DoxyCodeLine{00072\ \textcolor{comment}{\ \ \ (and\ a\ couple\ of\ flags)\ in\ the\ binding\ slot\ of\ unloaded\ bindings.}}
+\DoxyCodeLine{00073\ \textcolor{comment}{\ \ \ We\ rely\ on\ pointers\ being\ aligned\ and\ setting\ the\ bottom\ bit\ to}}
+\DoxyCodeLine{00074\ \textcolor{comment}{\ \ \ mark\ a\ lazy\ value.\ \ GTY\ doesn't\ like\ an\ array\ of\ union,\ so\ we\ have}}
+\DoxyCodeLine{00075\ \textcolor{comment}{\ \ \ a\ containing\ struct.\ \ */}}
+\DoxyCodeLine{00076\ }
+\DoxyCodeLine{00077\ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{coretypes_8h_ae5708c4d4b300570eebe0bc0c78facbc}{GTY}}(())\ binding\_slot\ \{}
+\DoxyCodeLine{00078\ \ \ \textcolor{keyword}{union\ }\doxymbox{\hyperlink{coretypes_8h_ae5708c4d4b300570eebe0bc0c78facbc}{GTY}}((desc\ (\textcolor{stringliteral}{"{}\%1.is\_lazy\ ()"{}})))\ binding\_slot\_lazy\ \{}
+\DoxyCodeLine{00079\ \ \ \ \ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ \doxymbox{\hyperlink{coretypes_8h_ae5708c4d4b300570eebe0bc0c78facbc}{GTY}}((tag\ (\textcolor{stringliteral}{"{}false"{}})))\ binding;}
+\DoxyCodeLine{00080\ \ \ \}\ u;}
+\DoxyCodeLine{00081\ }
+\DoxyCodeLine{00082\ \ \ operator\ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ \&\ ()}
+\DoxyCodeLine{00083\ \ \ \{}
+\DoxyCodeLine{00084\ \ \ \ \ \doxymbox{\hyperlink{system_8h_aff447899dc74d54931b2bc2d47de9423}{gcc\_checking\_assert}}\ (!is\_lazy\ ());}
+\DoxyCodeLine{00085\ \ \ \ \ \textcolor{keywordflow}{return}\ u.binding;}
+\DoxyCodeLine{00086\ \ \ \}}
+\DoxyCodeLine{00087\ \ \ binding\_slot\ \&operator=\ (\doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ t)}
+\DoxyCodeLine{00088\ \ \ \{}
+\DoxyCodeLine{00089\ \ \ \ \ u.binding\ =\ t;}
+\DoxyCodeLine{00090\ \ \ \ \ \textcolor{keywordflow}{return}\ *\textcolor{keyword}{this};}
+\DoxyCodeLine{00091\ \ \ \}}
+\DoxyCodeLine{00092\ \ \ \textcolor{keywordtype}{bool}\ is\_lazy\ ()\textcolor{keyword}{\ const}}
+\DoxyCodeLine{00093\ \textcolor{keyword}{\ \ }\{}
+\DoxyCodeLine{00094\ \ \ \ \ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{stdbool_8h_abb452686968e48b67397da5f97445f5b}{bool}}\ (uintptr\_t\ (u.binding)\ \&\ 1);}
+\DoxyCodeLine{00095\ \ \ \}}
+\DoxyCodeLine{00096\ \ \ \textcolor{keywordtype}{void}\ set\_lazy\ (\textcolor{keywordtype}{unsigned}\ snum)}
+\DoxyCodeLine{00097\ \ \ \{}
+\DoxyCodeLine{00098\ \ \ \ \ \doxymbox{\hyperlink{system_8h_aff447899dc74d54931b2bc2d47de9423}{gcc\_checking\_assert}}\ (!u.binding);}
+\DoxyCodeLine{00099\ \ \ \ \ u.binding\ =\ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ (uintptr\_t\ ((snum\ <<\ 1)\ |\ 1));}
+\DoxyCodeLine{00100\ \ \ \}}
+\DoxyCodeLine{00101\ \ \ \textcolor{keywordtype}{void}\ or\_lazy\ (\textcolor{keywordtype}{unsigned}\ snum)}
+\DoxyCodeLine{00102\ \ \ \{}
+\DoxyCodeLine{00103\ \ \ \ \ \doxymbox{\hyperlink{system_8h_aff447899dc74d54931b2bc2d47de9423}{gcc\_checking\_assert}}\ (is\_lazy\ ());}
+\DoxyCodeLine{00104\ \ \ \ \ u.binding\ =\ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ (uintptr\_t\ (u.binding)\ |\ (snum\ <<\ 1));}
+\DoxyCodeLine{00105\ \ \ \}}
+\DoxyCodeLine{00106\ \ \ \textcolor{keywordtype}{unsigned}\ get\_lazy\ ()\textcolor{keyword}{\ const}}
+\DoxyCodeLine{00107\ \textcolor{keyword}{\ \ }\{}
+\DoxyCodeLine{00108\ \ \ \ \ \doxymbox{\hyperlink{system_8h_aff447899dc74d54931b2bc2d47de9423}{gcc\_checking\_assert}}\ (is\_lazy\ ());}
+\DoxyCodeLine{00109\ \ \ \ \ \textcolor{keywordflow}{return}\ unsigned\ (uintptr\_t\ (u.binding)\ >>\ 1);}
+\DoxyCodeLine{00110\ \ \ \}}
+\DoxyCodeLine{00111\ \};}
+\DoxyCodeLine{00112\ }
+\DoxyCodeLine{00113\ \textcolor{comment}{/*\ Bindings\ for\ modules\ are\ held\ in\ a\ sparse\ array.\ \ There\ is\ always\ a}}
+\DoxyCodeLine{00114\ \textcolor{comment}{\ \ \ current\ TU\ slot,\ others\ are\ allocated\ as\ needed.\ \ By\ construction}}
+\DoxyCodeLine{00115\ \textcolor{comment}{\ \ \ of\ the\ importing\ mechanism\ we\ only\ ever\ need\ to\ append\ to\ the}}
+\DoxyCodeLine{00116\ \textcolor{comment}{\ \ \ array.\ \ Rather\ than\ have\ straight\ index/slot\ tuples,\ we\ bunch\ them}}
+\DoxyCodeLine{00117\ \textcolor{comment}{\ \ \ up\ for\ greater\ packing.}}
+\DoxyCodeLine{00118\ \textcolor{comment}{}}
+\DoxyCodeLine{00119\ \textcolor{comment}{\ \ \ The\ cluster\ representation\ packs\ well\ on\ a\ 64-\/bit\ system.\ \ */}}
+\DoxyCodeLine{00120\ }
+\DoxyCodeLine{00121\ \textcolor{preprocessor}{\#define\ BINDING\_VECTOR\_SLOTS\_PER\_CLUSTER\ 2}}
+\DoxyCodeLine{00122\ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{structbinding__index}{binding\_index}}\ \{}
+\DoxyCodeLine{00123\ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{short}\ \doxymbox{\hyperlink{structbinding__index_aa0955c0d6a88ca3e68729fb4153ec986}{base}};}
+\DoxyCodeLine{00124\ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{short}\ \doxymbox{\hyperlink{structbinding__index_acf5114484a8ad60e3145536ae2aef674}{span}};}
+\DoxyCodeLine{00125\ \};}
+\DoxyCodeLine{00126\ }
+\DoxyCodeLine{00127\ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{coretypes_8h_ae5708c4d4b300570eebe0bc0c78facbc}{GTY}}(())\ binding\_cluster}
+\DoxyCodeLine{00128\ \{}
+\DoxyCodeLine{00129\ \ \ \doxymbox{\hyperlink{structbinding__index}{binding\_index}}\ \doxymbox{\hyperlink{coretypes_8h_ae5708c4d4b300570eebe0bc0c78facbc}{GTY}}((skip))\ \doxymbox{\hyperlink{structindices}{indices}}[\doxymbox{\hyperlink{name-lookup_8h_ad19157325c914f91416b95e8ecbe6bbd}{BINDING\_VECTOR\_SLOTS\_PER\_CLUSTER}}];}
+\DoxyCodeLine{00130\ \ \ binding\_slot\ slots[\doxymbox{\hyperlink{name-lookup_8h_ad19157325c914f91416b95e8ecbe6bbd}{BINDING\_VECTOR\_SLOTS\_PER\_CLUSTER}}];}
+\DoxyCodeLine{00131\ \};}
+\DoxyCodeLine{00132\ }
+\DoxyCodeLine{00133\ \textcolor{comment}{/*\ These\ two\ fields\ overlay\ lang\ flags.\ \ So\ don't\ use\ those.\ \ */}}
+\DoxyCodeLine{00134\ \textcolor{preprocessor}{\#define\ BINDING\_VECTOR\_ALLOC\_CLUSTERS(NODE)\ \(\backslash\)}}
+\DoxyCodeLine{00135\ \textcolor{preprocessor}{\ \ (BINDING\_VECTOR\_CHECK\ (NODE)-\/>base.u.dependence\_info.clique)}}
+\DoxyCodeLine{00136\ \textcolor{preprocessor}{\#define\ BINDING\_VECTOR\_NUM\_CLUSTERS(NODE)\ \(\backslash\)}}
+\DoxyCodeLine{00137\ \textcolor{preprocessor}{\ \ (BINDING\_VECTOR\_CHECK\ (NODE)-\/>base.u.dependence\_info.base)}}
+\DoxyCodeLine{00138\ \textcolor{preprocessor}{\#define\ BINDING\_VECTOR\_CLUSTER\_BASE(NODE)\ \(\backslash\)}}
+\DoxyCodeLine{00139\ \textcolor{preprocessor}{\ \ (((tree\_binding\_vec\ *)BINDING\_VECTOR\_CHECK\ (NODE))-\/>vec)}}
+\DoxyCodeLine{00140\ \textcolor{preprocessor}{\#define\ BINDING\_VECTOR\_CLUSTER\_LAST(NODE)\ \(\backslash\)}}
+\DoxyCodeLine{00141\ \textcolor{preprocessor}{\ \ (\&BINDING\_VECTOR\_CLUSTER\ (NODE,\ BINDING\_VECTOR\_NUM\_CLUSTERS\ (NODE)\ -\/\ 1))}}
+\DoxyCodeLine{00142\ \textcolor{preprocessor}{\#define\ BINDING\_VECTOR\_CLUSTER(NODE,IX)\ \(\backslash\)}}
+\DoxyCodeLine{00143\ \textcolor{preprocessor}{\ \ (((tree\_binding\_vec\ *)BINDING\_VECTOR\_CHECK\ (NODE))-\/>vec[IX])}}
+\DoxyCodeLine{00144\ }
+\DoxyCodeLine{00145\ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{coretypes_8h_ae5708c4d4b300570eebe0bc0c78facbc}{GTY}}(())\ tree\_binding\_vec\ \{}
+\DoxyCodeLine{00146\ \ \ \textcolor{keyword}{struct\ }tree\_base\ base;}
+\DoxyCodeLine{00147\ \ \ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ \doxymbox{\hyperlink{configargs_8h_a8f8f80d37794cde9472343e4487ba3eb}{name}};}
+\DoxyCodeLine{00148\ \ \ binding\_cluster\ \doxymbox{\hyperlink{coretypes_8h_ae5708c4d4b300570eebe0bc0c78facbc}{GTY}}((length\ (\textcolor{stringliteral}{"{}\%h.base.u.dependence\_info.base"{}})))\ \doxymbox{\hyperlink{structvec}{vec}}[1];}
+\DoxyCodeLine{00149\ \};}
+\DoxyCodeLine{00150\ }
+\DoxyCodeLine{00151\ \textcolor{comment}{/*\ The\ name\ of\ a\ module\ vector.\ \ */}}
+\DoxyCodeLine{00152\ \textcolor{preprocessor}{\#define\ BINDING\_VECTOR\_NAME(NODE)\ \(\backslash\)}}
+\DoxyCodeLine{00153\ \textcolor{preprocessor}{\ \ (((tree\_binding\_vec\ *)BINDING\_VECTOR\_CHECK\ (NODE))-\/>name)}}
+\DoxyCodeLine{00154\ }
+\DoxyCodeLine{00155\ \textcolor{comment}{/*\ tree\_binding\_vec\ does\ uses\ \ base.u.dependence\_info.base\ field\ for}}
+\DoxyCodeLine{00156\ \textcolor{comment}{\ \ \ length.\ \ It\ does\ not\ have\ lang\_flag\ etc\ available!\ \ */}}
+\DoxyCodeLine{00157\ }
+\DoxyCodeLine{00158\ \textcolor{comment}{/*\ These\ two\ flags\ note\ if\ a\ module-\/vector\ contains\ deduplicated}}
+\DoxyCodeLine{00159\ \textcolor{comment}{\ \ \ bindings\ (i.e.\ multiple\ declarations\ in\ different\ imports).\ \ */}}
+\DoxyCodeLine{00160\ \textcolor{comment}{/*\ This\ binding\ contains\ duplicate\ references\ to\ a\ global\ module}}
+\DoxyCodeLine{00161\ \textcolor{comment}{\ \ \ entity.\ \ */}}
+\DoxyCodeLine{00162\ \textcolor{preprocessor}{\#define\ BINDING\_VECTOR\_GLOBAL\_DUPS\_P(NODE)\ \(\backslash\)}}
+\DoxyCodeLine{00163\ \textcolor{preprocessor}{\ \ (BINDING\_VECTOR\_CHECK\ (NODE)-\/>base.static\_flag)}}
+\DoxyCodeLine{00164\ \textcolor{comment}{/*\ This\ binding\ contains\ duplicate\ references\ to\ a\ partioned\ module}}
+\DoxyCodeLine{00165\ \textcolor{comment}{\ \ \ entity.\ \ */}}
+\DoxyCodeLine{00166\ \textcolor{preprocessor}{\#define\ BINDING\_VECTOR\_PARTITION\_DUPS\_P(NODE)\ \(\backslash\)}}
+\DoxyCodeLine{00167\ \textcolor{preprocessor}{\ \ (BINDING\_VECTOR\_CHECK\ (NODE)-\/>base.volatile\_flag)}}
+\DoxyCodeLine{00168\ }
+\DoxyCodeLine{00169\ \textcolor{comment}{/*\ These\ two\ flags\ indicate\ the\ provenence\ of\ the\ bindings\ on\ this}}
+\DoxyCodeLine{00170\ \textcolor{comment}{\ \ \ particular\ vector\ slot.\ \ We\ can\ of\ course\ determine\ this\ from\ slot}}
+\DoxyCodeLine{00171\ \textcolor{comment}{\ \ \ number,\ but\ that's\ a\ relatively\ expensive\ lookup.\ \ This\ avoids}}
+\DoxyCodeLine{00172\ \textcolor{comment}{\ \ \ that\ when\ iterating.\ \ */}}
+\DoxyCodeLine{00173\ \textcolor{comment}{/*\ This\ slot\ is\ part\ of\ the\ global\ module\ (a\ header\ unit).\ \ */}}
+\DoxyCodeLine{00174\ \textcolor{preprocessor}{\#define\ MODULE\_BINDING\_GLOBAL\_P(NODE)\ \(\backslash\)}}
+\DoxyCodeLine{00175\ \textcolor{preprocessor}{\ \ (OVERLOAD\_CHECK\ (NODE)-\/>base.static\_flag)}}
+\DoxyCodeLine{00176\ \textcolor{comment}{/*\ This\ slot\ is\ part\ of\ the\ current\ module\ (a\ partition\ or\ primary).\ \ */}}
+\DoxyCodeLine{00177\ \textcolor{preprocessor}{\#define\ MODULE\_BINDING\_PARTITION\_P(NODE)\ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00178\ \textcolor{preprocessor}{\ \ (OVERLOAD\_CHECK\ (NODE)-\/>base.volatile\_flag)}}
+\DoxyCodeLine{00179\ }
+\DoxyCodeLine{00180\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{name-lookup_8h_ae462583a92275e6cd150b905b0bc2ec1}{set\_identifier\_type\_value}}\ (\doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}},\ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}});}
+\DoxyCodeLine{00181\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{name-lookup_8h_a92533df6bac4479383a927cde163c352}{push\_binding}}\ (\doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}},\ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}},\ cp\_binding\_level*);}
+\DoxyCodeLine{00182\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{name-lookup_8h_a09fc932b739439f4eb325fd01101948a}{pop\_local\_binding}}\ (\doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}},\ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}});}
+\DoxyCodeLine{00183\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{name-lookup_8h_a7729fd627fffea491a15fbb7396e1582}{pop\_bindings\_and\_leave\_scope}}\ (\textcolor{keywordtype}{void});}
+\DoxyCodeLine{00184\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ \doxymbox{\hyperlink{name-lookup_8h_ad9d6d4cbf9816c7f3fe0780bce72ac18}{constructor\_name}}\ (\doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}});}
+\DoxyCodeLine{00185\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{name-lookup_8h_ad961a984d44c6d68daff7342b3b19b5e}{constructor\_name\_p}}\ (\doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}},\ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}});}
+\DoxyCodeLine{00186\ }
+\DoxyCodeLine{00187\ \textcolor{comment}{/*\ The\ kinds\ of\ scopes\ we\ recognize.\ \ */}}
+\DoxyCodeLine{00188\ \textcolor{keyword}{enum}\ \doxymbox{\hyperlink{name-lookup_8h_a87e591eb071fe708b20051715cb7d553}{scope\_kind}}\ \{}
+\DoxyCodeLine{00189\ \ \ \doxymbox{\hyperlink{name-lookup_8h_a87e591eb071fe708b20051715cb7d553a777724f85874470ec9ef308067140bd5}{sk\_block}}\ =\ 0,\ \ \ \ \ \ \textcolor{comment}{/*\ An\ ordinary\ block\ scope.\ \ This\ enumerator\ must}}
+\DoxyCodeLine{00190\ \textcolor{comment}{\ \ \ \ \ \ \ \ \ \ \ \ have\ the\ value\ zero\ because\ "{}cp\_binding\_level"{}}}
+\DoxyCodeLine{00191\ \textcolor{comment}{\ \ \ \ \ \ \ \ \ \ \ \ is\ initialized\ by\ using\ "{}memset"{}\ to\ set\ the}}
+\DoxyCodeLine{00192\ \textcolor{comment}{\ \ \ \ \ \ \ \ \ \ \ \ contents\ to\ zero,\ and\ the\ default\ scope\ kind}}
+\DoxyCodeLine{00193\ \textcolor{comment}{\ \ \ \ \ \ \ \ \ \ \ \ is\ "{}sk\_block"{}.\ \ */}}
+\DoxyCodeLine{00194\ \ \ \doxymbox{\hyperlink{name-lookup_8h_a87e591eb071fe708b20051715cb7d553ad59b3a96ea9670e27b84d9ec03f28b5e}{sk\_cleanup}},\ \ \ \ \ \ \ \ \textcolor{comment}{/*\ A\ scope\ for\ (pseudo-\/)scope\ for\ cleanup.\ \ It\ is}}
+\DoxyCodeLine{00195\ \textcolor{comment}{\ \ \ \ \ \ \ \ \ \ \ \ pseudo\ in\ that\ it\ is\ transparent\ to\ name\ lookup}}
+\DoxyCodeLine{00196\ \textcolor{comment}{\ \ \ \ \ \ \ \ \ \ \ \ activities.\ \ */}}
+\DoxyCodeLine{00197\ \ \ \doxymbox{\hyperlink{name-lookup_8h_a87e591eb071fe708b20051715cb7d553a14888713c649eea3348b7dbb6295102e}{sk\_try}},\ \ \ \ \ \ \ \ \textcolor{comment}{/*\ A\ try-\/block.\ \ */}}
+\DoxyCodeLine{00198\ \ \ \doxymbox{\hyperlink{name-lookup_8h_a87e591eb071fe708b20051715cb7d553a4acc50411421ed920f73a6fd124c2120}{sk\_catch}},\ \ \ \ \ \ \textcolor{comment}{/*\ A\ catch-\/block.\ \ */}}
+\DoxyCodeLine{00199\ \ \ \doxymbox{\hyperlink{name-lookup_8h_a87e591eb071fe708b20051715cb7d553a27c1b4a509b43f746e805467fa76f401}{sk\_for}},\ \ \ \ \ \ \ \ \textcolor{comment}{/*\ The\ scope\ of\ the\ variable\ declared\ in\ a}}
+\DoxyCodeLine{00200\ \textcolor{comment}{\ \ \ \ \ \ \ \ \ \ \ \ init-\/statement.\ \ */}}
+\DoxyCodeLine{00201\ \ \ \doxymbox{\hyperlink{name-lookup_8h_a87e591eb071fe708b20051715cb7d553aa96a707c96d3d066d254db0f270e3501}{sk\_cond}},\ \ \ \ \ \ \ \textcolor{comment}{/*\ The\ scope\ of\ the\ variable\ declared\ in\ the\ condition}}
+\DoxyCodeLine{00202\ \textcolor{comment}{\ \ \ \ \ \ \ \ \ \ \ \ of\ an\ if\ or\ switch\ statement.\ \ */}}
+\DoxyCodeLine{00203\ \ \ \doxymbox{\hyperlink{name-lookup_8h_a87e591eb071fe708b20051715cb7d553a3e8760603c41663e7ec9ea6271de133f}{sk\_stmt\_expr}},\ \ \ \ \ \ \textcolor{comment}{/*\ GNU\ statement\ expression\ block.\ \ */}}
+\DoxyCodeLine{00204\ \ \ \doxymbox{\hyperlink{name-lookup_8h_a87e591eb071fe708b20051715cb7d553a1e167a566431b03f1aec05d261a574f2}{sk\_function\_parms}},\ \textcolor{comment}{/*\ The\ scope\ containing\ function\ parameters.\ \ */}}
+\DoxyCodeLine{00205\ \ \ \doxymbox{\hyperlink{name-lookup_8h_a87e591eb071fe708b20051715cb7d553a2f957487af03ecd8d7be5d947c90526f}{sk\_class}},\ \ \ \ \ \ \textcolor{comment}{/*\ The\ scope\ containing\ the\ members\ of\ a\ class.\ \ */}}
+\DoxyCodeLine{00206\ \ \ \doxymbox{\hyperlink{name-lookup_8h_a87e591eb071fe708b20051715cb7d553aea1be4eaf0569ad0022ac7f6832cb8ea}{sk\_scoped\_enum}},\ \ \ \ \textcolor{comment}{/*\ The\ scope\ containing\ the\ enumerators\ of\ a\ C++11}}
+\DoxyCodeLine{00207\ \textcolor{comment}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ scoped\ enumeration.\ \ */}}
+\DoxyCodeLine{00208\ \ \ \doxymbox{\hyperlink{name-lookup_8h_a87e591eb071fe708b20051715cb7d553a32ce636b406b58e39a9f1db92990e66e}{sk\_namespace}},\ \ \ \ \ \ \textcolor{comment}{/*\ The\ scope\ containing\ the\ members\ of\ a}}
+\DoxyCodeLine{00209\ \textcolor{comment}{\ \ \ \ \ \ \ \ \ \ \ \ namespace,\ including\ the\ global\ scope.\ \ */}}
+\DoxyCodeLine{00210\ \ \ \doxymbox{\hyperlink{name-lookup_8h_a87e591eb071fe708b20051715cb7d553acdea8173e50265221eca125e4ef4ba0a}{sk\_template\_parms}},\ \textcolor{comment}{/*\ A\ scope\ for\ template\ parameters.\ \ */}}
+\DoxyCodeLine{00211\ \ \ \doxymbox{\hyperlink{name-lookup_8h_a87e591eb071fe708b20051715cb7d553ab167375a733cca1fa9a04e5c87d38e55}{sk\_template\_spec}},\ \ \textcolor{comment}{/*\ Like\ sk\_template\_parms,\ but\ for\ an\ explicit}}
+\DoxyCodeLine{00212\ \textcolor{comment}{\ \ \ \ \ \ \ \ \ \ \ \ specialization.\ \ Since,\ by\ definition,\ an}}
+\DoxyCodeLine{00213\ \textcolor{comment}{\ \ \ \ \ \ \ \ \ \ \ \ explicit\ specialization\ is\ introduced\ by}}
+\DoxyCodeLine{00214\ \textcolor{comment}{\ \ \ \ \ \ \ \ \ \ \ \ "{}template\ <>"{},\ this\ scope\ is\ always\ empty.\ \ */}}
+\DoxyCodeLine{00215\ \ \ \doxymbox{\hyperlink{name-lookup_8h_a87e591eb071fe708b20051715cb7d553aa1e118e27f3e197039903fc5917b93ea}{sk\_transaction}},\ \ \ \ \textcolor{comment}{/*\ A\ synchronized\ or\ atomic\ statement.\ \ */}}
+\DoxyCodeLine{00216\ \ \ \doxymbox{\hyperlink{name-lookup_8h_a87e591eb071fe708b20051715cb7d553acfe154d08469acdee00e329a3e081b47}{sk\_omp}},\ \ \ \ \ \ \ \ \textcolor{comment}{/*\ An\ OpenMP\ structured\ block.\ \ */}}
+\DoxyCodeLine{00217\ \ \ \doxymbox{\hyperlink{name-lookup_8h_a87e591eb071fe708b20051715cb7d553aad28e6e0d2d95e44aca6aac64ece8b19}{sk\_count}}\ \ \ \ \ \ \ \textcolor{comment}{/*\ Number\ of\ scope\_kind\ enumerations.\ \ */}}
+\DoxyCodeLine{00218\ \};}
+\DoxyCodeLine{00219\ }
+\DoxyCodeLine{00220\ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{coretypes_8h_ae5708c4d4b300570eebe0bc0c78facbc}{GTY}}(())\ cp\_class\_binding\ \{}
+\DoxyCodeLine{00221\ \ \ cxx\_binding\ *base;}
+\DoxyCodeLine{00222\ \ \ \textcolor{comment}{/*\ The\ bound\ name.\ \ */}}
+\DoxyCodeLine{00223\ \ \ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ identifier;}
+\DoxyCodeLine{00224\ \};}
+\DoxyCodeLine{00225\ }
+\DoxyCodeLine{00226\ \textcolor{comment}{/*\ For\ each\ binding\ contour\ we\ allocate\ a\ binding\_level\ structure}}
+\DoxyCodeLine{00227\ \textcolor{comment}{\ \ \ which\ records\ the\ names\ defined\ in\ that\ contour.}}
+\DoxyCodeLine{00228\ \textcolor{comment}{\ \ \ Contours\ include:}}
+\DoxyCodeLine{00229\ \textcolor{comment}{\ \ \ \ 0)\ the\ global\ one}}
+\DoxyCodeLine{00230\ \textcolor{comment}{\ \ \ \ 1)\ one\ for\ each\ function\ definition,}}
+\DoxyCodeLine{00231\ \textcolor{comment}{\ \ \ \ \ \ \ where\ internal\ declarations\ of\ the\ parameters\ appear.}}
+\DoxyCodeLine{00232\ \textcolor{comment}{\ \ \ \ 2)\ one\ for\ each\ compound\ statement,}}
+\DoxyCodeLine{00233\ \textcolor{comment}{\ \ \ \ \ \ \ to\ record\ its\ declarations.}}
+\DoxyCodeLine{00234\ \textcolor{comment}{}}
+\DoxyCodeLine{00235\ \textcolor{comment}{\ \ \ The\ current\ meaning\ of\ a\ name\ can\ be\ found\ by\ searching\ the\ levels}}
+\DoxyCodeLine{00236\ \textcolor{comment}{\ \ \ from\ the\ current\ one\ out\ to\ the\ global\ one.}}
+\DoxyCodeLine{00237\ \textcolor{comment}{}}
+\DoxyCodeLine{00238\ \textcolor{comment}{\ \ \ Off\ to\ the\ side,\ may\ be\ the\ class\_binding\_level.\ \ This\ exists\ only}}
+\DoxyCodeLine{00239\ \textcolor{comment}{\ \ \ to\ catch\ class-\/local\ declarations.\ \ It\ is\ otherwise\ nonexistent.}}
+\DoxyCodeLine{00240\ \textcolor{comment}{}}
+\DoxyCodeLine{00241\ \textcolor{comment}{\ \ \ Also\ there\ may\ be\ binding\ levels\ that\ catch\ cleanups\ that\ must\ be}}
+\DoxyCodeLine{00242\ \textcolor{comment}{\ \ \ run\ when\ exceptions\ occur.\ \ Thus,\ to\ see\ whether\ a\ name\ is\ bound\ in}}
+\DoxyCodeLine{00243\ \textcolor{comment}{\ \ \ the\ current\ scope,\ it\ is\ not\ enough\ to\ look\ in\ the}}
+\DoxyCodeLine{00244\ \textcolor{comment}{\ \ \ CURRENT\_BINDING\_LEVEL.\ \ You\ should\ use\ lookup\_name\_current\_level}}
+\DoxyCodeLine{00245\ \textcolor{comment}{\ \ \ instead.\ \ */}}
+\DoxyCodeLine{00246\ }
+\DoxyCodeLine{00247\ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{coretypes_8h_ae5708c4d4b300570eebe0bc0c78facbc}{GTY}}(())\ cp\_binding\_level\ \{}
+\DoxyCodeLine{00248\ \ \ \textcolor{comment}{/*\ A\ chain\ of\ \_DECL\ nodes\ for\ all\ variables,\ constants,\ functions,}}
+\DoxyCodeLine{00249\ \textcolor{comment}{\ \ \ \ \ \ and\ typedef\ types.\ \ These\ are\ in\ the\ reverse\ of\ the\ order}}
+\DoxyCodeLine{00250\ \textcolor{comment}{\ \ \ \ \ \ supplied.\ \ There\ may\ be\ OVERLOADs\ on\ this\ list,\ too,\ but\ they}}
+\DoxyCodeLine{00251\ \textcolor{comment}{\ \ \ \ \ \ are\ wrapped\ in\ TREE\_LISTs;\ the\ TREE\_VALUE\ is\ the\ OVERLOAD.\ \ */}}
+\DoxyCodeLine{00252\ \ \ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ names;}
+\DoxyCodeLine{00253\ }
+\DoxyCodeLine{00254\ \ \ \textcolor{comment}{/*\ Using\ directives.\ \ */}}
+\DoxyCodeLine{00255\ \ \ vec<tree,\ va\_gc>\ *using\_directives;}
+\DoxyCodeLine{00256\ }
+\DoxyCodeLine{00257\ \ \ \textcolor{comment}{/*\ For\ the\ binding\ level\ corresponding\ to\ a\ class,\ the\ entities}}
+\DoxyCodeLine{00258\ \textcolor{comment}{\ \ \ \ \ \ declared\ in\ the\ class\ or\ its\ base\ classes.\ \ */}}
+\DoxyCodeLine{00259\ \ \ \doxymbox{\hyperlink{vec_8h_ac6299229087b122e17686611255dfa27}{vec<cp\_class\_binding,\ va\_gc>}}\ *class\_shadowed;}
+\DoxyCodeLine{00260\ }
+\DoxyCodeLine{00261\ \ \ \textcolor{comment}{/*\ Similar\ to\ class\_shadowed,\ but\ for\ IDENTIFIER\_TYPE\_VALUE,\ and}}
+\DoxyCodeLine{00262\ \textcolor{comment}{\ \ \ \ \ \ is\ used\ for\ all\ binding\ levels.\ The\ TREE\_PURPOSE\ is\ the\ name\ of}}
+\DoxyCodeLine{00263\ \textcolor{comment}{\ \ \ \ \ \ the\ entity,\ the\ TREE\_TYPE\ is\ the\ associated\ type.\ \ In\ addition}}
+\DoxyCodeLine{00264\ \textcolor{comment}{\ \ \ \ \ \ the\ TREE\_VALUE\ is\ the\ IDENTIFIER\_TYPE\_VALUE\ before\ we\ entered}}
+\DoxyCodeLine{00265\ \textcolor{comment}{\ \ \ \ \ \ the\ class.\ \ */}}
+\DoxyCodeLine{00266\ \ \ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ type\_shadowed;}
+\DoxyCodeLine{00267\ }
+\DoxyCodeLine{00268\ \ \ \textcolor{comment}{/*\ For\ each\ level\ (except\ not\ the\ global\ one),}}
+\DoxyCodeLine{00269\ \textcolor{comment}{\ \ \ \ \ \ a\ chain\ of\ BLOCK\ nodes\ for\ all\ the\ levels}}
+\DoxyCodeLine{00270\ \textcolor{comment}{\ \ \ \ \ \ that\ were\ entered\ and\ exited\ one\ level\ down.\ \ */}}
+\DoxyCodeLine{00271\ \ \ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ blocks;}
+\DoxyCodeLine{00272\ }
+\DoxyCodeLine{00273\ \ \ \textcolor{comment}{/*\ The\ entity\ (namespace,\ class,\ function)\ the\ scope\ of\ which\ this}}
+\DoxyCodeLine{00274\ \textcolor{comment}{\ \ \ \ \ \ binding\ contour\ corresponds\ to.\ \ Otherwise\ NULL.\ \ */}}
+\DoxyCodeLine{00275\ \ \ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ this\_entity;}
+\DoxyCodeLine{00276\ }
+\DoxyCodeLine{00277\ \ \ \textcolor{comment}{/*\ The\ binding\ level\ which\ this\ one\ is\ contained\ in\ (inherits\ from).\ \ */}}
+\DoxyCodeLine{00278\ \ \ cp\_binding\_level\ *level\_chain;}
+\DoxyCodeLine{00279\ }
+\DoxyCodeLine{00280\ \ \ \textcolor{comment}{/*\ STATEMENT\_LIST\ for\ statements\ in\ this\ binding\ contour.}}
+\DoxyCodeLine{00281\ \textcolor{comment}{\ \ \ \ \ \ Only\ used\ at\ present\ for\ SK\_CLEANUP\ temporary\ bindings.\ \ */}}
+\DoxyCodeLine{00282\ \ \ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ statement\_list;}
+\DoxyCodeLine{00283\ }
+\DoxyCodeLine{00284\ \ \ \textcolor{comment}{/*\ Binding\ depth\ at\ which\ this\ level\ began.\ \ */}}
+\DoxyCodeLine{00285\ \ \ \textcolor{keywordtype}{int}\ binding\_depth;}
+\DoxyCodeLine{00286\ }
+\DoxyCodeLine{00287\ \ \ \textcolor{comment}{/*\ The\ kind\ of\ scope\ that\ this\ object\ represents.\ \ However,\ a}}
+\DoxyCodeLine{00288\ \textcolor{comment}{\ \ \ \ \ \ SK\_TEMPLATE\_SPEC\ scope\ is\ represented\ with\ KIND\ set\ to}}
+\DoxyCodeLine{00289\ \textcolor{comment}{\ \ \ \ \ \ SK\_TEMPLATE\_PARMS\ and\ EXPLICIT\_SPEC\_P\ set\ to\ true.\ \ */}}
+\DoxyCodeLine{00290\ \ \ \doxymbox{\hyperlink{ansidecl_8h_a2934559f672ebd88a0459d0fe40faff2}{ENUM\_BITFIELD}}\ (\doxymbox{\hyperlink{name-lookup_8h_a87e591eb071fe708b20051715cb7d553}{scope\_kind}})\ \doxymbox{\hyperlink{namespacejson_a9f5a5109c1edd510ca35a6d3916deba8}{kind}}\ :\ 4;}
+\DoxyCodeLine{00291\ }
+\DoxyCodeLine{00292\ \ \ \textcolor{comment}{/*\ True\ if\ this\ scope\ is\ an\ SK\_TEMPLATE\_SPEC\ scope.\ \ This\ field\ is}}
+\DoxyCodeLine{00293\ \textcolor{comment}{\ \ \ \ \ \ only\ valid\ if\ KIND\ ==\ SK\_TEMPLATE\_PARMS.\ \ */}}
+\DoxyCodeLine{00294\ \ \ \doxymbox{\hyperlink{system_8h_a4e2bfb0cb3835aa91a62a553a53e9763}{BOOL\_BITFIELD}}\ explicit\_spec\_p\ :\ 1;}
+\DoxyCodeLine{00295\ }
+\DoxyCodeLine{00296\ \ \ \textcolor{comment}{/*\ True\ means\ make\ a\ BLOCK\ for\ this\ level\ regardless\ of\ all\ else.\ \ */}}
+\DoxyCodeLine{00297\ \ \ \textcolor{keywordtype}{unsigned}\ keep\ :\ 1;}
+\DoxyCodeLine{00298\ }
+\DoxyCodeLine{00299\ \ \ \textcolor{comment}{/*\ Nonzero\ if\ this\ level\ can\ safely\ have\ additional}}
+\DoxyCodeLine{00300\ \textcolor{comment}{\ \ \ \ \ cleanup-\/needing\ variables\ added\ to\ it.\ \ */}}
+\DoxyCodeLine{00301\ \ \ \textcolor{keywordtype}{unsigned}\ more\_cleanups\_ok\ :\ 1;}
+\DoxyCodeLine{00302\ \ \ \textcolor{keywordtype}{unsigned}\ have\_cleanups\ :\ 1;}
+\DoxyCodeLine{00303\ }
+\DoxyCodeLine{00304\ \ \ \textcolor{comment}{/*\ Transient\ state\ set\ if\ this\ scope\ is\ of\ sk\_class\ kind}}
+\DoxyCodeLine{00305\ \textcolor{comment}{\ \ \ \ \ and\ is\ in\ the\ process\ of\ defining\ 'this\_entity'.\ \ Reset}}
+\DoxyCodeLine{00306\ \textcolor{comment}{\ \ \ \ \ on\ leaving\ the\ class\ definition\ to\ allow\ for\ the\ scope}}
+\DoxyCodeLine{00307\ \textcolor{comment}{\ \ \ \ \ to\ be\ subsequently\ re-\/used\ as\ a\ non-\/defining\ scope\ for}}
+\DoxyCodeLine{00308\ \textcolor{comment}{\ \ \ \ \ 'this\_entity'.\ \ */}}
+\DoxyCodeLine{00309\ \ \ \textcolor{keywordtype}{unsigned}\ defining\_class\_p\ :\ 1;}
+\DoxyCodeLine{00310\ }
+\DoxyCodeLine{00311\ \ \ \textcolor{comment}{/*\ True\ for\ SK\_FUNCTION\_PARMS\ of\ a\ requires-\/expression.\ \ */}}
+\DoxyCodeLine{00312\ \ \ \textcolor{keywordtype}{unsigned}\ requires\_expression\ :\ 1;}
+\DoxyCodeLine{00313\ }
+\DoxyCodeLine{00314\ \ \ \textcolor{comment}{/*\ True\ for\ artificial\ blocks\ which\ should\ be\ ignored\ when\ finding}}
+\DoxyCodeLine{00315\ \textcolor{comment}{\ \ \ \ \ parent\ scope.\ \ */}}
+\DoxyCodeLine{00316\ \ \ \textcolor{keywordtype}{unsigned}\ artificial\ :\ 1;}
+\DoxyCodeLine{00317\ }
+\DoxyCodeLine{00318\ \ \ \textcolor{comment}{/*\ 21\ bits\ left\ to\ fill\ a\ 32-\/bit\ word.\ \ */}}
+\DoxyCodeLine{00319\ \};}
+\DoxyCodeLine{00320\ }
+\DoxyCodeLine{00321\ \textcolor{comment}{/*\ The\ binding\ level\ currently\ in\ effect.\ \ */}}
+\DoxyCodeLine{00322\ }
+\DoxyCodeLine{00323\ \textcolor{preprocessor}{\#define\ current\_binding\_level\ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00324\ \textcolor{preprocessor}{\ \ (*(cfun\ \&\&\ cp\_function\_chain\ \&\&\ cp\_function\_chain-\/>bindings\ \(\backslash\)}}
+\DoxyCodeLine{00325\ \textcolor{preprocessor}{\ \ \ ?\ \&cp\_function\_chain-\/>bindings\ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00326\ \textcolor{preprocessor}{\ \ \ :\ \&scope\_chain-\/>bindings))}}
+\DoxyCodeLine{00327\ }
+\DoxyCodeLine{00328\ \textcolor{comment}{/*\ The\ binding\ level\ of\ the\ current\ class,\ if\ any.\ \ */}}
+\DoxyCodeLine{00329\ }
+\DoxyCodeLine{00330\ \textcolor{preprocessor}{\#define\ class\_binding\_level\ scope\_chain-\/>class\_bindings}}
+\DoxyCodeLine{00331\ }
+\DoxyCodeLine{00332\ \textcolor{comment}{/*\ True\ if\ SCOPE\ designates\ the\ global\ scope\ binding\ contour.\ \ */}}
+\DoxyCodeLine{00333\ \textcolor{preprocessor}{\#define\ global\_scope\_p(SCOPE)\ \(\backslash\)}}
+\DoxyCodeLine{00334\ \textcolor{preprocessor}{\ \ ((SCOPE)\ ==\ NAMESPACE\_LEVEL\ (global\_namespace))}}
+\DoxyCodeLine{00335\ }
+\DoxyCodeLine{00336\ \textcolor{keyword}{extern}\ cp\_binding\_level\ *\doxymbox{\hyperlink{name-lookup_8h_a7a3908d642108c892506330c430ceea5}{leave\_scope}}\ (\textcolor{keywordtype}{void});}
+\DoxyCodeLine{00337\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{name-lookup_8h_a9a246397cbb7325257055e9848a2bcfc}{kept\_level\_p}}\ (\textcolor{keywordtype}{void});}
+\DoxyCodeLine{00338\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{c-tree_8h_ac7467481812294da15e61e942a6d6273}{global\_bindings\_p}}\ (\textcolor{keywordtype}{void});}
+\DoxyCodeLine{00339\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{name-lookup_8h_a574fa8a6e41963c55cc80bfecfe4a664}{toplevel\_bindings\_p}}\ (\textcolor{keywordtype}{void});}
+\DoxyCodeLine{00340\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{name-lookup_8h_a68b9fe67184fe06900472a7584a9dce0}{namespace\_bindings\_p}}\ (\textcolor{keywordtype}{void});}
+\DoxyCodeLine{00341\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{name-lookup_8h_ac650b16e5d96564284b7741bc3f50dd5}{local\_bindings\_p}}\ (\textcolor{keywordtype}{void});}
+\DoxyCodeLine{00342\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{name-lookup_8h_add140b37ccc8784937c11035be5be921}{template\_parm\_scope\_p}}\ (\textcolor{keywordtype}{void});}
+\DoxyCodeLine{00343\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{name-lookup_8h_a87e591eb071fe708b20051715cb7d553}{scope\_kind}}\ \doxymbox{\hyperlink{name-lookup_8h_ad0bc9e969ab93451c675980fb1143644}{innermost\_scope\_kind}}\ (\textcolor{keywordtype}{void});}
+\DoxyCodeLine{00344\ \textcolor{keyword}{extern}\ cp\_binding\_level\ *\doxymbox{\hyperlink{name-lookup_8h_a163c5092a4443e0e0c73b2f823b082e7}{begin\_scope}}\ (\doxymbox{\hyperlink{name-lookup_8h_a87e591eb071fe708b20051715cb7d553}{scope\_kind}},\ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}});}
+\DoxyCodeLine{00345\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{name-lookup_8h_af1e73b7a64e2eedc2437d32e465ea0c3}{print\_binding\_stack}}\ (\textcolor{keywordtype}{void});}
+\DoxyCodeLine{00346\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{name-lookup_8h_afacb9e4802addb92c71ae9dea26cdcd8}{pop\_everything}}\ (\textcolor{keywordtype}{void});}
+\DoxyCodeLine{00347\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{c-tree_8h_a148ac1fcdf0609f798cf93c2881152eb}{keep\_next\_level}}\ (\textcolor{keywordtype}{bool});}
+\DoxyCodeLine{00348\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{name-lookup_8h_a4ac218303a48209a64192e54eb2bb4ce}{is\_ancestor}}\ (\doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ ancestor,\ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ descendant);}
+\DoxyCodeLine{00349\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{name-lookup_8h_a8ab03200f65aa50534306d9a69971d14}{is\_nested\_namespace}}\ (\doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ parent,\ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ descendant,}
+\DoxyCodeLine{00350\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{bool}\ inline\_only\ =\ \textcolor{keyword}{false});}
+\DoxyCodeLine{00351\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ \doxymbox{\hyperlink{c-tree_8h_adeb039ebd79c227075655cdccc6370d5}{push\_scope}}\ (\doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}});}
+\DoxyCodeLine{00352\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{c-tree_8h_a5542dac193bbe20f13e9acb1e99512db}{pop\_scope}}\ (\doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}});}
+\DoxyCodeLine{00353\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ \doxymbox{\hyperlink{name-lookup_8h_a9949968ae134dfa45b0b7fa222151b05}{push\_inner\_scope}}\ (\doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}});}
+\DoxyCodeLine{00354\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{name-lookup_8h_a51497edf5f1cda641e741a26cb3c29e2}{pop\_inner\_scope}}\ (\doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}},\ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}});}
+\DoxyCodeLine{00355\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{name-lookup_8h_ad974a5cfcbc23e9172cf4e0fc8810bd6}{push\_binding\_level}}\ (cp\_binding\_level\ *);}
+\DoxyCodeLine{00356\ }
+\DoxyCodeLine{00357\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{name-lookup_8h_a8b3ace316cee81ebd4b8fb124332d2db}{handle\_namespace\_attrs}}\ (\doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}},\ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}});}
+\DoxyCodeLine{00358\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{name-lookup_8h_a1ad930f4cadf0bb28c82caa844636d38}{pushlevel\_class}}\ (\textcolor{keywordtype}{void});}
+\DoxyCodeLine{00359\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{name-lookup_8h_ac3189f9260267d39f9020002406665e2}{poplevel\_class}}\ (\textcolor{keywordtype}{void});}
+\DoxyCodeLine{00360\ }
+\DoxyCodeLine{00361\ \textcolor{comment}{/*\ What\ kind\ of\ scopes\ name\ lookup\ looks\ in.\ \ An\ enum\ class\ so\ we}}
+\DoxyCodeLine{00362\ \textcolor{comment}{\ \ \ don't\ accidentally\ mix\ integers.\ \ */}}
+\DoxyCodeLine{00363\ \textcolor{keyword}{enum\ class}\ \doxymbox{\hyperlink{name-lookup_8h_a311cafda98863fcd3926d927e3544170}{LOOK\_where}}}
+\DoxyCodeLine{00364\ \{}
+\DoxyCodeLine{00365\ \ \ \doxymbox{\hyperlink{name-lookup_8h_a311cafda98863fcd3926d927e3544170a4d34f53389ed7f28ca91fc31ea360a66}{BLOCK}}\ =\ 1\ <<\ 0,\ \ \textcolor{comment}{/*\ Consider\ block\ scopes.\ \ */}\ }
+\DoxyCodeLine{00366\ \ \ \doxymbox{\hyperlink{name-lookup_8h_a311cafda98863fcd3926d927e3544170ac18e8f1f430ea227dbd63d0d9a2bc5fb}{CLASS}}\ =\ 1\ <<\ 1,\ \ \textcolor{comment}{/*\ Consider\ class\ scopes.\ \ */}\ }
+\DoxyCodeLine{00367\ \ \ \doxymbox{\hyperlink{name-lookup_8h_a311cafda98863fcd3926d927e3544170a7347fe5a0f184f79ef064e92e3beb297}{NAMESPACE}}\ =\ 1\ <<\ 2,\ \ \textcolor{comment}{/*\ Consider\ namespace\ scopes.\ \ */}\ }
+\DoxyCodeLine{00368\ }
+\DoxyCodeLine{00369\ \ \ \doxymbox{\hyperlink{name-lookup_8h_a311cafda98863fcd3926d927e3544170a5fb1f955b45e38e31789286a1790398d}{ALL}}\ =\ \doxymbox{\hyperlink{name-lookup_8h_a311cafda98863fcd3926d927e3544170a4d34f53389ed7f28ca91fc31ea360a66}{BLOCK}}\ |\ \doxymbox{\hyperlink{name-lookup_8h_a311cafda98863fcd3926d927e3544170ac18e8f1f430ea227dbd63d0d9a2bc5fb}{CLASS}}\ |\ \doxymbox{\hyperlink{name-lookup_8h_a311cafda98863fcd3926d927e3544170a7347fe5a0f184f79ef064e92e3beb297}{NAMESPACE}},}
+\DoxyCodeLine{00370\ \ \ \doxymbox{\hyperlink{name-lookup_8h_a311cafda98863fcd3926d927e3544170a65be1751e5812c186e6eb569a4229b72}{BLOCK\_NAMESPACE}}\ =\ \doxymbox{\hyperlink{name-lookup_8h_a311cafda98863fcd3926d927e3544170a4d34f53389ed7f28ca91fc31ea360a66}{BLOCK}}\ |\ \doxymbox{\hyperlink{name-lookup_8h_a311cafda98863fcd3926d927e3544170a7347fe5a0f184f79ef064e92e3beb297}{NAMESPACE}},}
+\DoxyCodeLine{00371\ \ \ \doxymbox{\hyperlink{name-lookup_8h_a311cafda98863fcd3926d927e3544170a5123b7d9a3c0efb49215ea5d770ab8c3}{CLASS\_NAMESPACE}}\ =\ \doxymbox{\hyperlink{name-lookup_8h_a311cafda98863fcd3926d927e3544170ac18e8f1f430ea227dbd63d0d9a2bc5fb}{CLASS}}\ |\ \doxymbox{\hyperlink{name-lookup_8h_a311cafda98863fcd3926d927e3544170a7347fe5a0f184f79ef064e92e3beb297}{NAMESPACE}},}
+\DoxyCodeLine{00372\ \};}
+\DoxyCodeLine{00373\ \textcolor{keyword}{constexpr}\ \doxymbox{\hyperlink{name-lookup_8h_a311cafda98863fcd3926d927e3544170}{LOOK\_where}}\ \doxymbox{\hyperlink{name-lookup_8h_a60297299f935d502ac20cb0dfd0f7c16}{operator|\ }}(\doxymbox{\hyperlink{name-lookup_8h_a311cafda98863fcd3926d927e3544170}{LOOK\_where}}\ \doxymbox{\hyperlink{poly-int_8h_af77c881600a14567e276ee17dfb8764f}{a}},\ \doxymbox{\hyperlink{name-lookup_8h_a311cafda98863fcd3926d927e3544170}{LOOK\_where}}\ \doxymbox{\hyperlink{poly-int_8h_af3bb9d9df219585072cf9e4e95572f70}{b}})}
+\DoxyCodeLine{00374\ \{}
+\DoxyCodeLine{00375\ \ \ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{name-lookup_8h_a311cafda98863fcd3926d927e3544170}{LOOK\_where}}\ (\textcolor{keywordtype}{unsigned}\ (\doxymbox{\hyperlink{poly-int_8h_af77c881600a14567e276ee17dfb8764f}{a}})\ |\ \textcolor{keywordtype}{unsigned}\ (\doxymbox{\hyperlink{poly-int_8h_af3bb9d9df219585072cf9e4e95572f70}{b}}));}
+\DoxyCodeLine{00376\ \}}
+\DoxyCodeLine{00377\ \textcolor{keyword}{constexpr}\ \doxymbox{\hyperlink{name-lookup_8h_a311cafda98863fcd3926d927e3544170}{LOOK\_where}}\ \doxymbox{\hyperlink{name-lookup_8h_a9119e3811c17ddb64d5e1e86583fd075}{operator\&\ }}(\doxymbox{\hyperlink{name-lookup_8h_a311cafda98863fcd3926d927e3544170}{LOOK\_where}}\ \doxymbox{\hyperlink{poly-int_8h_af77c881600a14567e276ee17dfb8764f}{a}},\ \doxymbox{\hyperlink{name-lookup_8h_a311cafda98863fcd3926d927e3544170}{LOOK\_where}}\ \doxymbox{\hyperlink{poly-int_8h_af3bb9d9df219585072cf9e4e95572f70}{b}})}
+\DoxyCodeLine{00378\ \{}
+\DoxyCodeLine{00379\ \ \ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{name-lookup_8h_a311cafda98863fcd3926d927e3544170}{LOOK\_where}}\ (\textcolor{keywordtype}{unsigned}\ (\doxymbox{\hyperlink{poly-int_8h_af77c881600a14567e276ee17dfb8764f}{a}})\ \&\ \textcolor{keywordtype}{unsigned}\ (\doxymbox{\hyperlink{poly-int_8h_af3bb9d9df219585072cf9e4e95572f70}{b}}));}
+\DoxyCodeLine{00380\ \}}
+\DoxyCodeLine{00381\ }
+\DoxyCodeLine{00382\ \textcolor{keyword}{enum\ class}\ \doxymbox{\hyperlink{name-lookup_8h_a376955c0e6b527dfcb376a603d1e3af5}{LOOK\_want}}}
+\DoxyCodeLine{00383\ \{}
+\DoxyCodeLine{00384\ \ \ \doxymbox{\hyperlink{name-lookup_8h_a376955c0e6b527dfcb376a603d1e3af5a1e23852820b9154316c7c06e2b7ba051}{NORMAL}}\ =\ 0,\ \ \textcolor{comment}{/*\ Normal\ lookup\ -\/-\/\ non-\/types\ can\ hide\ implicit\ types.\ \ */}}
+\DoxyCodeLine{00385\ \ \ \doxymbox{\hyperlink{name-lookup_8h_a376955c0e6b527dfcb376a603d1e3af5a948495146facadfe8859789036313d79}{TYPE}}\ =\ 1\ <<\ 1,\ \ \textcolor{comment}{/*\ We\ only\ want\ TYPE\_DECLS.\ \ */}}
+\DoxyCodeLine{00386\ \ \ \doxymbox{\hyperlink{name-lookup_8h_a311cafda98863fcd3926d927e3544170a7347fe5a0f184f79ef064e92e3beb297}{NAMESPACE}}\ =\ 1\ <<\ 2,\ \ \textcolor{comment}{/*\ We\ only\ want\ NAMESPACE\_DECLS.\ \ */}}
+\DoxyCodeLine{00387\ }
+\DoxyCodeLine{00388\ \ \ \doxymbox{\hyperlink{name-lookup_8h_a376955c0e6b527dfcb376a603d1e3af5a8a732a288a1a35b8943bcf3832cee86e}{HIDDEN\_FRIEND}}\ =\ 1\ <<\ 3,\ \textcolor{comment}{/*\ See\ hidden\ friends.\ \ */}}
+\DoxyCodeLine{00389\ \ \ \doxymbox{\hyperlink{name-lookup_8h_a376955c0e6b527dfcb376a603d1e3af5a617401ba6415fb6b1e81c94cad333da8}{HIDDEN\_LAMBDA}}\ =\ 1\ <<\ 4,\ \ \textcolor{comment}{/*\ See\ lambda-\/ignored\ entities.\ \ */}}
+\DoxyCodeLine{00390\ }
+\DoxyCodeLine{00391\ \ \ \doxymbox{\hyperlink{name-lookup_8h_a376955c0e6b527dfcb376a603d1e3af5a4a6ec7991087c8e6bd470a0ebe10341f}{TYPE\_NAMESPACE}}\ =\ \doxymbox{\hyperlink{name-lookup_8h_a376955c0e6b527dfcb376a603d1e3af5a948495146facadfe8859789036313d79}{TYPE}}\ |\ \doxymbox{\hyperlink{name-lookup_8h_a311cafda98863fcd3926d927e3544170a7347fe5a0f184f79ef064e92e3beb297}{NAMESPACE}},\ \ \textcolor{comment}{/*\ Either\ NAMESPACE\ or\ TYPE.\ \ */}}
+\DoxyCodeLine{00392\ \};}
+\DoxyCodeLine{00393\ \textcolor{keyword}{constexpr}\ \doxymbox{\hyperlink{name-lookup_8h_a376955c0e6b527dfcb376a603d1e3af5}{LOOK\_want}}\ \doxymbox{\hyperlink{name-lookup_8h_a60297299f935d502ac20cb0dfd0f7c16}{operator|\ }}(\doxymbox{\hyperlink{name-lookup_8h_a376955c0e6b527dfcb376a603d1e3af5}{LOOK\_want}}\ \doxymbox{\hyperlink{poly-int_8h_af77c881600a14567e276ee17dfb8764f}{a}},\ \doxymbox{\hyperlink{name-lookup_8h_a376955c0e6b527dfcb376a603d1e3af5}{LOOK\_want}}\ \doxymbox{\hyperlink{poly-int_8h_af3bb9d9df219585072cf9e4e95572f70}{b}})}
+\DoxyCodeLine{00394\ \{}
+\DoxyCodeLine{00395\ \ \ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{name-lookup_8h_a376955c0e6b527dfcb376a603d1e3af5}{LOOK\_want}}\ (\textcolor{keywordtype}{unsigned}\ (\doxymbox{\hyperlink{poly-int_8h_af77c881600a14567e276ee17dfb8764f}{a}})\ |\ \textcolor{keywordtype}{unsigned}\ (\doxymbox{\hyperlink{poly-int_8h_af3bb9d9df219585072cf9e4e95572f70}{b}}));}
+\DoxyCodeLine{00396\ \}}
+\DoxyCodeLine{00397\ \textcolor{keyword}{constexpr}\ \doxymbox{\hyperlink{name-lookup_8h_a376955c0e6b527dfcb376a603d1e3af5}{LOOK\_want}}\ \doxymbox{\hyperlink{name-lookup_8h_a9119e3811c17ddb64d5e1e86583fd075}{operator\&\ }}(\doxymbox{\hyperlink{name-lookup_8h_a376955c0e6b527dfcb376a603d1e3af5}{LOOK\_want}}\ \doxymbox{\hyperlink{poly-int_8h_af77c881600a14567e276ee17dfb8764f}{a}},\ \doxymbox{\hyperlink{name-lookup_8h_a376955c0e6b527dfcb376a603d1e3af5}{LOOK\_want}}\ \doxymbox{\hyperlink{poly-int_8h_af3bb9d9df219585072cf9e4e95572f70}{b}})}
+\DoxyCodeLine{00398\ \{}
+\DoxyCodeLine{00399\ \ \ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{name-lookup_8h_a376955c0e6b527dfcb376a603d1e3af5}{LOOK\_want}}\ (\textcolor{keywordtype}{unsigned}\ (\doxymbox{\hyperlink{poly-int_8h_af77c881600a14567e276ee17dfb8764f}{a}})\ \&\ \textcolor{keywordtype}{unsigned}\ (\doxymbox{\hyperlink{poly-int_8h_af3bb9d9df219585072cf9e4e95572f70}{b}}));}
+\DoxyCodeLine{00400\ \}}
+\DoxyCodeLine{00401\ }
+\DoxyCodeLine{00402\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ \doxymbox{\hyperlink{c-common_8h_a6f26dc98b8344ccc6b29885d83676ab2}{lookup\_name}}\ (\doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}},\ \doxymbox{\hyperlink{name-lookup_8h_a311cafda98863fcd3926d927e3544170}{LOOK\_where}},\ \doxymbox{\hyperlink{name-lookup_8h_a376955c0e6b527dfcb376a603d1e3af5}{LOOK\_want}}\ =\ \doxymbox{\hyperlink{name-lookup_8h_a376955c0e6b527dfcb376a603d1e3af5a1e23852820b9154316c7c06e2b7ba051}{LOOK\_want::NORMAL}});}
+\DoxyCodeLine{00403\ \textcolor{comment}{/*\ Also\ declared\ in\ c-\/family/c-\/common.h.\ \ */}}
+\DoxyCodeLine{00404\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ \doxymbox{\hyperlink{c-common_8h_a6f26dc98b8344ccc6b29885d83676ab2}{lookup\_name}}\ (\doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ \doxymbox{\hyperlink{configargs_8h_a8f8f80d37794cde9472343e4487ba3eb}{name}});}
+\DoxyCodeLine{00405\ \textcolor{keyword}{inline}\ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ \doxymbox{\hyperlink{c-common_8h_a6f26dc98b8344ccc6b29885d83676ab2}{lookup\_name}}\ (\doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ \doxymbox{\hyperlink{configargs_8h_a8f8f80d37794cde9472343e4487ba3eb}{name}},\ \doxymbox{\hyperlink{name-lookup_8h_a376955c0e6b527dfcb376a603d1e3af5}{LOOK\_want}}\ want)}
+\DoxyCodeLine{00406\ \{}
+\DoxyCodeLine{00407\ \ \ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{c-common_8h_a6f26dc98b8344ccc6b29885d83676ab2}{lookup\_name}}\ (\doxymbox{\hyperlink{configargs_8h_a8f8f80d37794cde9472343e4487ba3eb}{name}},\ \doxymbox{\hyperlink{name-lookup_8h_a311cafda98863fcd3926d927e3544170a5fb1f955b45e38e31789286a1790398d}{LOOK\_where::ALL}},\ want);}
+\DoxyCodeLine{00408\ \}}
+\DoxyCodeLine{00409\ }
+\DoxyCodeLine{00410\ \textcolor{keyword}{enum\ class}\ \doxymbox{\hyperlink{name-lookup_8h_a253ae8b7870deb08cf754b52fa2cf745}{TAG\_how}}}
+\DoxyCodeLine{00411\ \{}
+\DoxyCodeLine{00412\ \ \ \doxymbox{\hyperlink{name-lookup_8h_a253ae8b7870deb08cf754b52fa2cf745a6a99cf8f9d1f418956c86bfb8e8ec500}{CURRENT\_ONLY}}\ =\ 0,\ \textcolor{comment}{//\ Look\ and\ insert\ only\ in\ current\ scope}}
+\DoxyCodeLine{00413\ }
+\DoxyCodeLine{00414\ \ \ \doxymbox{\hyperlink{name-lookup_8h_a253ae8b7870deb08cf754b52fa2cf745a6eecfba72d12922ee1dead07a0ef3334}{GLOBAL}}\ =\ 1,\ \textcolor{comment}{//\ Unqualified\ lookup,\ innermost-\/non-\/class\ insertion}}
+\DoxyCodeLine{00415\ }
+\DoxyCodeLine{00416\ \ \ \doxymbox{\hyperlink{name-lookup_8h_a253ae8b7870deb08cf754b52fa2cf745afecec9a680155cd94f03050ee7c7be97}{INNERMOST\_NON\_CLASS}}\ =\ 2,\ \textcolor{comment}{//\ Look\ and\ insert\ only\ into}}
+\DoxyCodeLine{00417\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ innermost-\/non-\/class}}
+\DoxyCodeLine{00418\ }
+\DoxyCodeLine{00419\ \ \ \doxymbox{\hyperlink{name-lookup_8h_a376955c0e6b527dfcb376a603d1e3af5a8a732a288a1a35b8943bcf3832cee86e}{HIDDEN\_FRIEND}}\ =\ 3,\ \textcolor{comment}{//\ As\ INNERMOST\_NON\_CLASS,\ but\ hide\ it}}
+\DoxyCodeLine{00420\ \};}
+\DoxyCodeLine{00421\ }
+\DoxyCodeLine{00422\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ \doxymbox{\hyperlink{name-lookup_8h_a2aabf69c518e4b79df1610fa9dfe2b0a}{lookup\_elaborated\_type}}\ (\doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}},\ \doxymbox{\hyperlink{name-lookup_8h_a253ae8b7870deb08cf754b52fa2cf745}{TAG\_how}});}
+\DoxyCodeLine{00423\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ \doxymbox{\hyperlink{name-lookup_8h_a8cfeaa1654349e57a568e885323f93df}{get\_namespace\_binding}}\ (\doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ ns,\ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ \textcolor{keywordtype}{id});}
+\DoxyCodeLine{00424\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{name-lookup_8h_aaeeb8e05d8f263afd94815bdba53e8f4}{set\_global\_binding}}\ (\doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ decl);}
+\DoxyCodeLine{00425\ \textcolor{keyword}{inline}\ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ \doxymbox{\hyperlink{name-lookup_8h_abf82fd9b584b368d7d5ef6a42ce567cc}{get\_global\_binding}}\ (\doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ \textcolor{keywordtype}{id})}
+\DoxyCodeLine{00426\ \{}
+\DoxyCodeLine{00427\ \ \ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{name-lookup_8h_a8cfeaa1654349e57a568e885323f93df}{get\_namespace\_binding}}\ (\doxymbox{\hyperlink{tree_8h_aeda0ce25865d2494883f523217559d1e}{NULL\_TREE}},\ \textcolor{keywordtype}{id});}
+\DoxyCodeLine{00428\ \}}
+\DoxyCodeLine{00429\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ \doxymbox{\hyperlink{name-lookup_8h_a20a5bfac39918d3722111881ae06792d}{lookup\_qualified\_name}}\ (\doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ scope,\ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ \doxymbox{\hyperlink{configargs_8h_a8f8f80d37794cde9472343e4487ba3eb}{name}},}
+\DoxyCodeLine{00430\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{name-lookup_8h_a376955c0e6b527dfcb376a603d1e3af5}{LOOK\_want}}\ =\ \doxymbox{\hyperlink{name-lookup_8h_a376955c0e6b527dfcb376a603d1e3af5a1e23852820b9154316c7c06e2b7ba051}{LOOK\_want::NORMAL}},}
+\DoxyCodeLine{00431\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{bool}\ =\ \textcolor{keyword}{true});}
+\DoxyCodeLine{00432\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ \doxymbox{\hyperlink{name-lookup_8h_a20a5bfac39918d3722111881ae06792d}{lookup\_qualified\_name}}\ (\doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ scope,\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *\doxymbox{\hyperlink{configargs_8h_a8f8f80d37794cde9472343e4487ba3eb}{name}},}
+\DoxyCodeLine{00433\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{name-lookup_8h_a376955c0e6b527dfcb376a603d1e3af5}{LOOK\_want}}\ =\ \doxymbox{\hyperlink{name-lookup_8h_a376955c0e6b527dfcb376a603d1e3af5a1e23852820b9154316c7c06e2b7ba051}{LOOK\_want::NORMAL}},}
+\DoxyCodeLine{00434\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{bool}\ =\ \textcolor{keyword}{true});}
+\DoxyCodeLine{00435\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{name-lookup_8h_a657c497a7df54115cdc3a3c186d7b65c}{pushdecl\_class\_level}}\ (\doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}});}
+\DoxyCodeLine{00436\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ \doxymbox{\hyperlink{name-lookup_8h_ae89f78b2df2a6fdd21ffb5d6fd2b1f50}{pushdecl\_namespace\_level}}\ (\doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}},\ \textcolor{keywordtype}{bool}\ hiding\ =\ \textcolor{keyword}{false});}
+\DoxyCodeLine{00437\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{name-lookup_8h_a91b99a5aabab30d1957efa7e10138006}{push\_class\_level\_binding}}\ (\doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}},\ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}});}
+\DoxyCodeLine{00438\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ \doxymbox{\hyperlink{name-lookup_8h_ae242f681615f0319703c2658f5da5339}{get\_local\_decls}}\ ();}
+\DoxyCodeLine{00439\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{name-lookup_8h_a4fe29f7cc98489aa2711082fbbe1ca1f}{function\_parm\_depth}}\ (\textcolor{keywordtype}{void});}
+\DoxyCodeLine{00440\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ \doxymbox{\hyperlink{name-lookup_8h_a81f56e166294c9086717852328cee1df}{cp\_namespace\_decls}}\ (\doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}});}
+\DoxyCodeLine{00441\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{name-lookup_8h_a4541b45462fd37eaa3de119201a2b53c}{set\_decl\_namespace}}\ (\doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}},\ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}},\ \textcolor{keywordtype}{bool});}
+\DoxyCodeLine{00442\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{name-lookup_8h_a20fda8295c2eeb82e2ab04fd6b96f569}{push\_decl\_namespace}}\ (\doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}});}
+\DoxyCodeLine{00443\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{name-lookup_8h_af92db763df01ad844237455696961fec}{pop\_decl\_namespace}}\ (\textcolor{keywordtype}{void});}
+\DoxyCodeLine{00444\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{name-lookup_8h_ae18acecb788d07251ef9f81e3887c3ef}{do\_namespace\_alias}}\ (\doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}},\ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}});}
+\DoxyCodeLine{00445\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ \doxymbox{\hyperlink{name-lookup_8h_a5e966a447d0f28031107dba97a5f16cc}{do\_class\_using\_decl}}\ (\doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}},\ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}});}
+\DoxyCodeLine{00446\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ \doxymbox{\hyperlink{name-lookup_8h_a39b31adf830400219f30e34fbc736246}{lookup\_arg\_dependent}}\ (\doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}},\ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}},\ \doxymbox{\hyperlink{structvec}{vec<tree,\ va\_gc>}}\ *);}
+\DoxyCodeLine{00447\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ \doxymbox{\hyperlink{name-lookup_8h_a8a4f967feedae24efd4543d691cb5431}{search\_anon\_aggr}}\ (\doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}},\ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}},\ \textcolor{keywordtype}{bool}\ =\ \textcolor{keyword}{false});}
+\DoxyCodeLine{00448\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ \doxymbox{\hyperlink{name-lookup_8h_abc4ae97b420e8566570d2e027f6a94fe}{get\_class\_binding\_direct}}\ (\doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}},\ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}},\ \textcolor{keywordtype}{bool}\ want\_type\ =\ \textcolor{keyword}{false});}
+\DoxyCodeLine{00449\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ \doxymbox{\hyperlink{name-lookup_8h_a3bcf9197e07920f36aed4067e86ee4ae}{get\_class\_binding}}\ (\doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}},\ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}},\ \textcolor{keywordtype}{bool}\ want\_type\ =\ \textcolor{keyword}{false});}
+\DoxyCodeLine{00450\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ *\doxymbox{\hyperlink{name-lookup_8h_a5d16fa5c09936d5b371c4d6215a55e51}{find\_member\_slot}}\ (\doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ klass,\ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ \doxymbox{\hyperlink{configargs_8h_a8f8f80d37794cde9472343e4487ba3eb}{name}});}
+\DoxyCodeLine{00451\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ *\doxymbox{\hyperlink{name-lookup_8h_a69a28297fe144ac9756f11b56c569bd7}{add\_member\_slot}}\ (\doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ klass,\ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ \doxymbox{\hyperlink{configargs_8h_a8f8f80d37794cde9472343e4487ba3eb}{name}});}
+\DoxyCodeLine{00452\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{name-lookup_8h_a0406f80ad7a7ff7fda934b6ede1c2822}{resort\_type\_member\_vec}}\ (\textcolor{keywordtype}{void}\ *,\ \textcolor{keywordtype}{void}\ *,}
+\DoxyCodeLine{00453\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{coretypes_8h_ae5ca95fa9feb025fb3b39d2ed62f2a56}{gt\_pointer\_operator}},\ \textcolor{keywordtype}{void}\ *);}
+\DoxyCodeLine{00454\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{structvec}{vec<tree,\ va\_gc>}}\ *\doxymbox{\hyperlink{name-lookup_8h_afeab3dcc88f071bb6f9d20a5997776e9}{set\_class\_bindings}}\ (\doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}},\ \textcolor{keywordtype}{int}\ extra\ =\ 0);}
+\DoxyCodeLine{00455\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{name-lookup_8h_a1a5e7b871b883e904167c2bc67e95f0a}{insert\_late\_enum\_def\_bindings}}\ (\doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}},\ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}});}
+\DoxyCodeLine{00456\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ \doxymbox{\hyperlink{name-lookup_8h_ab8d083acd20995c3f5fa5cf8de0e99a2}{innermost\_non\_namespace\_value}}\ (\doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}});}
+\DoxyCodeLine{00457\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{name-lookup_8h_ae2c0282d03306de012327449563920cd}{decl\_in\_scope\_p}}\ (\doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}});}
+\DoxyCodeLine{00458\ \textcolor{keyword}{extern}\ cxx\_binding\ *\doxymbox{\hyperlink{name-lookup_8h_aee817742349d3fcdc9bbb3f0a6dbde89}{outer\_binding}}\ (\doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}},\ cxx\_binding\ *,\ \textcolor{keywordtype}{bool});}
+\DoxyCodeLine{00459\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{name-lookup_8h_a124886075754b9d10c64696ab12a50d6}{cp\_emit\_debug\_info\_for\_using}}\ (\doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}},\ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}});}
+\DoxyCodeLine{00460\ }
+\DoxyCodeLine{00461\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{name-lookup_8h_ac0c1818ffc8ae3db6184eb9ada325bd4}{finish\_nonmember\_using\_decl}}\ (\doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ scope,\ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ \doxymbox{\hyperlink{configargs_8h_a8f8f80d37794cde9472343e4487ba3eb}{name}});}
+\DoxyCodeLine{00462\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{name-lookup_8h_a603f19de4382b305de0bf4847c53e4c0}{finish\_using\_directive}}\ (\doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ target,\ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ attribs);}
+\DoxyCodeLine{00463\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{name-lookup_8h_aa9bb448628373c6860cfff4ae2f2be86}{push\_local\_extern\_decl\_alias}}\ (\doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ decl);}
+\DoxyCodeLine{00464\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ \doxymbox{\hyperlink{c-tree_8h_ac7040001cf1a9b3d770a87c5c86c9fcd}{pushdecl}}\ (\doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}},\ \textcolor{keywordtype}{bool}\ hiding\ =\ \textcolor{keyword}{false});}
+\DoxyCodeLine{00465\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ \doxymbox{\hyperlink{name-lookup_8h_abe5680602a8d4b82206b73a4a519c52e}{pushdecl\_outermost\_localscope}}\ (\doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}});}
+\DoxyCodeLine{00466\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ \doxymbox{\hyperlink{name-lookup_8h_accea8e2614f7db9b184adb47c2f9dff9}{pushdecl\_top\_level}}\ (\doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}});}
+\DoxyCodeLine{00467\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ \doxymbox{\hyperlink{name-lookup_8h_a10eee681f05bacab5b0ee5a2fef2b77d}{pushdecl\_top\_level\_and\_finish}}\ (\doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}},\ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}});}
+\DoxyCodeLine{00468\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ \doxymbox{\hyperlink{name-lookup_8h_a3a3022ec6a2e4783c63b4b35839995e6}{pushtag}}\ (\doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}},\ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}},\ \doxymbox{\hyperlink{name-lookup_8h_a253ae8b7870deb08cf754b52fa2cf745}{TAG\_how}}\ =\ \doxymbox{\hyperlink{name-lookup_8h_a253ae8b7870deb08cf754b52fa2cf745a6a99cf8f9d1f418956c86bfb8e8ec500}{TAG\_how::CURRENT\_ONLY}});}
+\DoxyCodeLine{00469\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{name-lookup_8h_ad6caf2f98da07269ef594c2dc5cd2682}{push\_namespace}}\ (\doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}},\ \textcolor{keywordtype}{bool}\ make\_inline\ =\ \textcolor{keyword}{false});}
+\DoxyCodeLine{00470\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{name-lookup_8h_a5d69f7ccecb9b9985ed84c5ad15ec019}{pop\_namespace}}\ (\textcolor{keywordtype}{void});}
+\DoxyCodeLine{00471\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{name-lookup_8h_a22b6a0f9a61e9bffeae3073376d5e298}{push\_nested\_namespace}}\ (\doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}});}
+\DoxyCodeLine{00472\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{name-lookup_8h_a8a4e7ba093b0f8e47635a65c9b79fca0}{pop\_nested\_namespace}}\ (\doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}});}
+\DoxyCodeLine{00473\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{name-lookup_8h_a4a1b24918fdf28ad246d02ae1c34a332}{push\_to\_top\_level}}\ (\textcolor{keywordtype}{void});}
+\DoxyCodeLine{00474\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{name-lookup_8h_aa27c03763850264ca35d5a664e43e1aa}{pop\_from\_top\_level}}\ (\textcolor{keywordtype}{void});}
+\DoxyCodeLine{00475\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{name-lookup_8h_a2c5d3b6046c3b8df684a3862f01e6c0b}{maybe\_push\_to\_top\_level}}\ (\doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}});}
+\DoxyCodeLine{00476\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{name-lookup_8h_a26799c624e3101b359b76a189c76084d}{maybe\_pop\_from\_top\_level}}\ (\textcolor{keywordtype}{bool});}
+\DoxyCodeLine{00477\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{name-lookup_8h_a0c5a47a9cda1ba32a07af3a952fedd29}{push\_using\_decl\_bindings}}\ (\doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}},\ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}});}
+\DoxyCodeLine{00478\ }
+\DoxyCodeLine{00479\ \textcolor{comment}{/*\ Lower\ level\ interface\ for\ modules.\ */}}
+\DoxyCodeLine{00480\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ *\doxymbox{\hyperlink{name-lookup_8h_a93d3564abc588614c63ad52d51125563}{mergeable\_namespace\_slots}}\ (\doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ ns,\ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ \doxymbox{\hyperlink{configargs_8h_a8f8f80d37794cde9472343e4487ba3eb}{name}},\ \textcolor{keywordtype}{bool}\ is\_attached,}
+\DoxyCodeLine{00481\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ *mvec);}
+\DoxyCodeLine{00482\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{name-lookup_8h_ad06316f0f1429555bc385dd3cc8a4c4e}{add\_mergeable\_namespace\_entity}}\ (\doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ *slot,\ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ decl);}
+\DoxyCodeLine{00483\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ \doxymbox{\hyperlink{name-lookup_8h_a1a0fb0990110bb31ddc613dace4220a8}{lookup\_class\_binding}}\ (\doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ ctx,\ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ \doxymbox{\hyperlink{configargs_8h_a8f8f80d37794cde9472343e4487ba3eb}{name}});}
+\DoxyCodeLine{00484\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{name-lookup_8h_a8874a583b33fc19458389dd98f20b1ac}{import\_module\_binding}}\ (\doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ ctx,\ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ \doxymbox{\hyperlink{configargs_8h_a8f8f80d37794cde9472343e4487ba3eb}{name}},\ \textcolor{keywordtype}{unsigned}\ mod,}
+\DoxyCodeLine{00485\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{unsigned}\ snum);}
+\DoxyCodeLine{00486\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{name-lookup_8h_a75b0c2a49cf71f2a072c3d5eca8858b3}{set\_module\_binding}}\ (\doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ ctx,\ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ \doxymbox{\hyperlink{configargs_8h_a8f8f80d37794cde9472343e4487ba3eb}{name}},\ \textcolor{keywordtype}{unsigned}\ mod,}
+\DoxyCodeLine{00487\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{int}\ mod\_glob\_flag,}
+\DoxyCodeLine{00488\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ \doxymbox{\hyperlink{configargs_8h_a92d544bd66c050551f3d87fa55eb3f5d}{value}},\ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ \doxymbox{\hyperlink{structtype}{type}},\ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ visible);}
+\DoxyCodeLine{00489\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{name-lookup_8h_ad0745f780850212fbcb4fb5aafbba04d}{add\_module\_namespace\_decl}}\ (\doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ ns,\ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ decl);}
+\DoxyCodeLine{00490\ }
+\DoxyCodeLine{00491\ \textcolor{keyword}{enum}\ \doxymbox{\hyperlink{name-lookup_8h_a6c371439d390b5f7d52fa602cde947b3}{WMB\_Flags}}}
+\DoxyCodeLine{00492\ \{}
+\DoxyCodeLine{00493\ \ \ \doxymbox{\hyperlink{name-lookup_8h_a6c371439d390b5f7d52fa602cde947b3a5c4308ef03d87fe05083b510e0773ea5}{WMB\_None}}\ =\ 0,}
+\DoxyCodeLine{00494\ \ \ \doxymbox{\hyperlink{name-lookup_8h_a6c371439d390b5f7d52fa602cde947b3a0203841d8f19617d833b74b04d0ff866}{WMB\_Dups}}\ =\ 1\ <<\ 0,}
+\DoxyCodeLine{00495\ \ \ \doxymbox{\hyperlink{name-lookup_8h_a6c371439d390b5f7d52fa602cde947b3aba6cfe9b87afa87bd05de3e6de65f9d6}{WMB\_Export}}\ =\ 1\ <<\ 1,}
+\DoxyCodeLine{00496\ \ \ \doxymbox{\hyperlink{name-lookup_8h_a6c371439d390b5f7d52fa602cde947b3af311958118ac6f7320d7238e2d97b6c1}{WMB\_Using}}\ =\ 1\ <<\ 2,}
+\DoxyCodeLine{00497\ \ \ \doxymbox{\hyperlink{name-lookup_8h_a6c371439d390b5f7d52fa602cde947b3ab05a1e87a128e1a1c6e5c6762202393d}{WMB\_Hidden}}\ =\ 1\ <<\ 3,}
+\DoxyCodeLine{00498\ \};}
+\DoxyCodeLine{00499\ }
+\DoxyCodeLine{00500\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{unsigned}\ \doxymbox{\hyperlink{name-lookup_8h_a18d083abf027dea92c9e8bd1019e8330}{walk\_module\_binding}}\ (\doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ binding,\ \doxymbox{\hyperlink{coretypes_8h_ae7ea3a04cabf8964dc6e8e95a9cde1b8}{bitmap}}\ partitions,}
+\DoxyCodeLine{00501\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{bool}\ (*)(\doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ decl,\ \doxymbox{\hyperlink{name-lookup_8h_a6c371439d390b5f7d52fa602cde947b3}{WMB\_Flags}},\ \textcolor{keywordtype}{void}\ *data),}
+\DoxyCodeLine{00502\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{void}\ *data);}
+\DoxyCodeLine{00503\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ \doxymbox{\hyperlink{name-lookup_8h_ae2f5e169f0b00677829847307d1fc215}{add\_imported\_namespace}}\ (\doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ ctx,\ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ \doxymbox{\hyperlink{configargs_8h_a8f8f80d37794cde9472343e4487ba3eb}{name}},\ \doxymbox{\hyperlink{line-map_8h_aedf25620511d64e43327f1a229906a96}{location\_t}},}
+\DoxyCodeLine{00504\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{unsigned}\ module,}
+\DoxyCodeLine{00505\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{bool}\ inline\_p,\ \textcolor{keywordtype}{bool}\ visible\_p);}
+\DoxyCodeLine{00506\ \textcolor{keyword}{extern}\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *\doxymbox{\hyperlink{name-lookup_8h_aea08067b7836d29338752bc06feca0c1}{get\_cxx\_dialect\_name}}\ (\textcolor{keyword}{enum}\ \doxymbox{\hyperlink{c-common_8h_a6b0a5a11ef4b37e1bb284b0b6f711b72}{cxx\_dialect}}\ dialect);}
+\DoxyCodeLine{00507\ }
+\DoxyCodeLine{00508\ \textcolor{preprocessor}{\#endif\ }\textcolor{comment}{/*\ GCC\_CP\_NAME\_LOOKUP\_H\ */}\textcolor{preprocessor}{}}
+
+\end{DoxyCode}

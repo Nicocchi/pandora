@@ -1,0 +1,25 @@
+var ggc_internal_8h =
+[
+    [ "ggc_statistics", "structggc__statistics.html", "structggc__statistics" ],
+    [ "ggc_free_overhead", "ggc-internal_8h.html#aafcbb5b1f72fe27869e6f6d67bd226a0", null ],
+    [ "ggc_get_size", "ggc-internal_8h.html#a9ef4feb3bff4f621a194b68f5f6144bd", null ],
+    [ "ggc_mark_roots", "ggc-internal_8h.html#ad17a3a4151bf62f2f6ea0a0843fc69a7", null ],
+    [ "ggc_mark_stringpool", "ggc-internal_8h.html#a8caf9e272d6197190418ebaca492ac67", null ],
+    [ "ggc_pch_alloc_object", "ggc-internal_8h.html#aa94d57e3b1cdeb1f5042e7594f2aec8c", null ],
+    [ "ggc_pch_count_object", "ggc-internal_8h.html#acdee72249508286c267a2f2c14cfae81", null ],
+    [ "ggc_pch_finish", "ggc-internal_8h.html#a2a0066b78a6d662c891afad12df55105", null ],
+    [ "ggc_pch_prepare_write", "ggc-internal_8h.html#a97faf3bc38c435d0ada5028614cb0731", null ],
+    [ "ggc_pch_read", "ggc-internal_8h.html#ae63cde9d413a4b510d04fee40a5e2fb5", null ],
+    [ "ggc_pch_this_base", "ggc-internal_8h.html#ae3aaa737bef867ad9073499c878aa021", null ],
+    [ "ggc_pch_total_size", "ggc-internal_8h.html#a7164f81e764c15813404159effae5abd", null ],
+    [ "ggc_pch_write_object", "ggc-internal_8h.html#a190a5841c88c64e7ca39a443618bb31d", null ],
+    [ "ggc_print_common_statistics", "ggc-internal_8h.html#ad09703596e7435863a2d0481a7a011a5", null ],
+    [ "ggc_prune_overhead_list", "ggc-internal_8h.html#a624b5ca8c1f3fdf29e28153960fd0766", null ],
+    [ "ggc_purge_stringpool", "ggc-internal_8h.html#a98122381965effd3a3b2965305cc226c", null ],
+    [ "ggc_record_overhead", "ggc-internal_8h.html#af1245c5593079e6a8190f0c9613a31e3", null ],
+    [ "gt_pch_fixup_stringpool", "ggc-internal_8h.html#aa6bfa5686dd101ec9809fbd72b0b3973", null ],
+    [ "gt_pch_p_S", "ggc-internal_8h.html#a8a80867d7774b3b122ccdef1f2de2388", null ],
+    [ "gt_pch_restore_stringpool", "ggc-internal_8h.html#a11e74de3f3a3e95fa55bd4fdca35d2c3", null ],
+    [ "gt_pch_save_stringpool", "ggc-internal_8h.html#a366b375ee45730855f634415d6e40fe1", null ],
+    [ "init_ggc_pch", "ggc-internal_8h.html#a9ac0a7492c2fdc2e111b5dec47b8b25a", null ]
+];

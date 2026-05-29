@@ -1,0 +1,261 @@
+\doxysection{mux-\/utils.h}
+\hypertarget{mux-utils_8h_source}{}\label{mux-utils_8h_source}\index{toolchain/x86\_64-\/elf/lib/gcc/x86\_64-\/elf/14.2.0/plugin/include/mux-\/utils.h@{toolchain/x86\_64-\/elf/lib/gcc/x86\_64-\/elf/14.2.0/plugin/include/mux-\/utils.h}}
+\doxymbox{\hyperlink{mux-utils_8h}{Go to the documentation of this file.}}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001\ \textcolor{comment}{//\ Multiplexer\ utilities}}
+\DoxyCodeLine{00002\ \textcolor{comment}{//\ Copyright\ (C)\ 2020-\/2024\ Free\ Software\ Foundation,\ Inc.}}
+\DoxyCodeLine{00003\ \textcolor{comment}{//}}
+\DoxyCodeLine{00004\ \textcolor{comment}{//\ This\ file\ is\ part\ of\ GCC.}}
+\DoxyCodeLine{00005\ \textcolor{comment}{//}}
+\DoxyCodeLine{00006\ \textcolor{comment}{//\ GCC\ is\ free\ software;\ you\ can\ redistribute\ it\ and/or\ modify\ it\ under}}
+\DoxyCodeLine{00007\ \textcolor{comment}{//\ the\ terms\ of\ the\ GNU\ General\ Public\ License\ as\ published\ by\ the\ Free}}
+\DoxyCodeLine{00008\ \textcolor{comment}{//\ Software\ Foundation;\ either\ version\ 3,\ or\ (at\ your\ option)\ any\ later}}
+\DoxyCodeLine{00009\ \textcolor{comment}{//\ version.}}
+\DoxyCodeLine{00010\ \textcolor{comment}{//}}
+\DoxyCodeLine{00011\ \textcolor{comment}{//\ GCC\ is\ distributed\ in\ the\ hope\ that\ it\ will\ be\ useful,\ but\ WITHOUT\ ANY}}
+\DoxyCodeLine{00012\ \textcolor{comment}{//\ WARRANTY;\ without\ even\ the\ implied\ warranty\ of\ MERCHANTABILITY\ or}}
+\DoxyCodeLine{00013\ \textcolor{comment}{//\ FITNESS\ FOR\ A\ PARTICULAR\ PURPOSE.\ \ See\ the\ GNU\ General\ Public\ License}}
+\DoxyCodeLine{00014\ \textcolor{comment}{//\ for\ more\ details.}}
+\DoxyCodeLine{00015\ \textcolor{comment}{//}}
+\DoxyCodeLine{00016\ \textcolor{comment}{//\ You\ should\ have\ received\ a\ copy\ of\ the\ GNU\ General\ Public\ License}}
+\DoxyCodeLine{00017\ \textcolor{comment}{//\ along\ with\ GCC;\ see\ the\ file\ COPYING3.\ \ If\ not\ see}}
+\DoxyCodeLine{00018\ \textcolor{comment}{//\ <http://www.gnu.org/licenses/>.}}
+\DoxyCodeLine{00019\ }
+\DoxyCodeLine{00020\ \textcolor{preprocessor}{\#ifndef\ GCC\_MUX\_UTILS\_H}}
+\DoxyCodeLine{00021\ \textcolor{preprocessor}{\#define\ GCC\_MUX\_UTILS\_H\ 1}}
+\DoxyCodeLine{00022\ }
+\DoxyCodeLine{00023\ \textcolor{comment}{//\ A\ class\ that\ stores\ a\ choice\ "{}A\ or\ B"{},\ where\ A\ has\ type\ T1\ *\ and\ B\ has}}
+\DoxyCodeLine{00024\ \textcolor{comment}{//\ type\ T2\ *.\ \ Both\ T1\ and\ T2\ must\ have\ an\ alignment\ greater\ than\ 1,\ since}}
+\DoxyCodeLine{00025\ \textcolor{comment}{//\ the\ low\ bit\ is\ used\ to\ identify\ B\ over\ A.\ \ T1\ and\ T2\ can\ be\ the\ same.}}
+\DoxyCodeLine{00026\ \textcolor{comment}{//}}
+\DoxyCodeLine{00027\ \textcolor{comment}{//\ A\ can\ be\ a\ null\ pointer\ but\ B\ cannot.}}
+\DoxyCodeLine{00028\ \textcolor{comment}{//}}
+\DoxyCodeLine{00029\ \textcolor{comment}{//\ Barring\ the\ requirement\ that\ B\ must\ be\ nonnull,\ using\ the\ class\ is}}
+\DoxyCodeLine{00030\ \textcolor{comment}{//\ equivalent\ to\ using:}}
+\DoxyCodeLine{00031\ \textcolor{comment}{//}}
+\DoxyCodeLine{00032\ \textcolor{comment}{//\ \ \ \ \ union\ \{\ T1\ *A;\ T2\ *B;\ \};}}
+\DoxyCodeLine{00033\ \textcolor{comment}{//}}
+\DoxyCodeLine{00034\ \textcolor{comment}{//\ and\ having\ a\ separate\ tag\ bit\ to\ indicate\ which\ alternative\ is\ active.}}
+\DoxyCodeLine{00035\ \textcolor{comment}{//\ However,\ using\ this\ class\ can\ have\ two\ advantages\ over\ a\ union:}}
+\DoxyCodeLine{00036\ \textcolor{comment}{//}}
+\DoxyCodeLine{00037\ \textcolor{comment}{//\ -\/\ It\ avoids\ the\ need\ to\ find\ somewhere\ to\ store\ the\ tag\ bit.}}
+\DoxyCodeLine{00038\ \textcolor{comment}{//}}
+\DoxyCodeLine{00039\ \textcolor{comment}{//\ -\/\ The\ compiler\ is\ aware\ that\ B\ cannot\ be\ null,\ which\ can\ make\ checks}}
+\DoxyCodeLine{00040\ \textcolor{comment}{//\ \ \ of\ the\ form:}}
+\DoxyCodeLine{00041\ \textcolor{comment}{//}}
+\DoxyCodeLine{00042\ \textcolor{comment}{//\ \ \ \ \ \ \ if\ (auto\ *B\ =\ mux.dyn\_cast<T2\ *>\ ())}}
+\DoxyCodeLine{00043\ \textcolor{comment}{//}}
+\DoxyCodeLine{00044\ \textcolor{comment}{//\ \ \ more\ efficient.\ \ With\ a\ union-\/based\ representation,\ the\ dyn\_cast}}
+\DoxyCodeLine{00045\ \textcolor{comment}{//\ \ \ check\ could\ fail\ either\ because\ MUX\ is\ an\ A\ or\ because\ MUX\ is\ a}}
+\DoxyCodeLine{00046\ \textcolor{comment}{//\ \ \ null\ B,\ both\ of\ which\ require\ a\ run-\/time\ test.\ \ With\ a\ pointer\_mux,}}
+\DoxyCodeLine{00047\ \textcolor{comment}{//\ \ \ only\ a\ check\ for\ MUX\ being\ A\ is\ needed.}}
+\DoxyCodeLine{00048\ \textcolor{keyword}{template}<\textcolor{keyword}{typename}\ T1,\ \textcolor{keyword}{typename}\ T2\ =\ T1>}
+\DoxyCodeLine{00049\ \textcolor{keyword}{class\ }\doxymbox{\hyperlink{classpointer__mux_ab4a59f387471f03e28914de67397a416}{pointer\_mux}}}
+\DoxyCodeLine{00050\ \{}
+\DoxyCodeLine{00051\ \textcolor{keyword}{public}:}
+\DoxyCodeLine{00052\ \ \ \textcolor{comment}{//\ Return\ an\ A\ pointer\ with\ the\ given\ value.}}
+\DoxyCodeLine{00053\ \ \ \textcolor{keyword}{static}\ \doxymbox{\hyperlink{classpointer__mux_ab4a59f387471f03e28914de67397a416}{pointer\_mux}}\ \doxymbox{\hyperlink{classpointer__mux_a2f7926e2c41d4a24a155d56e98ab051d}{first}}\ (T1\ *);}
+\DoxyCodeLine{00054\ }
+\DoxyCodeLine{00055\ \ \ \textcolor{comment}{//\ Return\ a\ B\ pointer\ with\ the\ given\ (nonnull)\ value.}}
+\DoxyCodeLine{00056\ \ \ \textcolor{keyword}{static}\ \doxymbox{\hyperlink{classpointer__mux_ab4a59f387471f03e28914de67397a416}{pointer\_mux}}\ \doxymbox{\hyperlink{classpointer__mux_a754ac306f89cd6d6b13984d4187eede4}{second}}\ (T2\ *);}
+\DoxyCodeLine{00057\ }
+\DoxyCodeLine{00058\ \ \ \doxymbox{\hyperlink{classpointer__mux_ab4a59f387471f03e28914de67397a416}{pointer\_mux}}\ ()\ =\ \textcolor{keywordflow}{default};}
+\DoxyCodeLine{00059\ }
+\DoxyCodeLine{00060\ \ \ \textcolor{comment}{//\ Create\ a\ null\ A\ pointer.}}
+\DoxyCodeLine{00061\ \ \ \doxymbox{\hyperlink{classpointer__mux_a943b2e59d03214ef56db3d0fa948e1c8}{pointer\_mux}}\ (std::nullptr\_t)\ :\ \doxymbox{\hyperlink{classpointer__mux_ad48277568b0238a27d958bd33d112bf0}{m\_ptr}}\ (nullptr)\ \{\}}
+\DoxyCodeLine{00062\ }
+\DoxyCodeLine{00063\ \ \ \textcolor{comment}{//\ Create\ an\ A\ or\ B\ pointer\ with\ the\ given\ value.\ \ This\ is\ only\ valid}}
+\DoxyCodeLine{00064\ \ \ \textcolor{comment}{//\ if\ T1\ and\ T2\ are\ distinct\ and\ if\ T\ can\ be\ resolved\ to\ exactly\ one}}
+\DoxyCodeLine{00065\ \ \ \textcolor{comment}{//\ of\ them.}}
+\DoxyCodeLine{00066\ \ \ \textcolor{keyword}{template}<\textcolor{keyword}{typename}\ T,}
+\DoxyCodeLine{00067\ \ \ \ \ \ \ \ \textcolor{keyword}{typename}\ Enable\ =\ \textcolor{keyword}{typename}}
+\DoxyCodeLine{00068\ \ \ \ \ \ \ \ \ \ std::enable\_if<std::is\_convertible<T\ *,\ T1\ *>::value}
+\DoxyCodeLine{00069\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ !=\ std::is\_convertible<T\ *,\ T2\ *>::value>\doxymbox{\hyperlink{structtype}{::type}}>}
+\DoxyCodeLine{00070\ \ \ \doxymbox{\hyperlink{classpointer__mux_ab4a59f387471f03e28914de67397a416}{pointer\_mux}}\ (T\ *ptr);}
+\DoxyCodeLine{00071\ }
+\DoxyCodeLine{00072\ \ \ \textcolor{comment}{//\ Return\ true\ unless\ the\ pointer\ is\ a\ null\ A\ pointer.}}
+\DoxyCodeLine{00073\ \ \ \textcolor{keyword}{explicit}\ \textcolor{keyword}{operator}\ \doxymbox{\hyperlink{stdbool_8h_abb452686968e48b67397da5f97445f5b}{bool}}\ ()\textcolor{keyword}{\ const\ }\{\ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{classpointer__mux_ad48277568b0238a27d958bd33d112bf0}{m\_ptr}};\ \}}
+\DoxyCodeLine{00074\ }
+\DoxyCodeLine{00075\ \ \ \textcolor{comment}{//\ Assign\ A\ and\ B\ pointers\ respectively.}}
+\DoxyCodeLine{00076\ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classpointer__mux_ade5851456805227912c1453aa4b0bcb5}{set\_first}}\ (T1\ *ptr)\ \{\ *\textcolor{keyword}{this}\ =\ \doxymbox{\hyperlink{classpointer__mux_a2f7926e2c41d4a24a155d56e98ab051d}{first}}\ (ptr);\ \}}
+\DoxyCodeLine{00077\ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classpointer__mux_a41829426303428c839dc21c45fd8a541}{set\_second}}\ (T2\ *ptr)\ \{\ *\textcolor{keyword}{this}\ =\ \doxymbox{\hyperlink{classpointer__mux_a754ac306f89cd6d6b13984d4187eede4}{second}}\ (ptr);\ \}}
+\DoxyCodeLine{00078\ }
+\DoxyCodeLine{00079\ \ \ \textcolor{comment}{//\ Return\ true\ if\ the\ pointer\ is\ an\ A\ pointer.}}
+\DoxyCodeLine{00080\ \ \ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{classpointer__mux_aa753b968789b2cb39e1b6f2fe7d66168}{is\_first}}\ ()\textcolor{keyword}{\ const\ }\{\ \textcolor{keywordflow}{return}\ !(uintptr\_t\ (\doxymbox{\hyperlink{classpointer__mux_ad48277568b0238a27d958bd33d112bf0}{m\_ptr}})\ \&\ 1);\ \}}
+\DoxyCodeLine{00081\ }
+\DoxyCodeLine{00082\ \ \ \textcolor{comment}{//\ Return\ true\ if\ the\ pointer\ is\ a\ B\ pointer.}}
+\DoxyCodeLine{00083\ \ \ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{classpointer__mux_a4649efbdcf1c1f67c5db4ffa372f5fba}{is\_second}}\ ()\textcolor{keyword}{\ const\ }\{\ \textcolor{keywordflow}{return}\ uintptr\_t\ (\doxymbox{\hyperlink{classpointer__mux_ad48277568b0238a27d958bd33d112bf0}{m\_ptr}})\ \&\ 1;\ \}}
+\DoxyCodeLine{00084\ }
+\DoxyCodeLine{00085\ \ \ \textcolor{comment}{//\ Return\ the\ contents\ of\ the\ pointer,\ given\ that\ it\ is\ known\ to\ be}}
+\DoxyCodeLine{00086\ \ \ \textcolor{comment}{//\ an\ A\ pointer.}}
+\DoxyCodeLine{00087\ \ \ T1\ *\doxymbox{\hyperlink{classpointer__mux_a7f4395845f9d7156908a99017b6e02b6}{known\_first}}\ ()\textcolor{keyword}{\ const\ }\{\ \textcolor{keywordflow}{return}\ \textcolor{keyword}{reinterpret\_cast<}T1\ *\textcolor{keyword}{>}\ (\doxymbox{\hyperlink{classpointer__mux_ad48277568b0238a27d958bd33d112bf0}{m\_ptr}});\ \}}
+\DoxyCodeLine{00088\ }
+\DoxyCodeLine{00089\ \ \ \textcolor{comment}{//\ Return\ the\ contents\ of\ the\ pointer,\ given\ that\ it\ is\ known\ to\ be}}
+\DoxyCodeLine{00090\ \ \ \textcolor{comment}{//\ a\ B\ pointer.}}
+\DoxyCodeLine{00091\ \ \ T2\ *\doxymbox{\hyperlink{classpointer__mux_ad047d0ff8a86813e340025ed48ea7619}{known\_second}}\ ()\textcolor{keyword}{\ const\ }\{\ \textcolor{keywordflow}{return}\ \textcolor{keyword}{reinterpret\_cast<}T2\ *\textcolor{keyword}{>}\ (\doxymbox{\hyperlink{classpointer__mux_ad48277568b0238a27d958bd33d112bf0}{m\_ptr}}\ -\/\ 1);\ \}}
+\DoxyCodeLine{00092\ }
+\DoxyCodeLine{00093\ \ \ \textcolor{comment}{//\ If\ the\ pointer\ is\ an\ A\ pointer,\ return\ its\ contents,\ otherwise}}
+\DoxyCodeLine{00094\ \ \ \textcolor{comment}{//\ return\ null.\ \ Thus\ a\ null\ return\ can\ mean\ that\ the\ pointer\ is}}
+\DoxyCodeLine{00095\ \ \ \textcolor{comment}{//\ either\ a\ null\ A\ pointer\ or\ a\ B\ pointer.}}
+\DoxyCodeLine{00096\ \ \ \textcolor{comment}{//}}
+\DoxyCodeLine{00097\ \ \ \textcolor{comment}{//\ If\ all\ A\ pointers\ are\ nonnull,\ it\ is\ more\ efficient\ to\ use:}}
+\DoxyCodeLine{00098\ \ \ \textcolor{comment}{//}}
+\DoxyCodeLine{00099\ \ \ \textcolor{comment}{//\ \ \ \ if\ (ptr.is\_first\ ())}}
+\DoxyCodeLine{00100\ \ \ \textcolor{comment}{//\ \ \ \ \ \ ...use\ ptr.known\_first\ ()...}}
+\DoxyCodeLine{00101\ \ \ \textcolor{comment}{//}}
+\DoxyCodeLine{00102\ \ \ \textcolor{comment}{//\ over:}}
+\DoxyCodeLine{00103\ \ \ \textcolor{comment}{//}}
+\DoxyCodeLine{00104\ \ \ \textcolor{comment}{//\ \ \ \ if\ (T1\ *a\ =\ ptr.first\_or\_null\ ())}}
+\DoxyCodeLine{00105\ \ \ \textcolor{comment}{//\ \ \ \ \ \ ...use\ a...}}
+\DoxyCodeLine{00106\ \ \ T1\ *\doxymbox{\hyperlink{classpointer__mux_a6e5c301fd73f50e3b06a6d304dea839d}{first\_or\_null}}\ ()\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00107\ }
+\DoxyCodeLine{00108\ \ \ \textcolor{comment}{//\ If\ the\ pointer\ is\ a\ B\ pointer,\ return\ its\ contents,\ otherwise}}
+\DoxyCodeLine{00109\ \ \ \textcolor{comment}{//\ return\ null.\ \ Using:}}
+\DoxyCodeLine{00110\ \ \ \textcolor{comment}{//}}
+\DoxyCodeLine{00111\ \ \ \textcolor{comment}{//\ \ \ \ if\ (T1\ *b\ =\ ptr.second\_or\_null\ ())}}
+\DoxyCodeLine{00112\ \ \ \textcolor{comment}{//\ \ \ \ \ \ ...use\ b...}}
+\DoxyCodeLine{00113\ \ \ \textcolor{comment}{//}}
+\DoxyCodeLine{00114\ \ \ \textcolor{comment}{//\ should\ be\ at\ least\ as\ efficient\ as:}}
+\DoxyCodeLine{00115\ \ \ \textcolor{comment}{//}}
+\DoxyCodeLine{00116\ \ \ \textcolor{comment}{//\ \ \ \ if\ (ptr.is\_second\ ())}}
+\DoxyCodeLine{00117\ \ \ \textcolor{comment}{//\ \ \ \ \ \ ...use\ ptr.known\_second\ ()...}}
+\DoxyCodeLine{00118\ \ \ T2\ *\doxymbox{\hyperlink{classpointer__mux_a0e68a6ee017554683127e5a800c1b94a}{second\_or\_null}}\ ()\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00119\ }
+\DoxyCodeLine{00120\ \ \ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{classpointer__mux_aa09037ac4dd5371c6852d99e6d399b89}{operator\ ==\ }}(\textcolor{keyword}{const}\ \doxymbox{\hyperlink{classpointer__mux_ab4a59f387471f03e28914de67397a416}{pointer\_mux}}\ \&pm)\textcolor{keyword}{\ const\ }\{\ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{classpointer__mux_ad48277568b0238a27d958bd33d112bf0}{m\_ptr}}\ ==\ pm.\doxymbox{\hyperlink{classpointer__mux_ad48277568b0238a27d958bd33d112bf0}{m\_ptr}};\ \}}
+\DoxyCodeLine{00121\ }
+\DoxyCodeLine{00122\ \ \ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{classpointer__mux_a43b040e60976d7c3feb95f95bbb60a1e}{operator\ !=\ }}(\textcolor{keyword}{const}\ \doxymbox{\hyperlink{classpointer__mux_ab4a59f387471f03e28914de67397a416}{pointer\_mux}}\ \&pm)\textcolor{keyword}{\ const\ }\{\ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{classpointer__mux_ad48277568b0238a27d958bd33d112bf0}{m\_ptr}}\ !=\ pm.\doxymbox{\hyperlink{classpointer__mux_ad48277568b0238a27d958bd33d112bf0}{m\_ptr}};\ \}}
+\DoxyCodeLine{00123\ }
+\DoxyCodeLine{00124\ \ \ \textcolor{comment}{//\ Return\ true\ if\ the\ pointer\ is\ a\ T.}}
+\DoxyCodeLine{00125\ \ \ \textcolor{comment}{//}}
+\DoxyCodeLine{00126\ \ \ \textcolor{comment}{//\ This\ is\ only\ valid\ if\ T1\ and\ T2\ are\ distinct\ and\ if\ T\ can\ be}}
+\DoxyCodeLine{00127\ \ \ \textcolor{comment}{//\ resolved\ to\ exactly\ one\ of\ them.\ \ The\ condition\ is\ checked\ using}}
+\DoxyCodeLine{00128\ \ \ \textcolor{comment}{//\ a\ static\ assertion\ rather\ than\ SFINAE\ because\ it\ gives\ a\ clearer}}
+\DoxyCodeLine{00129\ \ \ \textcolor{comment}{//\ error\ message.}}
+\DoxyCodeLine{00130\ \ \ \textcolor{keyword}{template}<\textcolor{keyword}{typename}\ T>}
+\DoxyCodeLine{00131\ \ \ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{classpointer__mux_a113d2f33a30f6e21fdc7b7b5f1dbc8f8}{is\_a}}\ ()\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00132\ }
+\DoxyCodeLine{00133\ \ \ \textcolor{comment}{//\ Assert\ that\ the\ pointer\ is\ a\ T\ and\ return\ it\ as\ such.\ \ See\ is\_a}}
+\DoxyCodeLine{00134\ \ \ \textcolor{comment}{//\ for\ the\ restrictions\ on\ T.}}
+\DoxyCodeLine{00135\ \ \ \textcolor{keyword}{template}<\textcolor{keyword}{typename}\ T>}
+\DoxyCodeLine{00136\ \ \ T\ \doxymbox{\hyperlink{classpointer__mux_a353a76642ce43ef5bb34436c10a332f2}{as\_a}}\ ()\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00137\ }
+\DoxyCodeLine{00138\ \ \ \textcolor{comment}{//\ If\ the\ pointer\ is\ a\ T,\ return\ it\ as\ such,\ otherwise\ return\ null.}}
+\DoxyCodeLine{00139\ \ \ \textcolor{comment}{//\ See\ is\_a\ for\ the\ restrictions\ on\ T.}}
+\DoxyCodeLine{00140\ \ \ \textcolor{keyword}{template}<\textcolor{keyword}{typename}\ T>}
+\DoxyCodeLine{00141\ \ \ T\ \doxymbox{\hyperlink{classpointer__mux_a39abf9b71b0a2fba6544c8f94ea4829b}{dyn\_cast}}\ ()\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00142\ }
+\DoxyCodeLine{00143\ \textcolor{keyword}{private}:}
+\DoxyCodeLine{00144\ \ \ \doxymbox{\hyperlink{classpointer__mux_acec45720a43bcdd30e38f5971c76c92f}{pointer\_mux}}\ (\textcolor{keywordtype}{char}\ *ptr)\ :\ \doxymbox{\hyperlink{classpointer__mux_ad48277568b0238a27d958bd33d112bf0}{m\_ptr}}\ (ptr)\ \{\}}
+\DoxyCodeLine{00145\ }
+\DoxyCodeLine{00146\ \ \ \textcolor{comment}{//\ Points\ to\ the\ first\ byte\ of\ an\ object\ for\ A\ pointers\ or\ the\ second}}
+\DoxyCodeLine{00147\ \ \ \textcolor{comment}{//\ byte\ of\ an\ object\ for\ B\ pointers.\ \ Using\ a\ pointer\ rather\ than\ a}}
+\DoxyCodeLine{00148\ \ \ \textcolor{comment}{//\ uintptr\_t\ tells\ the\ compiler\ that\ second\ ()\ can\ never\ return\ null,}}
+\DoxyCodeLine{00149\ \ \ \textcolor{comment}{//\ and\ that\ second\_or\_null\ ()\ is\ only\ null\ if\ is\_first\ ().}}
+\DoxyCodeLine{00150\ \ \ \textcolor{keywordtype}{char}\ *\doxymbox{\hyperlink{classpointer__mux_ad48277568b0238a27d958bd33d112bf0}{m\_ptr}};}
+\DoxyCodeLine{00151\ \};}
+\DoxyCodeLine{00152\ }
+\DoxyCodeLine{00153\ \textcolor{keyword}{template}<\textcolor{keyword}{typename}\ T1,\ \textcolor{keyword}{typename}\ T2>}
+\DoxyCodeLine{00154\ \textcolor{keyword}{inline}\ \doxymbox{\hyperlink{classpointer__mux}{pointer\_mux<T1,\ T2>}}}
+\DoxyCodeLine{00155\ \doxymbox{\hyperlink{classpointer__mux_a2f7926e2c41d4a24a155d56e98ab051d}{pointer\_mux<T1,\ T2>::first}}\ (T1\ *ptr)}
+\DoxyCodeLine{00156\ \{}
+\DoxyCodeLine{00157\ \ \ \doxymbox{\hyperlink{system_8h_aff447899dc74d54931b2bc2d47de9423}{gcc\_checking\_assert}}\ (!(uintptr\_t\ (ptr)\ \&\ 1));}
+\DoxyCodeLine{00158\ \ \ \textcolor{keywordflow}{return}\ \textcolor{keyword}{reinterpret\_cast<}\textcolor{keywordtype}{char}\ *\textcolor{keyword}{>}\ (ptr);}
+\DoxyCodeLine{00159\ \}}
+\DoxyCodeLine{00160\ }
+\DoxyCodeLine{00161\ \textcolor{keyword}{template}<\textcolor{keyword}{typename}\ T1,\ \textcolor{keyword}{typename}\ T2>}
+\DoxyCodeLine{00162\ \textcolor{keyword}{inline}\ \doxymbox{\hyperlink{classpointer__mux}{pointer\_mux<T1,\ T2>}}}
+\DoxyCodeLine{00163\ \doxymbox{\hyperlink{classpointer__mux_a754ac306f89cd6d6b13984d4187eede4}{pointer\_mux<T1,\ T2>::second}}\ (T2\ *ptr)}
+\DoxyCodeLine{00164\ \{}
+\DoxyCodeLine{00165\ \ \ \doxymbox{\hyperlink{system_8h_aff447899dc74d54931b2bc2d47de9423}{gcc\_checking\_assert}}\ (ptr\ \&\&\ !(uintptr\_t\ (ptr)\ \&\ 1));}
+\DoxyCodeLine{00166\ \ \ \textcolor{keywordflow}{return}\ \textcolor{keyword}{reinterpret\_cast<}\textcolor{keywordtype}{char}\ *\textcolor{keyword}{>}\ (ptr)\ +\ 1;}
+\DoxyCodeLine{00167\ \}}
+\DoxyCodeLine{00168\ }
+\DoxyCodeLine{00169\ \textcolor{keyword}{template}<\textcolor{keyword}{typename}\ T1,\ \textcolor{keyword}{typename}\ T2>}
+\DoxyCodeLine{00170\ \textcolor{keyword}{template}<\textcolor{keyword}{typename}\ T,\ \textcolor{keyword}{typename}\ Enable>}
+\DoxyCodeLine{00171\ \textcolor{keyword}{inline}\ \doxymbox{\hyperlink{classpointer__mux_ab4a59f387471f03e28914de67397a416}{pointer\_mux<T1,\ T2>::pointer\_mux}}\ (T\ *ptr)}
+\DoxyCodeLine{00172\ \ \ :\ \doxymbox{\hyperlink{classpointer__mux_ad48277568b0238a27d958bd33d112bf0}{m\_ptr}}\ (reinterpret\_cast<char\ *>\ (ptr))}
+\DoxyCodeLine{00173\ \{}
+\DoxyCodeLine{00174\ \ \ \textcolor{keywordflow}{if}\ (std::is\_convertible<T\ *,\ T2\ *>::value)}
+\DoxyCodeLine{00175\ \ \ \ \ \{}
+\DoxyCodeLine{00176\ \ \ \ \ \ \ \doxymbox{\hyperlink{system_8h_aff447899dc74d54931b2bc2d47de9423}{gcc\_checking\_assert}}\ (\doxymbox{\hyperlink{classpointer__mux_ad48277568b0238a27d958bd33d112bf0}{m\_ptr}});}
+\DoxyCodeLine{00177\ \ \ \ \ \ \ \doxymbox{\hyperlink{classpointer__mux_ad48277568b0238a27d958bd33d112bf0}{m\_ptr}}\ +=\ 1;}
+\DoxyCodeLine{00178\ \ \ \ \ \}}
+\DoxyCodeLine{00179\ \}}
+\DoxyCodeLine{00180\ }
+\DoxyCodeLine{00181\ \textcolor{keyword}{template}<\textcolor{keyword}{typename}\ T1,\ \textcolor{keyword}{typename}\ T2>}
+\DoxyCodeLine{00182\ \textcolor{keyword}{inline}\ T1\ *}
+\DoxyCodeLine{00183\ \doxymbox{\hyperlink{classpointer__mux_a6e5c301fd73f50e3b06a6d304dea839d}{pointer\_mux<T1,\ T2>::first\_or\_null}}\ ()\textcolor{keyword}{\ const}}
+\DoxyCodeLine{00184\ \textcolor{keyword}{}\{}
+\DoxyCodeLine{00185\ \ \ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{classpointer__mux_aa753b968789b2cb39e1b6f2fe7d66168}{is\_first}}\ ()\ ?\ \doxymbox{\hyperlink{classpointer__mux_a7f4395845f9d7156908a99017b6e02b6}{known\_first}}\ ()\ :\ \textcolor{keyword}{nullptr};}
+\DoxyCodeLine{00186\ \}}
+\DoxyCodeLine{00187\ }
+\DoxyCodeLine{00188\ \textcolor{keyword}{template}<\textcolor{keyword}{typename}\ T1,\ \textcolor{keyword}{typename}\ T2>}
+\DoxyCodeLine{00189\ \textcolor{keyword}{inline}\ T2\ *}
+\DoxyCodeLine{00190\ \doxymbox{\hyperlink{classpointer__mux_a0e68a6ee017554683127e5a800c1b94a}{pointer\_mux<T1,\ T2>::second\_or\_null}}\ ()\textcolor{keyword}{\ const}}
+\DoxyCodeLine{00191\ \textcolor{keyword}{}\{}
+\DoxyCodeLine{00192\ \ \ \textcolor{comment}{//\ Micro\ optimization\ that's\ effective\ as\ of\ GCC\ 11:\ compute\ the\ value}}
+\DoxyCodeLine{00193\ \ \ \textcolor{comment}{//\ of\ the\ second\ pointer\ as\ an\ integer\ and\ test\ that,\ so\ that\ the\ integer}}
+\DoxyCodeLine{00194\ \ \ \textcolor{comment}{//\ result\ can\ be\ reused\ as\ the\ pointer\ and\ so\ that\ all\ computation\ can}}
+\DoxyCodeLine{00195\ \ \ \textcolor{comment}{//\ happen\ before\ a\ branch\ on\ null.\ \ This\ reduces\ the\ number\ of\ branches}}
+\DoxyCodeLine{00196\ \ \ \textcolor{comment}{//\ needed\ for\ loops.}}
+\DoxyCodeLine{00197\ \ \ \textcolor{keywordflow}{return}\ (uintptr\_t\ (\doxymbox{\hyperlink{classpointer__mux_ad48277568b0238a27d958bd33d112bf0}{m\_ptr}})\ -\/\ 1)\ \&\ 1\ ?\ nullptr\ :\ \doxymbox{\hyperlink{classpointer__mux_ad047d0ff8a86813e340025ed48ea7619}{known\_second}}\ ();}
+\DoxyCodeLine{00198\ \}}
+\DoxyCodeLine{00199\ }
+\DoxyCodeLine{00200\ \textcolor{keyword}{template}<\textcolor{keyword}{typename}\ T1,\ \textcolor{keyword}{typename}\ T2>}
+\DoxyCodeLine{00201\ \textcolor{keyword}{template}<\textcolor{keyword}{typename}\ T>}
+\DoxyCodeLine{00202\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{bool}}
+\DoxyCodeLine{00203\ \doxymbox{\hyperlink{classpointer__mux_a113d2f33a30f6e21fdc7b7b5f1dbc8f8}{pointer\_mux<T1,\ T2>::is\_a}}\ ()\textcolor{keyword}{\ const}}
+\DoxyCodeLine{00204\ \textcolor{keyword}{}\{}
+\DoxyCodeLine{00205\ \ \ \textcolor{keyword}{static\_assert}\ (std::is\_convertible<T1\ *,\ T>::value}
+\DoxyCodeLine{00206\ \ \ \ \ \ \ \ \ \ !=\ std::is\_convertible<T2\ *,\ T>::value,}
+\DoxyCodeLine{00207\ \ \ \ \ \ \ \ \ \ \textcolor{stringliteral}{"{}Ambiguous\ pointer\ type"{}});}
+\DoxyCodeLine{00208\ \ \ \textcolor{keywordflow}{if}\ (std::is\_convertible<T2\ *,\ T>::value)}
+\DoxyCodeLine{00209\ \ \ \ \ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{classpointer__mux_a4649efbdcf1c1f67c5db4ffa372f5fba}{is\_second}}\ ();}
+\DoxyCodeLine{00210\ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00211\ \ \ \ \ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{classpointer__mux_aa753b968789b2cb39e1b6f2fe7d66168}{is\_first}}\ ();}
+\DoxyCodeLine{00212\ \}}
+\DoxyCodeLine{00213\ }
+\DoxyCodeLine{00214\ \textcolor{keyword}{template}<\textcolor{keyword}{typename}\ T1,\ \textcolor{keyword}{typename}\ T2>}
+\DoxyCodeLine{00215\ \textcolor{keyword}{template}<\textcolor{keyword}{typename}\ T>}
+\DoxyCodeLine{00216\ \textcolor{keyword}{inline}\ T}
+\DoxyCodeLine{00217\ \doxymbox{\hyperlink{classpointer__mux_a353a76642ce43ef5bb34436c10a332f2}{pointer\_mux<T1,\ T2>::as\_a}}\ ()\textcolor{keyword}{\ const}}
+\DoxyCodeLine{00218\ \textcolor{keyword}{}\{}
+\DoxyCodeLine{00219\ \ \ \textcolor{keyword}{static\_assert}\ (std::is\_convertible<T1\ *,\ T>::value}
+\DoxyCodeLine{00220\ \ \ \ \ \ \ \ \ \ !=\ std::is\_convertible<T2\ *,\ T>::value,}
+\DoxyCodeLine{00221\ \ \ \ \ \ \ \ \ \ \textcolor{stringliteral}{"{}Ambiguous\ pointer\ type"{}});}
+\DoxyCodeLine{00222\ \ \ \textcolor{keywordflow}{if}\ (std::is\_convertible<T2\ *,\ T>::value)}
+\DoxyCodeLine{00223\ \ \ \ \ \{}
+\DoxyCodeLine{00224\ \ \ \ \ \ \ \doxymbox{\hyperlink{system_8h_aff447899dc74d54931b2bc2d47de9423}{gcc\_checking\_assert}}\ (\doxymbox{\hyperlink{classpointer__mux_a4649efbdcf1c1f67c5db4ffa372f5fba}{is\_second}}\ ());}
+\DoxyCodeLine{00225\ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ \textcolor{keyword}{reinterpret\_cast<}T\textcolor{keyword}{>}\ (\doxymbox{\hyperlink{classpointer__mux_ad48277568b0238a27d958bd33d112bf0}{m\_ptr}}\ -\/\ 1);}
+\DoxyCodeLine{00226\ \ \ \ \ \}}
+\DoxyCodeLine{00227\ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00228\ \ \ \ \ \{}
+\DoxyCodeLine{00229\ \ \ \ \ \ \ \doxymbox{\hyperlink{system_8h_aff447899dc74d54931b2bc2d47de9423}{gcc\_checking\_assert}}\ (\doxymbox{\hyperlink{classpointer__mux_aa753b968789b2cb39e1b6f2fe7d66168}{is\_first}}\ ());}
+\DoxyCodeLine{00230\ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ \textcolor{keyword}{reinterpret\_cast<}T\textcolor{keyword}{>}\ (\doxymbox{\hyperlink{classpointer__mux_ad48277568b0238a27d958bd33d112bf0}{m\_ptr}});}
+\DoxyCodeLine{00231\ \ \ \ \ \}}
+\DoxyCodeLine{00232\ \}}
+\DoxyCodeLine{00233\ }
+\DoxyCodeLine{00234\ \textcolor{keyword}{template}<\textcolor{keyword}{typename}\ T1,\ \textcolor{keyword}{typename}\ T2>}
+\DoxyCodeLine{00235\ \textcolor{keyword}{template}<\textcolor{keyword}{typename}\ T>}
+\DoxyCodeLine{00236\ \textcolor{keyword}{inline}\ T}
+\DoxyCodeLine{00237\ \doxymbox{\hyperlink{classpointer__mux_a39abf9b71b0a2fba6544c8f94ea4829b}{pointer\_mux<T1,\ T2>::dyn\_cast}}\ ()\textcolor{keyword}{\ const}}
+\DoxyCodeLine{00238\ \textcolor{keyword}{}\{}
+\DoxyCodeLine{00239\ \ \ \textcolor{keyword}{static\_assert}\ (std::is\_convertible<T1\ *,\ T>::value}
+\DoxyCodeLine{00240\ \ \ \ \ \ \ \ \ \ !=\ std::is\_convertible<T2\ *,\ T>::value,}
+\DoxyCodeLine{00241\ \ \ \ \ \ \ \ \ \ \textcolor{stringliteral}{"{}Ambiguous\ pointer\ type"{}});}
+\DoxyCodeLine{00242\ \ \ \textcolor{keywordflow}{if}\ (std::is\_convertible<T2\ *,\ T>::value)}
+\DoxyCodeLine{00243\ \ \ \ \ \{}
+\DoxyCodeLine{00244\ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (\doxymbox{\hyperlink{classpointer__mux_a4649efbdcf1c1f67c5db4ffa372f5fba}{is\_second}}\ ())}
+\DoxyCodeLine{00245\ \ \ \ \ \textcolor{keywordflow}{return}\ \textcolor{keyword}{reinterpret\_cast<}T\textcolor{keyword}{>}\ (\doxymbox{\hyperlink{classpointer__mux_ad48277568b0238a27d958bd33d112bf0}{m\_ptr}}\ -\/\ 1);}
+\DoxyCodeLine{00246\ \ \ \ \ \}}
+\DoxyCodeLine{00247\ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00248\ \ \ \ \ \{}
+\DoxyCodeLine{00249\ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (\doxymbox{\hyperlink{classpointer__mux_aa753b968789b2cb39e1b6f2fe7d66168}{is\_first}}\ ())}
+\DoxyCodeLine{00250\ \ \ \ \ \textcolor{keywordflow}{return}\ \textcolor{keyword}{reinterpret\_cast<}T\textcolor{keyword}{>}\ (\doxymbox{\hyperlink{classpointer__mux_ad48277568b0238a27d958bd33d112bf0}{m\_ptr}});}
+\DoxyCodeLine{00251\ \ \ \ \ \}}
+\DoxyCodeLine{00252\ \ \ \textcolor{keywordflow}{return}\ \textcolor{keyword}{nullptr};}
+\DoxyCodeLine{00253\ \}}
+\DoxyCodeLine{00254\ }
+\DoxyCodeLine{00255\ \textcolor{preprocessor}{\#endif}}
+
+\end{DoxyCode}

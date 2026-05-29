@@ -1,0 +1,618 @@
+\doxysection{vector-\/builder.h}
+\hypertarget{vector-builder_8h_source}{}\label{vector-builder_8h_source}\index{toolchain/x86\_64-\/elf/lib/gcc/x86\_64-\/elf/14.2.0/plugin/include/vector-\/builder.h@{toolchain/x86\_64-\/elf/lib/gcc/x86\_64-\/elf/14.2.0/plugin/include/vector-\/builder.h}}
+\doxymbox{\hyperlink{vector-builder_8h}{Go to the documentation of this file.}}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001\ \textcolor{comment}{/*\ A\ class\ for\ building\ vector\ constant\ patterns.}}
+\DoxyCodeLine{00002\ \textcolor{comment}{\ \ \ Copyright\ (C)\ 2017-\/2024\ Free\ Software\ Foundation,\ Inc.}}
+\DoxyCodeLine{00003\ \textcolor{comment}{}}
+\DoxyCodeLine{00004\ \textcolor{comment}{This\ file\ is\ part\ of\ GCC.}}
+\DoxyCodeLine{00005\ \textcolor{comment}{}}
+\DoxyCodeLine{00006\ \textcolor{comment}{GCC\ is\ free\ software;\ you\ can\ redistribute\ it\ and/or\ modify\ it\ under}}
+\DoxyCodeLine{00007\ \textcolor{comment}{the\ terms\ of\ the\ GNU\ General\ Public\ License\ as\ published\ by\ the\ Free}}
+\DoxyCodeLine{00008\ \textcolor{comment}{Software\ Foundation;\ either\ version\ 3,\ or\ (at\ your\ option)\ any\ later}}
+\DoxyCodeLine{00009\ \textcolor{comment}{version.}}
+\DoxyCodeLine{00010\ \textcolor{comment}{}}
+\DoxyCodeLine{00011\ \textcolor{comment}{GCC\ is\ distributed\ in\ the\ hope\ that\ it\ will\ be\ useful,\ but\ WITHOUT\ ANY}}
+\DoxyCodeLine{00012\ \textcolor{comment}{WARRANTY;\ without\ even\ the\ implied\ warranty\ of\ MERCHANTABILITY\ or}}
+\DoxyCodeLine{00013\ \textcolor{comment}{FITNESS\ FOR\ A\ PARTICULAR\ PURPOSE.\ \ See\ the\ GNU\ General\ Public\ License}}
+\DoxyCodeLine{00014\ \textcolor{comment}{for\ more\ details.}}
+\DoxyCodeLine{00015\ \textcolor{comment}{}}
+\DoxyCodeLine{00016\ \textcolor{comment}{You\ should\ have\ received\ a\ copy\ of\ the\ GNU\ General\ Public\ License}}
+\DoxyCodeLine{00017\ \textcolor{comment}{along\ with\ GCC;\ see\ the\ file\ COPYING3.\ \ If\ not\ see}}
+\DoxyCodeLine{00018\ \textcolor{comment}{<http://www.gnu.org/licenses/>.\ \ */}}
+\DoxyCodeLine{00019\ }
+\DoxyCodeLine{00020\ \textcolor{preprocessor}{\#ifndef\ GCC\_VECTOR\_BUILDER\_H}}
+\DoxyCodeLine{00021\ \textcolor{preprocessor}{\#define\ GCC\_VECTOR\_BUILDER\_H}}
+\DoxyCodeLine{00022\ }
+\DoxyCodeLine{00023\ \textcolor{comment}{/*\ This\ class\ is\ a\ wrapper\ around\ auto\_vec<T>\ for\ building\ vectors\ of\ T.}}
+\DoxyCodeLine{00024\ \textcolor{comment}{\ \ \ It\ aims\ to\ encode\ each\ vector\ as\ npatterns\ interleaved\ patterns,}}
+\DoxyCodeLine{00025\ \textcolor{comment}{\ \ \ where\ each\ pattern\ represents\ a\ sequence:}}
+\DoxyCodeLine{00026\ \textcolor{comment}{}}
+\DoxyCodeLine{00027\ \textcolor{comment}{\ \ \ \ \ \{\ BASE0,\ BASE1,\ BASE1\ +\ STEP,\ BASE1\ +\ STEP*2,\ BASE1\ +\ STEP*3,\ ...\ \}}}
+\DoxyCodeLine{00028\ \textcolor{comment}{}}
+\DoxyCodeLine{00029\ \textcolor{comment}{\ \ \ The\ first\ three\ elements\ in\ each\ pattern\ provide\ enough\ information}}
+\DoxyCodeLine{00030\ \textcolor{comment}{\ \ \ to\ derive\ the\ other\ elements.\ \ If\ all\ patterns\ have\ a\ STEP\ of\ zero,}}
+\DoxyCodeLine{00031\ \textcolor{comment}{\ \ \ we\ only\ need\ to\ encode\ the\ first\ two\ elements\ in\ each\ pattern.}}
+\DoxyCodeLine{00032\ \textcolor{comment}{\ \ \ If\ BASE1\ is\ also\ equal\ to\ BASE0\ for\ all\ patterns,\ we\ only\ need\ to}}
+\DoxyCodeLine{00033\ \textcolor{comment}{\ \ \ encode\ the\ first\ element\ in\ each\ pattern.\ \ The\ number\ of\ encoded}}
+\DoxyCodeLine{00034\ \textcolor{comment}{\ \ \ elements\ per\ pattern\ is\ given\ by\ nelts\_per\_pattern.}}
+\DoxyCodeLine{00035\ \textcolor{comment}{}}
+\DoxyCodeLine{00036\ \textcolor{comment}{\ \ \ The\ class\ can\ be\ used\ in\ two\ ways:}}
+\DoxyCodeLine{00037\ \textcolor{comment}{}}
+\DoxyCodeLine{00038\ \textcolor{comment}{\ \ \ 1.\ It\ can\ be\ used\ to\ build\ a\ full\ image\ of\ the\ vector,\ which\ is\ then}}
+\DoxyCodeLine{00039\ \textcolor{comment}{\ \ \ \ \ \ canonicalized\ by\ finalize\ ().\ \ In\ this\ case\ npatterns\ is\ initially}}
+\DoxyCodeLine{00040\ \textcolor{comment}{\ \ \ \ \ \ the\ number\ of\ elements\ in\ the\ vector\ and\ nelts\_per\_pattern\ is}}
+\DoxyCodeLine{00041\ \textcolor{comment}{\ \ \ \ \ \ initially\ 1.}}
+\DoxyCodeLine{00042\ \textcolor{comment}{}}
+\DoxyCodeLine{00043\ \textcolor{comment}{\ \ \ 2.\ It\ can\ be\ used\ to\ build\ a\ vector\ that\ already\ has\ a\ known\ encoding.}}
+\DoxyCodeLine{00044\ \textcolor{comment}{\ \ \ \ \ \ This\ is\ preferred\ since\ it\ is\ more\ efficient\ and\ copes\ with}}
+\DoxyCodeLine{00045\ \textcolor{comment}{\ \ \ \ \ \ variable-\/length\ vectors.\ \ finalize\ ()\ then\ canonicalizes\ the\ encoding}}
+\DoxyCodeLine{00046\ \textcolor{comment}{\ \ \ \ \ \ to\ a\ simpler\ form\ if\ possible.}}
+\DoxyCodeLine{00047\ \textcolor{comment}{}}
+\DoxyCodeLine{00048\ \textcolor{comment}{\ \ \ Shape\ is\ the\ type\ that\ specifies\ the\ number\ of\ elements\ in\ the\ vector}}
+\DoxyCodeLine{00049\ \textcolor{comment}{\ \ \ and\ (where\ relevant)\ the\ type\ of\ each\ element.}}
+\DoxyCodeLine{00050\ \textcolor{comment}{}}
+\DoxyCodeLine{00051\ \textcolor{comment}{\ \ \ The\ derived\ class\ Derived\ provides\ the\ functionality\ of\ this\ class}}
+\DoxyCodeLine{00052\ \textcolor{comment}{\ \ \ for\ specific\ Ts.\ \ Derived\ needs\ to\ provide\ the\ following\ interface:}}
+\DoxyCodeLine{00053\ \textcolor{comment}{}}
+\DoxyCodeLine{00054\ \textcolor{comment}{\ \ \ \ \ \ bool\ equal\_p\ (T\ elt1,\ T\ elt2)\ const;}}
+\DoxyCodeLine{00055\ \textcolor{comment}{}}
+\DoxyCodeLine{00056\ \textcolor{comment}{\ \ \ \ \ \ Return\ true\ if\ elements\ ELT1\ and\ ELT2\ are\ equal.}}
+\DoxyCodeLine{00057\ \textcolor{comment}{}}
+\DoxyCodeLine{00058\ \textcolor{comment}{\ \ \ \ \ \ bool\ allow\_steps\_p\ ()\ const;}}
+\DoxyCodeLine{00059\ \textcolor{comment}{}}
+\DoxyCodeLine{00060\ \textcolor{comment}{\ \ \ \ \ \ Return\ true\ if\ a\ stepped\ representation\ is\ OK.\ \ We\ don't\ allow}}
+\DoxyCodeLine{00061\ \textcolor{comment}{\ \ \ \ \ \ linear\ series\ for\ anything\ other\ than\ integers,\ to\ avoid\ problems}}
+\DoxyCodeLine{00062\ \textcolor{comment}{\ \ \ \ \ \ with\ rounding.}}
+\DoxyCodeLine{00063\ \textcolor{comment}{}}
+\DoxyCodeLine{00064\ \textcolor{comment}{\ \ \ \ \ \ bool\ integral\_p\ (T\ elt)\ const;}}
+\DoxyCodeLine{00065\ \textcolor{comment}{}}
+\DoxyCodeLine{00066\ \textcolor{comment}{\ \ \ \ \ \ Return\ true\ if\ element\ ELT\ can\ be\ interpreted\ as\ an\ integer.}}
+\DoxyCodeLine{00067\ \textcolor{comment}{}}
+\DoxyCodeLine{00068\ \textcolor{comment}{\ \ \ \ \ \ StepType\ step\ (T\ elt1,\ T\ elt2)\ const;}}
+\DoxyCodeLine{00069\ \textcolor{comment}{}}
+\DoxyCodeLine{00070\ \textcolor{comment}{\ \ \ \ \ \ Return\ the\ value\ of\ element\ ELT2\ minus\ the\ value\ of\ element\ ELT1,}}
+\DoxyCodeLine{00071\ \textcolor{comment}{\ \ \ \ \ \ given\ integral\_p\ (ELT1)\ \&\&\ integral\_p\ (ELT2).\ \ There\ is\ no\ fixed}}
+\DoxyCodeLine{00072\ \textcolor{comment}{\ \ \ \ \ \ choice\ of\ StepType.}}
+\DoxyCodeLine{00073\ \textcolor{comment}{}}
+\DoxyCodeLine{00074\ \textcolor{comment}{\ \ \ \ \ \ T\ apply\_step\ (T\ base,\ unsigned\ int\ factor,\ StepType\ step)\ const;}}
+\DoxyCodeLine{00075\ \textcolor{comment}{}}
+\DoxyCodeLine{00076\ \textcolor{comment}{\ \ \ \ \ \ Return\ a\ vector\ element\ with\ the\ value\ BASE\ +\ FACTOR\ *\ STEP.}}
+\DoxyCodeLine{00077\ \textcolor{comment}{}}
+\DoxyCodeLine{00078\ \textcolor{comment}{\ \ \ \ \ \ bool\ can\_elide\_p\ (T\ elt)\ const;}}
+\DoxyCodeLine{00079\ \textcolor{comment}{}}
+\DoxyCodeLine{00080\ \textcolor{comment}{\ \ \ \ \ \ Return\ true\ if\ we\ can\ drop\ element\ ELT,\ even\ if\ the\ retained}}
+\DoxyCodeLine{00081\ \textcolor{comment}{\ \ \ \ \ \ elements\ are\ different.\ \ This\ is\ provided\ for\ TREE\_OVERFLOW}}
+\DoxyCodeLine{00082\ \textcolor{comment}{\ \ \ \ \ \ handling.}}
+\DoxyCodeLine{00083\ \textcolor{comment}{}}
+\DoxyCodeLine{00084\ \textcolor{comment}{\ \ \ \ \ \ void\ note\_representative\ (T\ *elt1\_ptr,\ T\ elt2);}}
+\DoxyCodeLine{00085\ \textcolor{comment}{}}
+\DoxyCodeLine{00086\ \textcolor{comment}{\ \ \ \ \ \ Record\ that\ ELT2\ is\ being\ elided,\ given\ that\ ELT1\_PTR\ points\ to}}
+\DoxyCodeLine{00087\ \textcolor{comment}{\ \ \ \ \ \ the\ last\ encoded\ element\ for\ the\ containing\ pattern.\ \ This\ is}}
+\DoxyCodeLine{00088\ \textcolor{comment}{\ \ \ \ \ \ again\ provided\ for\ TREE\_OVERFLOW\ handling.}}
+\DoxyCodeLine{00089\ \textcolor{comment}{}}
+\DoxyCodeLine{00090\ \textcolor{comment}{\ \ \ \ \ \ static\ poly\_uint64\ shape\_nelts\ (Shape\ shape);}}
+\DoxyCodeLine{00091\ \textcolor{comment}{}}
+\DoxyCodeLine{00092\ \textcolor{comment}{\ \ \ \ \ \ Return\ the\ number\ of\ elements\ in\ SHAPE.}}
+\DoxyCodeLine{00093\ \textcolor{comment}{}}
+\DoxyCodeLine{00094\ \textcolor{comment}{\ \ \ \ The\ class\ provides\ additional\ functionality\ for\ the\ case\ in\ which}}
+\DoxyCodeLine{00095\ \textcolor{comment}{\ \ \ \ T\ can\ describe\ a\ vector\ constant\ as\ well\ as\ an\ individual\ element.}}
+\DoxyCodeLine{00096\ \textcolor{comment}{\ \ \ \ This\ functionality\ requires:}}
+\DoxyCodeLine{00097\ \textcolor{comment}{}}
+\DoxyCodeLine{00098\ \textcolor{comment}{\ \ \ \ \ \ static\ poly\_uint64\ nelts\_of\ (T\ x);}}
+\DoxyCodeLine{00099\ \textcolor{comment}{}}
+\DoxyCodeLine{00100\ \textcolor{comment}{\ \ \ \ \ \ Return\ the\ number\ of\ elements\ in\ vector\ constant\ X.}}
+\DoxyCodeLine{00101\ \textcolor{comment}{}}
+\DoxyCodeLine{00102\ \textcolor{comment}{\ \ \ \ \ \ static\ unsigned\ int\ npatterns\_of\ (T\ x);}}
+\DoxyCodeLine{00103\ \textcolor{comment}{}}
+\DoxyCodeLine{00104\ \textcolor{comment}{\ \ \ \ \ \ Return\ the\ number\ of\ patterns\ used\ to\ encode\ vector\ constant\ X.}}
+\DoxyCodeLine{00105\ \textcolor{comment}{}}
+\DoxyCodeLine{00106\ \textcolor{comment}{\ \ \ \ \ \ static\ unsigned\ int\ nelts\_per\_pattern\_of\ (T\ x);}}
+\DoxyCodeLine{00107\ \textcolor{comment}{}}
+\DoxyCodeLine{00108\ \textcolor{comment}{\ \ \ \ \ \ Return\ the\ number\ of\ elements\ used\ to\ encode\ each\ pattern}}
+\DoxyCodeLine{00109\ \textcolor{comment}{\ \ \ \ \ \ in\ vector\ constant\ X.\ \ */}}
+\DoxyCodeLine{00110\ }
+\DoxyCodeLine{00111\ \textcolor{keyword}{template}<\textcolor{keyword}{typename}\ T,\ \textcolor{keyword}{typename}\ Shape,\ \textcolor{keyword}{typename}\ Derived>}
+\DoxyCodeLine{00112\ \textcolor{keyword}{class\ }\doxymbox{\hyperlink{classvector__builder_a1e67ba1a3b0680d994eeec7c8902f785}{vector\_builder}}\ :\ \textcolor{keyword}{public}\ \doxymbox{\hyperlink{classauto__vec_a2649a9c422dd4f2595b24736aefcc5d3}{auto\_vec}}<T,\ 32>}
+\DoxyCodeLine{00113\ \{}
+\DoxyCodeLine{00114\ \textcolor{keyword}{public}:}
+\DoxyCodeLine{00115\ \ \ \doxymbox{\hyperlink{classvector__builder_a1e67ba1a3b0680d994eeec7c8902f785}{vector\_builder}}\ ();}
+\DoxyCodeLine{00116\ }
+\DoxyCodeLine{00117\ \ \ \doxymbox{\hyperlink{poly-int-types_8h_a6d0ddbcb345e1192ca8249c789c1cb0f}{poly\_uint64}}\ \doxymbox{\hyperlink{classvector__builder_a948c042a690899a326965eb6a59f4636}{full\_nelts}}\ ()\textcolor{keyword}{\ const\ }\{\ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{classvector__builder_acc2271ccfb27a0a2e084e0ee102fcf45}{m\_full\_nelts}};\ \}}
+\DoxyCodeLine{00118\ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{classvector__builder_ae56c0d3d8d087a62b1d0c1d3f729b0d9}{npatterns}}\ ()\textcolor{keyword}{\ const\ }\{\ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{classvector__builder_adebea93284f6ed4f1b159e221d99d821}{m\_npatterns}};\ \}}
+\DoxyCodeLine{00119\ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{classvector__builder_ab53d25f50b1aa7637dfdfd1d00b7bdc2}{nelts\_per\_pattern}}\ ()\textcolor{keyword}{\ const\ }\{\ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{classvector__builder_ac5097ef88613608402840e2bcd6be18e}{m\_nelts\_per\_pattern}};\ \}}
+\DoxyCodeLine{00120\ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{classvector__builder_abf4a9ee739bf790bec5f33ea713dde60}{encoded\_nelts}}\ ()\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00121\ \ \ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{classvector__builder_a0edd205e6053fdcaa1eebfe2e2ed7642}{encoded\_full\_vector\_p}}\ ()\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00122\ \ \ T\ \doxymbox{\hyperlink{classvector__builder_ae82827bac6daa7965450f9c9237949bc}{elt}}\ (\textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int})\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00123\ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{classvector__builder_ada97caa72288849160815ef16915b385}{count\_dups}}\ (\textcolor{keywordtype}{int},\ \textcolor{keywordtype}{int},\ \textcolor{keywordtype}{int})\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00124\ }
+\DoxyCodeLine{00125\ \ \ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{classvector__builder_a53d67fb99c7541649c76b9862228742e}{operator\ ==\ }}(\textcolor{keyword}{const}\ Derived\ \&)\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00126\ \ \ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{classvector__builder_a1eb28d63746c32c09cca4dbd20775f20}{operator\ !=\ }}(\textcolor{keyword}{const}\ Derived\ \&x)\textcolor{keyword}{\ const\ }\{\ \textcolor{keywordflow}{return}\ !\doxymbox{\hyperlink{classvector__builder_a53d67fb99c7541649c76b9862228742e}{operator\ ==\ }}(x);\ \}}
+\DoxyCodeLine{00127\ }
+\DoxyCodeLine{00128\ \ \ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{classvector__builder_a7c1af74ac75afd3076094ca68997105f}{new\_unary\_operation}}\ (Shape,\ T,\ \textcolor{keywordtype}{bool});}
+\DoxyCodeLine{00129\ \ \ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{classvector__builder_a67aec1f3e39ea2286f481ae4ce27c3c3}{new\_binary\_operation}}\ (Shape,\ T,\ T,\ \textcolor{keywordtype}{bool});}
+\DoxyCodeLine{00130\ }
+\DoxyCodeLine{00131\ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classvector__builder_aa437859dddc7e461b766e7c10dc777bc}{finalize}}\ ();}
+\DoxyCodeLine{00132\ }
+\DoxyCodeLine{00133\ \ \ \textcolor{keyword}{static}\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{classvector__builder_a7a7d756628adc0332e37c0871ded4724}{binary\_encoded\_nelts}}\ (T,\ T);}
+\DoxyCodeLine{00134\ }
+\DoxyCodeLine{00135\ \textcolor{keyword}{protected}:}
+\DoxyCodeLine{00136\ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classvector__builder_a1995073bfb6d1ca9dbf397384792e96d}{new\_vector}}\ (\doxymbox{\hyperlink{poly-int-types_8h_a6d0ddbcb345e1192ca8249c789c1cb0f}{poly\_uint64}},\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int},\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int});}
+\DoxyCodeLine{00137\ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classvector__builder_a31e65b14bc497dd2d47af99cc4d902fc}{reshape}}\ (\textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int},\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int});}
+\DoxyCodeLine{00138\ \ \ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{classvector__builder_acdaf251ac8090c2d18c604dd2a62eec3}{repeating\_sequence\_p}}\ (\textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int},\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int},\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int});}
+\DoxyCodeLine{00139\ \ \ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{classvector__builder_a8fa168cb223331f6f0e5207881a4fed2}{stepped\_sequence\_p}}\ (\textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int},\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int},\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int});}
+\DoxyCodeLine{00140\ \ \ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{classvector__builder_ab91300a33015eb67d7defb142608eb65}{try\_npatterns}}\ (\textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int});}
+\DoxyCodeLine{00141\ }
+\DoxyCodeLine{00142\ \textcolor{keyword}{private}:}
+\DoxyCodeLine{00143\ \ \ \doxymbox{\hyperlink{classvector__builder_abad3edf5a2e7254ec03cdc4a43256f09}{vector\_builder}}\ (\textcolor{keyword}{const}\ \doxymbox{\hyperlink{classvector__builder_a1e67ba1a3b0680d994eeec7c8902f785}{vector\_builder}}\ \&);}
+\DoxyCodeLine{00144\ \ \ \doxymbox{\hyperlink{classvector__builder_a1e67ba1a3b0680d994eeec7c8902f785}{vector\_builder}}\ \&\doxymbox{\hyperlink{classvector__builder_a7003bdede06472a0a63e4d0971d3d6b6}{operator=\ }}(\textcolor{keyword}{const}\ \doxymbox{\hyperlink{classvector__builder_a1e67ba1a3b0680d994eeec7c8902f785}{vector\_builder}}\ \&);}
+\DoxyCodeLine{00145\ \ \ Derived\ *\doxymbox{\hyperlink{classvector__builder_a4e97a4958be3937a8306f2f47020d2ab}{derived}}\ ()\ \{\ \textcolor{keywordflow}{return}\ \textcolor{keyword}{static\_cast<}Derived\ *\textcolor{keyword}{>}\ (\textcolor{keyword}{this});\ \}}
+\DoxyCodeLine{00146\ \ \ \textcolor{keyword}{const}\ Derived\ *\doxymbox{\hyperlink{classvector__builder_a5c8d959b04d08b3f827cad4868f251ed}{derived}}\ ()\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00147\ }
+\DoxyCodeLine{00148\ \ \ \doxymbox{\hyperlink{poly-int-types_8h_a6d0ddbcb345e1192ca8249c789c1cb0f}{poly\_uint64}}\ \doxymbox{\hyperlink{classvector__builder_acc2271ccfb27a0a2e084e0ee102fcf45}{m\_full\_nelts}};}
+\DoxyCodeLine{00149\ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{classvector__builder_adebea93284f6ed4f1b159e221d99d821}{m\_npatterns}};}
+\DoxyCodeLine{00150\ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{classvector__builder_ac5097ef88613608402840e2bcd6be18e}{m\_nelts\_per\_pattern}};}
+\DoxyCodeLine{00151\ \};}
+\DoxyCodeLine{00152\ }
+\DoxyCodeLine{00153\ \textcolor{keyword}{template}<\textcolor{keyword}{typename}\ T,\ \textcolor{keyword}{typename}\ Shape,\ \textcolor{keyword}{typename}\ Derived>}
+\DoxyCodeLine{00154\ \textcolor{keyword}{inline}\ \textcolor{keyword}{const}\ Derived\ *}
+\DoxyCodeLine{00155\ \doxymbox{\hyperlink{classvector__builder_a4e97a4958be3937a8306f2f47020d2ab}{vector\_builder<T,\ Shape,\ Derived>::derived}}\ ()\textcolor{keyword}{\ const}}
+\DoxyCodeLine{00156\ \textcolor{keyword}{}\{}
+\DoxyCodeLine{00157\ \ \ \textcolor{keywordflow}{return}\ \textcolor{keyword}{static\_cast<}\textcolor{keyword}{const\ }Derived\ *\textcolor{keyword}{>}\ (\textcolor{keyword}{this});}
+\DoxyCodeLine{00158\ \}}
+\DoxyCodeLine{00159\ }
+\DoxyCodeLine{00160\ \textcolor{keyword}{template}<\textcolor{keyword}{typename}\ T,\ \textcolor{keyword}{typename}\ Shape,\ \textcolor{keyword}{typename}\ Derived>}
+\DoxyCodeLine{00161\ \textcolor{keyword}{inline}}
+\DoxyCodeLine{00162\ \doxymbox{\hyperlink{classvector__builder_a1e67ba1a3b0680d994eeec7c8902f785}{vector\_builder<T,\ Shape,\ Derived>::vector\_builder}}\ ()}
+\DoxyCodeLine{00163\ \ \ :\ \doxymbox{\hyperlink{classvector__builder_acc2271ccfb27a0a2e084e0ee102fcf45}{m\_full\_nelts}}\ (0),}
+\DoxyCodeLine{00164\ \ \ \ \ \doxymbox{\hyperlink{classvector__builder_adebea93284f6ed4f1b159e221d99d821}{m\_npatterns}}\ (0),}
+\DoxyCodeLine{00165\ \ \ \ \ \doxymbox{\hyperlink{classvector__builder_ac5097ef88613608402840e2bcd6be18e}{m\_nelts\_per\_pattern}}\ (0)}
+\DoxyCodeLine{00166\ \{\}}
+\DoxyCodeLine{00167\ }
+\DoxyCodeLine{00168\ \textcolor{comment}{/*\ Return\ the\ number\ of\ elements\ that\ are\ explicitly\ encoded.\ \ The\ vec}}
+\DoxyCodeLine{00169\ \textcolor{comment}{\ \ \ starts\ with\ these\ explicitly-\/encoded\ elements\ and\ may\ contain\ additional}}
+\DoxyCodeLine{00170\ \textcolor{comment}{\ \ \ elided\ elements.\ \ */}}
+\DoxyCodeLine{00171\ }
+\DoxyCodeLine{00172\ \textcolor{keyword}{template}<\textcolor{keyword}{typename}\ T,\ \textcolor{keyword}{typename}\ Shape,\ \textcolor{keyword}{typename}\ Derived>}
+\DoxyCodeLine{00173\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}}
+\DoxyCodeLine{00174\ \doxymbox{\hyperlink{classvector__builder_abf4a9ee739bf790bec5f33ea713dde60}{vector\_builder<T,\ Shape,\ Derived>::encoded\_nelts}}\ ()\textcolor{keyword}{\ const}}
+\DoxyCodeLine{00175\ \textcolor{keyword}{}\{}
+\DoxyCodeLine{00176\ \ \ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{classvector__builder_adebea93284f6ed4f1b159e221d99d821}{m\_npatterns}}\ *\ \doxymbox{\hyperlink{classvector__builder_ac5097ef88613608402840e2bcd6be18e}{m\_nelts\_per\_pattern}};}
+\DoxyCodeLine{00177\ \}}
+\DoxyCodeLine{00178\ }
+\DoxyCodeLine{00179\ \textcolor{comment}{/*\ Return\ true\ if\ every\ element\ of\ the\ vector\ is\ explicitly\ encoded.\ \ */}}
+\DoxyCodeLine{00180\ }
+\DoxyCodeLine{00181\ \textcolor{keyword}{template}<\textcolor{keyword}{typename}\ T,\ \textcolor{keyword}{typename}\ Shape,\ \textcolor{keyword}{typename}\ Derived>}
+\DoxyCodeLine{00182\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{bool}}
+\DoxyCodeLine{00183\ \doxymbox{\hyperlink{classvector__builder_a0edd205e6053fdcaa1eebfe2e2ed7642}{vector\_builder<T,\ Shape,\ Derived>::encoded\_full\_vector\_p}}\ ()\textcolor{keyword}{\ const}}
+\DoxyCodeLine{00184\ \textcolor{keyword}{}\{}
+\DoxyCodeLine{00185\ \ \ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{poly-int_8h_a11da39675af1f3d7548be9b31569abd0}{known\_eq}}\ (\doxymbox{\hyperlink{classvector__builder_adebea93284f6ed4f1b159e221d99d821}{m\_npatterns}}\ *\ \doxymbox{\hyperlink{classvector__builder_ac5097ef88613608402840e2bcd6be18e}{m\_nelts\_per\_pattern}},\ \doxymbox{\hyperlink{classvector__builder_acc2271ccfb27a0a2e084e0ee102fcf45}{m\_full\_nelts}});}
+\DoxyCodeLine{00186\ \}}
+\DoxyCodeLine{00187\ }
+\DoxyCodeLine{00188\ \textcolor{comment}{/*\ Start\ building\ a\ vector\ that\ has\ FULL\_NELTS\ elements.\ \ Initially}}
+\DoxyCodeLine{00189\ \textcolor{comment}{\ \ \ encode\ it\ using\ NPATTERNS\ patterns\ with\ NELTS\_PER\_PATTERN\ each.\ \ */}}
+\DoxyCodeLine{00190\ }
+\DoxyCodeLine{00191\ \textcolor{keyword}{template}<\textcolor{keyword}{typename}\ T,\ \textcolor{keyword}{typename}\ Shape,\ \textcolor{keyword}{typename}\ Derived>}
+\DoxyCodeLine{00192\ \textcolor{keywordtype}{void}}
+\DoxyCodeLine{00193\ \doxymbox{\hyperlink{classvector__builder_a1995073bfb6d1ca9dbf397384792e96d}{vector\_builder<T,\ Shape,\ Derived>::new\_vector}}\ (\doxymbox{\hyperlink{poly-int-types_8h_a6d0ddbcb345e1192ca8249c789c1cb0f}{poly\_uint64}}\ \doxymbox{\hyperlink{classvector__builder_a948c042a690899a326965eb6a59f4636}{full\_nelts}},}
+\DoxyCodeLine{00194\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{classvector__builder_ae56c0d3d8d087a62b1d0c1d3f729b0d9}{npatterns}},}
+\DoxyCodeLine{00195\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{classvector__builder_ab53d25f50b1aa7637dfdfd1d00b7bdc2}{nelts\_per\_pattern}})}
+\DoxyCodeLine{00196\ \{}
+\DoxyCodeLine{00197\ \ \ \doxymbox{\hyperlink{classvector__builder_acc2271ccfb27a0a2e084e0ee102fcf45}{m\_full\_nelts}}\ =\ \doxymbox{\hyperlink{classvector__builder_a948c042a690899a326965eb6a59f4636}{full\_nelts}};}
+\DoxyCodeLine{00198\ \ \ \doxymbox{\hyperlink{classvector__builder_adebea93284f6ed4f1b159e221d99d821}{m\_npatterns}}\ =\ \doxymbox{\hyperlink{classvector__builder_ae56c0d3d8d087a62b1d0c1d3f729b0d9}{npatterns}};}
+\DoxyCodeLine{00199\ \ \ \doxymbox{\hyperlink{classvector__builder_ac5097ef88613608402840e2bcd6be18e}{m\_nelts\_per\_pattern}}\ =\ \doxymbox{\hyperlink{classvector__builder_ab53d25f50b1aa7637dfdfd1d00b7bdc2}{nelts\_per\_pattern}};}
+\DoxyCodeLine{00200\ \ \ this-\/>reserve\ (\doxymbox{\hyperlink{classvector__builder_abf4a9ee739bf790bec5f33ea713dde60}{encoded\_nelts}}\ ());}
+\DoxyCodeLine{00201\ \ \ this-\/>\doxymbox{\hyperlink{vec_8h_ab3fce3a85384651523886acf4bcf02bc}{truncate}}\ (0);}
+\DoxyCodeLine{00202\ \}}
+\DoxyCodeLine{00203\ }
+\DoxyCodeLine{00204\ \textcolor{comment}{/*\ Return\ true\ if\ this\ vector\ and\ OTHER\ have\ the\ same\ elements\ and}}
+\DoxyCodeLine{00205\ \textcolor{comment}{\ \ \ are\ encoded\ in\ the\ same\ way.\ \ */}}
+\DoxyCodeLine{00206\ }
+\DoxyCodeLine{00207\ \textcolor{keyword}{template}<\textcolor{keyword}{typename}\ T,\ \textcolor{keyword}{typename}\ Shape,\ \textcolor{keyword}{typename}\ Derived>}
+\DoxyCodeLine{00208\ \textcolor{keywordtype}{bool}}
+\DoxyCodeLine{00209\ \doxymbox{\hyperlink{classvector__builder_a53d67fb99c7541649c76b9862228742e}{vector\_builder<T,\ Shape,\ Derived>::operator\ ==\ }}(\textcolor{keyword}{const}\ Derived\ \&other)\textcolor{keyword}{\ const}}
+\DoxyCodeLine{00210\ \textcolor{keyword}{}\{}
+\DoxyCodeLine{00211\ \ \ \textcolor{keywordflow}{if}\ (maybe\_ne\ (\doxymbox{\hyperlink{classvector__builder_acc2271ccfb27a0a2e084e0ee102fcf45}{m\_full\_nelts}},\ other.m\_full\_nelts)}
+\DoxyCodeLine{00212\ \ \ \ \ \ \ ||\ \doxymbox{\hyperlink{classvector__builder_adebea93284f6ed4f1b159e221d99d821}{m\_npatterns}}\ !=\ other.m\_npatterns}
+\DoxyCodeLine{00213\ \ \ \ \ \ \ ||\ \doxymbox{\hyperlink{classvector__builder_ac5097ef88613608402840e2bcd6be18e}{m\_nelts\_per\_pattern}}\ !=\ other.m\_nelts\_per\_pattern)}
+\DoxyCodeLine{00214\ \ \ \ \ \textcolor{keywordflow}{return}\ \textcolor{keyword}{false};}
+\DoxyCodeLine{00215\ }
+\DoxyCodeLine{00216\ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ nelts\ =\ \doxymbox{\hyperlink{classvector__builder_abf4a9ee739bf790bec5f33ea713dde60}{encoded\_nelts}}\ ();}
+\DoxyCodeLine{00217\ \ \ \textcolor{keywordflow}{for}\ (\textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{poly-int_8h_a7e98b8a17c0aad30ba64d47b74e2a6c1}{i}}\ =\ 0;\ \doxymbox{\hyperlink{poly-int_8h_a7e98b8a17c0aad30ba64d47b74e2a6c1}{i}}\ <\ nelts;\ ++\doxymbox{\hyperlink{poly-int_8h_a7e98b8a17c0aad30ba64d47b74e2a6c1}{i}})}
+\DoxyCodeLine{00218\ \ \ \ \ \textcolor{keywordflow}{if}\ (!\doxymbox{\hyperlink{classvector__builder_a4e97a4958be3937a8306f2f47020d2ab}{derived}}\ ()-\/>equal\_p\ ((*\textcolor{keyword}{this})[\doxymbox{\hyperlink{poly-int_8h_a7e98b8a17c0aad30ba64d47b74e2a6c1}{i}}],\ other[\doxymbox{\hyperlink{poly-int_8h_a7e98b8a17c0aad30ba64d47b74e2a6c1}{i}}]))}
+\DoxyCodeLine{00219\ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ \textcolor{keyword}{false};}
+\DoxyCodeLine{00220\ }
+\DoxyCodeLine{00221\ \ \ \textcolor{keywordflow}{return}\ \textcolor{keyword}{true};}
+\DoxyCodeLine{00222\ \}}
+\DoxyCodeLine{00223\ }
+\DoxyCodeLine{00224\ \textcolor{comment}{/*\ Return\ the\ value\ of\ vector\ element\ I,\ which\ might\ or\ might\ not\ be}}
+\DoxyCodeLine{00225\ \textcolor{comment}{\ \ \ encoded\ explicitly.\ \ */}}
+\DoxyCodeLine{00226\ }
+\DoxyCodeLine{00227\ \textcolor{keyword}{template}<\textcolor{keyword}{typename}\ T,\ \textcolor{keyword}{typename}\ Shape,\ \textcolor{keyword}{typename}\ Derived>}
+\DoxyCodeLine{00228\ T}
+\DoxyCodeLine{00229\ \doxymbox{\hyperlink{classvector__builder_ae82827bac6daa7965450f9c9237949bc}{vector\_builder<T,\ Shape,\ Derived>::elt}}\ (\textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{poly-int_8h_a7e98b8a17c0aad30ba64d47b74e2a6c1}{i}})\textcolor{keyword}{\ const}}
+\DoxyCodeLine{00230\ \textcolor{keyword}{}\{}
+\DoxyCodeLine{00231\ \ \ \textcolor{comment}{/*\ First\ handle\ elements\ that\ are\ already\ present\ in\ the\ underlying}}
+\DoxyCodeLine{00232\ \textcolor{comment}{\ \ \ \ \ vector,\ regardless\ of\ whether\ they're\ part\ of\ the\ encoding\ or\ not.\ \ */}}
+\DoxyCodeLine{00233\ \ \ \textcolor{keywordflow}{if}\ (\doxymbox{\hyperlink{poly-int_8h_a7e98b8a17c0aad30ba64d47b74e2a6c1}{i\ <\ this-\/>}}length\ ())}
+\DoxyCodeLine{00234\ \ \ \ \ \textcolor{keywordflow}{return}\ (*\textcolor{keyword}{this})[\doxymbox{\hyperlink{poly-int_8h_a7e98b8a17c0aad30ba64d47b74e2a6c1}{i}}];}
+\DoxyCodeLine{00235\ }
+\DoxyCodeLine{00236\ \ \ \textcolor{comment}{/*\ Extrapolation\ is\ only\ possible\ if\ the\ encoding\ has\ been\ fully}}
+\DoxyCodeLine{00237\ \textcolor{comment}{\ \ \ \ \ populated.\ \ */}}
+\DoxyCodeLine{00238\ \ \ \doxymbox{\hyperlink{system_8h_aff447899dc74d54931b2bc2d47de9423}{gcc\_checking\_assert}}\ (\doxymbox{\hyperlink{classvector__builder_abf4a9ee739bf790bec5f33ea713dde60}{encoded\_nelts}}\ ()\ <=\ this-\/>length\ ());}
+\DoxyCodeLine{00239\ }
+\DoxyCodeLine{00240\ \ \ \textcolor{comment}{/*\ Identify\ the\ pattern\ that\ contains\ element\ I\ and\ work\ out\ the\ index\ of}}
+\DoxyCodeLine{00241\ \textcolor{comment}{\ \ \ \ \ the\ last\ encoded\ element\ for\ that\ pattern.\ \ */}}
+\DoxyCodeLine{00242\ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ pattern\ =\ \doxymbox{\hyperlink{poly-int_8h_a7e98b8a17c0aad30ba64d47b74e2a6c1}{i}}\ \%\ \doxymbox{\hyperlink{classvector__builder_adebea93284f6ed4f1b159e221d99d821}{m\_npatterns}};}
+\DoxyCodeLine{00243\ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ count\ =\ \doxymbox{\hyperlink{poly-int_8h_a7e98b8a17c0aad30ba64d47b74e2a6c1}{i}}\ /\ \doxymbox{\hyperlink{classvector__builder_adebea93284f6ed4f1b159e221d99d821}{m\_npatterns}};}
+\DoxyCodeLine{00244\ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ final\_i\ =\ \doxymbox{\hyperlink{classvector__builder_abf4a9ee739bf790bec5f33ea713dde60}{encoded\_nelts}}\ ()\ -\/\ \doxymbox{\hyperlink{classvector__builder_adebea93284f6ed4f1b159e221d99d821}{m\_npatterns}}\ +\ pattern;}
+\DoxyCodeLine{00245\ \ \ T\ \textcolor{keyword}{final}\ =\ (*this)[final\_i];}
+\DoxyCodeLine{00246\ }
+\DoxyCodeLine{00247\ \ \ \textcolor{comment}{/*\ If\ there\ are\ no\ steps,\ the\ final\ encoded\ value\ is\ the\ right\ one.\ \ */}}
+\DoxyCodeLine{00248\ \ \ \textcolor{keywordflow}{if}\ (\doxymbox{\hyperlink{classvector__builder_ac5097ef88613608402840e2bcd6be18e}{m\_nelts\_per\_pattern}}\ <=\ 2)}
+\DoxyCodeLine{00249\ \ \ \ \ \textcolor{keywordflow}{return}\ \textcolor{keyword}{final};}
+\DoxyCodeLine{00250\ }
+\DoxyCodeLine{00251\ \ \ \textcolor{comment}{/*\ Otherwise\ work\ out\ the\ value\ from\ the\ last\ two\ encoded\ elements.\ \ */}}
+\DoxyCodeLine{00252\ \ \ T\ prev\ =\ (*this)[final\_i\ -\/\ \doxymbox{\hyperlink{classvector__builder_adebea93284f6ed4f1b159e221d99d821}{m\_npatterns}}];}
+\DoxyCodeLine{00253\ \ \ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{classvector__builder_a4e97a4958be3937a8306f2f47020d2ab}{derived}}\ ()-\/>apply\_step\ (\textcolor{keyword}{final},\ count\ -\/\ 2,}
+\DoxyCodeLine{00254\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{classvector__builder_a4e97a4958be3937a8306f2f47020d2ab}{derived}}\ ()-\/>step\ (prev,\ \textcolor{keyword}{final}));}
+\DoxyCodeLine{00255\ \}}
+\DoxyCodeLine{00256\ }
+\DoxyCodeLine{00257\ \textcolor{comment}{/*\ Try\ to\ start\ building\ a\ new\ vector\ of\ shape\ SHAPE\ that\ holds\ the\ result\ of}}
+\DoxyCodeLine{00258\ \textcolor{comment}{\ \ \ a\ unary\ operation\ on\ vector\ constant\ VEC.\ \ ALLOW\_STEPPED\_P\ is\ true\ if\ the}}
+\DoxyCodeLine{00259\ \textcolor{comment}{\ \ \ operation\ can\ handle\ stepped\ encodings\ directly,\ without\ having\ to\ expand}}
+\DoxyCodeLine{00260\ \textcolor{comment}{\ \ \ the\ full\ sequence.}}
+\DoxyCodeLine{00261\ \textcolor{comment}{}}
+\DoxyCodeLine{00262\ \textcolor{comment}{\ \ \ Return\ true\ if\ the\ operation\ is\ possible,\ which\ it\ always\ is\ when}}
+\DoxyCodeLine{00263\ \textcolor{comment}{\ \ \ ALLOW\_STEPPED\_P\ is\ true.\ \ Leave\ the\ builder\ unchanged\ otherwise.\ \ */}}
+\DoxyCodeLine{00264\ }
+\DoxyCodeLine{00265\ \textcolor{keyword}{template}<\textcolor{keyword}{typename}\ T,\ \textcolor{keyword}{typename}\ Shape,\ \textcolor{keyword}{typename}\ Derived>}
+\DoxyCodeLine{00266\ \textcolor{keywordtype}{bool}}
+\DoxyCodeLine{00267\ \doxymbox{\hyperlink{classvector__builder_a7c1af74ac75afd3076094ca68997105f}{vector\_builder<T,\ Shape,\ Derived>::new\_unary\_operation}}\ (Shape\ shape,\ T\ \doxymbox{\hyperlink{structvec}{vec}},}
+\DoxyCodeLine{00268\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{bool}\ allow\_stepped\_p)}
+\DoxyCodeLine{00269\ \{}
+\DoxyCodeLine{00270\ \ \ \doxymbox{\hyperlink{poly-int-types_8h_a6d0ddbcb345e1192ca8249c789c1cb0f}{poly\_uint64}}\ \doxymbox{\hyperlink{classvector__builder_a948c042a690899a326965eb6a59f4636}{full\_nelts}}\ =\ Derived::shape\_nelts\ (shape);}
+\DoxyCodeLine{00271\ \ \ \doxymbox{\hyperlink{system_8h_a0deee0ddaa8ce3bbd400ab5f75de06ff}{gcc\_assert}}\ (\doxymbox{\hyperlink{poly-int_8h_a11da39675af1f3d7548be9b31569abd0}{known\_eq}}\ (\doxymbox{\hyperlink{classvector__builder_a948c042a690899a326965eb6a59f4636}{full\_nelts}},\ Derived::nelts\_of\ (\doxymbox{\hyperlink{structvec}{vec}})));}
+\DoxyCodeLine{00272\ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{classvector__builder_ae56c0d3d8d087a62b1d0c1d3f729b0d9}{npatterns}}\ =\ Derived::npatterns\_of\ (\doxymbox{\hyperlink{structvec}{vec}});}
+\DoxyCodeLine{00273\ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{classvector__builder_ab53d25f50b1aa7637dfdfd1d00b7bdc2}{nelts\_per\_pattern}}\ =\ Derived::nelts\_per\_pattern\_of\ (\doxymbox{\hyperlink{structvec}{vec}});}
+\DoxyCodeLine{00274\ \ \ \textcolor{keywordflow}{if}\ (!allow\_stepped\_p\ \&\&\ \doxymbox{\hyperlink{classvector__builder_ab53d25f50b1aa7637dfdfd1d00b7bdc2}{nelts\_per\_pattern}}\ >\ 2)}
+\DoxyCodeLine{00275\ \ \ \ \ \{}
+\DoxyCodeLine{00276\ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (!\doxymbox{\hyperlink{classvector__builder_a948c042a690899a326965eb6a59f4636}{full\_nelts}}.is\_constant\ ())}
+\DoxyCodeLine{00277\ \ \ \ \ \textcolor{keywordflow}{return}\ \textcolor{keyword}{false};}
+\DoxyCodeLine{00278\ \ \ \ \ \ \ \doxymbox{\hyperlink{classvector__builder_ae56c0d3d8d087a62b1d0c1d3f729b0d9}{npatterns}}\ =\ \doxymbox{\hyperlink{classvector__builder_a948c042a690899a326965eb6a59f4636}{full\_nelts}}.to\_constant\ ();}
+\DoxyCodeLine{00279\ \ \ \ \ \ \ \doxymbox{\hyperlink{classvector__builder_ab53d25f50b1aa7637dfdfd1d00b7bdc2}{nelts\_per\_pattern}}\ =\ 1;}
+\DoxyCodeLine{00280\ \ \ \ \ \}}
+\DoxyCodeLine{00281\ \ \ \doxymbox{\hyperlink{classvector__builder_a4e97a4958be3937a8306f2f47020d2ab}{derived}}\ ()-\/>new\_vector\ (shape,\ \doxymbox{\hyperlink{classvector__builder_ae56c0d3d8d087a62b1d0c1d3f729b0d9}{npatterns}},\ \doxymbox{\hyperlink{classvector__builder_ab53d25f50b1aa7637dfdfd1d00b7bdc2}{nelts\_per\_pattern}});}
+\DoxyCodeLine{00282\ \ \ \textcolor{keywordflow}{return}\ \textcolor{keyword}{true};}
+\DoxyCodeLine{00283\ \}}
+\DoxyCodeLine{00284\ }
+\DoxyCodeLine{00285\ \textcolor{comment}{/*\ Try\ to\ start\ building\ a\ new\ vector\ of\ shape\ SHAPE\ that\ holds\ the\ result\ of}}
+\DoxyCodeLine{00286\ \textcolor{comment}{\ \ \ a\ binary\ operation\ on\ vector\ constants\ VEC1\ and\ VEC2.\ \ ALLOW\_STEPPED\_P\ is}}
+\DoxyCodeLine{00287\ \textcolor{comment}{\ \ \ true\ if\ the\ operation\ can\ handle\ stepped\ encodings\ directly,\ without}}
+\DoxyCodeLine{00288\ \textcolor{comment}{\ \ \ having\ to\ expand\ the\ full\ sequence.}}
+\DoxyCodeLine{00289\ \textcolor{comment}{}}
+\DoxyCodeLine{00290\ \textcolor{comment}{\ \ \ Return\ true\ if\ the\ operation\ is\ possible.\ \ Leave\ the\ builder\ unchanged}}
+\DoxyCodeLine{00291\ \textcolor{comment}{\ \ \ otherwise.\ \ */}}
+\DoxyCodeLine{00292\ }
+\DoxyCodeLine{00293\ \textcolor{keyword}{template}<\textcolor{keyword}{typename}\ T,\ \textcolor{keyword}{typename}\ Shape,\ \textcolor{keyword}{typename}\ Derived>}
+\DoxyCodeLine{00294\ \textcolor{keywordtype}{bool}}
+\DoxyCodeLine{00295\ \doxymbox{\hyperlink{classvector__builder_a67aec1f3e39ea2286f481ae4ce27c3c3}{vector\_builder<T,\ Shape,\ Derived>::new\_binary\_operation}}\ (Shape\ shape,}
+\DoxyCodeLine{00296\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ T\ vec1,\ T\ vec2,}
+\DoxyCodeLine{00297\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{bool}\ allow\_stepped\_p)}
+\DoxyCodeLine{00298\ \{}
+\DoxyCodeLine{00299\ \ \ \doxymbox{\hyperlink{poly-int-types_8h_a6d0ddbcb345e1192ca8249c789c1cb0f}{poly\_uint64}}\ \doxymbox{\hyperlink{classvector__builder_a948c042a690899a326965eb6a59f4636}{full\_nelts}}\ =\ Derived::shape\_nelts\ (shape);}
+\DoxyCodeLine{00300\ \ \ \doxymbox{\hyperlink{system_8h_a0deee0ddaa8ce3bbd400ab5f75de06ff}{gcc\_assert}}\ (\doxymbox{\hyperlink{poly-int_8h_a11da39675af1f3d7548be9b31569abd0}{known\_eq}}\ (\doxymbox{\hyperlink{classvector__builder_a948c042a690899a326965eb6a59f4636}{full\_nelts}},\ Derived::nelts\_of\ (vec1))}
+\DoxyCodeLine{00301\ \ \ \ \ \ \ \ \ \ \ \&\&\ \doxymbox{\hyperlink{poly-int_8h_a11da39675af1f3d7548be9b31569abd0}{known\_eq}}\ (\doxymbox{\hyperlink{classvector__builder_a948c042a690899a326965eb6a59f4636}{full\_nelts}},\ Derived::nelts\_of\ (vec2)));}
+\DoxyCodeLine{00302\ \ \ \textcolor{comment}{/*\ Conceptually\ we\ split\ the\ patterns\ in\ VEC1\ and\ VEC2\ until\ we\ have}}
+\DoxyCodeLine{00303\ \textcolor{comment}{\ \ \ \ \ an\ equal\ number\ for\ both.\ \ Each\ split\ pattern\ requires\ the\ same}}
+\DoxyCodeLine{00304\ \textcolor{comment}{\ \ \ \ \ number\ of\ elements\ per\ pattern\ as\ the\ original.\ \ E.g.\ splitting:}}
+\DoxyCodeLine{00305\ \textcolor{comment}{}}
+\DoxyCodeLine{00306\ \textcolor{comment}{\ \ \ \ \ \ \ \{\ 1,\ 2,\ 3,\ ...\ \}}}
+\DoxyCodeLine{00307\ \textcolor{comment}{}}
+\DoxyCodeLine{00308\ \textcolor{comment}{\ \ \ \ \ into\ two\ gives:}}
+\DoxyCodeLine{00309\ \textcolor{comment}{}}
+\DoxyCodeLine{00310\ \textcolor{comment}{\ \ \ \ \ \ \ \{\ 1,\ 3,\ 5,\ ...\ \}}}
+\DoxyCodeLine{00311\ \textcolor{comment}{\ \ \ \ \ \ \ \{\ 2,\ 4,\ 6,\ ...\ \}}}
+\DoxyCodeLine{00312\ \textcolor{comment}{}}
+\DoxyCodeLine{00313\ \textcolor{comment}{\ \ \ \ \ while\ splitting:}}
+\DoxyCodeLine{00314\ \textcolor{comment}{}}
+\DoxyCodeLine{00315\ \textcolor{comment}{\ \ \ \ \ \ \ \{\ 1,\ 0,\ ...\ \}}}
+\DoxyCodeLine{00316\ \textcolor{comment}{}}
+\DoxyCodeLine{00317\ \textcolor{comment}{\ \ \ \ \ into\ two\ gives:}}
+\DoxyCodeLine{00318\ \textcolor{comment}{}}
+\DoxyCodeLine{00319\ \textcolor{comment}{\ \ \ \ \ \ \ \{\ 1,\ 0,\ ...\ \}}}
+\DoxyCodeLine{00320\ \textcolor{comment}{\ \ \ \ \ \ \ \{\ 0,\ 0,\ ...\ \}.\ \ */}}
+\DoxyCodeLine{00321\ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{classvector__builder_ae56c0d3d8d087a62b1d0c1d3f729b0d9}{npatterns}}}
+\DoxyCodeLine{00322\ \ \ \ \ =\ \doxymbox{\hyperlink{hwint_8h_a8c8691ae44ac6a2179392696b8eb9746}{least\_common\_multiple}}\ (Derived::npatterns\_of\ (vec1),}
+\DoxyCodeLine{00323\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ Derived::npatterns\_of\ (vec2));}
+\DoxyCodeLine{00324\ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{classvector__builder_ab53d25f50b1aa7637dfdfd1d00b7bdc2}{nelts\_per\_pattern}}}
+\DoxyCodeLine{00325\ \ \ \ \ =\ \doxymbox{\hyperlink{system_8h_aff9931d7524c88e07743af6535b20761}{MAX}}\ (Derived::nelts\_per\_pattern\_of\ (vec1),}
+\DoxyCodeLine{00326\ \ \ \ \ \ \ \ Derived::nelts\_per\_pattern\_of\ (vec2));}
+\DoxyCodeLine{00327\ \ \ \textcolor{keywordflow}{if}\ (!allow\_stepped\_p\ \&\&\ \doxymbox{\hyperlink{classvector__builder_ab53d25f50b1aa7637dfdfd1d00b7bdc2}{nelts\_per\_pattern}}\ >\ 2)}
+\DoxyCodeLine{00328\ \ \ \ \ \{}
+\DoxyCodeLine{00329\ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (!\doxymbox{\hyperlink{classvector__builder_a948c042a690899a326965eb6a59f4636}{full\_nelts}}.is\_constant\ ())}
+\DoxyCodeLine{00330\ \ \ \ \ \textcolor{keywordflow}{return}\ \textcolor{keyword}{false};}
+\DoxyCodeLine{00331\ \ \ \ \ \ \ \doxymbox{\hyperlink{classvector__builder_ae56c0d3d8d087a62b1d0c1d3f729b0d9}{npatterns}}\ =\ \doxymbox{\hyperlink{classvector__builder_a948c042a690899a326965eb6a59f4636}{full\_nelts}}.to\_constant\ ();}
+\DoxyCodeLine{00332\ \ \ \ \ \ \ \doxymbox{\hyperlink{classvector__builder_ab53d25f50b1aa7637dfdfd1d00b7bdc2}{nelts\_per\_pattern}}\ =\ 1;}
+\DoxyCodeLine{00333\ \ \ \ \ \}}
+\DoxyCodeLine{00334\ \ \ \doxymbox{\hyperlink{classvector__builder_a4e97a4958be3937a8306f2f47020d2ab}{derived}}\ ()-\/>new\_vector\ (shape,\ \doxymbox{\hyperlink{classvector__builder_ae56c0d3d8d087a62b1d0c1d3f729b0d9}{npatterns}},\ \doxymbox{\hyperlink{classvector__builder_ab53d25f50b1aa7637dfdfd1d00b7bdc2}{nelts\_per\_pattern}});}
+\DoxyCodeLine{00335\ \ \ \textcolor{keywordflow}{return}\ \textcolor{keyword}{true};}
+\DoxyCodeLine{00336\ \}}
+\DoxyCodeLine{00337\ }
+\DoxyCodeLine{00338\ \textcolor{comment}{/*\ Return\ the\ number\ of\ elements\ that\ the\ caller\ needs\ to\ operate\ on\ in}}
+\DoxyCodeLine{00339\ \textcolor{comment}{\ \ \ order\ to\ handle\ a\ binary\ operation\ on\ vector\ constants\ VEC1\ and\ VEC2.}}
+\DoxyCodeLine{00340\ \textcolor{comment}{\ \ \ This\ static\ function\ is\ used\ instead\ of\ new\_binary\_operation\ if\ the}}
+\DoxyCodeLine{00341\ \textcolor{comment}{\ \ \ result\ of\ the\ operation\ is\ not\ a\ constant\ vector.\ \ */}}
+\DoxyCodeLine{00342\ }
+\DoxyCodeLine{00343\ \textcolor{keyword}{template}<\textcolor{keyword}{typename}\ T,\ \textcolor{keyword}{typename}\ Shape,\ \textcolor{keyword}{typename}\ Derived>}
+\DoxyCodeLine{00344\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}}
+\DoxyCodeLine{00345\ \doxymbox{\hyperlink{classvector__builder_a7a7d756628adc0332e37c0871ded4724}{vector\_builder<T,\ Shape,\ Derived>::binary\_encoded\_nelts}}\ (T\ vec1,\ T\ vec2)}
+\DoxyCodeLine{00346\ \{}
+\DoxyCodeLine{00347\ \ \ \doxymbox{\hyperlink{poly-int-types_8h_a6d0ddbcb345e1192ca8249c789c1cb0f}{poly\_uint64}}\ nelts\ =\ Derived::nelts\_of\ (vec1);}
+\DoxyCodeLine{00348\ \ \ \doxymbox{\hyperlink{system_8h_a0deee0ddaa8ce3bbd400ab5f75de06ff}{gcc\_assert}}\ (\doxymbox{\hyperlink{poly-int_8h_a11da39675af1f3d7548be9b31569abd0}{known\_eq}}\ (nelts,\ Derived::nelts\_of\ (vec2)));}
+\DoxyCodeLine{00349\ \ \ \textcolor{comment}{/*\ See\ new\_binary\_operation\ for\ details.\ \ */}}
+\DoxyCodeLine{00350\ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{classvector__builder_ae56c0d3d8d087a62b1d0c1d3f729b0d9}{npatterns}}}
+\DoxyCodeLine{00351\ \ \ \ \ =\ \doxymbox{\hyperlink{hwint_8h_a8c8691ae44ac6a2179392696b8eb9746}{least\_common\_multiple}}\ (Derived::npatterns\_of\ (vec1),}
+\DoxyCodeLine{00352\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ Derived::npatterns\_of\ (vec2));}
+\DoxyCodeLine{00353\ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{classvector__builder_ab53d25f50b1aa7637dfdfd1d00b7bdc2}{nelts\_per\_pattern}}}
+\DoxyCodeLine{00354\ \ \ \ \ =\ \doxymbox{\hyperlink{system_8h_aff9931d7524c88e07743af6535b20761}{MAX}}\ (Derived::nelts\_per\_pattern\_of\ (vec1),}
+\DoxyCodeLine{00355\ \ \ \ \ \ \ \ Derived::nelts\_per\_pattern\_of\ (vec2));}
+\DoxyCodeLine{00356\ \ \ \textcolor{keywordtype}{unsigned}\ HOST\_WIDE\_INT\ const\_nelts;}
+\DoxyCodeLine{00357\ \ \ \textcolor{keywordflow}{if}\ (nelts.\doxymbox{\hyperlink{classpoly__int_a6cb55a7a9a78e8cfea198b56ace9eaa8}{is\_constant}}\ (\&const\_nelts))}
+\DoxyCodeLine{00358\ \ \ \ \ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{system_8h_ad2f3678bf5eae3684fc497130b946eae}{MIN}}\ (\doxymbox{\hyperlink{classvector__builder_ae56c0d3d8d087a62b1d0c1d3f729b0d9}{npatterns}}\ *\ \doxymbox{\hyperlink{classvector__builder_ab53d25f50b1aa7637dfdfd1d00b7bdc2}{nelts\_per\_pattern}},\ const\_nelts);}
+\DoxyCodeLine{00359\ \ \ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{classvector__builder_ae56c0d3d8d087a62b1d0c1d3f729b0d9}{npatterns}}\ *\ \doxymbox{\hyperlink{classvector__builder_ab53d25f50b1aa7637dfdfd1d00b7bdc2}{nelts\_per\_pattern}};}
+\DoxyCodeLine{00360\ \}}
+\DoxyCodeLine{00361\ }
+\DoxyCodeLine{00362\ \textcolor{comment}{/*\ Return\ the\ number\ of\ leading\ duplicate\ elements\ in\ the\ range}}
+\DoxyCodeLine{00363\ \textcolor{comment}{\ \ \ [START:END:STEP].\ \ The\ value\ is\ always\ at\ least\ 1.\ \ */}}
+\DoxyCodeLine{00364\ }
+\DoxyCodeLine{00365\ \textcolor{keyword}{template}<\textcolor{keyword}{typename}\ T,\ \textcolor{keyword}{typename}\ Shape,\ \textcolor{keyword}{typename}\ Derived>}
+\DoxyCodeLine{00366\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}}
+\DoxyCodeLine{00367\ \doxymbox{\hyperlink{classvector__builder_ada97caa72288849160815ef16915b385}{vector\_builder<T,\ Shape,\ Derived>::count\_dups}}\ (\textcolor{keywordtype}{int}\ start,\ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{vec_8h_a17e1ff659cc80fc1b1a1c325dfe1a3aa}{end}},}
+\DoxyCodeLine{00368\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{int}\ step)\textcolor{keyword}{\ const}}
+\DoxyCodeLine{00369\ \textcolor{keyword}{}\{}
+\DoxyCodeLine{00370\ \ \ \doxymbox{\hyperlink{system_8h_a0deee0ddaa8ce3bbd400ab5f75de06ff}{gcc\_assert}}\ ((\doxymbox{\hyperlink{vec_8h_a17e1ff659cc80fc1b1a1c325dfe1a3aa}{end}}\ -\/\ start)\ \%\ step\ ==\ 0);}
+\DoxyCodeLine{00371\ }
+\DoxyCodeLine{00372\ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ ndups\ =\ 1;}
+\DoxyCodeLine{00373\ \ \ \textcolor{keywordflow}{for}\ (\textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{poly-int_8h_a7e98b8a17c0aad30ba64d47b74e2a6c1}{i}}\ =\ start\ +\ step;}
+\DoxyCodeLine{00374\ \ \ \ \ \ \ \ \doxymbox{\hyperlink{poly-int_8h_a7e98b8a17c0aad30ba64d47b74e2a6c1}{i}}\ !=\ \doxymbox{\hyperlink{vec_8h_a17e1ff659cc80fc1b1a1c325dfe1a3aa}{end}}\ \&\&\ \doxymbox{\hyperlink{classvector__builder_a4e97a4958be3937a8306f2f47020d2ab}{derived}}\ ()-\/>equal\_p\ (\doxymbox{\hyperlink{classvector__builder_ae82827bac6daa7965450f9c9237949bc}{elt}}\ (\doxymbox{\hyperlink{poly-int_8h_a7e98b8a17c0aad30ba64d47b74e2a6c1}{i}}),\ \doxymbox{\hyperlink{classvector__builder_ae82827bac6daa7965450f9c9237949bc}{elt}}\ (start));}
+\DoxyCodeLine{00375\ \ \ \ \ \ \ \ \doxymbox{\hyperlink{poly-int_8h_a7e98b8a17c0aad30ba64d47b74e2a6c1}{i}}\ +=\ step)}
+\DoxyCodeLine{00376\ \ \ \ \ ndups++;}
+\DoxyCodeLine{00377\ \ \ \textcolor{keywordflow}{return}\ ndups;}
+\DoxyCodeLine{00378\ \}}
+\DoxyCodeLine{00379\ }
+\DoxyCodeLine{00380\ \textcolor{comment}{/*\ Change\ the\ encoding\ to\ NPATTERNS\ patterns\ of\ NELTS\_PER\_PATTERN\ each,}}
+\DoxyCodeLine{00381\ \textcolor{comment}{\ \ \ but\ without\ changing\ the\ underlying\ vector.\ \ */}}
+\DoxyCodeLine{00382\ }
+\DoxyCodeLine{00383\ \textcolor{keyword}{template}<\textcolor{keyword}{typename}\ T,\ \textcolor{keyword}{typename}\ Shape,\ \textcolor{keyword}{typename}\ Derived>}
+\DoxyCodeLine{00384\ \textcolor{keywordtype}{void}}
+\DoxyCodeLine{00385\ \doxymbox{\hyperlink{classvector__builder_a31e65b14bc497dd2d47af99cc4d902fc}{vector\_builder<T,\ Shape,\ Derived>::reshape}}\ (\textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{classvector__builder_ae56c0d3d8d087a62b1d0c1d3f729b0d9}{npatterns}},}
+\DoxyCodeLine{00386\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{classvector__builder_ab53d25f50b1aa7637dfdfd1d00b7bdc2}{nelts\_per\_pattern}})}
+\DoxyCodeLine{00387\ \{}
+\DoxyCodeLine{00388\ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ old\_encoded\_nelts\ =\ \doxymbox{\hyperlink{classvector__builder_abf4a9ee739bf790bec5f33ea713dde60}{encoded\_nelts}}\ ();}
+\DoxyCodeLine{00389\ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ new\_encoded\_nelts\ =\ \doxymbox{\hyperlink{classvector__builder_ae56c0d3d8d087a62b1d0c1d3f729b0d9}{npatterns}}\ *\ \doxymbox{\hyperlink{classvector__builder_ab53d25f50b1aa7637dfdfd1d00b7bdc2}{nelts\_per\_pattern}};}
+\DoxyCodeLine{00390\ \ \ \doxymbox{\hyperlink{system_8h_aff447899dc74d54931b2bc2d47de9423}{gcc\_checking\_assert}}\ (new\_encoded\_nelts\ <=\ old\_encoded\_nelts);}
+\DoxyCodeLine{00391\ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ next\ =\ new\_encoded\_nelts\ -\/\ \doxymbox{\hyperlink{classvector__builder_ae56c0d3d8d087a62b1d0c1d3f729b0d9}{npatterns}};}
+\DoxyCodeLine{00392\ \ \ \textcolor{keywordflow}{for}\ (\textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{poly-int_8h_a7e98b8a17c0aad30ba64d47b74e2a6c1}{i}}\ =\ new\_encoded\_nelts;\ \doxymbox{\hyperlink{poly-int_8h_a7e98b8a17c0aad30ba64d47b74e2a6c1}{i}}\ <\ old\_encoded\_nelts;\ ++\doxymbox{\hyperlink{poly-int_8h_a7e98b8a17c0aad30ba64d47b74e2a6c1}{i}})}
+\DoxyCodeLine{00393\ \ \ \ \ \{}
+\DoxyCodeLine{00394\ \ \ \ \ \ \ \doxymbox{\hyperlink{classvector__builder_a4e97a4958be3937a8306f2f47020d2ab}{derived}}\ ()-\/>note\_representative\ (\&(*\textcolor{keyword}{this})[next],\ (*\textcolor{keyword}{this})[\doxymbox{\hyperlink{poly-int_8h_a7e98b8a17c0aad30ba64d47b74e2a6c1}{i}}]);}
+\DoxyCodeLine{00395\ \ \ \ \ \ \ next\ +=\ 1;}
+\DoxyCodeLine{00396\ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (next\ ==\ new\_encoded\_nelts)}
+\DoxyCodeLine{00397\ \ \ \ \ next\ -\/=\ \doxymbox{\hyperlink{classvector__builder_ae56c0d3d8d087a62b1d0c1d3f729b0d9}{npatterns}};}
+\DoxyCodeLine{00398\ \ \ \ \ \}}
+\DoxyCodeLine{00399\ \ \ \doxymbox{\hyperlink{classvector__builder_adebea93284f6ed4f1b159e221d99d821}{m\_npatterns}}\ =\ \doxymbox{\hyperlink{classvector__builder_ae56c0d3d8d087a62b1d0c1d3f729b0d9}{npatterns}};}
+\DoxyCodeLine{00400\ \ \ \doxymbox{\hyperlink{classvector__builder_ac5097ef88613608402840e2bcd6be18e}{m\_nelts\_per\_pattern}}\ =\ \doxymbox{\hyperlink{classvector__builder_ab53d25f50b1aa7637dfdfd1d00b7bdc2}{nelts\_per\_pattern}};}
+\DoxyCodeLine{00401\ \}}
+\DoxyCodeLine{00402\ }
+\DoxyCodeLine{00403\ \textcolor{comment}{/*\ Return\ true\ if\ elements\ [START,\ END)\ contain\ a\ repeating\ sequence\ of}}
+\DoxyCodeLine{00404\ \textcolor{comment}{\ \ \ STEP\ elements.\ \ */}}
+\DoxyCodeLine{00405\ }
+\DoxyCodeLine{00406\ \textcolor{keyword}{template}<\textcolor{keyword}{typename}\ T,\ \textcolor{keyword}{typename}\ Shape,\ \textcolor{keyword}{typename}\ Derived>}
+\DoxyCodeLine{00407\ \textcolor{keywordtype}{bool}}
+\DoxyCodeLine{00408\ \doxymbox{\hyperlink{classvector__builder_acdaf251ac8090c2d18c604dd2a62eec3}{vector\_builder<T,\ Shape,\ Derived>::repeating\_sequence\_p}}\ (\textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ start,}
+\DoxyCodeLine{00409\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{vec_8h_a17e1ff659cc80fc1b1a1c325dfe1a3aa}{end}},}
+\DoxyCodeLine{00410\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ step)}
+\DoxyCodeLine{00411\ \{}
+\DoxyCodeLine{00412\ \ \ \textcolor{keywordflow}{for}\ (\textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{poly-int_8h_a7e98b8a17c0aad30ba64d47b74e2a6c1}{i}}\ =\ start;\ \doxymbox{\hyperlink{poly-int_8h_a7e98b8a17c0aad30ba64d47b74e2a6c1}{i}}\ <\ \doxymbox{\hyperlink{vec_8h_a17e1ff659cc80fc1b1a1c325dfe1a3aa}{end}}\ -\/\ step;\ ++\doxymbox{\hyperlink{poly-int_8h_a7e98b8a17c0aad30ba64d47b74e2a6c1}{i}})}
+\DoxyCodeLine{00413\ \ \ \ \ \textcolor{keywordflow}{if}\ (!\doxymbox{\hyperlink{classvector__builder_a4e97a4958be3937a8306f2f47020d2ab}{derived}}\ ()-\/>equal\_p\ ((*\textcolor{keyword}{this})[\doxymbox{\hyperlink{poly-int_8h_a7e98b8a17c0aad30ba64d47b74e2a6c1}{i}}],\ (*\textcolor{keyword}{this})[\doxymbox{\hyperlink{poly-int_8h_a7e98b8a17c0aad30ba64d47b74e2a6c1}{i}}\ +\ step]))}
+\DoxyCodeLine{00414\ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ \textcolor{keyword}{false};}
+\DoxyCodeLine{00415\ \ \ \textcolor{keywordflow}{return}\ \textcolor{keyword}{true};}
+\DoxyCodeLine{00416\ \}}
+\DoxyCodeLine{00417\ }
+\DoxyCodeLine{00418\ \textcolor{comment}{/*\ Return\ true\ if\ elements\ [START,\ END)\ contain\ STEP\ interleaved\ linear}}
+\DoxyCodeLine{00419\ \textcolor{comment}{\ \ \ series.\ \ */}}
+\DoxyCodeLine{00420\ }
+\DoxyCodeLine{00421\ \textcolor{keyword}{template}<\textcolor{keyword}{typename}\ T,\ \textcolor{keyword}{typename}\ Shape,\ \textcolor{keyword}{typename}\ Derived>}
+\DoxyCodeLine{00422\ \textcolor{keywordtype}{bool}}
+\DoxyCodeLine{00423\ \doxymbox{\hyperlink{classvector__builder_a8fa168cb223331f6f0e5207881a4fed2}{vector\_builder<T,\ Shape,\ Derived>::stepped\_sequence\_p}}\ (\textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ start,}
+\DoxyCodeLine{00424\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{vec_8h_a17e1ff659cc80fc1b1a1c325dfe1a3aa}{end}},}
+\DoxyCodeLine{00425\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ step)}
+\DoxyCodeLine{00426\ \{}
+\DoxyCodeLine{00427\ \ \ \textcolor{keywordflow}{if}\ (!\doxymbox{\hyperlink{classvector__builder_a4e97a4958be3937a8306f2f47020d2ab}{derived}}\ ()-\/>allow\_steps\_p\ ())}
+\DoxyCodeLine{00428\ \ \ \ \ \textcolor{keywordflow}{return}\ \textcolor{keyword}{false};}
+\DoxyCodeLine{00429\ }
+\DoxyCodeLine{00430\ \ \ \textcolor{keywordflow}{for}\ (\textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{poly-int_8h_a7e98b8a17c0aad30ba64d47b74e2a6c1}{i}}\ =\ start\ +\ step\ *\ 2;\ \doxymbox{\hyperlink{poly-int_8h_a7e98b8a17c0aad30ba64d47b74e2a6c1}{i}}\ <\ \doxymbox{\hyperlink{vec_8h_a17e1ff659cc80fc1b1a1c325dfe1a3aa}{end}};\ ++\doxymbox{\hyperlink{poly-int_8h_a7e98b8a17c0aad30ba64d47b74e2a6c1}{i}})}
+\DoxyCodeLine{00431\ \ \ \ \ \{}
+\DoxyCodeLine{00432\ \ \ \ \ \ \ T\ elt1\ =\ (*this)[\doxymbox{\hyperlink{poly-int_8h_a7e98b8a17c0aad30ba64d47b74e2a6c1}{i}}\ -\/\ step\ *\ 2];}
+\DoxyCodeLine{00433\ \ \ \ \ \ \ T\ elt2\ =\ (*this)[\doxymbox{\hyperlink{poly-int_8h_a7e98b8a17c0aad30ba64d47b74e2a6c1}{i}}\ -\/\ step];}
+\DoxyCodeLine{00434\ \ \ \ \ \ \ T\ elt3\ =\ (*this)[\doxymbox{\hyperlink{poly-int_8h_a7e98b8a17c0aad30ba64d47b74e2a6c1}{i}}];}
+\DoxyCodeLine{00435\ }
+\DoxyCodeLine{00436\ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (!\doxymbox{\hyperlink{classvector__builder_a4e97a4958be3937a8306f2f47020d2ab}{derived}}\ ()-\/>integral\_p\ (elt1)}
+\DoxyCodeLine{00437\ \ \ \ \ \ \ ||\ !\doxymbox{\hyperlink{classvector__builder_a4e97a4958be3937a8306f2f47020d2ab}{derived}}\ ()-\/>integral\_p\ (elt2)}
+\DoxyCodeLine{00438\ \ \ \ \ \ \ ||\ !\doxymbox{\hyperlink{classvector__builder_a4e97a4958be3937a8306f2f47020d2ab}{derived}}\ ()-\/>integral\_p\ (elt3))}
+\DoxyCodeLine{00439\ \ \ \ \ \textcolor{keywordflow}{return}\ \textcolor{keyword}{false};}
+\DoxyCodeLine{00440\ }
+\DoxyCodeLine{00441\ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (maybe\_ne\ (\doxymbox{\hyperlink{classvector__builder_a4e97a4958be3937a8306f2f47020d2ab}{derived}}\ ()-\/>step\ (elt1,\ elt2),}
+\DoxyCodeLine{00442\ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{classvector__builder_a4e97a4958be3937a8306f2f47020d2ab}{derived}}\ ()-\/>step\ (elt2,\ elt3)))}
+\DoxyCodeLine{00443\ \ \ \ \ \textcolor{keywordflow}{return}\ \textcolor{keyword}{false};}
+\DoxyCodeLine{00444\ }
+\DoxyCodeLine{00445\ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (!\doxymbox{\hyperlink{classvector__builder_a4e97a4958be3937a8306f2f47020d2ab}{derived}}\ ()-\/>can\_elide\_p\ (elt3))}
+\DoxyCodeLine{00446\ \ \ \ \ \textcolor{keywordflow}{return}\ \textcolor{keyword}{false};}
+\DoxyCodeLine{00447\ \ \ \ \ \}}
+\DoxyCodeLine{00448\ \ \ \textcolor{keywordflow}{return}\ \textcolor{keyword}{true};}
+\DoxyCodeLine{00449\ \}}
+\DoxyCodeLine{00450\ }
+\DoxyCodeLine{00451\ \textcolor{comment}{/*\ Try\ to\ change\ the\ number\ of\ encoded\ patterns\ to\ NPATTERNS,\ returning}}
+\DoxyCodeLine{00452\ \textcolor{comment}{\ \ \ true\ on\ success.\ \ */}}
+\DoxyCodeLine{00453\ }
+\DoxyCodeLine{00454\ \textcolor{keyword}{template}<\textcolor{keyword}{typename}\ T,\ \textcolor{keyword}{typename}\ Shape,\ \textcolor{keyword}{typename}\ Derived>}
+\DoxyCodeLine{00455\ \textcolor{keywordtype}{bool}}
+\DoxyCodeLine{00456\ \doxymbox{\hyperlink{classvector__builder_ab91300a33015eb67d7defb142608eb65}{vector\_builder<T,\ Shape,\ Derived>::try\_npatterns}}\ (\textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{classvector__builder_ae56c0d3d8d087a62b1d0c1d3f729b0d9}{npatterns}})}
+\DoxyCodeLine{00457\ \{}
+\DoxyCodeLine{00458\ \ \ \textcolor{keywordflow}{if}\ (\doxymbox{\hyperlink{classvector__builder_ac5097ef88613608402840e2bcd6be18e}{m\_nelts\_per\_pattern}}\ ==\ 1)}
+\DoxyCodeLine{00459\ \ \ \ \ \{}
+\DoxyCodeLine{00460\ \ \ \ \ \ \ \textcolor{comment}{/*\ See\ whether\ NPATTERNS\ is\ valid\ with\ the\ current\ 1-\/element-\/per-\/pattern}}
+\DoxyCodeLine{00461\ \textcolor{comment}{\ \ \ \ \ encoding.\ \ */}}
+\DoxyCodeLine{00462\ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (\doxymbox{\hyperlink{classvector__builder_acdaf251ac8090c2d18c604dd2a62eec3}{repeating\_sequence\_p}}\ (0,\ \doxymbox{\hyperlink{classvector__builder_abf4a9ee739bf790bec5f33ea713dde60}{encoded\_nelts}}\ (),\ \doxymbox{\hyperlink{classvector__builder_ae56c0d3d8d087a62b1d0c1d3f729b0d9}{npatterns}}))}
+\DoxyCodeLine{00463\ \ \ \ \ \{}
+\DoxyCodeLine{00464\ \ \ \ \ \ \ \doxymbox{\hyperlink{classvector__builder_a31e65b14bc497dd2d47af99cc4d902fc}{reshape}}\ (\doxymbox{\hyperlink{classvector__builder_ae56c0d3d8d087a62b1d0c1d3f729b0d9}{npatterns}},\ 1);}
+\DoxyCodeLine{00465\ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ \textcolor{keyword}{true};}
+\DoxyCodeLine{00466\ \ \ \ \ \}}
+\DoxyCodeLine{00467\ }
+\DoxyCodeLine{00468\ \ \ \ \ \ \ \textcolor{comment}{/*\ We\ can\ only\ increase\ the\ number\ of\ elements\ per\ pattern\ if\ all}}
+\DoxyCodeLine{00469\ \textcolor{comment}{\ \ \ \ \ elements\ are\ still\ encoded\ explicitly.\ \ */}}
+\DoxyCodeLine{00470\ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (!\doxymbox{\hyperlink{classvector__builder_a0edd205e6053fdcaa1eebfe2e2ed7642}{encoded\_full\_vector\_p}}\ ())}
+\DoxyCodeLine{00471\ \ \ \ \ \textcolor{keywordflow}{return}\ \textcolor{keyword}{false};}
+\DoxyCodeLine{00472\ \ \ \ \ \}}
+\DoxyCodeLine{00473\ }
+\DoxyCodeLine{00474\ \ \ \textcolor{keywordflow}{if}\ (\doxymbox{\hyperlink{classvector__builder_ac5097ef88613608402840e2bcd6be18e}{m\_nelts\_per\_pattern}}\ <=\ 2)}
+\DoxyCodeLine{00475\ \ \ \ \ \{}
+\DoxyCodeLine{00476\ \ \ \ \ \ \ \textcolor{comment}{/*\ See\ whether\ NPATTERNS\ is\ valid\ with\ a\ 2-\/element-\/per-\/pattern}}
+\DoxyCodeLine{00477\ \textcolor{comment}{\ \ \ \ \ encoding.\ \ */}}
+\DoxyCodeLine{00478\ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (\doxymbox{\hyperlink{classvector__builder_acdaf251ac8090c2d18c604dd2a62eec3}{repeating\_sequence\_p}}\ (\doxymbox{\hyperlink{classvector__builder_ae56c0d3d8d087a62b1d0c1d3f729b0d9}{npatterns}},\ \doxymbox{\hyperlink{classvector__builder_abf4a9ee739bf790bec5f33ea713dde60}{encoded\_nelts}}\ (),\ \doxymbox{\hyperlink{classvector__builder_ae56c0d3d8d087a62b1d0c1d3f729b0d9}{npatterns}}))}
+\DoxyCodeLine{00479\ \ \ \ \ \{}
+\DoxyCodeLine{00480\ \ \ \ \ \ \ \doxymbox{\hyperlink{classvector__builder_a31e65b14bc497dd2d47af99cc4d902fc}{reshape}}\ (\doxymbox{\hyperlink{classvector__builder_ae56c0d3d8d087a62b1d0c1d3f729b0d9}{npatterns}},\ 2);}
+\DoxyCodeLine{00481\ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ \textcolor{keyword}{true};}
+\DoxyCodeLine{00482\ \ \ \ \ \}}
+\DoxyCodeLine{00483\ }
+\DoxyCodeLine{00484\ \ \ \ \ \ \ \textcolor{comment}{/*\ We\ can\ only\ increase\ the\ number\ of\ elements\ per\ pattern\ if\ all}}
+\DoxyCodeLine{00485\ \textcolor{comment}{\ \ \ \ \ elements\ are\ still\ encoded\ explicitly.\ \ */}}
+\DoxyCodeLine{00486\ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (!\doxymbox{\hyperlink{classvector__builder_a0edd205e6053fdcaa1eebfe2e2ed7642}{encoded\_full\_vector\_p}}\ ())}
+\DoxyCodeLine{00487\ \ \ \ \ \textcolor{keywordflow}{return}\ \textcolor{keyword}{false};}
+\DoxyCodeLine{00488\ \ \ \ \ \}}
+\DoxyCodeLine{00489\ }
+\DoxyCodeLine{00490\ \ \ \textcolor{keywordflow}{if}\ (\doxymbox{\hyperlink{classvector__builder_ac5097ef88613608402840e2bcd6be18e}{m\_nelts\_per\_pattern}}\ <=\ 3)}
+\DoxyCodeLine{00491\ \ \ \ \ \{}
+\DoxyCodeLine{00492\ \ \ \ \ \ \ \textcolor{comment}{/*\ See\ whether\ we\ have\ NPATTERNS\ interleaved\ linear\ series,}}
+\DoxyCodeLine{00493\ \textcolor{comment}{\ \ \ \ \ giving\ a\ 3-\/element-\/per-\/pattern\ encoding.\ \ */}}
+\DoxyCodeLine{00494\ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (\doxymbox{\hyperlink{classvector__builder_a8fa168cb223331f6f0e5207881a4fed2}{stepped\_sequence\_p}}\ (\doxymbox{\hyperlink{classvector__builder_ae56c0d3d8d087a62b1d0c1d3f729b0d9}{npatterns}},\ \doxymbox{\hyperlink{classvector__builder_abf4a9ee739bf790bec5f33ea713dde60}{encoded\_nelts}}\ (),\ \doxymbox{\hyperlink{classvector__builder_ae56c0d3d8d087a62b1d0c1d3f729b0d9}{npatterns}}))}
+\DoxyCodeLine{00495\ \ \ \ \ \{}
+\DoxyCodeLine{00496\ \ \ \ \ \ \ \doxymbox{\hyperlink{classvector__builder_a31e65b14bc497dd2d47af99cc4d902fc}{reshape}}\ (\doxymbox{\hyperlink{classvector__builder_ae56c0d3d8d087a62b1d0c1d3f729b0d9}{npatterns}},\ 3);}
+\DoxyCodeLine{00497\ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ \textcolor{keyword}{true};}
+\DoxyCodeLine{00498\ \ \ \ \ \}}
+\DoxyCodeLine{00499\ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ \textcolor{keyword}{false};}
+\DoxyCodeLine{00500\ \ \ \ \ \}}
+\DoxyCodeLine{00501\ }
+\DoxyCodeLine{00502\ \ \ \doxymbox{\hyperlink{system_8h_a32b3b26e9883686d3022c1ffe5ec3aa4}{gcc\_unreachable}}\ ();}
+\DoxyCodeLine{00503\ \}}
+\DoxyCodeLine{00504\ }
+\DoxyCodeLine{00505\ \textcolor{comment}{/*\ Replace\ the\ current\ encoding\ with\ the\ canonical\ form.\ \ */}}
+\DoxyCodeLine{00506\ }
+\DoxyCodeLine{00507\ \textcolor{keyword}{template}<\textcolor{keyword}{typename}\ T,\ \textcolor{keyword}{typename}\ Shape,\ \textcolor{keyword}{typename}\ Derived>}
+\DoxyCodeLine{00508\ \textcolor{keywordtype}{void}}
+\DoxyCodeLine{00509\ \doxymbox{\hyperlink{classvector__builder_aa437859dddc7e461b766e7c10dc777bc}{vector\_builder<T,\ Shape,\ Derived>::finalize}}\ ()}
+\DoxyCodeLine{00510\ \{}
+\DoxyCodeLine{00511\ \ \ \textcolor{comment}{/*\ The\ encoding\ requires\ the\ same\ number\ of\ elements\ to\ come\ from\ each}}
+\DoxyCodeLine{00512\ \textcolor{comment}{\ \ \ \ \ pattern.\ \ */}}
+\DoxyCodeLine{00513\ \ \ \doxymbox{\hyperlink{system_8h_a0deee0ddaa8ce3bbd400ab5f75de06ff}{gcc\_assert}}\ (multiple\_p\ (\doxymbox{\hyperlink{classvector__builder_acc2271ccfb27a0a2e084e0ee102fcf45}{m\_full\_nelts}},\ \doxymbox{\hyperlink{classvector__builder_adebea93284f6ed4f1b159e221d99d821}{m\_npatterns}}));}
+\DoxyCodeLine{00514\ }
+\DoxyCodeLine{00515\ \ \ \textcolor{comment}{/*\ Allow\ the\ caller\ to\ build\ more\ elements\ than\ necessary.\ \ For\ example,}}
+\DoxyCodeLine{00516\ \textcolor{comment}{\ \ \ \ \ it's\ often\ convenient\ to\ build\ a\ stepped\ vector\ from\ the\ natural}}
+\DoxyCodeLine{00517\ \textcolor{comment}{\ \ \ \ \ encoding\ of\ three\ elements\ even\ if\ the\ vector\ itself\ only\ has\ two.\ \ */}}
+\DoxyCodeLine{00518\ \ \ \textcolor{keywordtype}{unsigned}\ HOST\_WIDE\_INT\ const\_full\_nelts;}
+\DoxyCodeLine{00519\ \ \ \textcolor{keywordflow}{if}\ (\doxymbox{\hyperlink{classvector__builder_acc2271ccfb27a0a2e084e0ee102fcf45}{m\_full\_nelts}}.is\_constant\ (\&const\_full\_nelts)}
+\DoxyCodeLine{00520\ \ \ \ \ \ \ \&\&\ const\_full\_nelts\ <=\ \doxymbox{\hyperlink{classvector__builder_abf4a9ee739bf790bec5f33ea713dde60}{encoded\_nelts}}\ ())}
+\DoxyCodeLine{00521\ \ \ \ \ \{}
+\DoxyCodeLine{00522\ \ \ \ \ \ \ \doxymbox{\hyperlink{classvector__builder_adebea93284f6ed4f1b159e221d99d821}{m\_npatterns}}\ =\ const\_full\_nelts;}
+\DoxyCodeLine{00523\ \ \ \ \ \ \ \doxymbox{\hyperlink{classvector__builder_ac5097ef88613608402840e2bcd6be18e}{m\_nelts\_per\_pattern}}\ =\ 1;}
+\DoxyCodeLine{00524\ \ \ \ \ \}}
+\DoxyCodeLine{00525\ }
+\DoxyCodeLine{00526\ \ \ \textcolor{comment}{/*\ Try\ to\ whittle\ down\ the\ number\ of\ elements\ per\ pattern.\ \ That\ is:}}
+\DoxyCodeLine{00527\ \textcolor{comment}{}}
+\DoxyCodeLine{00528\ \textcolor{comment}{\ \ \ \ \ 1.\ If\ we\ have\ stepped\ patterns\ whose\ steps\ are\ all\ 0,\ reduce\ the}}
+\DoxyCodeLine{00529\ \textcolor{comment}{\ \ \ \ \ \ \ \ number\ of\ elements\ per\ pattern\ from\ 3\ to\ 2.}}
+\DoxyCodeLine{00530\ \textcolor{comment}{}}
+\DoxyCodeLine{00531\ \textcolor{comment}{\ \ \ \ \ 2.\ If\ we\ have\ background\ fill\ values\ that\ are\ the\ same\ as\ the}}
+\DoxyCodeLine{00532\ \textcolor{comment}{\ \ \ \ \ \ \ \ foreground\ values,\ reduce\ the\ number\ of\ elements\ per\ pattern}}
+\DoxyCodeLine{00533\ \textcolor{comment}{\ \ \ \ \ \ \ \ from\ 2\ to\ 1.\ \ */}}
+\DoxyCodeLine{00534\ \ \ \textcolor{keywordflow}{while}\ (\doxymbox{\hyperlink{classvector__builder_ac5097ef88613608402840e2bcd6be18e}{m\_nelts\_per\_pattern}}\ >\ 1}
+\DoxyCodeLine{00535\ \ \ \ \ \ \&\&\ \doxymbox{\hyperlink{classvector__builder_acdaf251ac8090c2d18c604dd2a62eec3}{repeating\_sequence\_p}}\ (\doxymbox{\hyperlink{classvector__builder_abf4a9ee739bf790bec5f33ea713dde60}{encoded\_nelts}}\ ()\ -\/\ \doxymbox{\hyperlink{classvector__builder_adebea93284f6ed4f1b159e221d99d821}{m\_npatterns}}\ *\ 2,}
+\DoxyCodeLine{00536\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{classvector__builder_abf4a9ee739bf790bec5f33ea713dde60}{encoded\_nelts}}\ (),\ \doxymbox{\hyperlink{classvector__builder_adebea93284f6ed4f1b159e221d99d821}{m\_npatterns}}))}
+\DoxyCodeLine{00537\ \ \ \ \ \textcolor{comment}{/*\ The\ last\ two\ sequences\ of\ M\_NPATTERNS\ elements\ are\ equal,}}
+\DoxyCodeLine{00538\ \textcolor{comment}{\ \ \ \ \ \ \ so\ remove\ the\ last\ one.\ \ */}}
+\DoxyCodeLine{00539\ \ \ \ \ \doxymbox{\hyperlink{classvector__builder_a31e65b14bc497dd2d47af99cc4d902fc}{reshape}}\ (\doxymbox{\hyperlink{classvector__builder_adebea93284f6ed4f1b159e221d99d821}{m\_npatterns}},\ \doxymbox{\hyperlink{classvector__builder_ac5097ef88613608402840e2bcd6be18e}{m\_nelts\_per\_pattern}}\ -\/\ 1);}
+\DoxyCodeLine{00540\ }
+\DoxyCodeLine{00541\ \ \ \textcolor{keywordflow}{if}\ (\doxymbox{\hyperlink{hwint_8h_a0b221110a533265dc3a542f668a0e67c}{pow2p\_hwi}}\ (\doxymbox{\hyperlink{classvector__builder_adebea93284f6ed4f1b159e221d99d821}{m\_npatterns}}))}
+\DoxyCodeLine{00542\ \ \ \ \ \{}
+\DoxyCodeLine{00543\ \ \ \ \ \ \ \textcolor{comment}{/*\ Try\ to\ halve\ the\ number\ of\ patterns\ while\ doing\ so\ gives\ a}}
+\DoxyCodeLine{00544\ \textcolor{comment}{\ \ \ \ \ valid\ pattern.\ \ This\ approach\ is\ linear\ in\ the\ number\ of}}
+\DoxyCodeLine{00545\ \textcolor{comment}{\ \ \ \ \ elements,\ whereas\ searcing\ from\ 1\ up\ would\ be\ O(n*log(n)).}}
+\DoxyCodeLine{00546\ \textcolor{comment}{}}
+\DoxyCodeLine{00547\ \textcolor{comment}{\ \ \ \ \ Each\ halving\ step\ tries\ to\ keep\ the\ number\ of\ elements\ per\ pattern}}
+\DoxyCodeLine{00548\ \textcolor{comment}{\ \ \ \ \ the\ same.\ \ If\ that\ isn't\ possible,\ and\ if\ all\ elements\ are\ still}}
+\DoxyCodeLine{00549\ \textcolor{comment}{\ \ \ \ \ explicitly\ encoded,\ the\ halving\ step\ can\ instead\ increase\ the\ number}}
+\DoxyCodeLine{00550\ \textcolor{comment}{\ \ \ \ \ of\ elements\ per\ pattern.}}
+\DoxyCodeLine{00551\ \textcolor{comment}{}}
+\DoxyCodeLine{00552\ \textcolor{comment}{\ \ \ \ \ E.g.\ for:}}
+\DoxyCodeLine{00553\ \textcolor{comment}{}}
+\DoxyCodeLine{00554\ \textcolor{comment}{\ \ \ \ \ \ \ \ \ \{\ 0,\ 2,\ 3,\ 4,\ 5,\ 6,\ 7,\ 8\ \}\ \ npatterns\ ==\ 8\ \ full\_nelts\ ==\ 8}}
+\DoxyCodeLine{00555\ \textcolor{comment}{}}
+\DoxyCodeLine{00556\ \textcolor{comment}{\ \ \ \ \ we\ first\ realize\ that\ the\ second\ half\ of\ the\ sequence\ is\ not}}
+\DoxyCodeLine{00557\ \textcolor{comment}{\ \ \ \ \ equal\ to\ the\ first,\ so\ we\ cannot\ maintain\ 1\ element\ per\ pattern}}
+\DoxyCodeLine{00558\ \textcolor{comment}{\ \ \ \ \ for\ npatterns\ ==\ 4.\ \ Instead\ we\ halve\ the\ number\ of\ patterns}}
+\DoxyCodeLine{00559\ \textcolor{comment}{\ \ \ \ \ and\ double\ the\ number\ of\ elements\ per\ pattern,\ treating\ this}}
+\DoxyCodeLine{00560\ \textcolor{comment}{\ \ \ \ \ as\ a\ "{}foreground"{}\ \{\ 0,\ 2,\ 3,\ 4\ \}\ against\ a\ "{}background"{}\ of}}
+\DoxyCodeLine{00561\ \textcolor{comment}{\ \ \ \ \ \{\ 5,\ 6,\ 7,\ 8\ |\ 5,\ 6,\ 7,\ 8\ ...\ \}:}}
+\DoxyCodeLine{00562\ \textcolor{comment}{}}
+\DoxyCodeLine{00563\ \textcolor{comment}{\ \ \ \ \ \ \ \ \ \{\ 0,\ 2,\ 3,\ 4\ |\ 5,\ 6,\ 7,\ 8\ \}\ \ npatterns\ ==\ 4}}
+\DoxyCodeLine{00564\ \textcolor{comment}{}}
+\DoxyCodeLine{00565\ \textcolor{comment}{\ \ \ \ \ Next\ we\ realize\ that\ this\ is\ *not*\ a\ foreround\ of\ \{\ 0,\ 2\ \}}}
+\DoxyCodeLine{00566\ \textcolor{comment}{\ \ \ \ \ against\ a\ background\ of\ \{\ 3,\ 4\ |\ 3,\ 4\ ...\ \},\ so\ the\ only}}
+\DoxyCodeLine{00567\ \textcolor{comment}{\ \ \ \ \ remaining\ option\ for\ reducing\ the\ number\ of\ patterns\ is}}
+\DoxyCodeLine{00568\ \textcolor{comment}{\ \ \ \ \ to\ use\ a\ foreground\ of\ \{\ 0,\ 2\ \}\ against\ a\ stepped\ background}}
+\DoxyCodeLine{00569\ \textcolor{comment}{\ \ \ \ \ of\ \{\ 1,\ 2\ |\ 3,\ 4\ |\ 5,\ 6\ ...\ \}.\ \ This\ is\ valid\ because\ we\ still}}
+\DoxyCodeLine{00570\ \textcolor{comment}{\ \ \ \ \ haven't\ elided\ any\ elements:}}
+\DoxyCodeLine{00571\ \textcolor{comment}{}}
+\DoxyCodeLine{00572\ \textcolor{comment}{\ \ \ \ \ \ \ \ \ \{\ 0,\ 2\ |\ 3,\ 4\ |\ 5,\ 6\ \}\ \ npatterns\ ==\ 2}}
+\DoxyCodeLine{00573\ \textcolor{comment}{}}
+\DoxyCodeLine{00574\ \textcolor{comment}{\ \ \ \ \ This\ in\ turn\ can\ be\ reduced\ to\ a\ foreground\ of\ \{\ 0\ \}\ against\ a}}
+\DoxyCodeLine{00575\ \textcolor{comment}{\ \ \ \ \ stepped\ background\ of\ \{\ 1\ |\ 2\ |\ 3\ ...\ \}:}}
+\DoxyCodeLine{00576\ \textcolor{comment}{}}
+\DoxyCodeLine{00577\ \textcolor{comment}{\ \ \ \ \ \ \ \ \ \{\ 0\ |\ 2\ |\ 3\ \}\ \ npatterns\ ==\ 1}}
+\DoxyCodeLine{00578\ \textcolor{comment}{}}
+\DoxyCodeLine{00579\ \textcolor{comment}{\ \ \ \ \ This\ last\ step\ would\ not\ have\ been\ possible\ for:}}
+\DoxyCodeLine{00580\ \textcolor{comment}{}}
+\DoxyCodeLine{00581\ \textcolor{comment}{\ \ \ \ \ \ \ \ \ \{\ 0,\ 0\ |\ 3,\ 4\ |\ 5,\ 6\ \}\ \ npatterns\ ==\ 2.\ \ */}}
+\DoxyCodeLine{00582\ \ \ \ \ \ \ \textcolor{keywordflow}{while}\ ((\doxymbox{\hyperlink{classvector__builder_adebea93284f6ed4f1b159e221d99d821}{m\_npatterns}}\ \&\ 1)\ ==\ 0\ \&\&\ \doxymbox{\hyperlink{classvector__builder_ab91300a33015eb67d7defb142608eb65}{try\_npatterns}}\ (\doxymbox{\hyperlink{classvector__builder_adebea93284f6ed4f1b159e221d99d821}{m\_npatterns}}\ /\ 2))}
+\DoxyCodeLine{00583\ \ \ \ \ \textcolor{keywordflow}{continue};}
+\DoxyCodeLine{00584\ }
+\DoxyCodeLine{00585\ \ \ \ \ \ \ \textcolor{comment}{/*\ Builders\ of\ arbitrary\ fixed-\/length\ vectors\ can\ use:}}
+\DoxyCodeLine{00586\ \textcolor{comment}{}}
+\DoxyCodeLine{00587\ \textcolor{comment}{\ \ \ \ \ \ \ \ \ new\_vector\ (x,\ x,\ 1)}}
+\DoxyCodeLine{00588\ \textcolor{comment}{}}
+\DoxyCodeLine{00589\ \textcolor{comment}{\ \ \ \ \ so\ that\ every\ element\ is\ specified\ explicitly.\ \ Handle\ cases}}
+\DoxyCodeLine{00590\ \textcolor{comment}{\ \ \ \ \ that\ are\ actually\ wrapping\ series,\ like\ \{\ 0,\ 1,\ 2,\ 3,\ 0,\ 1,\ 2,\ 3\ \}}}
+\DoxyCodeLine{00591\ \textcolor{comment}{\ \ \ \ \ would\ be\ for\ 2-\/bit\ elements.\ \ We'll\ have\ treated\ them\ as}}
+\DoxyCodeLine{00592\ \textcolor{comment}{\ \ \ \ \ duplicates\ in\ the\ loop\ above.\ \ */}}
+\DoxyCodeLine{00593\ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (\doxymbox{\hyperlink{classvector__builder_ac5097ef88613608402840e2bcd6be18e}{m\_nelts\_per\_pattern}}\ ==\ 1}
+\DoxyCodeLine{00594\ \ \ \ \ \ \ \&\&\ \doxymbox{\hyperlink{classvector__builder_acc2271ccfb27a0a2e084e0ee102fcf45}{m\_full\_nelts}}.is\_constant\ (\&const\_full\_nelts)}
+\DoxyCodeLine{00595\ \ \ \ \ \ \ \&\&\ this-\/>length\ ()\ >=\ const\_full\_nelts}
+\DoxyCodeLine{00596\ \ \ \ \ \ \ \&\&\ (\doxymbox{\hyperlink{classvector__builder_adebea93284f6ed4f1b159e221d99d821}{m\_npatterns}}\ \&\ 3)\ ==\ 0}
+\DoxyCodeLine{00597\ \ \ \ \ \ \ \&\&\ \doxymbox{\hyperlink{classvector__builder_a8fa168cb223331f6f0e5207881a4fed2}{stepped\_sequence\_p}}\ (\doxymbox{\hyperlink{classvector__builder_adebea93284f6ed4f1b159e221d99d821}{m\_npatterns}}\ /\ 4,\ const\_full\_nelts,}
+\DoxyCodeLine{00598\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{classvector__builder_adebea93284f6ed4f1b159e221d99d821}{m\_npatterns}}\ /\ 4))}
+\DoxyCodeLine{00599\ \ \ \ \ \{}
+\DoxyCodeLine{00600\ \ \ \ \ \ \ \doxymbox{\hyperlink{classvector__builder_a31e65b14bc497dd2d47af99cc4d902fc}{reshape}}\ (\doxymbox{\hyperlink{classvector__builder_adebea93284f6ed4f1b159e221d99d821}{m\_npatterns}}\ /\ 4,\ 3);}
+\DoxyCodeLine{00601\ \ \ \ \ \ \ \textcolor{keywordflow}{while}\ ((\doxymbox{\hyperlink{classvector__builder_adebea93284f6ed4f1b159e221d99d821}{m\_npatterns}}\ \&\ 1)\ ==\ 0\ \&\&\ \doxymbox{\hyperlink{classvector__builder_ab91300a33015eb67d7defb142608eb65}{try\_npatterns}}\ (\doxymbox{\hyperlink{classvector__builder_adebea93284f6ed4f1b159e221d99d821}{m\_npatterns}}\ /\ 2))}
+\DoxyCodeLine{00602\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{continue};}
+\DoxyCodeLine{00603\ \ \ \ \ \}}
+\DoxyCodeLine{00604\ \ \ \ \ \}}
+\DoxyCodeLine{00605\ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00606\ \ \ \ \ \textcolor{comment}{/*\ For\ the\ non-\/power-\/of-\/2\ case,\ do\ a\ simple\ search\ up\ from\ 1.\ \ */}}
+\DoxyCodeLine{00607\ \ \ \ \ \textcolor{keywordflow}{for}\ (\textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{poly-int_8h_a7e98b8a17c0aad30ba64d47b74e2a6c1}{i}}\ =\ 1;\ \doxymbox{\hyperlink{poly-int_8h_a7e98b8a17c0aad30ba64d47b74e2a6c1}{i}}\ <=\ \doxymbox{\hyperlink{classvector__builder_adebea93284f6ed4f1b159e221d99d821}{m\_npatterns}}\ /\ 2;\ ++\doxymbox{\hyperlink{poly-int_8h_a7e98b8a17c0aad30ba64d47b74e2a6c1}{i}})}
+\DoxyCodeLine{00608\ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (\doxymbox{\hyperlink{classvector__builder_adebea93284f6ed4f1b159e221d99d821}{m\_npatterns}}\ \%\ \doxymbox{\hyperlink{poly-int_8h_a7e98b8a17c0aad30ba64d47b74e2a6c1}{i}}\ ==\ 0\ \&\&\ \doxymbox{\hyperlink{classvector__builder_ab91300a33015eb67d7defb142608eb65}{try\_npatterns}}\ (\doxymbox{\hyperlink{poly-int_8h_a7e98b8a17c0aad30ba64d47b74e2a6c1}{i}}))}
+\DoxyCodeLine{00609\ \ \ \ \ \textcolor{keywordflow}{break};}
+\DoxyCodeLine{00610\ \}}
+\DoxyCodeLine{00611\ }
+\DoxyCodeLine{00612\ \textcolor{preprocessor}{\#endif}}
+
+\end{DoxyCode}

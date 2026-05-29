@@ -1,0 +1,1576 @@
+\doxysection{value-\/range.h}
+\hypertarget{value-range_8h_source}{}\label{value-range_8h_source}\index{toolchain/x86\_64-\/elf/lib/gcc/x86\_64-\/elf/14.2.0/plugin/include/value-\/range.h@{toolchain/x86\_64-\/elf/lib/gcc/x86\_64-\/elf/14.2.0/plugin/include/value-\/range.h}}
+\doxymbox{\hyperlink{value-range_8h}{Go to the documentation of this file.}}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001\ \textcolor{comment}{/*\ Support\ routines\ for\ value\ ranges.}}
+\DoxyCodeLine{00002\ \textcolor{comment}{\ \ \ Copyright\ (C)\ 2019-\/2024\ Free\ Software\ Foundation,\ Inc.}}
+\DoxyCodeLine{00003\ \textcolor{comment}{\ \ \ Contributed\ by\ Aldy\ Hernandez\ <aldyh@redhat.com>\ and}}
+\DoxyCodeLine{00004\ \textcolor{comment}{\ \ \ Andrew\ Macleod\ <amacleod@redhat.com>.}}
+\DoxyCodeLine{00005\ \textcolor{comment}{}}
+\DoxyCodeLine{00006\ \textcolor{comment}{This\ file\ is\ part\ of\ GCC.}}
+\DoxyCodeLine{00007\ \textcolor{comment}{}}
+\DoxyCodeLine{00008\ \textcolor{comment}{GCC\ is\ free\ software;\ you\ can\ redistribute\ it\ and/or\ modify}}
+\DoxyCodeLine{00009\ \textcolor{comment}{it\ under\ the\ terms\ of\ the\ GNU\ General\ Public\ License\ as\ published\ by}}
+\DoxyCodeLine{00010\ \textcolor{comment}{the\ Free\ Software\ Foundation;\ either\ version\ 3,\ or\ (at\ your\ option)}}
+\DoxyCodeLine{00011\ \textcolor{comment}{any\ later\ version.}}
+\DoxyCodeLine{00012\ \textcolor{comment}{}}
+\DoxyCodeLine{00013\ \textcolor{comment}{GCC\ is\ distributed\ in\ the\ hope\ that\ it\ will\ be\ useful,}}
+\DoxyCodeLine{00014\ \textcolor{comment}{but\ WITHOUT\ ANY\ WARRANTY;\ without\ even\ the\ implied\ warranty\ of}}
+\DoxyCodeLine{00015\ \textcolor{comment}{MERCHANTABILITY\ or\ FITNESS\ FOR\ A\ PARTICULAR\ PURPOSE.\ \ See\ the}}
+\DoxyCodeLine{00016\ \textcolor{comment}{GNU\ General\ Public\ License\ for\ more\ details.}}
+\DoxyCodeLine{00017\ \textcolor{comment}{}}
+\DoxyCodeLine{00018\ \textcolor{comment}{You\ should\ have\ received\ a\ copy\ of\ the\ GNU\ General\ Public\ License}}
+\DoxyCodeLine{00019\ \textcolor{comment}{along\ with\ GCC;\ see\ the\ file\ COPYING3.\ \ If\ not\ see}}
+\DoxyCodeLine{00020\ \textcolor{comment}{<http://www.gnu.org/licenses/>.\ \ */}}
+\DoxyCodeLine{00021\ }
+\DoxyCodeLine{00022\ \textcolor{preprocessor}{\#ifndef\ GCC\_VALUE\_RANGE\_H}}
+\DoxyCodeLine{00023\ \textcolor{preprocessor}{\#define\ GCC\_VALUE\_RANGE\_H}}
+\DoxyCodeLine{00024\ }
+\DoxyCodeLine{00025\ \textcolor{keyword}{class\ }irange;}
+\DoxyCodeLine{00026\ }
+\DoxyCodeLine{00027\ \textcolor{comment}{//\ Types\ of\ value\ ranges.}}
+\DoxyCodeLine{00028\ \textcolor{keyword}{enum}\ \doxymbox{\hyperlink{value-range_8h_a3f4073c0d3bf2a2addfa5a8f71d96818}{value\_range\_kind}}}
+\DoxyCodeLine{00029\ \{}
+\DoxyCodeLine{00030\ \ \ \textcolor{comment}{/*\ Empty\ range.\ \ */}}
+\DoxyCodeLine{00031\ \ \ \doxymbox{\hyperlink{value-range_8h_a3f4073c0d3bf2a2addfa5a8f71d96818aa95d2a79a8d463d24d8e2538093ff6db}{VR\_UNDEFINED}},}
+\DoxyCodeLine{00032\ \ \ \textcolor{comment}{/*\ Range\ spans\ the\ entire\ domain.\ \ */}}
+\DoxyCodeLine{00033\ \ \ \doxymbox{\hyperlink{value-range_8h_a3f4073c0d3bf2a2addfa5a8f71d96818aa860022b2f57b72728fb8823d2b2d45b}{VR\_VARYING}},}
+\DoxyCodeLine{00034\ \ \ \textcolor{comment}{/*\ Range\ is\ [MIN,\ MAX].\ \ */}}
+\DoxyCodeLine{00035\ \ \ \doxymbox{\hyperlink{value-range_8h_a3f4073c0d3bf2a2addfa5a8f71d96818a30bf60866081de6a1d9a799bc99fb16d}{VR\_RANGE}},}
+\DoxyCodeLine{00036\ \ \ \textcolor{comment}{/*\ Range\ is\ \string~[MIN,\ MAX].\ \ */}}
+\DoxyCodeLine{00037\ \ \ \doxymbox{\hyperlink{value-range_8h_a3f4073c0d3bf2a2addfa5a8f71d96818a1d0ef36ad5e8ae5e50754975abd4eb4a}{VR\_ANTI\_RANGE}},}
+\DoxyCodeLine{00038\ \ \ \textcolor{comment}{/*\ Range\ is\ a\ NAN.\ \ */}}
+\DoxyCodeLine{00039\ \ \ \doxymbox{\hyperlink{value-range_8h_a3f4073c0d3bf2a2addfa5a8f71d96818a8179420475dc32889b9b683b97b54d32}{VR\_NAN}},}
+\DoxyCodeLine{00040\ \ \ \textcolor{comment}{/*\ Range\ is\ a\ nice\ guy.\ \ */}}
+\DoxyCodeLine{00041\ \ \ \doxymbox{\hyperlink{value-range_8h_a3f4073c0d3bf2a2addfa5a8f71d96818a7dfff8f6745b9d2b4b0ccd4d429a2829}{VR\_LAST}}}
+\DoxyCodeLine{00042\ \};}
+\DoxyCodeLine{00043\ }
+\DoxyCodeLine{00044\ \textcolor{comment}{//\ Discriminator\ between\ different\ vrange\ types.}}
+\DoxyCodeLine{00045\ }
+\DoxyCodeLine{00046\ \textcolor{keyword}{enum}\ \doxymbox{\hyperlink{value-range_8h_a5c22d2d797d75c81f8a15e60137418c2}{value\_range\_discriminator}}}
+\DoxyCodeLine{00047\ \{}
+\DoxyCodeLine{00048\ \ \ \textcolor{comment}{//\ Range\ holds\ an\ integer\ or\ pointer.}}
+\DoxyCodeLine{00049\ \ \ \doxymbox{\hyperlink{value-range_8h_a5c22d2d797d75c81f8a15e60137418c2a74b330c0c425c20f84b36c3ed62d4949}{VR\_IRANGE}},}
+\DoxyCodeLine{00050\ \ \ \textcolor{comment}{//\ Floating\ point\ range.}}
+\DoxyCodeLine{00051\ \ \ \doxymbox{\hyperlink{value-range_8h_a5c22d2d797d75c81f8a15e60137418c2ad5ffbe7b65fcb1fe7862f7d319680e5b}{VR\_FRANGE}},}
+\DoxyCodeLine{00052\ \ \ \textcolor{comment}{//\ Range\ holds\ an\ unsupported\ type.}}
+\DoxyCodeLine{00053\ \ \ \doxymbox{\hyperlink{value-range_8h_a5c22d2d797d75c81f8a15e60137418c2a21a2108e8b530bb349878bdb723f5cfe}{VR\_UNKNOWN}}}
+\DoxyCodeLine{00054\ \};}
+\DoxyCodeLine{00055\ }
+\DoxyCodeLine{00056\ \textcolor{comment}{//\ Abstract\ class\ for\ ranges\ of\ any\ of\ the\ supported\ types.}}
+\DoxyCodeLine{00057\ \textcolor{comment}{//}}
+\DoxyCodeLine{00058\ \textcolor{comment}{//\ To\ query\ what\ types\ ranger\ and\ the\ entire\ ecosystem\ can\ support,}}
+\DoxyCodeLine{00059\ \textcolor{comment}{//\ use\ Value\_Range::supports\_type\_p(tree\ type).\ \ This\ is\ a\ static}}
+\DoxyCodeLine{00060\ \textcolor{comment}{//\ method\ available\ independently\ of\ any\ vrange\ object.}}
+\DoxyCodeLine{00061\ \textcolor{comment}{//}}
+\DoxyCodeLine{00062\ \textcolor{comment}{//\ To\ query\ what\ a\ given\ vrange\ variant\ can\ support,\ use:}}
+\DoxyCodeLine{00063\ \textcolor{comment}{//\ \ \ \ irange::supports\_p\ ()}}
+\DoxyCodeLine{00064\ \textcolor{comment}{//\ \ \ \ frange::supports\_p\ ()}}
+\DoxyCodeLine{00065\ \textcolor{comment}{//\ \ \ \ etc}}
+\DoxyCodeLine{00066\ \textcolor{comment}{//}}
+\DoxyCodeLine{00067\ \textcolor{comment}{//\ To\ query\ what\ a\ range\ object\ can\ support,\ use:}}
+\DoxyCodeLine{00068\ \textcolor{comment}{//\ \ \ \ void\ foo\ (vrange\ \&v,\ irange\ \&i,\ frange\ \&f)}}
+\DoxyCodeLine{00069\ \textcolor{comment}{//\ \ \ \ \{}}
+\DoxyCodeLine{00070\ \textcolor{comment}{//\ \ if\ (v.supports\_type\_p\ (type))\ ...}}
+\DoxyCodeLine{00071\ \textcolor{comment}{//\ \ if\ (i.supports\_type\_p\ (type))\ ...}}
+\DoxyCodeLine{00072\ \textcolor{comment}{//\ \ if\ (f.supports\_type\_p\ (type))\ ...}}
+\DoxyCodeLine{00073\ \textcolor{comment}{//\ \ \ \ \}}}
+\DoxyCodeLine{00074\ }
+\DoxyCodeLine{00075\ \textcolor{keyword}{class\ }\doxymbox{\hyperlink{coretypes_8h_ae5708c4d4b300570eebe0bc0c78facbc}{GTY}}((user))\ vrange}
+\DoxyCodeLine{00076\ \{}
+\DoxyCodeLine{00077\ \ \ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ T>\ \textcolor{keyword}{friend}\ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{is-a_8h_a7fc3c6f9ffa582e4caa829307f4ada7a}{is\_a}}\ (vrange\ \&);}
+\DoxyCodeLine{00078\ \ \ \textcolor{keyword}{friend}\ \textcolor{keyword}{class\ }Value\_Range;}
+\DoxyCodeLine{00079\ \ \ \textcolor{keyword}{friend}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{data-streamer_8h_a51eb58dd7c0dc801fc5cebbec7370b12}{streamer\_write\_vrange}}\ (\textcolor{keyword}{struct}\ output\_block\ *,\ \textcolor{keyword}{const}\ vrange\ \&);}
+\DoxyCodeLine{00080\ \ \ \textcolor{keyword}{friend}\ \textcolor{keyword}{class\ }range\_op\_handler;}
+\DoxyCodeLine{00081\ \textcolor{keyword}{public}:}
+\DoxyCodeLine{00082\ \ \ \textcolor{keyword}{virtual}\ \textcolor{keywordtype}{void}\ accept\ (\textcolor{keyword}{const}\ \textcolor{keyword}{class}\ vrange\_visitor\ \&v)\ \textcolor{keyword}{const}\ =\ 0;}
+\DoxyCodeLine{00083\ \ \ \textcolor{keyword}{virtual}\ \textcolor{keywordtype}{void}\ set\ (\doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}},\ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}},\ \doxymbox{\hyperlink{value-range_8h_a3f4073c0d3bf2a2addfa5a8f71d96818}{value\_range\_kind}}\ =\ \doxymbox{\hyperlink{value-range_8h_a3f4073c0d3bf2a2addfa5a8f71d96818a30bf60866081de6a1d9a799bc99fb16d}{VR\_RANGE}});}
+\DoxyCodeLine{00084\ \ \ \textcolor{keyword}{virtual}\ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ type\ ()\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00085\ \ \ \textcolor{keyword}{virtual}\ \textcolor{keywordtype}{bool}\ supports\_type\_p\ (\doxymbox{\hyperlink{coretypes_8h_ad41eb6a6028ff5b3fd00b1ee9f35ed46}{const\_tree}}\ type)\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00086\ \ \ \textcolor{keyword}{virtual}\ \textcolor{keywordtype}{void}\ set\_varying\ (\doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ type);}
+\DoxyCodeLine{00087\ \ \ \textcolor{keyword}{virtual}\ \textcolor{keywordtype}{void}\ set\_undefined\ ();}
+\DoxyCodeLine{00088\ \ \ \textcolor{keyword}{virtual}\ \textcolor{keywordtype}{bool}\ union\_\ (\textcolor{keyword}{const}\ vrange\ \&);}
+\DoxyCodeLine{00089\ \ \ \textcolor{keyword}{virtual}\ \textcolor{keywordtype}{bool}\ intersect\ (\textcolor{keyword}{const}\ vrange\ \&);}
+\DoxyCodeLine{00090\ \ \ \textcolor{keyword}{virtual}\ \textcolor{keywordtype}{bool}\ singleton\_p\ (\doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ *result\ =\ \doxymbox{\hyperlink{stddef_8h_a070d2ce7b6bb7e5c05602aa8c308d0c4}{NULL}})\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00091\ \ \ \textcolor{keyword}{virtual}\ \textcolor{keywordtype}{bool}\ contains\_p\ (\doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ cst)\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00092\ \ \ \textcolor{keyword}{virtual}\ \textcolor{keywordtype}{bool}\ zero\_p\ ()\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00093\ \ \ \textcolor{keyword}{virtual}\ \textcolor{keywordtype}{bool}\ nonzero\_p\ ()\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00094\ \ \ \textcolor{keyword}{virtual}\ \textcolor{keywordtype}{void}\ set\_nonzero\ (\doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ type);}
+\DoxyCodeLine{00095\ \ \ \textcolor{keyword}{virtual}\ \textcolor{keywordtype}{void}\ set\_zero\ (\doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ type);}
+\DoxyCodeLine{00096\ \ \ \textcolor{keyword}{virtual}\ \textcolor{keywordtype}{void}\ set\_nonnegative\ (\doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ type);}
+\DoxyCodeLine{00097\ \ \ \textcolor{keyword}{virtual}\ \textcolor{keywordtype}{bool}\ fits\_p\ (\textcolor{keyword}{const}\ vrange\ \&\doxymbox{\hyperlink{poly-int_8h_a3ecac2571dcdc8050989339124f1bd26}{r}})\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00098\ }
+\DoxyCodeLine{00099\ \ \ \textcolor{keywordtype}{bool}\ varying\_p\ ()\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00100\ \ \ \textcolor{keywordtype}{bool}\ undefined\_p\ ()\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00101\ \ \ vrange\&\ operator=\ (\textcolor{keyword}{const}\ vrange\ \&);}
+\DoxyCodeLine{00102\ \ \ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{cp-tree_8h_a4b9bd7e4e073a2a98d043c78719de59b}{operator==\ }}(\textcolor{keyword}{const}\ vrange\ \&)\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00103\ \ \ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{diagnostic-spec_8h_a6b5ad3fba66b4c54ae8afbdf1bbebfb7}{operator!=\ }}(\textcolor{keyword}{const}\ vrange\ \&\doxymbox{\hyperlink{poly-int_8h_a3ecac2571dcdc8050989339124f1bd26}{r}})\textcolor{keyword}{\ const\ }\{\ \textcolor{keywordflow}{return}\ !(*\textcolor{keyword}{this}\ ==\ \doxymbox{\hyperlink{poly-int_8h_a3ecac2571dcdc8050989339124f1bd26}{r}});\ \}}
+\DoxyCodeLine{00104\ \ \ \textcolor{keywordtype}{void}\ dump\ (FILE\ *)\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00105\ \textcolor{keyword}{protected}:}
+\DoxyCodeLine{00106\ \ \ vrange\ (\textcolor{keyword}{enum}\ \doxymbox{\hyperlink{value-range_8h_a5c22d2d797d75c81f8a15e60137418c2}{value\_range\_discriminator}}\ d)\ :\ m\_discriminator\ (d)\ \{\ \}}
+\DoxyCodeLine{00107\ \ \ \doxymbox{\hyperlink{ansidecl_8h_a2934559f672ebd88a0459d0fe40faff2}{ENUM\_BITFIELD}}(\doxymbox{\hyperlink{value-range_8h_a3f4073c0d3bf2a2addfa5a8f71d96818}{value\_range\_kind}})\ m\_kind\ :\ 8;}
+\DoxyCodeLine{00108\ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{ansidecl_8h_a2934559f672ebd88a0459d0fe40faff2}{ENUM\_BITFIELD}}(\doxymbox{\hyperlink{value-range_8h_a5c22d2d797d75c81f8a15e60137418c2}{value\_range\_discriminator}})\ m\_discriminator\ :\ 4;}
+\DoxyCodeLine{00109\ \};}
+\DoxyCodeLine{00110\ }
+\DoxyCodeLine{00111\ \textcolor{keyword}{namespace\ }\doxymbox{\hyperlink{namespaceinchash}{inchash}}}
+\DoxyCodeLine{00112\ \{}
+\DoxyCodeLine{00113\ \ \ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{namespaceinchash_a4de9a6632cd21a15de0c810d5b55c987}{add\_vrange}}\ (\textcolor{keyword}{const}\ vrange\ \&,\ \doxymbox{\hyperlink{classinchash_1_1hash}{hash}}\ \&,\ \textcolor{keywordtype}{unsigned}\ flags\ =\ 0);}
+\DoxyCodeLine{00114\ \}}
+\DoxyCodeLine{00115\ }
+\DoxyCodeLine{00116\ \textcolor{comment}{//\ A\ pair\ of\ values\ representing\ the\ known\ bits\ in\ a\ range.\ \ Zero\ bits}}
+\DoxyCodeLine{00117\ \textcolor{comment}{//\ in\ MASK\ cover\ constant\ values.\ \ Set\ bits\ in\ MASK\ cover\ unknown}}
+\DoxyCodeLine{00118\ \textcolor{comment}{//\ values.\ \ VALUE\ are\ the\ known\ bits.}}
+\DoxyCodeLine{00119\ \textcolor{comment}{//}}
+\DoxyCodeLine{00120\ \textcolor{comment}{//\ Set\ bits\ in\ MASK\ (no\ meaningful\ information)\ must\ have\ their}}
+\DoxyCodeLine{00121\ \textcolor{comment}{//\ corresponding\ bits\ in\ VALUE\ cleared,\ as\ this\ speeds\ up\ union\ and}}
+\DoxyCodeLine{00122\ \textcolor{comment}{//\ intersect.}}
+\DoxyCodeLine{00123\ }
+\DoxyCodeLine{00124\ \textcolor{keyword}{class\ }\doxymbox{\hyperlink{classirange__bitmask_ac6f11452f971f24fe2b0ce47329bd140}{irange\_bitmask}}}
+\DoxyCodeLine{00125\ \{}
+\DoxyCodeLine{00126\ \textcolor{keyword}{public}:}
+\DoxyCodeLine{00127\ \ \ \doxymbox{\hyperlink{classirange__bitmask_ac6f11452f971f24fe2b0ce47329bd140}{irange\_bitmask}}\ ()\ \{\ \textcolor{comment}{/*\ uninitialized\ */}\ \}}
+\DoxyCodeLine{00128\ \ \ \doxymbox{\hyperlink{classirange__bitmask_a0295cf29d8c25ee56a93fdaaacd4a5e2}{irange\_bitmask}}\ (\textcolor{keywordtype}{unsigned}\ prec)\ \{\ \doxymbox{\hyperlink{classirange__bitmask_a48e9138737f7ac637059587cd4ac603e}{set\_unknown}}\ (prec);\ \}}
+\DoxyCodeLine{00129\ \ \ \doxymbox{\hyperlink{classirange__bitmask_ac6f11452f971f24fe2b0ce47329bd140}{irange\_bitmask}}\ (\textcolor{keyword}{const}\ \doxymbox{\hyperlink{wide-int_8h_a9a29e47e2c40ae9adaf47df15970eced}{wide\_int}}\ \&\doxymbox{\hyperlink{configargs_8h_a92d544bd66c050551f3d87fa55eb3f5d}{value}},\ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{wide-int_8h_a9a29e47e2c40ae9adaf47df15970eced}{wide\_int}}\ \&\doxymbox{\hyperlink{classirange__bitmask_aa12fb5c1479912ecc026b4701a04ecae}{mask}});}
+\DoxyCodeLine{00130\ \ \ \doxymbox{\hyperlink{wide-int_8h_a9a29e47e2c40ae9adaf47df15970eced}{wide\_int}}\ \doxymbox{\hyperlink{classirange__bitmask_af4ace962e7640a1996d6be8ea6b88f10}{value}}\ ()\textcolor{keyword}{\ const\ }\{\ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{classirange__bitmask_af003088f772dc13cb32568e72fa8cb87}{m\_value}};\ \}}
+\DoxyCodeLine{00131\ \ \ \doxymbox{\hyperlink{wide-int_8h_a9a29e47e2c40ae9adaf47df15970eced}{wide\_int}}\ \doxymbox{\hyperlink{classirange__bitmask_aa12fb5c1479912ecc026b4701a04ecae}{mask}}\ ()\textcolor{keyword}{\ const\ }\{\ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{classirange__bitmask_ac89b6a39d070574de24f5f2657f236bb}{m\_mask}};\ \}}
+\DoxyCodeLine{00132\ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classirange__bitmask_a48e9138737f7ac637059587cd4ac603e}{set\_unknown}}\ (\textcolor{keywordtype}{unsigned}\ prec);}
+\DoxyCodeLine{00133\ \ \ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{classirange__bitmask_a6979a817ee7509114a2c6d23bec11cc9}{unknown\_p}}\ ()\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00134\ \ \ \textcolor{keywordtype}{unsigned}\ \doxymbox{\hyperlink{classirange__bitmask_a3c545a3228b1f8f415eaf3b7432043e8}{get\_precision}}\ ()\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00135\ \ \ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{classirange__bitmask_a37adbd982daf388a86a592149cfa0793}{union\_}}\ (\textcolor{keyword}{const}\ \doxymbox{\hyperlink{classirange__bitmask}{irange\_bitmask}}\ \&src);}
+\DoxyCodeLine{00136\ \ \ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{classirange__bitmask_ac3863611045dfbc497c4409dfe0256bf}{intersect}}\ (\textcolor{keyword}{const}\ \doxymbox{\hyperlink{classirange__bitmask}{irange\_bitmask}}\ \&src);}
+\DoxyCodeLine{00137\ \ \ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{classirange__bitmask_a779a0763f212b0981b1bdcdc873ec9b4}{operator==\ }}(\textcolor{keyword}{const}\ \doxymbox{\hyperlink{classirange__bitmask}{irange\_bitmask}}\ \&src)\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00138\ \ \ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{classirange__bitmask_ac2d35bbdfcb21c0a9a760b7a9c73ce71}{operator!=\ }}(\textcolor{keyword}{const}\ \doxymbox{\hyperlink{classirange__bitmask_ac6f11452f971f24fe2b0ce47329bd140}{irange\_bitmask}}\ \&src)\textcolor{keyword}{\ const\ }\{\ \textcolor{keywordflow}{return}\ !(*\textcolor{keyword}{this}\ ==\ src);\ \}}
+\DoxyCodeLine{00139\ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classirange__bitmask_a3196eb4f32f4311829fa5287076fdc94}{verify\_mask}}\ ()\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00140\ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classirange__bitmask_a160d26989abaa882591360f79c0621da}{dump}}\ (FILE\ *)\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00141\ }
+\DoxyCodeLine{00142\ \ \ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{classirange__bitmask_a4026dac28fa3990890b46f62461978ee}{member\_p}}\ (\textcolor{keyword}{const}\ \doxymbox{\hyperlink{wide-int_8h_a9a29e47e2c40ae9adaf47df15970eced}{wide\_int}}\ \&val)\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00143\ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classirange__bitmask_a2d1e33f268a7136f180274e2fa7b1d43}{adjust\_range}}\ (irange\ \&\doxymbox{\hyperlink{poly-int_8h_a3ecac2571dcdc8050989339124f1bd26}{r}})\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00144\ }
+\DoxyCodeLine{00145\ \ \ \textcolor{comment}{//\ Convenience\ functions\ for\ nonzero\ bitmask\ compatibility.}}
+\DoxyCodeLine{00146\ \ \ \doxymbox{\hyperlink{wide-int_8h_a9a29e47e2c40ae9adaf47df15970eced}{wide\_int}}\ \doxymbox{\hyperlink{classirange__bitmask_a957500e331ae27c4ae066f104ffb51ee}{get\_nonzero\_bits}}\ ()\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00147\ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classirange__bitmask_a3827d4517bad8c78cd9d446324eba1cb}{set\_nonzero\_bits}}\ (\textcolor{keyword}{const}\ \doxymbox{\hyperlink{wide-int_8h_a9a29e47e2c40ae9adaf47df15970eced}{wide\_int}}\ \&bits);}
+\DoxyCodeLine{00148\ \textcolor{keyword}{private}:}
+\DoxyCodeLine{00149\ \ \ \doxymbox{\hyperlink{wide-int_8h_a9a29e47e2c40ae9adaf47df15970eced}{wide\_int}}\ \doxymbox{\hyperlink{classirange__bitmask_af003088f772dc13cb32568e72fa8cb87}{m\_value}};}
+\DoxyCodeLine{00150\ \ \ \doxymbox{\hyperlink{wide-int_8h_a9a29e47e2c40ae9adaf47df15970eced}{wide\_int}}\ \doxymbox{\hyperlink{classirange__bitmask_ac89b6a39d070574de24f5f2657f236bb}{m\_mask}};}
+\DoxyCodeLine{00151\ \};}
+\DoxyCodeLine{00152\ }
+\DoxyCodeLine{00153\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{void}}
+\DoxyCodeLine{00154\ \doxymbox{\hyperlink{classirange__bitmask_a48e9138737f7ac637059587cd4ac603e}{irange\_bitmask::set\_unknown}}\ (\textcolor{keywordtype}{unsigned}\ prec)}
+\DoxyCodeLine{00155\ \{}
+\DoxyCodeLine{00156\ \ \ \doxymbox{\hyperlink{classirange__bitmask_af003088f772dc13cb32568e72fa8cb87}{m\_value}}\ =\ \doxymbox{\hyperlink{namespacewi_a6e251260a135cc72c48d4be39baa9e28}{wi::zero}}\ (prec);}
+\DoxyCodeLine{00157\ \ \ \doxymbox{\hyperlink{classirange__bitmask_ac89b6a39d070574de24f5f2657f236bb}{m\_mask}}\ =\ \doxymbox{\hyperlink{namespacewi_a671c262f4555f9abcad1fae1b0b2e238}{wi::minus\_one}}\ (prec);}
+\DoxyCodeLine{00158\ \ \ \textcolor{keywordflow}{if}\ (\doxymbox{\hyperlink{options_8h_a84596fb150478c4f5173d2c5fff82710}{flag\_checking}})}
+\DoxyCodeLine{00159\ \ \ \ \ \doxymbox{\hyperlink{classirange__bitmask_a3196eb4f32f4311829fa5287076fdc94}{verify\_mask}}\ ();}
+\DoxyCodeLine{00160\ \}}
+\DoxyCodeLine{00161\ }
+\DoxyCodeLine{00162\ \textcolor{comment}{//\ Return\ TRUE\ if\ THIS\ does\ not\ have\ any\ meaningful\ information.}}
+\DoxyCodeLine{00163\ }
+\DoxyCodeLine{00164\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{bool}}
+\DoxyCodeLine{00165\ \doxymbox{\hyperlink{classirange__bitmask_a6979a817ee7509114a2c6d23bec11cc9}{irange\_bitmask::unknown\_p}}\ ()\textcolor{keyword}{\ const}}
+\DoxyCodeLine{00166\ \textcolor{keyword}{}\{}
+\DoxyCodeLine{00167\ \ \ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{classirange__bitmask_ac89b6a39d070574de24f5f2657f236bb}{m\_mask}}\ ==\ -\/1;}
+\DoxyCodeLine{00168\ \}}
+\DoxyCodeLine{00169\ }
+\DoxyCodeLine{00170\ \textcolor{keyword}{inline}}
+\DoxyCodeLine{00171\ \doxymbox{\hyperlink{classirange__bitmask_ac6f11452f971f24fe2b0ce47329bd140}{irange\_bitmask::irange\_bitmask}}\ (\textcolor{keyword}{const}\ \doxymbox{\hyperlink{wide-int_8h_a9a29e47e2c40ae9adaf47df15970eced}{wide\_int}}\ \&\doxymbox{\hyperlink{classirange__bitmask_af4ace962e7640a1996d6be8ea6b88f10}{value}},\ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{wide-int_8h_a9a29e47e2c40ae9adaf47df15970eced}{wide\_int}}\ \&\doxymbox{\hyperlink{classirange__bitmask_aa12fb5c1479912ecc026b4701a04ecae}{mask}})}
+\DoxyCodeLine{00172\ \{}
+\DoxyCodeLine{00173\ \ \ \doxymbox{\hyperlink{classirange__bitmask_af003088f772dc13cb32568e72fa8cb87}{m\_value}}\ =\ \doxymbox{\hyperlink{classirange__bitmask_af4ace962e7640a1996d6be8ea6b88f10}{value}};}
+\DoxyCodeLine{00174\ \ \ \doxymbox{\hyperlink{classirange__bitmask_ac89b6a39d070574de24f5f2657f236bb}{m\_mask}}\ =\ \doxymbox{\hyperlink{classirange__bitmask_aa12fb5c1479912ecc026b4701a04ecae}{mask}};}
+\DoxyCodeLine{00175\ \ \ \textcolor{keywordflow}{if}\ (\doxymbox{\hyperlink{options_8h_a84596fb150478c4f5173d2c5fff82710}{flag\_checking}})}
+\DoxyCodeLine{00176\ \ \ \ \ \doxymbox{\hyperlink{classirange__bitmask_a3196eb4f32f4311829fa5287076fdc94}{verify\_mask}}\ ();}
+\DoxyCodeLine{00177\ \}}
+\DoxyCodeLine{00178\ }
+\DoxyCodeLine{00179\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{unsigned}}
+\DoxyCodeLine{00180\ \doxymbox{\hyperlink{classirange__bitmask_a3c545a3228b1f8f415eaf3b7432043e8}{irange\_bitmask::get\_precision}}\ ()\textcolor{keyword}{\ const}}
+\DoxyCodeLine{00181\ \textcolor{keyword}{}\{}
+\DoxyCodeLine{00182\ \ \ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{classirange__bitmask_ac89b6a39d070574de24f5f2657f236bb}{m\_mask}}.get\_precision\ ();}
+\DoxyCodeLine{00183\ \}}
+\DoxyCodeLine{00184\ }
+\DoxyCodeLine{00185\ \textcolor{comment}{//\ The\ following\ two\ functions\ are\ meant\ for\ backwards\ compatability}}
+\DoxyCodeLine{00186\ \textcolor{comment}{//\ with\ the\ nonzero\ bitmask.\ \ A\ cleared\ bit\ means\ the\ value\ must\ be\ 0.}}
+\DoxyCodeLine{00187\ \textcolor{comment}{//\ A\ set\ bit\ means\ we\ have\ no\ information\ for\ the\ bit.}}
+\DoxyCodeLine{00188\ }
+\DoxyCodeLine{00189\ \textcolor{comment}{//\ Return\ the\ nonzero\ bits.}}
+\DoxyCodeLine{00190\ \textcolor{keyword}{inline}\ \doxymbox{\hyperlink{wide-int_8h_a9a29e47e2c40ae9adaf47df15970eced}{wide\_int}}}
+\DoxyCodeLine{00191\ \doxymbox{\hyperlink{classirange__bitmask_a957500e331ae27c4ae066f104ffb51ee}{irange\_bitmask::get\_nonzero\_bits}}\ ()\textcolor{keyword}{\ const}}
+\DoxyCodeLine{00192\ \textcolor{keyword}{}\{}
+\DoxyCodeLine{00193\ \ \ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{classirange__bitmask_af003088f772dc13cb32568e72fa8cb87}{m\_value}}\ |\ \doxymbox{\hyperlink{classirange__bitmask_ac89b6a39d070574de24f5f2657f236bb}{m\_mask}};}
+\DoxyCodeLine{00194\ \}}
+\DoxyCodeLine{00195\ }
+\DoxyCodeLine{00196\ \textcolor{comment}{//\ Set\ the\ bitmask\ to\ the\ nonzero\ bits\ in\ BITS.}}
+\DoxyCodeLine{00197\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{void}}
+\DoxyCodeLine{00198\ \doxymbox{\hyperlink{classirange__bitmask_a3827d4517bad8c78cd9d446324eba1cb}{irange\_bitmask::set\_nonzero\_bits}}\ (\textcolor{keyword}{const}\ \doxymbox{\hyperlink{wide-int_8h_a9a29e47e2c40ae9adaf47df15970eced}{wide\_int}}\ \&bits)}
+\DoxyCodeLine{00199\ \{}
+\DoxyCodeLine{00200\ \ \ \doxymbox{\hyperlink{classirange__bitmask_af003088f772dc13cb32568e72fa8cb87}{m\_value}}\ =\ \doxymbox{\hyperlink{namespacewi_a6e251260a135cc72c48d4be39baa9e28}{wi::zero}}\ (bits.get\_precision\ ());}
+\DoxyCodeLine{00201\ \ \ \doxymbox{\hyperlink{classirange__bitmask_ac89b6a39d070574de24f5f2657f236bb}{m\_mask}}\ =\ bits;}
+\DoxyCodeLine{00202\ \ \ \textcolor{keywordflow}{if}\ (\doxymbox{\hyperlink{options_8h_a84596fb150478c4f5173d2c5fff82710}{flag\_checking}})}
+\DoxyCodeLine{00203\ \ \ \ \ \doxymbox{\hyperlink{classirange__bitmask_a3196eb4f32f4311829fa5287076fdc94}{verify\_mask}}\ ();}
+\DoxyCodeLine{00204\ \}}
+\DoxyCodeLine{00205\ }
+\DoxyCodeLine{00206\ \textcolor{comment}{//\ Return\ TRUE\ if\ val\ could\ be\ a\ valid\ value\ with\ this\ bitmask.}}
+\DoxyCodeLine{00207\ }
+\DoxyCodeLine{00208\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{bool}}
+\DoxyCodeLine{00209\ \doxymbox{\hyperlink{classirange__bitmask_a4026dac28fa3990890b46f62461978ee}{irange\_bitmask::member\_p}}\ (\textcolor{keyword}{const}\ \doxymbox{\hyperlink{wide-int_8h_a9a29e47e2c40ae9adaf47df15970eced}{wide\_int}}\ \&val)\textcolor{keyword}{\ const}}
+\DoxyCodeLine{00210\ \textcolor{keyword}{}\{}
+\DoxyCodeLine{00211\ \ \ \textcolor{keywordflow}{if}\ (\doxymbox{\hyperlink{classirange__bitmask_a6979a817ee7509114a2c6d23bec11cc9}{unknown\_p}}\ ())}
+\DoxyCodeLine{00212\ \ \ \ \ \textcolor{keywordflow}{return}\ \textcolor{keyword}{true};}
+\DoxyCodeLine{00213\ \ \ \doxymbox{\hyperlink{wide-int_8h_a9a29e47e2c40ae9adaf47df15970eced}{wide\_int}}\ res\ =\ \doxymbox{\hyperlink{classirange__bitmask_ac89b6a39d070574de24f5f2657f236bb}{m\_mask}}\ \&\ val;}
+\DoxyCodeLine{00214\ \ \ \textcolor{keywordflow}{if}\ (\doxymbox{\hyperlink{classirange__bitmask_af003088f772dc13cb32568e72fa8cb87}{m\_value}}\ !=\ 0)}
+\DoxyCodeLine{00215\ \ \ \ \ res\ |=\ \doxymbox{\hyperlink{classirange__bitmask_ac89b6a39d070574de24f5f2657f236bb}{\string~m\_mask}}\ \&\ \doxymbox{\hyperlink{classirange__bitmask_af003088f772dc13cb32568e72fa8cb87}{m\_value}};}
+\DoxyCodeLine{00216\ \ \ \textcolor{keywordflow}{return}\ res\ ==\ val;}
+\DoxyCodeLine{00217\ \}}
+\DoxyCodeLine{00218\ }
+\DoxyCodeLine{00219\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{bool}}
+\DoxyCodeLine{00220\ \doxymbox{\hyperlink{classirange__bitmask_a779a0763f212b0981b1bdcdc873ec9b4}{irange\_bitmask::operator==\ }}(\textcolor{keyword}{const}\ \doxymbox{\hyperlink{classirange__bitmask_ac6f11452f971f24fe2b0ce47329bd140}{irange\_bitmask}}\ \&src)\textcolor{keyword}{\ const}}
+\DoxyCodeLine{00221\ \textcolor{keyword}{}\{}
+\DoxyCodeLine{00222\ \ \ \textcolor{keywordtype}{bool}\ unknown1\ =\ \doxymbox{\hyperlink{classirange__bitmask_a6979a817ee7509114a2c6d23bec11cc9}{unknown\_p}}\ ();}
+\DoxyCodeLine{00223\ \ \ \textcolor{keywordtype}{bool}\ unknown2\ =\ src.\doxymbox{\hyperlink{classirange__bitmask_a6979a817ee7509114a2c6d23bec11cc9}{unknown\_p}}\ ();}
+\DoxyCodeLine{00224\ \ \ \textcolor{keywordflow}{if}\ (unknown1\ ||\ unknown2)}
+\DoxyCodeLine{00225\ \ \ \ \ \textcolor{keywordflow}{return}\ unknown1\ ==\ unknown2;}
+\DoxyCodeLine{00226\ \ \ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{classirange__bitmask_af003088f772dc13cb32568e72fa8cb87}{m\_value}}\ ==\ src.\doxymbox{\hyperlink{classirange__bitmask_af003088f772dc13cb32568e72fa8cb87}{m\_value}}\ \&\&\ \doxymbox{\hyperlink{classirange__bitmask_ac89b6a39d070574de24f5f2657f236bb}{m\_mask}}\ ==\ src.\doxymbox{\hyperlink{classirange__bitmask_ac89b6a39d070574de24f5f2657f236bb}{m\_mask}};}
+\DoxyCodeLine{00227\ \}}
+\DoxyCodeLine{00228\ }
+\DoxyCodeLine{00229\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{bool}}
+\DoxyCodeLine{00230\ \doxymbox{\hyperlink{classirange__bitmask_a37adbd982daf388a86a592149cfa0793}{irange\_bitmask::union\_}}\ (\textcolor{keyword}{const}\ \doxymbox{\hyperlink{classirange__bitmask_ac6f11452f971f24fe2b0ce47329bd140}{irange\_bitmask}}\ \&orig\_src)}
+\DoxyCodeLine{00231\ \{}
+\DoxyCodeLine{00232\ \ \ \textcolor{comment}{//\ Normalize\ mask.}}
+\DoxyCodeLine{00233\ \ \ \doxymbox{\hyperlink{classirange__bitmask_ac6f11452f971f24fe2b0ce47329bd140}{irange\_bitmask}}\ src\ (orig\_src.\doxymbox{\hyperlink{classirange__bitmask_af003088f772dc13cb32568e72fa8cb87}{m\_value}}\ \&\ \string~orig\_src.\doxymbox{\hyperlink{classirange__bitmask_ac89b6a39d070574de24f5f2657f236bb}{m\_mask}},\ orig\_src.\doxymbox{\hyperlink{classirange__bitmask_ac89b6a39d070574de24f5f2657f236bb}{m\_mask}});}
+\DoxyCodeLine{00234\ \ \ \doxymbox{\hyperlink{classirange__bitmask_af003088f772dc13cb32568e72fa8cb87}{m\_value}}\ \&=\ \doxymbox{\hyperlink{classirange__bitmask_ac89b6a39d070574de24f5f2657f236bb}{\string~m\_mask}};}
+\DoxyCodeLine{00235\ }
+\DoxyCodeLine{00236\ \ \ \doxymbox{\hyperlink{classirange__bitmask_ac6f11452f971f24fe2b0ce47329bd140}{irange\_bitmask}}\ save\ (*\textcolor{keyword}{this});}
+\DoxyCodeLine{00237\ \ \ \doxymbox{\hyperlink{classirange__bitmask_ac89b6a39d070574de24f5f2657f236bb}{m\_mask}}\ =\ (\doxymbox{\hyperlink{classirange__bitmask_ac89b6a39d070574de24f5f2657f236bb}{m\_mask}}\ |\ src.\doxymbox{\hyperlink{classirange__bitmask_ac89b6a39d070574de24f5f2657f236bb}{m\_mask}})\ |\ (\doxymbox{\hyperlink{classirange__bitmask_af003088f772dc13cb32568e72fa8cb87}{m\_value}}\ \string^\ src.\doxymbox{\hyperlink{classirange__bitmask_af003088f772dc13cb32568e72fa8cb87}{m\_value}});}
+\DoxyCodeLine{00238\ \ \ \doxymbox{\hyperlink{classirange__bitmask_af003088f772dc13cb32568e72fa8cb87}{m\_value}}\ =\ \doxymbox{\hyperlink{classirange__bitmask_af003088f772dc13cb32568e72fa8cb87}{m\_value}}\ \&\ src.\doxymbox{\hyperlink{classirange__bitmask_af003088f772dc13cb32568e72fa8cb87}{m\_value}};}
+\DoxyCodeLine{00239\ \ \ \textcolor{keywordflow}{if}\ (\doxymbox{\hyperlink{options_8h_a84596fb150478c4f5173d2c5fff82710}{flag\_checking}})}
+\DoxyCodeLine{00240\ \ \ \ \ \doxymbox{\hyperlink{classirange__bitmask_a3196eb4f32f4311829fa5287076fdc94}{verify\_mask}}\ ();}
+\DoxyCodeLine{00241\ \ \ \textcolor{keywordflow}{return}\ *\textcolor{keyword}{this}\ !=\ save;}
+\DoxyCodeLine{00242\ \}}
+\DoxyCodeLine{00243\ }
+\DoxyCodeLine{00244\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{bool}}
+\DoxyCodeLine{00245\ \doxymbox{\hyperlink{classirange__bitmask_ac3863611045dfbc497c4409dfe0256bf}{irange\_bitmask::intersect}}\ (\textcolor{keyword}{const}\ \doxymbox{\hyperlink{classirange__bitmask_ac6f11452f971f24fe2b0ce47329bd140}{irange\_bitmask}}\ \&orig\_src)}
+\DoxyCodeLine{00246\ \{}
+\DoxyCodeLine{00247\ \ \ \textcolor{comment}{//\ Normalize\ mask.}}
+\DoxyCodeLine{00248\ \ \ \doxymbox{\hyperlink{classirange__bitmask_ac6f11452f971f24fe2b0ce47329bd140}{irange\_bitmask}}\ src\ (orig\_src.\doxymbox{\hyperlink{classirange__bitmask_af003088f772dc13cb32568e72fa8cb87}{m\_value}}\ \&\ \string~orig\_src.\doxymbox{\hyperlink{classirange__bitmask_ac89b6a39d070574de24f5f2657f236bb}{m\_mask}},\ orig\_src.\doxymbox{\hyperlink{classirange__bitmask_ac89b6a39d070574de24f5f2657f236bb}{m\_mask}});}
+\DoxyCodeLine{00249\ \ \ \doxymbox{\hyperlink{classirange__bitmask_af003088f772dc13cb32568e72fa8cb87}{m\_value}}\ \&=\ \doxymbox{\hyperlink{classirange__bitmask_ac89b6a39d070574de24f5f2657f236bb}{\string~m\_mask}};}
+\DoxyCodeLine{00250\ }
+\DoxyCodeLine{00251\ \ \ \doxymbox{\hyperlink{classirange__bitmask_ac6f11452f971f24fe2b0ce47329bd140}{irange\_bitmask}}\ save\ (*\textcolor{keyword}{this});}
+\DoxyCodeLine{00252\ \ \ \textcolor{comment}{//\ If\ we\ have\ two\ known\ bits\ that\ are\ incompatible,\ the\ resulting}}
+\DoxyCodeLine{00253\ \ \ \textcolor{comment}{//\ bit\ is\ undefined.\ \ It\ is\ unclear\ whether\ we\ should\ set\ the\ entire}}
+\DoxyCodeLine{00254\ \ \ \textcolor{comment}{//\ range\ to\ UNDEFINED,\ or\ just\ a\ subset\ of\ it.\ \ For\ now,\ set\ the}}
+\DoxyCodeLine{00255\ \ \ \textcolor{comment}{//\ entire\ bitmask\ to\ unknown\ (VARYING).}}
+\DoxyCodeLine{00256\ \ \ \textcolor{keywordflow}{if}\ (\doxymbox{\hyperlink{namespacewi_a9ee2c585cae76b65de93c1e3c6951318}{wi::bit\_and}}\ (\string~(\doxymbox{\hyperlink{classirange__bitmask_ac89b6a39d070574de24f5f2657f236bb}{m\_mask}}\ |\ src.\doxymbox{\hyperlink{classirange__bitmask_ac89b6a39d070574de24f5f2657f236bb}{m\_mask}}),}
+\DoxyCodeLine{00257\ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{classirange__bitmask_af003088f772dc13cb32568e72fa8cb87}{m\_value}}\ \string^\ src.\doxymbox{\hyperlink{classirange__bitmask_af003088f772dc13cb32568e72fa8cb87}{m\_value}})\ !=\ 0)}
+\DoxyCodeLine{00258\ \ \ \ \ \{}
+\DoxyCodeLine{00259\ \ \ \ \ \ \ \textcolor{keywordtype}{unsigned}\ prec\ =\ \doxymbox{\hyperlink{classirange__bitmask_ac89b6a39d070574de24f5f2657f236bb}{m\_mask}}.get\_precision\ ();}
+\DoxyCodeLine{00260\ \ \ \ \ \ \ \doxymbox{\hyperlink{classirange__bitmask_ac89b6a39d070574de24f5f2657f236bb}{m\_mask}}\ =\ \doxymbox{\hyperlink{namespacewi_a671c262f4555f9abcad1fae1b0b2e238}{wi::minus\_one}}\ (prec);}
+\DoxyCodeLine{00261\ \ \ \ \ \ \ \doxymbox{\hyperlink{classirange__bitmask_af003088f772dc13cb32568e72fa8cb87}{m\_value}}\ =\ \doxymbox{\hyperlink{namespacewi_a6e251260a135cc72c48d4be39baa9e28}{wi::zero}}\ (prec);}
+\DoxyCodeLine{00262\ \ \ \ \ \}}
+\DoxyCodeLine{00263\ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00264\ \ \ \ \ \{}
+\DoxyCodeLine{00265\ \ \ \ \ \ \ \doxymbox{\hyperlink{classirange__bitmask_ac89b6a39d070574de24f5f2657f236bb}{m\_mask}}\ =\ \doxymbox{\hyperlink{classirange__bitmask_ac89b6a39d070574de24f5f2657f236bb}{m\_mask}}\ \&\ src.\doxymbox{\hyperlink{classirange__bitmask_ac89b6a39d070574de24f5f2657f236bb}{m\_mask}};}
+\DoxyCodeLine{00266\ \ \ \ \ \ \ \doxymbox{\hyperlink{classirange__bitmask_af003088f772dc13cb32568e72fa8cb87}{m\_value}}\ =\ \doxymbox{\hyperlink{classirange__bitmask_af003088f772dc13cb32568e72fa8cb87}{m\_value}}\ |\ src.\doxymbox{\hyperlink{classirange__bitmask_af003088f772dc13cb32568e72fa8cb87}{m\_value}};}
+\DoxyCodeLine{00267\ \ \ \ \ \}}
+\DoxyCodeLine{00268\ \ \ \textcolor{keywordflow}{if}\ (\doxymbox{\hyperlink{options_8h_a84596fb150478c4f5173d2c5fff82710}{flag\_checking}})}
+\DoxyCodeLine{00269\ \ \ \ \ \doxymbox{\hyperlink{classirange__bitmask_a3196eb4f32f4311829fa5287076fdc94}{verify\_mask}}\ ();}
+\DoxyCodeLine{00270\ \ \ \textcolor{keywordflow}{return}\ *\textcolor{keyword}{this}\ !=\ save;}
+\DoxyCodeLine{00271\ \}}
+\DoxyCodeLine{00272\ }
+\DoxyCodeLine{00273\ \textcolor{comment}{//\ An\ integer\ range\ without\ any\ storage.}}
+\DoxyCodeLine{00274\ }
+\DoxyCodeLine{00275\ \textcolor{keyword}{class\ }\doxymbox{\hyperlink{coretypes_8h_ae5708c4d4b300570eebe0bc0c78facbc}{GTY}}((user))\ irange\ :\ \textcolor{keyword}{public}\ vrange}
+\DoxyCodeLine{00276\ \{}
+\DoxyCodeLine{00277\ \ \ \textcolor{keyword}{friend}\ \doxymbox{\hyperlink{value-range_8h_a3f4073c0d3bf2a2addfa5a8f71d96818}{value\_range\_kind}}\ \doxymbox{\hyperlink{value-range_8h_a3fb3698d5cf9fd154a7a80afd438a94b}{get\_legacy\_range}}\ (\textcolor{keyword}{const}\ irange\ \&,\ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ \&,\ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ \&);}
+\DoxyCodeLine{00278\ \ \ \textcolor{keyword}{friend}\ \textcolor{keyword}{class\ }\doxymbox{\hyperlink{classirange__storage}{irange\_storage}};}
+\DoxyCodeLine{00279\ \ \ \textcolor{keyword}{friend}\ \textcolor{keyword}{class\ }\doxymbox{\hyperlink{classvrange__printer}{vrange\_printer}};}
+\DoxyCodeLine{00280\ \textcolor{keyword}{public}:}
+\DoxyCodeLine{00281\ \ \ \textcolor{comment}{//\ In-\/place\ setters.}}
+\DoxyCodeLine{00282\ \ \ \textcolor{keywordtype}{void}\ set\ (\doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ \doxymbox{\hyperlink{structtype}{type}},\ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{wide-int_8h_a9a29e47e2c40ae9adaf47df15970eced}{wide\_int}}\ \&,\ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{wide-int_8h_a9a29e47e2c40ae9adaf47df15970eced}{wide\_int}}\ \&,}
+\DoxyCodeLine{00283\ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{value-range_8h_a3f4073c0d3bf2a2addfa5a8f71d96818}{value\_range\_kind}}\ =\ \doxymbox{\hyperlink{value-range_8h_a3f4073c0d3bf2a2addfa5a8f71d96818a30bf60866081de6a1d9a799bc99fb16d}{VR\_RANGE}});}
+\DoxyCodeLine{00284\ \ \ \textcolor{keyword}{virtual}\ \textcolor{keywordtype}{void}\ set\_nonzero\ (\doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ \doxymbox{\hyperlink{structtype}{type}})\ \textcolor{keyword}{override};}
+\DoxyCodeLine{00285\ \ \ \textcolor{keyword}{virtual}\ \textcolor{keywordtype}{void}\ set\_zero\ (\doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ \doxymbox{\hyperlink{structtype}{type}})\ \textcolor{keyword}{override};}
+\DoxyCodeLine{00286\ \ \ \textcolor{keyword}{virtual}\ \textcolor{keywordtype}{void}\ set\_nonnegative\ (\doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ \doxymbox{\hyperlink{structtype}{type}})\ \textcolor{keyword}{override};}
+\DoxyCodeLine{00287\ \ \ \textcolor{keyword}{virtual}\ \textcolor{keywordtype}{void}\ set\_varying\ (\doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ \doxymbox{\hyperlink{structtype}{type}})\ \textcolor{keyword}{override};}
+\DoxyCodeLine{00288\ \ \ \textcolor{keyword}{virtual}\ \textcolor{keywordtype}{void}\ set\_undefined\ ()\ \textcolor{keyword}{override};}
+\DoxyCodeLine{00289\ }
+\DoxyCodeLine{00290\ \ \ \textcolor{comment}{//\ Range\ types.}}
+\DoxyCodeLine{00291\ \ \ \textcolor{keyword}{static}\ \textcolor{keywordtype}{bool}\ supports\_p\ (\doxymbox{\hyperlink{coretypes_8h_ad41eb6a6028ff5b3fd00b1ee9f35ed46}{const\_tree}}\ \doxymbox{\hyperlink{structtype}{type}});}
+\DoxyCodeLine{00292\ \ \ \textcolor{keyword}{virtual}\ \textcolor{keywordtype}{bool}\ supports\_type\_p\ (\doxymbox{\hyperlink{coretypes_8h_ad41eb6a6028ff5b3fd00b1ee9f35ed46}{const\_tree}}\ \doxymbox{\hyperlink{structtype}{type}})\ \textcolor{keyword}{const\ override};}
+\DoxyCodeLine{00293\ \ \ \textcolor{keyword}{virtual}\ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ \doxymbox{\hyperlink{structtype}{type}}\ ()\ \textcolor{keyword}{const\ override};}
+\DoxyCodeLine{00294\ }
+\DoxyCodeLine{00295\ \ \ \textcolor{comment}{//\ Iteration\ over\ sub-\/ranges.}}
+\DoxyCodeLine{00296\ \ \ \textcolor{keywordtype}{unsigned}\ num\_pairs\ ()\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00297\ \ \ \doxymbox{\hyperlink{wide-int_8h_a9a29e47e2c40ae9adaf47df15970eced}{wide\_int}}\ \doxymbox{\hyperlink{vec_8h_a639a7891c60dbfef3c62cd753a61653f}{lower\_bound}}\ (\textcolor{keywordtype}{unsigned}\ =\ 0)\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00298\ \ \ \doxymbox{\hyperlink{wide-int_8h_a9a29e47e2c40ae9adaf47df15970eced}{wide\_int}}\ upper\_bound\ (\textcolor{keywordtype}{unsigned})\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00299\ \ \ \doxymbox{\hyperlink{wide-int_8h_a9a29e47e2c40ae9adaf47df15970eced}{wide\_int}}\ upper\_bound\ ()\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00300\ }
+\DoxyCodeLine{00301\ \ \ \textcolor{comment}{//\ Predicates.}}
+\DoxyCodeLine{00302\ \ \ \textcolor{keyword}{virtual}\ \textcolor{keywordtype}{bool}\ zero\_p\ ()\ \textcolor{keyword}{const\ override};}
+\DoxyCodeLine{00303\ \ \ \textcolor{keyword}{virtual}\ \textcolor{keywordtype}{bool}\ nonzero\_p\ ()\ \textcolor{keyword}{const\ override};}
+\DoxyCodeLine{00304\ \ \ \textcolor{keyword}{virtual}\ \textcolor{keywordtype}{bool}\ singleton\_p\ (\doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ *result\ =\ \doxymbox{\hyperlink{stddef_8h_a070d2ce7b6bb7e5c05602aa8c308d0c4}{NULL}})\ \textcolor{keyword}{const\ override};}
+\DoxyCodeLine{00305\ \ \ \textcolor{keywordtype}{bool}\ singleton\_p\ (\doxymbox{\hyperlink{wide-int_8h_a9a29e47e2c40ae9adaf47df15970eced}{wide\_int}}\ \&)\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00306\ \ \ \textcolor{keywordtype}{bool}\ contains\_p\ (\textcolor{keyword}{const}\ \doxymbox{\hyperlink{wide-int_8h_a9a29e47e2c40ae9adaf47df15970eced}{wide\_int}}\ \&)\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00307\ \ \ \textcolor{keywordtype}{bool}\ nonnegative\_p\ ()\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00308\ \ \ \textcolor{keywordtype}{bool}\ nonpositive\_p\ ()\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00309\ }
+\DoxyCodeLine{00310\ \ \ \textcolor{comment}{//\ In-\/place\ operators.}}
+\DoxyCodeLine{00311\ \ \ \textcolor{keyword}{virtual}\ \textcolor{keywordtype}{bool}\ union\_\ (\textcolor{keyword}{const}\ vrange\ \&)\ \textcolor{keyword}{override};}
+\DoxyCodeLine{00312\ \ \ \textcolor{keyword}{virtual}\ \textcolor{keywordtype}{bool}\ intersect\ (\textcolor{keyword}{const}\ vrange\ \&)\ \textcolor{keyword}{override};}
+\DoxyCodeLine{00313\ \ \ \textcolor{keywordtype}{void}\ invert\ ();}
+\DoxyCodeLine{00314\ }
+\DoxyCodeLine{00315\ \ \ \textcolor{comment}{//\ Operator\ overloads.}}
+\DoxyCodeLine{00316\ \ \ irange\&\ operator=\ (\textcolor{keyword}{const}\ irange\ \&);}
+\DoxyCodeLine{00317\ \ \ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{cp-tree_8h_a4b9bd7e4e073a2a98d043c78719de59b}{operator==\ }}(\textcolor{keyword}{const}\ irange\ \&)\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00318\ \ \ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{diagnostic-spec_8h_a6b5ad3fba66b4c54ae8afbdf1bbebfb7}{operator!=\ }}(\textcolor{keyword}{const}\ irange\ \&\doxymbox{\hyperlink{poly-int_8h_a3ecac2571dcdc8050989339124f1bd26}{r}})\textcolor{keyword}{\ const\ }\{\ \textcolor{keywordflow}{return}\ !(*\textcolor{keyword}{this}\ ==\ \doxymbox{\hyperlink{poly-int_8h_a3ecac2571dcdc8050989339124f1bd26}{r}});\ \}}
+\DoxyCodeLine{00319\ }
+\DoxyCodeLine{00320\ \ \ \textcolor{comment}{//\ Misc\ methods.}}
+\DoxyCodeLine{00321\ \ \ \textcolor{keyword}{virtual}\ \textcolor{keywordtype}{bool}\ fits\_p\ (\textcolor{keyword}{const}\ vrange\ \&\doxymbox{\hyperlink{poly-int_8h_a3ecac2571dcdc8050989339124f1bd26}{r}})\ \textcolor{keyword}{const\ override};}
+\DoxyCodeLine{00322\ \ \ \textcolor{keyword}{virtual}\ \textcolor{keywordtype}{void}\ accept\ (\textcolor{keyword}{const}\ vrange\_visitor\ \&v)\ \textcolor{keyword}{const\ override};}
+\DoxyCodeLine{00323\ }
+\DoxyCodeLine{00324\ \ \ \textcolor{keywordtype}{void}\ update\_bitmask\ (\textcolor{keyword}{const}\ irange\_bitmask\ \&);}
+\DoxyCodeLine{00325\ \ \ irange\_bitmask\ get\_bitmask\ ()\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00326\ \ \ \textcolor{comment}{//\ Nonzero\ masks.}}
+\DoxyCodeLine{00327\ \ \ \doxymbox{\hyperlink{wide-int_8h_a9a29e47e2c40ae9adaf47df15970eced}{wide\_int}}\ \doxymbox{\hyperlink{tree-ssanames_8h_a26c7d471ded724827a81712cf4ae4572}{get\_nonzero\_bits}}\ ()\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00328\ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{tree-ssanames_8h_a4904e37e035160bff89d8f2ee459c0ef}{set\_nonzero\_bits}}\ (\textcolor{keyword}{const}\ \doxymbox{\hyperlink{wide-int_8h_a9a29e47e2c40ae9adaf47df15970eced}{wide\_int}}\ \&bits);}
+\DoxyCodeLine{00329\ }
+\DoxyCodeLine{00330\ \textcolor{keyword}{protected}:}
+\DoxyCodeLine{00331\ \ \ \textcolor{keywordtype}{void}\ maybe\_resize\ (\textcolor{keywordtype}{int}\ needed);}
+\DoxyCodeLine{00332\ \ \ \textcolor{keyword}{virtual}\ \textcolor{keywordtype}{void}\ set\ (\doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}},\ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}},\ \doxymbox{\hyperlink{value-range_8h_a3f4073c0d3bf2a2addfa5a8f71d96818}{value\_range\_kind}}\ =\ \doxymbox{\hyperlink{value-range_8h_a3f4073c0d3bf2a2addfa5a8f71d96818a30bf60866081de6a1d9a799bc99fb16d}{VR\_RANGE}})\ \textcolor{keyword}{override};}
+\DoxyCodeLine{00333\ \ \ \textcolor{keyword}{virtual}\ \textcolor{keywordtype}{bool}\ contains\_p\ (\doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ cst)\ \textcolor{keyword}{const\ override};}
+\DoxyCodeLine{00334\ \ \ irange\ (\doxymbox{\hyperlink{wide-int_8h_a9a29e47e2c40ae9adaf47df15970eced}{wide\_int}}\ *,\ \textcolor{keywordtype}{unsigned}\ nranges,\ \textcolor{keywordtype}{bool}\ resizable);}
+\DoxyCodeLine{00335\ }
+\DoxyCodeLine{00336\ \ \ \ \textcolor{comment}{//\ In-\/place\ operators.}}
+\DoxyCodeLine{00337\ \ \ \textcolor{keywordtype}{bool}\ irange\_contains\_p\ (\textcolor{keyword}{const}\ irange\ \&)\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00338\ \ \ \textcolor{keywordtype}{bool}\ irange\_single\_pair\_union\ (\textcolor{keyword}{const}\ irange\ \&\doxymbox{\hyperlink{poly-int_8h_a3ecac2571dcdc8050989339124f1bd26}{r}});}
+\DoxyCodeLine{00339\ }
+\DoxyCodeLine{00340\ \ \ \textcolor{keywordtype}{void}\ normalize\_kind\ ();}
+\DoxyCodeLine{00341\ }
+\DoxyCodeLine{00342\ \ \ \textcolor{keywordtype}{void}\ verify\_range\ ();}
+\DoxyCodeLine{00343\ }
+\DoxyCodeLine{00344\ \ \ \textcolor{comment}{//\ Hard\ limit\ on\ max\ ranges\ allowed.}}
+\DoxyCodeLine{00345\ \ \ \textcolor{keyword}{static}\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{int}\ HARD\_MAX\_RANGES\ =\ 255;}
+\DoxyCodeLine{00346\ \textcolor{keyword}{private}:}
+\DoxyCodeLine{00347\ \ \ \textcolor{keyword}{friend}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{ggc_8h_a77eb324884a7b0f347f16dd362d150d3}{gt\_ggc\_mx}}\ (irange\ *);}
+\DoxyCodeLine{00348\ \ \ \textcolor{keyword}{friend}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{ggc_8h_a3b26c28b1089a35761fee54cdbbd2171}{gt\_pch\_nx}}\ (irange\ *);}
+\DoxyCodeLine{00349\ \ \ \textcolor{keyword}{friend}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{ggc_8h_a3b26c28b1089a35761fee54cdbbd2171}{gt\_pch\_nx}}\ (irange\ *,\ \doxymbox{\hyperlink{coretypes_8h_ae5ca95fa9feb025fb3b39d2ed62f2a56}{gt\_pointer\_operator}},\ \textcolor{keywordtype}{void}\ *);}
+\DoxyCodeLine{00350\ }
+\DoxyCodeLine{00351\ \ \ \textcolor{keywordtype}{bool}\ varying\_compatible\_p\ ()\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00352\ \ \ \textcolor{keywordtype}{bool}\ intersect\_bitmask\ (\textcolor{keyword}{const}\ irange\ \&\doxymbox{\hyperlink{poly-int_8h_a3ecac2571dcdc8050989339124f1bd26}{r}});}
+\DoxyCodeLine{00353\ \ \ \textcolor{keywordtype}{bool}\ union\_bitmask\ (\textcolor{keyword}{const}\ irange\ \&\doxymbox{\hyperlink{poly-int_8h_a3ecac2571dcdc8050989339124f1bd26}{r}});}
+\DoxyCodeLine{00354\ \ \ irange\_bitmask\ get\_bitmask\_from\_range\ ()\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00355\ \ \ \textcolor{keywordtype}{bool}\ set\_range\_from\_bitmask\ ();}
+\DoxyCodeLine{00356\ }
+\DoxyCodeLine{00357\ \ \ \textcolor{keywordtype}{bool}\ intersect\ (\textcolor{keyword}{const}\ \doxymbox{\hyperlink{wide-int_8h_a9a29e47e2c40ae9adaf47df15970eced}{wide\_int}}\&\ lb,\ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{wide-int_8h_a9a29e47e2c40ae9adaf47df15970eced}{wide\_int}}\&\ ub);}
+\DoxyCodeLine{00358\ \ \ \textcolor{keywordtype}{bool}\ union\_append\ (\textcolor{keyword}{const}\ irange\ \&\doxymbox{\hyperlink{poly-int_8h_a3ecac2571dcdc8050989339124f1bd26}{r}});}
+\DoxyCodeLine{00359\ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{char}\ m\_num\_ranges;}
+\DoxyCodeLine{00360\ \ \ \textcolor{keywordtype}{bool}\ m\_resizable;}
+\DoxyCodeLine{00361\ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{char}\ m\_max\_ranges;}
+\DoxyCodeLine{00362\ \ \ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ m\_type;}
+\DoxyCodeLine{00363\ \ \ irange\_bitmask\ m\_bitmask;}
+\DoxyCodeLine{00364\ \textcolor{keyword}{protected}:}
+\DoxyCodeLine{00365\ \ \ \doxymbox{\hyperlink{wide-int_8h_a9a29e47e2c40ae9adaf47df15970eced}{wide\_int}}\ *m\_base;}
+\DoxyCodeLine{00366\ \};}
+\DoxyCodeLine{00367\ }
+\DoxyCodeLine{00368\ \textcolor{comment}{//\ Here\ we\ describe\ an\ irange\ with\ N\ pairs\ of\ ranges.\ \ The\ storage\ for}}
+\DoxyCodeLine{00369\ \textcolor{comment}{//\ the\ pairs\ is\ embedded\ in\ the\ class\ as\ an\ array.}}
+\DoxyCodeLine{00370\ \textcolor{comment}{//}}
+\DoxyCodeLine{00371\ \textcolor{comment}{//\ If\ RESIZABLE\ is\ true,\ the\ storage\ will\ be\ resized\ on\ the\ heap\ when}}
+\DoxyCodeLine{00372\ \textcolor{comment}{//\ the\ number\ of\ ranges\ needed\ goes\ past\ N\ up\ to\ a\ max\ of}}
+\DoxyCodeLine{00373\ \textcolor{comment}{//\ HARD\_MAX\_RANGES.\ \ This\ new\ storage\ is\ freed\ upon\ destruction.}}
+\DoxyCodeLine{00374\ }
+\DoxyCodeLine{00375\ \textcolor{keyword}{template}<\textcolor{keywordtype}{unsigned}\ N,\ \textcolor{keywordtype}{bool}\ RESIZABLE\ =\ false>}
+\DoxyCodeLine{00376\ \textcolor{keyword}{class\ }\doxymbox{\hyperlink{coretypes_8h_ae5708c4d4b300570eebe0bc0c78facbc}{GTY}}((user))\ int\_range\ :\ \textcolor{keyword}{public}\ irange}
+\DoxyCodeLine{00377\ \{}
+\DoxyCodeLine{00378\ \textcolor{keyword}{public}:}
+\DoxyCodeLine{00379\ \ \ int\_range\ ();}
+\DoxyCodeLine{00380\ \ \ int\_range\ (\doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ type,\ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{wide-int_8h_a9a29e47e2c40ae9adaf47df15970eced}{wide\_int}}\ \&,\ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{wide-int_8h_a9a29e47e2c40ae9adaf47df15970eced}{wide\_int}}\ \&,}
+\DoxyCodeLine{00381\ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{value-range_8h_a3f4073c0d3bf2a2addfa5a8f71d96818}{value\_range\_kind}}\ =\ \doxymbox{\hyperlink{value-range_8h_a3f4073c0d3bf2a2addfa5a8f71d96818a30bf60866081de6a1d9a799bc99fb16d}{VR\_RANGE}});}
+\DoxyCodeLine{00382\ \ \ int\_range\ (\doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ type);}
+\DoxyCodeLine{00383\ \ \ int\_range\ (\textcolor{keyword}{const}\ int\_range\ \&);}
+\DoxyCodeLine{00384\ \ \ int\_range\ (\textcolor{keyword}{const}\ irange\ \&);}
+\DoxyCodeLine{00385\ \ \ \textcolor{keyword}{virtual}\ \string~int\_range\ ();}
+\DoxyCodeLine{00386\ \ \ int\_range\&\ operator=\ (\textcolor{keyword}{const}\ int\_range\ \&);}
+\DoxyCodeLine{00387\ \textcolor{keyword}{protected}:}
+\DoxyCodeLine{00388\ \ \ int\_range\ (\doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}},\ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}},\ \doxymbox{\hyperlink{value-range_8h_a3f4073c0d3bf2a2addfa5a8f71d96818}{value\_range\_kind}}\ =\ \doxymbox{\hyperlink{value-range_8h_a3f4073c0d3bf2a2addfa5a8f71d96818a30bf60866081de6a1d9a799bc99fb16d}{VR\_RANGE}});}
+\DoxyCodeLine{00389\ \textcolor{keyword}{private}:}
+\DoxyCodeLine{00390\ \ \ \doxymbox{\hyperlink{wide-int_8h_a9a29e47e2c40ae9adaf47df15970eced}{wide\_int}}\ m\_ranges[N*2];}
+\DoxyCodeLine{00391\ \};}
+\DoxyCodeLine{00392\ }
+\DoxyCodeLine{00393\ \textcolor{comment}{//\ Unsupported\ temporaries\ may\ be\ created\ by\ ranger\ before\ it's\ known}}
+\DoxyCodeLine{00394\ \textcolor{comment}{//\ they're\ unsupported,\ or\ by\ vr\_values::get\_value\_range.}}
+\DoxyCodeLine{00395\ }
+\DoxyCodeLine{00396\ \textcolor{keyword}{class\ }\doxymbox{\hyperlink{classunsupported__range_a7e633c4cfc5395cc67f1f982294dc7da}{unsupported\_range}}\ :\ \textcolor{keyword}{public}\ vrange}
+\DoxyCodeLine{00397\ \{}
+\DoxyCodeLine{00398\ \textcolor{keyword}{public}:}
+\DoxyCodeLine{00399\ \ \ \doxymbox{\hyperlink{classunsupported__range_a7e633c4cfc5395cc67f1f982294dc7da}{unsupported\_range}}\ ()}
+\DoxyCodeLine{00400\ \ \ \ \ :\ vrange\ (\doxymbox{\hyperlink{value-range_8h_a5c22d2d797d75c81f8a15e60137418c2a21a2108e8b530bb349878bdb723f5cfe}{VR\_UNKNOWN}})}
+\DoxyCodeLine{00401\ \ \ \{}
+\DoxyCodeLine{00402\ \ \ \ \ \doxymbox{\hyperlink{classunsupported__range_a231516755106f6a5675260935b2c9378}{set\_undefined}}\ ();}
+\DoxyCodeLine{00403\ \ \ \}}
+\DoxyCodeLine{00404\ \ \ \textcolor{keyword}{virtual}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classunsupported__range_a231516755106f6a5675260935b2c9378}{set\_undefined}}\ ()\ \doxymbox{\hyperlink{output_8h_ab52ea22aac29575278d6a9e723d1d234}{final}}\textcolor{keyword}{\ override}}
+\DoxyCodeLine{00405\ \textcolor{keyword}{\ \ }\{}
+\DoxyCodeLine{00406\ \ \ \ \ m\_kind\ =\ \doxymbox{\hyperlink{value-range_8h_a3f4073c0d3bf2a2addfa5a8f71d96818aa95d2a79a8d463d24d8e2538093ff6db}{VR\_UNDEFINED}};}
+\DoxyCodeLine{00407\ \ \ \}}
+\DoxyCodeLine{00408\ \ \ \textcolor{keyword}{virtual}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classunsupported__range_a12d041c59a2c7af07dcd44c0495a6f30}{accept}}\ (\textcolor{keyword}{const}\ \doxymbox{\hyperlink{classvrange__visitor}{vrange\_visitor}}\ \&v)\ \textcolor{keyword}{const\ override};}
+\DoxyCodeLine{00409\ \};}
+\DoxyCodeLine{00410\ }
+\DoxyCodeLine{00411\ \textcolor{comment}{//\ The\ NAN\ state\ as\ an\ opaque\ object.}}
+\DoxyCodeLine{00412\ }
+\DoxyCodeLine{00413\ \textcolor{keyword}{class\ }\doxymbox{\hyperlink{classnan__state_a8e7ad6e24d28c42d69b5be1788920116}{nan\_state}}}
+\DoxyCodeLine{00414\ \{}
+\DoxyCodeLine{00415\ \textcolor{keyword}{public}:}
+\DoxyCodeLine{00416\ \ \ \doxymbox{\hyperlink{classnan__state_a8e7ad6e24d28c42d69b5be1788920116}{nan\_state}}\ (\textcolor{keywordtype}{bool});}
+\DoxyCodeLine{00417\ \ \ \doxymbox{\hyperlink{classnan__state_a8e7ad6e24d28c42d69b5be1788920116}{nan\_state}}\ (\textcolor{keywordtype}{bool}\ pos\_nan,\ \textcolor{keywordtype}{bool}\ neg\_nan);}
+\DoxyCodeLine{00418\ \ \ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{classnan__state_a0cd20ee99e7e32bcde4cb557f2e6eddd}{neg\_p}}\ ()\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00419\ \ \ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{classnan__state_a77f86e6aadb48adc13a9eb6c2a244db6}{pos\_p}}\ ()\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00420\ \textcolor{keyword}{private}:}
+\DoxyCodeLine{00421\ \ \ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{classnan__state_a879a2e1ab21f9aa95689f7a0aa995bf0}{m\_pos\_nan}};}
+\DoxyCodeLine{00422\ \ \ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{classnan__state_a530bebfc983bb58daa7dd78777710d3e}{m\_neg\_nan}};}
+\DoxyCodeLine{00423\ \};}
+\DoxyCodeLine{00424\ }
+\DoxyCodeLine{00425\ \textcolor{comment}{//\ Set\ NAN\ state\ to\ +-\/NAN\ if\ NAN\_P\ is\ true.\ \ Otherwise\ set\ NAN\ state}}
+\DoxyCodeLine{00426\ \textcolor{comment}{//\ to\ false.}}
+\DoxyCodeLine{00427\ }
+\DoxyCodeLine{00428\ \textcolor{keyword}{inline}}
+\DoxyCodeLine{00429\ \doxymbox{\hyperlink{classnan__state_a8e7ad6e24d28c42d69b5be1788920116}{nan\_state::nan\_state}}\ (\textcolor{keywordtype}{bool}\ nan\_p)}
+\DoxyCodeLine{00430\ \{}
+\DoxyCodeLine{00431\ \ \ \doxymbox{\hyperlink{classnan__state_a879a2e1ab21f9aa95689f7a0aa995bf0}{m\_pos\_nan}}\ =\ nan\_p;}
+\DoxyCodeLine{00432\ \ \ \doxymbox{\hyperlink{classnan__state_a530bebfc983bb58daa7dd78777710d3e}{m\_neg\_nan}}\ =\ nan\_p;}
+\DoxyCodeLine{00433\ \}}
+\DoxyCodeLine{00434\ }
+\DoxyCodeLine{00435\ \textcolor{comment}{//\ Constructor\ initializing\ the\ object\ to\ +NAN\ if\ POS\_NAN\ is\ set,\ -\/NAN}}
+\DoxyCodeLine{00436\ \textcolor{comment}{//\ if\ NEG\_NAN\ is\ set,\ or\ +-\/NAN\ if\ both\ are\ set.\ \ Otherwise\ POS\_NAN\ and}}
+\DoxyCodeLine{00437\ \textcolor{comment}{//\ NEG\_NAN\ are\ clear,\ and\ the\ object\ cannot\ be\ a\ NAN.}}
+\DoxyCodeLine{00438\ }
+\DoxyCodeLine{00439\ \textcolor{keyword}{inline}}
+\DoxyCodeLine{00440\ \doxymbox{\hyperlink{classnan__state_a8e7ad6e24d28c42d69b5be1788920116}{nan\_state::nan\_state}}\ (\textcolor{keywordtype}{bool}\ pos\_nan,\ \textcolor{keywordtype}{bool}\ neg\_nan)}
+\DoxyCodeLine{00441\ \{}
+\DoxyCodeLine{00442\ \ \ \doxymbox{\hyperlink{classnan__state_a879a2e1ab21f9aa95689f7a0aa995bf0}{m\_pos\_nan}}\ =\ pos\_nan;}
+\DoxyCodeLine{00443\ \ \ \doxymbox{\hyperlink{classnan__state_a530bebfc983bb58daa7dd78777710d3e}{m\_neg\_nan}}\ =\ neg\_nan;}
+\DoxyCodeLine{00444\ \}}
+\DoxyCodeLine{00445\ }
+\DoxyCodeLine{00446\ \textcolor{comment}{//\ Return\ if\ +NAN\ is\ possible.}}
+\DoxyCodeLine{00447\ }
+\DoxyCodeLine{00448\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{bool}}
+\DoxyCodeLine{00449\ \doxymbox{\hyperlink{classnan__state_a77f86e6aadb48adc13a9eb6c2a244db6}{nan\_state::pos\_p}}\ ()\textcolor{keyword}{\ const}}
+\DoxyCodeLine{00450\ \textcolor{keyword}{}\{}
+\DoxyCodeLine{00451\ \ \ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{classnan__state_a879a2e1ab21f9aa95689f7a0aa995bf0}{m\_pos\_nan}};}
+\DoxyCodeLine{00452\ \}}
+\DoxyCodeLine{00453\ }
+\DoxyCodeLine{00454\ \textcolor{comment}{//\ Return\ if\ -\/NAN\ is\ possible.}}
+\DoxyCodeLine{00455\ }
+\DoxyCodeLine{00456\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{bool}}
+\DoxyCodeLine{00457\ \doxymbox{\hyperlink{classnan__state_a0cd20ee99e7e32bcde4cb557f2e6eddd}{nan\_state::neg\_p}}\ ()\textcolor{keyword}{\ const}}
+\DoxyCodeLine{00458\ \textcolor{keyword}{}\{}
+\DoxyCodeLine{00459\ \ \ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{classnan__state_a530bebfc983bb58daa7dd78777710d3e}{m\_neg\_nan}};}
+\DoxyCodeLine{00460\ \}}
+\DoxyCodeLine{00461\ }
+\DoxyCodeLine{00462\ \textcolor{comment}{//\ A\ floating\ point\ range.}}
+\DoxyCodeLine{00463\ \textcolor{comment}{//}}
+\DoxyCodeLine{00464\ \textcolor{comment}{//\ The\ representation\ is\ a\ type\ with\ a\ couple\ of\ endpoints,\ unioned}}
+\DoxyCodeLine{00465\ \textcolor{comment}{//\ with\ the\ set\ of\ \{\ -\/NAN,\ +Nan\ \}.}}
+\DoxyCodeLine{00466\ }
+\DoxyCodeLine{00467\ \textcolor{keyword}{class\ }\doxymbox{\hyperlink{coretypes_8h_ae5708c4d4b300570eebe0bc0c78facbc}{GTY}}((user))\ frange\ :\ \textcolor{keyword}{public}\ vrange}
+\DoxyCodeLine{00468\ \{}
+\DoxyCodeLine{00469\ \ \ \textcolor{keyword}{friend}\ \textcolor{keyword}{class\ }\doxymbox{\hyperlink{classfrange__storage}{frange\_storage}};}
+\DoxyCodeLine{00470\ \ \ \textcolor{keyword}{friend}\ \textcolor{keyword}{class\ }\doxymbox{\hyperlink{classvrange__printer}{vrange\_printer}};}
+\DoxyCodeLine{00471\ \ \ \textcolor{keyword}{friend}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{ggc_8h_a77eb324884a7b0f347f16dd362d150d3}{gt\_ggc\_mx}}\ (frange\ *);}
+\DoxyCodeLine{00472\ \ \ \textcolor{keyword}{friend}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{ggc_8h_a3b26c28b1089a35761fee54cdbbd2171}{gt\_pch\_nx}}\ (frange\ *);}
+\DoxyCodeLine{00473\ \ \ \textcolor{keyword}{friend}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{ggc_8h_a3b26c28b1089a35761fee54cdbbd2171}{gt\_pch\_nx}}\ (frange\ *,\ \doxymbox{\hyperlink{coretypes_8h_ae5ca95fa9feb025fb3b39d2ed62f2a56}{gt\_pointer\_operator}},\ \textcolor{keywordtype}{void}\ *);}
+\DoxyCodeLine{00474\ \textcolor{keyword}{public}:}
+\DoxyCodeLine{00475\ \ \ frange\ ();}
+\DoxyCodeLine{00476\ \ \ frange\ (\textcolor{keyword}{const}\ frange\ \&);}
+\DoxyCodeLine{00477\ \ \ frange\ (\doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}},\ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}},\ \doxymbox{\hyperlink{value-range_8h_a3f4073c0d3bf2a2addfa5a8f71d96818}{value\_range\_kind}}\ =\ \doxymbox{\hyperlink{value-range_8h_a3f4073c0d3bf2a2addfa5a8f71d96818a30bf60866081de6a1d9a799bc99fb16d}{VR\_RANGE}});}
+\DoxyCodeLine{00478\ \ \ frange\ (\doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ \doxymbox{\hyperlink{structtype}{type}});}
+\DoxyCodeLine{00479\ \ \ frange\ (\doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ \doxymbox{\hyperlink{structtype}{type}},\ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{real_8h_aa7fc74aaf7cd891719830958b18d9a82}{REAL\_VALUE\_TYPE}}\ \&min,\ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{real_8h_aa7fc74aaf7cd891719830958b18d9a82}{REAL\_VALUE\_TYPE}}\ \&max,}
+\DoxyCodeLine{00480\ \ \ \ \ \ \ \doxymbox{\hyperlink{value-range_8h_a3f4073c0d3bf2a2addfa5a8f71d96818}{value\_range\_kind}}\ =\ \doxymbox{\hyperlink{value-range_8h_a3f4073c0d3bf2a2addfa5a8f71d96818a30bf60866081de6a1d9a799bc99fb16d}{VR\_RANGE}});}
+\DoxyCodeLine{00481\ \ \ \textcolor{keyword}{static}\ \textcolor{keywordtype}{bool}\ supports\_p\ (\doxymbox{\hyperlink{coretypes_8h_ad41eb6a6028ff5b3fd00b1ee9f35ed46}{const\_tree}}\ \doxymbox{\hyperlink{structtype}{type}})}
+\DoxyCodeLine{00482\ \ \ \{}
+\DoxyCodeLine{00483\ \ \ \ \ \textcolor{comment}{//\ ??\ Decimal\ floats\ can\ have\ multiple\ representations\ for\ the}}
+\DoxyCodeLine{00484\ \ \ \ \ \textcolor{comment}{//\ same\ number.\ \ Supporting\ them\ may\ be\ as\ simple\ as\ just}}
+\DoxyCodeLine{00485\ \ \ \ \ \textcolor{comment}{//\ disabling\ them\ in\ singleton\_p.\ \ No\ clue.}}
+\DoxyCodeLine{00486\ \ \ \ \ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{tree_8h_a3c68d204526a1db8b264386a8f7b7dcf}{SCALAR\_FLOAT\_TYPE\_P}}\ (\doxymbox{\hyperlink{structtype}{type}})\ \&\&\ !\doxymbox{\hyperlink{tree_8h_a0da9fa769d2e072a874d882596310488}{DECIMAL\_FLOAT\_TYPE\_P}}\ (\doxymbox{\hyperlink{structtype}{type}});}
+\DoxyCodeLine{00487\ \ \ \}}
+\DoxyCodeLine{00488\ \ \ \textcolor{keyword}{virtual}\ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ type\ ()\ \textcolor{keyword}{const\ override};}
+\DoxyCodeLine{00489\ \ \ \textcolor{keywordtype}{void}\ set\ (\doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ type,\ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{real_8h_aa7fc74aaf7cd891719830958b18d9a82}{REAL\_VALUE\_TYPE}}\ \&,\ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{real_8h_aa7fc74aaf7cd891719830958b18d9a82}{REAL\_VALUE\_TYPE}}\ \&,}
+\DoxyCodeLine{00490\ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{value-range_8h_a3f4073c0d3bf2a2addfa5a8f71d96818}{value\_range\_kind}}\ =\ \doxymbox{\hyperlink{value-range_8h_a3f4073c0d3bf2a2addfa5a8f71d96818a30bf60866081de6a1d9a799bc99fb16d}{VR\_RANGE}});}
+\DoxyCodeLine{00491\ \ \ \textcolor{keywordtype}{void}\ set\ (\doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ type,\ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{real_8h_aa7fc74aaf7cd891719830958b18d9a82}{REAL\_VALUE\_TYPE}}\ \&,\ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{real_8h_aa7fc74aaf7cd891719830958b18d9a82}{REAL\_VALUE\_TYPE}}\ \&,}
+\DoxyCodeLine{00492\ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ nan\_state\ \&,\ \doxymbox{\hyperlink{value-range_8h_a3f4073c0d3bf2a2addfa5a8f71d96818}{value\_range\_kind}}\ =\ \doxymbox{\hyperlink{value-range_8h_a3f4073c0d3bf2a2addfa5a8f71d96818a30bf60866081de6a1d9a799bc99fb16d}{VR\_RANGE}});}
+\DoxyCodeLine{00493\ \ \ \textcolor{keywordtype}{void}\ set\_nan\ (\doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ type);}
+\DoxyCodeLine{00494\ \ \ \textcolor{keywordtype}{void}\ set\_nan\ (\doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ type,\ \textcolor{keywordtype}{bool}\ sign);}
+\DoxyCodeLine{00495\ \ \ \textcolor{keywordtype}{void}\ set\_nan\ (\doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ type,\ \textcolor{keyword}{const}\ nan\_state\ \&);}
+\DoxyCodeLine{00496\ \ \ \textcolor{keyword}{virtual}\ \textcolor{keywordtype}{void}\ set\_varying\ (\doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ type)\ \textcolor{keyword}{override};}
+\DoxyCodeLine{00497\ \ \ \textcolor{keyword}{virtual}\ \textcolor{keywordtype}{void}\ set\_undefined\ ()\ \textcolor{keyword}{override};}
+\DoxyCodeLine{00498\ \ \ \textcolor{keyword}{virtual}\ \textcolor{keywordtype}{bool}\ union\_\ (\textcolor{keyword}{const}\ vrange\ \&)\ \textcolor{keyword}{override};}
+\DoxyCodeLine{00499\ \ \ \textcolor{keyword}{virtual}\ \textcolor{keywordtype}{bool}\ intersect\ (\textcolor{keyword}{const}\ vrange\ \&)\ \textcolor{keyword}{override};}
+\DoxyCodeLine{00500\ \ \ \textcolor{keywordtype}{bool}\ contains\_p\ (\textcolor{keyword}{const}\ \doxymbox{\hyperlink{real_8h_aa7fc74aaf7cd891719830958b18d9a82}{REAL\_VALUE\_TYPE}}\ \&)\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00501\ \ \ \textcolor{keyword}{virtual}\ \textcolor{keywordtype}{bool}\ singleton\_p\ (\doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ *result\ =\ \doxymbox{\hyperlink{stddef_8h_a070d2ce7b6bb7e5c05602aa8c308d0c4}{NULL}})\ \textcolor{keyword}{const\ override};}
+\DoxyCodeLine{00502\ \ \ \textcolor{keywordtype}{bool}\ singleton\_p\ (\doxymbox{\hyperlink{real_8h_aa7fc74aaf7cd891719830958b18d9a82}{REAL\_VALUE\_TYPE}}\ \&\doxymbox{\hyperlink{poly-int_8h_a3ecac2571dcdc8050989339124f1bd26}{r}})\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00503\ \ \ \textcolor{keyword}{virtual}\ \textcolor{keywordtype}{bool}\ supports\_type\_p\ (\doxymbox{\hyperlink{coretypes_8h_ad41eb6a6028ff5b3fd00b1ee9f35ed46}{const\_tree}}\ type)\ \textcolor{keyword}{const\ override};}
+\DoxyCodeLine{00504\ \ \ \textcolor{keyword}{virtual}\ \textcolor{keywordtype}{void}\ accept\ (\textcolor{keyword}{const}\ vrange\_visitor\ \&v)\ \textcolor{keyword}{const\ override};}
+\DoxyCodeLine{00505\ \ \ \textcolor{keyword}{virtual}\ \textcolor{keywordtype}{bool}\ zero\_p\ ()\ \textcolor{keyword}{const\ override};}
+\DoxyCodeLine{00506\ \ \ \textcolor{keyword}{virtual}\ \textcolor{keywordtype}{bool}\ nonzero\_p\ ()\ \textcolor{keyword}{const\ override};}
+\DoxyCodeLine{00507\ \ \ \textcolor{keyword}{virtual}\ \textcolor{keywordtype}{void}\ set\_nonzero\ (\doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ type)\ \textcolor{keyword}{override};}
+\DoxyCodeLine{00508\ \ \ \textcolor{keyword}{virtual}\ \textcolor{keywordtype}{void}\ set\_zero\ (\doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ type)\ \textcolor{keyword}{override};}
+\DoxyCodeLine{00509\ \ \ \textcolor{keyword}{virtual}\ \textcolor{keywordtype}{void}\ set\_nonnegative\ (\doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ type)\ \textcolor{keyword}{override};}
+\DoxyCodeLine{00510\ \ \ frange\&\ operator=\ (\textcolor{keyword}{const}\ frange\ \&);}
+\DoxyCodeLine{00511\ \ \ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{cp-tree_8h_a4b9bd7e4e073a2a98d043c78719de59b}{operator==\ }}(\textcolor{keyword}{const}\ frange\ \&)\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00512\ \ \ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{diagnostic-spec_8h_a6b5ad3fba66b4c54ae8afbdf1bbebfb7}{operator!=\ }}(\textcolor{keyword}{const}\ frange\ \&\doxymbox{\hyperlink{poly-int_8h_a3ecac2571dcdc8050989339124f1bd26}{r}})\textcolor{keyword}{\ const\ }\{\ \textcolor{keywordflow}{return}\ !(*\textcolor{keyword}{this}\ ==\ \doxymbox{\hyperlink{poly-int_8h_a3ecac2571dcdc8050989339124f1bd26}{r}});\ \}}
+\DoxyCodeLine{00513\ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{real_8h_aa7fc74aaf7cd891719830958b18d9a82}{REAL\_VALUE\_TYPE}}\ \&\doxymbox{\hyperlink{vec_8h_a639a7891c60dbfef3c62cd753a61653f}{lower\_bound}}\ ()\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00514\ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{real_8h_aa7fc74aaf7cd891719830958b18d9a82}{REAL\_VALUE\_TYPE}}\ \&upper\_bound\ ()\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00515\ \ \ nan\_state\ get\_nan\_state\ ()\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00516\ \ \ \textcolor{keywordtype}{void}\ update\_nan\ ();}
+\DoxyCodeLine{00517\ \ \ \textcolor{keywordtype}{void}\ update\_nan\ (\textcolor{keywordtype}{bool}\ sign);}
+\DoxyCodeLine{00518\ \ \ \textcolor{keywordtype}{void}\ update\_nan\ (\doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}})\ =\ \textcolor{keyword}{delete};\ \textcolor{comment}{//\ Disallow\ silent\ conversion\ to\ bool.}}
+\DoxyCodeLine{00519\ \ \ \textcolor{keywordtype}{void}\ update\_nan\ (\textcolor{keyword}{const}\ nan\_state\ \&);}
+\DoxyCodeLine{00520\ \ \ \textcolor{keywordtype}{void}\ clear\_nan\ ();}
+\DoxyCodeLine{00521\ \ \ \textcolor{keywordtype}{void}\ flush\_denormals\_to\_zero\ ();}
+\DoxyCodeLine{00522\ }
+\DoxyCodeLine{00523\ \ \ \textcolor{comment}{//\ fpclassify\ like\ API}}
+\DoxyCodeLine{00524\ \ \ \textcolor{keywordtype}{bool}\ known\_isfinite\ ()\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00525\ \ \ \textcolor{keywordtype}{bool}\ known\_isnan\ ()\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00526\ \ \ \textcolor{keywordtype}{bool}\ known\_isinf\ ()\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00527\ \ \ \textcolor{keywordtype}{bool}\ maybe\_isnan\ ()\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00528\ \ \ \textcolor{keywordtype}{bool}\ maybe\_isnan\ (\textcolor{keywordtype}{bool}\ sign)\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00529\ \ \ \textcolor{keywordtype}{bool}\ maybe\_isinf\ ()\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00530\ \ \ \textcolor{keywordtype}{bool}\ signbit\_p\ (\textcolor{keywordtype}{bool}\ \&signbit)\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00531\ \ \ \textcolor{keywordtype}{bool}\ nan\_signbit\_p\ (\textcolor{keywordtype}{bool}\ \&signbit)\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00532\ }
+\DoxyCodeLine{00533\ \textcolor{keyword}{protected}:}
+\DoxyCodeLine{00534\ \ \ \textcolor{keyword}{virtual}\ \textcolor{keywordtype}{bool}\ contains\_p\ (\doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ cst)\ \textcolor{keyword}{const\ override};}
+\DoxyCodeLine{00535\ \ \ \textcolor{keyword}{virtual}\ \textcolor{keywordtype}{void}\ set\ (\doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}},\ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}},\ \doxymbox{\hyperlink{value-range_8h_a3f4073c0d3bf2a2addfa5a8f71d96818}{value\_range\_kind}}\ =\ \doxymbox{\hyperlink{value-range_8h_a3f4073c0d3bf2a2addfa5a8f71d96818a30bf60866081de6a1d9a799bc99fb16d}{VR\_RANGE}})\ \textcolor{keyword}{override};}
+\DoxyCodeLine{00536\ }
+\DoxyCodeLine{00537\ \textcolor{keyword}{private}:}
+\DoxyCodeLine{00538\ \ \ \textcolor{keywordtype}{bool}\ internal\_singleton\_p\ (\doxymbox{\hyperlink{real_8h_aa7fc74aaf7cd891719830958b18d9a82}{REAL\_VALUE\_TYPE}}\ *\ =\ \doxymbox{\hyperlink{stddef_8h_a070d2ce7b6bb7e5c05602aa8c308d0c4}{NULL}})\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00539\ \ \ \textcolor{keywordtype}{void}\ verify\_range\ ();}
+\DoxyCodeLine{00540\ \ \ \textcolor{keywordtype}{bool}\ normalize\_kind\ ();}
+\DoxyCodeLine{00541\ \ \ \textcolor{keywordtype}{bool}\ union\_nans\ (\textcolor{keyword}{const}\ frange\ \&);}
+\DoxyCodeLine{00542\ \ \ \textcolor{keywordtype}{bool}\ intersect\_nans\ (\textcolor{keyword}{const}\ frange\ \&);}
+\DoxyCodeLine{00543\ \ \ \textcolor{keywordtype}{bool}\ combine\_zeros\ (\textcolor{keyword}{const}\ frange\ \&,\ \textcolor{keywordtype}{bool}\ union\_p);}
+\DoxyCodeLine{00544\ }
+\DoxyCodeLine{00545\ \ \ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ m\_type;}
+\DoxyCodeLine{00546\ \ \ \doxymbox{\hyperlink{real_8h_aa7fc74aaf7cd891719830958b18d9a82}{REAL\_VALUE\_TYPE}}\ m\_min;}
+\DoxyCodeLine{00547\ \ \ \doxymbox{\hyperlink{real_8h_aa7fc74aaf7cd891719830958b18d9a82}{REAL\_VALUE\_TYPE}}\ m\_max;}
+\DoxyCodeLine{00548\ \ \ \textcolor{keywordtype}{bool}\ m\_pos\_nan;}
+\DoxyCodeLine{00549\ \ \ \textcolor{keywordtype}{bool}\ m\_neg\_nan;}
+\DoxyCodeLine{00550\ \};}
+\DoxyCodeLine{00551\ }
+\DoxyCodeLine{00552\ \textcolor{keyword}{inline}\ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{real_8h_aa7fc74aaf7cd891719830958b18d9a82}{REAL\_VALUE\_TYPE}}\ \&}
+\DoxyCodeLine{00553\ frange::lower\_bound\ ()\textcolor{keyword}{\ const}}
+\DoxyCodeLine{00554\ \textcolor{keyword}{}\{}
+\DoxyCodeLine{00555\ \ \ \doxymbox{\hyperlink{system_8h_aff447899dc74d54931b2bc2d47de9423}{gcc\_checking\_assert}}\ (!undefined\_p\ ()\ \&\&\ !known\_isnan\ ());}
+\DoxyCodeLine{00556\ \ \ \textcolor{keywordflow}{return}\ m\_min;}
+\DoxyCodeLine{00557\ \}}
+\DoxyCodeLine{00558\ }
+\DoxyCodeLine{00559\ \textcolor{keyword}{inline}\ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{real_8h_aa7fc74aaf7cd891719830958b18d9a82}{REAL\_VALUE\_TYPE}}\ \&}
+\DoxyCodeLine{00560\ frange::upper\_bound\ ()\textcolor{keyword}{\ const}}
+\DoxyCodeLine{00561\ \textcolor{keyword}{}\{}
+\DoxyCodeLine{00562\ \ \ \doxymbox{\hyperlink{system_8h_aff447899dc74d54931b2bc2d47de9423}{gcc\_checking\_assert}}\ (!undefined\_p\ ()\ \&\&\ !known\_isnan\ ());}
+\DoxyCodeLine{00563\ \ \ \textcolor{keywordflow}{return}\ m\_max;}
+\DoxyCodeLine{00564\ \}}
+\DoxyCodeLine{00565\ }
+\DoxyCodeLine{00566\ \textcolor{comment}{//\ Return\ the\ NAN\ state.}}
+\DoxyCodeLine{00567\ }
+\DoxyCodeLine{00568\ \textcolor{keyword}{inline}\ \doxymbox{\hyperlink{classnan__state}{nan\_state}}}
+\DoxyCodeLine{00569\ frange::get\_nan\_state\ ()\textcolor{keyword}{\ const}}
+\DoxyCodeLine{00570\ \textcolor{keyword}{}\{}
+\DoxyCodeLine{00571\ \ \ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{classnan__state}{nan\_state}}\ (m\_pos\_nan,\ m\_neg\_nan);}
+\DoxyCodeLine{00572\ \}}
+\DoxyCodeLine{00573\ }
+\DoxyCodeLine{00574\ \textcolor{comment}{//\ is\_a<>\ and\ as\_a<>\ implementation\ for\ vrange.}}
+\DoxyCodeLine{00575\ }
+\DoxyCodeLine{00576\ \textcolor{comment}{//\ Anything\ we\ haven't\ specialized\ is\ a\ hard\ fail.}}
+\DoxyCodeLine{00577\ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ T>}
+\DoxyCodeLine{00578\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{bool}}
+\DoxyCodeLine{00579\ \doxymbox{\hyperlink{value-range_8h_ab503099670043837a41522be9ffa0f7b}{is\_a}}\ (vrange\ \&)}
+\DoxyCodeLine{00580\ \{}
+\DoxyCodeLine{00581\ \ \ \doxymbox{\hyperlink{system_8h_a32b3b26e9883686d3022c1ffe5ec3aa4}{gcc\_unreachable}}\ ();}
+\DoxyCodeLine{00582\ \ \ \textcolor{keywordflow}{return}\ \textcolor{keyword}{false};}
+\DoxyCodeLine{00583\ \}}
+\DoxyCodeLine{00584\ }
+\DoxyCodeLine{00585\ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ T>}
+\DoxyCodeLine{00586\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{bool}}
+\DoxyCodeLine{00587\ \doxymbox{\hyperlink{value-range_8h_ab503099670043837a41522be9ffa0f7b}{is\_a}}\ (\textcolor{keyword}{const}\ vrange\ \&v)}
+\DoxyCodeLine{00588\ \{}
+\DoxyCodeLine{00589\ \ \ \textcolor{comment}{//\ Reuse\ is\_a\ <vrange>\ to\ implement\ the\ const\ version.}}
+\DoxyCodeLine{00590\ \ \ \textcolor{keyword}{const}\ T\ \&derived\ =\ \textcolor{keyword}{static\_cast<}\textcolor{keyword}{const\ }T\ \&\textcolor{keyword}{>}\ (v);}
+\DoxyCodeLine{00591\ \ \ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{value-range_8h_ab503099670043837a41522be9ffa0f7b}{is\_a\ <T>}}\ (\textcolor{keyword}{const\_cast<}T\ \&\textcolor{keyword}{>}\ (derived));}
+\DoxyCodeLine{00592\ \}}
+\DoxyCodeLine{00593\ }
+\DoxyCodeLine{00594\ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ T>}
+\DoxyCodeLine{00595\ \textcolor{keyword}{inline}\ T\ \&}
+\DoxyCodeLine{00596\ \doxymbox{\hyperlink{value-range_8h_a082c8913b67046f2f0e3a3dc3e5515c2}{as\_a}}\ (vrange\ \&v)}
+\DoxyCodeLine{00597\ \{}
+\DoxyCodeLine{00598\ \ \ \doxymbox{\hyperlink{system_8h_aff447899dc74d54931b2bc2d47de9423}{gcc\_checking\_assert}}\ (\doxymbox{\hyperlink{value-range_8h_ab503099670043837a41522be9ffa0f7b}{is\_a\ <T>}}\ (v));}
+\DoxyCodeLine{00599\ \ \ \textcolor{keywordflow}{return}\ \textcolor{keyword}{static\_cast\ <}T\ \&\textcolor{keyword}{>}\ (v);}
+\DoxyCodeLine{00600\ \}}
+\DoxyCodeLine{00601\ }
+\DoxyCodeLine{00602\ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ T>}
+\DoxyCodeLine{00603\ \textcolor{keyword}{inline}\ \textcolor{keyword}{const}\ T\ \&}
+\DoxyCodeLine{00604\ \doxymbox{\hyperlink{value-range_8h_a082c8913b67046f2f0e3a3dc3e5515c2}{as\_a}}\ (\textcolor{keyword}{const}\ vrange\ \&v)}
+\DoxyCodeLine{00605\ \{}
+\DoxyCodeLine{00606\ \ \ \doxymbox{\hyperlink{system_8h_aff447899dc74d54931b2bc2d47de9423}{gcc\_checking\_assert}}\ (\doxymbox{\hyperlink{value-range_8h_ab503099670043837a41522be9ffa0f7b}{is\_a\ <T>}}\ (v));}
+\DoxyCodeLine{00607\ \ \ \textcolor{keywordflow}{return}\ \textcolor{keyword}{static\_cast\ <}\textcolor{keyword}{const\ }T\ \&\textcolor{keyword}{>}\ (v);}
+\DoxyCodeLine{00608\ \}}
+\DoxyCodeLine{00609\ }
+\DoxyCodeLine{00610\ \textcolor{comment}{//\ Specializations\ for\ the\ different\ range\ types.}}
+\DoxyCodeLine{00611\ }
+\DoxyCodeLine{00612\ \textcolor{keyword}{template}\ <>}
+\DoxyCodeLine{00613\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{bool}}
+\DoxyCodeLine{00614\ \doxymbox{\hyperlink{value-range_8h_afa088ba8b5b5b82de40e8c84cef5d558}{is\_a\ <irange>}}\ (vrange\ \&v)}
+\DoxyCodeLine{00615\ \{}
+\DoxyCodeLine{00616\ \ \ \textcolor{keywordflow}{return}\ v.m\_discriminator\ ==\ \doxymbox{\hyperlink{value-range_8h_a5c22d2d797d75c81f8a15e60137418c2a74b330c0c425c20f84b36c3ed62d4949}{VR\_IRANGE}};}
+\DoxyCodeLine{00617\ \}}
+\DoxyCodeLine{00618\ }
+\DoxyCodeLine{00619\ \textcolor{keyword}{template}\ <>}
+\DoxyCodeLine{00620\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{bool}}
+\DoxyCodeLine{00621\ \doxymbox{\hyperlink{value-range_8h_a9099bb6e99b11e502b85f35611d0d2f8}{is\_a\ <frange>}}\ (vrange\ \&v)}
+\DoxyCodeLine{00622\ \{}
+\DoxyCodeLine{00623\ \ \ \textcolor{keywordflow}{return}\ v.m\_discriminator\ ==\ \doxymbox{\hyperlink{value-range_8h_a5c22d2d797d75c81f8a15e60137418c2ad5ffbe7b65fcb1fe7862f7d319680e5b}{VR\_FRANGE}};}
+\DoxyCodeLine{00624\ \}}
+\DoxyCodeLine{00625\ }
+\DoxyCodeLine{00626\ \textcolor{keyword}{template}\ <>}
+\DoxyCodeLine{00627\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{bool}}
+\DoxyCodeLine{00628\ \doxymbox{\hyperlink{value-range_8h_a58d450183eb5fab302a9b9775b9ed8f4}{is\_a\ <unsupported\_range>}}\ (vrange\ \&v)}
+\DoxyCodeLine{00629\ \{}
+\DoxyCodeLine{00630\ \ \ \textcolor{keywordflow}{return}\ v.m\_discriminator\ ==\ \doxymbox{\hyperlink{value-range_8h_a5c22d2d797d75c81f8a15e60137418c2a21a2108e8b530bb349878bdb723f5cfe}{VR\_UNKNOWN}};}
+\DoxyCodeLine{00631\ \}}
+\DoxyCodeLine{00632\ }
+\DoxyCodeLine{00633\ \textcolor{comment}{//\ For\ resizable\ ranges,\ resize\ the\ range\ up\ to\ HARD\_MAX\_RANGES\ if\ the}}
+\DoxyCodeLine{00634\ \textcolor{comment}{//\ NEEDED\ pairs\ is\ greater\ than\ the\ current\ capacity\ of\ the\ range.}}
+\DoxyCodeLine{00635\ }
+\DoxyCodeLine{00636\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{void}}
+\DoxyCodeLine{00637\ irange::maybe\_resize\ (\textcolor{keywordtype}{int}\ needed)}
+\DoxyCodeLine{00638\ \{}
+\DoxyCodeLine{00639\ \ \ \textcolor{keywordflow}{if}\ (!m\_resizable\ ||\ m\_max\_ranges\ ==\ HARD\_MAX\_RANGES)}
+\DoxyCodeLine{00640\ \ \ \ \ \textcolor{keywordflow}{return};}
+\DoxyCodeLine{00641\ }
+\DoxyCodeLine{00642\ \ \ \textcolor{keywordflow}{if}\ (needed\ >\ m\_max\_ranges)}
+\DoxyCodeLine{00643\ \ \ \ \ \{}
+\DoxyCodeLine{00644\ \ \ \ \ \ \ m\_max\_ranges\ =\ HARD\_MAX\_RANGES;}
+\DoxyCodeLine{00645\ \ \ \ \ \ \ \doxymbox{\hyperlink{wide-int_8h_a9a29e47e2c40ae9adaf47df15970eced}{wide\_int}}\ *newmem\ =\ \textcolor{keyword}{new}\ \doxymbox{\hyperlink{wide-int_8h_a9a29e47e2c40ae9adaf47df15970eced}{wide\_int}}[m\_max\_ranges\ *\ 2];}
+\DoxyCodeLine{00646\ \ \ \ \ \ \ \textcolor{keywordtype}{unsigned}\ n\ =\ num\_pairs\ ()\ *\ 2;}
+\DoxyCodeLine{00647\ \ \ \ \ \ \ \textcolor{keywordflow}{for}\ (\textcolor{keywordtype}{unsigned}\ \doxymbox{\hyperlink{poly-int_8h_a7e98b8a17c0aad30ba64d47b74e2a6c1}{i}}\ =\ 0;\ \doxymbox{\hyperlink{poly-int_8h_a7e98b8a17c0aad30ba64d47b74e2a6c1}{i}}\ <\ n;\ ++\doxymbox{\hyperlink{poly-int_8h_a7e98b8a17c0aad30ba64d47b74e2a6c1}{i}})}
+\DoxyCodeLine{00648\ \ \ \ \ newmem[\doxymbox{\hyperlink{poly-int_8h_a7e98b8a17c0aad30ba64d47b74e2a6c1}{i}}]\ =\ m\_base[\doxymbox{\hyperlink{poly-int_8h_a7e98b8a17c0aad30ba64d47b74e2a6c1}{i}}];}
+\DoxyCodeLine{00649\ \ \ \ \ \ \ m\_base\ =\ newmem;}
+\DoxyCodeLine{00650\ \ \ \ \ \}}
+\DoxyCodeLine{00651\ \}}
+\DoxyCodeLine{00652\ }
+\DoxyCodeLine{00653\ \textcolor{keyword}{template}<\textcolor{keywordtype}{unsigned}\ N,\ \textcolor{keywordtype}{bool}\ RESIZABLE>}
+\DoxyCodeLine{00654\ \textcolor{keyword}{inline}}
+\DoxyCodeLine{00655\ int\_range<N,\ RESIZABLE>::\string~int\_range\ ()}
+\DoxyCodeLine{00656\ \{}
+\DoxyCodeLine{00657\ \ \ \textcolor{keywordflow}{if}\ (RESIZABLE\ \&\&\ m\_base\ !=\ m\_ranges)}
+\DoxyCodeLine{00658\ \ \ \ \ \textcolor{keyword}{delete}[]\ m\_base;}
+\DoxyCodeLine{00659\ \}}
+\DoxyCodeLine{00660\ }
+\DoxyCodeLine{00661\ \textcolor{comment}{//\ This\ is\ an\ "{}infinite"{}\ precision\ irange\ for\ use\ in\ temporary}}
+\DoxyCodeLine{00662\ \textcolor{comment}{//\ calculations.\ \ It\ starts\ with\ a\ sensible\ default\ covering\ 99\%\ of}}
+\DoxyCodeLine{00663\ \textcolor{comment}{//\ uses,\ and\ goes\ up\ to\ HARD\_MAX\_RANGES\ when\ needed.\ \ Any\ allocated}}
+\DoxyCodeLine{00664\ \textcolor{comment}{//\ storage\ is\ freed\ upon\ destruction.}}
+\DoxyCodeLine{00665\ \textcolor{keyword}{typedef}\ int\_range<3,\ \textcolor{comment}{/*RESIZABLE=*/}\textcolor{keyword}{true}>\ \doxymbox{\hyperlink{value-range_8h_a8353f75a459f005e702e43c460db607a}{int\_range\_max}};}
+\DoxyCodeLine{00666\ }
+\DoxyCodeLine{00667\ \textcolor{keyword}{class\ }\doxymbox{\hyperlink{classvrange__visitor}{vrange\_visitor}}}
+\DoxyCodeLine{00668\ \{}
+\DoxyCodeLine{00669\ \textcolor{keyword}{public}:}
+\DoxyCodeLine{00670\ \ \ \textcolor{keyword}{virtual}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classvrange__visitor_a8b7782dd163c84528dceb72887c48119}{visit}}\ (\textcolor{keyword}{const}\ irange\ \&)\textcolor{keyword}{\ const\ }\{\ \}}
+\DoxyCodeLine{00671\ \ \ \textcolor{keyword}{virtual}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classvrange__visitor_ab9778e48236f778545b9d3fad9470881}{visit}}\ (\textcolor{keyword}{const}\ frange\ \&)\textcolor{keyword}{\ const\ }\{\ \}}
+\DoxyCodeLine{00672\ \ \ \textcolor{keyword}{virtual}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classvrange__visitor_a08735c3103a3966da1b9c6cba2b14e57}{visit}}\ (\textcolor{keyword}{const}\ \doxymbox{\hyperlink{classunsupported__range}{unsupported\_range}}\ \&)\textcolor{keyword}{\ const\ }\{\ \}}
+\DoxyCodeLine{00673\ \};}
+\DoxyCodeLine{00674\ }
+\DoxyCodeLine{00675\ \textcolor{keyword}{typedef}\ int\_range<2>\ \doxymbox{\hyperlink{value-range_8h_a22f53d0317d2e505b175c1715c926bcb}{value\_range}};}
+\DoxyCodeLine{00676\ }
+\DoxyCodeLine{00677\ \textcolor{comment}{//\ This\ is\ an\ "{}infinite"{}\ precision\ range\ object\ for\ use\ in\ temporary}}
+\DoxyCodeLine{00678\ \textcolor{comment}{//\ calculations\ for\ any\ of\ the\ handled\ types.\ \ The\ object\ can\ be}}
+\DoxyCodeLine{00679\ \textcolor{comment}{//\ transparently\ used\ as\ a\ vrange.}}
+\DoxyCodeLine{00680\ }
+\DoxyCodeLine{00681\ \textcolor{keyword}{class\ }\doxymbox{\hyperlink{classValue__Range_a240e62332c5b805dbe2a063424975226}{Value\_Range}}}
+\DoxyCodeLine{00682\ \{}
+\DoxyCodeLine{00683\ \textcolor{keyword}{public}:}
+\DoxyCodeLine{00684\ \ \ \doxymbox{\hyperlink{classValue__Range_a240e62332c5b805dbe2a063424975226}{Value\_Range}}\ ();}
+\DoxyCodeLine{00685\ \ \ \doxymbox{\hyperlink{classValue__Range_a240e62332c5b805dbe2a063424975226}{Value\_Range}}\ (\textcolor{keyword}{const}\ vrange\ \&\doxymbox{\hyperlink{poly-int_8h_a3ecac2571dcdc8050989339124f1bd26}{r}});}
+\DoxyCodeLine{00686\ \ \ \doxymbox{\hyperlink{classValue__Range_a240e62332c5b805dbe2a063424975226}{Value\_Range}}\ (\doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ \doxymbox{\hyperlink{classValue__Range_a8d9cd2928c7721597377ced426c159ea}{type}});}
+\DoxyCodeLine{00687\ \ \ \doxymbox{\hyperlink{classValue__Range_a240e62332c5b805dbe2a063424975226}{Value\_Range}}\ (\doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}},\ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}},\ \doxymbox{\hyperlink{value-range_8h_a3f4073c0d3bf2a2addfa5a8f71d96818}{value\_range\_kind}}\ kind\ =\ \doxymbox{\hyperlink{value-range_8h_a3f4073c0d3bf2a2addfa5a8f71d96818a30bf60866081de6a1d9a799bc99fb16d}{VR\_RANGE}});}
+\DoxyCodeLine{00688\ \ \ \doxymbox{\hyperlink{classValue__Range_a240e62332c5b805dbe2a063424975226}{Value\_Range}}\ (\textcolor{keyword}{const}\ \doxymbox{\hyperlink{classValue__Range_a240e62332c5b805dbe2a063424975226}{Value\_Range}}\ \&);}
+\DoxyCodeLine{00689\ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classValue__Range_ab13660a294630ef191bde0bf4b9bbcd6}{set\_type}}\ (\doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ \doxymbox{\hyperlink{classValue__Range_a8d9cd2928c7721597377ced426c159ea}{type}});}
+\DoxyCodeLine{00690\ \ \ vrange\&\ \doxymbox{\hyperlink{classValue__Range_a74e91d98411ab5b4aea63ccb77bdb31a}{operator=\ }}(\textcolor{keyword}{const}\ vrange\ \&);}
+\DoxyCodeLine{00691\ \ \ \doxymbox{\hyperlink{classValue__Range_a240e62332c5b805dbe2a063424975226}{Value\_Range}}\&\ \doxymbox{\hyperlink{classValue__Range_a74e91d98411ab5b4aea63ccb77bdb31a}{operator=\ }}(\textcolor{keyword}{const}\ \doxymbox{\hyperlink{classValue__Range_a240e62332c5b805dbe2a063424975226}{Value\_Range}}\ \&);}
+\DoxyCodeLine{00692\ \ \ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{classValue__Range_a278a398d800e10602bfa827d3981b4d3}{operator==\ }}(\textcolor{keyword}{const}\ \doxymbox{\hyperlink{classValue__Range_a240e62332c5b805dbe2a063424975226}{Value\_Range}}\ \&\doxymbox{\hyperlink{poly-int_8h_a3ecac2571dcdc8050989339124f1bd26}{r}})\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00693\ \ \ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{classValue__Range_ad21f426318f726f222ddbf5f4f28b3dc}{operator!=\ }}(\textcolor{keyword}{const}\ \doxymbox{\hyperlink{classValue__Range_a240e62332c5b805dbe2a063424975226}{Value\_Range}}\ \&\doxymbox{\hyperlink{poly-int_8h_a3ecac2571dcdc8050989339124f1bd26}{r}})\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00694\ \ \ \textcolor{keyword}{operator}\ vrange\ \&();}
+\DoxyCodeLine{00695\ \ \ \textcolor{keyword}{operator}\ \textcolor{keyword}{const}\ vrange\ \&()\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00696\ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classValue__Range_a7fc29853a6ff796beea2a216f37ee157}{dump}}\ (FILE\ *)\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00697\ \ \ \textcolor{keyword}{static}\ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{classValue__Range_aba2fb0d3d2220cacf0cc926de31c7414}{supports\_type\_p}}\ (\doxymbox{\hyperlink{coretypes_8h_ad41eb6a6028ff5b3fd00b1ee9f35ed46}{const\_tree}}\ \doxymbox{\hyperlink{classValue__Range_a8d9cd2928c7721597377ced426c159ea}{type}});}
+\DoxyCodeLine{00698\ }
+\DoxyCodeLine{00699\ \ \ \textcolor{comment}{//\ Convenience\ methods\ for\ vrange\ compatibility.}}
+\DoxyCodeLine{00700\ \ \ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ \doxymbox{\hyperlink{classValue__Range_a8d9cd2928c7721597377ced426c159ea}{type}}\ ()\ \{\ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{classValue__Range_a42c95f5e4497aa754dea0cd820b94ced}{m\_vrange}}-\/>type\ ();\ \}}
+\DoxyCodeLine{00701\ \ \ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{classValue__Range_ad36adda3933c73534a3940946f1907dd}{varying\_p}}\ ()\textcolor{keyword}{\ const\ }\{\ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{classValue__Range_a42c95f5e4497aa754dea0cd820b94ced}{m\_vrange}}-\/>varying\_p\ ();\ \}}
+\DoxyCodeLine{00702\ \ \ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{classValue__Range_aad4212c34b3b30bcdc1bf5514756f9d2}{undefined\_p}}\ ()\textcolor{keyword}{\ const\ }\{\ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{classValue__Range_a42c95f5e4497aa754dea0cd820b94ced}{m\_vrange}}-\/>undefined\_p\ ();\ \}}
+\DoxyCodeLine{00703\ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classValue__Range_a9a00c1373ec0695348cde53ea221b2cf}{set\_varying}}\ (\doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ \doxymbox{\hyperlink{classValue__Range_a8d9cd2928c7721597377ced426c159ea}{type}})\ \{\ \doxymbox{\hyperlink{classValue__Range_a7263167a18aba1b76643543ceefde9ac}{init}}\ (\doxymbox{\hyperlink{classValue__Range_a8d9cd2928c7721597377ced426c159ea}{type}});\ \doxymbox{\hyperlink{classValue__Range_a42c95f5e4497aa754dea0cd820b94ced}{m\_vrange}}-\/>set\_varying\ (\doxymbox{\hyperlink{classValue__Range_a8d9cd2928c7721597377ced426c159ea}{type}});\ \}}
+\DoxyCodeLine{00704\ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classValue__Range_aaa99840d0709b37c676b4987925a18f7}{set\_undefined}}\ ()\ \{\ \doxymbox{\hyperlink{classValue__Range_a42c95f5e4497aa754dea0cd820b94ced}{m\_vrange}}-\/>set\_undefined\ ();\ \}}
+\DoxyCodeLine{00705\ \ \ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{classValue__Range_a7ad6ff2c9f899d44d9a5c70eeeb2ae7c}{union\_}}\ (\textcolor{keyword}{const}\ vrange\ \&\doxymbox{\hyperlink{poly-int_8h_a3ecac2571dcdc8050989339124f1bd26}{r}})\ \{\ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{classValue__Range_a42c95f5e4497aa754dea0cd820b94ced}{m\_vrange}}-\/>union\_\ (\doxymbox{\hyperlink{poly-int_8h_a3ecac2571dcdc8050989339124f1bd26}{r}});\ \}}
+\DoxyCodeLine{00706\ \ \ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{classValue__Range_a37b0f510f77bd2f21f4a6373e63ff70b}{intersect}}\ (\textcolor{keyword}{const}\ vrange\ \&\doxymbox{\hyperlink{poly-int_8h_a3ecac2571dcdc8050989339124f1bd26}{r}})\ \{\ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{classValue__Range_a42c95f5e4497aa754dea0cd820b94ced}{m\_vrange}}-\/>intersect\ (\doxymbox{\hyperlink{poly-int_8h_a3ecac2571dcdc8050989339124f1bd26}{r}});\ \}}
+\DoxyCodeLine{00707\ \ \ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{classValue__Range_a6ba58d41de896bf313d59ddd8493c32f}{contains\_p}}\ (\doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ cst)\textcolor{keyword}{\ const\ }\{\ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{classValue__Range_a42c95f5e4497aa754dea0cd820b94ced}{m\_vrange}}-\/>contains\_p\ (cst);\ \}}
+\DoxyCodeLine{00708\ \ \ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{classValue__Range_aee8ad699cef054e88485873e05af0944}{singleton\_p}}\ (\doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ *result\ =\ \doxymbox{\hyperlink{stddef_8h_a070d2ce7b6bb7e5c05602aa8c308d0c4}{NULL}})\textcolor{keyword}{\ const}}
+\DoxyCodeLine{00709\ \textcolor{keyword}{\ \ \ \ }\{\ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{classValue__Range_a42c95f5e4497aa754dea0cd820b94ced}{m\_vrange}}-\/>singleton\_p\ (result);\ \}}
+\DoxyCodeLine{00710\ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classValue__Range_af1bcd071a0b43a33ff8cff8ff128f698}{set\_zero}}\ (\doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ \doxymbox{\hyperlink{classValue__Range_a8d9cd2928c7721597377ced426c159ea}{type}})\ \{\ \doxymbox{\hyperlink{classValue__Range_a7263167a18aba1b76643543ceefde9ac}{init}}\ (\doxymbox{\hyperlink{classValue__Range_a8d9cd2928c7721597377ced426c159ea}{type}});\ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{classValue__Range_a42c95f5e4497aa754dea0cd820b94ced}{m\_vrange}}-\/>set\_zero\ (\doxymbox{\hyperlink{classValue__Range_a8d9cd2928c7721597377ced426c159ea}{type}});\ \}}
+\DoxyCodeLine{00711\ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classValue__Range_acbbba4405dea6f87cfcbcb44119b6747}{set\_nonzero}}\ (\doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ \doxymbox{\hyperlink{classValue__Range_a8d9cd2928c7721597377ced426c159ea}{type}})}
+\DoxyCodeLine{00712\ \ \ \ \ \{\ \doxymbox{\hyperlink{classValue__Range_a7263167a18aba1b76643543ceefde9ac}{init}}\ (\doxymbox{\hyperlink{classValue__Range_a8d9cd2928c7721597377ced426c159ea}{type}});\ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{classValue__Range_a42c95f5e4497aa754dea0cd820b94ced}{m\_vrange}}-\/>set\_nonzero\ (\doxymbox{\hyperlink{classValue__Range_a8d9cd2928c7721597377ced426c159ea}{type}});\ \}}
+\DoxyCodeLine{00713\ \ \ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{classValue__Range_a3223c892c8f2b321cfd0e25b8258e402}{nonzero\_p}}\ ()\textcolor{keyword}{\ const\ }\{\ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{classValue__Range_a42c95f5e4497aa754dea0cd820b94ced}{m\_vrange}}-\/>nonzero\_p\ ();\ \}}
+\DoxyCodeLine{00714\ \ \ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{classValue__Range_a7e9abf10f5122898a9f97918869a5672}{zero\_p}}\ ()\textcolor{keyword}{\ const\ }\{\ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{classValue__Range_a42c95f5e4497aa754dea0cd820b94ced}{m\_vrange}}-\/>zero\_p\ ();\ \}}
+\DoxyCodeLine{00715\ \ \ \doxymbox{\hyperlink{wide-int_8h_a9a29e47e2c40ae9adaf47df15970eced}{wide\_int}}\ \doxymbox{\hyperlink{classValue__Range_ad9cc0c70cea5432c880049f704e7d10b}{lower\_bound}}\ ()\ \textcolor{keyword}{const};\ \textcolor{comment}{//\ For\ irange/prange\ comparability.}}
+\DoxyCodeLine{00716\ \ \ \doxymbox{\hyperlink{wide-int_8h_a9a29e47e2c40ae9adaf47df15970eced}{wide\_int}}\ \doxymbox{\hyperlink{classValue__Range_a3ef5820c1d936f8678797a70cd92f5e0}{upper\_bound}}\ ()\ \textcolor{keyword}{const};\ \textcolor{comment}{//\ For\ irange/prange\ comparability.}}
+\DoxyCodeLine{00717\ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classValue__Range_ab89d0df50132cb8b5b7898517d3bc9b7}{accept}}\ (\textcolor{keyword}{const}\ \doxymbox{\hyperlink{classvrange__visitor}{vrange\_visitor}}\ \&v)\textcolor{keyword}{\ const\ }\{\ \doxymbox{\hyperlink{classValue__Range_a42c95f5e4497aa754dea0cd820b94ced}{m\_vrange}}-\/>accept\ (v);\ \}}
+\DoxyCodeLine{00718\ \textcolor{keyword}{private}:}
+\DoxyCodeLine{00719\ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classValue__Range_a7263167a18aba1b76643543ceefde9ac}{init}}\ (\doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ \doxymbox{\hyperlink{structtype}{type}});}
+\DoxyCodeLine{00720\ \ \ \doxymbox{\hyperlink{classunsupported__range}{unsupported\_range}}\ \doxymbox{\hyperlink{classValue__Range_ad253de695ad371afef8fc2245b5e1517}{m\_unsupported}};}
+\DoxyCodeLine{00721\ \ \ vrange\ *\doxymbox{\hyperlink{classValue__Range_a42c95f5e4497aa754dea0cd820b94ced}{m\_vrange}};}
+\DoxyCodeLine{00722\ \ \ \doxymbox{\hyperlink{value-range_8h_a8353f75a459f005e702e43c460db607a}{int\_range\_max}}\ \doxymbox{\hyperlink{classValue__Range_a7b767a13b30b2d4528711027300fc2eb}{m\_irange}};}
+\DoxyCodeLine{00723\ \ \ frange\ \doxymbox{\hyperlink{classValue__Range_a48f42c0a77e59e561ace9f500ad6be1e}{m\_frange}};}
+\DoxyCodeLine{00724\ \};}
+\DoxyCodeLine{00725\ }
+\DoxyCodeLine{00726\ \textcolor{keyword}{inline}}
+\DoxyCodeLine{00727\ \doxymbox{\hyperlink{classValue__Range_a240e62332c5b805dbe2a063424975226}{Value\_Range::Value\_Range}}\ ()}
+\DoxyCodeLine{00728\ \{}
+\DoxyCodeLine{00729\ \ \ \doxymbox{\hyperlink{classValue__Range_a42c95f5e4497aa754dea0cd820b94ced}{m\_vrange}}\ =\ \&\doxymbox{\hyperlink{classValue__Range_ad253de695ad371afef8fc2245b5e1517}{m\_unsupported}};}
+\DoxyCodeLine{00730\ \}}
+\DoxyCodeLine{00731\ }
+\DoxyCodeLine{00732\ \textcolor{comment}{//\ Copy\ constructor\ from\ a\ vrange.}}
+\DoxyCodeLine{00733\ }
+\DoxyCodeLine{00734\ \textcolor{keyword}{inline}}
+\DoxyCodeLine{00735\ \doxymbox{\hyperlink{classValue__Range_a240e62332c5b805dbe2a063424975226}{Value\_Range::Value\_Range}}\ (\textcolor{keyword}{const}\ vrange\ \&\doxymbox{\hyperlink{poly-int_8h_a3ecac2571dcdc8050989339124f1bd26}{r}})}
+\DoxyCodeLine{00736\ \{}
+\DoxyCodeLine{00737\ \ \ *\textcolor{keyword}{this}\ =\ \doxymbox{\hyperlink{poly-int_8h_a3ecac2571dcdc8050989339124f1bd26}{r}};}
+\DoxyCodeLine{00738\ \}}
+\DoxyCodeLine{00739\ }
+\DoxyCodeLine{00740\ \textcolor{comment}{//\ Copy\ constructor\ from\ a\ TYPE.\ \ The\ range\ of\ the\ temporary\ is\ set\ to}}
+\DoxyCodeLine{00741\ \textcolor{comment}{//\ UNDEFINED.}}
+\DoxyCodeLine{00742\ }
+\DoxyCodeLine{00743\ \textcolor{keyword}{inline}}
+\DoxyCodeLine{00744\ \doxymbox{\hyperlink{classValue__Range_a240e62332c5b805dbe2a063424975226}{Value\_Range::Value\_Range}}\ (\doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ \doxymbox{\hyperlink{classValue__Range_a8d9cd2928c7721597377ced426c159ea}{type}})}
+\DoxyCodeLine{00745\ \{}
+\DoxyCodeLine{00746\ \ \ \doxymbox{\hyperlink{classValue__Range_a7263167a18aba1b76643543ceefde9ac}{init}}\ (\doxymbox{\hyperlink{classValue__Range_a8d9cd2928c7721597377ced426c159ea}{type}});}
+\DoxyCodeLine{00747\ \}}
+\DoxyCodeLine{00748\ }
+\DoxyCodeLine{00749\ \textcolor{keyword}{inline}}
+\DoxyCodeLine{00750\ \doxymbox{\hyperlink{classValue__Range_a240e62332c5b805dbe2a063424975226}{Value\_Range::Value\_Range}}\ (\doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ min,\ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ max,\ \doxymbox{\hyperlink{value-range_8h_a3f4073c0d3bf2a2addfa5a8f71d96818}{value\_range\_kind}}\ kind)}
+\DoxyCodeLine{00751\ \{}
+\DoxyCodeLine{00752\ \ \ \doxymbox{\hyperlink{classValue__Range_a7263167a18aba1b76643543ceefde9ac}{init}}\ (\doxymbox{\hyperlink{tree_8h_aac9b9df6e10564b46659fc4a617b71aa}{TREE\_TYPE}}\ (min));}
+\DoxyCodeLine{00753\ \ \ \doxymbox{\hyperlink{classValue__Range_a42c95f5e4497aa754dea0cd820b94ced}{m\_vrange}}-\/>set\ (min,\ max,\ kind);}
+\DoxyCodeLine{00754\ \}}
+\DoxyCodeLine{00755\ }
+\DoxyCodeLine{00756\ \textcolor{keyword}{inline}}
+\DoxyCodeLine{00757\ \doxymbox{\hyperlink{classValue__Range_a240e62332c5b805dbe2a063424975226}{Value\_Range::Value\_Range}}\ (\textcolor{keyword}{const}\ \doxymbox{\hyperlink{classValue__Range_a240e62332c5b805dbe2a063424975226}{Value\_Range}}\ \&\doxymbox{\hyperlink{poly-int_8h_a3ecac2571dcdc8050989339124f1bd26}{r}})}
+\DoxyCodeLine{00758\ \{}
+\DoxyCodeLine{00759\ \ \ *\textcolor{keyword}{this}\ =\ *\doxymbox{\hyperlink{poly-int_8h_a3ecac2571dcdc8050989339124f1bd26}{r}}.m\_vrange;}
+\DoxyCodeLine{00760\ \}}
+\DoxyCodeLine{00761\ }
+\DoxyCodeLine{00762\ \textcolor{comment}{//\ Initialize\ object\ so\ it\ is\ possible\ to\ store\ temporaries\ of\ TYPE}}
+\DoxyCodeLine{00763\ \textcolor{comment}{//\ into\ it.}}
+\DoxyCodeLine{00764\ }
+\DoxyCodeLine{00765\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{void}}
+\DoxyCodeLine{00766\ \doxymbox{\hyperlink{classValue__Range_a7263167a18aba1b76643543ceefde9ac}{Value\_Range::init}}\ (\doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ \doxymbox{\hyperlink{classValue__Range_a8d9cd2928c7721597377ced426c159ea}{type}})}
+\DoxyCodeLine{00767\ \{}
+\DoxyCodeLine{00768\ \ \ \doxymbox{\hyperlink{system_8h_aff447899dc74d54931b2bc2d47de9423}{gcc\_checking\_assert}}\ (\doxymbox{\hyperlink{tree_8h_a7ff4c82ba77388a5cbf0e3b03ce2eccd}{TYPE\_P}}\ (\doxymbox{\hyperlink{classValue__Range_a8d9cd2928c7721597377ced426c159ea}{type}}));}
+\DoxyCodeLine{00769\ }
+\DoxyCodeLine{00770\ \ \ \textcolor{keywordflow}{if}\ (irange::supports\_p\ (\doxymbox{\hyperlink{classValue__Range_a8d9cd2928c7721597377ced426c159ea}{type}}))}
+\DoxyCodeLine{00771\ \ \ \ \ \doxymbox{\hyperlink{classValue__Range_a42c95f5e4497aa754dea0cd820b94ced}{m\_vrange}}\ =\ \&\doxymbox{\hyperlink{classValue__Range_a7b767a13b30b2d4528711027300fc2eb}{m\_irange}};}
+\DoxyCodeLine{00772\ \ \ \textcolor{keywordflow}{else}\ \textcolor{keywordflow}{if}\ (frange::supports\_p\ (\doxymbox{\hyperlink{classValue__Range_a8d9cd2928c7721597377ced426c159ea}{type}}))}
+\DoxyCodeLine{00773\ \ \ \ \ \doxymbox{\hyperlink{classValue__Range_a42c95f5e4497aa754dea0cd820b94ced}{m\_vrange}}\ =\ \&\doxymbox{\hyperlink{classValue__Range_a48f42c0a77e59e561ace9f500ad6be1e}{m\_frange}};}
+\DoxyCodeLine{00774\ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00775\ \ \ \ \ \doxymbox{\hyperlink{classValue__Range_a42c95f5e4497aa754dea0cd820b94ced}{m\_vrange}}\ =\ \&\doxymbox{\hyperlink{classValue__Range_ad253de695ad371afef8fc2245b5e1517}{m\_unsupported}};}
+\DoxyCodeLine{00776\ \}}
+\DoxyCodeLine{00777\ }
+\DoxyCodeLine{00778\ \textcolor{comment}{//\ Set\ the\ temporary\ to\ allow\ storing\ temporaries\ of\ TYPE.\ \ The\ range}}
+\DoxyCodeLine{00779\ \textcolor{comment}{//\ of\ the\ temporary\ is\ set\ to\ UNDEFINED.}}
+\DoxyCodeLine{00780\ }
+\DoxyCodeLine{00781\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{void}}
+\DoxyCodeLine{00782\ \doxymbox{\hyperlink{classValue__Range_ab13660a294630ef191bde0bf4b9bbcd6}{Value\_Range::set\_type}}\ (\doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ \doxymbox{\hyperlink{classValue__Range_a8d9cd2928c7721597377ced426c159ea}{type}})}
+\DoxyCodeLine{00783\ \{}
+\DoxyCodeLine{00784\ \ \ \doxymbox{\hyperlink{classValue__Range_a7263167a18aba1b76643543ceefde9ac}{init}}\ (\doxymbox{\hyperlink{classValue__Range_a8d9cd2928c7721597377ced426c159ea}{type}});}
+\DoxyCodeLine{00785\ \ \ \doxymbox{\hyperlink{classValue__Range_a42c95f5e4497aa754dea0cd820b94ced}{m\_vrange}}-\/>set\_undefined\ ();}
+\DoxyCodeLine{00786\ \}}
+\DoxyCodeLine{00787\ }
+\DoxyCodeLine{00788\ \textcolor{comment}{//\ Assignment\ operator\ for\ temporaries.\ \ Copying\ incompatible\ types\ is}}
+\DoxyCodeLine{00789\ \textcolor{comment}{//\ allowed.}}
+\DoxyCodeLine{00790\ }
+\DoxyCodeLine{00791\ \textcolor{keyword}{inline}\ vrange\ \&}
+\DoxyCodeLine{00792\ \doxymbox{\hyperlink{classValue__Range_a74e91d98411ab5b4aea63ccb77bdb31a}{Value\_Range::operator=\ }}(\textcolor{keyword}{const}\ vrange\ \&\doxymbox{\hyperlink{poly-int_8h_a3ecac2571dcdc8050989339124f1bd26}{r}})}
+\DoxyCodeLine{00793\ \{}
+\DoxyCodeLine{00794\ \ \ \textcolor{keywordflow}{if}\ (\doxymbox{\hyperlink{value-range_8h_afa088ba8b5b5b82de40e8c84cef5d558}{is\_a\ <irange>}}\ (\doxymbox{\hyperlink{poly-int_8h_a3ecac2571dcdc8050989339124f1bd26}{r}}))}
+\DoxyCodeLine{00795\ \ \ \ \ \{}
+\DoxyCodeLine{00796\ \ \ \ \ \ \ \doxymbox{\hyperlink{classValue__Range_a7b767a13b30b2d4528711027300fc2eb}{m\_irange}}\ =\ \doxymbox{\hyperlink{value-range_8h_a082c8913b67046f2f0e3a3dc3e5515c2}{as\_a\ <irange>}}\ (\doxymbox{\hyperlink{poly-int_8h_a3ecac2571dcdc8050989339124f1bd26}{r}});}
+\DoxyCodeLine{00797\ \ \ \ \ \ \ \doxymbox{\hyperlink{classValue__Range_a42c95f5e4497aa754dea0cd820b94ced}{m\_vrange}}\ =\ \&\doxymbox{\hyperlink{classValue__Range_a7b767a13b30b2d4528711027300fc2eb}{m\_irange}};}
+\DoxyCodeLine{00798\ \ \ \ \ \}}
+\DoxyCodeLine{00799\ \ \ \textcolor{keywordflow}{else}\ \textcolor{keywordflow}{if}\ (\doxymbox{\hyperlink{value-range_8h_a9099bb6e99b11e502b85f35611d0d2f8}{is\_a\ <frange>}}\ (\doxymbox{\hyperlink{poly-int_8h_a3ecac2571dcdc8050989339124f1bd26}{r}}))}
+\DoxyCodeLine{00800\ \ \ \ \ \{}
+\DoxyCodeLine{00801\ \ \ \ \ \ \ \doxymbox{\hyperlink{classValue__Range_a48f42c0a77e59e561ace9f500ad6be1e}{m\_frange}}\ =\ \doxymbox{\hyperlink{value-range_8h_a082c8913b67046f2f0e3a3dc3e5515c2}{as\_a\ <frange>}}\ (\doxymbox{\hyperlink{poly-int_8h_a3ecac2571dcdc8050989339124f1bd26}{r}});}
+\DoxyCodeLine{00802\ \ \ \ \ \ \ \doxymbox{\hyperlink{classValue__Range_a42c95f5e4497aa754dea0cd820b94ced}{m\_vrange}}\ =\ \&\doxymbox{\hyperlink{classValue__Range_a48f42c0a77e59e561ace9f500ad6be1e}{m\_frange}};}
+\DoxyCodeLine{00803\ \ \ \ \ \}}
+\DoxyCodeLine{00804\ \ \ \textcolor{keywordflow}{else}\ \textcolor{keywordflow}{if}\ (\doxymbox{\hyperlink{value-range_8h_a58d450183eb5fab302a9b9775b9ed8f4}{is\_a\ <unsupported\_range>}}\ (\doxymbox{\hyperlink{poly-int_8h_a3ecac2571dcdc8050989339124f1bd26}{r}}))}
+\DoxyCodeLine{00805\ \ \ \ \ \{}
+\DoxyCodeLine{00806\ \ \ \ \ \ \ \doxymbox{\hyperlink{classValue__Range_ad253de695ad371afef8fc2245b5e1517}{m\_unsupported}}\ =\ \doxymbox{\hyperlink{value-range_8h_a082c8913b67046f2f0e3a3dc3e5515c2}{as\_a\ <unsupported\_range>}}\ (\doxymbox{\hyperlink{poly-int_8h_a3ecac2571dcdc8050989339124f1bd26}{r}});}
+\DoxyCodeLine{00807\ \ \ \ \ \ \ \doxymbox{\hyperlink{classValue__Range_a42c95f5e4497aa754dea0cd820b94ced}{m\_vrange}}\ =\ \&\doxymbox{\hyperlink{classValue__Range_ad253de695ad371afef8fc2245b5e1517}{m\_unsupported}};}
+\DoxyCodeLine{00808\ \ \ \ \ \}}
+\DoxyCodeLine{00809\ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00810\ \ \ \ \ \doxymbox{\hyperlink{system_8h_a32b3b26e9883686d3022c1ffe5ec3aa4}{gcc\_unreachable}}\ ();}
+\DoxyCodeLine{00811\ }
+\DoxyCodeLine{00812\ \ \ \textcolor{keywordflow}{return}\ *\doxymbox{\hyperlink{classValue__Range_a42c95f5e4497aa754dea0cd820b94ced}{m\_vrange}};}
+\DoxyCodeLine{00813\ \}}
+\DoxyCodeLine{00814\ }
+\DoxyCodeLine{00815\ \textcolor{keyword}{inline}\ \doxymbox{\hyperlink{classValue__Range}{Value\_Range}}\ \&}
+\DoxyCodeLine{00816\ \doxymbox{\hyperlink{classValue__Range_a74e91d98411ab5b4aea63ccb77bdb31a}{Value\_Range::operator=\ }}(\textcolor{keyword}{const}\ \doxymbox{\hyperlink{classValue__Range_a240e62332c5b805dbe2a063424975226}{Value\_Range}}\ \&\doxymbox{\hyperlink{poly-int_8h_a3ecac2571dcdc8050989339124f1bd26}{r}})}
+\DoxyCodeLine{00817\ \{}
+\DoxyCodeLine{00818\ \ \ \textcolor{keywordflow}{if}\ (\doxymbox{\hyperlink{poly-int_8h_a3ecac2571dcdc8050989339124f1bd26}{r}}.m\_vrange\ ==\ \&\doxymbox{\hyperlink{poly-int_8h_a3ecac2571dcdc8050989339124f1bd26}{r}}.m\_irange)}
+\DoxyCodeLine{00819\ \ \ \ \ \{}
+\DoxyCodeLine{00820\ \ \ \ \ \ \ \doxymbox{\hyperlink{classValue__Range_a7b767a13b30b2d4528711027300fc2eb}{m\_irange}}\ =\ \doxymbox{\hyperlink{poly-int_8h_a3ecac2571dcdc8050989339124f1bd26}{r}}.m\_irange;}
+\DoxyCodeLine{00821\ \ \ \ \ \ \ \doxymbox{\hyperlink{classValue__Range_a42c95f5e4497aa754dea0cd820b94ced}{m\_vrange}}\ =\ \&\doxymbox{\hyperlink{classValue__Range_a7b767a13b30b2d4528711027300fc2eb}{m\_irange}};}
+\DoxyCodeLine{00822\ \ \ \ \ \}}
+\DoxyCodeLine{00823\ \ \ \textcolor{keywordflow}{else}\ \textcolor{keywordflow}{if}\ (\doxymbox{\hyperlink{poly-int_8h_a3ecac2571dcdc8050989339124f1bd26}{r}}.m\_vrange\ ==\ \&\doxymbox{\hyperlink{poly-int_8h_a3ecac2571dcdc8050989339124f1bd26}{r}}.m\_frange)}
+\DoxyCodeLine{00824\ \ \ \ \ \{}
+\DoxyCodeLine{00825\ \ \ \ \ \ \ \doxymbox{\hyperlink{classValue__Range_a48f42c0a77e59e561ace9f500ad6be1e}{m\_frange}}\ =\ \doxymbox{\hyperlink{poly-int_8h_a3ecac2571dcdc8050989339124f1bd26}{r}}.m\_frange;}
+\DoxyCodeLine{00826\ \ \ \ \ \ \ \doxymbox{\hyperlink{classValue__Range_a42c95f5e4497aa754dea0cd820b94ced}{m\_vrange}}\ =\ \&\doxymbox{\hyperlink{classValue__Range_a48f42c0a77e59e561ace9f500ad6be1e}{m\_frange}};}
+\DoxyCodeLine{00827\ \ \ \ \ \}}
+\DoxyCodeLine{00828\ \ \ \textcolor{keywordflow}{else}\ \textcolor{keywordflow}{if}\ (\doxymbox{\hyperlink{poly-int_8h_a3ecac2571dcdc8050989339124f1bd26}{r}}.m\_vrange\ ==\ \&\doxymbox{\hyperlink{poly-int_8h_a3ecac2571dcdc8050989339124f1bd26}{r}}.m\_unsupported)}
+\DoxyCodeLine{00829\ \ \ \ \ \{}
+\DoxyCodeLine{00830\ \ \ \ \ \ \ \doxymbox{\hyperlink{classValue__Range_ad253de695ad371afef8fc2245b5e1517}{m\_unsupported}}\ =\ \doxymbox{\hyperlink{poly-int_8h_a3ecac2571dcdc8050989339124f1bd26}{r}}.m\_unsupported;}
+\DoxyCodeLine{00831\ \ \ \ \ \ \ \doxymbox{\hyperlink{classValue__Range_a42c95f5e4497aa754dea0cd820b94ced}{m\_vrange}}\ =\ \&\doxymbox{\hyperlink{classValue__Range_ad253de695ad371afef8fc2245b5e1517}{m\_unsupported}};}
+\DoxyCodeLine{00832\ \ \ \ \ \}}
+\DoxyCodeLine{00833\ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00834\ \ \ \ \ \doxymbox{\hyperlink{system_8h_a32b3b26e9883686d3022c1ffe5ec3aa4}{gcc\_unreachable}}\ ();}
+\DoxyCodeLine{00835\ }
+\DoxyCodeLine{00836\ \ \ \textcolor{keywordflow}{return}\ *\textcolor{keyword}{this};}
+\DoxyCodeLine{00837\ \}}
+\DoxyCodeLine{00838\ }
+\DoxyCodeLine{00839\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{bool}}
+\DoxyCodeLine{00840\ \doxymbox{\hyperlink{classValue__Range_a278a398d800e10602bfa827d3981b4d3}{Value\_Range::operator==\ }}(\textcolor{keyword}{const}\ \doxymbox{\hyperlink{classValue__Range_a240e62332c5b805dbe2a063424975226}{Value\_Range}}\ \&\doxymbox{\hyperlink{poly-int_8h_a3ecac2571dcdc8050989339124f1bd26}{r}})\textcolor{keyword}{\ const}}
+\DoxyCodeLine{00841\ \textcolor{keyword}{}\{}
+\DoxyCodeLine{00842\ \ \ \textcolor{keywordflow}{return}\ *\doxymbox{\hyperlink{classValue__Range_a42c95f5e4497aa754dea0cd820b94ced}{m\_vrange}}\ ==\ *\doxymbox{\hyperlink{poly-int_8h_a3ecac2571dcdc8050989339124f1bd26}{r}}.m\_vrange;}
+\DoxyCodeLine{00843\ \}}
+\DoxyCodeLine{00844\ }
+\DoxyCodeLine{00845\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{bool}}
+\DoxyCodeLine{00846\ \doxymbox{\hyperlink{classValue__Range_ad21f426318f726f222ddbf5f4f28b3dc}{Value\_Range::operator!=\ }}(\textcolor{keyword}{const}\ \doxymbox{\hyperlink{classValue__Range_a240e62332c5b805dbe2a063424975226}{Value\_Range}}\ \&\doxymbox{\hyperlink{poly-int_8h_a3ecac2571dcdc8050989339124f1bd26}{r}})\textcolor{keyword}{\ const}}
+\DoxyCodeLine{00847\ \textcolor{keyword}{}\{}
+\DoxyCodeLine{00848\ \ \ \textcolor{keywordflow}{return}\ *\doxymbox{\hyperlink{classValue__Range_a42c95f5e4497aa754dea0cd820b94ced}{m\_vrange}}\ !=\ *\doxymbox{\hyperlink{poly-int_8h_a3ecac2571dcdc8050989339124f1bd26}{r}}.m\_vrange;}
+\DoxyCodeLine{00849\ \}}
+\DoxyCodeLine{00850\ }
+\DoxyCodeLine{00851\ \textcolor{keyword}{inline}}
+\DoxyCodeLine{00852\ Value\_Range::operator\ vrange\ \&()}
+\DoxyCodeLine{00853\ \{}
+\DoxyCodeLine{00854\ \ \ \textcolor{keywordflow}{return}\ *\doxymbox{\hyperlink{classValue__Range_a42c95f5e4497aa754dea0cd820b94ced}{m\_vrange}};}
+\DoxyCodeLine{00855\ \}}
+\DoxyCodeLine{00856\ }
+\DoxyCodeLine{00857\ \textcolor{keyword}{inline}}
+\DoxyCodeLine{00858\ Value\_Range::operator\ \textcolor{keyword}{const}\ vrange\ \&()\ \textcolor{keyword}{const}}
+\DoxyCodeLine{00859\ \{}
+\DoxyCodeLine{00860\ \ \ \textcolor{keywordflow}{return}\ *\doxymbox{\hyperlink{classValue__Range_a42c95f5e4497aa754dea0cd820b94ced}{m\_vrange}};}
+\DoxyCodeLine{00861\ \}}
+\DoxyCodeLine{00862\ }
+\DoxyCodeLine{00863\ \textcolor{comment}{//\ Return\ TRUE\ if\ TYPE\ is\ supported\ by\ the\ vrange\ infrastructure.}}
+\DoxyCodeLine{00864\ }
+\DoxyCodeLine{00865\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{bool}}
+\DoxyCodeLine{00866\ \doxymbox{\hyperlink{classValue__Range_aba2fb0d3d2220cacf0cc926de31c7414}{Value\_Range::supports\_type\_p}}\ (\doxymbox{\hyperlink{coretypes_8h_ad41eb6a6028ff5b3fd00b1ee9f35ed46}{const\_tree}}\ \doxymbox{\hyperlink{classValue__Range_a8d9cd2928c7721597377ced426c159ea}{type}})}
+\DoxyCodeLine{00867\ \{}
+\DoxyCodeLine{00868\ \ \ \textcolor{keywordflow}{return}\ irange::supports\_p\ (\doxymbox{\hyperlink{classValue__Range_a8d9cd2928c7721597377ced426c159ea}{type}})\ ||\ frange::supports\_p\ (\doxymbox{\hyperlink{classValue__Range_a8d9cd2928c7721597377ced426c159ea}{type}});}
+\DoxyCodeLine{00869\ \}}
+\DoxyCodeLine{00870\ }
+\DoxyCodeLine{00871\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{value-range_8h_a3f4073c0d3bf2a2addfa5a8f71d96818}{value\_range\_kind}}\ \doxymbox{\hyperlink{value-range_8h_a3fb3698d5cf9fd154a7a80afd438a94b}{get\_legacy\_range}}\ (\textcolor{keyword}{const}\ irange\ \&,\ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ \&min,\ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ \&max);}
+\DoxyCodeLine{00872\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{value-range_8h_a49e316b00a1f8d41a13407c2006bf8bb}{dump\_value\_range}}\ (FILE\ *,\ \textcolor{keyword}{const}\ vrange\ *);}
+\DoxyCodeLine{00873\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{value-range_8h_adb4386ee8b9cc94c108c2849fbbb649f}{vrp\_operand\_equal\_p}}\ (\doxymbox{\hyperlink{coretypes_8h_ad41eb6a6028ff5b3fd00b1ee9f35ed46}{const\_tree}},\ \doxymbox{\hyperlink{coretypes_8h_ad41eb6a6028ff5b3fd00b1ee9f35ed46}{const\_tree}});}
+\DoxyCodeLine{00874\ \textcolor{keyword}{inline}\ \doxymbox{\hyperlink{real_8h_aa7fc74aaf7cd891719830958b18d9a82}{REAL\_VALUE\_TYPE}}\ \doxymbox{\hyperlink{value-range_8h_ae4655351e56f94830312370d532c5679}{frange\_val\_min}}\ (\doxymbox{\hyperlink{coretypes_8h_ad41eb6a6028ff5b3fd00b1ee9f35ed46}{const\_tree}}\ \doxymbox{\hyperlink{structtype}{type}});}
+\DoxyCodeLine{00875\ \textcolor{keyword}{inline}\ \doxymbox{\hyperlink{real_8h_aa7fc74aaf7cd891719830958b18d9a82}{REAL\_VALUE\_TYPE}}\ \doxymbox{\hyperlink{value-range_8h_a15eeef1b568d3cd8e1d2d8e27750e289}{frange\_val\_max}}\ (\doxymbox{\hyperlink{coretypes_8h_ad41eb6a6028ff5b3fd00b1ee9f35ed46}{const\_tree}}\ \doxymbox{\hyperlink{structtype}{type}});}
+\DoxyCodeLine{00876\ }
+\DoxyCodeLine{00877\ \textcolor{comment}{//\ Number\ of\ sub-\/ranges\ in\ a\ range.}}
+\DoxyCodeLine{00878\ }
+\DoxyCodeLine{00879\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{unsigned}}
+\DoxyCodeLine{00880\ irange::num\_pairs\ ()\textcolor{keyword}{\ const}}
+\DoxyCodeLine{00881\ \textcolor{keyword}{}\{}
+\DoxyCodeLine{00882\ \ \ \textcolor{keywordflow}{return}\ m\_num\_ranges;}
+\DoxyCodeLine{00883\ \}}
+\DoxyCodeLine{00884\ }
+\DoxyCodeLine{00885\ \textcolor{keyword}{inline}\ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}}
+\DoxyCodeLine{00886\ irange::type\ ()\textcolor{keyword}{\ const}}
+\DoxyCodeLine{00887\ \textcolor{keyword}{}\{}
+\DoxyCodeLine{00888\ \ \ \doxymbox{\hyperlink{system_8h_aff447899dc74d54931b2bc2d47de9423}{gcc\_checking\_assert}}\ (m\_num\_ranges\ >\ 0);}
+\DoxyCodeLine{00889\ \ \ \textcolor{keywordflow}{return}\ m\_type;}
+\DoxyCodeLine{00890\ \}}
+\DoxyCodeLine{00891\ }
+\DoxyCodeLine{00892\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{bool}}
+\DoxyCodeLine{00893\ irange::varying\_compatible\_p\ ()\textcolor{keyword}{\ const}}
+\DoxyCodeLine{00894\ \textcolor{keyword}{}\{}
+\DoxyCodeLine{00895\ \ \ \textcolor{keywordflow}{if}\ (m\_num\_ranges\ !=\ 1)}
+\DoxyCodeLine{00896\ \ \ \ \ \textcolor{keywordflow}{return}\ \textcolor{keyword}{false};}
+\DoxyCodeLine{00897\ }
+\DoxyCodeLine{00898\ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{wide-int_8h_a9a29e47e2c40ae9adaf47df15970eced}{wide\_int}}\ \&l\ =\ m\_base[0];}
+\DoxyCodeLine{00899\ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{wide-int_8h_a9a29e47e2c40ae9adaf47df15970eced}{wide\_int}}\ \&u\ =\ m\_base[1];}
+\DoxyCodeLine{00900\ \ \ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ t\ =\ m\_type;}
+\DoxyCodeLine{00901\ }
+\DoxyCodeLine{00902\ \ \ \textcolor{keywordflow}{if}\ (m\_kind\ ==\ \doxymbox{\hyperlink{value-range_8h_a3f4073c0d3bf2a2addfa5a8f71d96818aa860022b2f57b72728fb8823d2b2d45b}{VR\_VARYING}}\ \&\&\ t\ ==\ \doxymbox{\hyperlink{tree_8h_adc335a15eb37174a39b3abe2cd8d0cec}{error\_mark\_node}})}
+\DoxyCodeLine{00903\ \ \ \ \ \textcolor{keywordflow}{return}\ \textcolor{keyword}{true};}
+\DoxyCodeLine{00904\ }
+\DoxyCodeLine{00905\ \ \ \textcolor{keywordtype}{unsigned}\ prec\ =\ \doxymbox{\hyperlink{tree_8h_a26e86dfe4de807f822f26aa95fef67db}{TYPE\_PRECISION}}\ (t);}
+\DoxyCodeLine{00906\ \ \ \doxymbox{\hyperlink{signop_8h_a0efd8c0320c8ceccd81453b4ba495458}{signop}}\ sign\ =\ \doxymbox{\hyperlink{tree_8h_a70a0c524456653691e82c11ce2b673d6}{TYPE\_SIGN}}\ (t);}
+\DoxyCodeLine{00907\ \ \ \textcolor{keywordflow}{if}\ (\doxymbox{\hyperlink{tree_8h_aad766a87515301a19e8f0d8c88604b8a}{INTEGRAL\_TYPE\_P}}\ (t)\ ||\ \doxymbox{\hyperlink{tree_8h_a7bbdf9c7655d6e42ae263d0b4b948529}{POINTER\_TYPE\_P}}\ (t))}
+\DoxyCodeLine{00908\ \ \ \ \ \textcolor{keywordflow}{return}\ (l\ ==\ \doxymbox{\hyperlink{namespacewi_a1f3002a4a693f0d7bef8e3a38a78d81b}{wi::min\_value}}\ (prec,\ sign)}
+\DoxyCodeLine{00909\ \ \ \ \ \ \ \ \ \&\&\ u\ ==\ \doxymbox{\hyperlink{namespacewi_ab16cfd018643134dc8d81f754ed02912}{wi::max\_value}}\ (prec,\ sign)}
+\DoxyCodeLine{00910\ \ \ \ \ \ \ \ \ \&\&\ m\_bitmask.unknown\_p\ ());}
+\DoxyCodeLine{00911\ \ \ \textcolor{keywordflow}{return}\ \textcolor{keyword}{true};}
+\DoxyCodeLine{00912\ \}}
+\DoxyCodeLine{00913\ }
+\DoxyCodeLine{00914\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{bool}}
+\DoxyCodeLine{00915\ vrange::varying\_p\ ()\textcolor{keyword}{\ const}}
+\DoxyCodeLine{00916\ \textcolor{keyword}{}\{}
+\DoxyCodeLine{00917\ \ \ \textcolor{keywordflow}{return}\ m\_kind\ ==\ \doxymbox{\hyperlink{value-range_8h_a3f4073c0d3bf2a2addfa5a8f71d96818aa860022b2f57b72728fb8823d2b2d45b}{VR\_VARYING}};}
+\DoxyCodeLine{00918\ \}}
+\DoxyCodeLine{00919\ }
+\DoxyCodeLine{00920\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{bool}}
+\DoxyCodeLine{00921\ vrange::undefined\_p\ ()\textcolor{keyword}{\ const}}
+\DoxyCodeLine{00922\ \textcolor{keyword}{}\{}
+\DoxyCodeLine{00923\ \ \ \textcolor{keywordflow}{return}\ m\_kind\ ==\ \doxymbox{\hyperlink{value-range_8h_a3f4073c0d3bf2a2addfa5a8f71d96818aa95d2a79a8d463d24d8e2538093ff6db}{VR\_UNDEFINED}};}
+\DoxyCodeLine{00924\ \}}
+\DoxyCodeLine{00925\ }
+\DoxyCodeLine{00926\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{bool}}
+\DoxyCodeLine{00927\ irange::zero\_p\ ()\textcolor{keyword}{\ const}}
+\DoxyCodeLine{00928\ \textcolor{keyword}{}\{}
+\DoxyCodeLine{00929\ \ \ \textcolor{keywordflow}{return}\ (m\_kind\ ==\ \doxymbox{\hyperlink{value-range_8h_a3f4073c0d3bf2a2addfa5a8f71d96818a30bf60866081de6a1d9a799bc99fb16d}{VR\_RANGE}}\ \&\&\ m\_num\_ranges\ ==\ 1}
+\DoxyCodeLine{00930\ \ \ \ \ \ \ \&\&\ \doxymbox{\hyperlink{vec_8h_a639a7891c60dbfef3c62cd753a61653f}{lower\_bound}}\ (0)\ ==\ 0}
+\DoxyCodeLine{00931\ \ \ \ \ \ \ \&\&\ upper\_bound\ (0)\ ==\ 0);}
+\DoxyCodeLine{00932\ \}}
+\DoxyCodeLine{00933\ }
+\DoxyCodeLine{00934\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{bool}}
+\DoxyCodeLine{00935\ irange::nonzero\_p\ ()\textcolor{keyword}{\ const}}
+\DoxyCodeLine{00936\ \textcolor{keyword}{}\{}
+\DoxyCodeLine{00937\ \ \ \textcolor{keywordflow}{if}\ (undefined\_p\ ())}
+\DoxyCodeLine{00938\ \ \ \ \ \textcolor{keywordflow}{return}\ \textcolor{keyword}{false};}
+\DoxyCodeLine{00939\ }
+\DoxyCodeLine{00940\ \ \ \doxymbox{\hyperlink{wide-int_8h_a9a29e47e2c40ae9adaf47df15970eced}{wide\_int}}\ \doxymbox{\hyperlink{namespacewi_a6e251260a135cc72c48d4be39baa9e28}{zero}}\ =\ \doxymbox{\hyperlink{namespacewi_a6e251260a135cc72c48d4be39baa9e28}{wi::zero}}\ (\doxymbox{\hyperlink{tree_8h_a26e86dfe4de807f822f26aa95fef67db}{TYPE\_PRECISION}}\ (\doxymbox{\hyperlink{structtype}{type}}\ ()));}
+\DoxyCodeLine{00941\ \ \ \textcolor{keywordflow}{return}\ *\textcolor{keyword}{this}\ ==\ int\_range<2>\ (\doxymbox{\hyperlink{structtype}{type}}\ (),\ zero,\ zero,\ \doxymbox{\hyperlink{value-range_8h_a3f4073c0d3bf2a2addfa5a8f71d96818a1d0ef36ad5e8ae5e50754975abd4eb4a}{VR\_ANTI\_RANGE}});}
+\DoxyCodeLine{00942\ \}}
+\DoxyCodeLine{00943\ }
+\DoxyCodeLine{00944\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{bool}}
+\DoxyCodeLine{00945\ irange::supports\_p\ (\doxymbox{\hyperlink{coretypes_8h_ad41eb6a6028ff5b3fd00b1ee9f35ed46}{const\_tree}}\ \doxymbox{\hyperlink{structtype}{type}})}
+\DoxyCodeLine{00946\ \{}
+\DoxyCodeLine{00947\ \ \ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{tree_8h_aad766a87515301a19e8f0d8c88604b8a}{INTEGRAL\_TYPE\_P}}\ (\doxymbox{\hyperlink{structtype}{type}})\ ||\ \doxymbox{\hyperlink{tree_8h_a7bbdf9c7655d6e42ae263d0b4b948529}{POINTER\_TYPE\_P}}\ (\doxymbox{\hyperlink{structtype}{type}});}
+\DoxyCodeLine{00948\ \}}
+\DoxyCodeLine{00949\ }
+\DoxyCodeLine{00950\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{bool}}
+\DoxyCodeLine{00951\ irange::contains\_p\ (\doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ cst)\textcolor{keyword}{\ const}}
+\DoxyCodeLine{00952\ \textcolor{keyword}{}\{}
+\DoxyCodeLine{00953\ \ \ \textcolor{keywordflow}{return}\ contains\_p\ (\doxymbox{\hyperlink{namespacewi_abe399b8d3232570892cf60e69c298e13}{wi::to\_wide}}\ (cst));}
+\DoxyCodeLine{00954\ \}}
+\DoxyCodeLine{00955\ }
+\DoxyCodeLine{00956\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{bool}}
+\DoxyCodeLine{00957\ \doxymbox{\hyperlink{value-range_8h_a4d5694a6a0b64f46412233c27c923e4f}{range\_includes\_zero\_p}}\ (\textcolor{keyword}{const}\ irange\ *vr)}
+\DoxyCodeLine{00958\ \{}
+\DoxyCodeLine{00959\ \ \ \textcolor{keywordflow}{if}\ (vr-\/>undefined\_p\ ())}
+\DoxyCodeLine{00960\ \ \ \ \ \textcolor{keywordflow}{return}\ \textcolor{keyword}{false};}
+\DoxyCodeLine{00961\ }
+\DoxyCodeLine{00962\ \ \ \textcolor{keywordflow}{if}\ (vr-\/>varying\_p\ ())}
+\DoxyCodeLine{00963\ \ \ \ \ \textcolor{keywordflow}{return}\ \textcolor{keyword}{true};}
+\DoxyCodeLine{00964\ }
+\DoxyCodeLine{00965\ \ \ \doxymbox{\hyperlink{wide-int_8h_a9a29e47e2c40ae9adaf47df15970eced}{wide\_int}}\ zero\ =\ \doxymbox{\hyperlink{namespacewi_a6e251260a135cc72c48d4be39baa9e28}{wi::zero}}\ (\doxymbox{\hyperlink{tree_8h_a26e86dfe4de807f822f26aa95fef67db}{TYPE\_PRECISION}}\ (vr-\/>type\ ()));}
+\DoxyCodeLine{00966\ \ \ \textcolor{keywordflow}{return}\ vr-\/>contains\_p\ (zero);}
+\DoxyCodeLine{00967\ \}}
+\DoxyCodeLine{00968\ }
+\DoxyCodeLine{00969\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{value-range_8h_a6cb2e69c8f8f4b2d5ae91ca8fc3b2338}{gt\_ggc\_mx}}\ (vrange\ *);}
+\DoxyCodeLine{00970\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{value-range_8h_a3da1c6f7239d571e629617df443b1269}{gt\_pch\_nx}}\ (vrange\ *);}
+\DoxyCodeLine{00971\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{value-range_8h_a3da1c6f7239d571e629617df443b1269}{gt\_pch\_nx}}\ (vrange\ *,\ \doxymbox{\hyperlink{coretypes_8h_ae5ca95fa9feb025fb3b39d2ed62f2a56}{gt\_pointer\_operator}},\ \textcolor{keywordtype}{void}\ *);}
+\DoxyCodeLine{00972\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{value-range_8h_a6cb2e69c8f8f4b2d5ae91ca8fc3b2338}{gt\_ggc\_mx}}\ (irange\ *);}
+\DoxyCodeLine{00973\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{value-range_8h_a3da1c6f7239d571e629617df443b1269}{gt\_pch\_nx}}\ (irange\ *);}
+\DoxyCodeLine{00974\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{value-range_8h_a3da1c6f7239d571e629617df443b1269}{gt\_pch\_nx}}\ (irange\ *,\ \doxymbox{\hyperlink{coretypes_8h_ae5ca95fa9feb025fb3b39d2ed62f2a56}{gt\_pointer\_operator}},\ \textcolor{keywordtype}{void}\ *);}
+\DoxyCodeLine{00975\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{value-range_8h_a6cb2e69c8f8f4b2d5ae91ca8fc3b2338}{gt\_ggc\_mx}}\ (frange\ *);}
+\DoxyCodeLine{00976\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{value-range_8h_a3da1c6f7239d571e629617df443b1269}{gt\_pch\_nx}}\ (frange\ *);}
+\DoxyCodeLine{00977\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{value-range_8h_a3da1c6f7239d571e629617df443b1269}{gt\_pch\_nx}}\ (frange\ *,\ \doxymbox{\hyperlink{coretypes_8h_ae5ca95fa9feb025fb3b39d2ed62f2a56}{gt\_pointer\_operator}},\ \textcolor{keywordtype}{void}\ *);}
+\DoxyCodeLine{00978\ }
+\DoxyCodeLine{00979\ \textcolor{keyword}{template}<\textcolor{keywordtype}{unsigned}\ N>}
+\DoxyCodeLine{00980\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{void}}
+\DoxyCodeLine{00981\ \doxymbox{\hyperlink{value-range_8h_a6cb2e69c8f8f4b2d5ae91ca8fc3b2338}{gt\_ggc\_mx}}\ (int\_range<N>\ *x)}
+\DoxyCodeLine{00982\ \{}
+\DoxyCodeLine{00983\ \ \ \doxymbox{\hyperlink{value-range_8h_a6cb2e69c8f8f4b2d5ae91ca8fc3b2338}{gt\_ggc\_mx}}\ ((irange\ *)\ x);}
+\DoxyCodeLine{00984\ \}}
+\DoxyCodeLine{00985\ }
+\DoxyCodeLine{00986\ \textcolor{keyword}{template}<\textcolor{keywordtype}{unsigned}\ N>}
+\DoxyCodeLine{00987\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{void}}
+\DoxyCodeLine{00988\ \doxymbox{\hyperlink{value-range_8h_a3da1c6f7239d571e629617df443b1269}{gt\_pch\_nx}}\ (int\_range<N>\ *x)}
+\DoxyCodeLine{00989\ \{}
+\DoxyCodeLine{00990\ \ \ \doxymbox{\hyperlink{value-range_8h_a3da1c6f7239d571e629617df443b1269}{gt\_pch\_nx}}\ ((irange\ *)\ x);}
+\DoxyCodeLine{00991\ \}}
+\DoxyCodeLine{00992\ }
+\DoxyCodeLine{00993\ \textcolor{keyword}{template}<\textcolor{keywordtype}{unsigned}\ N>}
+\DoxyCodeLine{00994\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{void}}
+\DoxyCodeLine{00995\ \doxymbox{\hyperlink{value-range_8h_a3da1c6f7239d571e629617df443b1269}{gt\_pch\_nx}}\ (int\_range<N>\ *x,\ \doxymbox{\hyperlink{coretypes_8h_ae5ca95fa9feb025fb3b39d2ed62f2a56}{gt\_pointer\_operator}}\ op,\ \textcolor{keywordtype}{void}\ *cookie)}
+\DoxyCodeLine{00996\ \{}
+\DoxyCodeLine{00997\ \ \ \doxymbox{\hyperlink{value-range_8h_a3da1c6f7239d571e629617df443b1269}{gt\_pch\_nx}}\ ((irange\ *)\ x,\ op,\ cookie);}
+\DoxyCodeLine{00998\ \}}
+\DoxyCodeLine{00999\ }
+\DoxyCodeLine{01000\ \textcolor{comment}{//\ Constructors\ for\ irange}}
+\DoxyCodeLine{01001\ }
+\DoxyCodeLine{01002\ \textcolor{keyword}{inline}}
+\DoxyCodeLine{01003\ irange::irange\ (\doxymbox{\hyperlink{wide-int_8h_a9a29e47e2c40ae9adaf47df15970eced}{wide\_int}}\ *base,\ \textcolor{keywordtype}{unsigned}\ nranges,\ \textcolor{keywordtype}{bool}\ resizable)}
+\DoxyCodeLine{01004\ \ \ :\ vrange\ (\doxymbox{\hyperlink{value-range_8h_a5c22d2d797d75c81f8a15e60137418c2a74b330c0c425c20f84b36c3ed62d4949}{VR\_IRANGE}}),}
+\DoxyCodeLine{01005\ \ \ \ \ m\_resizable\ (resizable),}
+\DoxyCodeLine{01006\ \ \ \ \ m\_max\_ranges\ (nranges)}
+\DoxyCodeLine{01007\ \{}
+\DoxyCodeLine{01008\ \ \ m\_base\ =\ base;}
+\DoxyCodeLine{01009\ \ \ set\_undefined\ ();}
+\DoxyCodeLine{01010\ \}}
+\DoxyCodeLine{01011\ }
+\DoxyCodeLine{01012\ \textcolor{comment}{//\ Constructors\ for\ int\_range<>.}}
+\DoxyCodeLine{01013\ }
+\DoxyCodeLine{01014\ \textcolor{keyword}{template}<\textcolor{keywordtype}{unsigned}\ N,\ \textcolor{keywordtype}{bool}\ RESIZABLE>}
+\DoxyCodeLine{01015\ \textcolor{keyword}{inline}}
+\DoxyCodeLine{01016\ int\_range<N,\ RESIZABLE>::int\_range\ ()}
+\DoxyCodeLine{01017\ \ \ :\ irange\ (m\_ranges,\ N,\ RESIZABLE)}
+\DoxyCodeLine{01018\ \{}
+\DoxyCodeLine{01019\ \}}
+\DoxyCodeLine{01020\ }
+\DoxyCodeLine{01021\ \textcolor{keyword}{template}<\textcolor{keywordtype}{unsigned}\ N,\ \textcolor{keywordtype}{bool}\ RESIZABLE>}
+\DoxyCodeLine{01022\ int\_range<N,\ RESIZABLE>::int\_range\ (\textcolor{keyword}{const}\ int\_range\ \&other)}
+\DoxyCodeLine{01023\ \ \ :\ irange\ (m\_ranges,\ N,\ RESIZABLE)}
+\DoxyCodeLine{01024\ \{}
+\DoxyCodeLine{01025\ \ \ irange::operator=\ (other);}
+\DoxyCodeLine{01026\ \}}
+\DoxyCodeLine{01027\ }
+\DoxyCodeLine{01028\ \textcolor{keyword}{template}<\textcolor{keywordtype}{unsigned}\ N,\ \textcolor{keywordtype}{bool}\ RESIZABLE>}
+\DoxyCodeLine{01029\ int\_range<N,\ RESIZABLE>::int\_range\ (\doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ min,\ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ max,\ \doxymbox{\hyperlink{value-range_8h_a3f4073c0d3bf2a2addfa5a8f71d96818}{value\_range\_kind}}\ kind)}
+\DoxyCodeLine{01030\ \ \ :\ irange\ (m\_ranges,\ N,\ RESIZABLE)}
+\DoxyCodeLine{01031\ \{}
+\DoxyCodeLine{01032\ \ \ irange::set\ (min,\ max,\ kind);}
+\DoxyCodeLine{01033\ \}}
+\DoxyCodeLine{01034\ }
+\DoxyCodeLine{01035\ \textcolor{keyword}{template}<\textcolor{keywordtype}{unsigned}\ N,\ \textcolor{keywordtype}{bool}\ RESIZABLE>}
+\DoxyCodeLine{01036\ int\_range<N,\ RESIZABLE>::int\_range\ (\doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ \doxymbox{\hyperlink{structtype}{type}})}
+\DoxyCodeLine{01037\ \ \ :\ irange\ (m\_ranges,\ N,\ RESIZABLE)}
+\DoxyCodeLine{01038\ \{}
+\DoxyCodeLine{01039\ \ \ set\_varying\ (\doxymbox{\hyperlink{structtype}{type}});}
+\DoxyCodeLine{01040\ \}}
+\DoxyCodeLine{01041\ }
+\DoxyCodeLine{01042\ \textcolor{keyword}{template}<\textcolor{keywordtype}{unsigned}\ N,\ \textcolor{keywordtype}{bool}\ RESIZABLE>}
+\DoxyCodeLine{01043\ int\_range<N,\ RESIZABLE>::int\_range\ (\doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ \doxymbox{\hyperlink{structtype}{type}},\ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{wide-int_8h_a9a29e47e2c40ae9adaf47df15970eced}{wide\_int}}\ \&wmin,\ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{wide-int_8h_a9a29e47e2c40ae9adaf47df15970eced}{wide\_int}}\ \&wmax,}
+\DoxyCodeLine{01044\ \ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{value-range_8h_a3f4073c0d3bf2a2addfa5a8f71d96818}{value\_range\_kind}}\ kind)}
+\DoxyCodeLine{01045\ \ \ :\ irange\ (m\_ranges,\ N,\ RESIZABLE)}
+\DoxyCodeLine{01046\ \{}
+\DoxyCodeLine{01047\ \ \ set\ (\doxymbox{\hyperlink{structtype}{type}},\ wmin,\ wmax,\ kind);}
+\DoxyCodeLine{01048\ \}}
+\DoxyCodeLine{01049\ }
+\DoxyCodeLine{01050\ \textcolor{keyword}{template}<\textcolor{keywordtype}{unsigned}\ N,\ \textcolor{keywordtype}{bool}\ RESIZABLE>}
+\DoxyCodeLine{01051\ int\_range<N,\ RESIZABLE>::int\_range\ (\textcolor{keyword}{const}\ irange\ \&other)}
+\DoxyCodeLine{01052\ \ \ :\ irange\ (m\_ranges,\ N,\ RESIZABLE)}
+\DoxyCodeLine{01053\ \{}
+\DoxyCodeLine{01054\ \ \ irange::operator=\ (other);}
+\DoxyCodeLine{01055\ \}}
+\DoxyCodeLine{01056\ }
+\DoxyCodeLine{01057\ \textcolor{keyword}{template}<\textcolor{keywordtype}{unsigned}\ N,\ \textcolor{keywordtype}{bool}\ RESIZABLE>}
+\DoxyCodeLine{01058\ int\_range<N,\ RESIZABLE>\&}
+\DoxyCodeLine{01059\ int\_range<N,\ RESIZABLE>::operator=\ (\textcolor{keyword}{const}\ int\_range\ \&src)}
+\DoxyCodeLine{01060\ \{}
+\DoxyCodeLine{01061\ \ \ irange::operator=\ (src);}
+\DoxyCodeLine{01062\ \ \ \textcolor{keywordflow}{return}\ *\textcolor{keyword}{this};}
+\DoxyCodeLine{01063\ \}}
+\DoxyCodeLine{01064\ }
+\DoxyCodeLine{01065\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{void}}
+\DoxyCodeLine{01066\ irange::set\_undefined\ ()}
+\DoxyCodeLine{01067\ \{}
+\DoxyCodeLine{01068\ \ \ m\_kind\ =\ \doxymbox{\hyperlink{value-range_8h_a3f4073c0d3bf2a2addfa5a8f71d96818aa95d2a79a8d463d24d8e2538093ff6db}{VR\_UNDEFINED}};}
+\DoxyCodeLine{01069\ \ \ m\_num\_ranges\ =\ 0;}
+\DoxyCodeLine{01070\ \}}
+\DoxyCodeLine{01071\ }
+\DoxyCodeLine{01072\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{void}}
+\DoxyCodeLine{01073\ irange::set\_varying\ (\doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ \doxymbox{\hyperlink{structtype}{type}})}
+\DoxyCodeLine{01074\ \{}
+\DoxyCodeLine{01075\ \ \ m\_kind\ =\ \doxymbox{\hyperlink{value-range_8h_a3f4073c0d3bf2a2addfa5a8f71d96818aa860022b2f57b72728fb8823d2b2d45b}{VR\_VARYING}};}
+\DoxyCodeLine{01076\ \ \ m\_num\_ranges\ =\ 1;}
+\DoxyCodeLine{01077\ \ \ m\_bitmask.set\_unknown\ (\doxymbox{\hyperlink{tree_8h_a26e86dfe4de807f822f26aa95fef67db}{TYPE\_PRECISION}}\ (\doxymbox{\hyperlink{structtype}{type}}));}
+\DoxyCodeLine{01078\ }
+\DoxyCodeLine{01079\ \ \ \textcolor{keywordflow}{if}\ (\doxymbox{\hyperlink{tree_8h_aad766a87515301a19e8f0d8c88604b8a}{INTEGRAL\_TYPE\_P}}\ (\doxymbox{\hyperlink{structtype}{type}})\ ||\ \doxymbox{\hyperlink{tree_8h_a7bbdf9c7655d6e42ae263d0b4b948529}{POINTER\_TYPE\_P}}\ (\doxymbox{\hyperlink{structtype}{type}}))}
+\DoxyCodeLine{01080\ \ \ \ \ \{}
+\DoxyCodeLine{01081\ \ \ \ \ \ \ m\_type\ =\ \doxymbox{\hyperlink{structtype}{type}};}
+\DoxyCodeLine{01082\ \ \ \ \ \ \ \textcolor{comment}{//\ Strict\ enum's\ require\ varying\ to\ be\ not\ TYPE\_MIN/MAX,\ but\ rather}}
+\DoxyCodeLine{01083\ \ \ \ \ \ \ \textcolor{comment}{//\ min\_value\ and\ max\_value.}}
+\DoxyCodeLine{01084\ \ \ \ \ \ \ m\_base[0]\ =\ \doxymbox{\hyperlink{namespacewi_a1f3002a4a693f0d7bef8e3a38a78d81b}{wi::min\_value}}\ (\doxymbox{\hyperlink{tree_8h_a26e86dfe4de807f822f26aa95fef67db}{TYPE\_PRECISION}}\ (\doxymbox{\hyperlink{structtype}{type}}),\ \doxymbox{\hyperlink{tree_8h_a70a0c524456653691e82c11ce2b673d6}{TYPE\_SIGN}}\ (\doxymbox{\hyperlink{structtype}{type}}));}
+\DoxyCodeLine{01085\ \ \ \ \ \ \ m\_base[1]\ =\ \doxymbox{\hyperlink{namespacewi_ab16cfd018643134dc8d81f754ed02912}{wi::max\_value}}\ (\doxymbox{\hyperlink{tree_8h_a26e86dfe4de807f822f26aa95fef67db}{TYPE\_PRECISION}}\ (\doxymbox{\hyperlink{structtype}{type}}),\ \doxymbox{\hyperlink{tree_8h_a70a0c524456653691e82c11ce2b673d6}{TYPE\_SIGN}}\ (\doxymbox{\hyperlink{structtype}{type}}));}
+\DoxyCodeLine{01086\ \ \ \ \ \}}
+\DoxyCodeLine{01087\ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{01088\ \ \ \ \ m\_type\ =\ \doxymbox{\hyperlink{tree_8h_adc335a15eb37174a39b3abe2cd8d0cec}{error\_mark\_node}};}
+\DoxyCodeLine{01089\ \}}
+\DoxyCodeLine{01090\ }
+\DoxyCodeLine{01091\ \textcolor{comment}{//\ Return\ the\ lower\ bound\ of\ a\ sub-\/range.\ \ PAIR\ is\ the\ sub-\/range\ in}}
+\DoxyCodeLine{01092\ \textcolor{comment}{//\ question.}}
+\DoxyCodeLine{01093\ }
+\DoxyCodeLine{01094\ \textcolor{keyword}{inline}\ \doxymbox{\hyperlink{wide-int_8h_a9a29e47e2c40ae9adaf47df15970eced}{wide\_int}}}
+\DoxyCodeLine{01095\ irange::lower\_bound\ (\textcolor{keywordtype}{unsigned}\ \doxymbox{\hyperlink{structpair}{pair}})\textcolor{keyword}{\ const}}
+\DoxyCodeLine{01096\ \textcolor{keyword}{}\{}
+\DoxyCodeLine{01097\ \ \ \doxymbox{\hyperlink{system_8h_aff447899dc74d54931b2bc2d47de9423}{gcc\_checking\_assert}}\ (m\_num\_ranges\ >\ 0);}
+\DoxyCodeLine{01098\ \ \ \doxymbox{\hyperlink{system_8h_aff447899dc74d54931b2bc2d47de9423}{gcc\_checking\_assert}}\ (\doxymbox{\hyperlink{structpair}{pair}}\ +\ 1\ <=\ num\_pairs\ ());}
+\DoxyCodeLine{01099\ \ \ \textcolor{keywordflow}{return}\ m\_base[\doxymbox{\hyperlink{structpair}{pair}}\ *\ 2];}
+\DoxyCodeLine{01100\ \}}
+\DoxyCodeLine{01101\ }
+\DoxyCodeLine{01102\ \textcolor{comment}{//\ Return\ the\ upper\ bound\ of\ a\ sub-\/range.\ \ PAIR\ is\ the\ sub-\/range\ in}}
+\DoxyCodeLine{01103\ \textcolor{comment}{//\ question.}}
+\DoxyCodeLine{01104\ }
+\DoxyCodeLine{01105\ \textcolor{keyword}{inline}\ \doxymbox{\hyperlink{wide-int_8h_a9a29e47e2c40ae9adaf47df15970eced}{wide\_int}}}
+\DoxyCodeLine{01106\ irange::upper\_bound\ (\textcolor{keywordtype}{unsigned}\ \doxymbox{\hyperlink{structpair}{pair}})\textcolor{keyword}{\ const}}
+\DoxyCodeLine{01107\ \textcolor{keyword}{}\{}
+\DoxyCodeLine{01108\ \ \ \doxymbox{\hyperlink{system_8h_aff447899dc74d54931b2bc2d47de9423}{gcc\_checking\_assert}}\ (m\_num\_ranges\ >\ 0);}
+\DoxyCodeLine{01109\ \ \ \doxymbox{\hyperlink{system_8h_aff447899dc74d54931b2bc2d47de9423}{gcc\_checking\_assert}}\ (\doxymbox{\hyperlink{structpair}{pair}}\ +\ 1\ <=\ num\_pairs\ ());}
+\DoxyCodeLine{01110\ \ \ \textcolor{keywordflow}{return}\ m\_base[\doxymbox{\hyperlink{structpair}{pair}}\ *\ 2\ +\ 1];}
+\DoxyCodeLine{01111\ \}}
+\DoxyCodeLine{01112\ }
+\DoxyCodeLine{01113\ \textcolor{comment}{//\ Return\ the\ highest\ bound\ of\ a\ range.}}
+\DoxyCodeLine{01114\ }
+\DoxyCodeLine{01115\ \textcolor{keyword}{inline}\ \doxymbox{\hyperlink{wide-int_8h_a9a29e47e2c40ae9adaf47df15970eced}{wide\_int}}}
+\DoxyCodeLine{01116\ irange::upper\_bound\ ()\textcolor{keyword}{\ const}}
+\DoxyCodeLine{01117\ \textcolor{keyword}{}\{}
+\DoxyCodeLine{01118\ \ \ \textcolor{keywordtype}{unsigned}\ pairs\ =\ num\_pairs\ ();}
+\DoxyCodeLine{01119\ \ \ \doxymbox{\hyperlink{system_8h_aff447899dc74d54931b2bc2d47de9423}{gcc\_checking\_assert}}\ (pairs\ >\ 0);}
+\DoxyCodeLine{01120\ \ \ \textcolor{keywordflow}{return}\ upper\_bound\ (pairs\ -\/\ 1);}
+\DoxyCodeLine{01121\ \}}
+\DoxyCodeLine{01122\ }
+\DoxyCodeLine{01123\ \textcolor{comment}{//\ Set\ value\ range\ VR\ to\ a\ nonzero\ range\ of\ type\ TYPE.}}
+\DoxyCodeLine{01124\ }
+\DoxyCodeLine{01125\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{void}}
+\DoxyCodeLine{01126\ irange::set\_nonzero\ (\doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ \doxymbox{\hyperlink{structtype}{type}})}
+\DoxyCodeLine{01127\ \{}
+\DoxyCodeLine{01128\ \ \ \textcolor{keywordtype}{unsigned}\ prec\ =\ \doxymbox{\hyperlink{tree_8h_a26e86dfe4de807f822f26aa95fef67db}{TYPE\_PRECISION}}\ (\doxymbox{\hyperlink{structtype}{type}});}
+\DoxyCodeLine{01129\ }
+\DoxyCodeLine{01130\ \ \ \textcolor{keywordflow}{if}\ (\doxymbox{\hyperlink{tree_8h_a63915c0a3ee5f6d30d5517fb8d487987}{TYPE\_UNSIGNED}}\ (\doxymbox{\hyperlink{structtype}{type}}))}
+\DoxyCodeLine{01131\ \ \ \ \ \{}
+\DoxyCodeLine{01132\ \ \ \ \ \ \ m\_type\ =\ \doxymbox{\hyperlink{structtype}{type}};}
+\DoxyCodeLine{01133\ \ \ \ \ \ \ m\_kind\ =\ \doxymbox{\hyperlink{value-range_8h_a3f4073c0d3bf2a2addfa5a8f71d96818a30bf60866081de6a1d9a799bc99fb16d}{VR\_RANGE}};}
+\DoxyCodeLine{01134\ \ \ \ \ \ \ m\_base[0]\ =\ \doxymbox{\hyperlink{namespacewi_af93b01272e81b416abc70bcf468b2040}{wi::one}}\ (prec);}
+\DoxyCodeLine{01135\ \ \ \ \ \ \ m\_base[1]\ =\ \doxymbox{\hyperlink{namespacewi_a671c262f4555f9abcad1fae1b0b2e238}{wi::minus\_one}}\ (prec);}
+\DoxyCodeLine{01136\ \ \ \ \ \ \ m\_bitmask.set\_unknown\ (prec);}
+\DoxyCodeLine{01137\ \ \ \ \ \ \ m\_num\_ranges\ =\ 1;}
+\DoxyCodeLine{01138\ }
+\DoxyCodeLine{01139\ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (\doxymbox{\hyperlink{options_8h_a84596fb150478c4f5173d2c5fff82710}{flag\_checking}})}
+\DoxyCodeLine{01140\ \ \ \ \ verify\_range\ ();}
+\DoxyCodeLine{01141\ \ \ \ \ \}}
+\DoxyCodeLine{01142\ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{01143\ \ \ \ \ \{}
+\DoxyCodeLine{01144\ \ \ \ \ \ \ \doxymbox{\hyperlink{wide-int_8h_a9a29e47e2c40ae9adaf47df15970eced}{wide\_int}}\ \doxymbox{\hyperlink{namespacewi_a6e251260a135cc72c48d4be39baa9e28}{zero}}\ =\ \doxymbox{\hyperlink{namespacewi_a6e251260a135cc72c48d4be39baa9e28}{wi::zero}}\ (prec);}
+\DoxyCodeLine{01145\ \ \ \ \ \ \ set\ (\doxymbox{\hyperlink{structtype}{type}},\ zero,\ zero,\ \doxymbox{\hyperlink{value-range_8h_a3f4073c0d3bf2a2addfa5a8f71d96818a1d0ef36ad5e8ae5e50754975abd4eb4a}{VR\_ANTI\_RANGE}});}
+\DoxyCodeLine{01146\ \ \ \ \ \}}
+\DoxyCodeLine{01147\ \}}
+\DoxyCodeLine{01148\ }
+\DoxyCodeLine{01149\ \textcolor{comment}{//\ Set\ value\ range\ VR\ to\ a\ ZERO\ range\ of\ type\ TYPE.}}
+\DoxyCodeLine{01150\ }
+\DoxyCodeLine{01151\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{void}}
+\DoxyCodeLine{01152\ irange::set\_zero\ (\doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ \doxymbox{\hyperlink{structtype}{type}})}
+\DoxyCodeLine{01153\ \{}
+\DoxyCodeLine{01154\ \ \ \doxymbox{\hyperlink{wide-int_8h_a9a29e47e2c40ae9adaf47df15970eced}{wide\_int}}\ \doxymbox{\hyperlink{namespacewi_a6e251260a135cc72c48d4be39baa9e28}{zero}}\ =\ \doxymbox{\hyperlink{namespacewi_a6e251260a135cc72c48d4be39baa9e28}{wi::zero}}\ (\doxymbox{\hyperlink{tree_8h_a26e86dfe4de807f822f26aa95fef67db}{TYPE\_PRECISION}}\ (\doxymbox{\hyperlink{structtype}{type}}));}
+\DoxyCodeLine{01155\ \ \ set\ (\doxymbox{\hyperlink{structtype}{type}},\ zero,\ zero);}
+\DoxyCodeLine{01156\ \}}
+\DoxyCodeLine{01157\ }
+\DoxyCodeLine{01158\ \textcolor{comment}{//\ Normalize\ a\ range\ to\ VARYING\ or\ UNDEFINED\ if\ possible.}}
+\DoxyCodeLine{01159\ }
+\DoxyCodeLine{01160\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{void}}
+\DoxyCodeLine{01161\ irange::normalize\_kind\ ()}
+\DoxyCodeLine{01162\ \{}
+\DoxyCodeLine{01163\ \ \ \textcolor{keywordflow}{if}\ (m\_num\_ranges\ ==\ 0)}
+\DoxyCodeLine{01164\ \ \ \ \ set\_undefined\ ();}
+\DoxyCodeLine{01165\ \ \ \textcolor{keywordflow}{else}\ \textcolor{keywordflow}{if}\ (varying\_compatible\_p\ ())}
+\DoxyCodeLine{01166\ \ \ \ \ \{}
+\DoxyCodeLine{01167\ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (m\_kind\ ==\ \doxymbox{\hyperlink{value-range_8h_a3f4073c0d3bf2a2addfa5a8f71d96818a30bf60866081de6a1d9a799bc99fb16d}{VR\_RANGE}})}
+\DoxyCodeLine{01168\ \ \ \ \ m\_kind\ =\ \doxymbox{\hyperlink{value-range_8h_a3f4073c0d3bf2a2addfa5a8f71d96818aa860022b2f57b72728fb8823d2b2d45b}{VR\_VARYING}};}
+\DoxyCodeLine{01169\ \ \ \ \ \ \ \textcolor{keywordflow}{else}\ \textcolor{keywordflow}{if}\ (m\_kind\ ==\ \doxymbox{\hyperlink{value-range_8h_a3f4073c0d3bf2a2addfa5a8f71d96818a1d0ef36ad5e8ae5e50754975abd4eb4a}{VR\_ANTI\_RANGE}})}
+\DoxyCodeLine{01170\ \ \ \ \ set\_undefined\ ();}
+\DoxyCodeLine{01171\ \ \ \ \ \}}
+\DoxyCodeLine{01172\ \ \ \textcolor{keywordflow}{if}\ (\doxymbox{\hyperlink{options_8h_a84596fb150478c4f5173d2c5fff82710}{flag\_checking}})}
+\DoxyCodeLine{01173\ \ \ \ \ verify\_range\ ();}
+\DoxyCodeLine{01174\ \}}
+\DoxyCodeLine{01175\ }
+\DoxyCodeLine{01176\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{bool}}
+\DoxyCodeLine{01177\ \doxymbox{\hyperlink{value-range_8h_ac6445128caefcefb99492fcff483c909}{contains\_zero\_p}}\ (\textcolor{keyword}{const}\ irange\ \&\doxymbox{\hyperlink{poly-int_8h_a3ecac2571dcdc8050989339124f1bd26}{r}})}
+\DoxyCodeLine{01178\ \{}
+\DoxyCodeLine{01179\ \ \ \textcolor{keywordflow}{if}\ (\doxymbox{\hyperlink{poly-int_8h_a3ecac2571dcdc8050989339124f1bd26}{r}}.undefined\_p\ ())}
+\DoxyCodeLine{01180\ \ \ \ \ \textcolor{keywordflow}{return}\ \textcolor{keyword}{false};}
+\DoxyCodeLine{01181\ }
+\DoxyCodeLine{01182\ \ \ \doxymbox{\hyperlink{wide-int_8h_a9a29e47e2c40ae9adaf47df15970eced}{wide\_int}}\ zero\ =\ \doxymbox{\hyperlink{namespacewi_a6e251260a135cc72c48d4be39baa9e28}{wi::zero}}\ (\doxymbox{\hyperlink{tree_8h_a26e86dfe4de807f822f26aa95fef67db}{TYPE\_PRECISION}}\ (\doxymbox{\hyperlink{poly-int_8h_a3ecac2571dcdc8050989339124f1bd26}{r}}.type\ ()));}
+\DoxyCodeLine{01183\ \ \ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{poly-int_8h_a3ecac2571dcdc8050989339124f1bd26}{r}}.contains\_p\ (zero);}
+\DoxyCodeLine{01184\ \}}
+\DoxyCodeLine{01185\ }
+\DoxyCodeLine{01186\ \textcolor{keyword}{inline}\ \doxymbox{\hyperlink{wide-int_8h_a9a29e47e2c40ae9adaf47df15970eced}{wide\_int}}}
+\DoxyCodeLine{01187\ \doxymbox{\hyperlink{value-range_8h_aaccbb37d676ab9096721f3157de301f8}{irange\_val\_min}}\ (\doxymbox{\hyperlink{coretypes_8h_ad41eb6a6028ff5b3fd00b1ee9f35ed46}{const\_tree}}\ \doxymbox{\hyperlink{structtype}{type}})}
+\DoxyCodeLine{01188\ \{}
+\DoxyCodeLine{01189\ \ \ \doxymbox{\hyperlink{system_8h_aff447899dc74d54931b2bc2d47de9423}{gcc\_checking\_assert}}\ (irange::supports\_p\ (\doxymbox{\hyperlink{structtype}{type}}));}
+\DoxyCodeLine{01190\ \ \ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{namespacewi_a1f3002a4a693f0d7bef8e3a38a78d81b}{wi::min\_value}}\ (\doxymbox{\hyperlink{tree_8h_a26e86dfe4de807f822f26aa95fef67db}{TYPE\_PRECISION}}\ (\doxymbox{\hyperlink{structtype}{type}}),\ \doxymbox{\hyperlink{tree_8h_a70a0c524456653691e82c11ce2b673d6}{TYPE\_SIGN}}\ (\doxymbox{\hyperlink{structtype}{type}}));}
+\DoxyCodeLine{01191\ \}}
+\DoxyCodeLine{01192\ }
+\DoxyCodeLine{01193\ \textcolor{keyword}{inline}\ \doxymbox{\hyperlink{wide-int_8h_a9a29e47e2c40ae9adaf47df15970eced}{wide\_int}}}
+\DoxyCodeLine{01194\ \doxymbox{\hyperlink{value-range_8h_a3e07b9e1143ffd1373e2dd123f3c6500}{irange\_val\_max}}\ (\doxymbox{\hyperlink{coretypes_8h_ad41eb6a6028ff5b3fd00b1ee9f35ed46}{const\_tree}}\ \doxymbox{\hyperlink{structtype}{type}})}
+\DoxyCodeLine{01195\ \{}
+\DoxyCodeLine{01196\ \ \ \doxymbox{\hyperlink{system_8h_aff447899dc74d54931b2bc2d47de9423}{gcc\_checking\_assert}}\ (irange::supports\_p\ (\doxymbox{\hyperlink{structtype}{type}}));}
+\DoxyCodeLine{01197\ \ \ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{namespacewi_ab16cfd018643134dc8d81f754ed02912}{wi::max\_value}}\ (\doxymbox{\hyperlink{tree_8h_a26e86dfe4de807f822f26aa95fef67db}{TYPE\_PRECISION}}\ (\doxymbox{\hyperlink{structtype}{type}}),\ \doxymbox{\hyperlink{tree_8h_a70a0c524456653691e82c11ce2b673d6}{TYPE\_SIGN}}\ (\doxymbox{\hyperlink{structtype}{type}}));}
+\DoxyCodeLine{01198\ \}}
+\DoxyCodeLine{01199\ }
+\DoxyCodeLine{01200\ \textcolor{keyword}{inline}}
+\DoxyCodeLine{01201\ frange::frange\ ()}
+\DoxyCodeLine{01202\ \ \ :\ vrange\ (\doxymbox{\hyperlink{value-range_8h_a5c22d2d797d75c81f8a15e60137418c2ad5ffbe7b65fcb1fe7862f7d319680e5b}{VR\_FRANGE}})}
+\DoxyCodeLine{01203\ \{}
+\DoxyCodeLine{01204\ \ \ set\_undefined\ ();}
+\DoxyCodeLine{01205\ \}}
+\DoxyCodeLine{01206\ }
+\DoxyCodeLine{01207\ \textcolor{keyword}{inline}}
+\DoxyCodeLine{01208\ frange::frange\ (\textcolor{keyword}{const}\ frange\ \&src)}
+\DoxyCodeLine{01209\ \ \ :\ vrange\ (\doxymbox{\hyperlink{value-range_8h_a5c22d2d797d75c81f8a15e60137418c2ad5ffbe7b65fcb1fe7862f7d319680e5b}{VR\_FRANGE}})}
+\DoxyCodeLine{01210\ \{}
+\DoxyCodeLine{01211\ \ \ *\textcolor{keyword}{this}\ =\ src;}
+\DoxyCodeLine{01212\ \}}
+\DoxyCodeLine{01213\ }
+\DoxyCodeLine{01214\ \textcolor{keyword}{inline}}
+\DoxyCodeLine{01215\ frange::frange\ (\doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ \doxymbox{\hyperlink{structtype}{type}})}
+\DoxyCodeLine{01216\ \ \ :\ vrange\ (\doxymbox{\hyperlink{value-range_8h_a5c22d2d797d75c81f8a15e60137418c2ad5ffbe7b65fcb1fe7862f7d319680e5b}{VR\_FRANGE}})}
+\DoxyCodeLine{01217\ \{}
+\DoxyCodeLine{01218\ \ \ set\_varying\ (\doxymbox{\hyperlink{structtype}{type}});}
+\DoxyCodeLine{01219\ \}}
+\DoxyCodeLine{01220\ }
+\DoxyCodeLine{01221\ \textcolor{comment}{//\ frange\ constructor\ from\ REAL\_VALUE\_TYPE\ endpoints.}}
+\DoxyCodeLine{01222\ }
+\DoxyCodeLine{01223\ \textcolor{keyword}{inline}}
+\DoxyCodeLine{01224\ frange::frange\ (\doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ \doxymbox{\hyperlink{structtype}{type}},}
+\DoxyCodeLine{01225\ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{real_8h_aa7fc74aaf7cd891719830958b18d9a82}{REAL\_VALUE\_TYPE}}\ \&min,\ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{real_8h_aa7fc74aaf7cd891719830958b18d9a82}{REAL\_VALUE\_TYPE}}\ \&max,}
+\DoxyCodeLine{01226\ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{value-range_8h_a3f4073c0d3bf2a2addfa5a8f71d96818}{value\_range\_kind}}\ kind)}
+\DoxyCodeLine{01227\ \ \ :\ vrange\ (\doxymbox{\hyperlink{value-range_8h_a5c22d2d797d75c81f8a15e60137418c2ad5ffbe7b65fcb1fe7862f7d319680e5b}{VR\_FRANGE}})}
+\DoxyCodeLine{01228\ \{}
+\DoxyCodeLine{01229\ \ \ set\ (\doxymbox{\hyperlink{structtype}{type}},\ min,\ max,\ kind);}
+\DoxyCodeLine{01230\ \}}
+\DoxyCodeLine{01231\ }
+\DoxyCodeLine{01232\ \textcolor{comment}{//\ frange\ constructor\ from\ trees.}}
+\DoxyCodeLine{01233\ }
+\DoxyCodeLine{01234\ \textcolor{keyword}{inline}}
+\DoxyCodeLine{01235\ frange::frange\ (\doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ min,\ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ max,\ \doxymbox{\hyperlink{value-range_8h_a3f4073c0d3bf2a2addfa5a8f71d96818}{value\_range\_kind}}\ kind)}
+\DoxyCodeLine{01236\ \ \ :\ vrange\ (\doxymbox{\hyperlink{value-range_8h_a5c22d2d797d75c81f8a15e60137418c2ad5ffbe7b65fcb1fe7862f7d319680e5b}{VR\_FRANGE}})}
+\DoxyCodeLine{01237\ \{}
+\DoxyCodeLine{01238\ \ \ set\ (min,\ max,\ kind);}
+\DoxyCodeLine{01239\ \}}
+\DoxyCodeLine{01240\ }
+\DoxyCodeLine{01241\ \textcolor{keyword}{inline}\ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}}
+\DoxyCodeLine{01242\ frange::type\ ()\textcolor{keyword}{\ const}}
+\DoxyCodeLine{01243\ \textcolor{keyword}{}\{}
+\DoxyCodeLine{01244\ \ \ \doxymbox{\hyperlink{system_8h_aff447899dc74d54931b2bc2d47de9423}{gcc\_checking\_assert}}\ (!undefined\_p\ ());}
+\DoxyCodeLine{01245\ \ \ \textcolor{keywordflow}{return}\ m\_type;}
+\DoxyCodeLine{01246\ \}}
+\DoxyCodeLine{01247\ }
+\DoxyCodeLine{01248\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{void}}
+\DoxyCodeLine{01249\ frange::set\_varying\ (\doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ \doxymbox{\hyperlink{structtype}{type}})}
+\DoxyCodeLine{01250\ \{}
+\DoxyCodeLine{01251\ \ \ m\_kind\ =\ \doxymbox{\hyperlink{value-range_8h_a3f4073c0d3bf2a2addfa5a8f71d96818aa860022b2f57b72728fb8823d2b2d45b}{VR\_VARYING}};}
+\DoxyCodeLine{01252\ \ \ m\_type\ =\ \doxymbox{\hyperlink{structtype}{type}};}
+\DoxyCodeLine{01253\ \ \ m\_min\ =\ \doxymbox{\hyperlink{value-range_8h_ae4655351e56f94830312370d532c5679}{frange\_val\_min}}\ (\doxymbox{\hyperlink{structtype}{type}});}
+\DoxyCodeLine{01254\ \ \ m\_max\ =\ \doxymbox{\hyperlink{value-range_8h_a15eeef1b568d3cd8e1d2d8e27750e289}{frange\_val\_max}}\ (\doxymbox{\hyperlink{structtype}{type}});}
+\DoxyCodeLine{01255\ \ \ \textcolor{keywordflow}{if}\ (\doxymbox{\hyperlink{real_8h_a175cbb257de69554d9a5a03a6ac22ddb}{HONOR\_NANS}}\ (m\_type))}
+\DoxyCodeLine{01256\ \ \ \ \ \{}
+\DoxyCodeLine{01257\ \ \ \ \ \ \ m\_pos\_nan\ =\ \textcolor{keyword}{true};}
+\DoxyCodeLine{01258\ \ \ \ \ \ \ m\_neg\_nan\ =\ \textcolor{keyword}{true};}
+\DoxyCodeLine{01259\ \ \ \ \ \}}
+\DoxyCodeLine{01260\ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{01261\ \ \ \ \ \{}
+\DoxyCodeLine{01262\ \ \ \ \ \ \ m\_pos\_nan\ =\ \textcolor{keyword}{false};}
+\DoxyCodeLine{01263\ \ \ \ \ \ \ m\_neg\_nan\ =\ \textcolor{keyword}{false};}
+\DoxyCodeLine{01264\ \ \ \ \ \}}
+\DoxyCodeLine{01265\ \}}
+\DoxyCodeLine{01266\ }
+\DoxyCodeLine{01267\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{void}}
+\DoxyCodeLine{01268\ frange::set\_undefined\ ()}
+\DoxyCodeLine{01269\ \{}
+\DoxyCodeLine{01270\ \ \ m\_kind\ =\ \doxymbox{\hyperlink{value-range_8h_a3f4073c0d3bf2a2addfa5a8f71d96818aa95d2a79a8d463d24d8e2538093ff6db}{VR\_UNDEFINED}};}
+\DoxyCodeLine{01271\ \ \ m\_type\ =\ \doxymbox{\hyperlink{stddef_8h_a070d2ce7b6bb7e5c05602aa8c308d0c4}{NULL}};}
+\DoxyCodeLine{01272\ \ \ m\_pos\_nan\ =\ \textcolor{keyword}{false};}
+\DoxyCodeLine{01273\ \ \ m\_neg\_nan\ =\ \textcolor{keyword}{false};}
+\DoxyCodeLine{01274\ \ \ \textcolor{comment}{//\ m\_min\ and\ m\_min\ are\ uninitialized\ as\ they\ are\ REAL\_VALUE\_TYPE\ ??.}}
+\DoxyCodeLine{01275\ \ \ \textcolor{keywordflow}{if}\ (\doxymbox{\hyperlink{options_8h_a84596fb150478c4f5173d2c5fff82710}{flag\_checking}})}
+\DoxyCodeLine{01276\ \ \ \ \ verify\_range\ ();}
+\DoxyCodeLine{01277\ \}}
+\DoxyCodeLine{01278\ }
+\DoxyCodeLine{01279\ \textcolor{comment}{//\ Set\ the\ NAN\ bits\ to\ NAN\ and\ adjust\ the\ range.}}
+\DoxyCodeLine{01280\ }
+\DoxyCodeLine{01281\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{void}}
+\DoxyCodeLine{01282\ frange::update\_nan\ (\textcolor{keyword}{const}\ \doxymbox{\hyperlink{classnan__state}{nan\_state}}\ \&nan)}
+\DoxyCodeLine{01283\ \{}
+\DoxyCodeLine{01284\ \ \ \doxymbox{\hyperlink{system_8h_aff447899dc74d54931b2bc2d47de9423}{gcc\_checking\_assert}}\ (!undefined\_p\ ());}
+\DoxyCodeLine{01285\ \ \ \textcolor{keywordflow}{if}\ (\doxymbox{\hyperlink{real_8h_a175cbb257de69554d9a5a03a6ac22ddb}{HONOR\_NANS}}\ (m\_type))}
+\DoxyCodeLine{01286\ \ \ \ \ \{}
+\DoxyCodeLine{01287\ \ \ \ \ \ \ m\_pos\_nan\ =\ nan.\doxymbox{\hyperlink{classnan__state_a77f86e6aadb48adc13a9eb6c2a244db6}{pos\_p}}\ ();}
+\DoxyCodeLine{01288\ \ \ \ \ \ \ m\_neg\_nan\ =\ nan.\doxymbox{\hyperlink{classnan__state_a0cd20ee99e7e32bcde4cb557f2e6eddd}{neg\_p}}\ ();}
+\DoxyCodeLine{01289\ \ \ \ \ \ \ normalize\_kind\ ();}
+\DoxyCodeLine{01290\ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (\doxymbox{\hyperlink{options_8h_a84596fb150478c4f5173d2c5fff82710}{flag\_checking}})}
+\DoxyCodeLine{01291\ \ \ \ \ verify\_range\ ();}
+\DoxyCodeLine{01292\ \ \ \ \ \}}
+\DoxyCodeLine{01293\ \}}
+\DoxyCodeLine{01294\ }
+\DoxyCodeLine{01295\ \textcolor{comment}{//\ Set\ the\ NAN\ bit\ to\ +-\/NAN.}}
+\DoxyCodeLine{01296\ }
+\DoxyCodeLine{01297\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{void}}
+\DoxyCodeLine{01298\ frange::update\_nan\ ()}
+\DoxyCodeLine{01299\ \{}
+\DoxyCodeLine{01300\ \ \ \doxymbox{\hyperlink{system_8h_aff447899dc74d54931b2bc2d47de9423}{gcc\_checking\_assert}}\ (!undefined\_p\ ());}
+\DoxyCodeLine{01301\ \ \ \doxymbox{\hyperlink{classnan__state}{nan\_state}}\ nan\ (\textcolor{keyword}{true});}
+\DoxyCodeLine{01302\ \ \ update\_nan\ (nan);}
+\DoxyCodeLine{01303\ \}}
+\DoxyCodeLine{01304\ }
+\DoxyCodeLine{01305\ \textcolor{comment}{//\ Like\ above,\ but\ set\ the\ sign\ of\ the\ NAN.}}
+\DoxyCodeLine{01306\ }
+\DoxyCodeLine{01307\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{void}}
+\DoxyCodeLine{01308\ frange::update\_nan\ (\textcolor{keywordtype}{bool}\ sign)}
+\DoxyCodeLine{01309\ \{}
+\DoxyCodeLine{01310\ \ \ \doxymbox{\hyperlink{system_8h_aff447899dc74d54931b2bc2d47de9423}{gcc\_checking\_assert}}\ (!undefined\_p\ ());}
+\DoxyCodeLine{01311\ \ \ \doxymbox{\hyperlink{classnan__state}{nan\_state}}\ nan\ (\textcolor{comment}{/*pos=*/}!sign,\ \textcolor{comment}{/*neg=*/}sign);}
+\DoxyCodeLine{01312\ \ \ update\_nan\ (nan);}
+\DoxyCodeLine{01313\ \}}
+\DoxyCodeLine{01314\ }
+\DoxyCodeLine{01315\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{bool}}
+\DoxyCodeLine{01316\ frange::contains\_p\ (\doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ cst)\textcolor{keyword}{\ const}}
+\DoxyCodeLine{01317\ \textcolor{keyword}{}\{}
+\DoxyCodeLine{01318\ \ \ \textcolor{keywordflow}{return}\ contains\_p\ (*\doxymbox{\hyperlink{tree_8h_a5006c72b24209d79262fb563b9ab177f}{TREE\_REAL\_CST\_PTR}}\ (cst));}
+\DoxyCodeLine{01319\ \}}
+\DoxyCodeLine{01320\ }
+\DoxyCodeLine{01321\ \textcolor{comment}{//\ Clear\ the\ NAN\ bit\ and\ adjust\ the\ range.}}
+\DoxyCodeLine{01322\ }
+\DoxyCodeLine{01323\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{void}}
+\DoxyCodeLine{01324\ frange::clear\_nan\ ()}
+\DoxyCodeLine{01325\ \{}
+\DoxyCodeLine{01326\ \ \ \doxymbox{\hyperlink{system_8h_aff447899dc74d54931b2bc2d47de9423}{gcc\_checking\_assert}}\ (!undefined\_p\ ());}
+\DoxyCodeLine{01327\ \ \ m\_pos\_nan\ =\ \textcolor{keyword}{false};}
+\DoxyCodeLine{01328\ \ \ m\_neg\_nan\ =\ \textcolor{keyword}{false};}
+\DoxyCodeLine{01329\ \ \ normalize\_kind\ ();}
+\DoxyCodeLine{01330\ \ \ \textcolor{keywordflow}{if}\ (\doxymbox{\hyperlink{options_8h_a84596fb150478c4f5173d2c5fff82710}{flag\_checking}})}
+\DoxyCodeLine{01331\ \ \ \ \ verify\_range\ ();}
+\DoxyCodeLine{01332\ \}}
+\DoxyCodeLine{01333\ }
+\DoxyCodeLine{01334\ \textcolor{comment}{//\ Set\ R\ to\ maximum\ representable\ value\ for\ TYPE.}}
+\DoxyCodeLine{01335\ }
+\DoxyCodeLine{01336\ \textcolor{keyword}{inline}\ \doxymbox{\hyperlink{real_8h_aa7fc74aaf7cd891719830958b18d9a82}{REAL\_VALUE\_TYPE}}}
+\DoxyCodeLine{01337\ \doxymbox{\hyperlink{value-range_8h_aa4ca3678b5205cf0cebb27d93f6d01c3}{real\_max\_representable}}\ (\doxymbox{\hyperlink{coretypes_8h_ad41eb6a6028ff5b3fd00b1ee9f35ed46}{const\_tree}}\ \doxymbox{\hyperlink{structtype}{type}})}
+\DoxyCodeLine{01338\ \{}
+\DoxyCodeLine{01339\ \ \ \doxymbox{\hyperlink{real_8h_aa7fc74aaf7cd891719830958b18d9a82}{REAL\_VALUE\_TYPE}}\ \doxymbox{\hyperlink{poly-int_8h_a3ecac2571dcdc8050989339124f1bd26}{r}};}
+\DoxyCodeLine{01340\ \ \ \textcolor{keywordtype}{char}\ buf[128];}
+\DoxyCodeLine{01341\ \ \ \doxymbox{\hyperlink{real_8h_ab00c85181245189d3624e313dd07b0c8}{get\_max\_float}}\ (\doxymbox{\hyperlink{real_8h_a2a8f23311489e732c861ace91b78fa1c}{REAL\_MODE\_FORMAT}}\ (\doxymbox{\hyperlink{tree_8h_a681209b67406d90eccafc2af921f96b8}{TYPE\_MODE}}\ (\doxymbox{\hyperlink{structtype}{type}})),}
+\DoxyCodeLine{01342\ \ \ \ \ \ \ \ \ \ buf,\ \textcolor{keyword}{sizeof}\ (buf),\ \textcolor{keyword}{false});}
+\DoxyCodeLine{01343\ \ \ \textcolor{keywordtype}{int}\ res\ =\ \doxymbox{\hyperlink{real_8h_acf0fbc8bedd12404cac1e82a4cf01332}{real\_from\_string}}\ (\&\doxymbox{\hyperlink{poly-int_8h_a3ecac2571dcdc8050989339124f1bd26}{r}},\ buf);}
+\DoxyCodeLine{01344\ \ \ \doxymbox{\hyperlink{system_8h_aff447899dc74d54931b2bc2d47de9423}{gcc\_checking\_assert}}\ (!res);}
+\DoxyCodeLine{01345\ \ \ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{poly-int_8h_a3ecac2571dcdc8050989339124f1bd26}{r}};}
+\DoxyCodeLine{01346\ \}}
+\DoxyCodeLine{01347\ }
+\DoxyCodeLine{01348\ \textcolor{comment}{//\ Return\ the\ minimum\ representable\ value\ for\ TYPE.}}
+\DoxyCodeLine{01349\ }
+\DoxyCodeLine{01350\ \textcolor{keyword}{inline}\ \doxymbox{\hyperlink{real_8h_aa7fc74aaf7cd891719830958b18d9a82}{REAL\_VALUE\_TYPE}}}
+\DoxyCodeLine{01351\ \doxymbox{\hyperlink{value-range_8h_a60c1bd38921e2d926966b84cac37e35e}{real\_min\_representable}}\ (\doxymbox{\hyperlink{coretypes_8h_ad41eb6a6028ff5b3fd00b1ee9f35ed46}{const\_tree}}\ \doxymbox{\hyperlink{structtype}{type}})}
+\DoxyCodeLine{01352\ \{}
+\DoxyCodeLine{01353\ \ \ \doxymbox{\hyperlink{real_8h_aa7fc74aaf7cd891719830958b18d9a82}{REAL\_VALUE\_TYPE}}\ \doxymbox{\hyperlink{poly-int_8h_a3ecac2571dcdc8050989339124f1bd26}{r}}\ =\ \doxymbox{\hyperlink{value-range_8h_aa4ca3678b5205cf0cebb27d93f6d01c3}{real\_max\_representable}}\ (\doxymbox{\hyperlink{structtype}{type}});}
+\DoxyCodeLine{01354\ \ \ \doxymbox{\hyperlink{poly-int_8h_a3ecac2571dcdc8050989339124f1bd26}{r}}\ =\ \doxymbox{\hyperlink{real_8h_a5dfbc5f3992dbd1acdbec18dc5e8f383}{real\_value\_negate}}\ (\&\doxymbox{\hyperlink{poly-int_8h_a3ecac2571dcdc8050989339124f1bd26}{r}});}
+\DoxyCodeLine{01355\ \ \ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{poly-int_8h_a3ecac2571dcdc8050989339124f1bd26}{r}};}
+\DoxyCodeLine{01356\ \}}
+\DoxyCodeLine{01357\ }
+\DoxyCodeLine{01358\ \textcolor{comment}{//\ Return\ the\ minimum\ value\ for\ TYPE.}}
+\DoxyCodeLine{01359\ }
+\DoxyCodeLine{01360\ \textcolor{keyword}{inline}\ \doxymbox{\hyperlink{real_8h_aa7fc74aaf7cd891719830958b18d9a82}{REAL\_VALUE\_TYPE}}}
+\DoxyCodeLine{01361\ \doxymbox{\hyperlink{value-range_8h_ae4655351e56f94830312370d532c5679}{frange\_val\_min}}\ (\doxymbox{\hyperlink{coretypes_8h_ad41eb6a6028ff5b3fd00b1ee9f35ed46}{const\_tree}}\ \doxymbox{\hyperlink{structtype}{type}})}
+\DoxyCodeLine{01362\ \{}
+\DoxyCodeLine{01363\ \ \ \textcolor{keywordflow}{if}\ (\doxymbox{\hyperlink{real_8h_a13e6ea382d7daea9d9754ce9b9773012}{HONOR\_INFINITIES}}\ (\doxymbox{\hyperlink{structtype}{type}}))}
+\DoxyCodeLine{01364\ \ \ \ \ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{real_8h_a54d0af3221583e5b51bf9671e4bdbcd7}{dconstninf}};}
+\DoxyCodeLine{01365\ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{01366\ \ \ \ \ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{value-range_8h_a60c1bd38921e2d926966b84cac37e35e}{real\_min\_representable}}\ (\doxymbox{\hyperlink{structtype}{type}});}
+\DoxyCodeLine{01367\ \}}
+\DoxyCodeLine{01368\ }
+\DoxyCodeLine{01369\ \textcolor{comment}{//\ Return\ the\ maximum\ value\ for\ TYPE.}}
+\DoxyCodeLine{01370\ }
+\DoxyCodeLine{01371\ \textcolor{keyword}{inline}\ \doxymbox{\hyperlink{real_8h_aa7fc74aaf7cd891719830958b18d9a82}{REAL\_VALUE\_TYPE}}}
+\DoxyCodeLine{01372\ \doxymbox{\hyperlink{value-range_8h_a15eeef1b568d3cd8e1d2d8e27750e289}{frange\_val\_max}}\ (\doxymbox{\hyperlink{coretypes_8h_ad41eb6a6028ff5b3fd00b1ee9f35ed46}{const\_tree}}\ \doxymbox{\hyperlink{structtype}{type}})}
+\DoxyCodeLine{01373\ \{}
+\DoxyCodeLine{01374\ \ \ \textcolor{keywordflow}{if}\ (\doxymbox{\hyperlink{real_8h_a13e6ea382d7daea9d9754ce9b9773012}{HONOR\_INFINITIES}}\ (\doxymbox{\hyperlink{structtype}{type}}))}
+\DoxyCodeLine{01375\ \ \ \ \ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{real_8h_a7c9b865848fc87b48317988433b6488a}{dconstinf}};}
+\DoxyCodeLine{01376\ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{01377\ \ \ \ \ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{value-range_8h_aa4ca3678b5205cf0cebb27d93f6d01c3}{real\_max\_representable}}\ (\doxymbox{\hyperlink{structtype}{type}});}
+\DoxyCodeLine{01378\ \}}
+\DoxyCodeLine{01379\ }
+\DoxyCodeLine{01380\ \textcolor{comment}{//\ Return\ TRUE\ if\ R\ is\ the\ minimum\ value\ for\ TYPE.}}
+\DoxyCodeLine{01381\ }
+\DoxyCodeLine{01382\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{bool}}
+\DoxyCodeLine{01383\ \doxymbox{\hyperlink{value-range_8h_ab96303f8c0a1a3ab5037ae18e6166c24}{frange\_val\_is\_min}}\ (\textcolor{keyword}{const}\ \doxymbox{\hyperlink{real_8h_aa7fc74aaf7cd891719830958b18d9a82}{REAL\_VALUE\_TYPE}}\ \&\doxymbox{\hyperlink{poly-int_8h_a3ecac2571dcdc8050989339124f1bd26}{r}},\ \doxymbox{\hyperlink{coretypes_8h_ad41eb6a6028ff5b3fd00b1ee9f35ed46}{const\_tree}}\ \doxymbox{\hyperlink{structtype}{type}})}
+\DoxyCodeLine{01384\ \{}
+\DoxyCodeLine{01385\ \ \ \doxymbox{\hyperlink{real_8h_aa7fc74aaf7cd891719830958b18d9a82}{REAL\_VALUE\_TYPE}}\ min\ =\ \doxymbox{\hyperlink{value-range_8h_ae4655351e56f94830312370d532c5679}{frange\_val\_min}}\ (\doxymbox{\hyperlink{structtype}{type}});}
+\DoxyCodeLine{01386\ \ \ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{real_8h_ade4f0c0365834bb67f5f40dc7e37b830}{real\_identical}}\ (\&min,\ \&\doxymbox{\hyperlink{poly-int_8h_a3ecac2571dcdc8050989339124f1bd26}{r}});}
+\DoxyCodeLine{01387\ \}}
+\DoxyCodeLine{01388\ }
+\DoxyCodeLine{01389\ \textcolor{comment}{//\ Return\ TRUE\ if\ R\ is\ the\ max\ value\ for\ TYPE.}}
+\DoxyCodeLine{01390\ }
+\DoxyCodeLine{01391\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{bool}}
+\DoxyCodeLine{01392\ \doxymbox{\hyperlink{value-range_8h_ad76c833cafedfc54a0e5334eba0c883a}{frange\_val\_is\_max}}\ (\textcolor{keyword}{const}\ \doxymbox{\hyperlink{real_8h_aa7fc74aaf7cd891719830958b18d9a82}{REAL\_VALUE\_TYPE}}\ \&\doxymbox{\hyperlink{poly-int_8h_a3ecac2571dcdc8050989339124f1bd26}{r}},\ \doxymbox{\hyperlink{coretypes_8h_ad41eb6a6028ff5b3fd00b1ee9f35ed46}{const\_tree}}\ \doxymbox{\hyperlink{structtype}{type}})}
+\DoxyCodeLine{01393\ \{}
+\DoxyCodeLine{01394\ \ \ \doxymbox{\hyperlink{real_8h_aa7fc74aaf7cd891719830958b18d9a82}{REAL\_VALUE\_TYPE}}\ max\ =\ \doxymbox{\hyperlink{value-range_8h_a15eeef1b568d3cd8e1d2d8e27750e289}{frange\_val\_max}}\ (\doxymbox{\hyperlink{structtype}{type}});}
+\DoxyCodeLine{01395\ \ \ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{real_8h_ade4f0c0365834bb67f5f40dc7e37b830}{real\_identical}}\ (\&max,\ \&\doxymbox{\hyperlink{poly-int_8h_a3ecac2571dcdc8050989339124f1bd26}{r}});}
+\DoxyCodeLine{01396\ \}}
+\DoxyCodeLine{01397\ }
+\DoxyCodeLine{01398\ \textcolor{comment}{//\ Build\ a\ NAN\ with\ a\ state\ of\ NAN.}}
+\DoxyCodeLine{01399\ }
+\DoxyCodeLine{01400\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{void}}
+\DoxyCodeLine{01401\ frange::set\_nan\ (\doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ \doxymbox{\hyperlink{structtype}{type}},\ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classnan__state}{nan\_state}}\ \&nan)}
+\DoxyCodeLine{01402\ \{}
+\DoxyCodeLine{01403\ \ \ \doxymbox{\hyperlink{system_8h_aff447899dc74d54931b2bc2d47de9423}{gcc\_checking\_assert}}\ (nan.\doxymbox{\hyperlink{classnan__state_a77f86e6aadb48adc13a9eb6c2a244db6}{pos\_p}}\ ()\ ||\ nan.\doxymbox{\hyperlink{classnan__state_a0cd20ee99e7e32bcde4cb557f2e6eddd}{neg\_p}}\ ());}
+\DoxyCodeLine{01404\ \ \ \textcolor{keywordflow}{if}\ (\doxymbox{\hyperlink{real_8h_a175cbb257de69554d9a5a03a6ac22ddb}{HONOR\_NANS}}\ (\doxymbox{\hyperlink{structtype}{type}}))}
+\DoxyCodeLine{01405\ \ \ \ \ \{}
+\DoxyCodeLine{01406\ \ \ \ \ \ \ m\_kind\ =\ \doxymbox{\hyperlink{value-range_8h_a3f4073c0d3bf2a2addfa5a8f71d96818a8179420475dc32889b9b683b97b54d32}{VR\_NAN}};}
+\DoxyCodeLine{01407\ \ \ \ \ \ \ m\_type\ =\ \doxymbox{\hyperlink{structtype}{type}};}
+\DoxyCodeLine{01408\ \ \ \ \ \ \ m\_neg\_nan\ =\ nan.\doxymbox{\hyperlink{classnan__state_a0cd20ee99e7e32bcde4cb557f2e6eddd}{neg\_p}}\ ();}
+\DoxyCodeLine{01409\ \ \ \ \ \ \ m\_pos\_nan\ =\ nan.\doxymbox{\hyperlink{classnan__state_a77f86e6aadb48adc13a9eb6c2a244db6}{pos\_p}}\ ();}
+\DoxyCodeLine{01410\ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (\doxymbox{\hyperlink{options_8h_a84596fb150478c4f5173d2c5fff82710}{flag\_checking}})}
+\DoxyCodeLine{01411\ \ \ \ \ verify\_range\ ();}
+\DoxyCodeLine{01412\ \ \ \ \ \}}
+\DoxyCodeLine{01413\ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{01414\ \ \ \ \ set\_undefined\ ();}
+\DoxyCodeLine{01415\ \}}
+\DoxyCodeLine{01416\ }
+\DoxyCodeLine{01417\ \textcolor{comment}{//\ Build\ a\ signless\ NAN\ of\ type\ TYPE.}}
+\DoxyCodeLine{01418\ }
+\DoxyCodeLine{01419\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{void}}
+\DoxyCodeLine{01420\ frange::set\_nan\ (\doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ \doxymbox{\hyperlink{structtype}{type}})}
+\DoxyCodeLine{01421\ \{}
+\DoxyCodeLine{01422\ \ \ \doxymbox{\hyperlink{classnan__state}{nan\_state}}\ nan\ (\textcolor{keyword}{true});}
+\DoxyCodeLine{01423\ \ \ set\_nan\ (\doxymbox{\hyperlink{structtype}{type}},\ nan);}
+\DoxyCodeLine{01424\ \}}
+\DoxyCodeLine{01425\ }
+\DoxyCodeLine{01426\ \textcolor{comment}{//\ Build\ a\ NAN\ of\ type\ TYPE\ with\ SIGN.}}
+\DoxyCodeLine{01427\ }
+\DoxyCodeLine{01428\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{void}}
+\DoxyCodeLine{01429\ frange::set\_nan\ (\doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ \doxymbox{\hyperlink{structtype}{type}},\ \textcolor{keywordtype}{bool}\ sign)}
+\DoxyCodeLine{01430\ \{}
+\DoxyCodeLine{01431\ \ \ \doxymbox{\hyperlink{classnan__state}{nan\_state}}\ nan\ (\textcolor{comment}{/*pos=*/}!sign,\ \textcolor{comment}{/*neg=*/}sign);}
+\DoxyCodeLine{01432\ \ \ set\_nan\ (\doxymbox{\hyperlink{structtype}{type}},\ nan);}
+\DoxyCodeLine{01433\ \}}
+\DoxyCodeLine{01434\ }
+\DoxyCodeLine{01435\ \textcolor{comment}{//\ Return\ TRUE\ if\ range\ is\ known\ to\ be\ finite.}}
+\DoxyCodeLine{01436\ }
+\DoxyCodeLine{01437\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{bool}}
+\DoxyCodeLine{01438\ frange::known\_isfinite\ ()\textcolor{keyword}{\ const}}
+\DoxyCodeLine{01439\ \textcolor{keyword}{}\{}
+\DoxyCodeLine{01440\ \ \ \textcolor{keywordflow}{if}\ (undefined\_p\ ()\ ||\ varying\_p\ ()\ ||\ m\_kind\ ==\ \doxymbox{\hyperlink{value-range_8h_a3f4073c0d3bf2a2addfa5a8f71d96818a1d0ef36ad5e8ae5e50754975abd4eb4a}{VR\_ANTI\_RANGE}})}
+\DoxyCodeLine{01441\ \ \ \ \ \textcolor{keywordflow}{return}\ \textcolor{keyword}{false};}
+\DoxyCodeLine{01442\ \ \ \textcolor{keywordflow}{return}\ (!maybe\_isnan\ ()\ \&\&\ !\doxymbox{\hyperlink{real_8h_a81877156715a8a61649533b2910cc6f4}{real\_isinf}}\ (\&m\_min)\ \&\&\ !\doxymbox{\hyperlink{real_8h_a81877156715a8a61649533b2910cc6f4}{real\_isinf}}\ (\&m\_max));}
+\DoxyCodeLine{01443\ \}}
+\DoxyCodeLine{01444\ }
+\DoxyCodeLine{01445\ \textcolor{comment}{//\ Return\ TRUE\ if\ range\ may\ be\ infinite.}}
+\DoxyCodeLine{01446\ }
+\DoxyCodeLine{01447\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{bool}}
+\DoxyCodeLine{01448\ frange::maybe\_isinf\ ()\textcolor{keyword}{\ const}}
+\DoxyCodeLine{01449\ \textcolor{keyword}{}\{}
+\DoxyCodeLine{01450\ \ \ \textcolor{keywordflow}{if}\ (undefined\_p\ ()\ ||\ m\_kind\ ==\ \doxymbox{\hyperlink{value-range_8h_a3f4073c0d3bf2a2addfa5a8f71d96818a1d0ef36ad5e8ae5e50754975abd4eb4a}{VR\_ANTI\_RANGE}}\ ||\ m\_kind\ ==\ \doxymbox{\hyperlink{value-range_8h_a3f4073c0d3bf2a2addfa5a8f71d96818a8179420475dc32889b9b683b97b54d32}{VR\_NAN}})}
+\DoxyCodeLine{01451\ \ \ \ \ \textcolor{keywordflow}{return}\ \textcolor{keyword}{false};}
+\DoxyCodeLine{01452\ \ \ \textcolor{keywordflow}{if}\ (varying\_p\ ())}
+\DoxyCodeLine{01453\ \ \ \ \ \textcolor{keywordflow}{return}\ \textcolor{keyword}{true};}
+\DoxyCodeLine{01454\ \ \ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{real_8h_a81877156715a8a61649533b2910cc6f4}{real\_isinf}}\ (\&m\_min)\ ||\ \doxymbox{\hyperlink{real_8h_a81877156715a8a61649533b2910cc6f4}{real\_isinf}}\ (\&m\_max);}
+\DoxyCodeLine{01455\ \}}
+\DoxyCodeLine{01456\ }
+\DoxyCodeLine{01457\ \textcolor{comment}{//\ Return\ TRUE\ if\ range\ is\ known\ to\ be\ the\ [-\/INF,-\/INF]\ or\ [+INF,+INF].}}
+\DoxyCodeLine{01458\ }
+\DoxyCodeLine{01459\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{bool}}
+\DoxyCodeLine{01460\ frange::known\_isinf\ ()\textcolor{keyword}{\ const}}
+\DoxyCodeLine{01461\ \textcolor{keyword}{}\{}
+\DoxyCodeLine{01462\ \ \ \textcolor{keywordflow}{return}\ (m\_kind\ ==\ \doxymbox{\hyperlink{value-range_8h_a3f4073c0d3bf2a2addfa5a8f71d96818a30bf60866081de6a1d9a799bc99fb16d}{VR\_RANGE}}}
+\DoxyCodeLine{01463\ \ \ \ \ \ \ \&\&\ !maybe\_isnan\ ()}
+\DoxyCodeLine{01464\ \ \ \ \ \ \ \&\&\ \doxymbox{\hyperlink{real_8h_ade4f0c0365834bb67f5f40dc7e37b830}{real\_identical}}\ (\&m\_min,\ \&m\_max)}
+\DoxyCodeLine{01465\ \ \ \ \ \ \ \&\&\ \doxymbox{\hyperlink{real_8h_a81877156715a8a61649533b2910cc6f4}{real\_isinf}}\ (\&m\_min));}
+\DoxyCodeLine{01466\ \}}
+\DoxyCodeLine{01467\ }
+\DoxyCodeLine{01468\ \textcolor{comment}{//\ Return\ TRUE\ if\ range\ is\ possibly\ a\ NAN.}}
+\DoxyCodeLine{01469\ }
+\DoxyCodeLine{01470\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{bool}}
+\DoxyCodeLine{01471\ frange::maybe\_isnan\ ()\textcolor{keyword}{\ const}}
+\DoxyCodeLine{01472\ \textcolor{keyword}{}\{}
+\DoxyCodeLine{01473\ \ \ \textcolor{keywordflow}{if}\ (undefined\_p\ ())}
+\DoxyCodeLine{01474\ \ \ \ \ \textcolor{keywordflow}{return}\ \textcolor{keyword}{false};}
+\DoxyCodeLine{01475\ \ \ \textcolor{keywordflow}{return}\ m\_pos\_nan\ ||\ m\_neg\_nan;}
+\DoxyCodeLine{01476\ \}}
+\DoxyCodeLine{01477\ }
+\DoxyCodeLine{01478\ \textcolor{comment}{//\ Return\ TRUE\ if\ range\ is\ possibly\ a\ NAN\ with\ SIGN.}}
+\DoxyCodeLine{01479\ }
+\DoxyCodeLine{01480\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{bool}}
+\DoxyCodeLine{01481\ frange::maybe\_isnan\ (\textcolor{keywordtype}{bool}\ sign)\textcolor{keyword}{\ const}}
+\DoxyCodeLine{01482\ \textcolor{keyword}{}\{}
+\DoxyCodeLine{01483\ \ \ \textcolor{keywordflow}{if}\ (undefined\_p\ ())}
+\DoxyCodeLine{01484\ \ \ \ \ \textcolor{keywordflow}{return}\ \textcolor{keyword}{false};}
+\DoxyCodeLine{01485\ \ \ \textcolor{keywordflow}{if}\ (sign)}
+\DoxyCodeLine{01486\ \ \ \ \ \textcolor{keywordflow}{return}\ m\_neg\_nan;}
+\DoxyCodeLine{01487\ \ \ \textcolor{keywordflow}{return}\ m\_pos\_nan;}
+\DoxyCodeLine{01488\ \}}
+\DoxyCodeLine{01489\ }
+\DoxyCodeLine{01490\ \textcolor{comment}{//\ Return\ TRUE\ if\ range\ is\ a\ +NAN\ or\ -\/NAN.}}
+\DoxyCodeLine{01491\ }
+\DoxyCodeLine{01492\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{bool}}
+\DoxyCodeLine{01493\ frange::known\_isnan\ ()\textcolor{keyword}{\ const}}
+\DoxyCodeLine{01494\ \textcolor{keyword}{}\{}
+\DoxyCodeLine{01495\ \ \ \textcolor{keywordflow}{return}\ m\_kind\ ==\ \doxymbox{\hyperlink{value-range_8h_a3f4073c0d3bf2a2addfa5a8f71d96818a8179420475dc32889b9b683b97b54d32}{VR\_NAN}};}
+\DoxyCodeLine{01496\ \}}
+\DoxyCodeLine{01497\ }
+\DoxyCodeLine{01498\ \textcolor{comment}{//\ If\ the\ signbit\ for\ the\ range\ is\ known,\ set\ it\ in\ SIGNBIT\ and\ return}}
+\DoxyCodeLine{01499\ \textcolor{comment}{//\ TRUE.}}
+\DoxyCodeLine{01500\ }
+\DoxyCodeLine{01501\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{bool}}
+\DoxyCodeLine{01502\ frange::signbit\_p\ (\textcolor{keywordtype}{bool}\ \&signbit)\textcolor{keyword}{\ const}}
+\DoxyCodeLine{01503\ \textcolor{keyword}{}\{}
+\DoxyCodeLine{01504\ \ \ \textcolor{keywordflow}{if}\ (undefined\_p\ ())}
+\DoxyCodeLine{01505\ \ \ \ \ \textcolor{keywordflow}{return}\ \textcolor{keyword}{false};}
+\DoxyCodeLine{01506\ }
+\DoxyCodeLine{01507\ \ \ \textcolor{comment}{//\ NAN\ with\ unknown\ sign.}}
+\DoxyCodeLine{01508\ \ \ \textcolor{keywordflow}{if}\ (m\_pos\_nan\ \&\&\ m\_neg\_nan)}
+\DoxyCodeLine{01509\ \ \ \ \ \textcolor{keywordflow}{return}\ \textcolor{keyword}{false};}
+\DoxyCodeLine{01510\ \ \ \textcolor{comment}{//\ No\ NAN.}}
+\DoxyCodeLine{01511\ \ \ \textcolor{keywordflow}{if}\ (!m\_pos\_nan\ \&\&\ !m\_neg\_nan)}
+\DoxyCodeLine{01512\ \ \ \ \ \{}
+\DoxyCodeLine{01513\ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (m\_min.sign\ ==\ m\_max.sign)}
+\DoxyCodeLine{01514\ \ \ \ \ \{}
+\DoxyCodeLine{01515\ \ \ \ \ \ \ signbit\ =\ m\_min.sign;}
+\DoxyCodeLine{01516\ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ \textcolor{keyword}{true};}
+\DoxyCodeLine{01517\ \ \ \ \ \}}
+\DoxyCodeLine{01518\ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ \textcolor{keyword}{false};}
+\DoxyCodeLine{01519\ \ \ \ \ \}}
+\DoxyCodeLine{01520\ \ \ \textcolor{comment}{//\ NAN\ with\ known\ sign.}}
+\DoxyCodeLine{01521\ \ \ \textcolor{keywordtype}{bool}\ nan\_sign\ =\ m\_neg\_nan;}
+\DoxyCodeLine{01522\ \ \ \textcolor{keywordflow}{if}\ (known\_isnan\ ()}
+\DoxyCodeLine{01523\ \ \ \ \ \ \ ||\ (nan\_sign\ ==\ m\_min.sign\ \&\&\ nan\_sign\ ==\ m\_max.sign))}
+\DoxyCodeLine{01524\ \ \ \ \ \{}
+\DoxyCodeLine{01525\ \ \ \ \ \ \ signbit\ =\ nan\_sign;}
+\DoxyCodeLine{01526\ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ \textcolor{keyword}{true};}
+\DoxyCodeLine{01527\ \ \ \ \ \}}
+\DoxyCodeLine{01528\ \ \ \textcolor{keywordflow}{return}\ \textcolor{keyword}{false};}
+\DoxyCodeLine{01529\ \}}
+\DoxyCodeLine{01530\ }
+\DoxyCodeLine{01531\ \textcolor{comment}{//\ If\ range\ has\ a\ NAN\ with\ a\ known\ sign,\ set\ it\ in\ SIGNBIT\ and\ return}}
+\DoxyCodeLine{01532\ \textcolor{comment}{//\ TRUE.}}
+\DoxyCodeLine{01533\ }
+\DoxyCodeLine{01534\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{bool}}
+\DoxyCodeLine{01535\ frange::nan\_signbit\_p\ (\textcolor{keywordtype}{bool}\ \&signbit)\textcolor{keyword}{\ const}}
+\DoxyCodeLine{01536\ \textcolor{keyword}{}\{}
+\DoxyCodeLine{01537\ \ \ \textcolor{keywordflow}{if}\ (undefined\_p\ ())}
+\DoxyCodeLine{01538\ \ \ \ \ \textcolor{keywordflow}{return}\ \textcolor{keyword}{false};}
+\DoxyCodeLine{01539\ }
+\DoxyCodeLine{01540\ \ \ \textcolor{keywordflow}{if}\ (m\_pos\_nan\ ==\ m\_neg\_nan)}
+\DoxyCodeLine{01541\ \ \ \ \ \textcolor{keywordflow}{return}\ \textcolor{keyword}{false};}
+\DoxyCodeLine{01542\ }
+\DoxyCodeLine{01543\ \ \ signbit\ =\ m\_neg\_nan;}
+\DoxyCodeLine{01544\ \ \ \textcolor{keywordflow}{return}\ \textcolor{keyword}{true};}
+\DoxyCodeLine{01545\ \}}
+\DoxyCodeLine{01546\ }
+\DoxyCodeLine{01547\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{value-range_8h_a9ec42ed1e1dcda1c267afb90ca31f004}{frange\_nextafter}}\ (\textcolor{keyword}{enum}\ \doxymbox{\hyperlink{insn-modes_8h_a3c592bc51c57098d62602b12c9468e92}{machine\_mode}},\ \doxymbox{\hyperlink{real_8h_aa7fc74aaf7cd891719830958b18d9a82}{REAL\_VALUE\_TYPE}}\ \&,}
+\DoxyCodeLine{01548\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{real_8h_aa7fc74aaf7cd891719830958b18d9a82}{REAL\_VALUE\_TYPE}}\ \&);}
+\DoxyCodeLine{01549\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{value-range_8h_a7643c01165330a81bf9436266bad672b}{frange\_arithmetic}}\ (\textcolor{keyword}{enum}\ \doxymbox{\hyperlink{tree-core_8h_aee7678415f75b79d1651bfccce10c9f5}{tree\_code}},\ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}},\ \doxymbox{\hyperlink{real_8h_aa7fc74aaf7cd891719830958b18d9a82}{REAL\_VALUE\_TYPE}}\ \&,}
+\DoxyCodeLine{01550\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{real_8h_aa7fc74aaf7cd891719830958b18d9a82}{REAL\_VALUE\_TYPE}}\ \&,\ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{real_8h_aa7fc74aaf7cd891719830958b18d9a82}{REAL\_VALUE\_TYPE}}\ \&,}
+\DoxyCodeLine{01551\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{real_8h_aa7fc74aaf7cd891719830958b18d9a82}{REAL\_VALUE\_TYPE}}\ \&);}
+\DoxyCodeLine{01552\ }
+\DoxyCodeLine{01553\ \textcolor{comment}{//\ Return\ true\ if\ TYPE1\ and\ TYPE2\ are\ compatible\ range\ types.}}
+\DoxyCodeLine{01554\ }
+\DoxyCodeLine{01555\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{bool}}
+\DoxyCodeLine{01556\ \doxymbox{\hyperlink{value-range_8h_ab3d27b7b2d5cf9fb428d58f950c79999}{range\_compatible\_p}}\ (\doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ type1,\ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ type2)}
+\DoxyCodeLine{01557\ \{}
+\DoxyCodeLine{01558\ \ \ \textcolor{comment}{//\ types\_compatible\_p\ requires\ conversion\ in\ both\ directions\ to\ be\ useless.}}
+\DoxyCodeLine{01559\ \ \ \textcolor{comment}{//\ GIMPLE\ only\ requires\ a\ cast\ one\ way\ in\ order\ to\ be\ compatible.}}
+\DoxyCodeLine{01560\ \ \ \textcolor{comment}{//\ Ranges\ really\ only\ need\ the\ sign\ and\ precision\ to\ be\ the\ same.}}
+\DoxyCodeLine{01561\ \ \ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{tree_8h_a70a0c524456653691e82c11ce2b673d6}{TYPE\_SIGN}}\ (type1)\ ==\ \doxymbox{\hyperlink{tree_8h_a70a0c524456653691e82c11ce2b673d6}{TYPE\_SIGN}}\ (type2)}
+\DoxyCodeLine{01562\ \ \ \ \ \ \&\&\ (\doxymbox{\hyperlink{tree_8h_a26e86dfe4de807f822f26aa95fef67db}{TYPE\_PRECISION}}\ (type1)\ ==\ \doxymbox{\hyperlink{tree_8h_a26e86dfe4de807f822f26aa95fef67db}{TYPE\_PRECISION}}\ (type2)}
+\DoxyCodeLine{01563\ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ FIXME:\ As\ PR112788\ shows,\ for\ now\ on\ rs6000\ \_Float128\ has}}
+\DoxyCodeLine{01564\ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ type\ precision\ 128\ while\ long\ double\ has\ type\ precision\ 127}}
+\DoxyCodeLine{01565\ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ but\ both\ have\ the\ same\ mode\ so\ their\ precision\ is\ actually}}
+\DoxyCodeLine{01566\ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ the\ same,\ workaround\ it\ temporarily.}}
+\DoxyCodeLine{01567\ \ \ \ \ \ \ \ \ \ ||\ (\doxymbox{\hyperlink{tree_8h_a3c68d204526a1db8b264386a8f7b7dcf}{SCALAR\_FLOAT\_TYPE\_P}}\ (type1)}
+\DoxyCodeLine{01568\ \ \ \ \ \ \ \ \ \ \&\&\ \doxymbox{\hyperlink{tree_8h_a681209b67406d90eccafc2af921f96b8}{TYPE\_MODE}}\ (type1)\ ==\ \doxymbox{\hyperlink{tree_8h_a681209b67406d90eccafc2af921f96b8}{TYPE\_MODE}}\ (type2)));}
+\DoxyCodeLine{01569\ \}}
+\DoxyCodeLine{01570\ \textcolor{preprocessor}{\#endif\ }\textcolor{comment}{//\ GCC\_VALUE\_RANGE\_H}}
+
+\end{DoxyCode}

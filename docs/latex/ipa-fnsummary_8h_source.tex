@@ -1,0 +1,461 @@
+\doxysection{ipa-\/fnsummary.h}
+\hypertarget{ipa-fnsummary_8h_source}{}\label{ipa-fnsummary_8h_source}\index{toolchain/x86\_64-\/elf/lib/gcc/x86\_64-\/elf/14.2.0/plugin/include/ipa-\/fnsummary.h@{toolchain/x86\_64-\/elf/lib/gcc/x86\_64-\/elf/14.2.0/plugin/include/ipa-\/fnsummary.h}}
+\doxymbox{\hyperlink{ipa-fnsummary_8h}{Go to the documentation of this file.}}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001\ \textcolor{comment}{/*\ IPA\ function\ body\ analysis.}}
+\DoxyCodeLine{00002\ \textcolor{comment}{\ \ \ Copyright\ (C)\ 2003-\/2024\ Free\ Software\ Foundation,\ Inc.}}
+\DoxyCodeLine{00003\ \textcolor{comment}{\ \ \ Contributed\ by\ Jan\ Hubicka}}
+\DoxyCodeLine{00004\ \textcolor{comment}{}}
+\DoxyCodeLine{00005\ \textcolor{comment}{This\ file\ is\ part\ of\ GCC.}}
+\DoxyCodeLine{00006\ \textcolor{comment}{}}
+\DoxyCodeLine{00007\ \textcolor{comment}{GCC\ is\ free\ software;\ you\ can\ redistribute\ it\ and/or\ modify\ it\ under}}
+\DoxyCodeLine{00008\ \textcolor{comment}{the\ terms\ of\ the\ GNU\ General\ Public\ License\ as\ published\ by\ the\ Free}}
+\DoxyCodeLine{00009\ \textcolor{comment}{Software\ Foundation;\ either\ version\ 3,\ or\ (at\ your\ option)\ any\ later}}
+\DoxyCodeLine{00010\ \textcolor{comment}{version.}}
+\DoxyCodeLine{00011\ \textcolor{comment}{}}
+\DoxyCodeLine{00012\ \textcolor{comment}{GCC\ is\ distributed\ in\ the\ hope\ that\ it\ will\ be\ useful,\ but\ WITHOUT\ ANY}}
+\DoxyCodeLine{00013\ \textcolor{comment}{WARRANTY;\ without\ even\ the\ implied\ warranty\ of\ MERCHANTABILITY\ or}}
+\DoxyCodeLine{00014\ \textcolor{comment}{FITNESS\ FOR\ A\ PARTICULAR\ PURPOSE.\ \ See\ the\ GNU\ General\ Public\ License}}
+\DoxyCodeLine{00015\ \textcolor{comment}{for\ more\ details.}}
+\DoxyCodeLine{00016\ \textcolor{comment}{}}
+\DoxyCodeLine{00017\ \textcolor{comment}{You\ should\ have\ received\ a\ copy\ of\ the\ GNU\ General\ Public\ License}}
+\DoxyCodeLine{00018\ \textcolor{comment}{along\ with\ GCC;\ see\ the\ file\ COPYING3.\ \ If\ not\ see}}
+\DoxyCodeLine{00019\ \textcolor{comment}{<http://www.gnu.org/licenses/>.\ \ */}}
+\DoxyCodeLine{00020\ }
+\DoxyCodeLine{00021\ \textcolor{preprocessor}{\#ifndef\ GCC\_IPA\_SUMMARY\_H}}
+\DoxyCodeLine{00022\ \textcolor{preprocessor}{\#define\ GCC\_IPA\_SUMMARY\_H}}
+\DoxyCodeLine{00023\ }
+\DoxyCodeLine{00024\ \textcolor{preprocessor}{\#include\ "{}\doxymbox{\hyperlink{sreal_8h}{sreal.h}}"{}}}
+\DoxyCodeLine{00025\ \textcolor{preprocessor}{\#include\ "{}\doxymbox{\hyperlink{ipa-predicate_8h}{ipa-\/predicate.h}}"{}}}
+\DoxyCodeLine{00026\ }
+\DoxyCodeLine{00027\ }
+\DoxyCodeLine{00028\ \textcolor{comment}{/*\ Hints\ are\ reasons\ why\ IPA\ heuristics\ should\ prefer\ specializing\ given}}
+\DoxyCodeLine{00029\ \textcolor{comment}{\ \ \ function.\ \ They\ are\ represented\ as\ bitmap\ of\ the\ following\ values.\ \ */}}
+\DoxyCodeLine{00030\ \textcolor{keyword}{enum}\ \doxymbox{\hyperlink{ipa-fnsummary_8h_ac18222d931a4ff9b5584939742610047}{ipa\_hints\_vals}}\ \{}
+\DoxyCodeLine{00031\ \ \ \textcolor{comment}{/*\ When\ specialization\ turns\ indirect\ call\ into\ a\ direct\ call,}}
+\DoxyCodeLine{00032\ \textcolor{comment}{\ \ \ \ \ it\ is\ good\ idea\ to\ do\ so.\ \ */}}
+\DoxyCodeLine{00033\ \ \ \doxymbox{\hyperlink{ipa-fnsummary_8h_ac18222d931a4ff9b5584939742610047afec754263b090278083387716d021224}{INLINE\_HINT\_indirect\_call}}\ =\ 1,}
+\DoxyCodeLine{00034\ \ \ \textcolor{comment}{/*\ Inlining\ may\ make\ loop\ iterations\ or\ loop\ stride\ known.\ \ It\ is\ good\ idea}}
+\DoxyCodeLine{00035\ \textcolor{comment}{\ \ \ \ \ to\ do\ so\ because\ it\ enables\ loop\ optimizations.\ \ */}}
+\DoxyCodeLine{00036\ \ \ \doxymbox{\hyperlink{ipa-fnsummary_8h_ac18222d931a4ff9b5584939742610047ac0828583672dedaa70d54758047dfed4}{INLINE\_HINT\_loop\_iterations}}\ =\ 2,}
+\DoxyCodeLine{00037\ \ \ \doxymbox{\hyperlink{ipa-fnsummary_8h_ac18222d931a4ff9b5584939742610047adc1b10e755d65ddc97968e9ba8643990}{INLINE\_HINT\_loop\_stride}}\ =\ 4,}
+\DoxyCodeLine{00038\ \ \ \textcolor{comment}{/*\ Inlining\ within\ same\ strongly\ connected\ component\ of\ callgraph\ is\ often}}
+\DoxyCodeLine{00039\ \textcolor{comment}{\ \ \ \ \ a\ loss\ due\ to\ increased\ stack\ frame\ usage\ and\ prologue\ setup\ costs.\ \ */}}
+\DoxyCodeLine{00040\ \ \ \doxymbox{\hyperlink{ipa-fnsummary_8h_ac18222d931a4ff9b5584939742610047a3ab5e0f34e6218d49c79357223d36a01}{INLINE\_HINT\_same\_scc}}\ =\ 8,}
+\DoxyCodeLine{00041\ \ \ \textcolor{comment}{/*\ Inlining\ functions\ in\ strongly\ connected\ component\ is\ not\ such\ a\ great}}
+\DoxyCodeLine{00042\ \textcolor{comment}{\ \ \ \ \ win.\ \ */}}
+\DoxyCodeLine{00043\ \ \ \doxymbox{\hyperlink{ipa-fnsummary_8h_ac18222d931a4ff9b5584939742610047a68096b8f0adca1d87ea19ab636b38e2b}{INLINE\_HINT\_in\_scc}}\ =\ 16,}
+\DoxyCodeLine{00044\ \ \ \textcolor{comment}{/*\ If\ function\ is\ declared\ inline\ by\ user,\ it\ may\ be\ good\ idea\ to\ inline}}
+\DoxyCodeLine{00045\ \textcolor{comment}{\ \ \ \ \ it.\ \ Set\ by\ simple\_edge\_hints\ in\ ipa-\/inline-\/analysis.cc.\ \ */}}
+\DoxyCodeLine{00046\ \ \ \doxymbox{\hyperlink{ipa-fnsummary_8h_ac18222d931a4ff9b5584939742610047a121fdf6841b4f4f5928cced75899b4b6}{INLINE\_HINT\_declared\_inline}}\ =\ 32,}
+\DoxyCodeLine{00047\ \ \ \textcolor{comment}{/*\ Programs\ are\ usually\ still\ organized\ for\ non-\/LTO\ compilation\ and\ thus}}
+\DoxyCodeLine{00048\ \textcolor{comment}{\ \ \ \ \ if\ functions\ are\ in\ different\ modules,\ inlining\ may\ not\ be\ so\ important.\ }}
+\DoxyCodeLine{00049\ \textcolor{comment}{\ \ \ \ \ Set\ by\ simple\_edge\_hints\ in\ ipa-\/inline-\/analysis.cc.\ \ \ */}}
+\DoxyCodeLine{00050\ \ \ \doxymbox{\hyperlink{ipa-fnsummary_8h_ac18222d931a4ff9b5584939742610047af9b85b63733f5ed3027e57045b4f05b7}{INLINE\_HINT\_cross\_module}}\ =\ 64,}
+\DoxyCodeLine{00051\ \ \ \textcolor{comment}{/*\ We\ know\ that\ the\ callee\ is\ hot\ by\ profile.\ \ */}}
+\DoxyCodeLine{00052\ \ \ \doxymbox{\hyperlink{ipa-fnsummary_8h_ac18222d931a4ff9b5584939742610047a168ea80515ae07f84c67921febbed33c}{INLINE\_HINT\_known\_hot}}\ =\ 128,}
+\DoxyCodeLine{00053\ \ \ \textcolor{comment}{/*\ There\ is\ builtin\_constant\_p\ dependent\ on\ parameter\ which\ is\ usually}}
+\DoxyCodeLine{00054\ \textcolor{comment}{\ \ \ \ \ a\ strong\ hint\ to\ inline.\ \ */}}
+\DoxyCodeLine{00055\ \ \ \doxymbox{\hyperlink{ipa-fnsummary_8h_ac18222d931a4ff9b5584939742610047aa468285eea25f2aa1a7edb712268ccf3}{INLINE\_HINT\_builtin\_constant\_p}}\ =\ 256}
+\DoxyCodeLine{00056\ \};}
+\DoxyCodeLine{00057\ }
+\DoxyCodeLine{00058\ \textcolor{keyword}{typedef}\ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{ipa-fnsummary_8h_afea7e76c36549cf97be969ad64a2d82c}{ipa\_hints}};}
+\DoxyCodeLine{00059\ }
+\DoxyCodeLine{00060\ \textcolor{comment}{/*\ Simple\ description\ of\ whether\ a\ memory\ load\ or\ a\ condition\ refers\ to\ a\ load}}
+\DoxyCodeLine{00061\ \textcolor{comment}{\ \ \ from\ an\ aggregate\ and\ if\ so,\ how\ and\ where\ from\ in\ the\ aggregate.}}
+\DoxyCodeLine{00062\ \textcolor{comment}{\ \ \ Individual\ fields\ have\ the\ same\ meaning\ like\ fields\ with\ the\ same\ name\ in}}
+\DoxyCodeLine{00063\ \textcolor{comment}{\ \ \ struct\ condition.\ \ */}}
+\DoxyCodeLine{00064\ }
+\DoxyCodeLine{00065\ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{structagg__position__info}{agg\_position\_info}}}
+\DoxyCodeLine{00066\ \{}
+\DoxyCodeLine{00067\ \ \ HOST\_WIDE\_INT\ \doxymbox{\hyperlink{structagg__position__info_a005acd0456fbed20f7606d46c511b336}{offset}};}
+\DoxyCodeLine{00068\ \ \ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{structagg__position__info_ab6b32dddd508955afe335cd024dc29d1}{agg\_contents}};}
+\DoxyCodeLine{00069\ \ \ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{structagg__position__info_ac90bed9c31f7437e1c466e6c17f4d51c}{by\_ref}};}
+\DoxyCodeLine{00070\ \};}
+\DoxyCodeLine{00071\ }
+\DoxyCodeLine{00072\ \textcolor{comment}{/*\ Representation\ of\ function\ body\ size\ and\ time\ depending\ on\ the\ call}}
+\DoxyCodeLine{00073\ \textcolor{comment}{\ \ \ context.\ \ We\ keep\ simple\ array\ of\ record,\ every\ containing\ of\ predicate}}
+\DoxyCodeLine{00074\ \textcolor{comment}{\ \ \ and\ time/size\ to\ account.\ \ */}}
+\DoxyCodeLine{00075\ \textcolor{keyword}{class\ }\doxymbox{\hyperlink{classsize__time__entry}{size\_time\_entry}}}
+\DoxyCodeLine{00076\ \{}
+\DoxyCodeLine{00077\ \textcolor{keyword}{public}:}
+\DoxyCodeLine{00078\ \ \ \textcolor{comment}{/*\ Predicate\ for\ code\ to\ be\ executed.\ \ */}}
+\DoxyCodeLine{00079\ \ \ \doxymbox{\hyperlink{classipa__predicate}{ipa\_predicate}}\ \doxymbox{\hyperlink{classsize__time__entry_a6af2683ba4c722a6a19ac79f770e3779}{exec\_predicate}};}
+\DoxyCodeLine{00080\ \ \ \textcolor{comment}{/*\ Predicate\ for\ value\ to\ be\ constant\ and\ optimized\ out\ in\ a\ specialized\ copy.}}
+\DoxyCodeLine{00081\ \textcolor{comment}{\ \ \ \ \ When\ deciding\ on\ specialization\ this\ makes\ it\ possible\ to\ see\ how\ much}}
+\DoxyCodeLine{00082\ \textcolor{comment}{\ \ \ \ \ the\ executed\ code\ paths\ will\ simplify.\ \ */}}
+\DoxyCodeLine{00083\ \ \ \doxymbox{\hyperlink{classipa__predicate}{ipa\_predicate}}\ \doxymbox{\hyperlink{classsize__time__entry_a788da0b256fee77d754ed78a5a9dc530}{nonconst\_predicate}};}
+\DoxyCodeLine{00084\ \ \ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{classsize__time__entry_a5e3165a9b174691c89c3978cfca94470}{size}};}
+\DoxyCodeLine{00085\ \ \ \doxymbox{\hyperlink{classsreal}{sreal}}\ \doxymbox{\hyperlink{classsize__time__entry_a76fb4c843fdd8e4c8d10143b73d2ad98}{time}};}
+\DoxyCodeLine{00086\ \};}
+\DoxyCodeLine{00087\ }
+\DoxyCodeLine{00088\ \textcolor{comment}{/*\ Summary\ about\ function\ and\ stack\ frame\ sizes.\ \ We\ keep\ this\ info\ }}
+\DoxyCodeLine{00089\ \textcolor{comment}{\ \ \ for\ inline\ clones\ and\ also\ for\ WPA\ streaming.\ For\ this\ reason\ this\ is\ not}}
+\DoxyCodeLine{00090\ \textcolor{comment}{\ \ \ part\ of\ ipa\_fn\_summary\ which\ exists\ only\ for\ offline\ functions.\ \ */}}
+\DoxyCodeLine{00091\ \textcolor{keyword}{class\ }\doxymbox{\hyperlink{classipa__size__summary_af5c6803f34e4e83a73b0fc5059983a2d}{ipa\_size\_summary}}}
+\DoxyCodeLine{00092\ \{}
+\DoxyCodeLine{00093\ \textcolor{keyword}{public}:}
+\DoxyCodeLine{00094\ \ \ \textcolor{comment}{/*\ Estimated\ stack\ frame\ consumption\ by\ the\ function.\ \ */}}
+\DoxyCodeLine{00095\ \ \ HOST\_WIDE\_INT\ \doxymbox{\hyperlink{classipa__size__summary_ad6bb5ded173100343c056f0f6e3f78ea}{estimated\_self\_stack\_size}};}
+\DoxyCodeLine{00096\ \ \ \textcolor{comment}{/*\ Size\ of\ the\ function\ body.\ \ */}}
+\DoxyCodeLine{00097\ \ \ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{classipa__size__summary_af8dff6ed4dc8f183f12c04d2f082a366}{self\_size}};}
+\DoxyCodeLine{00098\ \ \ \textcolor{comment}{/*\ Estimated\ size\ of\ the\ function\ after\ inlining.\ \ */}}
+\DoxyCodeLine{00099\ \ \ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{classipa__size__summary_a758025a5a73ece6a2b2c45c5be7f7aaf}{size}};}
+\DoxyCodeLine{00100\ }
+\DoxyCodeLine{00101\ \ \ \doxymbox{\hyperlink{classipa__size__summary_af5c6803f34e4e83a73b0fc5059983a2d}{ipa\_size\_summary}}\ ()}
+\DoxyCodeLine{00102\ \ \ :\ \doxymbox{\hyperlink{classipa__size__summary_ad6bb5ded173100343c056f0f6e3f78ea}{estimated\_self\_stack\_size}}\ (0),\ \doxymbox{\hyperlink{classipa__size__summary_af8dff6ed4dc8f183f12c04d2f082a366}{self\_size}}\ (0),\ \doxymbox{\hyperlink{classipa__size__summary_a758025a5a73ece6a2b2c45c5be7f7aaf}{size}}\ (0)}
+\DoxyCodeLine{00103\ \ \ \{}
+\DoxyCodeLine{00104\ \ \ \}}
+\DoxyCodeLine{00105\ \};}
+\DoxyCodeLine{00106\ }
+\DoxyCodeLine{00107\ \textcolor{comment}{/*\ Structure\ to\ capture\ how\ frequently\ some\ interesting\ events\ occur\ given\ a}}
+\DoxyCodeLine{00108\ \textcolor{comment}{\ \ \ particular\ predicate.\ \ The\ structure\ is\ used\ to\ estimate\ how\ often\ we}}
+\DoxyCodeLine{00109\ \textcolor{comment}{\ \ \ encounter\ loops\ with\ known\ iteration\ count\ or\ stride\ in\ various}}
+\DoxyCodeLine{00110\ \textcolor{comment}{\ \ \ contexts.\ \ */}}
+\DoxyCodeLine{00111\ }
+\DoxyCodeLine{00112\ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{coretypes_8h_ae5708c4d4b300570eebe0bc0c78facbc}{GTY}}(())\ ipa\_freqcounting\_predicate}
+\DoxyCodeLine{00113\ \{}
+\DoxyCodeLine{00114\ \ \ \textcolor{comment}{/*\ The\ described\ event\ happens\ with\ this\ frequency...\ */}}
+\DoxyCodeLine{00115\ \ \ sreal\ freq;}
+\DoxyCodeLine{00116\ \ \ \textcolor{comment}{/*\ ...when\ this\ predicate\ evaluates\ to\ false.\ */}}
+\DoxyCodeLine{00117\ \ \ ipa\_predicate\ *\ \doxymbox{\hyperlink{coretypes_8h_ae5708c4d4b300570eebe0bc0c78facbc}{GTY}}((skip))\ predicate;}
+\DoxyCodeLine{00118\ \};}
+\DoxyCodeLine{00119\ }
+\DoxyCodeLine{00120\ \textcolor{comment}{/*\ Function\ inlining\ information.\ \ */}}
+\DoxyCodeLine{00121\ \textcolor{keyword}{class\ }\doxymbox{\hyperlink{coretypes_8h_ae5708c4d4b300570eebe0bc0c78facbc}{GTY}}(())\ ipa\_fn\_summary}
+\DoxyCodeLine{00122\ \{}
+\DoxyCodeLine{00123\ \textcolor{keyword}{public}:}
+\DoxyCodeLine{00124\ \ \ \textcolor{comment}{/*\ Keep\ all\ field\ empty\ so\ summary\ dumping\ works\ during\ its\ computation.}}
+\DoxyCodeLine{00125\ \textcolor{comment}{\ \ \ \ \ This\ is\ useful\ for\ debugging.\ \ */}}
+\DoxyCodeLine{00126\ \ \ ipa\_fn\_summary\ ()}
+\DoxyCodeLine{00127\ \ \ \ \ :\ min\_size\ (0),}
+\DoxyCodeLine{00128\ \ \ \ \ \ \ inlinable\ (\doxymbox{\hyperlink{stdbool_8h_a65e9886d74aaee76545e83dd09011727}{false}}),\ single\_caller\ (\doxymbox{\hyperlink{stdbool_8h_a65e9886d74aaee76545e83dd09011727}{false}}),}
+\DoxyCodeLine{00129\ \ \ \ \ \ \ fp\_expressions\ (\doxymbox{\hyperlink{stdbool_8h_a65e9886d74aaee76545e83dd09011727}{false}}),\ safe\_to\_inline\_to\_always\_inline\ (0),}
+\DoxyCodeLine{00130\ \ \ \ \ \ \ target\_info\ (0),\ estimated\_stack\_size\ (\doxymbox{\hyperlink{stdbool_8h_a65e9886d74aaee76545e83dd09011727}{false}}),}
+\DoxyCodeLine{00131\ \ \ \ \ \ \ time\ (0),\ conds\ (\doxymbox{\hyperlink{stddef_8h_a070d2ce7b6bb7e5c05602aa8c308d0c4}{NULL}}),}
+\DoxyCodeLine{00132\ \ \ \ \ \ \ size\_time\_table\ (),\ call\_size\_time\_table\ (\doxymbox{\hyperlink{vec_8h_a38c7a75c76b8eb596e88ea8672114cc3}{vNULL}}),}
+\DoxyCodeLine{00133\ \ \ \ \ \ \ loop\_iterations\ (\doxymbox{\hyperlink{stddef_8h_a070d2ce7b6bb7e5c05602aa8c308d0c4}{NULL}}),\ loop\_strides\ (\doxymbox{\hyperlink{stddef_8h_a070d2ce7b6bb7e5c05602aa8c308d0c4}{NULL}}),}
+\DoxyCodeLine{00134\ \ \ \ \ \ \ builtin\_constant\_p\_parms\ (\doxymbox{\hyperlink{vec_8h_a38c7a75c76b8eb596e88ea8672114cc3}{vNULL}}),}
+\DoxyCodeLine{00135\ \ \ \ \ \ \ growth\ (0),\ scc\_no\ (0)}
+\DoxyCodeLine{00136\ \ \ \{}
+\DoxyCodeLine{00137\ \ \ \}}
+\DoxyCodeLine{00138\ }
+\DoxyCodeLine{00139\ \ \ \textcolor{comment}{/*\ Copy\ constructor.\ \ */}}
+\DoxyCodeLine{00140\ \ \ ipa\_fn\_summary\ (\textcolor{keyword}{const}\ ipa\_fn\_summary\ \&s)}
+\DoxyCodeLine{00141\ \ \ \ \ :\ min\_size\ (s.min\_size),}
+\DoxyCodeLine{00142\ \ \ \ \ inlinable\ (s.inlinable),\ single\_caller\ (s.single\_caller),}
+\DoxyCodeLine{00143\ \ \ \ \ fp\_expressions\ (s.fp\_expressions),}
+\DoxyCodeLine{00144\ \ \ \ \ target\_info\ (s.target\_info),}
+\DoxyCodeLine{00145\ \ \ \ \ estimated\_stack\_size\ (s.estimated\_stack\_size),}
+\DoxyCodeLine{00146\ \ \ \ \ time\ (s.time),\ conds\ (s.conds),\ size\_time\_table\ (),}
+\DoxyCodeLine{00147\ \ \ \ \ call\_size\_time\_table\ (\doxymbox{\hyperlink{vec_8h_a38c7a75c76b8eb596e88ea8672114cc3}{vNULL}}),}
+\DoxyCodeLine{00148\ \ \ \ \ loop\_iterations\ (s.loop\_iterations),\ loop\_strides\ (s.loop\_strides),}
+\DoxyCodeLine{00149\ \ \ \ \ builtin\_constant\_p\_parms\ (s.builtin\_constant\_p\_parms),}
+\DoxyCodeLine{00150\ \ \ \ \ growth\ (s.growth),\ scc\_no\ (s.scc\_no)}
+\DoxyCodeLine{00151\ \ \ \{\}}
+\DoxyCodeLine{00152\ }
+\DoxyCodeLine{00153\ \ \ \textcolor{comment}{/*\ Default\ constructor.\ \ */}}
+\DoxyCodeLine{00154\ \ \ \string~ipa\_fn\_summary\ ();}
+\DoxyCodeLine{00155\ }
+\DoxyCodeLine{00156\ \ \ \textcolor{comment}{/*\ Information\ about\ the\ function\ body\ itself.\ \ */}}
+\DoxyCodeLine{00157\ }
+\DoxyCodeLine{00158\ \ \ \textcolor{comment}{/*\ Minimal\ size\ increase\ after\ inlining.\ \ */}}
+\DoxyCodeLine{00159\ \ \ \textcolor{keywordtype}{int}\ min\_size;}
+\DoxyCodeLine{00160\ }
+\DoxyCodeLine{00161\ \ \ \textcolor{comment}{/*\ False\ when\ there\ something\ makes\ inlining\ impossible\ (such\ as\ va\_arg).\ \ */}}
+\DoxyCodeLine{00162\ \ \ \textcolor{keywordtype}{unsigned}\ inlinable\ :\ 1;}
+\DoxyCodeLine{00163\ \ \ \textcolor{comment}{/*\ True\ wen\ there\ is\ only\ one\ caller\ of\ the\ function\ before\ small\ function}}
+\DoxyCodeLine{00164\ \textcolor{comment}{\ \ \ \ \ inlining.\ \ */}}
+\DoxyCodeLine{00165\ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ single\_caller\ :\ 1;}
+\DoxyCodeLine{00166\ \ \ \textcolor{comment}{/*\ True\ if\ function\ contains\ any\ floating\ point\ expressions.\ \ */}}
+\DoxyCodeLine{00167\ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ fp\_expressions\ :\ 1;}
+\DoxyCodeLine{00168\ \ \ \textcolor{comment}{/*\ Cache\ for\ analysis\ of\ can\_early\_inline\_edge\_p.\ \ */}}
+\DoxyCodeLine{00169\ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ safe\_to\_inline\_to\_always\_inline\ :\ 2;}
+\DoxyCodeLine{00170\ \ \ \textcolor{comment}{/*\ Like\ fp\_expressions\ field\ above,\ but\ it's\ to\ hold\ some\ target\ specific}}
+\DoxyCodeLine{00171\ \textcolor{comment}{\ \ \ \ \ information,\ such\ as\ some\ target\ specific\ isa\ flags.\ \ Note\ that\ for}}
+\DoxyCodeLine{00172\ \textcolor{comment}{\ \ \ \ \ offloading\ target\ compilers,\ this\ field\ isn't\ streamed.\ \ */}}
+\DoxyCodeLine{00173\ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ target\_info;}
+\DoxyCodeLine{00174\ }
+\DoxyCodeLine{00175\ \ \ \textcolor{comment}{/*\ Information\ about\ function\ that\ will\ result\ after\ applying\ all\ the}}
+\DoxyCodeLine{00176\ \textcolor{comment}{\ \ \ \ \ inline\ decisions\ present\ in\ the\ callgraph.\ \ Generally\ kept\ up\ to}}
+\DoxyCodeLine{00177\ \textcolor{comment}{\ \ \ \ \ date\ only\ for\ functions\ that\ are\ not\ inline\ clones.\ */}}
+\DoxyCodeLine{00178\ }
+\DoxyCodeLine{00179\ \ \ \textcolor{comment}{/*\ Estimated\ stack\ frame\ consumption\ by\ the\ function.\ \ */}}
+\DoxyCodeLine{00180\ \ \ HOST\_WIDE\_INT\ estimated\_stack\_size;}
+\DoxyCodeLine{00181\ \ \ \textcolor{comment}{/*\ Estimated\ runtime\ of\ function\ after\ inlining.\ \ */}}
+\DoxyCodeLine{00182\ \ \ sreal\ \doxymbox{\hyperlink{coretypes_8h_ae5708c4d4b300570eebe0bc0c78facbc}{GTY}}((skip))\ time;}
+\DoxyCodeLine{00183\ }
+\DoxyCodeLine{00184\ \ \ \textcolor{comment}{/*\ Conditional\ size/time\ information.\ \ The\ summaries\ are\ being}}
+\DoxyCodeLine{00185\ \textcolor{comment}{\ \ \ \ \ merged\ during\ inlining.\ \ */}}
+\DoxyCodeLine{00186\ \ \ \doxymbox{\hyperlink{ipa-predicate_8h_adf9403bdddd3edbe30af140c6fc1e8c3}{conditions}}\ conds;}
+\DoxyCodeLine{00187\ \ \ \textcolor{comment}{/*\ Normal\ code\ is\ accounted\ in\ size\_time\_table,\ while\ calls\ are}}
+\DoxyCodeLine{00188\ \textcolor{comment}{\ \ \ \ \ accounted\ in\ call\_size\_time\_table.\ \ This\ is\ because\ calls}}
+\DoxyCodeLine{00189\ \textcolor{comment}{\ \ \ \ \ are\ often\ adjusted\ by\ IPA\ optimizations\ and\ thus\ this\ summary}}
+\DoxyCodeLine{00190\ \textcolor{comment}{\ \ \ \ \ is\ generated\ from\ call\ summary\ information\ when\ needed.\ \ */}}
+\DoxyCodeLine{00191\ \ \ auto\_vec<size\_time\_entry>\ \doxymbox{\hyperlink{coretypes_8h_ae5708c4d4b300570eebe0bc0c78facbc}{GTY}}((skip))\ size\_time\_table;}
+\DoxyCodeLine{00192\ \ \ \textcolor{comment}{/*\ Unlike\ size\_time\_table\ that\ is\ initialized\ for\ all\ summaries}}
+\DoxyCodeLine{00193\ \textcolor{comment}{\ \ \ \ \ call\_size\_time\_table\ is\ allocated\ only\ for\ functions\ with}}
+\DoxyCodeLine{00194\ \textcolor{comment}{\ \ \ \ \ many\ calls.\ \ Use\ effecient\ vl\_ptr\ storage.\ \ */}}
+\DoxyCodeLine{00195\ \ \ \doxymbox{\hyperlink{vec_8h_ac6299229087b122e17686611255dfa27}{vec<size\_time\_entry,\ va\_heap,\ vl\_ptr>}}\ \doxymbox{\hyperlink{coretypes_8h_ae5708c4d4b300570eebe0bc0c78facbc}{GTY}}((skip))\ call\_size\_time\_table;}
+\DoxyCodeLine{00196\ }
+\DoxyCodeLine{00197\ \ \ \textcolor{comment}{/*\ Predicates\ on\ when\ some\ loops\ in\ the\ function\ can\ have\ known\ bounds.\ \ */}}
+\DoxyCodeLine{00198\ \ \ \doxymbox{\hyperlink{vec_8h_ac6299229087b122e17686611255dfa27}{vec<ipa\_freqcounting\_predicate,\ va\_gc>}}\ *loop\_iterations;}
+\DoxyCodeLine{00199\ \ \ \textcolor{comment}{/*\ Predicates\ on\ when\ some\ loops\ in\ the\ function\ can\ have\ known\ strides.\ \ */}}
+\DoxyCodeLine{00200\ \ \ \doxymbox{\hyperlink{vec_8h_ac6299229087b122e17686611255dfa27}{vec<ipa\_freqcounting\_predicate,\ va\_gc>}}\ *loop\_strides;}
+\DoxyCodeLine{00201\ \ \ \textcolor{comment}{/*\ Parameters\ tested\ by\ builtin\_constant\_p.\ \ */}}
+\DoxyCodeLine{00202\ \ \ \doxymbox{\hyperlink{vec_8h_ac6299229087b122e17686611255dfa27}{vec<int,\ va\_heap,\ vl\_ptr>}}\ \doxymbox{\hyperlink{coretypes_8h_ae5708c4d4b300570eebe0bc0c78facbc}{GTY}}((skip))\ builtin\_constant\_p\_parms;}
+\DoxyCodeLine{00203\ \ \ \textcolor{comment}{/*\ Estimated\ growth\ for\ inlining\ all\ copies\ of\ the\ function\ before\ start}}
+\DoxyCodeLine{00204\ \textcolor{comment}{\ \ \ \ \ of\ small\ functions\ inlining.}}
+\DoxyCodeLine{00205\ \textcolor{comment}{\ \ \ \ \ This\ value\ will\ get\ out\ of\ date\ as\ the\ callers\ are\ duplicated,\ but}}
+\DoxyCodeLine{00206\ \textcolor{comment}{\ \ \ \ \ using\ up-\/to-\/date\ value\ in\ the\ badness\ metric\ mean\ a\ lot\ of\ extra}}
+\DoxyCodeLine{00207\ \textcolor{comment}{\ \ \ \ \ expenses.\ \ */}}
+\DoxyCodeLine{00208\ \ \ \textcolor{keywordtype}{int}\ growth;}
+\DoxyCodeLine{00209\ \ \ \textcolor{comment}{/*\ Number\ of\ SCC\ on\ the\ beginning\ of\ inlining\ process.\ \ */}}
+\DoxyCodeLine{00210\ \ \ \textcolor{keywordtype}{int}\ scc\_no;}
+\DoxyCodeLine{00211\ }
+\DoxyCodeLine{00212\ \ \ \textcolor{comment}{/*\ Record\ time\ and\ size\ under\ given\ predicates.\ \ */}}
+\DoxyCodeLine{00213\ \ \ \textcolor{keywordtype}{void}\ account\_size\_time\ (\textcolor{keywordtype}{int},\ sreal,\ \textcolor{keyword}{const}\ ipa\_predicate\ \&,}
+\DoxyCodeLine{00214\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ ipa\_predicate\ \&,}
+\DoxyCodeLine{00215\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{bool}\ call\ =\ \textcolor{keyword}{false});}
+\DoxyCodeLine{00216\ }
+\DoxyCodeLine{00217\ \ \ \textcolor{comment}{/*\ We\ keep\ values\ scaled\ up,\ so\ fractional\ sizes\ can\ be\ accounted.\ \ */}}
+\DoxyCodeLine{00218\ \ \ \textcolor{keyword}{static}\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{int}\ size\_scale\ =\ 2;}
+\DoxyCodeLine{00219\ \ \ \textcolor{comment}{/*\ Maximal\ size\ of\ size\_time\_table\ before\ we\ start\ to\ be\ conservative.\ \ */}}
+\DoxyCodeLine{00220\ \ \ \textcolor{keyword}{static}\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{int}\ max\_size\_time\_table\_size\ =\ 256;}
+\DoxyCodeLine{00221\ \};}
+\DoxyCodeLine{00222\ }
+\DoxyCodeLine{00223\ \textcolor{keyword}{class\ }\doxymbox{\hyperlink{coretypes_8h_ae5708c4d4b300570eebe0bc0c78facbc}{GTY}}((user))\ ipa\_fn\_summary\_t:}
+\DoxyCodeLine{00224\ \ \ \textcolor{keyword}{public}\ \doxymbox{\hyperlink{classfast__function__summary}{fast\_function\_summary}}\ <ipa\_fn\_summary\ *,\ va\_gc>}
+\DoxyCodeLine{00225\ \{}
+\DoxyCodeLine{00226\ \textcolor{keyword}{public}:}
+\DoxyCodeLine{00227\ \ \ ipa\_fn\_summary\_t\ (symbol\_table\ *symtab):}
+\DoxyCodeLine{00228\ \ \ \ \ fast\_function\_summary\ <ipa\_fn\_summary\ *,\ \doxymbox{\hyperlink{vec_8h_aa164af0ad170e12f150a0fc79dd6d221}{va\_gc}}>\ (symtab)\ \{\}}
+\DoxyCodeLine{00229\ }
+\DoxyCodeLine{00230\ \ \ \textcolor{keyword}{static}\ ipa\_fn\_summary\_t\ *create\_ggc\ (symbol\_table\ *symtab)}
+\DoxyCodeLine{00231\ \ \ \{}
+\DoxyCodeLine{00232\ \ \ \ \ \textcolor{keyword}{class\ }ipa\_fn\_summary\_t\ *summary}
+\DoxyCodeLine{00233\ \ \ \ \ \ \ =\ \textcolor{keyword}{new}\ (\doxymbox{\hyperlink{ggc_8h_a446a887d3ee7d1b2afee06860082d798}{ggc\_alloc\_no\_dtor<ipa\_fn\_summary\_t>}}\ ())\ ipa\_fn\_summary\_t\ (symtab);}
+\DoxyCodeLine{00234\ \ \ \ \ summary-\/>disable\_insertion\_hook\ ();}
+\DoxyCodeLine{00235\ \ \ \ \ \textcolor{keywordflow}{return}\ summary;}
+\DoxyCodeLine{00236\ \ \ \}}
+\DoxyCodeLine{00237\ }
+\DoxyCodeLine{00238\ \ \ \textcolor{comment}{/*\ Remove\ ipa\_fn\_summary\ for\ all\ callees\ of\ NODE.\ \ */}}
+\DoxyCodeLine{00239\ \ \ \textcolor{keywordtype}{void}\ remove\_callees\ (cgraph\_node\ *node);}
+\DoxyCodeLine{00240\ }
+\DoxyCodeLine{00241\ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{namespacewi_aa421202393ff12d6d6cd77590adeef85}{insert}}\ (cgraph\_node\ *,\ ipa\_fn\_summary\ *)\ \textcolor{keyword}{final}\ \textcolor{keyword}{override};}
+\DoxyCodeLine{00242\ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{symbol-summary_8h_aeee6c19b32ef7a2c7f1e31cf44773159}{remove}}\ (cgraph\_node\ *node,\ ipa\_fn\_summary\ *)\ \textcolor{keyword}{final}\ \textcolor{keyword}{override}}
+\DoxyCodeLine{00243\ \ \ \{}
+\DoxyCodeLine{00244\ \ \ \ \ remove\_callees\ (node);}
+\DoxyCodeLine{00245\ \ \ \}}
+\DoxyCodeLine{00246\ }
+\DoxyCodeLine{00247\ \ \ \textcolor{keywordtype}{void}\ duplicate\ (cgraph\_node\ *src,\ cgraph\_node\ *dst,}
+\DoxyCodeLine{00248\ \ \ \ \ \ \ \ \ \ \ ipa\_fn\_summary\ *src\_data,\ ipa\_fn\_summary\ *dst\_data)}
+\DoxyCodeLine{00249\ \ \ \ \ \textcolor{keyword}{final}\ \textcolor{keyword}{override};}
+\DoxyCodeLine{00250\ \};}
+\DoxyCodeLine{00251\ }
+\DoxyCodeLine{00252\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{coretypes_8h_ae5708c4d4b300570eebe0bc0c78facbc}{GTY}}(())\ \doxymbox{\hyperlink{classfast__function__summary}{fast\_function\_summary}}\ <ipa\_fn\_summary\ *,\ \doxymbox{\hyperlink{structva__gc}{va\_gc}}>}
+\DoxyCodeLine{00253\ \ \ *\doxymbox{\hyperlink{ipa-fnsummary_8h_a15c13e7f14b57a402f501c439a02ca45}{ipa\_fn\_summaries}};}
+\DoxyCodeLine{00254\ }
+\DoxyCodeLine{00255\ class\ \doxymbox{\hyperlink{classipa__size__summary__t_a996c257fdf068a3472fd1e7e90c4bed5}{ipa\_size\_summary\_t}}:}
+\DoxyCodeLine{00256\ \ \ public\ \doxymbox{\hyperlink{classfast__function__summary_a0a1c4745756359468dde87113bea45d5}{fast\_function\_summary}}\ <\doxymbox{\hyperlink{classipa__size__summary}{ipa\_size\_summary}}\ *,\ \doxymbox{\hyperlink{structva__heap}{va\_heap}}>}
+\DoxyCodeLine{00257\ \{}
+\DoxyCodeLine{00258\ \textcolor{keyword}{public}:}
+\DoxyCodeLine{00259\ \ \ \doxymbox{\hyperlink{classipa__size__summary__t_a996c257fdf068a3472fd1e7e90c4bed5}{ipa\_size\_summary\_t}}\ (symbol\_table\ *symtab):}
+\DoxyCodeLine{00260\ \ \ \ \ \doxymbox{\hyperlink{classfast__function__summary_a0a1c4745756359468dde87113bea45d5}{fast\_function\_summary}}\ <\doxymbox{\hyperlink{classipa__size__summary}{ipa\_size\_summary}}\ *,\ \doxymbox{\hyperlink{structva__heap}{va\_heap}}>\ (symtab)}
+\DoxyCodeLine{00261\ \ \ \{}
+\DoxyCodeLine{00262\ \ \ \ \ disable\_insertion\_hook\ ();}
+\DoxyCodeLine{00263\ \ \ \}}
+\DoxyCodeLine{00264\ }
+\DoxyCodeLine{00265\ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classipa__size__summary__t_a9a87fe59fc61b9d145240d5a19898e0a}{duplicate}}\ (cgraph\_node\ *,\ cgraph\_node\ *,}
+\DoxyCodeLine{00266\ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{classipa__size__summary}{ipa\_size\_summary}}\ *src\_data,}
+\DoxyCodeLine{00267\ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{classipa__size__summary}{ipa\_size\_summary}}\ *dst\_data)\ \textcolor{keyword}{final}\ \textcolor{keyword}{override}}
+\DoxyCodeLine{00268\ \ \ \{}
+\DoxyCodeLine{00269\ \ \ \ \ *dst\_data\ =\ *src\_data;}
+\DoxyCodeLine{00270\ \ \ \}}
+\DoxyCodeLine{00271\ \};}
+\DoxyCodeLine{00272\ \textcolor{keyword}{extern}\ fast\_function\_summary\ <ipa\_size\_summary\ *,\ va\_heap>}
+\DoxyCodeLine{00273\ \ \ *\doxymbox{\hyperlink{ipa-fnsummary_8h_a4d2e9c6c2d8fda27236b1e5b735abafb}{ipa\_size\_summaries}};}
+\DoxyCodeLine{00274\ }
+\DoxyCodeLine{00275\ \textcolor{comment}{/*\ Information\ kept\ about\ callgraph\ edges.\ \ */}}
+\DoxyCodeLine{00276\ \textcolor{keyword}{class\ }\doxymbox{\hyperlink{classipa__call__summary_ae313d4ef221c08dfed63c70c42a90b9d}{ipa\_call\_summary}}}
+\DoxyCodeLine{00277\ \{}
+\DoxyCodeLine{00278\ \textcolor{keyword}{public}:}
+\DoxyCodeLine{00279\ \ \ \textcolor{comment}{/*\ Keep\ all\ field\ empty\ so\ summary\ dumping\ works\ during\ its\ computation.}}
+\DoxyCodeLine{00280\ \textcolor{comment}{\ \ \ \ \ This\ is\ useful\ for\ debugging.\ \ */}}
+\DoxyCodeLine{00281\ \ \ \doxymbox{\hyperlink{classipa__call__summary_ae313d4ef221c08dfed63c70c42a90b9d}{ipa\_call\_summary}}\ ()}
+\DoxyCodeLine{00282\ \ \ \ \ :\ \doxymbox{\hyperlink{classipa__call__summary_a6a44737dabddeae17cd6e50d333652ff}{predicate}}\ (\doxymbox{\hyperlink{stddef_8h_a070d2ce7b6bb7e5c05602aa8c308d0c4}{NULL}}),\ \doxymbox{\hyperlink{classipa__call__summary_a927f82a8706126e8e80c485dd9036ed0}{param}}\ (\doxymbox{\hyperlink{vec_8h_a38c7a75c76b8eb596e88ea8672114cc3}{vNULL}}),\ \doxymbox{\hyperlink{classipa__call__summary_a88b4a71d22d65c4c4dc26eb096e41bf4}{call\_stmt\_size}}\ (0),\ \doxymbox{\hyperlink{classipa__call__summary_a37baa2455c77d5b0ae6598140c8ed948}{call\_stmt\_time}}\ (0),}
+\DoxyCodeLine{00283\ \ \ \ \ \ \ \doxymbox{\hyperlink{classipa__call__summary_a2ad64810ae759b18e0a217bc64172e72}{loop\_depth}}\ (0),\ \doxymbox{\hyperlink{classipa__call__summary_a096a6103eb2c5b149e5e2b3632c23e49}{is\_return\_callee\_uncaptured}}\ (\doxymbox{\hyperlink{stdbool_8h_a65e9886d74aaee76545e83dd09011727}{false}})}
+\DoxyCodeLine{00284\ \ \ \ \ \{}
+\DoxyCodeLine{00285\ \ \ \ \ \}}
+\DoxyCodeLine{00286\ }
+\DoxyCodeLine{00287\ \ \ \textcolor{comment}{/*\ Copy\ constructor.\ \ */}}
+\DoxyCodeLine{00288\ \ \ \doxymbox{\hyperlink{classipa__call__summary_a44efcc9eb6b9eea865818a5c907e2361}{ipa\_call\_summary}}\ (\textcolor{keyword}{const}\ \doxymbox{\hyperlink{classipa__call__summary_ae313d4ef221c08dfed63c70c42a90b9d}{ipa\_call\_summary}}\ \&s):}
+\DoxyCodeLine{00289\ \ \ \ \ \doxymbox{\hyperlink{classipa__call__summary_a6a44737dabddeae17cd6e50d333652ff}{predicate}}\ (s.\doxymbox{\hyperlink{classipa__call__summary_a6a44737dabddeae17cd6e50d333652ff}{predicate}}),\ \doxymbox{\hyperlink{classipa__call__summary_a927f82a8706126e8e80c485dd9036ed0}{param}}\ (s.\doxymbox{\hyperlink{classipa__call__summary_a927f82a8706126e8e80c485dd9036ed0}{param}}),\ \doxymbox{\hyperlink{classipa__call__summary_a88b4a71d22d65c4c4dc26eb096e41bf4}{call\_stmt\_size}}\ (s.\doxymbox{\hyperlink{classipa__call__summary_a88b4a71d22d65c4c4dc26eb096e41bf4}{call\_stmt\_size}}),}
+\DoxyCodeLine{00290\ \ \ \ \ \doxymbox{\hyperlink{classipa__call__summary_a37baa2455c77d5b0ae6598140c8ed948}{call\_stmt\_time}}\ (s.\doxymbox{\hyperlink{classipa__call__summary_a37baa2455c77d5b0ae6598140c8ed948}{call\_stmt\_time}}),\ \doxymbox{\hyperlink{classipa__call__summary_a2ad64810ae759b18e0a217bc64172e72}{loop\_depth}}\ (s.\doxymbox{\hyperlink{classipa__call__summary_a2ad64810ae759b18e0a217bc64172e72}{loop\_depth}}),}
+\DoxyCodeLine{00291\ \ \ \ \ \doxymbox{\hyperlink{classipa__call__summary_a096a6103eb2c5b149e5e2b3632c23e49}{is\_return\_callee\_uncaptured}}\ (s.\doxymbox{\hyperlink{classipa__call__summary_a096a6103eb2c5b149e5e2b3632c23e49}{is\_return\_callee\_uncaptured}})}
+\DoxyCodeLine{00292\ \ \ \{}
+\DoxyCodeLine{00293\ \ \ \}}
+\DoxyCodeLine{00294\ }
+\DoxyCodeLine{00295\ \ \ \textcolor{comment}{/*\ Default\ destructor.\ \ */}}
+\DoxyCodeLine{00296\ \ \ \doxymbox{\hyperlink{classipa__call__summary_a740e1981264792d44537128b3aa731c4}{\string~ipa\_call\_summary}}\ ();}
+\DoxyCodeLine{00297\ }
+\DoxyCodeLine{00298\ \ \ \doxymbox{\hyperlink{classipa__predicate}{ipa\_predicate}}\ *\doxymbox{\hyperlink{classipa__call__summary_a6a44737dabddeae17cd6e50d333652ff}{predicate}};}
+\DoxyCodeLine{00299\ \ \ \textcolor{comment}{/*\ Vector\ indexed\ by\ parameters.\ \ */}}
+\DoxyCodeLine{00300\ \ \ \doxymbox{\hyperlink{structvec}{vec<inline\_param\_summary>}}\ \doxymbox{\hyperlink{classipa__call__summary_a927f82a8706126e8e80c485dd9036ed0}{param}};}
+\DoxyCodeLine{00301\ \ \ \textcolor{comment}{/*\ Estimated\ size\ and\ time\ of\ the\ call\ statement.\ \ */}}
+\DoxyCodeLine{00302\ \ \ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{classipa__call__summary_a88b4a71d22d65c4c4dc26eb096e41bf4}{call\_stmt\_size}};}
+\DoxyCodeLine{00303\ \ \ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{classipa__call__summary_a37baa2455c77d5b0ae6598140c8ed948}{call\_stmt\_time}};}
+\DoxyCodeLine{00304\ \ \ \textcolor{comment}{/*\ Depth\ of\ loop\ nest,\ 0\ means\ no\ nesting.\ \ */}}
+\DoxyCodeLine{00305\ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{classipa__call__summary_a2ad64810ae759b18e0a217bc64172e72}{loop\_depth}};}
+\DoxyCodeLine{00306\ \ \ \textcolor{comment}{/*\ Indicates\ whether\ the\ caller\ returns\ the\ value\ of\ it's\ callee.\ \ */}}
+\DoxyCodeLine{00307\ \ \ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{classipa__call__summary_a096a6103eb2c5b149e5e2b3632c23e49}{is\_return\_callee\_uncaptured}};}
+\DoxyCodeLine{00308\ \};}
+\DoxyCodeLine{00309\ }
+\DoxyCodeLine{00310\ \textcolor{keyword}{class\ }\doxymbox{\hyperlink{classipa__call__summary__t_a6b96a78aed95d28ed80fbd9fc85f90a4}{ipa\_call\_summary\_t}}:\ \textcolor{keyword}{public}\ \doxymbox{\hyperlink{classfast__call__summary_a362c03f00ae5f1ea61428365de00038c}{fast\_call\_summary}}\ <ipa\_call\_summary\ *,\ va\_heap>}
+\DoxyCodeLine{00311\ \{}
+\DoxyCodeLine{00312\ \textcolor{keyword}{public}:}
+\DoxyCodeLine{00313\ \ \ \doxymbox{\hyperlink{classipa__call__summary__t_a6b96a78aed95d28ed80fbd9fc85f90a4}{ipa\_call\_summary\_t}}\ (symbol\_table\ *symtab):}
+\DoxyCodeLine{00314\ \ \ \ \ \doxymbox{\hyperlink{classfast__call__summary_a362c03f00ae5f1ea61428365de00038c}{fast\_call\_summary}}\ <\doxymbox{\hyperlink{classipa__call__summary}{ipa\_call\_summary}}\ *,\ \doxymbox{\hyperlink{structva__heap}{va\_heap}}>\ (symtab)\ \{\}}
+\DoxyCodeLine{00315\ }
+\DoxyCodeLine{00316\ \ \ \textcolor{comment}{/*\ Hook\ that\ is\ called\ by\ summary\ when\ an\ edge\ is\ duplicated.\ \ */}}
+\DoxyCodeLine{00317\ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classipa__call__summary__t_a8f4da76fdcad1092b707bd34878a4086}{duplicate}}\ (cgraph\_edge\ *src,\ cgraph\_edge\ *dst,}
+\DoxyCodeLine{00318\ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{classipa__call__summary}{ipa\_call\_summary}}\ *src\_data,}
+\DoxyCodeLine{00319\ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{classipa__call__summary}{ipa\_call\_summary}}\ *dst\_data)\ \textcolor{keyword}{final}\ \textcolor{keyword}{override};}
+\DoxyCodeLine{00320\ \};}
+\DoxyCodeLine{00321\ }
+\DoxyCodeLine{00322\ \textcolor{comment}{/*\ Estimated\ execution\ times,\ code\ sizes\ and\ other\ information\ about\ the}}
+\DoxyCodeLine{00323\ \textcolor{comment}{\ \ \ code\ executing\ a\ call\ described\ by\ ipa\_call\_context.\ \ */}}
+\DoxyCodeLine{00324\ }
+\DoxyCodeLine{00325\ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{structipa__call__estimates}{ipa\_call\_estimates}}}
+\DoxyCodeLine{00326\ \{}
+\DoxyCodeLine{00327\ \ \ \textcolor{comment}{/*\ Estimated\ size\ needed\ to\ execute\ call\ in\ the\ given\ context.\ */}}
+\DoxyCodeLine{00328\ \ \ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{structipa__call__estimates_ad48038374e21fc3c1c4d904e7165008b}{size}};}
+\DoxyCodeLine{00329\ }
+\DoxyCodeLine{00330\ \ \ \textcolor{comment}{/*\ Minimal\ size\ needed\ for\ the\ call\ that\ is\ +\ independent\ on\ the\ call\ context}}
+\DoxyCodeLine{00331\ \textcolor{comment}{\ \ \ \ \ and\ can\ be\ used\ for\ fast\ estimates.\ \ */}}
+\DoxyCodeLine{00332\ \ \ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{structipa__call__estimates_a238fc19ca55561206a7b3f4dc34dfe6d}{min\_size}};}
+\DoxyCodeLine{00333\ }
+\DoxyCodeLine{00334\ \ \ \textcolor{comment}{/*\ Estimated\ time\ needed\ to\ execute\ call\ in\ the\ given\ context.\ */}}
+\DoxyCodeLine{00335\ \ \ \doxymbox{\hyperlink{classsreal}{sreal}}\ \doxymbox{\hyperlink{structipa__call__estimates_af18692ccae1485bc06eb92c330283e03}{time}};}
+\DoxyCodeLine{00336\ }
+\DoxyCodeLine{00337\ \ \ \textcolor{comment}{/*\ Estimated\ time\ needed\ to\ execute\ the\ function\ when\ not\ ignoring}}
+\DoxyCodeLine{00338\ \textcolor{comment}{\ \ \ \ \ computations\ known\ to\ be\ constant\ in\ this\ context.\ \ */}}
+\DoxyCodeLine{00339\ \ \ \doxymbox{\hyperlink{classsreal}{sreal}}\ \doxymbox{\hyperlink{structipa__call__estimates_ab0088a7efabe310198a9d476942e4c47}{nonspecialized\_time}};}
+\DoxyCodeLine{00340\ }
+\DoxyCodeLine{00341\ \ \ \textcolor{comment}{/*\ Further\ discovered\ reasons\ why\ to\ inline\ or\ specialize\ the\ give\ calls.\ \ */}}
+\DoxyCodeLine{00342\ \ \ \doxymbox{\hyperlink{ipa-fnsummary_8h_afea7e76c36549cf97be969ad64a2d82c}{ipa\_hints}}\ \doxymbox{\hyperlink{structipa__call__estimates_a8276542112106adedabdca91d69e8023}{hints}};}
+\DoxyCodeLine{00343\ }
+\DoxyCodeLine{00344\ \ \ \textcolor{comment}{/*\ Frequency\ how\ often\ a\ loop\ with\ known\ number\ of\ iterations\ is\ encountered.}}
+\DoxyCodeLine{00345\ \textcolor{comment}{\ \ \ \ \ Calculated\ with\ hints.\ \ */}}
+\DoxyCodeLine{00346\ \ \ \doxymbox{\hyperlink{classsreal}{sreal}}\ \doxymbox{\hyperlink{structipa__call__estimates_a19f2d73e1d1afeb2b818ab012f8755bf}{loops\_with\_known\_iterations}};}
+\DoxyCodeLine{00347\ }
+\DoxyCodeLine{00348\ \ \ \textcolor{comment}{/*\ Frequency\ how\ often\ a\ loop\ with\ known\ strides\ is\ encountered.\ \ Calculated}}
+\DoxyCodeLine{00349\ \textcolor{comment}{\ \ \ \ \ with\ hints.\ \ */}}
+\DoxyCodeLine{00350\ \ \ \doxymbox{\hyperlink{classsreal}{sreal}}\ \doxymbox{\hyperlink{structipa__call__estimates_a8a22b4d86a24679afc2a40d60ff8f59b}{loops\_with\_known\_strides}};}
+\DoxyCodeLine{00351\ \};}
+\DoxyCodeLine{00352\ }
+\DoxyCodeLine{00353\ \textcolor{keyword}{class\ }\doxymbox{\hyperlink{classipa__cached__call__context}{ipa\_cached\_call\_context}};}
+\DoxyCodeLine{00354\ }
+\DoxyCodeLine{00355\ \textcolor{comment}{/*\ This\ object\ describe\ a\ context\ of\ call.\ \ That\ is\ a\ summary\ of\ known}}
+\DoxyCodeLine{00356\ \textcolor{comment}{\ \ \ information\ about\ its\ parameters.\ \ Main\ purpose\ of\ this\ context\ is}}
+\DoxyCodeLine{00357\ \textcolor{comment}{\ \ \ to\ give\ more\ realistic\ estimations\ of\ function\ runtime,\ size\ and}}
+\DoxyCodeLine{00358\ \textcolor{comment}{\ \ \ inline\ hints.\ \ */}}
+\DoxyCodeLine{00359\ \textcolor{keyword}{class\ }\doxymbox{\hyperlink{classipa__call__context_aa681bde7262d60b13eb289a95187e12e}{ipa\_call\_context}}}
+\DoxyCodeLine{00360\ \{}
+\DoxyCodeLine{00361\ \textcolor{keyword}{public}:}
+\DoxyCodeLine{00362\ \ \ \doxymbox{\hyperlink{classipa__call__context_aa681bde7262d60b13eb289a95187e12e}{ipa\_call\_context}}\ (cgraph\_node\ *node,}
+\DoxyCodeLine{00363\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{ipa-predicate_8h_a32971b580ef4e2c2c15cb6bd8a36ae44}{clause\_t}}\ possible\_truths,}
+\DoxyCodeLine{00364\ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{ipa-predicate_8h_a32971b580ef4e2c2c15cb6bd8a36ae44}{clause\_t}}\ nonspec\_possible\_truths,}
+\DoxyCodeLine{00365\ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{structvec}{vec<inline\_param\_summary>}}\ \doxymbox{\hyperlink{structinline__param__summary}{inline\_param\_summary}},}
+\DoxyCodeLine{00366\ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{classipa__auto__call__arg__values}{ipa\_auto\_call\_arg\_values}}\ *arg\_values);}
+\DoxyCodeLine{00367\ \ \ \doxymbox{\hyperlink{classipa__call__context_abb7eb3f0bcdbf9aa223c9825e82cee7c}{ipa\_call\_context}}\ ()}
+\DoxyCodeLine{00368\ \ \ :\ \doxymbox{\hyperlink{classipa__call__context_a2f1049bb2f05ba034d4b64bd40b59d78}{m\_node}}(\doxymbox{\hyperlink{stddef_8h_a070d2ce7b6bb7e5c05602aa8c308d0c4}{NULL}})}
+\DoxyCodeLine{00369\ \ \ \{}
+\DoxyCodeLine{00370\ \ \ \}}
+\DoxyCodeLine{00371\ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classipa__call__context_a4786cc4040a6e7f44fa5ce9a34a8acd6}{estimate\_size\_and\_time}}\ (\doxymbox{\hyperlink{structipa__call__estimates}{ipa\_call\_estimates}}\ *estimates,}
+\DoxyCodeLine{00372\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{bool}\ est\_times\ =\ \textcolor{keyword}{true},\ \textcolor{keywordtype}{bool}\ est\_hints\ =\ \textcolor{keyword}{true});}
+\DoxyCodeLine{00373\ \ \ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{classipa__call__context_a3518fbf9012ce1efcd135c19c331cd2b}{equal\_to}}\ (\textcolor{keyword}{const}\ \doxymbox{\hyperlink{classipa__call__context_aa681bde7262d60b13eb289a95187e12e}{ipa\_call\_context}}\ \&);}
+\DoxyCodeLine{00374\ \ \ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{classipa__call__context_adb20d6b2e636457931a1a9cc55b2bf20}{exists\_p}}\ ()}
+\DoxyCodeLine{00375\ \ \ \{}
+\DoxyCodeLine{00376\ \ \ \ \ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{classipa__call__context_a2f1049bb2f05ba034d4b64bd40b59d78}{m\_node}}\ !=\ \doxymbox{\hyperlink{stddef_8h_a070d2ce7b6bb7e5c05602aa8c308d0c4}{NULL}};}
+\DoxyCodeLine{00377\ \ \ \}}
+\DoxyCodeLine{00378\ \textcolor{keyword}{private}:}
+\DoxyCodeLine{00379\ \ \ \textcolor{comment}{/*\ Called\ function.\ \ */}}
+\DoxyCodeLine{00380\ \ \ cgraph\_node\ *\doxymbox{\hyperlink{classipa__call__context_a2f1049bb2f05ba034d4b64bd40b59d78}{m\_node}};}
+\DoxyCodeLine{00381\ \ \ \textcolor{comment}{/*\ Clause\ describing\ what\ predicate\ conditionals\ can\ be\ satisfied}}
+\DoxyCodeLine{00382\ \textcolor{comment}{\ \ \ \ \ in\ this\ context\ if\ function\ is\ inlined/specialized.\ \ */}}
+\DoxyCodeLine{00383\ \ \ \doxymbox{\hyperlink{ipa-predicate_8h_a32971b580ef4e2c2c15cb6bd8a36ae44}{clause\_t}}\ \doxymbox{\hyperlink{classipa__call__context_a0d2788f74a1c3071a06271e3da76e1ae}{m\_possible\_truths}};}
+\DoxyCodeLine{00384\ \ \ \textcolor{comment}{/*\ Clause\ describing\ what\ predicate\ conditionals\ can\ be\ satisfied}}
+\DoxyCodeLine{00385\ \textcolor{comment}{\ \ \ \ \ in\ this\ context\ if\ function\ is\ kept\ offline.\ \ */}}
+\DoxyCodeLine{00386\ \ \ \doxymbox{\hyperlink{ipa-predicate_8h_a32971b580ef4e2c2c15cb6bd8a36ae44}{clause\_t}}\ \doxymbox{\hyperlink{classipa__call__context_adf1d0a9a42bc9329521d66cfabb48b0f}{m\_nonspec\_possible\_truths}};}
+\DoxyCodeLine{00387\ \ \ \textcolor{comment}{/*\ Inline\ summary\ maintains\ info\ about\ change\ probabilities.\ \ */}}
+\DoxyCodeLine{00388\ \ \ \doxymbox{\hyperlink{structvec}{vec<inline\_param\_summary>}}\ \doxymbox{\hyperlink{classipa__call__context_a27c52693354935fcaa683b54c094c6f2}{m\_inline\_param\_summary}};}
+\DoxyCodeLine{00389\ }
+\DoxyCodeLine{00390\ \ \ \textcolor{comment}{/*\ Even\ after\ having\ calculated\ clauses,\ the\ information\ about\ argument}}
+\DoxyCodeLine{00391\ \textcolor{comment}{\ \ \ \ \ values\ is\ used\ to\ resolve\ indirect\ calls.\ \ */}}
+\DoxyCodeLine{00392\ \ \ \doxymbox{\hyperlink{classipa__call__arg__values}{ipa\_call\_arg\_values}}\ \doxymbox{\hyperlink{classipa__call__context_af57255751bd295ddb7cf487f01ecaa68}{m\_avals}};}
+\DoxyCodeLine{00393\ }
+\DoxyCodeLine{00394\ \ \ \textcolor{keyword}{friend}\ \doxymbox{\hyperlink{classipa__call__context_a3985cfce5662b2bdacc0c51435511eb6}{ipa\_cached\_call\_context}};}
+\DoxyCodeLine{00395\ \};}
+\DoxyCodeLine{00396\ }
+\DoxyCodeLine{00397\ \textcolor{comment}{/*\ Variant\ of\ ipa\_call\_context\ that\ is\ stored\ in\ a\ cache\ over\ a\ longer\ period}}
+\DoxyCodeLine{00398\ \textcolor{comment}{\ \ \ of\ time.\ \ */}}
+\DoxyCodeLine{00399\ }
+\DoxyCodeLine{00400\ \textcolor{keyword}{class\ }\doxymbox{\hyperlink{classipa__call__context_a3985cfce5662b2bdacc0c51435511eb6}{ipa\_cached\_call\_context}}\ :\ \textcolor{keyword}{public}\ \doxymbox{\hyperlink{classipa__call__context_aa681bde7262d60b13eb289a95187e12e}{ipa\_call\_context}}}
+\DoxyCodeLine{00401\ \{}
+\DoxyCodeLine{00402\ \textcolor{keyword}{public}:}
+\DoxyCodeLine{00403\ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classipa__cached__call__context_aacca0c2225d09a72e2a10844412c4d20}{duplicate\_from}}\ (\textcolor{keyword}{const}\ \doxymbox{\hyperlink{classipa__call__context_aa681bde7262d60b13eb289a95187e12e}{ipa\_call\_context}}\ \&ctx);}
+\DoxyCodeLine{00404\ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classipa__cached__call__context_a0e06523bd543f02492eafcab831954b3}{release}}\ ();}
+\DoxyCodeLine{00405\ \};}
+\DoxyCodeLine{00406\ }
+\DoxyCodeLine{00407\ \textcolor{keyword}{extern}\ fast\_call\_summary\ <ipa\_call\_summary\ *,\ va\_heap>\ *\doxymbox{\hyperlink{ipa-fnsummary_8h_ac16aae75c6102b94b00f9abb44ffb06b}{ipa\_call\_summaries}};}
+\DoxyCodeLine{00408\ }
+\DoxyCodeLine{00409\ \textcolor{comment}{/*\ In\ ipa-\/fnsummary.cc\ \ */}}
+\DoxyCodeLine{00410\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{ipa-fnsummary_8h_ab346bb0438d6c27b2a8666c53923d82a}{ipa\_debug\_fn\_summary}}\ (\textcolor{keyword}{struct}\ cgraph\_node\ *);}
+\DoxyCodeLine{00411\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{ipa-fnsummary_8h_a0e40027664cd84cb2903c0efe1fd9715}{ipa\_dump\_fn\_summaries}}\ (FILE\ *f);}
+\DoxyCodeLine{00412\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{ipa-fnsummary_8h_a84c29e23d80f5b2a96e31dbf06155ba1}{ipa\_dump\_fn\_summary}}\ (FILE\ *f,\ \textcolor{keyword}{struct}\ cgraph\_node\ *node);}
+\DoxyCodeLine{00413\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{ipa-fnsummary_8h_aca46c3a30efe37bbace11bfc6aeb97ba}{ipa\_dump\_hints}}\ (FILE\ *f,\ \doxymbox{\hyperlink{ipa-fnsummary_8h_afea7e76c36549cf97be969ad64a2d82c}{ipa\_hints}});}
+\DoxyCodeLine{00414\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{ipa-fnsummary_8h_a0eb2e17962240246677b964581387189}{ipa\_free\_fn\_summary}}\ (\textcolor{keywordtype}{void});}
+\DoxyCodeLine{00415\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{ipa-fnsummary_8h_a9daa00017194c5b662693ec50319fcdb}{ipa\_free\_size\_summary}}\ (\textcolor{keywordtype}{void});}
+\DoxyCodeLine{00416\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{ipa-fnsummary_8h_af71f92d1cbe2d3e2d2e2a8a920e6c473}{inline\_analyze\_function}}\ (\textcolor{keyword}{struct}\ cgraph\_node\ *node);}
+\DoxyCodeLine{00417\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{ipa-fnsummary_8h_a96bfd5ddb49e139bfd953ac1e74db39d}{estimate\_ipcp\_clone\_size\_and\_time}}\ (\textcolor{keyword}{struct}\ cgraph\_node\ *node,}
+\DoxyCodeLine{00418\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{classipa__auto__call__arg__values}{ipa\_auto\_call\_arg\_values}}\ *avals,}
+\DoxyCodeLine{00419\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{structipa__call__estimates}{ipa\_call\_estimates}}\ *estimates);}
+\DoxyCodeLine{00420\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{ipa-fnsummary_8h_ae42f2b6945bcead2e334a05130126f01}{ipa\_merge\_fn\_summary\_after\_inlining}}\ (\textcolor{keyword}{struct}\ cgraph\_edge\ *\doxymbox{\hyperlink{coretypes_8h_a44ae11f0c90646aa6208ad4bf486490b}{edge}});}
+\DoxyCodeLine{00421\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{ipa-fnsummary_8h_a75165e2a80c1b937fb48212f3742b93f}{ipa\_update\_overall\_fn\_summary}}\ (\textcolor{keyword}{struct}\ cgraph\_node\ *node,\ \textcolor{keywordtype}{bool}\ reset\ =\ \textcolor{keyword}{true});}
+\DoxyCodeLine{00422\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{ipa-fnsummary_8h_af02d095ec7a5a7498f3973540d37cc47}{compute\_fn\_summary}}\ (\textcolor{keyword}{struct}\ cgraph\_node\ *,\ \textcolor{keywordtype}{bool});}
+\DoxyCodeLine{00423\ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{ipa-fnsummary_8h_ad83b709030deaf9357d4f71706e563f2}{refs\_local\_or\_readonly\_memory\_p}}\ (\doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}});}
+\DoxyCodeLine{00424\ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{ipa-fnsummary_8h_a65c48e2e4240f73d84ab40db54400c33}{points\_to\_local\_or\_readonly\_memory\_p}}\ (\doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}});}
+\DoxyCodeLine{00425\ }
+\DoxyCodeLine{00426\ }
+\DoxyCodeLine{00427\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{ipa-fnsummary_8h_ac429d80120881f2f91957883e8caf8b2}{evaluate\_properties\_for\_edge}}\ (\textcolor{keyword}{struct}\ cgraph\_edge\ *e,}
+\DoxyCodeLine{00428\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{bool}\ inline\_p,}
+\DoxyCodeLine{00429\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{ipa-predicate_8h_a32971b580ef4e2c2c15cb6bd8a36ae44}{clause\_t}}\ *clause\_ptr,}
+\DoxyCodeLine{00430\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{ipa-predicate_8h_a32971b580ef4e2c2c15cb6bd8a36ae44}{clause\_t}}\ *nonspec\_clause\_ptr,}
+\DoxyCodeLine{00431\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{classipa__auto__call__arg__values}{ipa\_auto\_call\_arg\_values}}\ *avals,}
+\DoxyCodeLine{00432\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{bool}\ compute\_contexts);}
+\DoxyCodeLine{00433\ }
+\DoxyCodeLine{00434\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{ipa-fnsummary_8h_afebb5d5962d66739d4a08bc8d07e978a}{ipa\_fnsummary\_cc\_finalize}}\ (\textcolor{keywordtype}{void});}
+\DoxyCodeLine{00435\ HOST\_WIDE\_INT\ \doxymbox{\hyperlink{ipa-fnsummary_8h_a0f1e2c2f599868fd3e749a230f437c2f}{ipa\_get\_stack\_frame\_offset}}\ (\textcolor{keyword}{struct}\ cgraph\_node\ *node);}
+\DoxyCodeLine{00436\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{ipa-fnsummary_8h_a00c7fde131fea5eb0160f778dfd2eb0f}{ipa\_remove\_from\_growth\_caches}}\ (\textcolor{keyword}{struct}\ cgraph\_edge\ *\doxymbox{\hyperlink{coretypes_8h_a44ae11f0c90646aa6208ad4bf486490b}{edge}});}
+\DoxyCodeLine{00437\ }
+\DoxyCodeLine{00438\ \textcolor{comment}{/*\ Return\ true\ if\ EDGE\ is\ a\ cross\ module\ call.\ \ */}}
+\DoxyCodeLine{00439\ }
+\DoxyCodeLine{00440\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{bool}}
+\DoxyCodeLine{00441\ \doxymbox{\hyperlink{ipa-fnsummary_8h_a70211d05d3bf3e361e1cd8af7a261daf}{cross\_module\_call\_p}}\ (\textcolor{keyword}{struct}\ cgraph\_edge\ *\doxymbox{\hyperlink{coretypes_8h_a44ae11f0c90646aa6208ad4bf486490b}{edge}})}
+\DoxyCodeLine{00442\ \{}
+\DoxyCodeLine{00443\ \ \ \textcolor{comment}{/*\ Here\ we\ do\ not\ want\ to\ walk\ to\ alias\ target\ becuase\ ICF\ may\ create}}
+\DoxyCodeLine{00444\ \textcolor{comment}{\ \ \ \ \ cross-\/unit\ aliases.\ \ */}}
+\DoxyCodeLine{00445\ \ \ \textcolor{keywordflow}{if}\ (\doxymbox{\hyperlink{coretypes_8h_a44ae11f0c90646aa6208ad4bf486490b}{edge}}-\/>caller-\/>unit\_id\ ==\ \doxymbox{\hyperlink{coretypes_8h_a44ae11f0c90646aa6208ad4bf486490b}{edge}}-\/>callee-\/>unit\_id)}
+\DoxyCodeLine{00446\ \ \ \ \ \textcolor{keywordflow}{return}\ \textcolor{keyword}{false};}
+\DoxyCodeLine{00447\ \ \ \textcolor{comment}{/*\ If\ the\ call\ is\ to\ a\ (former)\ comdat\ function\ or\ s\ symbol\ with\ mutiple}}
+\DoxyCodeLine{00448\ \textcolor{comment}{\ \ \ \ \ extern\ inline\ definitions\ then\ treat\ is\ as\ in-\/module\ call.\ \ */}}
+\DoxyCodeLine{00449\ \ \ \textcolor{keywordflow}{if}\ (\doxymbox{\hyperlink{coretypes_8h_a44ae11f0c90646aa6208ad4bf486490b}{edge}}-\/>callee-\/>merged\_extern\_inline\ ||\ \doxymbox{\hyperlink{coretypes_8h_a44ae11f0c90646aa6208ad4bf486490b}{edge}}-\/>callee-\/>merged\_comdat}
+\DoxyCodeLine{00450\ \ \ \ \ \ \ ||\ \doxymbox{\hyperlink{tree_8h_a7d981a0393fbcc20010503081cb9efac}{DECL\_COMDAT}}\ (\doxymbox{\hyperlink{coretypes_8h_a44ae11f0c90646aa6208ad4bf486490b}{edge}}-\/>callee-\/>decl))}
+\DoxyCodeLine{00451\ \ \ \ \ \textcolor{keywordflow}{return}\ \textcolor{keyword}{false};}
+\DoxyCodeLine{00452\ \ \ \textcolor{keywordflow}{return}\ \textcolor{keyword}{true};}
+\DoxyCodeLine{00453\ \}}
+\DoxyCodeLine{00454\ }
+\DoxyCodeLine{00455\ \textcolor{preprocessor}{\#endif\ }\textcolor{comment}{/*\ GCC\_IPA\_FNSUMMARY\_H\ */}\textcolor{preprocessor}{}}
+
+\end{DoxyCode}

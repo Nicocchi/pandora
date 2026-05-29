@@ -1,0 +1,126 @@
+\doxysection{value-\/prof.h}
+\hypertarget{value-prof_8h_source}{}\label{value-prof_8h_source}\index{toolchain/x86\_64-\/elf/lib/gcc/x86\_64-\/elf/14.2.0/plugin/include/value-\/prof.h@{toolchain/x86\_64-\/elf/lib/gcc/x86\_64-\/elf/14.2.0/plugin/include/value-\/prof.h}}
+\doxymbox{\hyperlink{value-prof_8h}{Go to the documentation of this file.}}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001\ \textcolor{comment}{/*\ Definitions\ for\ transformations\ based\ on\ profile\ information\ for\ values.}}
+\DoxyCodeLine{00002\ \textcolor{comment}{\ \ \ Copyright\ (C)\ 2003-\/2024\ Free\ Software\ Foundation,\ Inc.}}
+\DoxyCodeLine{00003\ \textcolor{comment}{}}
+\DoxyCodeLine{00004\ \textcolor{comment}{This\ file\ is\ part\ of\ GCC.}}
+\DoxyCodeLine{00005\ \textcolor{comment}{}}
+\DoxyCodeLine{00006\ \textcolor{comment}{GCC\ is\ free\ software;\ you\ can\ redistribute\ it\ and/or\ modify\ it\ under}}
+\DoxyCodeLine{00007\ \textcolor{comment}{the\ terms\ of\ the\ GNU\ General\ Public\ License\ as\ published\ by\ the\ Free}}
+\DoxyCodeLine{00008\ \textcolor{comment}{Software\ Foundation;\ either\ version\ 3,\ or\ (at\ your\ option)\ any\ later}}
+\DoxyCodeLine{00009\ \textcolor{comment}{version.}}
+\DoxyCodeLine{00010\ \textcolor{comment}{}}
+\DoxyCodeLine{00011\ \textcolor{comment}{GCC\ is\ distributed\ in\ the\ hope\ that\ it\ will\ be\ useful,\ but\ WITHOUT\ ANY}}
+\DoxyCodeLine{00012\ \textcolor{comment}{WARRANTY;\ without\ even\ the\ implied\ warranty\ of\ MERCHANTABILITY\ or}}
+\DoxyCodeLine{00013\ \textcolor{comment}{FITNESS\ FOR\ A\ PARTICULAR\ PURPOSE.\ \ See\ the\ GNU\ General\ Public\ License}}
+\DoxyCodeLine{00014\ \textcolor{comment}{for\ more\ details.}}
+\DoxyCodeLine{00015\ \textcolor{comment}{}}
+\DoxyCodeLine{00016\ \textcolor{comment}{You\ should\ have\ received\ a\ copy\ of\ the\ GNU\ General\ Public\ License}}
+\DoxyCodeLine{00017\ \textcolor{comment}{along\ with\ GCC;\ see\ the\ file\ COPYING3.\ \ If\ not\ see}}
+\DoxyCodeLine{00018\ \textcolor{comment}{<http://www.gnu.org/licenses/>.\ \ */}}
+\DoxyCodeLine{00019\ }
+\DoxyCodeLine{00020\ \textcolor{preprocessor}{\#ifndef\ GCC\_VALUE\_PROF\_H}}
+\DoxyCodeLine{00021\ \textcolor{preprocessor}{\#define\ GCC\_VALUE\_PROF\_H}}
+\DoxyCodeLine{00022\ }
+\DoxyCodeLine{00023\ \textcolor{comment}{/*\ Supported\ histogram\ types.\ \ */}}
+\DoxyCodeLine{00024\ \textcolor{keyword}{enum}\ \doxymbox{\hyperlink{value-prof_8h_a4f099aaa1fccd5e2688a689542a3d866}{hist\_type}}}
+\DoxyCodeLine{00025\ \{}
+\DoxyCodeLine{00026\ \ \ \doxymbox{\hyperlink{value-prof_8h_a4f099aaa1fccd5e2688a689542a3d866aaecb30e99b00884998ca9dfb212a1161}{HIST\_TYPE\_INTERVAL}},\ \ \ \textcolor{comment}{/*\ Measures\ histogram\ of\ values\ inside\ a\ specified}}
+\DoxyCodeLine{00027\ \textcolor{comment}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ interval.\ \ */}}
+\DoxyCodeLine{00028\ \ \ \doxymbox{\hyperlink{value-prof_8h_a4f099aaa1fccd5e2688a689542a3d866a3be30a5af005dc1cbf86083ced48ddc5}{HIST\_TYPE\_POW2}},\ \ \ \textcolor{comment}{/*\ Histogram\ of\ power\ of\ 2\ values.\ \ */}}
+\DoxyCodeLine{00029\ \ \ \doxymbox{\hyperlink{value-prof_8h_a4f099aaa1fccd5e2688a689542a3d866a03c6d132cc45c2653db5c57b96444dcc}{HIST\_TYPE\_TOPN\_VALUES}},\ \textcolor{comment}{/*\ Tries\ to\ identify\ the\ N\ most\ common\ values.\ \ */}}
+\DoxyCodeLine{00030\ \ \ \doxymbox{\hyperlink{value-prof_8h_a4f099aaa1fccd5e2688a689542a3d866ab1600c8af75314ff8ed4aa4aeb212255}{HIST\_TYPE\_INDIR\_CALL}},\ \ \ \textcolor{comment}{/*\ Tries\ to\ identify\ the\ function\ that\ is\ (almost)}}
+\DoxyCodeLine{00031\ \textcolor{comment}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ called\ in\ indirect\ call\ */}}
+\DoxyCodeLine{00032\ \ \ \doxymbox{\hyperlink{value-prof_8h_a4f099aaa1fccd5e2688a689542a3d866a6bedb2437b5372489b431ab718cba284}{HIST\_TYPE\_AVERAGE}},\ \ \ \ \textcolor{comment}{/*\ Compute\ average\ value\ (sum\ of\ all\ values).\ \ */}}
+\DoxyCodeLine{00033\ \ \ \doxymbox{\hyperlink{value-prof_8h_a4f099aaa1fccd5e2688a689542a3d866a63cbfd221ebb386582ad44255124c609}{HIST\_TYPE\_IOR}},\ \ \ \ \textcolor{comment}{/*\ Used\ to\ compute\ expected\ alignment.\ \ */}}
+\DoxyCodeLine{00034\ \ \ \doxymbox{\hyperlink{value-prof_8h_a4f099aaa1fccd5e2688a689542a3d866a6c3cce9da112446c2132ba0d96d75f76}{HIST\_TYPE\_TIME\_PROFILE}},\ \textcolor{comment}{/*\ Used\ for\ time\ profile\ */}}
+\DoxyCodeLine{00035\ \ \ \doxymbox{\hyperlink{value-prof_8h_a4f099aaa1fccd5e2688a689542a3d866a00d0704c6386cd220a9ab116d083522d}{HIST\_TYPE\_MAX}}}
+\DoxyCodeLine{00036\ \};}
+\DoxyCodeLine{00037\ }
+\DoxyCodeLine{00038\ \textcolor{preprocessor}{\#define\ COUNTER\_FOR\_HIST\_TYPE(TYPE)\ ((int)\ (TYPE)\ +\ GCOV\_FIRST\_VALUE\_COUNTER)}}
+\DoxyCodeLine{00039\ \textcolor{preprocessor}{\#define\ HIST\_TYPE\_FOR\_COUNTER(COUNTER)\ \(\backslash\)}}
+\DoxyCodeLine{00040\ \textcolor{preprocessor}{\ \ ((enum\ hist\_type)\ ((COUNTER)\ -\/\ GCOV\_FIRST\_VALUE\_COUNTER))}}
+\DoxyCodeLine{00041\ }
+\DoxyCodeLine{00042\ }
+\DoxyCodeLine{00043\ \textcolor{comment}{/*\ The\ value\ to\ measure.\ \ */}}
+\DoxyCodeLine{00044\ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{structhistogram__value__t}{histogram\_value\_t}}}
+\DoxyCodeLine{00045\ \{}
+\DoxyCodeLine{00046\ \ \ \textcolor{keyword}{struct}}
+\DoxyCodeLine{00047\ \ \ \ \ \{}
+\DoxyCodeLine{00048\ \ \ \ \ \ \ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ \doxymbox{\hyperlink{structhistogram__value__t_a7d5377ae0e86d7c7ca83c2409f07d505}{value}};\ \ \ \ \ \ \ \textcolor{comment}{/*\ The\ value\ to\ profile.\ \ */}}
+\DoxyCodeLine{00049\ \ \ \ \ \ \ gimple\ *\doxymbox{\hyperlink{structhistogram__value__t_ab4fe9106f4d6ef7f57bf48d5eeae58c6}{stmt}};\ \ \ \ \ \textcolor{comment}{/*\ Insn\ containing\ the\ value.\ \ */}}
+\DoxyCodeLine{00050\ \ \ \ \ \ \ \doxymbox{\hyperlink{coretypes_8h_ae8c03cc266a69e9635893ee0772d12e8}{gcov\_type}}\ *\doxymbox{\hyperlink{structhistogram__value__t_a84f5e76a12dc05cfc908b3989024abca}{counters}};\ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{/*\ Pointer\ to\ first\ counter.\ \ */}}
+\DoxyCodeLine{00051\ \ \ \ \ \ \ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{structhistogram__value__t}{histogram\_value\_t}}\ *\doxymbox{\hyperlink{structhistogram__value__t_a481c5c06b5359a1b64459da75dc8f133}{next}};\ \ \ \ \ \ \ \textcolor{comment}{/*\ Linked\ list\ pointer.\ \ */}}
+\DoxyCodeLine{00052\ \ \ \ \ \}\ \doxymbox{\hyperlink{structhistogram__value__t_a0b03b9bfae239534a99f4faabdc2a930}{hvalue}};}
+\DoxyCodeLine{00053\ \ \ \textcolor{keyword}{enum}\ \doxymbox{\hyperlink{value-prof_8h_a4f099aaa1fccd5e2688a689542a3d866}{hist\_type}}\ \doxymbox{\hyperlink{structhistogram__value__t_a163860ec7c0703aa42e4c68312b11d6f}{type}};\ \ \ \ \ \ \ \ \ \ \textcolor{comment}{/*\ Type\ of\ information\ to\ measure.\ \ */}}
+\DoxyCodeLine{00054\ \ \ \textcolor{keywordtype}{unsigned}\ \doxymbox{\hyperlink{structhistogram__value__t_a75ce93baeeb981324635f418afe576ea}{n\_counters}};\ \ \ \ \ \ \ \ \ \ \textcolor{comment}{/*\ Number\ of\ required\ counters.\ \ */}}
+\DoxyCodeLine{00055\ \ \ \textcolor{keyword}{struct\ }function\ *\doxymbox{\hyperlink{structhistogram__value__t_a5604fa598bddcee25cece572d95d622d}{fun}};}
+\DoxyCodeLine{00056\ \ \ \textcolor{keyword}{union}}
+\DoxyCodeLine{00057\ \ \ \ \ \{}
+\DoxyCodeLine{00058\ \ \ \ \ \ \ \textcolor{keyword}{struct}}
+\DoxyCodeLine{00059\ \ \ \ \ \{}
+\DoxyCodeLine{00060\ \ \ \ \ \ \ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{structhistogram__value__t_a357e75680c7a73c6400ded79016edbca}{int\_start}};\ \ \ \ \textcolor{comment}{/*\ First\ value\ in\ interval.\ \ */}}
+\DoxyCodeLine{00061\ \ \ \ \ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{structhistogram__value__t_a1e16664929027d6210fd8f4c66b493c0}{steps}};\ \ \ \textcolor{comment}{/*\ Number\ of\ values\ in\ it.\ \ */}}
+\DoxyCodeLine{00062\ \ \ \ \ \}\ \doxymbox{\hyperlink{structhistogram__value__t_a5651c16618ca787718d1a2b5f023a973}{intvl}};\ \ \ \ \textcolor{comment}{/*\ Interval\ histogram\ data.\ \ */}}
+\DoxyCodeLine{00063\ \ \ \ \ \}\ \doxymbox{\hyperlink{structhistogram__value__t_a09d32bc7c5751a3d9e0469b4146c1c68}{hdata}};\ \ \ \ \ \ \ \ \textcolor{comment}{/*\ Profiled\ information\ specific\ data.\ \ */}}
+\DoxyCodeLine{00064\ \};}
+\DoxyCodeLine{00065\ }
+\DoxyCodeLine{00066\ \textcolor{keyword}{typedef}\ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{structhistogram__value__t}{histogram\_value\_t}}\ *\doxymbox{\hyperlink{value-prof_8h_aefdbaf6b390418089b53aed8eae4e729}{histogram\_value}};}
+\DoxyCodeLine{00067\ \textcolor{keyword}{typedef}\ \textcolor{keyword}{const}\ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{structhistogram__value__t}{histogram\_value\_t}}\ *\doxymbox{\hyperlink{value-prof_8h_a3f363cbf19eada8e8f8d4053be7a04f1}{const\_histogram\_value}};}
+\DoxyCodeLine{00068\ }
+\DoxyCodeLine{00069\ }
+\DoxyCodeLine{00070\ \textcolor{keyword}{typedef}\ \doxymbox{\hyperlink{structvec}{vec<histogram\_value>}}\ \doxymbox{\hyperlink{value-prof_8h_aff8320668d48d1eee6c0e5bc55b05995}{histogram\_values}};}
+\DoxyCodeLine{00071\ }
+\DoxyCodeLine{00072\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{value-prof_8h_a6d9504c3914ad466c745f0dce796d3fa}{gimple\_find\_values\_to\_profile}}\ (\doxymbox{\hyperlink{value-prof_8h_aff8320668d48d1eee6c0e5bc55b05995}{histogram\_values}}\ *);}
+\DoxyCodeLine{00073\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{value-prof_8h_a6a453cbb201b3d5b94799a08ee01c7b3}{gimple\_value\_profile\_transformations}}\ (\textcolor{keywordtype}{void});}
+\DoxyCodeLine{00074\ }
+\DoxyCodeLine{00075\ \doxymbox{\hyperlink{value-prof_8h_aefdbaf6b390418089b53aed8eae4e729}{histogram\_value}}\ \doxymbox{\hyperlink{value-prof_8h_ad69b4d25e91a1b43e2ad1aeb77a823ec}{gimple\_alloc\_histogram\_value}}\ (\textcolor{keyword}{struct}\ function\ *,\ \textcolor{keyword}{enum}\ \doxymbox{\hyperlink{value-prof_8h_a4f099aaa1fccd5e2688a689542a3d866}{hist\_type}},}
+\DoxyCodeLine{00076\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ gimple\ *\doxymbox{\hyperlink{structhistogram__value__t_ab4fe9106f4d6ef7f57bf48d5eeae58c6}{stmt}}\ =\ \doxymbox{\hyperlink{stddef_8h_a070d2ce7b6bb7e5c05602aa8c308d0c4}{NULL}},}
+\DoxyCodeLine{00077\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ \doxymbox{\hyperlink{configargs_8h_a92d544bd66c050551f3d87fa55eb3f5d}{value}}\ =\ \doxymbox{\hyperlink{tree_8h_aeda0ce25865d2494883f523217559d1e}{NULL\_TREE}});}
+\DoxyCodeLine{00078\ \doxymbox{\hyperlink{value-prof_8h_aefdbaf6b390418089b53aed8eae4e729}{histogram\_value}}\ \doxymbox{\hyperlink{value-prof_8h_a9b5d3002ae490d9223f03a3e4366f718}{gimple\_histogram\_value}}\ (\textcolor{keyword}{struct}\ function\ *,\ gimple\ *);}
+\DoxyCodeLine{00079\ \doxymbox{\hyperlink{value-prof_8h_aefdbaf6b390418089b53aed8eae4e729}{histogram\_value}}\ \doxymbox{\hyperlink{value-prof_8h_a5c84cc21061a3ff07da2d7915b72c5a4}{gimple\_histogram\_value\_of\_type}}\ (\textcolor{keyword}{struct}\ function\ *,\ gimple\ *,}
+\DoxyCodeLine{00080\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{enum}\ \doxymbox{\hyperlink{value-prof_8h_a4f099aaa1fccd5e2688a689542a3d866}{hist\_type}});}
+\DoxyCodeLine{00081\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{value-prof_8h_aa3a69019b28672dfef6b67c405fb0401}{gimple\_add\_histogram\_value}}\ (\textcolor{keyword}{struct}\ function\ *,\ gimple\ *,\ \doxymbox{\hyperlink{value-prof_8h_aefdbaf6b390418089b53aed8eae4e729}{histogram\_value}});}
+\DoxyCodeLine{00082\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{value-prof_8h_a051210e2378d605db45635f1b56be311}{dump\_histograms\_for\_stmt}}\ (\textcolor{keyword}{struct}\ function\ *,\ FILE\ *,\ gimple\ *);}
+\DoxyCodeLine{00083\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{value-prof_8h_ace875bdcf50a10c7a7c139ffc5cd7b47}{gimple\_remove\_histogram\_value}}\ (\textcolor{keyword}{struct}\ function\ *,\ gimple\ *,\ \doxymbox{\hyperlink{value-prof_8h_aefdbaf6b390418089b53aed8eae4e729}{histogram\_value}});}
+\DoxyCodeLine{00084\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{value-prof_8h_a6e3d74837d42bc66e04826549445c298}{gimple\_remove\_stmt\_histograms}}\ (\textcolor{keyword}{struct}\ function\ *,\ gimple\ *);}
+\DoxyCodeLine{00085\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{value-prof_8h_a9507fd3a931fc75d75a74cf7c16d5c96}{gimple\_duplicate\_stmt\_histograms}}\ (\textcolor{keyword}{struct}\ function\ *,\ gimple\ *,}
+\DoxyCodeLine{00086\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{struct}\ function\ *,\ gimple\ *);}
+\DoxyCodeLine{00087\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{value-prof_8h_a9468d8685f3dbbdf800001ce43f24fbe}{gimple\_move\_stmt\_histograms}}\ (\textcolor{keyword}{struct}\ function\ *,\ gimple\ *,\ gimple\ *);}
+\DoxyCodeLine{00088\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{value-prof_8h_a35b91573ba6bda2f57168fa85ee5d61d}{verify\_histograms}}\ (\textcolor{keywordtype}{void});}
+\DoxyCodeLine{00089\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{value-prof_8h_a89c3605468902a9711b020725c397c00}{free\_histograms}}\ (function\ *);}
+\DoxyCodeLine{00090\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{value-prof_8h_a68a78747939800d19d6d925eda2ad7ce}{stringop\_block\_profile}}\ (gimple\ *,\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ *,\ HOST\_WIDE\_INT\ *);}
+\DoxyCodeLine{00091\ gcall\ *\doxymbox{\hyperlink{value-prof_8h_ad4e709c31e60f5c68a411108db07c732}{gimple\_ic}}\ (gcall\ *,\ \textcolor{keyword}{struct}\ cgraph\_node\ *,\ profile\_probability);}
+\DoxyCodeLine{00092\ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{value-prof_8h_a5043bf711948d49397a457d0b570186e}{get\_nth\_most\_common\_value}}\ (gimple\ *\doxymbox{\hyperlink{structhistogram__value__t_ab4fe9106f4d6ef7f57bf48d5eeae58c6}{stmt}},\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *counter\_type,}
+\DoxyCodeLine{00093\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{value-prof_8h_aefdbaf6b390418089b53aed8eae4e729}{histogram\_value}}\ hist,\ \doxymbox{\hyperlink{coretypes_8h_ae8c03cc266a69e9635893ee0772d12e8}{gcov\_type}}\ *\doxymbox{\hyperlink{configargs_8h_a92d544bd66c050551f3d87fa55eb3f5d}{value}},}
+\DoxyCodeLine{00094\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{coretypes_8h_ae8c03cc266a69e9635893ee0772d12e8}{gcov\_type}}\ *count,\ \doxymbox{\hyperlink{coretypes_8h_ae8c03cc266a69e9635893ee0772d12e8}{gcov\_type}}\ *all,}
+\DoxyCodeLine{00095\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{unsigned}\ n\ =\ 0);}
+\DoxyCodeLine{00096\ }
+\DoxyCodeLine{00097\ \textcolor{comment}{/*\ In\ tree-\/profile.cc.\ \ */}}
+\DoxyCodeLine{00098\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{value-prof_8h_a7f732f42da059528969ebeacb51956b7}{gimple\_init\_gcov\_profiler}}\ (\textcolor{keywordtype}{void});}
+\DoxyCodeLine{00099\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{value-prof_8h_a9a2fdb990e755506417fcea74f912667}{gimple\_gen\_edge\_profiler}}\ (\textcolor{keywordtype}{int},\ \doxymbox{\hyperlink{coretypes_8h_a44ae11f0c90646aa6208ad4bf486490b}{edge}});}
+\DoxyCodeLine{00100\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{value-prof_8h_a8744dd6e60a29ece176e9659bc458947}{gimple\_gen\_interval\_profiler}}\ (\doxymbox{\hyperlink{value-prof_8h_aefdbaf6b390418089b53aed8eae4e729}{histogram\_value}},\ \textcolor{keywordtype}{unsigned});}
+\DoxyCodeLine{00101\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{value-prof_8h_af29aeebfd094b1e174afb020e35a28c1}{gimple\_gen\_pow2\_profiler}}\ (\doxymbox{\hyperlink{value-prof_8h_aefdbaf6b390418089b53aed8eae4e729}{histogram\_value}},\ \textcolor{keywordtype}{unsigned});}
+\DoxyCodeLine{00102\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{value-prof_8h_a1f3c011ba496c905d1e017d73825488b}{gimple\_gen\_topn\_values\_profiler}}\ (\doxymbox{\hyperlink{value-prof_8h_aefdbaf6b390418089b53aed8eae4e729}{histogram\_value}},\ \textcolor{keywordtype}{unsigned});}
+\DoxyCodeLine{00103\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{value-prof_8h_ab1604122cd19d1f29c1d859dc485d701}{gimple\_gen\_ic\_profiler}}\ (\doxymbox{\hyperlink{value-prof_8h_aefdbaf6b390418089b53aed8eae4e729}{histogram\_value}},\ \textcolor{keywordtype}{unsigned});}
+\DoxyCodeLine{00104\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{value-prof_8h_a390ca95d19c0023c43dc98127bdfa7c7}{gimple\_gen\_ic\_func\_profiler}}\ (\textcolor{keywordtype}{void});}
+\DoxyCodeLine{00105\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{value-prof_8h_ae6a23010789de51b018ede029978cc8e}{gimple\_gen\_time\_profiler}}\ (\textcolor{keywordtype}{unsigned});}
+\DoxyCodeLine{00106\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{value-prof_8h_a3c9a35cdf8d8aaedec60d50689670123}{gimple\_gen\_average\_profiler}}\ (\doxymbox{\hyperlink{value-prof_8h_aefdbaf6b390418089b53aed8eae4e729}{histogram\_value}},\ \textcolor{keywordtype}{unsigned});}
+\DoxyCodeLine{00107\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{value-prof_8h_a6644539f155db11caa939fc8daf76767}{gimple\_gen\_ior\_profiler}}\ (\doxymbox{\hyperlink{value-prof_8h_aefdbaf6b390418089b53aed8eae4e729}{histogram\_value}},\ \textcolor{keywordtype}{unsigned});}
+\DoxyCodeLine{00108\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{value-prof_8h_a7646cbf22ffc1177ae0223da36e6eee4}{stream\_out\_histogram\_value}}\ (\textcolor{keyword}{struct}\ \doxymbox{\hyperlink{structoutput__block}{output\_block}}\ *,\ \doxymbox{\hyperlink{value-prof_8h_aefdbaf6b390418089b53aed8eae4e729}{histogram\_value}});}
+\DoxyCodeLine{00109\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{value-prof_8h_ae36a8bbca6d623b4e42b22381a952e0c}{stream\_in\_histogram\_value}}\ (\textcolor{keyword}{class}\ \doxymbox{\hyperlink{classlto__input__block}{lto\_input\_block}}\ *,\ gimple\ *);}
+\DoxyCodeLine{00110\ \textcolor{keyword}{extern}\ \textcolor{keyword}{struct\ }cgraph\_node*\ \doxymbox{\hyperlink{value-prof_8h_a6cf4eaa4b667080b9ea644ad834c8a5f}{find\_func\_by\_profile\_id}}\ (\textcolor{keywordtype}{int}\ func\_id);}
+\DoxyCodeLine{00111\ }
+\DoxyCodeLine{00112\ }
+\DoxyCodeLine{00113\ \textcolor{comment}{/*\ In\ profile.cc.\ \ */}}
+\DoxyCodeLine{00114\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{value-prof_8h_ad90d7b9c00cde364a09ff67e7d4eb871}{init\_branch\_prob}}\ (\textcolor{keywordtype}{void});}
+\DoxyCodeLine{00115\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{value-prof_8h_a9e329e88d2378c5ce9c568d2f117cc3d}{branch\_prob}}\ (\textcolor{keywordtype}{bool});}
+\DoxyCodeLine{00116\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{value-prof_8h_a955a4690e079b9ceacb51dc4db8b665e}{read\_thunk\_profile}}\ (\textcolor{keyword}{struct}\ cgraph\_node\ *);}
+\DoxyCodeLine{00117\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{value-prof_8h_aa37234bc448cfcb2bdbeeb329676ff49}{end\_branch\_prob}}\ (\textcolor{keywordtype}{void});}
+\DoxyCodeLine{00118\ }
+\DoxyCodeLine{00119\ \textcolor{preprocessor}{\#endif\ \ }\textcolor{comment}{/*\ GCC\_VALUE\_PROF\_H\ */}\textcolor{preprocessor}{}}
+\DoxyCodeLine{00120\ }
+
+\end{DoxyCode}

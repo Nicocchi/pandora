@@ -1,0 +1,1019 @@
+\doxysection{ssa-\/iterators.h}
+\hypertarget{ssa-iterators_8h_source}{}\label{ssa-iterators_8h_source}\index{toolchain/x86\_64-\/elf/lib/gcc/x86\_64-\/elf/14.2.0/plugin/include/ssa-\/iterators.h@{toolchain/x86\_64-\/elf/lib/gcc/x86\_64-\/elf/14.2.0/plugin/include/ssa-\/iterators.h}}
+\doxymbox{\hyperlink{ssa-iterators_8h}{Go to the documentation of this file.}}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001\ \textcolor{comment}{/*\ Header\ file\ for\ SSA\ iterators.}}
+\DoxyCodeLine{00002\ \textcolor{comment}{\ \ \ Copyright\ (C)\ 2013-\/2024\ Free\ Software\ Foundation,\ Inc.}}
+\DoxyCodeLine{00003\ \textcolor{comment}{}}
+\DoxyCodeLine{00004\ \textcolor{comment}{This\ file\ is\ part\ of\ GCC.}}
+\DoxyCodeLine{00005\ \textcolor{comment}{}}
+\DoxyCodeLine{00006\ \textcolor{comment}{GCC\ is\ free\ software;\ you\ can\ redistribute\ it\ and/or\ modify\ it\ under}}
+\DoxyCodeLine{00007\ \textcolor{comment}{the\ terms\ of\ the\ GNU\ General\ Public\ License\ as\ published\ by\ the\ Free}}
+\DoxyCodeLine{00008\ \textcolor{comment}{Software\ Foundation;\ either\ version\ 3,\ or\ (at\ your\ option)\ any\ later}}
+\DoxyCodeLine{00009\ \textcolor{comment}{version.}}
+\DoxyCodeLine{00010\ \textcolor{comment}{}}
+\DoxyCodeLine{00011\ \textcolor{comment}{GCC\ is\ distributed\ in\ the\ hope\ that\ it\ will\ be\ useful,\ but\ WITHOUT\ ANY}}
+\DoxyCodeLine{00012\ \textcolor{comment}{WARRANTY;\ without\ even\ the\ implied\ warranty\ of\ MERCHANTABILITY\ or}}
+\DoxyCodeLine{00013\ \textcolor{comment}{FITNESS\ FOR\ A\ PARTICULAR\ PURPOSE.\ \ See\ the\ GNU\ General\ Public\ License}}
+\DoxyCodeLine{00014\ \textcolor{comment}{\ for\ more\ details.}}
+\DoxyCodeLine{00015\ \textcolor{comment}{}}
+\DoxyCodeLine{00016\ \textcolor{comment}{You\ should\ have\ received\ a\ copy\ of\ the\ GNU\ General\ Public\ License}}
+\DoxyCodeLine{00017\ \textcolor{comment}{along\ with\ GCC;\ see\ the\ file\ COPYING3.\ \ If\ not\ see}}
+\DoxyCodeLine{00018\ \textcolor{comment}{<http://www.gnu.org/licenses/>.\ \ */}}
+\DoxyCodeLine{00019\ }
+\DoxyCodeLine{00020\ \textcolor{preprocessor}{\#ifndef\ GCC\_SSA\_ITERATORS\_H}}
+\DoxyCodeLine{00021\ \textcolor{preprocessor}{\#define\ GCC\_SSA\_ITERATORS\_H}}
+\DoxyCodeLine{00022\ }
+\DoxyCodeLine{00023\ \textcolor{comment}{/*\ Immediate\ use\ lists\ are\ used\ to\ directly\ access\ all\ uses\ for\ an\ SSA}}
+\DoxyCodeLine{00024\ \textcolor{comment}{\ \ \ name\ and\ get\ pointers\ to\ the\ statement\ for\ each\ use.}}
+\DoxyCodeLine{00025\ \textcolor{comment}{}}
+\DoxyCodeLine{00026\ \textcolor{comment}{\ \ \ The\ structure\ ssa\_use\_operand\_t\ consists\ of\ PREV\ and\ NEXT\ pointers}}
+\DoxyCodeLine{00027\ \textcolor{comment}{\ \ \ to\ maintain\ the\ list.\ \ A\ USE\ pointer,\ which\ points\ to\ address\ where}}
+\DoxyCodeLine{00028\ \textcolor{comment}{\ \ \ the\ use\ is\ located\ and\ a\ LOC\ pointer\ which\ can\ point\ to\ the}}
+\DoxyCodeLine{00029\ \textcolor{comment}{\ \ \ statement\ where\ the\ use\ is\ located,\ or,\ in\ the\ case\ of\ the\ root}}
+\DoxyCodeLine{00030\ \textcolor{comment}{\ \ \ node,\ it\ points\ to\ the\ SSA\ name\ itself.}}
+\DoxyCodeLine{00031\ \textcolor{comment}{}}
+\DoxyCodeLine{00032\ \textcolor{comment}{\ \ \ The\ list\ is\ anchored\ by\ an\ occurrence\ of\ ssa\_operand\_d\ *in*\ the}}
+\DoxyCodeLine{00033\ \textcolor{comment}{\ \ \ ssa\_name\ node\ itself\ (named\ 'imm\_uses').\ \ This\ node\ is\ uniquely}}
+\DoxyCodeLine{00034\ \textcolor{comment}{\ \ \ identified\ by\ having\ a\ NULL\ USE\ pointer.\ and\ the\ LOC\ pointer}}
+\DoxyCodeLine{00035\ \textcolor{comment}{\ \ \ pointing\ back\ to\ the\ ssa\_name\ node\ itself.\ \ This\ node\ forms\ the}}
+\DoxyCodeLine{00036\ \textcolor{comment}{\ \ \ base\ for\ a\ circular\ list,\ and\ initially\ this\ is\ the\ only\ node\ in}}
+\DoxyCodeLine{00037\ \textcolor{comment}{\ \ \ the\ list.}}
+\DoxyCodeLine{00038\ \textcolor{comment}{}}
+\DoxyCodeLine{00039\ \textcolor{comment}{\ \ \ Fast\ iteration\ allows\ each\ use\ to\ be\ examined,\ but\ does\ not\ allow}}
+\DoxyCodeLine{00040\ \textcolor{comment}{\ \ \ any\ modifications\ to\ the\ uses\ or\ stmts.}}
+\DoxyCodeLine{00041\ \textcolor{comment}{}}
+\DoxyCodeLine{00042\ \textcolor{comment}{\ \ \ Normal\ iteration\ allows\ insertion,\ deletion,\ and\ modification.\ the}}
+\DoxyCodeLine{00043\ \textcolor{comment}{\ \ \ iterator\ manages\ this\ by\ inserting\ a\ marker\ node\ into\ the\ list}}
+\DoxyCodeLine{00044\ \textcolor{comment}{\ \ \ immediately\ before\ the\ node\ currently\ being\ examined\ in\ the\ list.}}
+\DoxyCodeLine{00045\ \textcolor{comment}{\ \ \ this\ marker\ node\ is\ uniquely\ identified\ by\ having\ null\ stmt\ *and*\ a}}
+\DoxyCodeLine{00046\ \textcolor{comment}{\ \ \ null\ use\ pointer.}}
+\DoxyCodeLine{00047\ \textcolor{comment}{}}
+\DoxyCodeLine{00048\ \textcolor{comment}{\ \ \ When\ iterating\ to\ the\ next\ use,\ the\ iteration\ routines\ check\ to\ see}}
+\DoxyCodeLine{00049\ \textcolor{comment}{\ \ \ if\ the\ node\ after\ the\ marker\ has\ changed.\ if\ it\ has,\ then\ the\ node}}
+\DoxyCodeLine{00050\ \textcolor{comment}{\ \ \ following\ the\ marker\ is\ now\ the\ next\ one\ to\ be\ visited.\ if\ not,\ the}}
+\DoxyCodeLine{00051\ \textcolor{comment}{\ \ \ marker\ node\ is\ moved\ past\ that\ node\ in\ the\ list\ (visualize\ it\ as}}
+\DoxyCodeLine{00052\ \textcolor{comment}{\ \ \ bumping\ the\ marker\ node\ through\ the\ list).\ \ this\ continues\ until}}
+\DoxyCodeLine{00053\ \textcolor{comment}{\ \ \ the\ marker\ node\ is\ moved\ to\ the\ original\ anchor\ position.\ the}}
+\DoxyCodeLine{00054\ \textcolor{comment}{\ \ \ marker\ node\ is\ then\ removed\ from\ the\ list.}}
+\DoxyCodeLine{00055\ \textcolor{comment}{}}
+\DoxyCodeLine{00056\ \textcolor{comment}{\ \ \ If\ iteration\ is\ halted\ early,\ the\ marker\ node\ must\ be\ removed\ from}}
+\DoxyCodeLine{00057\ \textcolor{comment}{\ \ \ the\ list\ before\ continuing.\ \ */}}
+\DoxyCodeLine{00058\ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{structimm__use__iterator}{imm\_use\_iterator}}}
+\DoxyCodeLine{00059\ \{}
+\DoxyCodeLine{00060\ \ \ \textcolor{comment}{/*\ This\ is\ the\ current\ use\ the\ iterator\ is\ processing.\ \ */}}
+\DoxyCodeLine{00061\ \ \ ssa\_use\_operand\_t\ *\doxymbox{\hyperlink{structimm__use__iterator_ac4ff91a3432fd2735bf3ae3eacf2195b}{imm\_use}};}
+\DoxyCodeLine{00062\ \ \ \textcolor{comment}{/*\ This\ marks\ the\ last\ use\ in\ the\ list\ (use\ node\ from\ SSA\_NAME)\ \ */}}
+\DoxyCodeLine{00063\ \ \ ssa\_use\_operand\_t\ *\doxymbox{\hyperlink{structimm__use__iterator_a4c986b8c3d59974e13bf2d0dfa9a1830}{end\_p}};}
+\DoxyCodeLine{00064\ \ \ \textcolor{comment}{/*\ This\ node\ is\ inserted\ and\ used\ to\ mark\ the\ end\ of\ the\ uses\ for\ a\ stmt.\ \ */}}
+\DoxyCodeLine{00065\ \ \ ssa\_use\_operand\_t\ \doxymbox{\hyperlink{structimm__use__iterator_a5495087f0678991bca89a997df35ef35}{iter\_node}};}
+\DoxyCodeLine{00066\ \ \ \textcolor{comment}{/*\ This\ is\ the\ next\ ssa\_name\ to\ visit.\ \ IMM\_USE\ may\ get\ removed\ before}}
+\DoxyCodeLine{00067\ \textcolor{comment}{\ \ \ \ \ the\ next\ one\ is\ traversed\ to,\ so\ it\ must\ be\ cached\ early.\ \ */}}
+\DoxyCodeLine{00068\ \ \ ssa\_use\_operand\_t\ *\doxymbox{\hyperlink{structimm__use__iterator_acf5ee1c3075f5f5c28f941b5f4521a82}{next\_imm\_name}};}
+\DoxyCodeLine{00069\ \};}
+\DoxyCodeLine{00070\ }
+\DoxyCodeLine{00071\ }
+\DoxyCodeLine{00072\ \textcolor{comment}{/*\ Use\ this\ iterator\ when\ simply\ looking\ at\ stmts.\ \ Adding,\ deleting\ or}}
+\DoxyCodeLine{00073\ \textcolor{comment}{\ \ \ modifying\ stmts\ will\ cause\ this\ iterator\ to\ malfunction.\ \ */}}
+\DoxyCodeLine{00074\ }
+\DoxyCodeLine{00075\ \textcolor{preprocessor}{\#define\ FOR\_EACH\_IMM\_USE\_FAST(DEST,\ ITER,\ SSAVAR)\ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00076\ \textcolor{preprocessor}{\ \ for\ ((DEST)\ =\ first\_readonly\_imm\_use\ (\&(ITER),\ (SSAVAR));\ \(\backslash\)}}
+\DoxyCodeLine{00077\ \textcolor{preprocessor}{\ \ \ \ \ \ \ !end\_readonly\_imm\_use\_p\ (\&(ITER));\ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00078\ \textcolor{preprocessor}{\ \ \ \ \ \ \ (void)\ ((DEST)\ =\ next\_readonly\_imm\_use\ (\&(ITER))))}}
+\DoxyCodeLine{00079\ }
+\DoxyCodeLine{00080\ \textcolor{comment}{/*\ Forward\ declare\ for\ use\ in\ the\ class\ below.\ \ */}}
+\DoxyCodeLine{00081\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{ssa-iterators_8h_a227ddae0788f252009d701fda324e11b}{end\_imm\_use\_stmt\_traverse}}\ (\doxymbox{\hyperlink{structimm__use__iterator}{imm\_use\_iterator}}\ *);}
+\DoxyCodeLine{00082\ }
+\DoxyCodeLine{00083\ \textcolor{comment}{/*\ arrange\ to\ automatically\ call,\ upon\ descruction,\ end\_imm\_use\_stmt\_traverse}}
+\DoxyCodeLine{00084\ \textcolor{comment}{\ \ \ with\ a\ given\ pointer\ to\ imm\_use\_iterator.\ \ */}}
+\DoxyCodeLine{00085\ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{structauto__end__imm__use__stmt__traverse_a9418cab74183f5a15011ee3857644bd1}{auto\_end\_imm\_use\_stmt\_traverse}}}
+\DoxyCodeLine{00086\ \{}
+\DoxyCodeLine{00087\ \ \ \doxymbox{\hyperlink{structimm__use__iterator}{imm\_use\_iterator}}\ *\doxymbox{\hyperlink{structauto__end__imm__use__stmt__traverse_a966ed382e45b3c0e5727e0e8e98c7461}{imm}};}
+\DoxyCodeLine{00088\ \ \ \doxymbox{\hyperlink{structauto__end__imm__use__stmt__traverse_a9418cab74183f5a15011ee3857644bd1}{auto\_end\_imm\_use\_stmt\_traverse}}\ (\doxymbox{\hyperlink{structimm__use__iterator}{imm\_use\_iterator}}\ *\doxymbox{\hyperlink{structauto__end__imm__use__stmt__traverse_a966ed382e45b3c0e5727e0e8e98c7461}{imm}})}
+\DoxyCodeLine{00089\ \ \ :\ \doxymbox{\hyperlink{structauto__end__imm__use__stmt__traverse_a966ed382e45b3c0e5727e0e8e98c7461}{imm}}\ (\doxymbox{\hyperlink{structauto__end__imm__use__stmt__traverse_a966ed382e45b3c0e5727e0e8e98c7461}{imm}})\ \{\}}
+\DoxyCodeLine{00090\ \ \ \doxymbox{\hyperlink{structauto__end__imm__use__stmt__traverse_a0a1986fd117b8d47ca60402fc852e1da}{\string~auto\_end\_imm\_use\_stmt\_traverse}}\ ()}
+\DoxyCodeLine{00091\ \ \ \{\ \doxymbox{\hyperlink{ssa-iterators_8h_a227ddae0788f252009d701fda324e11b}{end\_imm\_use\_stmt\_traverse}}\ (\doxymbox{\hyperlink{structauto__end__imm__use__stmt__traverse_a966ed382e45b3c0e5727e0e8e98c7461}{imm}});\ \}}
+\DoxyCodeLine{00092\ \};}
+\DoxyCodeLine{00093\ }
+\DoxyCodeLine{00094\ \textcolor{comment}{/*\ Use\ this\ iterator\ to\ visit\ each\ stmt\ which\ has\ a\ use\ of\ SSAVAR.\ \ The}}
+\DoxyCodeLine{00095\ \textcolor{comment}{\ \ \ destructor\ of\ the\ auto\_end\_imm\_use\_stmt\_traverse\ object\ deals\ with\ removing}}
+\DoxyCodeLine{00096\ \textcolor{comment}{\ \ \ ITER\ from\ SSAVAR's\ IMM\_USE\ list\ even\ when\ leaving\ the\ scope\ early.\ \ */}}
+\DoxyCodeLine{00097\ }
+\DoxyCodeLine{00098\ \textcolor{preprocessor}{\#define\ FOR\_EACH\_IMM\_USE\_STMT(STMT,\ ITER,\ SSAVAR)\ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00099\ \textcolor{preprocessor}{\ \ for\ (struct\ auto\_end\_imm\_use\_stmt\_traverse\ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00100\ \textcolor{preprocessor}{\ \ \ \ \ auto\_end\_imm\_use\_stmt\_traverse\ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00101\ \textcolor{preprocessor}{\ \ \ \ \ \ \ ((((STMT)\ =\ first\_imm\_use\_stmt\ (\&(ITER),\ (SSAVAR))),\ \(\backslash\)}}
+\DoxyCodeLine{00102\ \textcolor{preprocessor}{\ \ \ \ \ \ \ \ \ \&(ITER)));\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00103\ \textcolor{preprocessor}{\ \ \ \ \ \ \ !end\_imm\_use\_stmt\_p\ (\&(ITER));\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00104\ \textcolor{preprocessor}{\ \ \ \ \ \ \ (void)\ ((STMT)\ =\ next\_imm\_use\_stmt\ (\&(ITER))))}}
+\DoxyCodeLine{00105\ }
+\DoxyCodeLine{00106\ \textcolor{comment}{/*\ Use\ this\ iterator\ in\ combination\ with\ FOR\_EACH\_IMM\_USE\_STMT\ to}}
+\DoxyCodeLine{00107\ \textcolor{comment}{\ \ \ get\ access\ to\ each\ occurrence\ of\ ssavar\ on\ the\ stmt\ returned\ by}}
+\DoxyCodeLine{00108\ \textcolor{comment}{\ \ \ that\ iterator..\ \ for\ instance:}}
+\DoxyCodeLine{00109\ \textcolor{comment}{}}
+\DoxyCodeLine{00110\ \textcolor{comment}{\ \ \ \ \ FOR\_EACH\_IMM\_USE\_STMT\ (stmt,\ iter,\ ssavar)}}
+\DoxyCodeLine{00111\ \textcolor{comment}{\ \ \ \ \ \ \ \{}}
+\DoxyCodeLine{00112\ \textcolor{comment}{\ \ \ \ \ \ \ \ \ FOR\_EACH\_IMM\_USE\_ON\_STMT\ (use\_p,\ iter)}}
+\DoxyCodeLine{00113\ \textcolor{comment}{\ \ \ \ \ \ \ \{}}
+\DoxyCodeLine{00114\ \textcolor{comment}{\ \ \ \ \ \ \ \ \ SET\_USE\ (use\_p,\ blah);}}
+\DoxyCodeLine{00115\ \textcolor{comment}{\ \ \ \ \ \ \ \}}}
+\DoxyCodeLine{00116\ \textcolor{comment}{\ \ \ \ \ update\_stmt\ (stmt);}}
+\DoxyCodeLine{00117\ \textcolor{comment}{\ \ \ \ \ \ \ \}\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ */}}
+\DoxyCodeLine{00118\ }
+\DoxyCodeLine{00119\ \textcolor{preprocessor}{\#define\ FOR\_EACH\_IMM\_USE\_ON\_STMT(DEST,\ ITER)\ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00120\ \textcolor{preprocessor}{\ \ for\ ((DEST)\ =\ first\_imm\_use\_on\_stmt\ (\&(ITER));\ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00121\ \textcolor{preprocessor}{\ \ \ \ \ \ \ !end\_imm\_use\_on\_stmt\_p\ (\&(ITER));\ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00122\ \textcolor{preprocessor}{\ \ \ \ \ \ \ (void)\ ((DEST)\ =\ next\_imm\_use\_on\_stmt\ (\&(ITER))))}}
+\DoxyCodeLine{00123\ }
+\DoxyCodeLine{00124\ }
+\DoxyCodeLine{00125\ }
+\DoxyCodeLine{00126\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{ssa-iterators_8h_adf73233cc9071af391cd04c03abe476f}{single\_imm\_use\_1}}\ (\textcolor{keyword}{const}\ ssa\_use\_operand\_t\ *head,}
+\DoxyCodeLine{00127\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{tree-ssa-operands_8h_a6c4644d017fc5af6b02dd63b38fa35c1}{use\_operand\_p}}\ *use\_p,\ gimple\ **stmt);}
+\DoxyCodeLine{00128\ }
+\DoxyCodeLine{00129\ }
+\DoxyCodeLine{00130\ \textcolor{keyword}{enum}\ \doxymbox{\hyperlink{ssa-iterators_8h_a54d8f55e5098519da13d9283802bc956}{ssa\_op\_iter\_type}}\ \{}
+\DoxyCodeLine{00131\ \ \ \doxymbox{\hyperlink{ssa-iterators_8h_a54d8f55e5098519da13d9283802bc956a1525add353b14b2b8440a2adbd5379c6}{ssa\_op\_iter\_none}}\ =\ 0,}
+\DoxyCodeLine{00132\ \ \ \doxymbox{\hyperlink{ssa-iterators_8h_a54d8f55e5098519da13d9283802bc956acc2c00c7b7a02ff7284f9415bc5d3f7d}{ssa\_op\_iter\_tree}},}
+\DoxyCodeLine{00133\ \ \ \doxymbox{\hyperlink{ssa-iterators_8h_a54d8f55e5098519da13d9283802bc956abac5d38d2635fb3a9ac44545e9cea556}{ssa\_op\_iter\_use}},}
+\DoxyCodeLine{00134\ \ \ \doxymbox{\hyperlink{ssa-iterators_8h_a54d8f55e5098519da13d9283802bc956accdbf16b9d679ba71ea2dc0219142ed1}{ssa\_op\_iter\_def}}}
+\DoxyCodeLine{00135\ \};}
+\DoxyCodeLine{00136\ }
+\DoxyCodeLine{00137\ \textcolor{comment}{/*\ This\ structure\ is\ used\ in\ the\ operand\ iterator\ loops.\ \ It\ contains\ the}}
+\DoxyCodeLine{00138\ \textcolor{comment}{\ \ \ items\ required\ to\ determine\ which\ operand\ is\ retrieved\ next.\ \ During}}
+\DoxyCodeLine{00139\ \textcolor{comment}{\ \ \ optimization,\ this\ structure\ is\ scalarized,\ and\ any\ unused\ fields\ are}}
+\DoxyCodeLine{00140\ \textcolor{comment}{\ \ \ optimized\ away,\ resulting\ in\ little\ overhead.\ \ */}}
+\DoxyCodeLine{00141\ }
+\DoxyCodeLine{00142\ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{structssa__op__iter}{ssa\_op\_iter}}}
+\DoxyCodeLine{00143\ \{}
+\DoxyCodeLine{00144\ \ \ \textcolor{keyword}{enum}\ \doxymbox{\hyperlink{ssa-iterators_8h_a54d8f55e5098519da13d9283802bc956}{ssa\_op\_iter\_type}}\ \doxymbox{\hyperlink{structssa__op__iter_af34c59433f9e1f77d8440297bd4a951c}{iter\_type}};}
+\DoxyCodeLine{00145\ \ \ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{structssa__op__iter_a3e6e920b017174b2d2310582d22221c9}{done}};}
+\DoxyCodeLine{00146\ \ \ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{structssa__op__iter_a7b9cdceb8d3af8a057d100baeec6ad62}{flags}};}
+\DoxyCodeLine{00147\ \ \ \textcolor{keywordtype}{unsigned}\ \doxymbox{\hyperlink{structssa__op__iter_a246cbf827d1797fa1b4821e6fd47c521}{i}};}
+\DoxyCodeLine{00148\ \ \ \textcolor{keywordtype}{unsigned}\ \doxymbox{\hyperlink{structssa__op__iter_a0fbd4f7f755d2e5dffd60096c1bba64c}{numops}};}
+\DoxyCodeLine{00149\ \ \ \doxymbox{\hyperlink{tree-ssa-operands_8h_a113b3d44cceddebd3d9c2cc34030b7a3}{use\_optype\_p}}\ \doxymbox{\hyperlink{structssa__op__iter_aaf4d5d5c3054d2ecb2aff0f4a2ebc2f8}{uses}};}
+\DoxyCodeLine{00150\ \ \ gimple\ *\doxymbox{\hyperlink{structssa__op__iter_a8b8fc7e2d7a4cc92bc7a0d3cc0fafbb8}{stmt}};}
+\DoxyCodeLine{00151\ \};}
+\DoxyCodeLine{00152\ }
+\DoxyCodeLine{00153\ \textcolor{comment}{/*\ NOTE:\ Keep\ these\ in\ sync\ with\ doc/tree-\/ssa.texi.\ \ */}}
+\DoxyCodeLine{00154\ \textcolor{comment}{/*\ These\ flags\ are\ used\ to\ determine\ which\ operands\ are\ returned\ during}}
+\DoxyCodeLine{00155\ \textcolor{comment}{\ \ \ execution\ of\ the\ loop.\ \ */}}
+\DoxyCodeLine{00156\ \textcolor{preprocessor}{\#define\ SSA\_OP\_USE\ \ \ \ \ \ 0x01\ \ \ \ }\textcolor{comment}{/*\ Real\ USE\ operands.\ \ */}\textcolor{preprocessor}{}}
+\DoxyCodeLine{00157\ \textcolor{preprocessor}{\#define\ SSA\_OP\_DEF\ \ \ \ \ \ 0x02\ \ \ \ }\textcolor{comment}{/*\ Real\ DEF\ operands.\ \ */}\textcolor{preprocessor}{}}
+\DoxyCodeLine{00158\ \textcolor{preprocessor}{\#define\ SSA\_OP\_VUSE\ \ \ \ \ 0x04\ \ \ \ }\textcolor{comment}{/*\ VUSE\ operands.\ \ */}\textcolor{preprocessor}{}}
+\DoxyCodeLine{00159\ \textcolor{preprocessor}{\#define\ SSA\_OP\_VDEF\ \ \ \ \ 0x08\ \ \ \ }\textcolor{comment}{/*\ VDEF\ operands.\ \ */}\textcolor{preprocessor}{}}
+\DoxyCodeLine{00160\ \textcolor{comment}{/*\ These\ are\ commonly\ grouped\ operand\ flags.\ \ */}}
+\DoxyCodeLine{00161\ \textcolor{preprocessor}{\#define\ SSA\_OP\_VIRTUAL\_USES\ (SSA\_OP\_VUSE)}}
+\DoxyCodeLine{00162\ \textcolor{preprocessor}{\#define\ SSA\_OP\_VIRTUAL\_DEFS\ (SSA\_OP\_VDEF)}}
+\DoxyCodeLine{00163\ \textcolor{preprocessor}{\#define\ SSA\_OP\_ALL\_VIRTUALS\ \ \ \ \ (SSA\_OP\_VIRTUAL\_USES\ |\ SSA\_OP\_VIRTUAL\_DEFS)}}
+\DoxyCodeLine{00164\ \textcolor{preprocessor}{\#define\ SSA\_OP\_ALL\_USES\ \ \ \ \ (SSA\_OP\_VIRTUAL\_USES\ |\ SSA\_OP\_USE)}}
+\DoxyCodeLine{00165\ \textcolor{preprocessor}{\#define\ SSA\_OP\_ALL\_DEFS\ \ \ \ \ (SSA\_OP\_VIRTUAL\_DEFS\ |\ SSA\_OP\_DEF)}}
+\DoxyCodeLine{00166\ \textcolor{preprocessor}{\#define\ SSA\_OP\_ALL\_OPERANDS\ (SSA\_OP\_ALL\_USES\ |\ SSA\_OP\_ALL\_DEFS)}}
+\DoxyCodeLine{00167\ }
+\DoxyCodeLine{00168\ \textcolor{comment}{/*\ This\ macro\ executes\ a\ loop\ over\ the\ operands\ of\ STMT\ specified\ in\ FLAG,}}
+\DoxyCodeLine{00169\ \textcolor{comment}{\ \ \ returning\ each\ operand\ as\ a\ 'tree'\ in\ the\ variable\ TREEVAR.\ \ ITER\ is\ an}}
+\DoxyCodeLine{00170\ \textcolor{comment}{\ \ \ ssa\_op\_iter\ structure\ used\ to\ control\ the\ loop.\ \ */}}
+\DoxyCodeLine{00171\ \textcolor{preprocessor}{\#define\ FOR\_EACH\_SSA\_TREE\_OPERAND(TREEVAR,\ STMT,\ ITER,\ FLAGS)\ \ \ \(\backslash\)}}
+\DoxyCodeLine{00172\ \textcolor{preprocessor}{\ \ for\ (TREEVAR\ =\ op\_iter\_init\_tree\ (\&(ITER),\ STMT,\ FLAGS);\ \ \(\backslash\)}}
+\DoxyCodeLine{00173\ \textcolor{preprocessor}{\ \ \ \ \ \ \ !op\_iter\_done\ (\&(ITER));\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00174\ \textcolor{preprocessor}{\ \ \ \ \ \ \ (void)\ (TREEVAR\ =\ op\_iter\_next\_tree\ (\&(ITER))))}}
+\DoxyCodeLine{00175\ }
+\DoxyCodeLine{00176\ \textcolor{comment}{/*\ This\ macro\ executes\ a\ loop\ over\ the\ operands\ of\ STMT\ specified\ in\ FLAG,}}
+\DoxyCodeLine{00177\ \textcolor{comment}{\ \ \ returning\ each\ operand\ as\ a\ 'use\_operand\_p'\ in\ the\ variable\ USEVAR.}}
+\DoxyCodeLine{00178\ \textcolor{comment}{\ \ \ ITER\ is\ an\ ssa\_op\_iter\ structure\ used\ to\ control\ the\ loop.\ \ */}}
+\DoxyCodeLine{00179\ \textcolor{preprocessor}{\#define\ FOR\_EACH\_SSA\_USE\_OPERAND(USEVAR,\ STMT,\ ITER,\ FLAGS)\ \(\backslash\)}}
+\DoxyCodeLine{00180\ \textcolor{preprocessor}{\ \ for\ (USEVAR\ =\ op\_iter\_init\_use\ (\&(ITER),\ STMT,\ FLAGS);\ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00181\ \textcolor{preprocessor}{\ \ \ \ \ \ \ !op\_iter\_done\ (\&(ITER));\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00182\ \textcolor{preprocessor}{\ \ \ \ \ \ \ USEVAR\ =\ op\_iter\_next\_use\ (\&(ITER)))}}
+\DoxyCodeLine{00183\ }
+\DoxyCodeLine{00184\ \textcolor{comment}{/*\ This\ macro\ executes\ a\ loop\ over\ the\ operands\ of\ STMT\ specified\ in\ FLAG,}}
+\DoxyCodeLine{00185\ \textcolor{comment}{\ \ \ returning\ each\ operand\ as\ a\ 'def\_operand\_p'\ in\ the\ variable\ DEFVAR.}}
+\DoxyCodeLine{00186\ \textcolor{comment}{\ \ \ ITER\ is\ an\ ssa\_op\_iter\ structure\ used\ to\ control\ the\ loop.\ \ */}}
+\DoxyCodeLine{00187\ \textcolor{preprocessor}{\#define\ FOR\_EACH\_SSA\_DEF\_OPERAND(DEFVAR,\ STMT,\ ITER,\ FLAGS)\ \(\backslash\)}}
+\DoxyCodeLine{00188\ \textcolor{preprocessor}{\ \ for\ (DEFVAR\ =\ op\_iter\_init\_def\ (\&(ITER),\ STMT,\ FLAGS);\ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00189\ \textcolor{preprocessor}{\ \ \ \ \ \ \ !op\_iter\_done\ (\&(ITER));\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00190\ \textcolor{preprocessor}{\ \ \ \ \ \ \ DEFVAR\ =\ op\_iter\_next\_def\ (\&(ITER)))}}
+\DoxyCodeLine{00191\ }
+\DoxyCodeLine{00192\ \textcolor{comment}{/*\ This\ macro\ will\ execute\ a\ loop\ over\ all\ the\ arguments\ of\ a\ PHI\ which}}
+\DoxyCodeLine{00193\ \textcolor{comment}{\ \ \ match\ FLAGS.\ \ \ A\ use\_operand\_p\ is\ always\ returned\ via\ USEVAR.\ \ FLAGS}}
+\DoxyCodeLine{00194\ \textcolor{comment}{\ \ \ can\ be\ either\ SSA\_OP\_USE\ or\ SSA\_OP\_VIRTUAL\_USES\ or\ SSA\_OP\_ALL\_USES.\ \ */}}
+\DoxyCodeLine{00195\ \textcolor{preprocessor}{\#define\ FOR\_EACH\_PHI\_ARG(USEVAR,\ STMT,\ ITER,\ FLAGS)\ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00196\ \textcolor{preprocessor}{\ \ for\ ((USEVAR)\ =\ op\_iter\_init\_phiuse\ (\&(ITER),\ STMT,\ FLAGS);\ \ \ \(\backslash\)}}
+\DoxyCodeLine{00197\ \textcolor{preprocessor}{\ \ \ \ \ \ \ !op\_iter\_done\ (\&(ITER));\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00198\ \textcolor{preprocessor}{\ \ \ \ \ \ \ (USEVAR)\ =\ op\_iter\_next\_use\ (\&(ITER)))}}
+\DoxyCodeLine{00199\ }
+\DoxyCodeLine{00200\ }
+\DoxyCodeLine{00201\ \textcolor{comment}{/*\ This\ macro\ will\ execute\ a\ loop\ over\ a\ stmt,\ regardless\ of\ whether\ it\ is}}
+\DoxyCodeLine{00202\ \textcolor{comment}{\ \ \ a\ real\ stmt\ or\ a\ PHI\ node,\ looking\ at\ the\ USE\ nodes\ matching\ FLAGS.\ \ */}}
+\DoxyCodeLine{00203\ \textcolor{preprocessor}{\#define\ FOR\_EACH\_PHI\_OR\_STMT\_USE(USEVAR,\ STMT,\ ITER,\ FLAGS)\ \(\backslash\)}}
+\DoxyCodeLine{00204\ \textcolor{preprocessor}{\ \ for\ ((USEVAR)\ =\ (gimple\_code\ (STMT)\ ==\ GIMPLE\_PHI\ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00205\ \textcolor{preprocessor}{\ \ \ \ \ \ \ \ \ \ \ ?\ op\_iter\_init\_phiuse\ (\&(ITER),\ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00206\ \textcolor{preprocessor}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ as\_a\ <gphi\ *>\ (STMT),\ \(\backslash\)}}
+\DoxyCodeLine{00207\ \textcolor{preprocessor}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ FLAGS)\ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00208\ \textcolor{preprocessor}{\ \ \ \ \ \ \ \ \ \ \ :\ op\_iter\_init\_use\ (\&(ITER),\ STMT,\ FLAGS));\ \ \(\backslash\)}}
+\DoxyCodeLine{00209\ \textcolor{preprocessor}{\ \ \ \ \ \ \ !op\_iter\_done\ (\&(ITER));\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00210\ \textcolor{preprocessor}{\ \ \ \ \ \ \ (USEVAR)\ =\ op\_iter\_next\_use\ (\&(ITER)))}}
+\DoxyCodeLine{00211\ }
+\DoxyCodeLine{00212\ \textcolor{comment}{/*\ This\ macro\ will\ execute\ a\ loop\ over\ a\ stmt,\ regardless\ of\ whether\ it\ is}}
+\DoxyCodeLine{00213\ \textcolor{comment}{\ \ \ a\ real\ stmt\ or\ a\ PHI\ node,\ looking\ at\ the\ DEF\ nodes\ matching\ FLAGS.\ \ */}}
+\DoxyCodeLine{00214\ \textcolor{preprocessor}{\#define\ FOR\_EACH\_PHI\_OR\_STMT\_DEF(DEFVAR,\ STMT,\ ITER,\ FLAGS)\ \(\backslash\)}}
+\DoxyCodeLine{00215\ \textcolor{preprocessor}{\ \ for\ ((DEFVAR)\ =\ (gimple\_code\ (STMT)\ ==\ GIMPLE\_PHI\ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00216\ \textcolor{preprocessor}{\ \ \ \ \ \ \ \ \ \ \ ?\ op\_iter\_init\_phidef\ (\&(ITER),\ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00217\ \textcolor{preprocessor}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ as\_a\ <gphi\ *>\ (STMT),\ \(\backslash\)}}
+\DoxyCodeLine{00218\ \textcolor{preprocessor}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ FLAGS)\ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00219\ \textcolor{preprocessor}{\ \ \ \ \ \ \ \ \ \ \ :\ op\_iter\_init\_def\ (\&(ITER),\ STMT,\ FLAGS));\ \ \(\backslash\)}}
+\DoxyCodeLine{00220\ \textcolor{preprocessor}{\ \ \ \ \ \ \ !op\_iter\_done\ (\&(ITER));\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00221\ \textcolor{preprocessor}{\ \ \ \ \ \ \ (DEFVAR)\ =\ op\_iter\_next\_def\ (\&(ITER)))}}
+\DoxyCodeLine{00222\ }
+\DoxyCodeLine{00223\ \textcolor{comment}{/*\ This\ macro\ returns\ an\ operand\ in\ STMT\ as\ a\ tree\ if\ it\ is\ the\ ONLY}}
+\DoxyCodeLine{00224\ \textcolor{comment}{\ \ \ operand\ matching\ FLAGS.\ \ If\ there\ are\ 0\ or\ more\ than\ 1\ operand\ matching}}
+\DoxyCodeLine{00225\ \textcolor{comment}{\ \ \ FLAGS,\ then\ NULL\_TREE\ is\ returned.\ \ */}}
+\DoxyCodeLine{00226\ \textcolor{preprocessor}{\#define\ SINGLE\_SSA\_TREE\_OPERAND(STMT,\ FLAGS)\ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00227\ \textcolor{preprocessor}{\ \ single\_ssa\_tree\_operand\ (STMT,\ FLAGS)}}
+\DoxyCodeLine{00228\ }
+\DoxyCodeLine{00229\ \textcolor{comment}{/*\ This\ macro\ returns\ an\ operand\ in\ STMT\ as\ a\ use\_operand\_p\ if\ it\ is\ the\ ONLY}}
+\DoxyCodeLine{00230\ \textcolor{comment}{\ \ \ operand\ matching\ FLAGS.\ \ If\ there\ are\ 0\ or\ more\ than\ 1\ operand\ matching}}
+\DoxyCodeLine{00231\ \textcolor{comment}{\ \ \ FLAGS,\ then\ NULL\_USE\_OPERAND\_P\ is\ returned.\ \ */}}
+\DoxyCodeLine{00232\ \textcolor{preprocessor}{\#define\ SINGLE\_SSA\_USE\_OPERAND(STMT,\ FLAGS)\ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00233\ \textcolor{preprocessor}{\ \ single\_ssa\_use\_operand\ (STMT,\ FLAGS)}}
+\DoxyCodeLine{00234\ }
+\DoxyCodeLine{00235\ \textcolor{comment}{/*\ This\ macro\ returns\ an\ operand\ in\ STMT\ as\ a\ def\_operand\_p\ if\ it\ is\ the\ ONLY}}
+\DoxyCodeLine{00236\ \textcolor{comment}{\ \ \ operand\ matching\ FLAGS.\ \ If\ there\ are\ 0\ or\ more\ than\ 1\ operand\ matching}}
+\DoxyCodeLine{00237\ \textcolor{comment}{\ \ \ FLAGS,\ then\ NULL\_DEF\_OPERAND\_P\ is\ returned.\ \ */}}
+\DoxyCodeLine{00238\ \textcolor{preprocessor}{\#define\ SINGLE\_SSA\_DEF\_OPERAND(STMT,\ FLAGS)\ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00239\ \textcolor{preprocessor}{\ \ single\_ssa\_def\_operand\ (STMT,\ FLAGS)}}
+\DoxyCodeLine{00240\ }
+\DoxyCodeLine{00241\ \textcolor{comment}{/*\ This\ macro\ returns\ TRUE\ if\ there\ are\ no\ operands\ matching\ FLAGS\ in\ STMT.\ \ */}}
+\DoxyCodeLine{00242\ \textcolor{preprocessor}{\#define\ ZERO\_SSA\_OPERANDS(STMT,\ FLAGS)\ \ zero\_ssa\_operands\ (STMT,\ FLAGS)}}
+\DoxyCodeLine{00243\ }
+\DoxyCodeLine{00244\ \textcolor{comment}{/*\ This\ macro\ counts\ the\ number\ of\ operands\ in\ STMT\ matching\ FLAGS.\ \ */}}
+\DoxyCodeLine{00245\ \textcolor{preprocessor}{\#define\ NUM\_SSA\_OPERANDS(STMT,\ FLAGS)\ \ \ num\_ssa\_operands\ (STMT,\ FLAGS)}}
+\DoxyCodeLine{00246\ }
+\DoxyCodeLine{00247\ }
+\DoxyCodeLine{00248\ \textcolor{comment}{/*\ Delink\ an\ immediate\_uses\ node\ from\ its\ chain.\ \ */}}
+\DoxyCodeLine{00249\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{void}}
+\DoxyCodeLine{00250\ \doxymbox{\hyperlink{ssa-iterators_8h_ac1499f9265d1c5b0a7c3abf3ac5dd8e9}{delink\_imm\_use}}\ (ssa\_use\_operand\_t\ *linknode)}
+\DoxyCodeLine{00251\ \{}
+\DoxyCodeLine{00252\ \ \ \textcolor{comment}{/*\ Return\ if\ this\ node\ is\ not\ in\ a\ list.\ \ */}}
+\DoxyCodeLine{00253\ \ \ \textcolor{keywordflow}{if}\ (linknode-\/>prev\ ==\ \doxymbox{\hyperlink{stddef_8h_a070d2ce7b6bb7e5c05602aa8c308d0c4}{NULL}})}
+\DoxyCodeLine{00254\ \ \ \ \ \textcolor{keywordflow}{return};}
+\DoxyCodeLine{00255\ }
+\DoxyCodeLine{00256\ \ \ linknode-\/>prev-\/>next\ =\ linknode-\/>next;}
+\DoxyCodeLine{00257\ \ \ linknode-\/>next-\/>prev\ =\ linknode-\/>prev;}
+\DoxyCodeLine{00258\ \ \ linknode-\/>prev\ =\ \doxymbox{\hyperlink{stddef_8h_a070d2ce7b6bb7e5c05602aa8c308d0c4}{NULL}};}
+\DoxyCodeLine{00259\ \ \ linknode-\/>next\ =\ \doxymbox{\hyperlink{stddef_8h_a070d2ce7b6bb7e5c05602aa8c308d0c4}{NULL}};}
+\DoxyCodeLine{00260\ \}}
+\DoxyCodeLine{00261\ }
+\DoxyCodeLine{00262\ \textcolor{comment}{/*\ Link\ ssa\_imm\_use\ node\ LINKNODE\ into\ the\ chain\ for\ LIST.\ \ */}}
+\DoxyCodeLine{00263\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{void}}
+\DoxyCodeLine{00264\ \doxymbox{\hyperlink{ssa-iterators_8h_aaee384668c0373c3818decf5c24aae14}{link\_imm\_use\_to\_list}}\ (ssa\_use\_operand\_t\ *linknode,\ ssa\_use\_operand\_t\ *list)}
+\DoxyCodeLine{00265\ \{}
+\DoxyCodeLine{00266\ \ \ \textcolor{comment}{/*\ Link\ the\ new\ node\ at\ the\ head\ of\ the\ list.\ \ If\ we\ are\ in\ the\ process\ of}}
+\DoxyCodeLine{00267\ \textcolor{comment}{\ \ \ \ \ traversing\ the\ list,\ we\ won't\ visit\ any\ new\ nodes\ added\ to\ it.\ \ */}}
+\DoxyCodeLine{00268\ \ \ linknode-\/>prev\ =\ list;}
+\DoxyCodeLine{00269\ \ \ linknode-\/>next\ =\ list-\/>next;}
+\DoxyCodeLine{00270\ \ \ list-\/>next-\/>prev\ =\ linknode;}
+\DoxyCodeLine{00271\ \ \ list-\/>next\ =\ linknode;}
+\DoxyCodeLine{00272\ \}}
+\DoxyCodeLine{00273\ }
+\DoxyCodeLine{00274\ \textcolor{comment}{/*\ Link\ ssa\_imm\_use\ node\ LINKNODE\ into\ the\ chain\ for\ DEF.\ \ */}}
+\DoxyCodeLine{00275\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{void}}
+\DoxyCodeLine{00276\ \doxymbox{\hyperlink{ssa-iterators_8h_aa7bd7cb5868e2e21b4276f05b621f2f1}{link\_imm\_use}}\ (ssa\_use\_operand\_t\ *linknode,\ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ def)}
+\DoxyCodeLine{00277\ \{}
+\DoxyCodeLine{00278\ \ \ ssa\_use\_operand\_t\ *root;}
+\DoxyCodeLine{00279\ }
+\DoxyCodeLine{00280\ \ \ \textcolor{keywordflow}{if}\ (!def\ ||\ \doxymbox{\hyperlink{tree_8h_a6449672126fbdb41758e25c87196efc1}{TREE\_CODE}}\ (def)\ !=\ SSA\_NAME)}
+\DoxyCodeLine{00281\ \ \ \ \ linknode-\/>prev\ =\ \doxymbox{\hyperlink{stddef_8h_a070d2ce7b6bb7e5c05602aa8c308d0c4}{NULL}};}
+\DoxyCodeLine{00282\ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00283\ \ \ \ \ \{}
+\DoxyCodeLine{00284\ \ \ \ \ \ \ root\ =\ \&(\doxymbox{\hyperlink{tree_8h_a637c83b86df6744e6a1c1a60912016ce}{SSA\_NAME\_IMM\_USE\_NODE}}\ (def));}
+\DoxyCodeLine{00285\ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (linknode-\/>use)}
+\DoxyCodeLine{00286\ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{system_8h_aff447899dc74d54931b2bc2d47de9423}{gcc\_checking\_assert}}\ (*(linknode-\/>use)\ ==\ def);}
+\DoxyCodeLine{00287\ \ \ \ \ \ \ \doxymbox{\hyperlink{ssa-iterators_8h_aaee384668c0373c3818decf5c24aae14}{link\_imm\_use\_to\_list}}\ (linknode,\ root);}
+\DoxyCodeLine{00288\ \ \ \ \ \}}
+\DoxyCodeLine{00289\ \}}
+\DoxyCodeLine{00290\ }
+\DoxyCodeLine{00291\ \textcolor{comment}{/*\ Set\ the\ value\ of\ a\ use\ pointed\ to\ by\ USE\ to\ VAL.\ \ */}}
+\DoxyCodeLine{00292\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{void}}
+\DoxyCodeLine{00293\ \doxymbox{\hyperlink{ssa-iterators_8h_a9f2dbec9bac956c3fac050ad8be9a332}{set\_ssa\_use\_from\_ptr}}\ (\doxymbox{\hyperlink{tree-ssa-operands_8h_a6c4644d017fc5af6b02dd63b38fa35c1}{use\_operand\_p}}\ use,\ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ val)}
+\DoxyCodeLine{00294\ \{}
+\DoxyCodeLine{00295\ \ \ \doxymbox{\hyperlink{ssa-iterators_8h_ac1499f9265d1c5b0a7c3abf3ac5dd8e9}{delink\_imm\_use}}\ (use);}
+\DoxyCodeLine{00296\ \ \ *(use-\/>use)\ =\ val;}
+\DoxyCodeLine{00297\ \ \ \doxymbox{\hyperlink{ssa-iterators_8h_aa7bd7cb5868e2e21b4276f05b621f2f1}{link\_imm\_use}}\ (use,\ val);}
+\DoxyCodeLine{00298\ \}}
+\DoxyCodeLine{00299\ }
+\DoxyCodeLine{00300\ \textcolor{comment}{/*\ Link\ ssa\_imm\_use\ node\ LINKNODE\ into\ the\ chain\ for\ DEF,\ with\ use\ occurring}}
+\DoxyCodeLine{00301\ \textcolor{comment}{\ \ \ in\ STMT.\ \ */}}
+\DoxyCodeLine{00302\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{void}}
+\DoxyCodeLine{00303\ \doxymbox{\hyperlink{ssa-iterators_8h_a2229174692a8c584d1b2d4c3633dc8e5}{link\_imm\_use\_stmt}}\ (ssa\_use\_operand\_t\ *linknode,\ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ def,\ gimple\ *stmt)}
+\DoxyCodeLine{00304\ \{}
+\DoxyCodeLine{00305\ \ \ \textcolor{keywordflow}{if}\ (stmt)}
+\DoxyCodeLine{00306\ \ \ \ \ \doxymbox{\hyperlink{ssa-iterators_8h_aa7bd7cb5868e2e21b4276f05b621f2f1}{link\_imm\_use}}\ (linknode,\ def);}
+\DoxyCodeLine{00307\ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00308\ \ \ \ \ \doxymbox{\hyperlink{ssa-iterators_8h_aa7bd7cb5868e2e21b4276f05b621f2f1}{link\_imm\_use}}\ (linknode,\ \doxymbox{\hyperlink{stddef_8h_a070d2ce7b6bb7e5c05602aa8c308d0c4}{NULL}});}
+\DoxyCodeLine{00309\ \ \ linknode-\/>loc.stmt\ =\ stmt;}
+\DoxyCodeLine{00310\ \}}
+\DoxyCodeLine{00311\ }
+\DoxyCodeLine{00312\ \textcolor{comment}{/*\ Relink\ a\ new\ node\ in\ place\ of\ an\ old\ node\ in\ the\ list.\ \ */}}
+\DoxyCodeLine{00313\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{void}}
+\DoxyCodeLine{00314\ \doxymbox{\hyperlink{ssa-iterators_8h_a466ce261263aa28b39f2ce7f503e9a99}{relink\_imm\_use}}\ (ssa\_use\_operand\_t\ *node,\ ssa\_use\_operand\_t\ *old)}
+\DoxyCodeLine{00315\ \{}
+\DoxyCodeLine{00316\ \ \ \textcolor{comment}{/*\ The\ node\ one\ had\ better\ be\ in\ the\ same\ list.\ \ */}}
+\DoxyCodeLine{00317\ \ \ \doxymbox{\hyperlink{system_8h_aff447899dc74d54931b2bc2d47de9423}{gcc\_checking\_assert}}\ (*(old-\/>use)\ ==\ *(node-\/>use));}
+\DoxyCodeLine{00318\ \ \ node-\/>prev\ =\ old-\/>prev;}
+\DoxyCodeLine{00319\ \ \ node-\/>next\ =\ old-\/>next;}
+\DoxyCodeLine{00320\ \ \ \textcolor{keywordflow}{if}\ (old-\/>prev)}
+\DoxyCodeLine{00321\ \ \ \ \ \{}
+\DoxyCodeLine{00322\ \ \ \ \ \ \ old-\/>prev-\/>next\ =\ node;}
+\DoxyCodeLine{00323\ \ \ \ \ \ \ old-\/>next-\/>prev\ =\ node;}
+\DoxyCodeLine{00324\ \ \ \ \ \ \ \textcolor{comment}{/*\ Remove\ the\ old\ node\ from\ the\ list.\ \ */}}
+\DoxyCodeLine{00325\ \ \ \ \ \ \ old-\/>prev\ =\ \doxymbox{\hyperlink{stddef_8h_a070d2ce7b6bb7e5c05602aa8c308d0c4}{NULL}};}
+\DoxyCodeLine{00326\ \ \ \ \ \}}
+\DoxyCodeLine{00327\ \}}
+\DoxyCodeLine{00328\ }
+\DoxyCodeLine{00329\ \textcolor{comment}{/*\ Relink\ ssa\_imm\_use\ node\ LINKNODE\ into\ the\ chain\ for\ OLD,\ with\ use\ occurring}}
+\DoxyCodeLine{00330\ \textcolor{comment}{\ \ \ in\ STMT.\ \ */}}
+\DoxyCodeLine{00331\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{void}}
+\DoxyCodeLine{00332\ \doxymbox{\hyperlink{ssa-iterators_8h_a8bec58039deac6240d02f52cbc022082}{relink\_imm\_use\_stmt}}\ (ssa\_use\_operand\_t\ *linknode,\ ssa\_use\_operand\_t\ *old,}
+\DoxyCodeLine{00333\ \ \ \ \ \ \ \ \ \ \ \ \ \ gimple\ *stmt)}
+\DoxyCodeLine{00334\ \{}
+\DoxyCodeLine{00335\ \ \ \textcolor{keywordflow}{if}\ (stmt)}
+\DoxyCodeLine{00336\ \ \ \ \ \doxymbox{\hyperlink{ssa-iterators_8h_a466ce261263aa28b39f2ce7f503e9a99}{relink\_imm\_use}}\ (linknode,\ old);}
+\DoxyCodeLine{00337\ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00338\ \ \ \ \ \doxymbox{\hyperlink{ssa-iterators_8h_aa7bd7cb5868e2e21b4276f05b621f2f1}{link\_imm\_use}}\ (linknode,\ \doxymbox{\hyperlink{stddef_8h_a070d2ce7b6bb7e5c05602aa8c308d0c4}{NULL}});}
+\DoxyCodeLine{00339\ \ \ linknode-\/>loc.stmt\ =\ stmt;}
+\DoxyCodeLine{00340\ \}}
+\DoxyCodeLine{00341\ }
+\DoxyCodeLine{00342\ }
+\DoxyCodeLine{00343\ \textcolor{comment}{/*\ Return\ true\ is\ IMM\ has\ reached\ the\ end\ of\ the\ immediate\ use\ list.\ \ */}}
+\DoxyCodeLine{00344\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{bool}}
+\DoxyCodeLine{00345\ \doxymbox{\hyperlink{ssa-iterators_8h_ab5035f2d220fd4c092c059b81d15b929}{end\_readonly\_imm\_use\_p}}\ (\textcolor{keyword}{const}\ \doxymbox{\hyperlink{structimm__use__iterator}{imm\_use\_iterator}}\ *imm)}
+\DoxyCodeLine{00346\ \{}
+\DoxyCodeLine{00347\ \ \ \textcolor{keywordflow}{return}\ (imm-\/>\doxymbox{\hyperlink{structimm__use__iterator_ac4ff91a3432fd2735bf3ae3eacf2195b}{imm\_use}}\ ==\ imm-\/>\doxymbox{\hyperlink{structimm__use__iterator_a4c986b8c3d59974e13bf2d0dfa9a1830}{end\_p}});}
+\DoxyCodeLine{00348\ \}}
+\DoxyCodeLine{00349\ }
+\DoxyCodeLine{00350\ \textcolor{comment}{/*\ Initialize\ iterator\ IMM\ to\ process\ the\ list\ for\ VAR.\ \ */}}
+\DoxyCodeLine{00351\ \textcolor{keyword}{inline}\ \doxymbox{\hyperlink{tree-ssa-operands_8h_a6c4644d017fc5af6b02dd63b38fa35c1}{use\_operand\_p}}}
+\DoxyCodeLine{00352\ \doxymbox{\hyperlink{ssa-iterators_8h_a24f755ab45fbe288159cadc4cd94e384}{first\_readonly\_imm\_use}}\ (\doxymbox{\hyperlink{structimm__use__iterator}{imm\_use\_iterator}}\ *imm,\ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ var)}
+\DoxyCodeLine{00353\ \{}
+\DoxyCodeLine{00354\ \ \ imm-\/>\doxymbox{\hyperlink{structimm__use__iterator_a4c986b8c3d59974e13bf2d0dfa9a1830}{end\_p}}\ =\ \&(\doxymbox{\hyperlink{tree_8h_a637c83b86df6744e6a1c1a60912016ce}{SSA\_NAME\_IMM\_USE\_NODE}}\ (var));}
+\DoxyCodeLine{00355\ \ \ imm-\/>\doxymbox{\hyperlink{structimm__use__iterator_ac4ff91a3432fd2735bf3ae3eacf2195b}{imm\_use}}\ =\ imm-\/>\doxymbox{\hyperlink{structimm__use__iterator_a4c986b8c3d59974e13bf2d0dfa9a1830}{end\_p}}-\/>next;}
+\DoxyCodeLine{00356\ \ \ imm-\/>\doxymbox{\hyperlink{structimm__use__iterator_a5495087f0678991bca89a997df35ef35}{iter\_node}}.next\ =\ imm-\/>\doxymbox{\hyperlink{structimm__use__iterator_ac4ff91a3432fd2735bf3ae3eacf2195b}{imm\_use}}-\/>next;}
+\DoxyCodeLine{00357\ \ \ \textcolor{keywordflow}{if}\ (\doxymbox{\hyperlink{ssa-iterators_8h_ab5035f2d220fd4c092c059b81d15b929}{end\_readonly\_imm\_use\_p}}\ (imm))}
+\DoxyCodeLine{00358\ \ \ \ \ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{tree-ssa-operands_8h_ac903e336aa6cdf4821106a43ebfbdde7}{NULL\_USE\_OPERAND\_P}};}
+\DoxyCodeLine{00359\ \ \ \textcolor{keywordflow}{return}\ imm-\/>\doxymbox{\hyperlink{structimm__use__iterator_ac4ff91a3432fd2735bf3ae3eacf2195b}{imm\_use}};}
+\DoxyCodeLine{00360\ \}}
+\DoxyCodeLine{00361\ }
+\DoxyCodeLine{00362\ \textcolor{comment}{/*\ Bump\ IMM\ to\ the\ next\ use\ in\ the\ list.\ \ */}}
+\DoxyCodeLine{00363\ \textcolor{keyword}{inline}\ \doxymbox{\hyperlink{tree-ssa-operands_8h_a6c4644d017fc5af6b02dd63b38fa35c1}{use\_operand\_p}}}
+\DoxyCodeLine{00364\ \doxymbox{\hyperlink{ssa-iterators_8h_a7e1b30ea3c2bb74309641d086fef07dd}{next\_readonly\_imm\_use}}\ (\doxymbox{\hyperlink{structimm__use__iterator}{imm\_use\_iterator}}\ *imm)}
+\DoxyCodeLine{00365\ \{}
+\DoxyCodeLine{00366\ \ \ \doxymbox{\hyperlink{tree-ssa-operands_8h_a6c4644d017fc5af6b02dd63b38fa35c1}{use\_operand\_p}}\ old\ =\ imm-\/>\doxymbox{\hyperlink{structimm__use__iterator_ac4ff91a3432fd2735bf3ae3eacf2195b}{imm\_use}};}
+\DoxyCodeLine{00367\ }
+\DoxyCodeLine{00368\ \ \ \textcolor{comment}{/*\ If\ this\ assertion\ fails,\ it\ indicates\ the\ 'next'\ pointer\ has\ changed}}
+\DoxyCodeLine{00369\ \textcolor{comment}{\ \ \ \ \ since\ the\ last\ bump.\ \ This\ indicates\ that\ the\ list\ is\ being\ modified}}
+\DoxyCodeLine{00370\ \textcolor{comment}{\ \ \ \ \ via\ stmt\ changes,\ or\ SET\_USE,\ or\ somesuch\ thing,\ and\ you\ need\ to\ be}}
+\DoxyCodeLine{00371\ \textcolor{comment}{\ \ \ \ \ using\ the\ SAFE\ version\ of\ the\ iterator.\ \ */}}
+\DoxyCodeLine{00372\ \ \ \textcolor{keywordflow}{if}\ (\doxymbox{\hyperlink{options_8h_a84596fb150478c4f5173d2c5fff82710}{flag\_checking}})}
+\DoxyCodeLine{00373\ \ \ \ \ \{}
+\DoxyCodeLine{00374\ \ \ \ \ \ \ \doxymbox{\hyperlink{system_8h_a0deee0ddaa8ce3bbd400ab5f75de06ff}{gcc\_assert}}\ (imm-\/>\doxymbox{\hyperlink{structimm__use__iterator_a5495087f0678991bca89a997df35ef35}{iter\_node}}.next\ ==\ old-\/>next);}
+\DoxyCodeLine{00375\ \ \ \ \ \ \ imm-\/>\doxymbox{\hyperlink{structimm__use__iterator_a5495087f0678991bca89a997df35ef35}{iter\_node}}.next\ =\ old-\/>next-\/>next;}
+\DoxyCodeLine{00376\ \ \ \ \ \}}
+\DoxyCodeLine{00377\ }
+\DoxyCodeLine{00378\ \ \ imm-\/>\doxymbox{\hyperlink{structimm__use__iterator_ac4ff91a3432fd2735bf3ae3eacf2195b}{imm\_use}}\ =\ old-\/>next;}
+\DoxyCodeLine{00379\ \ \ \textcolor{keywordflow}{if}\ (\doxymbox{\hyperlink{ssa-iterators_8h_ab5035f2d220fd4c092c059b81d15b929}{end\_readonly\_imm\_use\_p}}\ (imm))}
+\DoxyCodeLine{00380\ \ \ \ \ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{tree-ssa-operands_8h_ac903e336aa6cdf4821106a43ebfbdde7}{NULL\_USE\_OPERAND\_P}};}
+\DoxyCodeLine{00381\ \ \ \textcolor{keywordflow}{return}\ imm-\/>\doxymbox{\hyperlink{structimm__use__iterator_ac4ff91a3432fd2735bf3ae3eacf2195b}{imm\_use}};}
+\DoxyCodeLine{00382\ \}}
+\DoxyCodeLine{00383\ }
+\DoxyCodeLine{00384\ }
+\DoxyCodeLine{00385\ \textcolor{comment}{/*\ Return\ true\ if\ VAR\ has\ no\ nondebug\ uses.\ \ */}}
+\DoxyCodeLine{00386\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{bool}}
+\DoxyCodeLine{00387\ \doxymbox{\hyperlink{ssa-iterators_8h_a3c788343ea4b241c0d24fd9aef4e76ba}{has\_zero\_uses}}\ (\doxymbox{\hyperlink{coretypes_8h_ad41eb6a6028ff5b3fd00b1ee9f35ed46}{const\_tree}}\ var)}
+\DoxyCodeLine{00388\ \{}
+\DoxyCodeLine{00389\ \ \ \textcolor{keyword}{const}\ ssa\_use\_operand\_t\ *\textcolor{keyword}{const}\ head\ =\ \&(\doxymbox{\hyperlink{tree_8h_a637c83b86df6744e6a1c1a60912016ce}{SSA\_NAME\_IMM\_USE\_NODE}}\ (var));}
+\DoxyCodeLine{00390\ \ \ \textcolor{keyword}{const}\ ssa\_use\_operand\_t\ *ptr;}
+\DoxyCodeLine{00391\ }
+\DoxyCodeLine{00392\ \ \ \textcolor{keywordflow}{for}\ (ptr\ =\ head-\/>next;\ ptr\ !=\ head;\ ptr\ =\ ptr-\/>next)}
+\DoxyCodeLine{00393\ \ \ \ \ \textcolor{keywordflow}{if}\ (\doxymbox{\hyperlink{tree-ssa-operands_8h_a3349aa1cbd782e70fa771eb4e94118b7}{USE\_STMT}}\ (ptr)\ \&\&\ !\doxymbox{\hyperlink{gimple_8h_a70f97ff69d3df82a82347f4c851e34e4}{is\_gimple\_debug}}\ (\doxymbox{\hyperlink{tree-ssa-operands_8h_a3349aa1cbd782e70fa771eb4e94118b7}{USE\_STMT}}\ (ptr)))}
+\DoxyCodeLine{00394\ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ \textcolor{keyword}{false};}
+\DoxyCodeLine{00395\ }
+\DoxyCodeLine{00396\ \ \ \textcolor{keywordflow}{return}\ \textcolor{keyword}{true};}
+\DoxyCodeLine{00397\ \}}
+\DoxyCodeLine{00398\ }
+\DoxyCodeLine{00399\ \textcolor{comment}{/*\ Return\ true\ if\ VAR\ has\ a\ single\ nondebug\ use.\ \ */}}
+\DoxyCodeLine{00400\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{bool}}
+\DoxyCodeLine{00401\ \doxymbox{\hyperlink{ssa-iterators_8h_ab0fbca62d5b09a28983db9126f999593}{has\_single\_use}}\ (\doxymbox{\hyperlink{coretypes_8h_ad41eb6a6028ff5b3fd00b1ee9f35ed46}{const\_tree}}\ var)}
+\DoxyCodeLine{00402\ \{}
+\DoxyCodeLine{00403\ \ \ \textcolor{keyword}{const}\ ssa\_use\_operand\_t\ *\textcolor{keyword}{const}\ head\ =\ \&(\doxymbox{\hyperlink{tree_8h_a637c83b86df6744e6a1c1a60912016ce}{SSA\_NAME\_IMM\_USE\_NODE}}\ (var));}
+\DoxyCodeLine{00404\ \ \ \textcolor{keyword}{const}\ ssa\_use\_operand\_t\ *ptr;}
+\DoxyCodeLine{00405\ \ \ \textcolor{keywordtype}{bool}\ single\ =\ \textcolor{keyword}{false};}
+\DoxyCodeLine{00406\ \ \ \ }
+\DoxyCodeLine{00407\ \ \ \textcolor{keywordflow}{for}\ (ptr\ =\ head-\/>next;\ ptr\ !=\ head;\ ptr\ =\ ptr-\/>next)}
+\DoxyCodeLine{00408\ \ \ \ \ \textcolor{keywordflow}{if}\ (\doxymbox{\hyperlink{tree-ssa-operands_8h_a3349aa1cbd782e70fa771eb4e94118b7}{USE\_STMT}}(ptr)\ \&\&\ !\doxymbox{\hyperlink{gimple_8h_a70f97ff69d3df82a82347f4c851e34e4}{is\_gimple\_debug}}\ (\doxymbox{\hyperlink{tree-ssa-operands_8h_a3349aa1cbd782e70fa771eb4e94118b7}{USE\_STMT}}\ (ptr)))}
+\DoxyCodeLine{00409\ \ \ \ \ \ \ \{}
+\DoxyCodeLine{00410\ \ \ \ \ \textcolor{keywordflow}{if}\ (single)}
+\DoxyCodeLine{00411\ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ \textcolor{keyword}{false};}
+\DoxyCodeLine{00412\ \ \ \ \ \textcolor{keywordflow}{else}\ }
+\DoxyCodeLine{00413\ \ \ \ \ \ \ single\ =\ \textcolor{keyword}{true};}
+\DoxyCodeLine{00414\ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00415\ }
+\DoxyCodeLine{00416\ \ \ \textcolor{keywordflow}{return}\ single;}
+\DoxyCodeLine{00417\ \}}
+\DoxyCodeLine{00418\ \ \ \ \ }
+\DoxyCodeLine{00419\ \textcolor{comment}{/*\ If\ VAR\ has\ only\ a\ single\ immediate\ nondebug\ use,\ return\ true,\ and}}
+\DoxyCodeLine{00420\ \textcolor{comment}{\ \ \ set\ USE\_P\ and\ STMT\ to\ the\ use\ pointer\ and\ stmt\ of\ occurrence.\ \ */}}
+\DoxyCodeLine{00421\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{bool}}
+\DoxyCodeLine{00422\ \doxymbox{\hyperlink{ssa-iterators_8h_a2d0a34a60146715d7731f884b897c78e}{single\_imm\_use}}\ (\doxymbox{\hyperlink{coretypes_8h_ad41eb6a6028ff5b3fd00b1ee9f35ed46}{const\_tree}}\ var,\ \doxymbox{\hyperlink{tree-ssa-operands_8h_a6c4644d017fc5af6b02dd63b38fa35c1}{use\_operand\_p}}\ *use\_p,\ gimple\ **stmt)}
+\DoxyCodeLine{00423\ \{}
+\DoxyCodeLine{00424\ \ \ \textcolor{keyword}{const}\ ssa\_use\_operand\_t\ *\textcolor{keyword}{const}\ ptr\ =\ \&(\doxymbox{\hyperlink{tree_8h_a637c83b86df6744e6a1c1a60912016ce}{SSA\_NAME\_IMM\_USE\_NODE}}\ (var));}
+\DoxyCodeLine{00425\ }
+\DoxyCodeLine{00426\ \ \ \textcolor{comment}{/*\ If\ there\ aren't\ any\ uses\ whatsoever,\ we're\ done.\ \ */}}
+\DoxyCodeLine{00427\ \ \ \textcolor{keywordflow}{if}\ (ptr\ ==\ ptr-\/>next)}
+\DoxyCodeLine{00428\ \ \ \ \ \{}
+\DoxyCodeLine{00429\ \ \ \ \ \doxymbox{\hyperlink{ipa-icf-gimple_8h_a0283fc9cafe3fe3e105087e56a99010a}{return\_false}}:}
+\DoxyCodeLine{00430\ \ \ \ \ \ \ *use\_p\ =\ \doxymbox{\hyperlink{tree-ssa-operands_8h_ac903e336aa6cdf4821106a43ebfbdde7}{NULL\_USE\_OPERAND\_P}};}
+\DoxyCodeLine{00431\ \ \ \ \ \ \ *stmt\ =\ \doxymbox{\hyperlink{stddef_8h_a070d2ce7b6bb7e5c05602aa8c308d0c4}{NULL}};}
+\DoxyCodeLine{00432\ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ \textcolor{keyword}{false};}
+\DoxyCodeLine{00433\ \ \ \ \ \}}
+\DoxyCodeLine{00434\ }
+\DoxyCodeLine{00435\ \ \ \textcolor{comment}{/*\ If\ there's\ a\ single\ use,\ check\ that\ it's\ not\ a\ debug\ stmt.\ \ */}}
+\DoxyCodeLine{00436\ \ \ \textcolor{keywordflow}{if}\ (ptr\ ==\ ptr-\/>next-\/>next)}
+\DoxyCodeLine{00437\ \ \ \ \ \{}
+\DoxyCodeLine{00438\ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (\doxymbox{\hyperlink{tree-ssa-operands_8h_a3349aa1cbd782e70fa771eb4e94118b7}{USE\_STMT}}\ (ptr-\/>next)\ \&\&\ !\doxymbox{\hyperlink{gimple_8h_a70f97ff69d3df82a82347f4c851e34e4}{is\_gimple\_debug}}\ (\doxymbox{\hyperlink{tree-ssa-operands_8h_a3349aa1cbd782e70fa771eb4e94118b7}{USE\_STMT}}\ (ptr-\/>next)))}
+\DoxyCodeLine{00439\ \ \ \ \ \{}
+\DoxyCodeLine{00440\ \ \ \ \ \ \ *use\_p\ =\ ptr-\/>next;}
+\DoxyCodeLine{00441\ \ \ \ \ \ \ *stmt\ =\ ptr-\/>next-\/>loc.stmt;}
+\DoxyCodeLine{00442\ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ \textcolor{keyword}{true};}
+\DoxyCodeLine{00443\ \ \ \ \ \}}
+\DoxyCodeLine{00444\ \ \ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00445\ \ \ \ \ \textcolor{keywordflow}{goto}\ \doxymbox{\hyperlink{ipa-icf-gimple_8h_a0283fc9cafe3fe3e105087e56a99010a}{return\_false}};}
+\DoxyCodeLine{00446\ \ \ \ \ \}}
+\DoxyCodeLine{00447\ }
+\DoxyCodeLine{00448\ \ \ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{ssa-iterators_8h_adf73233cc9071af391cd04c03abe476f}{single\_imm\_use\_1}}\ (ptr,\ use\_p,\ stmt);}
+\DoxyCodeLine{00449\ \}}
+\DoxyCodeLine{00450\ }
+\DoxyCodeLine{00451\ \textcolor{comment}{/*\ Return\ the\ number\ of\ nondebug\ immediate\ uses\ of\ VAR.\ \ */}}
+\DoxyCodeLine{00452\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}}
+\DoxyCodeLine{00453\ \doxymbox{\hyperlink{ssa-iterators_8h_a854022639e325ecdb286186241a76beb}{num\_imm\_uses}}\ (\doxymbox{\hyperlink{coretypes_8h_ad41eb6a6028ff5b3fd00b1ee9f35ed46}{const\_tree}}\ var)}
+\DoxyCodeLine{00454\ \{}
+\DoxyCodeLine{00455\ \ \ \textcolor{keyword}{const}\ ssa\_use\_operand\_t\ *\textcolor{keyword}{const}\ start\ =\ \&(\doxymbox{\hyperlink{tree_8h_a637c83b86df6744e6a1c1a60912016ce}{SSA\_NAME\_IMM\_USE\_NODE}}\ (var));}
+\DoxyCodeLine{00456\ \ \ \textcolor{keyword}{const}\ ssa\_use\_operand\_t\ *ptr;}
+\DoxyCodeLine{00457\ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ num\ =\ 0;}
+\DoxyCodeLine{00458\ }
+\DoxyCodeLine{00459\ \ \ \textcolor{keywordflow}{if}\ (!\doxymbox{\hyperlink{tree_8h_a46789926892f191224628ceb74ac320a}{MAY\_HAVE\_DEBUG\_BIND\_STMTS}})}
+\DoxyCodeLine{00460\ \ \ \ \ \{}
+\DoxyCodeLine{00461\ \ \ \ \ \ \ \textcolor{keywordflow}{for}\ (ptr\ =\ start-\/>next;\ ptr\ !=\ start;\ ptr\ =\ ptr-\/>next)}
+\DoxyCodeLine{00462\ \ \ \ \ \textcolor{keywordflow}{if}\ (\doxymbox{\hyperlink{tree-ssa-operands_8h_a3349aa1cbd782e70fa771eb4e94118b7}{USE\_STMT}}\ (ptr))}
+\DoxyCodeLine{00463\ \ \ \ \ \ \ num++;}
+\DoxyCodeLine{00464\ \ \ \ \ \}}
+\DoxyCodeLine{00465\ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00466\ \ \ \ \ \textcolor{keywordflow}{for}\ (ptr\ =\ start-\/>next;\ ptr\ !=\ start;\ ptr\ =\ ptr-\/>next)}
+\DoxyCodeLine{00467\ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (\doxymbox{\hyperlink{tree-ssa-operands_8h_a3349aa1cbd782e70fa771eb4e94118b7}{USE\_STMT}}\ (ptr)\ \&\&\ !\doxymbox{\hyperlink{gimple_8h_a70f97ff69d3df82a82347f4c851e34e4}{is\_gimple\_debug}}\ (\doxymbox{\hyperlink{tree-ssa-operands_8h_a3349aa1cbd782e70fa771eb4e94118b7}{USE\_STMT}}\ (ptr)))}
+\DoxyCodeLine{00468\ \ \ \ \ num++;}
+\DoxyCodeLine{00469\ }
+\DoxyCodeLine{00470\ \ \ \textcolor{keywordflow}{return}\ num;}
+\DoxyCodeLine{00471\ \}}
+\DoxyCodeLine{00472\ }
+\DoxyCodeLine{00473\ \textcolor{comment}{/*\ \ -\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/\ \ */}}
+\DoxyCodeLine{00474\ }
+\DoxyCodeLine{00475\ \textcolor{comment}{/*\ The\ following\ set\ of\ routines\ are\ used\ to\ iterator\ over\ various\ type\ of}}
+\DoxyCodeLine{00476\ \textcolor{comment}{\ \ \ SSA\ operands.\ \ */}}
+\DoxyCodeLine{00477\ }
+\DoxyCodeLine{00478\ \textcolor{comment}{/*\ Return\ true\ if\ PTR\ is\ finished\ iterating.\ \ */}}
+\DoxyCodeLine{00479\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{bool}}
+\DoxyCodeLine{00480\ \doxymbox{\hyperlink{ssa-iterators_8h_af4f9bfdbf5105812b98265abec030e48}{op\_iter\_done}}\ (\textcolor{keyword}{const}\ \doxymbox{\hyperlink{structssa__op__iter}{ssa\_op\_iter}}\ *ptr)}
+\DoxyCodeLine{00481\ \{}
+\DoxyCodeLine{00482\ \ \ \textcolor{keywordflow}{return}\ ptr-\/>\doxymbox{\hyperlink{structssa__op__iter_a3e6e920b017174b2d2310582d22221c9}{done}};}
+\DoxyCodeLine{00483\ \}}
+\DoxyCodeLine{00484\ }
+\DoxyCodeLine{00485\ \textcolor{comment}{/*\ Get\ the\ next\ iterator\ use\ value\ for\ PTR.\ \ */}}
+\DoxyCodeLine{00486\ \textcolor{keyword}{inline}\ \doxymbox{\hyperlink{tree-ssa-operands_8h_a6c4644d017fc5af6b02dd63b38fa35c1}{use\_operand\_p}}}
+\DoxyCodeLine{00487\ \doxymbox{\hyperlink{ssa-iterators_8h_a4e104c27b4b148c651f73e1c4ad0bbbd}{op\_iter\_next\_use}}\ (\doxymbox{\hyperlink{structssa__op__iter}{ssa\_op\_iter}}\ *ptr)}
+\DoxyCodeLine{00488\ \{}
+\DoxyCodeLine{00489\ \ \ \doxymbox{\hyperlink{tree-ssa-operands_8h_a6c4644d017fc5af6b02dd63b38fa35c1}{use\_operand\_p}}\ use\_p;}
+\DoxyCodeLine{00490\ \ \ \doxymbox{\hyperlink{system_8h_aff447899dc74d54931b2bc2d47de9423}{gcc\_checking\_assert}}\ (ptr-\/>\doxymbox{\hyperlink{structssa__op__iter_af34c59433f9e1f77d8440297bd4a951c}{iter\_type}}\ ==\ \doxymbox{\hyperlink{ssa-iterators_8h_a54d8f55e5098519da13d9283802bc956abac5d38d2635fb3a9ac44545e9cea556}{ssa\_op\_iter\_use}});}
+\DoxyCodeLine{00491\ \ \ \textcolor{keywordflow}{if}\ (ptr-\/>\doxymbox{\hyperlink{structssa__op__iter_aaf4d5d5c3054d2ecb2aff0f4a2ebc2f8}{uses}})}
+\DoxyCodeLine{00492\ \ \ \ \ \{}
+\DoxyCodeLine{00493\ \ \ \ \ \ \ use\_p\ =\ \doxymbox{\hyperlink{tree-ssa-operands_8h_aa000697e672820f3561900959f295e4a}{USE\_OP\_PTR}}\ (ptr-\/>\doxymbox{\hyperlink{structssa__op__iter_aaf4d5d5c3054d2ecb2aff0f4a2ebc2f8}{uses}});}
+\DoxyCodeLine{00494\ \ \ \ \ \ \ ptr-\/>\doxymbox{\hyperlink{structssa__op__iter_aaf4d5d5c3054d2ecb2aff0f4a2ebc2f8}{uses}}\ =\ ptr-\/>\doxymbox{\hyperlink{structssa__op__iter_aaf4d5d5c3054d2ecb2aff0f4a2ebc2f8}{uses}}-\/>\doxymbox{\hyperlink{structuse__optype__d_abc46756b0c77b4698d55e6c074254eca}{next}};}
+\DoxyCodeLine{00495\ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ use\_p;}
+\DoxyCodeLine{00496\ \ \ \ \ \}}
+\DoxyCodeLine{00497\ \ \ \textcolor{keywordflow}{if}\ (ptr-\/>\doxymbox{\hyperlink{structssa__op__iter_a246cbf827d1797fa1b4821e6fd47c521}{i}}\ <\ ptr-\/>\doxymbox{\hyperlink{structssa__op__iter_a0fbd4f7f755d2e5dffd60096c1bba64c}{numops}})}
+\DoxyCodeLine{00498\ \ \ \ \ \{}
+\DoxyCodeLine{00499\ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{tree-ssa-operands_8h_aa7a9ab12bdc17548341954f87afcea3f}{PHI\_ARG\_DEF\_PTR}}\ (ptr-\/>\doxymbox{\hyperlink{structssa__op__iter_a8b8fc7e2d7a4cc92bc7a0d3cc0fafbb8}{stmt}},\ (ptr-\/>\doxymbox{\hyperlink{structssa__op__iter_a246cbf827d1797fa1b4821e6fd47c521}{i}})++);}
+\DoxyCodeLine{00500\ \ \ \ \ \}}
+\DoxyCodeLine{00501\ \ \ ptr-\/>\doxymbox{\hyperlink{structssa__op__iter_a3e6e920b017174b2d2310582d22221c9}{done}}\ =\ \textcolor{keyword}{true};}
+\DoxyCodeLine{00502\ \ \ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{tree-ssa-operands_8h_ac903e336aa6cdf4821106a43ebfbdde7}{NULL\_USE\_OPERAND\_P}};}
+\DoxyCodeLine{00503\ \}}
+\DoxyCodeLine{00504\ }
+\DoxyCodeLine{00505\ \textcolor{comment}{/*\ Get\ the\ next\ iterator\ def\ value\ for\ PTR.\ \ */}}
+\DoxyCodeLine{00506\ \textcolor{keyword}{inline}\ \doxymbox{\hyperlink{tree-ssa-operands_8h_a0039b49df2ddf3b065bbce8dbff4e49b}{def\_operand\_p}}}
+\DoxyCodeLine{00507\ \doxymbox{\hyperlink{ssa-iterators_8h_a00cb5fe9af2d46f7341a4f3552f01713}{op\_iter\_next\_def}}\ (\doxymbox{\hyperlink{structssa__op__iter}{ssa\_op\_iter}}\ *ptr)}
+\DoxyCodeLine{00508\ \{}
+\DoxyCodeLine{00509\ \ \ \doxymbox{\hyperlink{system_8h_aff447899dc74d54931b2bc2d47de9423}{gcc\_checking\_assert}}\ (ptr-\/>\doxymbox{\hyperlink{structssa__op__iter_af34c59433f9e1f77d8440297bd4a951c}{iter\_type}}\ ==\ \doxymbox{\hyperlink{ssa-iterators_8h_a54d8f55e5098519da13d9283802bc956accdbf16b9d679ba71ea2dc0219142ed1}{ssa\_op\_iter\_def}});}
+\DoxyCodeLine{00510\ \ \ \textcolor{keywordflow}{if}\ (ptr-\/>\doxymbox{\hyperlink{structssa__op__iter_a7b9cdceb8d3af8a057d100baeec6ad62}{flags}}\ \&\ \doxymbox{\hyperlink{ssa-iterators_8h_a3ffd70ceae018fdd3fc2cc646c41457d}{SSA\_OP\_VDEF}})}
+\DoxyCodeLine{00511\ \ \ \ \ \{}
+\DoxyCodeLine{00512\ \ \ \ \ \ \ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ *p;}
+\DoxyCodeLine{00513\ \ \ \ \ \ \ ptr-\/>\doxymbox{\hyperlink{structssa__op__iter_a7b9cdceb8d3af8a057d100baeec6ad62}{flags}}\ \&=\ \doxymbox{\hyperlink{ssa-iterators_8h_a3ffd70ceae018fdd3fc2cc646c41457d}{\string~SSA\_OP\_VDEF}};}
+\DoxyCodeLine{00514\ \ \ \ \ \ \ p\ =\ \doxymbox{\hyperlink{gimple_8h_a12fa338fa194053d9330edf5607b2c49}{gimple\_vdef\_ptr}}\ (ptr-\/>\doxymbox{\hyperlink{structssa__op__iter_a8b8fc7e2d7a4cc92bc7a0d3cc0fafbb8}{stmt}});}
+\DoxyCodeLine{00515\ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (p\ \&\&\ *p)}
+\DoxyCodeLine{00516\ \ \ \ \ \textcolor{keywordflow}{return}\ p;}
+\DoxyCodeLine{00517\ \ \ \ \ \}}
+\DoxyCodeLine{00518\ \ \ \textcolor{keywordflow}{if}\ (ptr-\/>\doxymbox{\hyperlink{structssa__op__iter_a7b9cdceb8d3af8a057d100baeec6ad62}{flags}}\ \&\ \doxymbox{\hyperlink{ssa-iterators_8h_ac145ed18cf597672cb938c7da02681e4}{SSA\_OP\_DEF}})}
+\DoxyCodeLine{00519\ \ \ \ \ \{}
+\DoxyCodeLine{00520\ \ \ \ \ \ \ \textcolor{keywordflow}{while}\ (ptr-\/>\doxymbox{\hyperlink{structssa__op__iter_a246cbf827d1797fa1b4821e6fd47c521}{i}}\ <\ ptr-\/>\doxymbox{\hyperlink{structssa__op__iter_a0fbd4f7f755d2e5dffd60096c1bba64c}{numops}})}
+\DoxyCodeLine{00521\ \ \ \ \ \{}
+\DoxyCodeLine{00522\ \ \ \ \ \ \ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ *val\ =\ \doxymbox{\hyperlink{gimple_8h_a0ca16695da9905373ae3cd2a6c4e27f4}{gimple\_op\_ptr}}\ (ptr-\/>\doxymbox{\hyperlink{structssa__op__iter_a8b8fc7e2d7a4cc92bc7a0d3cc0fafbb8}{stmt}},\ ptr-\/>\doxymbox{\hyperlink{structssa__op__iter_a246cbf827d1797fa1b4821e6fd47c521}{i}});}
+\DoxyCodeLine{00523\ \ \ \ \ \ \ ptr-\/>\doxymbox{\hyperlink{structssa__op__iter_a246cbf827d1797fa1b4821e6fd47c521}{i}}++;}
+\DoxyCodeLine{00524\ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (*val)}
+\DoxyCodeLine{00525\ \ \ \ \ \ \ \ \ \{}
+\DoxyCodeLine{00526\ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (\doxymbox{\hyperlink{tree_8h_a6449672126fbdb41758e25c87196efc1}{TREE\_CODE}}\ (*val)\ ==\ TREE\_LIST)}
+\DoxyCodeLine{00527\ \ \ \ \ \ \ \ \ val\ =\ \&\doxymbox{\hyperlink{tree_8h_a0a0ab7a8abe787543bd79a7609f1ee19}{TREE\_VALUE}}\ (*val);}
+\DoxyCodeLine{00528\ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (\doxymbox{\hyperlink{tree_8h_a6449672126fbdb41758e25c87196efc1}{TREE\_CODE}}\ (*val)\ ==\ SSA\_NAME}
+\DoxyCodeLine{00529\ \ \ \ \ \ \ \ \ \ \ ||\ \doxymbox{\hyperlink{gimple-expr_8h_a705bf1d30c987310c0ea05b39f386e40}{is\_gimple\_reg}}\ (*val))}
+\DoxyCodeLine{00530\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ val;}
+\DoxyCodeLine{00531\ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00532\ \ \ \ \ \}}
+\DoxyCodeLine{00533\ \ \ \ \ \ \ ptr-\/>\doxymbox{\hyperlink{structssa__op__iter_a7b9cdceb8d3af8a057d100baeec6ad62}{flags}}\ \&=\ \doxymbox{\hyperlink{ssa-iterators_8h_ac145ed18cf597672cb938c7da02681e4}{\string~SSA\_OP\_DEF}};}
+\DoxyCodeLine{00534\ \ \ \ \ \}}
+\DoxyCodeLine{00535\ }
+\DoxyCodeLine{00536\ \ \ ptr-\/>\doxymbox{\hyperlink{structssa__op__iter_a3e6e920b017174b2d2310582d22221c9}{done}}\ =\ \textcolor{keyword}{true};}
+\DoxyCodeLine{00537\ \ \ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{tree-ssa-operands_8h_ad9c087a13a807c322845ccc6bb1fd2f3}{NULL\_DEF\_OPERAND\_P}};}
+\DoxyCodeLine{00538\ \}}
+\DoxyCodeLine{00539\ }
+\DoxyCodeLine{00540\ \textcolor{comment}{/*\ Get\ the\ next\ iterator\ tree\ value\ for\ PTR.\ \ */}}
+\DoxyCodeLine{00541\ \textcolor{keyword}{inline}\ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}}
+\DoxyCodeLine{00542\ \doxymbox{\hyperlink{ssa-iterators_8h_aeca05d8c0e2ec7dc4fe4e8a5e0f699f7}{op\_iter\_next\_tree}}\ (\doxymbox{\hyperlink{structssa__op__iter}{ssa\_op\_iter}}\ *ptr)}
+\DoxyCodeLine{00543\ \{}
+\DoxyCodeLine{00544\ \ \ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ val;}
+\DoxyCodeLine{00545\ \ \ \doxymbox{\hyperlink{system_8h_aff447899dc74d54931b2bc2d47de9423}{gcc\_checking\_assert}}\ (ptr-\/>\doxymbox{\hyperlink{structssa__op__iter_af34c59433f9e1f77d8440297bd4a951c}{iter\_type}}\ ==\ \doxymbox{\hyperlink{ssa-iterators_8h_a54d8f55e5098519da13d9283802bc956acc2c00c7b7a02ff7284f9415bc5d3f7d}{ssa\_op\_iter\_tree}});}
+\DoxyCodeLine{00546\ \ \ \textcolor{keywordflow}{if}\ (ptr-\/>\doxymbox{\hyperlink{structssa__op__iter_aaf4d5d5c3054d2ecb2aff0f4a2ebc2f8}{uses}})}
+\DoxyCodeLine{00547\ \ \ \ \ \{}
+\DoxyCodeLine{00548\ \ \ \ \ \ \ val\ =\ \doxymbox{\hyperlink{tree-ssa-operands_8h_a6da0c5f394af2df1a048a8f425c9775e}{USE\_OP}}\ (ptr-\/>\doxymbox{\hyperlink{structssa__op__iter_aaf4d5d5c3054d2ecb2aff0f4a2ebc2f8}{uses}});}
+\DoxyCodeLine{00549\ \ \ \ \ \ \ ptr-\/>\doxymbox{\hyperlink{structssa__op__iter_aaf4d5d5c3054d2ecb2aff0f4a2ebc2f8}{uses}}\ =\ ptr-\/>\doxymbox{\hyperlink{structssa__op__iter_aaf4d5d5c3054d2ecb2aff0f4a2ebc2f8}{uses}}-\/>\doxymbox{\hyperlink{structuse__optype__d_abc46756b0c77b4698d55e6c074254eca}{next}};}
+\DoxyCodeLine{00550\ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ val;}
+\DoxyCodeLine{00551\ \ \ \ \ \}}
+\DoxyCodeLine{00552\ \ \ \textcolor{keywordflow}{if}\ (ptr-\/>\doxymbox{\hyperlink{structssa__op__iter_a7b9cdceb8d3af8a057d100baeec6ad62}{flags}}\ \&\ \doxymbox{\hyperlink{ssa-iterators_8h_a3ffd70ceae018fdd3fc2cc646c41457d}{SSA\_OP\_VDEF}})}
+\DoxyCodeLine{00553\ \ \ \ \ \{}
+\DoxyCodeLine{00554\ \ \ \ \ \ \ ptr-\/>\doxymbox{\hyperlink{structssa__op__iter_a7b9cdceb8d3af8a057d100baeec6ad62}{flags}}\ \&=\ \doxymbox{\hyperlink{ssa-iterators_8h_a3ffd70ceae018fdd3fc2cc646c41457d}{\string~SSA\_OP\_VDEF}};}
+\DoxyCodeLine{00555\ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ ((val\ =\ \doxymbox{\hyperlink{gimple_8h_a239cdf3908aad0852efc190f6e14829c}{gimple\_vdef}}\ (ptr-\/>\doxymbox{\hyperlink{structssa__op__iter_a8b8fc7e2d7a4cc92bc7a0d3cc0fafbb8}{stmt}})))}
+\DoxyCodeLine{00556\ \ \ \ \ \textcolor{keywordflow}{return}\ val;}
+\DoxyCodeLine{00557\ \ \ \ \ \}}
+\DoxyCodeLine{00558\ \ \ \textcolor{keywordflow}{if}\ (ptr-\/>\doxymbox{\hyperlink{structssa__op__iter_a7b9cdceb8d3af8a057d100baeec6ad62}{flags}}\ \&\ \doxymbox{\hyperlink{ssa-iterators_8h_ac145ed18cf597672cb938c7da02681e4}{SSA\_OP\_DEF}})}
+\DoxyCodeLine{00559\ \ \ \ \ \{}
+\DoxyCodeLine{00560\ \ \ \ \ \ \ \textcolor{keywordflow}{while}\ (ptr-\/>\doxymbox{\hyperlink{structssa__op__iter_a246cbf827d1797fa1b4821e6fd47c521}{i}}\ <\ ptr-\/>\doxymbox{\hyperlink{structssa__op__iter_a0fbd4f7f755d2e5dffd60096c1bba64c}{numops}})}
+\DoxyCodeLine{00561\ \ \ \ \ \{}
+\DoxyCodeLine{00562\ \ \ \ \ \ \ val\ =\ \doxymbox{\hyperlink{gimple_8h_a1a976a3ca821e73c264debaf7cccf47b}{gimple\_op}}\ (ptr-\/>\doxymbox{\hyperlink{structssa__op__iter_a8b8fc7e2d7a4cc92bc7a0d3cc0fafbb8}{stmt}},\ ptr-\/>\doxymbox{\hyperlink{structssa__op__iter_a246cbf827d1797fa1b4821e6fd47c521}{i}});}
+\DoxyCodeLine{00563\ \ \ \ \ \ \ ptr-\/>\doxymbox{\hyperlink{structssa__op__iter_a246cbf827d1797fa1b4821e6fd47c521}{i}}++;}
+\DoxyCodeLine{00564\ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (val)}
+\DoxyCodeLine{00565\ \ \ \ \ \ \ \ \ \{}
+\DoxyCodeLine{00566\ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (\doxymbox{\hyperlink{tree_8h_a6449672126fbdb41758e25c87196efc1}{TREE\_CODE}}\ (val)\ ==\ TREE\_LIST)}
+\DoxyCodeLine{00567\ \ \ \ \ \ \ \ \ val\ =\ \doxymbox{\hyperlink{tree_8h_a0a0ab7a8abe787543bd79a7609f1ee19}{TREE\_VALUE}}\ (val);}
+\DoxyCodeLine{00568\ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (\doxymbox{\hyperlink{tree_8h_a6449672126fbdb41758e25c87196efc1}{TREE\_CODE}}\ (val)\ ==\ SSA\_NAME}
+\DoxyCodeLine{00569\ \ \ \ \ \ \ \ \ \ \ ||\ \doxymbox{\hyperlink{gimple-expr_8h_a705bf1d30c987310c0ea05b39f386e40}{is\_gimple\_reg}}\ (val))}
+\DoxyCodeLine{00570\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ val;}
+\DoxyCodeLine{00571\ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00572\ \ \ \ \ \}}
+\DoxyCodeLine{00573\ \ \ \ \ \ \ ptr-\/>\doxymbox{\hyperlink{structssa__op__iter_a7b9cdceb8d3af8a057d100baeec6ad62}{flags}}\ \&=\ \doxymbox{\hyperlink{ssa-iterators_8h_ac145ed18cf597672cb938c7da02681e4}{\string~SSA\_OP\_DEF}};}
+\DoxyCodeLine{00574\ \ \ \ \ \}}
+\DoxyCodeLine{00575\ }
+\DoxyCodeLine{00576\ \ \ ptr-\/>\doxymbox{\hyperlink{structssa__op__iter_a3e6e920b017174b2d2310582d22221c9}{done}}\ =\ \textcolor{keyword}{true};}
+\DoxyCodeLine{00577\ \ \ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{tree_8h_aeda0ce25865d2494883f523217559d1e}{NULL\_TREE}};}
+\DoxyCodeLine{00578\ \}}
+\DoxyCodeLine{00579\ }
+\DoxyCodeLine{00580\ }
+\DoxyCodeLine{00581\ \textcolor{comment}{/*\ This\ functions\ clears\ the\ iterator\ PTR,\ and\ marks\ it\ done.\ \ This\ is\ normally}}
+\DoxyCodeLine{00582\ \textcolor{comment}{\ \ \ used\ to\ prevent\ warnings\ in\ the\ compile\ about\ might\ be\ uninitialized}}
+\DoxyCodeLine{00583\ \textcolor{comment}{\ \ \ components.\ \ */}}
+\DoxyCodeLine{00584\ }
+\DoxyCodeLine{00585\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{void}}
+\DoxyCodeLine{00586\ \doxymbox{\hyperlink{ssa-iterators_8h_a3654aef6af3859435e600e4119d5fc4c}{clear\_and\_done\_ssa\_iter}}\ (\doxymbox{\hyperlink{structssa__op__iter}{ssa\_op\_iter}}\ *ptr)}
+\DoxyCodeLine{00587\ \{}
+\DoxyCodeLine{00588\ \ \ ptr-\/>\doxymbox{\hyperlink{structssa__op__iter_a246cbf827d1797fa1b4821e6fd47c521}{i}}\ =\ 0;}
+\DoxyCodeLine{00589\ \ \ ptr-\/>\doxymbox{\hyperlink{structssa__op__iter_a0fbd4f7f755d2e5dffd60096c1bba64c}{numops}}\ =\ 0;}
+\DoxyCodeLine{00590\ \ \ ptr-\/>\doxymbox{\hyperlink{structssa__op__iter_aaf4d5d5c3054d2ecb2aff0f4a2ebc2f8}{uses}}\ =\ \doxymbox{\hyperlink{stddef_8h_a070d2ce7b6bb7e5c05602aa8c308d0c4}{NULL}};}
+\DoxyCodeLine{00591\ \ \ ptr-\/>\doxymbox{\hyperlink{structssa__op__iter_af34c59433f9e1f77d8440297bd4a951c}{iter\_type}}\ =\ \doxymbox{\hyperlink{ssa-iterators_8h_a54d8f55e5098519da13d9283802bc956a1525add353b14b2b8440a2adbd5379c6}{ssa\_op\_iter\_none}};}
+\DoxyCodeLine{00592\ \ \ ptr-\/>\doxymbox{\hyperlink{structssa__op__iter_a8b8fc7e2d7a4cc92bc7a0d3cc0fafbb8}{stmt}}\ =\ \doxymbox{\hyperlink{stddef_8h_a070d2ce7b6bb7e5c05602aa8c308d0c4}{NULL}};}
+\DoxyCodeLine{00593\ \ \ ptr-\/>\doxymbox{\hyperlink{structssa__op__iter_a3e6e920b017174b2d2310582d22221c9}{done}}\ =\ \textcolor{keyword}{true};}
+\DoxyCodeLine{00594\ \ \ ptr-\/>\doxymbox{\hyperlink{structssa__op__iter_a7b9cdceb8d3af8a057d100baeec6ad62}{flags}}\ =\ 0;}
+\DoxyCodeLine{00595\ \}}
+\DoxyCodeLine{00596\ }
+\DoxyCodeLine{00597\ \textcolor{comment}{/*\ Initialize\ the\ iterator\ PTR\ to\ the\ virtual\ defs\ in\ STMT.\ \ */}}
+\DoxyCodeLine{00598\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{void}}
+\DoxyCodeLine{00599\ \doxymbox{\hyperlink{ssa-iterators_8h_a84c2866b167c11e55f6c00aa7ab701b4}{op\_iter\_init}}\ (\doxymbox{\hyperlink{structssa__op__iter}{ssa\_op\_iter}}\ *ptr,\ gimple\ *stmt,\ \textcolor{keywordtype}{int}\ flags)}
+\DoxyCodeLine{00600\ \{}
+\DoxyCodeLine{00601\ \ \ \textcolor{comment}{/*\ PHI\ nodes\ require\ a\ different\ iterator\ initialization\ path.\ \ We}}
+\DoxyCodeLine{00602\ \textcolor{comment}{\ \ \ \ \ do\ not\ support\ iterating\ over\ virtual\ defs\ or\ uses\ without}}
+\DoxyCodeLine{00603\ \textcolor{comment}{\ \ \ \ \ iterating\ over\ defs\ or\ uses\ at\ the\ same\ time.\ \ */}}
+\DoxyCodeLine{00604\ \ \ \doxymbox{\hyperlink{system_8h_aff447899dc74d54931b2bc2d47de9423}{gcc\_checking\_assert}}\ (\doxymbox{\hyperlink{gimple_8h_a2a3ad11f4b4195051f6405b104eedd06}{gimple\_code}}\ (stmt)\ !=\ GIMPLE\_PHI}
+\DoxyCodeLine{00605\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&\&\ (!(flags\ \&\ \doxymbox{\hyperlink{ssa-iterators_8h_a3ffd70ceae018fdd3fc2cc646c41457d}{SSA\_OP\_VDEF}})\ ||\ (flags\ \&\ \doxymbox{\hyperlink{ssa-iterators_8h_ac145ed18cf597672cb938c7da02681e4}{SSA\_OP\_DEF}}))}
+\DoxyCodeLine{00606\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&\&\ (!(flags\ \&\ \doxymbox{\hyperlink{ssa-iterators_8h_a205c365a0686859801079d2ec317e4a6}{SSA\_OP\_VUSE}})\ ||\ (flags\ \&\ \doxymbox{\hyperlink{ssa-iterators_8h_a0e9afb463360ad324443e1b8a17a2ba9}{SSA\_OP\_USE}})));}
+\DoxyCodeLine{00607\ \ \ ptr-\/>\doxymbox{\hyperlink{structssa__op__iter_a0fbd4f7f755d2e5dffd60096c1bba64c}{numops}}\ =\ 0;}
+\DoxyCodeLine{00608\ \ \ \textcolor{keywordflow}{if}\ (flags\ \&\ (\doxymbox{\hyperlink{ssa-iterators_8h_ac145ed18cf597672cb938c7da02681e4}{SSA\_OP\_DEF}}\ |\ \doxymbox{\hyperlink{ssa-iterators_8h_a3ffd70ceae018fdd3fc2cc646c41457d}{SSA\_OP\_VDEF}}))}
+\DoxyCodeLine{00609\ \ \ \ \ \{}
+\DoxyCodeLine{00610\ \ \ \ \ \ \ \textcolor{keywordflow}{switch}\ (\doxymbox{\hyperlink{gimple_8h_a2a3ad11f4b4195051f6405b104eedd06}{gimple\_code}}\ (stmt))}
+\DoxyCodeLine{00611\ \ \ \ \ \{}
+\DoxyCodeLine{00612\ \ \ \ \ \ \ \textcolor{keywordflow}{case}\ GIMPLE\_ASSIGN:}
+\DoxyCodeLine{00613\ \ \ \ \ \ \ \textcolor{keywordflow}{case}\ GIMPLE\_CALL:}
+\DoxyCodeLine{00614\ \ \ \ \ \ \ \ \ ptr-\/>\doxymbox{\hyperlink{structssa__op__iter_a0fbd4f7f755d2e5dffd60096c1bba64c}{numops}}\ =\ 1;}
+\DoxyCodeLine{00615\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{break};}
+\DoxyCodeLine{00616\ \ \ \ \ \ \ \textcolor{keywordflow}{case}\ GIMPLE\_ASM:}
+\DoxyCodeLine{00617\ \ \ \ \ \ \ \ \ ptr-\/>\doxymbox{\hyperlink{structssa__op__iter_a0fbd4f7f755d2e5dffd60096c1bba64c}{numops}}\ =\ \doxymbox{\hyperlink{gimple_8h_a4eeacfe6c5f73abd972ac8a730b8b4f8}{gimple\_asm\_noutputs}}\ (\doxymbox{\hyperlink{is-a_8h_aca295849653a5caadba0a81a521dda2e}{as\_a\ <gasm\ *>}}\ (stmt));}
+\DoxyCodeLine{00618\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{break};}
+\DoxyCodeLine{00619\ \ \ \ \ \ \ \textcolor{keywordflow}{case}\ GIMPLE\_TRANSACTION:}
+\DoxyCodeLine{00620\ \ \ \ \ \ \ \ \ ptr-\/>\doxymbox{\hyperlink{structssa__op__iter_a0fbd4f7f755d2e5dffd60096c1bba64c}{numops}}\ =\ 0;}
+\DoxyCodeLine{00621\ \ \ \ \ \ \ \ \ flags\ \&=\ \doxymbox{\hyperlink{ssa-iterators_8h_ac145ed18cf597672cb938c7da02681e4}{\string~SSA\_OP\_DEF}};}
+\DoxyCodeLine{00622\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{break};}
+\DoxyCodeLine{00623\ \ \ \ \ \ \ \textcolor{keywordflow}{default}:}
+\DoxyCodeLine{00624\ \ \ \ \ \ \ \ \ ptr-\/>\doxymbox{\hyperlink{structssa__op__iter_a0fbd4f7f755d2e5dffd60096c1bba64c}{numops}}\ =\ 0;}
+\DoxyCodeLine{00625\ \ \ \ \ \ \ \ \ flags\ \&=\ \string~(\doxymbox{\hyperlink{ssa-iterators_8h_ac145ed18cf597672cb938c7da02681e4}{SSA\_OP\_DEF}}\ |\ \doxymbox{\hyperlink{ssa-iterators_8h_a3ffd70ceae018fdd3fc2cc646c41457d}{SSA\_OP\_VDEF}});}
+\DoxyCodeLine{00626\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{break};}
+\DoxyCodeLine{00627\ \ \ \ \ \}}
+\DoxyCodeLine{00628\ \ \ \ \ \}}
+\DoxyCodeLine{00629\ \ \ ptr-\/>\doxymbox{\hyperlink{structssa__op__iter_aaf4d5d5c3054d2ecb2aff0f4a2ebc2f8}{uses}}\ =\ (flags\ \&\ (\doxymbox{\hyperlink{ssa-iterators_8h_a0e9afb463360ad324443e1b8a17a2ba9}{SSA\_OP\_USE}}|\doxymbox{\hyperlink{ssa-iterators_8h_a205c365a0686859801079d2ec317e4a6}{SSA\_OP\_VUSE}}))\ ?\ \doxymbox{\hyperlink{gimple_8h_a696de42f7a7495723b694eb45ce7e3fb}{gimple\_use\_ops}}\ (stmt)\ :\ \doxymbox{\hyperlink{stddef_8h_a070d2ce7b6bb7e5c05602aa8c308d0c4}{NULL}};}
+\DoxyCodeLine{00630\ \ \ \textcolor{keywordflow}{if}\ (!(flags\ \&\ \doxymbox{\hyperlink{ssa-iterators_8h_a205c365a0686859801079d2ec317e4a6}{SSA\_OP\_VUSE}})}
+\DoxyCodeLine{00631\ \ \ \ \ \ \ \&\&\ ptr-\/>\doxymbox{\hyperlink{structssa__op__iter_aaf4d5d5c3054d2ecb2aff0f4a2ebc2f8}{uses}}}
+\DoxyCodeLine{00632\ \ \ \ \ \ \ \&\&\ \doxymbox{\hyperlink{gimple_8h_ae4fb7cc6aaf716d3f153a9521bd3ad9a}{gimple\_vuse}}\ (stmt)\ !=\ \doxymbox{\hyperlink{tree_8h_aeda0ce25865d2494883f523217559d1e}{NULL\_TREE}})}
+\DoxyCodeLine{00633\ \ \ \ \ ptr-\/>\doxymbox{\hyperlink{structssa__op__iter_aaf4d5d5c3054d2ecb2aff0f4a2ebc2f8}{uses}}\ =\ ptr-\/>\doxymbox{\hyperlink{structssa__op__iter_aaf4d5d5c3054d2ecb2aff0f4a2ebc2f8}{uses}}-\/>\doxymbox{\hyperlink{structuse__optype__d_abc46756b0c77b4698d55e6c074254eca}{next}};}
+\DoxyCodeLine{00634\ \ \ ptr-\/>\doxymbox{\hyperlink{structssa__op__iter_a3e6e920b017174b2d2310582d22221c9}{done}}\ =\ \textcolor{keyword}{false};}
+\DoxyCodeLine{00635\ \ \ ptr-\/>\doxymbox{\hyperlink{structssa__op__iter_a246cbf827d1797fa1b4821e6fd47c521}{i}}\ =\ 0;}
+\DoxyCodeLine{00636\ }
+\DoxyCodeLine{00637\ \ \ ptr-\/>\doxymbox{\hyperlink{structssa__op__iter_a8b8fc7e2d7a4cc92bc7a0d3cc0fafbb8}{stmt}}\ =\ stmt;}
+\DoxyCodeLine{00638\ \ \ ptr-\/>\doxymbox{\hyperlink{structssa__op__iter_a7b9cdceb8d3af8a057d100baeec6ad62}{flags}}\ =\ flags;}
+\DoxyCodeLine{00639\ \}}
+\DoxyCodeLine{00640\ }
+\DoxyCodeLine{00641\ \textcolor{comment}{/*\ Initialize\ iterator\ PTR\ to\ the\ use\ operands\ in\ STMT\ based\ on\ FLAGS.\ Return}}
+\DoxyCodeLine{00642\ \textcolor{comment}{\ \ \ the\ first\ use.\ \ */}}
+\DoxyCodeLine{00643\ \textcolor{keyword}{inline}\ \doxymbox{\hyperlink{tree-ssa-operands_8h_a6c4644d017fc5af6b02dd63b38fa35c1}{use\_operand\_p}}}
+\DoxyCodeLine{00644\ \doxymbox{\hyperlink{ssa-iterators_8h_aa4d2f150de47b21354a1fe7e8938beed}{op\_iter\_init\_use}}\ (\doxymbox{\hyperlink{structssa__op__iter}{ssa\_op\_iter}}\ *ptr,\ gimple\ *stmt,\ \textcolor{keywordtype}{int}\ flags)}
+\DoxyCodeLine{00645\ \{}
+\DoxyCodeLine{00646\ \ \ \doxymbox{\hyperlink{system_8h_aff447899dc74d54931b2bc2d47de9423}{gcc\_checking\_assert}}\ ((flags\ \&\ \doxymbox{\hyperlink{ssa-iterators_8h_aa8c3cc51237021e2b98592f52d78ece0}{SSA\_OP\_ALL\_DEFS}})\ ==\ 0}
+\DoxyCodeLine{00647\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&\&\ (flags\ \&\ \doxymbox{\hyperlink{ssa-iterators_8h_a0e9afb463360ad324443e1b8a17a2ba9}{SSA\_OP\_USE}}));}
+\DoxyCodeLine{00648\ \ \ \doxymbox{\hyperlink{ssa-iterators_8h_a84c2866b167c11e55f6c00aa7ab701b4}{op\_iter\_init}}\ (ptr,\ stmt,\ flags);}
+\DoxyCodeLine{00649\ \ \ ptr-\/>\doxymbox{\hyperlink{structssa__op__iter_af34c59433f9e1f77d8440297bd4a951c}{iter\_type}}\ =\ \doxymbox{\hyperlink{ssa-iterators_8h_a54d8f55e5098519da13d9283802bc956abac5d38d2635fb3a9ac44545e9cea556}{ssa\_op\_iter\_use}};}
+\DoxyCodeLine{00650\ \ \ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{ssa-iterators_8h_a4e104c27b4b148c651f73e1c4ad0bbbd}{op\_iter\_next\_use}}\ (ptr);}
+\DoxyCodeLine{00651\ \}}
+\DoxyCodeLine{00652\ }
+\DoxyCodeLine{00653\ \textcolor{comment}{/*\ Initialize\ iterator\ PTR\ to\ the\ def\ operands\ in\ STMT\ based\ on\ FLAGS.\ Return}}
+\DoxyCodeLine{00654\ \textcolor{comment}{\ \ \ the\ first\ def.\ \ */}}
+\DoxyCodeLine{00655\ \textcolor{keyword}{inline}\ \doxymbox{\hyperlink{tree-ssa-operands_8h_a0039b49df2ddf3b065bbce8dbff4e49b}{def\_operand\_p}}}
+\DoxyCodeLine{00656\ \doxymbox{\hyperlink{ssa-iterators_8h_a77420f2318e56b328cf235b76edc9c10}{op\_iter\_init\_def}}\ (\doxymbox{\hyperlink{structssa__op__iter}{ssa\_op\_iter}}\ *ptr,\ gimple\ *stmt,\ \textcolor{keywordtype}{int}\ flags)}
+\DoxyCodeLine{00657\ \{}
+\DoxyCodeLine{00658\ \ \ \doxymbox{\hyperlink{system_8h_aff447899dc74d54931b2bc2d47de9423}{gcc\_checking\_assert}}\ ((flags\ \&\ \doxymbox{\hyperlink{ssa-iterators_8h_ab220a35071636176890f9becfb060da6}{SSA\_OP\_ALL\_USES}})\ ==\ 0}
+\DoxyCodeLine{00659\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&\&\ (flags\ \&\ \doxymbox{\hyperlink{ssa-iterators_8h_ac145ed18cf597672cb938c7da02681e4}{SSA\_OP\_DEF}}));}
+\DoxyCodeLine{00660\ \ \ \doxymbox{\hyperlink{ssa-iterators_8h_a84c2866b167c11e55f6c00aa7ab701b4}{op\_iter\_init}}\ (ptr,\ stmt,\ flags);}
+\DoxyCodeLine{00661\ \ \ ptr-\/>\doxymbox{\hyperlink{structssa__op__iter_af34c59433f9e1f77d8440297bd4a951c}{iter\_type}}\ =\ \doxymbox{\hyperlink{ssa-iterators_8h_a54d8f55e5098519da13d9283802bc956accdbf16b9d679ba71ea2dc0219142ed1}{ssa\_op\_iter\_def}};}
+\DoxyCodeLine{00662\ \ \ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{ssa-iterators_8h_a00cb5fe9af2d46f7341a4f3552f01713}{op\_iter\_next\_def}}\ (ptr);}
+\DoxyCodeLine{00663\ \}}
+\DoxyCodeLine{00664\ }
+\DoxyCodeLine{00665\ \textcolor{comment}{/*\ Initialize\ iterator\ PTR\ to\ the\ operands\ in\ STMT\ based\ on\ FLAGS.\ Return}}
+\DoxyCodeLine{00666\ \textcolor{comment}{\ \ \ the\ first\ operand\ as\ a\ tree.\ \ */}}
+\DoxyCodeLine{00667\ \textcolor{keyword}{inline}\ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}}
+\DoxyCodeLine{00668\ \doxymbox{\hyperlink{ssa-iterators_8h_a57d3851ef99865e6fc26f444ccfb7625}{op\_iter\_init\_tree}}\ (\doxymbox{\hyperlink{structssa__op__iter}{ssa\_op\_iter}}\ *ptr,\ gimple\ *stmt,\ \textcolor{keywordtype}{int}\ flags)}
+\DoxyCodeLine{00669\ \{}
+\DoxyCodeLine{00670\ \ \ \doxymbox{\hyperlink{ssa-iterators_8h_a84c2866b167c11e55f6c00aa7ab701b4}{op\_iter\_init}}\ (ptr,\ stmt,\ flags);}
+\DoxyCodeLine{00671\ \ \ ptr-\/>\doxymbox{\hyperlink{structssa__op__iter_af34c59433f9e1f77d8440297bd4a951c}{iter\_type}}\ =\ \doxymbox{\hyperlink{ssa-iterators_8h_a54d8f55e5098519da13d9283802bc956acc2c00c7b7a02ff7284f9415bc5d3f7d}{ssa\_op\_iter\_tree}};}
+\DoxyCodeLine{00672\ \ \ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{ssa-iterators_8h_aeca05d8c0e2ec7dc4fe4e8a5e0f699f7}{op\_iter\_next\_tree}}\ (ptr);}
+\DoxyCodeLine{00673\ \}}
+\DoxyCodeLine{00674\ }
+\DoxyCodeLine{00675\ }
+\DoxyCodeLine{00676\ \textcolor{comment}{/*\ If\ there\ is\ a\ single\ operand\ in\ STMT\ matching\ FLAGS,\ return\ it.\ \ Otherwise}}
+\DoxyCodeLine{00677\ \textcolor{comment}{\ \ \ return\ NULL.\ \ */}}
+\DoxyCodeLine{00678\ \textcolor{keyword}{inline}\ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}}
+\DoxyCodeLine{00679\ \doxymbox{\hyperlink{ssa-iterators_8h_aede3b179671492176fc16b8aa8ff8c1c}{single\_ssa\_tree\_operand}}\ (gimple\ *stmt,\ \textcolor{keywordtype}{int}\ flags)}
+\DoxyCodeLine{00680\ \{}
+\DoxyCodeLine{00681\ \ \ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ var;}
+\DoxyCodeLine{00682\ \ \ \doxymbox{\hyperlink{structssa__op__iter}{ssa\_op\_iter}}\ iter;}
+\DoxyCodeLine{00683\ }
+\DoxyCodeLine{00684\ \ \ var\ =\ \doxymbox{\hyperlink{ssa-iterators_8h_a57d3851ef99865e6fc26f444ccfb7625}{op\_iter\_init\_tree}}\ (\&iter,\ stmt,\ flags);}
+\DoxyCodeLine{00685\ \ \ \textcolor{keywordflow}{if}\ (\doxymbox{\hyperlink{ssa-iterators_8h_af4f9bfdbf5105812b98265abec030e48}{op\_iter\_done}}\ (\&iter))}
+\DoxyCodeLine{00686\ \ \ \ \ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{tree_8h_aeda0ce25865d2494883f523217559d1e}{NULL\_TREE}};}
+\DoxyCodeLine{00687\ \ \ \doxymbox{\hyperlink{ssa-iterators_8h_aeca05d8c0e2ec7dc4fe4e8a5e0f699f7}{op\_iter\_next\_tree}}\ (\&iter);}
+\DoxyCodeLine{00688\ \ \ \textcolor{keywordflow}{if}\ (\doxymbox{\hyperlink{ssa-iterators_8h_af4f9bfdbf5105812b98265abec030e48}{op\_iter\_done}}\ (\&iter))}
+\DoxyCodeLine{00689\ \ \ \ \ \textcolor{keywordflow}{return}\ var;}
+\DoxyCodeLine{00690\ \ \ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{tree_8h_aeda0ce25865d2494883f523217559d1e}{NULL\_TREE}};}
+\DoxyCodeLine{00691\ \}}
+\DoxyCodeLine{00692\ }
+\DoxyCodeLine{00693\ }
+\DoxyCodeLine{00694\ \textcolor{comment}{/*\ If\ there\ is\ a\ single\ operand\ in\ STMT\ matching\ FLAGS,\ return\ it.\ \ Otherwise}}
+\DoxyCodeLine{00695\ \textcolor{comment}{\ \ \ return\ NULL.\ \ */}}
+\DoxyCodeLine{00696\ \textcolor{keyword}{inline}\ \doxymbox{\hyperlink{tree-ssa-operands_8h_a6c4644d017fc5af6b02dd63b38fa35c1}{use\_operand\_p}}}
+\DoxyCodeLine{00697\ \doxymbox{\hyperlink{ssa-iterators_8h_a557e4829ed8407cefda0d2c79ddbb08a}{single\_ssa\_use\_operand}}\ (gimple\ *stmt,\ \textcolor{keywordtype}{int}\ flags)}
+\DoxyCodeLine{00698\ \{}
+\DoxyCodeLine{00699\ \ \ \doxymbox{\hyperlink{tree-ssa-operands_8h_a6c4644d017fc5af6b02dd63b38fa35c1}{use\_operand\_p}}\ var;}
+\DoxyCodeLine{00700\ \ \ \doxymbox{\hyperlink{structssa__op__iter}{ssa\_op\_iter}}\ iter;}
+\DoxyCodeLine{00701\ }
+\DoxyCodeLine{00702\ \ \ var\ =\ \doxymbox{\hyperlink{ssa-iterators_8h_aa4d2f150de47b21354a1fe7e8938beed}{op\_iter\_init\_use}}\ (\&iter,\ stmt,\ flags);}
+\DoxyCodeLine{00703\ \ \ \textcolor{keywordflow}{if}\ (\doxymbox{\hyperlink{ssa-iterators_8h_af4f9bfdbf5105812b98265abec030e48}{op\_iter\_done}}\ (\&iter))}
+\DoxyCodeLine{00704\ \ \ \ \ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{tree-ssa-operands_8h_ac903e336aa6cdf4821106a43ebfbdde7}{NULL\_USE\_OPERAND\_P}};}
+\DoxyCodeLine{00705\ \ \ \doxymbox{\hyperlink{ssa-iterators_8h_a4e104c27b4b148c651f73e1c4ad0bbbd}{op\_iter\_next\_use}}\ (\&iter);}
+\DoxyCodeLine{00706\ \ \ \textcolor{keywordflow}{if}\ (\doxymbox{\hyperlink{ssa-iterators_8h_af4f9bfdbf5105812b98265abec030e48}{op\_iter\_done}}\ (\&iter))}
+\DoxyCodeLine{00707\ \ \ \ \ \textcolor{keywordflow}{return}\ var;}
+\DoxyCodeLine{00708\ \ \ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{tree-ssa-operands_8h_ac903e336aa6cdf4821106a43ebfbdde7}{NULL\_USE\_OPERAND\_P}};}
+\DoxyCodeLine{00709\ \}}
+\DoxyCodeLine{00710\ }
+\DoxyCodeLine{00711\ \textcolor{comment}{/*\ Return\ the\ single\ virtual\ use\ operand\ in\ STMT\ if\ present.\ \ Otherwise}}
+\DoxyCodeLine{00712\ \textcolor{comment}{\ \ \ return\ NULL.\ \ */}}
+\DoxyCodeLine{00713\ \textcolor{keyword}{inline}\ \doxymbox{\hyperlink{tree-ssa-operands_8h_a6c4644d017fc5af6b02dd63b38fa35c1}{use\_operand\_p}}}
+\DoxyCodeLine{00714\ \doxymbox{\hyperlink{ssa-iterators_8h_a7f75d2828f593b0399013ea066a40da4}{ssa\_vuse\_operand}}\ (gimple\ *stmt)}
+\DoxyCodeLine{00715\ \{}
+\DoxyCodeLine{00716\ \ \ \textcolor{keywordflow}{if}\ (!\ \doxymbox{\hyperlink{gimple_8h_ae4fb7cc6aaf716d3f153a9521bd3ad9a}{gimple\_vuse}}\ (stmt))}
+\DoxyCodeLine{00717\ \ \ \ \ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{tree-ssa-operands_8h_ac903e336aa6cdf4821106a43ebfbdde7}{NULL\_USE\_OPERAND\_P}};}
+\DoxyCodeLine{00718\ \ \ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{tree-ssa-operands_8h_aa000697e672820f3561900959f295e4a}{USE\_OP\_PTR}}\ (\doxymbox{\hyperlink{gimple_8h_a696de42f7a7495723b694eb45ce7e3fb}{gimple\_use\_ops}}\ (stmt));}
+\DoxyCodeLine{00719\ \}}
+\DoxyCodeLine{00720\ }
+\DoxyCodeLine{00721\ }
+\DoxyCodeLine{00722\ \textcolor{comment}{/*\ If\ there\ is\ a\ single\ operand\ in\ STMT\ matching\ FLAGS,\ return\ it.\ \ Otherwise}}
+\DoxyCodeLine{00723\ \textcolor{comment}{\ \ \ return\ NULL.\ \ */}}
+\DoxyCodeLine{00724\ \textcolor{keyword}{inline}\ \doxymbox{\hyperlink{tree-ssa-operands_8h_a0039b49df2ddf3b065bbce8dbff4e49b}{def\_operand\_p}}}
+\DoxyCodeLine{00725\ \doxymbox{\hyperlink{ssa-iterators_8h_abaa847354459cb664afb855800c6c19f}{single\_ssa\_def\_operand}}\ (gimple\ *stmt,\ \textcolor{keywordtype}{int}\ flags)}
+\DoxyCodeLine{00726\ \{}
+\DoxyCodeLine{00727\ \ \ \doxymbox{\hyperlink{tree-ssa-operands_8h_a0039b49df2ddf3b065bbce8dbff4e49b}{def\_operand\_p}}\ var;}
+\DoxyCodeLine{00728\ \ \ \doxymbox{\hyperlink{structssa__op__iter}{ssa\_op\_iter}}\ iter;}
+\DoxyCodeLine{00729\ }
+\DoxyCodeLine{00730\ \ \ var\ =\ \doxymbox{\hyperlink{ssa-iterators_8h_a77420f2318e56b328cf235b76edc9c10}{op\_iter\_init\_def}}\ (\&iter,\ stmt,\ flags);}
+\DoxyCodeLine{00731\ \ \ \textcolor{keywordflow}{if}\ (\doxymbox{\hyperlink{ssa-iterators_8h_af4f9bfdbf5105812b98265abec030e48}{op\_iter\_done}}\ (\&iter))}
+\DoxyCodeLine{00732\ \ \ \ \ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{tree-ssa-operands_8h_ad9c087a13a807c322845ccc6bb1fd2f3}{NULL\_DEF\_OPERAND\_P}};}
+\DoxyCodeLine{00733\ \ \ \doxymbox{\hyperlink{ssa-iterators_8h_a00cb5fe9af2d46f7341a4f3552f01713}{op\_iter\_next\_def}}\ (\&iter);}
+\DoxyCodeLine{00734\ \ \ \textcolor{keywordflow}{if}\ (\doxymbox{\hyperlink{ssa-iterators_8h_af4f9bfdbf5105812b98265abec030e48}{op\_iter\_done}}\ (\&iter))}
+\DoxyCodeLine{00735\ \ \ \ \ \textcolor{keywordflow}{return}\ var;}
+\DoxyCodeLine{00736\ \ \ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{tree-ssa-operands_8h_ad9c087a13a807c322845ccc6bb1fd2f3}{NULL\_DEF\_OPERAND\_P}};}
+\DoxyCodeLine{00737\ \}}
+\DoxyCodeLine{00738\ }
+\DoxyCodeLine{00739\ }
+\DoxyCodeLine{00740\ \textcolor{comment}{/*\ Return\ true\ if\ there\ are\ zero\ operands\ in\ STMT\ matching\ the\ type}}
+\DoxyCodeLine{00741\ \textcolor{comment}{\ \ \ given\ in\ FLAGS.\ \ */}}
+\DoxyCodeLine{00742\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{bool}}
+\DoxyCodeLine{00743\ \doxymbox{\hyperlink{ssa-iterators_8h_a69e295602cdcf4d7d8ce52995b399eda}{zero\_ssa\_operands}}\ (gimple\ *stmt,\ \textcolor{keywordtype}{int}\ flags)}
+\DoxyCodeLine{00744\ \{}
+\DoxyCodeLine{00745\ \ \ \doxymbox{\hyperlink{structssa__op__iter}{ssa\_op\_iter}}\ iter;}
+\DoxyCodeLine{00746\ }
+\DoxyCodeLine{00747\ \ \ \doxymbox{\hyperlink{ssa-iterators_8h_a57d3851ef99865e6fc26f444ccfb7625}{op\_iter\_init\_tree}}\ (\&iter,\ stmt,\ flags);}
+\DoxyCodeLine{00748\ \ \ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{ssa-iterators_8h_af4f9bfdbf5105812b98265abec030e48}{op\_iter\_done}}\ (\&iter);}
+\DoxyCodeLine{00749\ \}}
+\DoxyCodeLine{00750\ }
+\DoxyCodeLine{00751\ }
+\DoxyCodeLine{00752\ \textcolor{comment}{/*\ Return\ the\ number\ of\ operands\ matching\ FLAGS\ in\ STMT.\ \ */}}
+\DoxyCodeLine{00753\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{int}}
+\DoxyCodeLine{00754\ \doxymbox{\hyperlink{ssa-iterators_8h_af5fc1495211a9ac2d0a4ff861cc50198}{num\_ssa\_operands}}\ (gimple\ *stmt,\ \textcolor{keywordtype}{int}\ flags)}
+\DoxyCodeLine{00755\ \{}
+\DoxyCodeLine{00756\ \ \ \doxymbox{\hyperlink{structssa__op__iter}{ssa\_op\_iter}}\ iter;}
+\DoxyCodeLine{00757\ \ \ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ t;}
+\DoxyCodeLine{00758\ \ \ \textcolor{keywordtype}{int}\ num\ =\ 0;}
+\DoxyCodeLine{00759\ }
+\DoxyCodeLine{00760\ \ \ \doxymbox{\hyperlink{system_8h_aff447899dc74d54931b2bc2d47de9423}{gcc\_checking\_assert}}\ (\doxymbox{\hyperlink{gimple_8h_a2a3ad11f4b4195051f6405b104eedd06}{gimple\_code}}\ (stmt)\ !=\ GIMPLE\_PHI);}
+\DoxyCodeLine{00761\ \ \ \doxymbox{\hyperlink{ssa-iterators_8h_a6cd2d4f6faead513dd00a89b8963a876}{FOR\_EACH\_SSA\_TREE\_OPERAND}}\ (t,\ stmt,\ iter,\ flags)}
+\DoxyCodeLine{00762\ \ \ \ \ num++;}
+\DoxyCodeLine{00763\ \ \ \textcolor{keywordflow}{return}\ num;}
+\DoxyCodeLine{00764\ \}}
+\DoxyCodeLine{00765\ }
+\DoxyCodeLine{00766\ \textcolor{comment}{/*\ If\ there\ is\ a\ single\ DEF\ in\ the\ PHI\ node\ which\ matches\ FLAG,\ return\ it.}}
+\DoxyCodeLine{00767\ \textcolor{comment}{\ \ \ Otherwise\ return\ NULL\_DEF\_OPERAND\_P.\ \ */}}
+\DoxyCodeLine{00768\ \textcolor{keyword}{inline}\ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}}
+\DoxyCodeLine{00769\ \doxymbox{\hyperlink{ssa-iterators_8h_a72d51976170c3b0d2b73975c5f1b663f}{single\_phi\_def}}\ (gphi\ *stmt,\ \textcolor{keywordtype}{int}\ flags)}
+\DoxyCodeLine{00770\ \{}
+\DoxyCodeLine{00771\ \ \ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ def\ =\ \doxymbox{\hyperlink{tree-ssa-operands_8h_a9cfc48ff7c5dbe732bdd1a9a365daa97}{PHI\_RESULT}}\ (stmt);}
+\DoxyCodeLine{00772\ \ \ \textcolor{keywordflow}{if}\ ((flags\ \&\ \doxymbox{\hyperlink{ssa-iterators_8h_ac145ed18cf597672cb938c7da02681e4}{SSA\_OP\_DEF}})\ \&\&\ \doxymbox{\hyperlink{gimple-expr_8h_a705bf1d30c987310c0ea05b39f386e40}{is\_gimple\_reg}}\ (def))}
+\DoxyCodeLine{00773\ \ \ \ \ \textcolor{keywordflow}{return}\ def;}
+\DoxyCodeLine{00774\ \ \ \textcolor{keywordflow}{if}\ ((flags\ \&\ \doxymbox{\hyperlink{ssa-iterators_8h_a3a65206719bd157e485824dafba2c42a}{SSA\_OP\_VIRTUAL\_DEFS}})\ \&\&\ !\doxymbox{\hyperlink{gimple-expr_8h_a705bf1d30c987310c0ea05b39f386e40}{is\_gimple\_reg}}\ (def))}
+\DoxyCodeLine{00775\ \ \ \ \ \textcolor{keywordflow}{return}\ def;}
+\DoxyCodeLine{00776\ \ \ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{tree_8h_aeda0ce25865d2494883f523217559d1e}{NULL\_TREE}};}
+\DoxyCodeLine{00777\ \}}
+\DoxyCodeLine{00778\ }
+\DoxyCodeLine{00779\ \textcolor{comment}{/*\ Initialize\ the\ iterator\ PTR\ for\ uses\ matching\ FLAGS\ in\ PHI.\ \ FLAGS\ should}}
+\DoxyCodeLine{00780\ \textcolor{comment}{\ \ \ be\ either\ SSA\_OP\_USES\ or\ SSA\_OP\_VIRTUAL\_USES.\ \ */}}
+\DoxyCodeLine{00781\ \textcolor{keyword}{inline}\ \doxymbox{\hyperlink{tree-ssa-operands_8h_a6c4644d017fc5af6b02dd63b38fa35c1}{use\_operand\_p}}}
+\DoxyCodeLine{00782\ \doxymbox{\hyperlink{ssa-iterators_8h_a4010699c45871e7d7a0510604ec12aef}{op\_iter\_init\_phiuse}}\ (\doxymbox{\hyperlink{structssa__op__iter}{ssa\_op\_iter}}\ *ptr,\ gphi\ *phi,\ \textcolor{keywordtype}{int}\ flags)}
+\DoxyCodeLine{00783\ \{}
+\DoxyCodeLine{00784\ \ \ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ phi\_def\ =\ \doxymbox{\hyperlink{gimple_8h_a5e2667184772c3faec97f2139cede5f8}{gimple\_phi\_result}}\ (phi);}
+\DoxyCodeLine{00785\ \ \ \textcolor{keywordtype}{int}\ comp;}
+\DoxyCodeLine{00786\ }
+\DoxyCodeLine{00787\ \ \ \doxymbox{\hyperlink{ssa-iterators_8h_a3654aef6af3859435e600e4119d5fc4c}{clear\_and\_done\_ssa\_iter}}\ (ptr);}
+\DoxyCodeLine{00788\ \ \ ptr-\/>\doxymbox{\hyperlink{structssa__op__iter_a3e6e920b017174b2d2310582d22221c9}{done}}\ =\ \textcolor{keyword}{false};}
+\DoxyCodeLine{00789\ }
+\DoxyCodeLine{00790\ \ \ \doxymbox{\hyperlink{system_8h_aff447899dc74d54931b2bc2d47de9423}{gcc\_checking\_assert}}\ ((flags\ \&\ (\doxymbox{\hyperlink{ssa-iterators_8h_a0e9afb463360ad324443e1b8a17a2ba9}{SSA\_OP\_USE}}\ |\ \doxymbox{\hyperlink{ssa-iterators_8h_a46cb9cb42db08a4d2955cb0edf4f17ae}{SSA\_OP\_VIRTUAL\_USES}}))\ !=\ 0);}
+\DoxyCodeLine{00791\ }
+\DoxyCodeLine{00792\ \ \ comp\ =\ (\doxymbox{\hyperlink{gimple-expr_8h_a705bf1d30c987310c0ea05b39f386e40}{is\_gimple\_reg}}\ (phi\_def)\ ?\ \doxymbox{\hyperlink{ssa-iterators_8h_a0e9afb463360ad324443e1b8a17a2ba9}{SSA\_OP\_USE}}\ :\ \doxymbox{\hyperlink{ssa-iterators_8h_a46cb9cb42db08a4d2955cb0edf4f17ae}{SSA\_OP\_VIRTUAL\_USES}});}
+\DoxyCodeLine{00793\ }
+\DoxyCodeLine{00794\ \ \ \textcolor{comment}{/*\ If\ the\ PHI\ node\ doesn't\ the\ operand\ type\ we\ care\ about,\ we're\ done.\ \ */}}
+\DoxyCodeLine{00795\ \ \ \textcolor{keywordflow}{if}\ ((flags\ \&\ comp)\ ==\ 0)}
+\DoxyCodeLine{00796\ \ \ \ \ \{}
+\DoxyCodeLine{00797\ \ \ \ \ \ \ ptr-\/>\doxymbox{\hyperlink{structssa__op__iter_a3e6e920b017174b2d2310582d22221c9}{done}}\ =\ \textcolor{keyword}{true};}
+\DoxyCodeLine{00798\ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{tree-ssa-operands_8h_ac903e336aa6cdf4821106a43ebfbdde7}{NULL\_USE\_OPERAND\_P}};}
+\DoxyCodeLine{00799\ \ \ \ \ \}}
+\DoxyCodeLine{00800\ }
+\DoxyCodeLine{00801\ \ \ ptr-\/>\doxymbox{\hyperlink{structssa__op__iter_a8b8fc7e2d7a4cc92bc7a0d3cc0fafbb8}{stmt}}\ =\ phi;}
+\DoxyCodeLine{00802\ \ \ ptr-\/>\doxymbox{\hyperlink{structssa__op__iter_a0fbd4f7f755d2e5dffd60096c1bba64c}{numops}}\ =\ \doxymbox{\hyperlink{gimple_8h_af46d635b6c033f9a64b08a9f219e26a7}{gimple\_phi\_num\_args}}\ (phi);}
+\DoxyCodeLine{00803\ \ \ ptr-\/>\doxymbox{\hyperlink{structssa__op__iter_af34c59433f9e1f77d8440297bd4a951c}{iter\_type}}\ =\ \doxymbox{\hyperlink{ssa-iterators_8h_a54d8f55e5098519da13d9283802bc956abac5d38d2635fb3a9ac44545e9cea556}{ssa\_op\_iter\_use}};}
+\DoxyCodeLine{00804\ \ \ ptr-\/>\doxymbox{\hyperlink{structssa__op__iter_a7b9cdceb8d3af8a057d100baeec6ad62}{flags}}\ =\ flags;}
+\DoxyCodeLine{00805\ \ \ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{ssa-iterators_8h_a4e104c27b4b148c651f73e1c4ad0bbbd}{op\_iter\_next\_use}}\ (ptr);}
+\DoxyCodeLine{00806\ \}}
+\DoxyCodeLine{00807\ }
+\DoxyCodeLine{00808\ }
+\DoxyCodeLine{00809\ \textcolor{comment}{/*\ Start\ an\ iterator\ for\ a\ PHI\ definition.\ \ */}}
+\DoxyCodeLine{00810\ }
+\DoxyCodeLine{00811\ \textcolor{keyword}{inline}\ \doxymbox{\hyperlink{tree-ssa-operands_8h_a0039b49df2ddf3b065bbce8dbff4e49b}{def\_operand\_p}}}
+\DoxyCodeLine{00812\ \doxymbox{\hyperlink{ssa-iterators_8h_abf3604bc80fcbc6f2a06446a31c76d68}{op\_iter\_init\_phidef}}\ (\doxymbox{\hyperlink{structssa__op__iter}{ssa\_op\_iter}}\ *ptr,\ gphi\ *phi,\ \textcolor{keywordtype}{int}\ flags)}
+\DoxyCodeLine{00813\ \{}
+\DoxyCodeLine{00814\ \ \ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ phi\_def\ =\ \doxymbox{\hyperlink{tree-ssa-operands_8h_a9cfc48ff7c5dbe732bdd1a9a365daa97}{PHI\_RESULT}}\ (phi);}
+\DoxyCodeLine{00815\ \ \ \textcolor{keywordtype}{int}\ comp;}
+\DoxyCodeLine{00816\ }
+\DoxyCodeLine{00817\ \ \ \doxymbox{\hyperlink{ssa-iterators_8h_a3654aef6af3859435e600e4119d5fc4c}{clear\_and\_done\_ssa\_iter}}\ (ptr);}
+\DoxyCodeLine{00818\ \ \ ptr-\/>\doxymbox{\hyperlink{structssa__op__iter_a3e6e920b017174b2d2310582d22221c9}{done}}\ =\ \textcolor{keyword}{false};}
+\DoxyCodeLine{00819\ }
+\DoxyCodeLine{00820\ \ \ \doxymbox{\hyperlink{system_8h_aff447899dc74d54931b2bc2d47de9423}{gcc\_checking\_assert}}\ ((flags\ \&\ (\doxymbox{\hyperlink{ssa-iterators_8h_ac145ed18cf597672cb938c7da02681e4}{SSA\_OP\_DEF}}\ |\ \doxymbox{\hyperlink{ssa-iterators_8h_a3a65206719bd157e485824dafba2c42a}{SSA\_OP\_VIRTUAL\_DEFS}}))\ !=\ 0);}
+\DoxyCodeLine{00821\ }
+\DoxyCodeLine{00822\ \ \ comp\ =\ (\doxymbox{\hyperlink{gimple-expr_8h_a705bf1d30c987310c0ea05b39f386e40}{is\_gimple\_reg}}\ (phi\_def)\ ?\ \doxymbox{\hyperlink{ssa-iterators_8h_ac145ed18cf597672cb938c7da02681e4}{SSA\_OP\_DEF}}\ :\ \doxymbox{\hyperlink{ssa-iterators_8h_a3a65206719bd157e485824dafba2c42a}{SSA\_OP\_VIRTUAL\_DEFS}});}
+\DoxyCodeLine{00823\ }
+\DoxyCodeLine{00824\ \ \ \textcolor{comment}{/*\ If\ the\ PHI\ node\ doesn't\ have\ the\ operand\ type\ we\ care\ about,}}
+\DoxyCodeLine{00825\ \textcolor{comment}{\ \ \ \ \ we're\ done.\ \ */}}
+\DoxyCodeLine{00826\ \ \ \textcolor{keywordflow}{if}\ ((flags\ \&\ comp)\ ==\ 0)}
+\DoxyCodeLine{00827\ \ \ \ \ \{}
+\DoxyCodeLine{00828\ \ \ \ \ \ \ ptr-\/>\doxymbox{\hyperlink{structssa__op__iter_a3e6e920b017174b2d2310582d22221c9}{done}}\ =\ \textcolor{keyword}{true};}
+\DoxyCodeLine{00829\ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{tree-ssa-operands_8h_ad9c087a13a807c322845ccc6bb1fd2f3}{NULL\_DEF\_OPERAND\_P}};}
+\DoxyCodeLine{00830\ \ \ \ \ \}}
+\DoxyCodeLine{00831\ }
+\DoxyCodeLine{00832\ \ \ ptr-\/>\doxymbox{\hyperlink{structssa__op__iter_af34c59433f9e1f77d8440297bd4a951c}{iter\_type}}\ =\ \doxymbox{\hyperlink{ssa-iterators_8h_a54d8f55e5098519da13d9283802bc956accdbf16b9d679ba71ea2dc0219142ed1}{ssa\_op\_iter\_def}};}
+\DoxyCodeLine{00833\ \ \ \textcolor{comment}{/*\ The\ first\ call\ to\ op\_iter\_next\_def\ will\ terminate\ the\ iterator\ since}}
+\DoxyCodeLine{00834\ \textcolor{comment}{\ \ \ \ \ all\ the\ fields\ are\ NULL.\ \ Simply\ return\ the\ result\ here\ as\ the\ first\ and}}
+\DoxyCodeLine{00835\ \textcolor{comment}{\ \ \ \ \ therefore\ only\ result.\ \ */}}
+\DoxyCodeLine{00836\ \ \ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{tree-ssa-operands_8h_aac36e3a16c1f57d7b19eb0e943739206}{PHI\_RESULT\_PTR}}\ (phi);}
+\DoxyCodeLine{00837\ \}}
+\DoxyCodeLine{00838\ }
+\DoxyCodeLine{00839\ \textcolor{comment}{/*\ Return\ true\ is\ IMM\ has\ reached\ the\ end\ of\ the\ immediate\ use\ stmt\ list.\ \ */}}
+\DoxyCodeLine{00840\ }
+\DoxyCodeLine{00841\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{bool}}
+\DoxyCodeLine{00842\ \doxymbox{\hyperlink{ssa-iterators_8h_ad3d6b181eae3cb2c7f171df6a3f6a713}{end\_imm\_use\_stmt\_p}}\ (\textcolor{keyword}{const}\ \doxymbox{\hyperlink{structimm__use__iterator}{imm\_use\_iterator}}\ *imm)}
+\DoxyCodeLine{00843\ \{}
+\DoxyCodeLine{00844\ \ \ \textcolor{keywordflow}{return}\ (imm-\/>\doxymbox{\hyperlink{structimm__use__iterator_ac4ff91a3432fd2735bf3ae3eacf2195b}{imm\_use}}\ ==\ imm-\/>\doxymbox{\hyperlink{structimm__use__iterator_a4c986b8c3d59974e13bf2d0dfa9a1830}{end\_p}});}
+\DoxyCodeLine{00845\ \}}
+\DoxyCodeLine{00846\ }
+\DoxyCodeLine{00847\ \textcolor{comment}{/*\ Finished\ the\ traverse\ of\ an\ immediate\ use\ stmt\ list\ IMM\ by\ removing\ the}}
+\DoxyCodeLine{00848\ \textcolor{comment}{\ \ \ placeholder\ node\ from\ the\ list.\ \ */}}
+\DoxyCodeLine{00849\ }
+\DoxyCodeLine{00850\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{void}}
+\DoxyCodeLine{00851\ \doxymbox{\hyperlink{ssa-iterators_8h_a227ddae0788f252009d701fda324e11b}{end\_imm\_use\_stmt\_traverse}}\ (\doxymbox{\hyperlink{structimm__use__iterator}{imm\_use\_iterator}}\ *imm)}
+\DoxyCodeLine{00852\ \{}
+\DoxyCodeLine{00853\ \ \ \doxymbox{\hyperlink{ssa-iterators_8h_ac1499f9265d1c5b0a7c3abf3ac5dd8e9}{delink\_imm\_use}}\ (\&(imm-\/>\doxymbox{\hyperlink{structimm__use__iterator_a5495087f0678991bca89a997df35ef35}{iter\_node}}));}
+\DoxyCodeLine{00854\ \}}
+\DoxyCodeLine{00855\ }
+\DoxyCodeLine{00856\ \textcolor{comment}{/*\ Immediate\ use\ traversal\ of\ uses\ within\ a\ stmt\ require\ that\ all\ the}}
+\DoxyCodeLine{00857\ \textcolor{comment}{\ \ \ uses\ on\ a\ stmt\ be\ sequentially\ listed.\ \ This\ routine\ is\ used\ to\ build\ up}}
+\DoxyCodeLine{00858\ \textcolor{comment}{\ \ \ this\ sequential\ list\ by\ adding\ USE\_P\ to\ the\ end\ of\ the\ current\ list}}
+\DoxyCodeLine{00859\ \textcolor{comment}{\ \ \ currently\ delimited\ by\ HEAD\ and\ LAST\_P.\ \ The\ new\ LAST\_P\ value\ is}}
+\DoxyCodeLine{00860\ \textcolor{comment}{\ \ \ returned.\ \ */}}
+\DoxyCodeLine{00861\ }
+\DoxyCodeLine{00862\ \textcolor{keyword}{inline}\ \doxymbox{\hyperlink{tree-ssa-operands_8h_a6c4644d017fc5af6b02dd63b38fa35c1}{use\_operand\_p}}}
+\DoxyCodeLine{00863\ \doxymbox{\hyperlink{ssa-iterators_8h_a5e29f334c2a6eb2fec31f55c8d2c855b}{move\_use\_after\_head}}\ (\doxymbox{\hyperlink{tree-ssa-operands_8h_a6c4644d017fc5af6b02dd63b38fa35c1}{use\_operand\_p}}\ use\_p,\ \doxymbox{\hyperlink{tree-ssa-operands_8h_a6c4644d017fc5af6b02dd63b38fa35c1}{use\_operand\_p}}\ head,}
+\DoxyCodeLine{00864\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{tree-ssa-operands_8h_a6c4644d017fc5af6b02dd63b38fa35c1}{use\_operand\_p}}\ last\_p)}
+\DoxyCodeLine{00865\ \{}
+\DoxyCodeLine{00866\ \ \ \doxymbox{\hyperlink{system_8h_aff447899dc74d54931b2bc2d47de9423}{gcc\_checking\_assert}}\ (\doxymbox{\hyperlink{tree-ssa-operands_8h_a257a77ba135de1a418aef39013d54984}{USE\_FROM\_PTR}}\ (use\_p)\ ==\ \doxymbox{\hyperlink{tree-ssa-operands_8h_a257a77ba135de1a418aef39013d54984}{USE\_FROM\_PTR}}\ (head));}
+\DoxyCodeLine{00867\ \ \ \textcolor{comment}{/*\ Skip\ head\ when\ we\ find\ it.\ \ */}}
+\DoxyCodeLine{00868\ \ \ \textcolor{keywordflow}{if}\ (use\_p\ !=\ head)}
+\DoxyCodeLine{00869\ \ \ \ \ \{}
+\DoxyCodeLine{00870\ \ \ \ \ \ \ \textcolor{comment}{/*\ If\ use\_p\ is\ already\ linked\ in\ after\ last\_p,\ continue.\ \ */}}
+\DoxyCodeLine{00871\ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (last\_p-\/>next\ ==\ use\_p)}
+\DoxyCodeLine{00872\ \ \ \ \ last\_p\ =\ use\_p;}
+\DoxyCodeLine{00873\ \ \ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00874\ \ \ \ \ \{}
+\DoxyCodeLine{00875\ \ \ \ \ \ \ \textcolor{comment}{/*\ Delink\ from\ current\ location,\ and\ link\ in\ at\ last\_p.\ \ */}}
+\DoxyCodeLine{00876\ \ \ \ \ \ \ \doxymbox{\hyperlink{ssa-iterators_8h_ac1499f9265d1c5b0a7c3abf3ac5dd8e9}{delink\_imm\_use}}\ (use\_p);}
+\DoxyCodeLine{00877\ \ \ \ \ \ \ \doxymbox{\hyperlink{ssa-iterators_8h_aaee384668c0373c3818decf5c24aae14}{link\_imm\_use\_to\_list}}\ (use\_p,\ last\_p);}
+\DoxyCodeLine{00878\ \ \ \ \ \ \ last\_p\ =\ use\_p;}
+\DoxyCodeLine{00879\ \ \ \ \ \}}
+\DoxyCodeLine{00880\ \ \ \ \ \}}
+\DoxyCodeLine{00881\ \ \ \textcolor{keywordflow}{return}\ last\_p;}
+\DoxyCodeLine{00882\ \}}
+\DoxyCodeLine{00883\ }
+\DoxyCodeLine{00884\ }
+\DoxyCodeLine{00885\ \textcolor{comment}{/*\ This\ routine\ will\ relink\ all\ uses\ with\ the\ same\ stmt\ as\ HEAD\ into\ the\ list}}
+\DoxyCodeLine{00886\ \textcolor{comment}{\ \ \ immediately\ following\ HEAD\ for\ iterator\ IMM.\ \ */}}
+\DoxyCodeLine{00887\ }
+\DoxyCodeLine{00888\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{void}}
+\DoxyCodeLine{00889\ \doxymbox{\hyperlink{ssa-iterators_8h_a85a1cfd44a4cd7c87cc00e8678c5031a}{link\_use\_stmts\_after}}\ (\doxymbox{\hyperlink{tree-ssa-operands_8h_a6c4644d017fc5af6b02dd63b38fa35c1}{use\_operand\_p}}\ head,\ \doxymbox{\hyperlink{structimm__use__iterator}{imm\_use\_iterator}}\ *imm)}
+\DoxyCodeLine{00890\ \{}
+\DoxyCodeLine{00891\ \ \ \doxymbox{\hyperlink{tree-ssa-operands_8h_a6c4644d017fc5af6b02dd63b38fa35c1}{use\_operand\_p}}\ use\_p;}
+\DoxyCodeLine{00892\ \ \ \doxymbox{\hyperlink{tree-ssa-operands_8h_a6c4644d017fc5af6b02dd63b38fa35c1}{use\_operand\_p}}\ last\_p\ =\ head;}
+\DoxyCodeLine{00893\ \ \ gimple\ *head\_stmt\ =\ \doxymbox{\hyperlink{tree-ssa-operands_8h_a3349aa1cbd782e70fa771eb4e94118b7}{USE\_STMT}}\ (head);}
+\DoxyCodeLine{00894\ \ \ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ use\ =\ \doxymbox{\hyperlink{tree-ssa-operands_8h_a257a77ba135de1a418aef39013d54984}{USE\_FROM\_PTR}}\ (head);}
+\DoxyCodeLine{00895\ \ \ \doxymbox{\hyperlink{structssa__op__iter}{ssa\_op\_iter}}\ op\_iter;}
+\DoxyCodeLine{00896\ \ \ \textcolor{keywordtype}{int}\ flag;}
+\DoxyCodeLine{00897\ }
+\DoxyCodeLine{00898\ \ \ \textcolor{comment}{/*\ Only\ look\ at\ virtual\ or\ real\ uses,\ depending\ on\ the\ type\ of\ HEAD.\ \ */}}
+\DoxyCodeLine{00899\ \ \ flag\ =\ (\doxymbox{\hyperlink{gimple-expr_8h_a705bf1d30c987310c0ea05b39f386e40}{is\_gimple\_reg}}\ (use)\ ?\ \doxymbox{\hyperlink{ssa-iterators_8h_a0e9afb463360ad324443e1b8a17a2ba9}{SSA\_OP\_USE}}\ :\ \doxymbox{\hyperlink{ssa-iterators_8h_a46cb9cb42db08a4d2955cb0edf4f17ae}{SSA\_OP\_VIRTUAL\_USES}});}
+\DoxyCodeLine{00900\ }
+\DoxyCodeLine{00901\ \ \ \textcolor{keywordflow}{if}\ (gphi\ *phi\ =\ \doxymbox{\hyperlink{is-a_8h_aea38ccb7ddbe54f14c7c56e9cffe887b}{dyn\_cast\ <gphi\ *>}}\ (head\_stmt))}
+\DoxyCodeLine{00902\ \ \ \ \ \{}
+\DoxyCodeLine{00903\ \ \ \ \ \ \ \doxymbox{\hyperlink{ssa-iterators_8h_a6f341dc6bd855b4c56e6b160637fffe9}{FOR\_EACH\_PHI\_ARG}}\ (use\_p,\ phi,\ op\_iter,\ flag)}
+\DoxyCodeLine{00904\ \ \ \ \ \textcolor{keywordflow}{if}\ (\doxymbox{\hyperlink{tree-ssa-operands_8h_a257a77ba135de1a418aef39013d54984}{USE\_FROM\_PTR}}\ (use\_p)\ ==\ use)}
+\DoxyCodeLine{00905\ \ \ \ \ \ \ last\_p\ =\ \doxymbox{\hyperlink{ssa-iterators_8h_a5e29f334c2a6eb2fec31f55c8d2c855b}{move\_use\_after\_head}}\ (use\_p,\ head,\ last\_p);}
+\DoxyCodeLine{00906\ \ \ \ \ \}}
+\DoxyCodeLine{00907\ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00908\ \ \ \ \ \{}
+\DoxyCodeLine{00909\ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (flag\ ==\ \doxymbox{\hyperlink{ssa-iterators_8h_a0e9afb463360ad324443e1b8a17a2ba9}{SSA\_OP\_USE}})}
+\DoxyCodeLine{00910\ \ \ \ \ \{}
+\DoxyCodeLine{00911\ \ \ \ \ \ \ \doxymbox{\hyperlink{ssa-iterators_8h_a65815f62786ee5c0dc9c4fa0e928fd45}{FOR\_EACH\_SSA\_USE\_OPERAND}}\ (use\_p,\ head\_stmt,\ op\_iter,\ flag)}
+\DoxyCodeLine{00912\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (\doxymbox{\hyperlink{tree-ssa-operands_8h_a257a77ba135de1a418aef39013d54984}{USE\_FROM\_PTR}}\ (use\_p)\ ==\ use)}
+\DoxyCodeLine{00913\ \ \ \ \ \ \ \ \ \ \ last\_p\ =\ \doxymbox{\hyperlink{ssa-iterators_8h_a5e29f334c2a6eb2fec31f55c8d2c855b}{move\_use\_after\_head}}\ (use\_p,\ head,\ last\_p);}
+\DoxyCodeLine{00914\ \ \ \ \ \}}
+\DoxyCodeLine{00915\ \ \ \ \ \ \ \textcolor{keywordflow}{else}\ \textcolor{keywordflow}{if}\ ((use\_p\ =\ \doxymbox{\hyperlink{gimple-ssa_8h_aa97965e577a34f3aec6118dbb4e7cdc1}{gimple\_vuse\_op}}\ (head\_stmt))\ !=\ \doxymbox{\hyperlink{tree-ssa-operands_8h_ac903e336aa6cdf4821106a43ebfbdde7}{NULL\_USE\_OPERAND\_P}})}
+\DoxyCodeLine{00916\ \ \ \ \ \{}
+\DoxyCodeLine{00917\ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (\doxymbox{\hyperlink{tree-ssa-operands_8h_a257a77ba135de1a418aef39013d54984}{USE\_FROM\_PTR}}\ (use\_p)\ ==\ use)}
+\DoxyCodeLine{00918\ \ \ \ \ \ \ \ \ last\_p\ =\ \doxymbox{\hyperlink{ssa-iterators_8h_a5e29f334c2a6eb2fec31f55c8d2c855b}{move\_use\_after\_head}}\ (use\_p,\ head,\ last\_p);}
+\DoxyCodeLine{00919\ \ \ \ \ \}}
+\DoxyCodeLine{00920\ \ \ \ \ \}}
+\DoxyCodeLine{00921\ \ \ \textcolor{comment}{/*\ Link\ iter\ node\ in\ after\ last\_p.\ \ */}}
+\DoxyCodeLine{00922\ \ \ \textcolor{keywordflow}{if}\ (imm-\/>\doxymbox{\hyperlink{structimm__use__iterator_a5495087f0678991bca89a997df35ef35}{iter\_node}}.prev\ !=\ \doxymbox{\hyperlink{stddef_8h_a070d2ce7b6bb7e5c05602aa8c308d0c4}{NULL}})}
+\DoxyCodeLine{00923\ \ \ \ \ \doxymbox{\hyperlink{ssa-iterators_8h_ac1499f9265d1c5b0a7c3abf3ac5dd8e9}{delink\_imm\_use}}\ (\&imm-\/>\doxymbox{\hyperlink{structimm__use__iterator_a5495087f0678991bca89a997df35ef35}{iter\_node}});}
+\DoxyCodeLine{00924\ \ \ \doxymbox{\hyperlink{ssa-iterators_8h_aaee384668c0373c3818decf5c24aae14}{link\_imm\_use\_to\_list}}\ (\&(imm-\/>\doxymbox{\hyperlink{structimm__use__iterator_a5495087f0678991bca89a997df35ef35}{iter\_node}}),\ last\_p);}
+\DoxyCodeLine{00925\ \}}
+\DoxyCodeLine{00926\ }
+\DoxyCodeLine{00927\ \textcolor{comment}{/*\ Initialize\ IMM\ to\ traverse\ over\ uses\ of\ VAR.\ \ Return\ the\ first\ statement.\ \ */}}
+\DoxyCodeLine{00928\ \textcolor{keyword}{inline}\ gimple\ *}
+\DoxyCodeLine{00929\ \doxymbox{\hyperlink{ssa-iterators_8h_a317e09ac8e2587fdb8c81b6c2554d688}{first\_imm\_use\_stmt}}\ (\doxymbox{\hyperlink{structimm__use__iterator}{imm\_use\_iterator}}\ *imm,\ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ var)}
+\DoxyCodeLine{00930\ \{}
+\DoxyCodeLine{00931\ \ \ imm-\/>\doxymbox{\hyperlink{structimm__use__iterator_a4c986b8c3d59974e13bf2d0dfa9a1830}{end\_p}}\ =\ \&(\doxymbox{\hyperlink{tree_8h_a637c83b86df6744e6a1c1a60912016ce}{SSA\_NAME\_IMM\_USE\_NODE}}\ (var));}
+\DoxyCodeLine{00932\ \ \ imm-\/>\doxymbox{\hyperlink{structimm__use__iterator_ac4ff91a3432fd2735bf3ae3eacf2195b}{imm\_use}}\ =\ imm-\/>\doxymbox{\hyperlink{structimm__use__iterator_a4c986b8c3d59974e13bf2d0dfa9a1830}{end\_p}}-\/>next;}
+\DoxyCodeLine{00933\ \ \ imm-\/>\doxymbox{\hyperlink{structimm__use__iterator_acf5ee1c3075f5f5c28f941b5f4521a82}{next\_imm\_name}}\ =\ \doxymbox{\hyperlink{tree-ssa-operands_8h_ac903e336aa6cdf4821106a43ebfbdde7}{NULL\_USE\_OPERAND\_P}};}
+\DoxyCodeLine{00934\ }
+\DoxyCodeLine{00935\ \ \ \textcolor{comment}{/*\ iter\_node\ is\ used\ as\ a\ marker\ within\ the\ immediate\ use\ list\ to\ indicate}}
+\DoxyCodeLine{00936\ \textcolor{comment}{\ \ \ \ \ where\ the\ end\ of\ the\ current\ stmt's\ uses\ are.\ \ Initialize\ it\ to\ NULL}}
+\DoxyCodeLine{00937\ \textcolor{comment}{\ \ \ \ \ stmt\ and\ use,\ which\ indicates\ a\ marker\ node.\ \ */}}
+\DoxyCodeLine{00938\ \ \ imm-\/>\doxymbox{\hyperlink{structimm__use__iterator_a5495087f0678991bca89a997df35ef35}{iter\_node}}.prev\ =\ \doxymbox{\hyperlink{tree-ssa-operands_8h_ac903e336aa6cdf4821106a43ebfbdde7}{NULL\_USE\_OPERAND\_P}};}
+\DoxyCodeLine{00939\ \ \ imm-\/>\doxymbox{\hyperlink{structimm__use__iterator_a5495087f0678991bca89a997df35ef35}{iter\_node}}.next\ =\ \doxymbox{\hyperlink{tree-ssa-operands_8h_ac903e336aa6cdf4821106a43ebfbdde7}{NULL\_USE\_OPERAND\_P}};}
+\DoxyCodeLine{00940\ \ \ imm-\/>\doxymbox{\hyperlink{structimm__use__iterator_a5495087f0678991bca89a997df35ef35}{iter\_node}}.loc.stmt\ =\ \doxymbox{\hyperlink{stddef_8h_a070d2ce7b6bb7e5c05602aa8c308d0c4}{NULL}};}
+\DoxyCodeLine{00941\ \ \ imm-\/>\doxymbox{\hyperlink{structimm__use__iterator_a5495087f0678991bca89a997df35ef35}{iter\_node}}.use\ =\ \doxymbox{\hyperlink{stddef_8h_a070d2ce7b6bb7e5c05602aa8c308d0c4}{NULL}};}
+\DoxyCodeLine{00942\ }
+\DoxyCodeLine{00943\ \ \ \textcolor{keywordflow}{if}\ (\doxymbox{\hyperlink{ssa-iterators_8h_ad3d6b181eae3cb2c7f171df6a3f6a713}{end\_imm\_use\_stmt\_p}}\ (imm))}
+\DoxyCodeLine{00944\ \ \ \ \ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{stddef_8h_a070d2ce7b6bb7e5c05602aa8c308d0c4}{NULL}};}
+\DoxyCodeLine{00945\ }
+\DoxyCodeLine{00946\ \ \ \doxymbox{\hyperlink{ssa-iterators_8h_a85a1cfd44a4cd7c87cc00e8678c5031a}{link\_use\_stmts\_after}}\ (imm-\/>\doxymbox{\hyperlink{structimm__use__iterator_ac4ff91a3432fd2735bf3ae3eacf2195b}{imm\_use}},\ imm);}
+\DoxyCodeLine{00947\ }
+\DoxyCodeLine{00948\ \ \ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{tree-ssa-operands_8h_a3349aa1cbd782e70fa771eb4e94118b7}{USE\_STMT}}\ (imm-\/>\doxymbox{\hyperlink{structimm__use__iterator_ac4ff91a3432fd2735bf3ae3eacf2195b}{imm\_use}});}
+\DoxyCodeLine{00949\ \}}
+\DoxyCodeLine{00950\ }
+\DoxyCodeLine{00951\ \textcolor{comment}{/*\ Bump\ IMM\ to\ the\ next\ stmt\ which\ has\ a\ use\ of\ var.\ \ */}}
+\DoxyCodeLine{00952\ }
+\DoxyCodeLine{00953\ \textcolor{keyword}{inline}\ gimple\ *}
+\DoxyCodeLine{00954\ \doxymbox{\hyperlink{ssa-iterators_8h_a6ddd5170a7fa023866e97e0fc401023d}{next\_imm\_use\_stmt}}\ (\doxymbox{\hyperlink{structimm__use__iterator}{imm\_use\_iterator}}\ *imm)}
+\DoxyCodeLine{00955\ \{}
+\DoxyCodeLine{00956\ \ \ imm-\/>\doxymbox{\hyperlink{structimm__use__iterator_ac4ff91a3432fd2735bf3ae3eacf2195b}{imm\_use}}\ =\ imm-\/>\doxymbox{\hyperlink{structimm__use__iterator_a5495087f0678991bca89a997df35ef35}{iter\_node}}.next;}
+\DoxyCodeLine{00957\ \ \ \textcolor{keywordflow}{if}\ (\doxymbox{\hyperlink{ssa-iterators_8h_ad3d6b181eae3cb2c7f171df6a3f6a713}{end\_imm\_use\_stmt\_p}}\ (imm))}
+\DoxyCodeLine{00958\ \ \ \ \ \{}
+\DoxyCodeLine{00959\ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (imm-\/>\doxymbox{\hyperlink{structimm__use__iterator_a5495087f0678991bca89a997df35ef35}{iter\_node}}.prev\ !=\ \doxymbox{\hyperlink{stddef_8h_a070d2ce7b6bb7e5c05602aa8c308d0c4}{NULL}})}
+\DoxyCodeLine{00960\ \ \ \ \ \doxymbox{\hyperlink{ssa-iterators_8h_ac1499f9265d1c5b0a7c3abf3ac5dd8e9}{delink\_imm\_use}}\ (\&imm-\/>\doxymbox{\hyperlink{structimm__use__iterator_a5495087f0678991bca89a997df35ef35}{iter\_node}});}
+\DoxyCodeLine{00961\ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{stddef_8h_a070d2ce7b6bb7e5c05602aa8c308d0c4}{NULL}};}
+\DoxyCodeLine{00962\ \ \ \ \ \}}
+\DoxyCodeLine{00963\ }
+\DoxyCodeLine{00964\ \ \ \doxymbox{\hyperlink{ssa-iterators_8h_a85a1cfd44a4cd7c87cc00e8678c5031a}{link\_use\_stmts\_after}}\ (imm-\/>\doxymbox{\hyperlink{structimm__use__iterator_ac4ff91a3432fd2735bf3ae3eacf2195b}{imm\_use}},\ imm);}
+\DoxyCodeLine{00965\ \ \ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{tree-ssa-operands_8h_a3349aa1cbd782e70fa771eb4e94118b7}{USE\_STMT}}\ (imm-\/>\doxymbox{\hyperlink{structimm__use__iterator_ac4ff91a3432fd2735bf3ae3eacf2195b}{imm\_use}});}
+\DoxyCodeLine{00966\ \}}
+\DoxyCodeLine{00967\ }
+\DoxyCodeLine{00968\ \textcolor{comment}{/*\ This\ routine\ will\ return\ the\ first\ use\ on\ the\ stmt\ IMM\ currently\ refers}}
+\DoxyCodeLine{00969\ \textcolor{comment}{\ \ \ to.\ \ */}}
+\DoxyCodeLine{00970\ }
+\DoxyCodeLine{00971\ \textcolor{keyword}{inline}\ \doxymbox{\hyperlink{tree-ssa-operands_8h_a6c4644d017fc5af6b02dd63b38fa35c1}{use\_operand\_p}}}
+\DoxyCodeLine{00972\ \doxymbox{\hyperlink{ssa-iterators_8h_a09d92766c68556d0ace338ab0ab4600e}{first\_imm\_use\_on\_stmt}}\ (\doxymbox{\hyperlink{structimm__use__iterator}{imm\_use\_iterator}}\ *imm)}
+\DoxyCodeLine{00973\ \{}
+\DoxyCodeLine{00974\ \ \ imm-\/>\doxymbox{\hyperlink{structimm__use__iterator_acf5ee1c3075f5f5c28f941b5f4521a82}{next\_imm\_name}}\ =\ imm-\/>\doxymbox{\hyperlink{structimm__use__iterator_ac4ff91a3432fd2735bf3ae3eacf2195b}{imm\_use}}-\/>next;}
+\DoxyCodeLine{00975\ \ \ \textcolor{keywordflow}{return}\ imm-\/>\doxymbox{\hyperlink{structimm__use__iterator_ac4ff91a3432fd2735bf3ae3eacf2195b}{imm\_use}};}
+\DoxyCodeLine{00976\ \}}
+\DoxyCodeLine{00977\ }
+\DoxyCodeLine{00978\ \textcolor{comment}{/*\ \ Return\ TRUE\ if\ the\ last\ use\ on\ the\ stmt\ IMM\ refers\ to\ has\ been\ visited.\ \ */}}
+\DoxyCodeLine{00979\ }
+\DoxyCodeLine{00980\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{bool}}
+\DoxyCodeLine{00981\ \doxymbox{\hyperlink{ssa-iterators_8h_a62c39d10c120609440c229a255871582}{end\_imm\_use\_on\_stmt\_p}}\ (\textcolor{keyword}{const}\ \doxymbox{\hyperlink{structimm__use__iterator}{imm\_use\_iterator}}\ *imm)}
+\DoxyCodeLine{00982\ \{}
+\DoxyCodeLine{00983\ \ \ \textcolor{keywordflow}{return}\ (imm-\/>\doxymbox{\hyperlink{structimm__use__iterator_ac4ff91a3432fd2735bf3ae3eacf2195b}{imm\_use}}\ ==\ \&(imm-\/>\doxymbox{\hyperlink{structimm__use__iterator_a5495087f0678991bca89a997df35ef35}{iter\_node}}));}
+\DoxyCodeLine{00984\ \}}
+\DoxyCodeLine{00985\ }
+\DoxyCodeLine{00986\ \textcolor{comment}{/*\ Bump\ to\ the\ next\ use\ on\ the\ stmt\ IMM\ refers\ to,\ return\ NULL\ if\ done.\ \ */}}
+\DoxyCodeLine{00987\ }
+\DoxyCodeLine{00988\ \textcolor{keyword}{inline}\ \doxymbox{\hyperlink{tree-ssa-operands_8h_a6c4644d017fc5af6b02dd63b38fa35c1}{use\_operand\_p}}}
+\DoxyCodeLine{00989\ \doxymbox{\hyperlink{ssa-iterators_8h_a417f1bdda343688a93f2bb7494025ff6}{next\_imm\_use\_on\_stmt}}\ (\doxymbox{\hyperlink{structimm__use__iterator}{imm\_use\_iterator}}\ *imm)}
+\DoxyCodeLine{00990\ \{}
+\DoxyCodeLine{00991\ \ \ imm-\/>\doxymbox{\hyperlink{structimm__use__iterator_ac4ff91a3432fd2735bf3ae3eacf2195b}{imm\_use}}\ =\ imm-\/>\doxymbox{\hyperlink{structimm__use__iterator_acf5ee1c3075f5f5c28f941b5f4521a82}{next\_imm\_name}};}
+\DoxyCodeLine{00992\ \ \ \textcolor{keywordflow}{if}\ (\doxymbox{\hyperlink{ssa-iterators_8h_a62c39d10c120609440c229a255871582}{end\_imm\_use\_on\_stmt\_p}}\ (imm))}
+\DoxyCodeLine{00993\ \ \ \ \ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{tree-ssa-operands_8h_ac903e336aa6cdf4821106a43ebfbdde7}{NULL\_USE\_OPERAND\_P}};}
+\DoxyCodeLine{00994\ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00995\ \ \ \ \ \{}
+\DoxyCodeLine{00996\ \ \ \ \ \ \ imm-\/>\doxymbox{\hyperlink{structimm__use__iterator_acf5ee1c3075f5f5c28f941b5f4521a82}{next\_imm\_name}}\ =\ imm-\/>\doxymbox{\hyperlink{structimm__use__iterator_ac4ff91a3432fd2735bf3ae3eacf2195b}{imm\_use}}-\/>next;}
+\DoxyCodeLine{00997\ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ imm-\/>\doxymbox{\hyperlink{structimm__use__iterator_ac4ff91a3432fd2735bf3ae3eacf2195b}{imm\_use}};}
+\DoxyCodeLine{00998\ \ \ \ \ \}}
+\DoxyCodeLine{00999\ \}}
+\DoxyCodeLine{01000\ }
+\DoxyCodeLine{01001\ \textcolor{comment}{/*\ Delink\ all\ immediate\_use\ information\ for\ STMT.\ \ */}}
+\DoxyCodeLine{01002\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{void}}
+\DoxyCodeLine{01003\ \doxymbox{\hyperlink{ssa-iterators_8h_a282bc3c7d89f6d8c73471f2ac02373cc}{delink\_stmt\_imm\_use}}\ (gimple\ *stmt)}
+\DoxyCodeLine{01004\ \{}
+\DoxyCodeLine{01005\ \ \ \ \doxymbox{\hyperlink{structssa__op__iter}{ssa\_op\_iter}}\ iter;}
+\DoxyCodeLine{01006\ \ \ \ \doxymbox{\hyperlink{tree-ssa-operands_8h_a6c4644d017fc5af6b02dd63b38fa35c1}{use\_operand\_p}}\ use\_p;}
+\DoxyCodeLine{01007\ }
+\DoxyCodeLine{01008\ \ \ \ \textcolor{keywordflow}{if}\ (\doxymbox{\hyperlink{tree-ssa-operands_8h_ad16a6f2d717ed5356883cbe20ec9d6c3}{ssa\_operands\_active}}\ (\doxymbox{\hyperlink{function_8h_ae364f850fb87e59780f10d5890501251}{cfun}}))}
+\DoxyCodeLine{01009\ \ \ \ \ \ \doxymbox{\hyperlink{ssa-iterators_8h_ac8e14ce5821dd682f43e161014079979}{FOR\_EACH\_PHI\_OR\_STMT\_USE}}\ (use\_p,\ stmt,\ iter,\ \doxymbox{\hyperlink{ssa-iterators_8h_ab220a35071636176890f9becfb060da6}{SSA\_OP\_ALL\_USES}})}
+\DoxyCodeLine{01010\ \ \ \ \ \ \ \ \doxymbox{\hyperlink{ssa-iterators_8h_ac1499f9265d1c5b0a7c3abf3ac5dd8e9}{delink\_imm\_use}}\ (use\_p);}
+\DoxyCodeLine{01011\ \}}
+\DoxyCodeLine{01012\ }
+\DoxyCodeLine{01013\ \textcolor{preprocessor}{\#endif\ }\textcolor{comment}{/*\ GCC\_TREE\_SSA\_ITERATORS\_H\ */}\textcolor{preprocessor}{}}
+
+\end{DoxyCode}

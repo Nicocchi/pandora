@@ -1,0 +1,1345 @@
+\doxysection{profile-\/count.h}
+\hypertarget{profile-count_8h_source}{}\label{profile-count_8h_source}\index{toolchain/x86\_64-\/elf/lib/gcc/x86\_64-\/elf/14.2.0/plugin/include/profile-\/count.h@{toolchain/x86\_64-\/elf/lib/gcc/x86\_64-\/elf/14.2.0/plugin/include/profile-\/count.h}}
+\doxymbox{\hyperlink{profile-count_8h}{Go to the documentation of this file.}}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001\ \textcolor{comment}{/*\ Profile\ counter\ container\ type.}}
+\DoxyCodeLine{00002\ \textcolor{comment}{\ \ \ Copyright\ (C)\ 2017-\/2024\ Free\ Software\ Foundation,\ Inc.}}
+\DoxyCodeLine{00003\ \textcolor{comment}{\ \ \ Contributed\ by\ Jan\ Hubicka}}
+\DoxyCodeLine{00004\ \textcolor{comment}{}}
+\DoxyCodeLine{00005\ \textcolor{comment}{This\ file\ is\ part\ of\ GCC.}}
+\DoxyCodeLine{00006\ \textcolor{comment}{}}
+\DoxyCodeLine{00007\ \textcolor{comment}{GCC\ is\ free\ software;\ you\ can\ redistribute\ it\ and/or\ modify\ it\ under}}
+\DoxyCodeLine{00008\ \textcolor{comment}{the\ terms\ of\ the\ GNU\ General\ Public\ License\ as\ published\ by\ the\ Free}}
+\DoxyCodeLine{00009\ \textcolor{comment}{Software\ Foundation;\ either\ version\ 3,\ or\ (at\ your\ option)\ any\ later}}
+\DoxyCodeLine{00010\ \textcolor{comment}{version.}}
+\DoxyCodeLine{00011\ \textcolor{comment}{}}
+\DoxyCodeLine{00012\ \textcolor{comment}{GCC\ is\ distributed\ in\ the\ hope\ that\ it\ will\ be\ useful,\ but\ WITHOUT\ ANY}}
+\DoxyCodeLine{00013\ \textcolor{comment}{WARRANTY;\ without\ even\ the\ implied\ warranty\ of\ MERCHANTABILITY\ or}}
+\DoxyCodeLine{00014\ \textcolor{comment}{FITNESS\ FOR\ A\ PARTICULAR\ PURPOSE.\ \ See\ the\ GNU\ General\ Public\ License}}
+\DoxyCodeLine{00015\ \textcolor{comment}{for\ more\ details.}}
+\DoxyCodeLine{00016\ \textcolor{comment}{}}
+\DoxyCodeLine{00017\ \textcolor{comment}{You\ should\ have\ received\ a\ copy\ of\ the\ GNU\ General\ Public\ License}}
+\DoxyCodeLine{00018\ \textcolor{comment}{along\ with\ GCC;\ see\ the\ file\ COPYING3.\ \ If\ not\ see}}
+\DoxyCodeLine{00019\ \textcolor{comment}{<http://www.gnu.org/licenses/>.\ \ */}}
+\DoxyCodeLine{00020\ }
+\DoxyCodeLine{00021\ \textcolor{preprocessor}{\#ifndef\ GCC\_PROFILE\_COUNT\_H}}
+\DoxyCodeLine{00022\ \textcolor{preprocessor}{\#define\ GCC\_PROFILE\_COUNT\_H}}
+\DoxyCodeLine{00023\ }
+\DoxyCodeLine{00024\ \textcolor{keyword}{struct\ }function;}
+\DoxyCodeLine{00025\ \textcolor{keyword}{struct\ }profile\_count;}
+\DoxyCodeLine{00026\ \textcolor{keyword}{class\ }\doxymbox{\hyperlink{classsreal}{sreal}};}
+\DoxyCodeLine{00027\ }
+\DoxyCodeLine{00028\ \textcolor{comment}{/*\ Quality\ of\ the\ profile\ count.\ \ Because\ gengtype\ does\ not\ support\ enums}}
+\DoxyCodeLine{00029\ \textcolor{comment}{\ \ \ inside\ of\ classes,\ this\ is\ in\ global\ namespace.\ \ */}}
+\DoxyCodeLine{00030\ \textcolor{keyword}{enum}\ \doxymbox{\hyperlink{profile-count_8h_a176a4353f013d9fd4215c4721c89b08a}{profile\_quality}}\ \{}
+\DoxyCodeLine{00031\ \ \ \textcolor{comment}{/*\ Uninitialized\ value.\ \ */}}
+\DoxyCodeLine{00032\ \ \ \doxymbox{\hyperlink{profile-count_8h_a176a4353f013d9fd4215c4721c89b08aa38e581a0ef8a137857aa3c958d75a6d7}{UNINITIALIZED\_PROFILE}},}
+\DoxyCodeLine{00033\ }
+\DoxyCodeLine{00034\ \ \ \textcolor{comment}{/*\ Profile\ is\ based\ on\ static\ branch\ prediction\ heuristics\ and\ may}}
+\DoxyCodeLine{00035\ \textcolor{comment}{\ \ \ \ \ or\ may\ not\ match\ reality.\ \ It\ is\ local\ to\ function\ and\ cannot\ be\ compared}}
+\DoxyCodeLine{00036\ \textcolor{comment}{\ \ \ \ \ inter-\/procedurally.\ \ Never\ used\ by\ probabilities\ (they\ are\ always\ local).}}
+\DoxyCodeLine{00037\ \textcolor{comment}{\ \ \ */}}
+\DoxyCodeLine{00038\ \ \ \doxymbox{\hyperlink{profile-count_8h_a176a4353f013d9fd4215c4721c89b08aa24920ec18baa87c0dd0032b1b3cd7917}{GUESSED\_LOCAL}},}
+\DoxyCodeLine{00039\ }
+\DoxyCodeLine{00040\ \ \ \textcolor{comment}{/*\ Profile\ was\ read\ by\ feedback\ and\ was\ 0,\ we\ used\ local\ heuristics\ to\ guess}}
+\DoxyCodeLine{00041\ \textcolor{comment}{\ \ \ \ \ better.\ \ This\ is\ the\ case\ of\ functions\ not\ run\ in\ profile\ feedback.}}
+\DoxyCodeLine{00042\ \textcolor{comment}{\ \ \ \ \ Never\ used\ by\ probabilities.\ \ */}}
+\DoxyCodeLine{00043\ \ \ \doxymbox{\hyperlink{profile-count_8h_a176a4353f013d9fd4215c4721c89b08aabd539fab0a7c2b002a125566f011652c}{GUESSED\_GLOBAL0}},}
+\DoxyCodeLine{00044\ }
+\DoxyCodeLine{00045\ \ \ \textcolor{comment}{/*\ Same\ as\ GUESSED\_GLOBAL0\ but\ global\ count\ is\ adjusted\ 0.\ \ */}}
+\DoxyCodeLine{00046\ \ \ \doxymbox{\hyperlink{profile-count_8h_a176a4353f013d9fd4215c4721c89b08aa8a69e2f5dba175df7b2c5721d4ae3181}{GUESSED\_GLOBAL0\_ADJUSTED}},}
+\DoxyCodeLine{00047\ }
+\DoxyCodeLine{00048\ \ \ \textcolor{comment}{/*\ Profile\ is\ based\ on\ static\ branch\ prediction\ heuristics.\ \ It\ may\ or\ may}}
+\DoxyCodeLine{00049\ \textcolor{comment}{\ \ \ \ \ not\ reflect\ the\ reality\ but\ it\ can\ be\ compared\ interprocedurally}}
+\DoxyCodeLine{00050\ \textcolor{comment}{\ \ \ \ \ (for\ example,\ we\ inlined\ function\ w/o\ profile\ feedback\ into\ function}}
+\DoxyCodeLine{00051\ \textcolor{comment}{\ \ \ \ \ \ with\ feedback\ and\ propagated\ from\ that).}}
+\DoxyCodeLine{00052\ \textcolor{comment}{\ \ \ \ \ Never\ used\ by\ probabilities.\ \ */}}
+\DoxyCodeLine{00053\ \ \ \doxymbox{\hyperlink{profile-count_8h_a176a4353f013d9fd4215c4721c89b08aaf5a5c929d87138f872009eba2703c52e}{GUESSED}},}
+\DoxyCodeLine{00054\ }
+\DoxyCodeLine{00055\ \ \ \textcolor{comment}{/*\ Profile\ was\ determined\ by\ autofdo.\ \ */}}
+\DoxyCodeLine{00056\ \ \ \doxymbox{\hyperlink{profile-count_8h_a176a4353f013d9fd4215c4721c89b08aacd3fe5e8a7128ab4f13d0f4a107eb098}{AFDO}},}
+\DoxyCodeLine{00057\ }
+\DoxyCodeLine{00058\ \ \ \textcolor{comment}{/*\ Profile\ was\ originally\ based\ on\ feedback\ but\ it\ was\ adjusted}}
+\DoxyCodeLine{00059\ \textcolor{comment}{\ \ \ \ \ by\ code\ duplicating\ optimization.\ \ It\ may\ not\ precisely\ reflect\ the}}
+\DoxyCodeLine{00060\ \textcolor{comment}{\ \ \ \ \ particular\ code\ path.\ \ */}}
+\DoxyCodeLine{00061\ \ \ \doxymbox{\hyperlink{profile-count_8h_a176a4353f013d9fd4215c4721c89b08aa11bda19fea1e90f64f65a8f278ecfd62}{ADJUSTED}},}
+\DoxyCodeLine{00062\ }
+\DoxyCodeLine{00063\ \ \ \textcolor{comment}{/*\ Profile\ was\ read\ from\ profile\ feedback\ or\ determined\ by\ accurate\ static}}
+\DoxyCodeLine{00064\ \textcolor{comment}{\ \ \ \ \ method.\ \ */}}
+\DoxyCodeLine{00065\ \ \ \doxymbox{\hyperlink{profile-count_8h_a176a4353f013d9fd4215c4721c89b08aaf18175cd0be2b1fce85e2d670ae1d24e}{PRECISE}}}
+\DoxyCodeLine{00066\ \};}
+\DoxyCodeLine{00067\ }
+\DoxyCodeLine{00068\ \textcolor{keyword}{extern}\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *\doxymbox{\hyperlink{profile-count_8h_abeda7de10e9f7400a7388298433afc58}{profile\_quality\_as\_string}}\ (\textcolor{keyword}{enum}\ \doxymbox{\hyperlink{profile-count_8h_a176a4353f013d9fd4215c4721c89b08a}{profile\_quality}});}
+\DoxyCodeLine{00069\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{profile-count_8h_a3fd723242aa259113c10a535f2433889}{parse\_profile\_quality}}\ (\textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *\doxymbox{\hyperlink{configargs_8h_a92d544bd66c050551f3d87fa55eb3f5d}{value}},}
+\DoxyCodeLine{00070\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{profile-count_8h_a176a4353f013d9fd4215c4721c89b08a}{profile\_quality}}\ *quality);}
+\DoxyCodeLine{00071\ }
+\DoxyCodeLine{00072\ \textcolor{comment}{/*\ The\ base\ value\ for\ branch\ probability\ notes\ and\ edge\ probabilities.\ \ */}}
+\DoxyCodeLine{00073\ \textcolor{preprocessor}{\#define\ REG\_BR\_PROB\_BASE\ \ 10000}}
+\DoxyCodeLine{00074\ }
+\DoxyCodeLine{00075\ \textcolor{preprocessor}{\#define\ RDIV(X,Y)\ (((X)\ +\ (Y)\ /\ 2)\ /\ (Y))}}
+\DoxyCodeLine{00076\ }
+\DoxyCodeLine{00077\ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{profile-count_8h_a9221fe233a666dcd9bf94d9ec0e93d95}{slow\_safe\_scale\_64bit}}\ (uint64\_t\ \doxymbox{\hyperlink{poly-int_8h_af77c881600a14567e276ee17dfb8764f}{a}},\ uint64\_t\ \doxymbox{\hyperlink{poly-int_8h_af3bb9d9df219585072cf9e4e95572f70}{b}},\ uint64\_t\ c,\ uint64\_t\ *res);}
+\DoxyCodeLine{00078\ }
+\DoxyCodeLine{00079\ \textcolor{comment}{/*\ Compute\ RES=(a*b\ +\ c/2)/c\ capping\ and\ return\ false\ if\ overflow\ happened.\ \ */}}
+\DoxyCodeLine{00080\ }
+\DoxyCodeLine{00081\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{bool}}
+\DoxyCodeLine{00082\ \doxymbox{\hyperlink{profile-count_8h_abf7026d97ca7472a755d036768642b47}{safe\_scale\_64bit}}\ (uint64\_t\ \doxymbox{\hyperlink{poly-int_8h_af77c881600a14567e276ee17dfb8764f}{a}},\ uint64\_t\ \doxymbox{\hyperlink{poly-int_8h_af3bb9d9df219585072cf9e4e95572f70}{b}},\ uint64\_t\ c,\ uint64\_t\ *res)}
+\DoxyCodeLine{00083\ \{}
+\DoxyCodeLine{00084\ \textcolor{preprocessor}{\#if\ (GCC\_VERSION\ >=\ 5000)}}
+\DoxyCodeLine{00085\ \ \ uint64\_t\ tmp;}
+\DoxyCodeLine{00086\ \ \ \textcolor{keywordflow}{if}\ (!\_\_builtin\_mul\_overflow\ (\doxymbox{\hyperlink{poly-int_8h_af77c881600a14567e276ee17dfb8764f}{a}},\ \doxymbox{\hyperlink{poly-int_8h_af3bb9d9df219585072cf9e4e95572f70}{b}},\ \&tmp)}
+\DoxyCodeLine{00087\ \ \ \ \ \ \ \&\&\ !\_\_builtin\_add\_overflow\ (tmp,\ c/2,\ \&tmp))}
+\DoxyCodeLine{00088\ \ \ \ \ \{}
+\DoxyCodeLine{00089\ \ \ \ \ \ \ *res\ =\ tmp\ /\ c;}
+\DoxyCodeLine{00090\ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ \textcolor{keyword}{true};}
+\DoxyCodeLine{00091\ \ \ \ \ \}}
+\DoxyCodeLine{00092\ \ \ \textcolor{keywordflow}{if}\ (c\ ==\ 1)}
+\DoxyCodeLine{00093\ \ \ \ \ \{}
+\DoxyCodeLine{00094\ \ \ \ \ \ \ *res\ =\ (uint64\_t)\ -\/1;}
+\DoxyCodeLine{00095\ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ \textcolor{keyword}{false};}
+\DoxyCodeLine{00096\ \ \ \ \ \}}
+\DoxyCodeLine{00097\ \textcolor{preprocessor}{\#else}}
+\DoxyCodeLine{00098\ \ \ \textcolor{keywordflow}{if}\ (\doxymbox{\hyperlink{poly-int_8h_af77c881600a14567e276ee17dfb8764f}{a}}\ <\ ((uint64\_t)1\ <<\ 31)}
+\DoxyCodeLine{00099\ \ \ \ \ \ \ \&\&\ \doxymbox{\hyperlink{poly-int_8h_af3bb9d9df219585072cf9e4e95572f70}{b}}\ <\ ((uint64\_t)1\ <<\ 31)}
+\DoxyCodeLine{00100\ \ \ \ \ \ \ \&\&\ c\ <\ ((uint64\_t)1\ <<\ 31))}
+\DoxyCodeLine{00101\ \ \ \ \ \{}
+\DoxyCodeLine{00102\ \ \ \ \ \ \ *res\ =\ (\doxymbox{\hyperlink{poly-int_8h_af77c881600a14567e276ee17dfb8764f}{a}}\ *\ \doxymbox{\hyperlink{poly-int_8h_af3bb9d9df219585072cf9e4e95572f70}{b}}\ +\ (c\ /\ 2))\ /\ c;}
+\DoxyCodeLine{00103\ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ \textcolor{keyword}{true};}
+\DoxyCodeLine{00104\ \ \ \ \ \}}
+\DoxyCodeLine{00105\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00106\ \ \ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{profile-count_8h_a9221fe233a666dcd9bf94d9ec0e93d95}{slow\_safe\_scale\_64bit}}\ (\doxymbox{\hyperlink{poly-int_8h_af77c881600a14567e276ee17dfb8764f}{a}},\ \doxymbox{\hyperlink{poly-int_8h_af3bb9d9df219585072cf9e4e95572f70}{b}},\ c,\ res);}
+\DoxyCodeLine{00107\ \}}
+\DoxyCodeLine{00108\ }
+\DoxyCodeLine{00109\ \textcolor{comment}{/*\ Data\ type\ to\ hold\ probabilities.\ \ It\ implements\ fixed\ point\ arithmetics}}
+\DoxyCodeLine{00110\ \textcolor{comment}{\ \ \ with\ capping\ so\ probability\ is\ always\ in\ range\ [0,1]\ and\ scaling\ requiring}}
+\DoxyCodeLine{00111\ \textcolor{comment}{\ \ \ values\ greater\ than\ 1\ needs\ to\ be\ represented\ otherwise.}}
+\DoxyCodeLine{00112\ \textcolor{comment}{}}
+\DoxyCodeLine{00113\ \textcolor{comment}{\ \ \ In\ addition\ to\ actual\ value\ the\ quality\ of\ profile\ is\ tracked\ and\ propagated}}
+\DoxyCodeLine{00114\ \textcolor{comment}{\ \ \ through\ all\ operations.\ \ Special\ value\ UNINITIALIZED\_PROFILE\ is\ used\ for\ probabilities}}
+\DoxyCodeLine{00115\ \textcolor{comment}{\ \ \ that\ has\ not\ been\ determined\ yet\ (for\ example\ because\ of}}
+\DoxyCodeLine{00116\ \textcolor{comment}{\ \ \ -\/fno-\/guess-\/branch-\/probability)}}
+\DoxyCodeLine{00117\ \textcolor{comment}{}}
+\DoxyCodeLine{00118\ \textcolor{comment}{\ \ \ Typically\ probabilities\ are\ derived\ from\ profile\ feedback\ (via}}
+\DoxyCodeLine{00119\ \textcolor{comment}{\ \ \ probability\_in\_gcov\_type),\ autoFDO\ or\ guessed\ statically\ and\ then\ propagated}}
+\DoxyCodeLine{00120\ \textcolor{comment}{\ \ \ thorough\ the\ compilation.}}
+\DoxyCodeLine{00121\ \textcolor{comment}{}}
+\DoxyCodeLine{00122\ \textcolor{comment}{\ \ \ Named\ probabilities\ are\ available:}}
+\DoxyCodeLine{00123\ \textcolor{comment}{\ \ \ \ \ -\/\ never\ \ \ \ \ \ \ \ \ \ \ (0\ probability)}}
+\DoxyCodeLine{00124\ \textcolor{comment}{\ \ \ \ \ -\/\ guessed\_never}}
+\DoxyCodeLine{00125\ \textcolor{comment}{\ \ \ \ \ -\/\ very\_unlikely\ \ \ (1/2000\ probability)}}
+\DoxyCodeLine{00126\ \textcolor{comment}{\ \ \ \ \ -\/\ unlikely\ \ \ \ \ \ \ \ (1/5\ probability)}}
+\DoxyCodeLine{00127\ \textcolor{comment}{\ \ \ \ \ -\/\ even\ \ \ \ \ \ \ \ \ \ \ \ (1/2\ probability)}}
+\DoxyCodeLine{00128\ \textcolor{comment}{\ \ \ \ \ -\/\ likely\ \ \ \ \ \ \ \ \ \ (4/5\ probability)}}
+\DoxyCodeLine{00129\ \textcolor{comment}{\ \ \ \ \ -\/\ very\_likely\ \ \ \ \ (1999/2000\ probability)}}
+\DoxyCodeLine{00130\ \textcolor{comment}{\ \ \ \ \ -\/\ guessed\_always}}
+\DoxyCodeLine{00131\ \textcolor{comment}{\ \ \ \ \ -\/\ always}}
+\DoxyCodeLine{00132\ \textcolor{comment}{}}
+\DoxyCodeLine{00133\ \textcolor{comment}{\ \ \ Named\ probabilities\ except\ for\ never/always\ are\ assumed\ to\ be\ statically}}
+\DoxyCodeLine{00134\ \textcolor{comment}{\ \ \ guessed\ and\ thus\ not\ necessarily\ accurate.\ \ The\ difference\ between\ never}}
+\DoxyCodeLine{00135\ \textcolor{comment}{\ \ \ and\ guessed\_never\ is\ that\ the\ first\ one\ should\ be\ used\ only\ in\ case\ that}}
+\DoxyCodeLine{00136\ \textcolor{comment}{\ \ \ well\ behaving\ program\ will\ very\ likely\ not\ execute\ the\ "{}never"{}\ path.}}
+\DoxyCodeLine{00137\ \textcolor{comment}{\ \ \ For\ example\ if\ the\ path\ is\ going\ to\ abort\ ()\ call\ or\ it\ exception\ handling.}}
+\DoxyCodeLine{00138\ \textcolor{comment}{}}
+\DoxyCodeLine{00139\ \textcolor{comment}{\ \ \ Always\ and\ guessed\_always\ probabilities\ are\ symmetric.}}
+\DoxyCodeLine{00140\ \textcolor{comment}{}}
+\DoxyCodeLine{00141\ \textcolor{comment}{\ \ \ For\ legacy\ code\ we\ support\ conversion\ to/from\ REG\_BR\_PROB\_BASE\ based\ fixpoint}}
+\DoxyCodeLine{00142\ \textcolor{comment}{\ \ \ integer\ arithmetics.\ Once\ the\ code\ is\ converted\ to\ branch\ probabilities,}}
+\DoxyCodeLine{00143\ \textcolor{comment}{\ \ \ these\ conversions\ will\ probably\ go\ away\ because\ they\ are\ lossy.}}
+\DoxyCodeLine{00144\ \textcolor{comment}{*/}}
+\DoxyCodeLine{00145\ }
+\DoxyCodeLine{00146\ \textcolor{keyword}{class\ }\doxymbox{\hyperlink{coretypes_8h_ae5708c4d4b300570eebe0bc0c78facbc}{GTY}}((user))\ profile\_probability}
+\DoxyCodeLine{00147\ \{}
+\DoxyCodeLine{00148\ \ \ \textcolor{keyword}{static}\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{int}\ n\_bits\ =\ 29;}
+\DoxyCodeLine{00149\ \ \ \textcolor{comment}{/*\ We\ can\ technically\ use\ ((uint32\_t)\ 1\ <<\ (n\_bits\ -\/\ 1))\ -\/\ 2\ but\ that}}
+\DoxyCodeLine{00150\ \textcolor{comment}{\ \ \ \ \ will\ lead\ to\ harder\ multiplication\ sequences.\ \ */}}
+\DoxyCodeLine{00151\ \ \ \textcolor{keyword}{static}\ \textcolor{keyword}{const}\ uint32\_t\ max\_probability\ =\ (uint32\_t)\ 1\ <<\ (n\_bits\ -\/\ 2);}
+\DoxyCodeLine{00152\ \ \ \textcolor{keyword}{static}\ \textcolor{keyword}{const}\ uint32\_t\ uninitialized\_probability}
+\DoxyCodeLine{00153\ \ \ \ \ \ \ \ \ \ =\ ((uint32\_t)\ 1\ <<\ (n\_bits\ -\/\ 1))\ -\/\ 1;}
+\DoxyCodeLine{00154\ }
+\DoxyCodeLine{00155\ \ \ uint32\_t\ m\_val\ :\ 29;}
+\DoxyCodeLine{00156\ \ \ \textcolor{keyword}{enum}\ \doxymbox{\hyperlink{profile-count_8h_a176a4353f013d9fd4215c4721c89b08a}{profile\_quality}}\ m\_quality\ :\ 3;}
+\DoxyCodeLine{00157\ }
+\DoxyCodeLine{00158\ \ \ \textcolor{keyword}{friend}\ \textcolor{keyword}{struct\ }profile\_count;}
+\DoxyCodeLine{00159\ \textcolor{keyword}{public}:}
+\DoxyCodeLine{00160\ \ \ profile\_probability\ ():\ m\_val\ (uninitialized\_probability),}
+\DoxyCodeLine{00161\ \ \ \ \ m\_quality\ (\doxymbox{\hyperlink{profile-count_8h_a176a4353f013d9fd4215c4721c89b08aaf5a5c929d87138f872009eba2703c52e}{GUESSED}})}
+\DoxyCodeLine{00162\ \ \ \{\}}
+\DoxyCodeLine{00163\ }
+\DoxyCodeLine{00164\ \ \ profile\_probability\ (uint32\_t\ val,\ \doxymbox{\hyperlink{profile-count_8h_a176a4353f013d9fd4215c4721c89b08a}{profile\_quality}}\ quality):}
+\DoxyCodeLine{00165\ \ \ \ \ m\_val\ (val),\ m\_quality\ (quality)}
+\DoxyCodeLine{00166\ \ \ \{\}}
+\DoxyCodeLine{00167\ }
+\DoxyCodeLine{00168\ \ \ \textcolor{comment}{/*\ Named\ probabilities.\ \ */}}
+\DoxyCodeLine{00169\ \ \ \textcolor{keyword}{static}\ profile\_probability\ never\ ()}
+\DoxyCodeLine{00170\ \ \ \ \ \{}
+\DoxyCodeLine{00171\ \ \ \ \ \ \ profile\_probability\ ret;}
+\DoxyCodeLine{00172\ \ \ \ \ \ \ ret.m\_val\ =\ 0;}
+\DoxyCodeLine{00173\ \ \ \ \ \ \ ret.m\_quality\ =\ \doxymbox{\hyperlink{profile-count_8h_a176a4353f013d9fd4215c4721c89b08aaf18175cd0be2b1fce85e2d670ae1d24e}{PRECISE}};}
+\DoxyCodeLine{00174\ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ ret;}
+\DoxyCodeLine{00175\ \ \ \ \ \}}
+\DoxyCodeLine{00176\ }
+\DoxyCodeLine{00177\ \ \ \textcolor{keyword}{static}\ profile\_probability\ guessed\_never\ ()}
+\DoxyCodeLine{00178\ \ \ \ \ \{}
+\DoxyCodeLine{00179\ \ \ \ \ \ \ profile\_probability\ ret;}
+\DoxyCodeLine{00180\ \ \ \ \ \ \ ret.m\_val\ =\ 0;}
+\DoxyCodeLine{00181\ \ \ \ \ \ \ ret.m\_quality\ =\ \doxymbox{\hyperlink{profile-count_8h_a176a4353f013d9fd4215c4721c89b08aaf5a5c929d87138f872009eba2703c52e}{GUESSED}};}
+\DoxyCodeLine{00182\ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ ret;}
+\DoxyCodeLine{00183\ \ \ \ \ \}}
+\DoxyCodeLine{00184\ }
+\DoxyCodeLine{00185\ \ \ \textcolor{keyword}{static}\ profile\_probability\ very\_unlikely\ ()}
+\DoxyCodeLine{00186\ \ \ \ \ \{}
+\DoxyCodeLine{00187\ \ \ \ \ \ \ \textcolor{comment}{/*\ Be\ consistent\ with\ PROB\_VERY\_UNLIKELY\ in\ predict.h.\ \ */}}
+\DoxyCodeLine{00188\ \ \ \ \ \ \ profile\_probability\ \doxymbox{\hyperlink{poly-int_8h_a3ecac2571dcdc8050989339124f1bd26}{r}}\ =\ guessed\_always\ ()\ /\ 2000;}
+\DoxyCodeLine{00189\ \ \ \ \ \ \ \doxymbox{\hyperlink{poly-int_8h_a3ecac2571dcdc8050989339124f1bd26}{r}}.m\_val-\/-\/;}
+\DoxyCodeLine{00190\ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{poly-int_8h_a3ecac2571dcdc8050989339124f1bd26}{r}};}
+\DoxyCodeLine{00191\ \ \ \ \ \}}
+\DoxyCodeLine{00192\ }
+\DoxyCodeLine{00193\ \ \ \textcolor{keyword}{static}\ profile\_probability\ unlikely\ ()}
+\DoxyCodeLine{00194\ \ \ \ \ \{}
+\DoxyCodeLine{00195\ \ \ \ \ \ \ \textcolor{comment}{/*\ Be\ consistent\ with\ PROB\_VERY\_LIKELY\ in\ predict.h.\ \ */}}
+\DoxyCodeLine{00196\ \ \ \ \ \ \ profile\_probability\ \doxymbox{\hyperlink{poly-int_8h_a3ecac2571dcdc8050989339124f1bd26}{r}}\ =\ guessed\_always\ ()\ /\ 5;}
+\DoxyCodeLine{00197\ \ \ \ \ \ \ \doxymbox{\hyperlink{poly-int_8h_a3ecac2571dcdc8050989339124f1bd26}{r}}.m\_val-\/-\/;}
+\DoxyCodeLine{00198\ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{poly-int_8h_a3ecac2571dcdc8050989339124f1bd26}{r}};}
+\DoxyCodeLine{00199\ \ \ \ \ \}}
+\DoxyCodeLine{00200\ }
+\DoxyCodeLine{00201\ \ \ \textcolor{keyword}{static}\ profile\_probability\ even\ ()}
+\DoxyCodeLine{00202\ \ \ \ \ \{}
+\DoxyCodeLine{00203\ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ guessed\_always\ ()\ /\ 2;}
+\DoxyCodeLine{00204\ \ \ \ \ \}}
+\DoxyCodeLine{00205\ }
+\DoxyCodeLine{00206\ \ \ \textcolor{keyword}{static}\ profile\_probability\ very\_likely\ ()}
+\DoxyCodeLine{00207\ \ \ \ \ \{}
+\DoxyCodeLine{00208\ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ always\ ()\ -\/\ very\_unlikely\ ();}
+\DoxyCodeLine{00209\ \ \ \ \ \}}
+\DoxyCodeLine{00210\ }
+\DoxyCodeLine{00211\ \ \ \textcolor{keyword}{static}\ profile\_probability\ likely\ ()}
+\DoxyCodeLine{00212\ \ \ \ \ \{}
+\DoxyCodeLine{00213\ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ always\ ()\ -\/\ unlikely\ ();}
+\DoxyCodeLine{00214\ \ \ \ \ \}}
+\DoxyCodeLine{00215\ \ \ \textcolor{comment}{/*\ Return\ true\ when\ value\ is\ not\ zero\ and\ can\ be\ used\ for\ scaling.\ \ \ */}}
+\DoxyCodeLine{00216\ \ \ \textcolor{keywordtype}{bool}\ nonzero\_p\ ()\textcolor{keyword}{\ const}}
+\DoxyCodeLine{00217\ \textcolor{keyword}{\ \ \ \ }\{}
+\DoxyCodeLine{00218\ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ initialized\_p\ ()\ \&\&\ m\_val\ !=\ 0;}
+\DoxyCodeLine{00219\ \ \ \ \ \}}
+\DoxyCodeLine{00220\ }
+\DoxyCodeLine{00221\ \ \ \textcolor{keyword}{static}\ profile\_probability\ guessed\_always\ ()}
+\DoxyCodeLine{00222\ \ \ \ \ \{}
+\DoxyCodeLine{00223\ \ \ \ \ \ \ profile\_probability\ ret;}
+\DoxyCodeLine{00224\ \ \ \ \ \ \ ret.m\_val\ =\ max\_probability;}
+\DoxyCodeLine{00225\ \ \ \ \ \ \ ret.m\_quality\ =\ \doxymbox{\hyperlink{profile-count_8h_a176a4353f013d9fd4215c4721c89b08aaf5a5c929d87138f872009eba2703c52e}{GUESSED}};}
+\DoxyCodeLine{00226\ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ ret;}
+\DoxyCodeLine{00227\ \ \ \ \ \}}
+\DoxyCodeLine{00228\ }
+\DoxyCodeLine{00229\ \ \ \textcolor{keyword}{static}\ profile\_probability\ always\ ()}
+\DoxyCodeLine{00230\ \ \ \ \ \{}
+\DoxyCodeLine{00231\ \ \ \ \ \ \ profile\_probability\ ret;}
+\DoxyCodeLine{00232\ \ \ \ \ \ \ ret.m\_val\ =\ max\_probability;}
+\DoxyCodeLine{00233\ \ \ \ \ \ \ ret.m\_quality\ =\ \doxymbox{\hyperlink{profile-count_8h_a176a4353f013d9fd4215c4721c89b08aaf18175cd0be2b1fce85e2d670ae1d24e}{PRECISE}};}
+\DoxyCodeLine{00234\ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ ret;}
+\DoxyCodeLine{00235\ \ \ \ \ \}}
+\DoxyCodeLine{00236\ }
+\DoxyCodeLine{00237\ \ \ \textcolor{comment}{/*\ Probabilities\ which\ has\ not\ been\ initialized.\ Either\ because}}
+\DoxyCodeLine{00238\ \textcolor{comment}{\ \ \ \ \ initialization\ did\ not\ happen\ yet\ or\ because\ profile\ is\ unknown.\ \ */}}
+\DoxyCodeLine{00239\ \ \ \textcolor{keyword}{static}\ profile\_probability\ uninitialized\ ()}
+\DoxyCodeLine{00240\ \ \ \ \ \{}
+\DoxyCodeLine{00241\ \ \ \ \ \ \ profile\_probability\ c;}
+\DoxyCodeLine{00242\ \ \ \ \ \ \ c.m\_val\ =\ uninitialized\_probability;}
+\DoxyCodeLine{00243\ \ \ \ \ \ \ c.m\_quality\ =\ \doxymbox{\hyperlink{profile-count_8h_a176a4353f013d9fd4215c4721c89b08aaf5a5c929d87138f872009eba2703c52e}{GUESSED}};}
+\DoxyCodeLine{00244\ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ c;}
+\DoxyCodeLine{00245\ \ \ \ \ \}}
+\DoxyCodeLine{00246\ }
+\DoxyCodeLine{00247\ \ \ \textcolor{comment}{/*\ Return\ true\ if\ value\ has\ been\ initialized.\ \ */}}
+\DoxyCodeLine{00248\ \ \ \textcolor{keywordtype}{bool}\ initialized\_p\ ()\textcolor{keyword}{\ const}}
+\DoxyCodeLine{00249\ \textcolor{keyword}{\ \ \ \ }\{}
+\DoxyCodeLine{00250\ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ m\_val\ !=\ uninitialized\_probability;}
+\DoxyCodeLine{00251\ \ \ \ \ \}}
+\DoxyCodeLine{00252\ }
+\DoxyCodeLine{00253\ \ \ \textcolor{comment}{/*\ Return\ true\ if\ value\ can\ be\ trusted.\ \ */}}
+\DoxyCodeLine{00254\ \ \ \textcolor{keywordtype}{bool}\ reliable\_p\ ()\textcolor{keyword}{\ const}}
+\DoxyCodeLine{00255\ \textcolor{keyword}{\ \ \ \ }\{}
+\DoxyCodeLine{00256\ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ m\_quality\ >=\ \doxymbox{\hyperlink{profile-count_8h_a176a4353f013d9fd4215c4721c89b08aa11bda19fea1e90f64f65a8f278ecfd62}{ADJUSTED}};}
+\DoxyCodeLine{00257\ \ \ \ \ \}}
+\DoxyCodeLine{00258\ }
+\DoxyCodeLine{00259\ \ \ \textcolor{comment}{/*\ Conversion\ from\ and\ to\ REG\_BR\_PROB\_BASE\ integer\ fixpoint\ arithmetics.}}
+\DoxyCodeLine{00260\ \textcolor{comment}{\ \ \ \ \ this\ is\ mostly\ to\ support\ legacy\ code\ and\ should\ go\ away.\ \ */}}
+\DoxyCodeLine{00261\ \ \ \textcolor{keyword}{static}\ profile\_probability\ from\_reg\_br\_prob\_base\ (\textcolor{keywordtype}{int}\ v)}
+\DoxyCodeLine{00262\ \ \ \ \ \{}
+\DoxyCodeLine{00263\ \ \ \ \ \ \ profile\_probability\ ret;}
+\DoxyCodeLine{00264\ \ \ \ \ \ \ \doxymbox{\hyperlink{system_8h_aff447899dc74d54931b2bc2d47de9423}{gcc\_checking\_assert}}\ (v\ >=\ 0\ \&\&\ v\ <=\ \doxymbox{\hyperlink{profile-count_8h_a3c5bb681f2416299ceb4465de0a215c3}{REG\_BR\_PROB\_BASE}});}
+\DoxyCodeLine{00265\ \ \ \ \ \ \ ret.m\_val\ =\ \doxymbox{\hyperlink{profile-count_8h_a202bd9b10241c405f250450bd30569f2}{RDIV}}\ (v\ *\ (uint64\_t)\ max\_probability,\ \doxymbox{\hyperlink{profile-count_8h_a3c5bb681f2416299ceb4465de0a215c3}{REG\_BR\_PROB\_BASE}});}
+\DoxyCodeLine{00266\ \ \ \ \ \ \ ret.m\_quality\ =\ \doxymbox{\hyperlink{profile-count_8h_a176a4353f013d9fd4215c4721c89b08aaf5a5c929d87138f872009eba2703c52e}{GUESSED}};}
+\DoxyCodeLine{00267\ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ ret;}
+\DoxyCodeLine{00268\ \ \ \ \ \}}
+\DoxyCodeLine{00269\ }
+\DoxyCodeLine{00270\ \ \ \textcolor{comment}{/*\ Return\ THIS\ with\ quality\ set\ to\ ADJUSTED.\ \ */}}
+\DoxyCodeLine{00271\ \ \ profile\_probability\ adjusted\ ()\textcolor{keyword}{\ const}}
+\DoxyCodeLine{00272\ \textcolor{keyword}{\ \ \ \ }\{}
+\DoxyCodeLine{00273\ \ \ \ \ \ \ profile\_probability\ ret\ =\ *\textcolor{keyword}{this};}
+\DoxyCodeLine{00274\ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (!initialized\_p\ ())}
+\DoxyCodeLine{00275\ \ \ \ \ \textcolor{keywordflow}{return}\ *\textcolor{keyword}{this};}
+\DoxyCodeLine{00276\ \ \ \ \ \ \ ret.m\_quality\ =\ \doxymbox{\hyperlink{profile-count_8h_a176a4353f013d9fd4215c4721c89b08aa11bda19fea1e90f64f65a8f278ecfd62}{ADJUSTED}};}
+\DoxyCodeLine{00277\ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ ret;}
+\DoxyCodeLine{00278\ \ \ \ \ \}}
+\DoxyCodeLine{00279\ }
+\DoxyCodeLine{00280\ \ \ \textcolor{keywordtype}{int}\ to\_reg\_br\_prob\_base\ ()\textcolor{keyword}{\ const}}
+\DoxyCodeLine{00281\ \textcolor{keyword}{\ \ \ \ }\{}
+\DoxyCodeLine{00282\ \ \ \ \ \ \ \doxymbox{\hyperlink{system_8h_aff447899dc74d54931b2bc2d47de9423}{gcc\_checking\_assert}}\ (initialized\_p\ ());}
+\DoxyCodeLine{00283\ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{profile-count_8h_a202bd9b10241c405f250450bd30569f2}{RDIV}}\ (m\_val\ *\ (uint64\_t)\ \doxymbox{\hyperlink{profile-count_8h_a3c5bb681f2416299ceb4465de0a215c3}{REG\_BR\_PROB\_BASE}},\ max\_probability);}
+\DoxyCodeLine{00284\ \ \ \ \ \}}
+\DoxyCodeLine{00285\ }
+\DoxyCodeLine{00286\ \ \ \textcolor{comment}{/*\ Conversion\ to\ and\ from\ RTL\ representation\ of\ profile\ probabilities.\ \ */}}
+\DoxyCodeLine{00287\ \ \ \textcolor{keyword}{static}\ profile\_probability\ from\_reg\_br\_prob\_note\ (\textcolor{keywordtype}{int}\ v)}
+\DoxyCodeLine{00288\ \ \ \ \ \{}
+\DoxyCodeLine{00289\ \ \ \ \ \ \ profile\_probability\ ret;}
+\DoxyCodeLine{00290\ \ \ \ \ \ \ ret.m\_val\ =\ ((\textcolor{keywordtype}{unsigned}\ int)v)\ /\ 8;}
+\DoxyCodeLine{00291\ \ \ \ \ \ \ ret.m\_quality\ =\ (\textcolor{keyword}{enum}\ \doxymbox{\hyperlink{profile-count_8h_a176a4353f013d9fd4215c4721c89b08a}{profile\_quality}})(v\ \&\ 7);}
+\DoxyCodeLine{00292\ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ ret;}
+\DoxyCodeLine{00293\ \ \ \ \ \}}
+\DoxyCodeLine{00294\ }
+\DoxyCodeLine{00295\ \ \ \textcolor{keywordtype}{int}\ to\_reg\_br\_prob\_note\ ()\textcolor{keyword}{\ const}}
+\DoxyCodeLine{00296\ \textcolor{keyword}{\ \ \ \ }\{}
+\DoxyCodeLine{00297\ \ \ \ \ \ \ \doxymbox{\hyperlink{system_8h_aff447899dc74d54931b2bc2d47de9423}{gcc\_checking\_assert}}\ (initialized\_p\ ());}
+\DoxyCodeLine{00298\ \ \ \ \ \ \ \textcolor{keywordtype}{int}\ ret\ =\ m\_val\ *\ 8\ +\ m\_quality;}
+\DoxyCodeLine{00299\ \ \ \ \ \ \ \doxymbox{\hyperlink{system_8h_aff447899dc74d54931b2bc2d47de9423}{gcc\_checking\_assert}}\ (from\_reg\_br\_prob\_note\ (ret)\ ==\ *\textcolor{keyword}{this});}
+\DoxyCodeLine{00300\ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ ret;}
+\DoxyCodeLine{00301\ \ \ \ \ \}}
+\DoxyCodeLine{00302\ }
+\DoxyCodeLine{00303\ \ \ \textcolor{comment}{/*\ Return\ VAL1/VAL2.\ \ */}}
+\DoxyCodeLine{00304\ \ \ \textcolor{keyword}{static}\ profile\_probability\ probability\_in\_gcov\_type}
+\DoxyCodeLine{00305\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ (\doxymbox{\hyperlink{coretypes_8h_ae8c03cc266a69e9635893ee0772d12e8}{gcov\_type}}\ val1,\ \doxymbox{\hyperlink{coretypes_8h_ae8c03cc266a69e9635893ee0772d12e8}{gcov\_type}}\ val2)}
+\DoxyCodeLine{00306\ \ \ \ \ \{}
+\DoxyCodeLine{00307\ \ \ \ \ \ \ profile\_probability\ ret;}
+\DoxyCodeLine{00308\ \ \ \ \ \ \ \doxymbox{\hyperlink{system_8h_aff447899dc74d54931b2bc2d47de9423}{gcc\_checking\_assert}}\ (val1\ >=\ 0\ \&\&\ val2\ >\ 0);}
+\DoxyCodeLine{00309\ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (val1\ >\ val2)}
+\DoxyCodeLine{00310\ \ \ \ \ ret.m\_val\ =\ max\_probability;}
+\DoxyCodeLine{00311\ \ \ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00312\ \ \ \ \ \{}
+\DoxyCodeLine{00313\ \ \ \ \ \ \ uint64\_t\ tmp;}
+\DoxyCodeLine{00314\ \ \ \ \ \ \ \doxymbox{\hyperlink{profile-count_8h_abf7026d97ca7472a755d036768642b47}{safe\_scale\_64bit}}\ (val1,\ max\_probability,\ val2,\ \&tmp);}
+\DoxyCodeLine{00315\ \ \ \ \ \ \ \doxymbox{\hyperlink{system_8h_aff447899dc74d54931b2bc2d47de9423}{gcc\_checking\_assert}}\ (tmp\ <=\ max\_probability);}
+\DoxyCodeLine{00316\ \ \ \ \ \ \ ret.m\_val\ =\ tmp;}
+\DoxyCodeLine{00317\ \ \ \ \ \}}
+\DoxyCodeLine{00318\ \ \ \ \ \ \ ret.m\_quality\ =\ \doxymbox{\hyperlink{profile-count_8h_a176a4353f013d9fd4215c4721c89b08aaf18175cd0be2b1fce85e2d670ae1d24e}{PRECISE}};}
+\DoxyCodeLine{00319\ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ ret;}
+\DoxyCodeLine{00320\ \ \ \ \ \}}
+\DoxyCodeLine{00321\ }
+\DoxyCodeLine{00322\ \ \ \textcolor{comment}{/*\ Basic\ operations.\ \ */}}
+\DoxyCodeLine{00323\ \ \ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{cp-tree_8h_a4b9bd7e4e073a2a98d043c78719de59b}{operator==\ }}(\textcolor{keyword}{const}\ profile\_probability\ \&other)\textcolor{keyword}{\ const}}
+\DoxyCodeLine{00324\ \textcolor{keyword}{\ \ \ \ }\{}
+\DoxyCodeLine{00325\ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ m\_val\ ==\ other.m\_val\ \&\&\ m\_quality\ ==\ other.m\_quality;}
+\DoxyCodeLine{00326\ \ \ \ \ \}}
+\DoxyCodeLine{00327\ }
+\DoxyCodeLine{00328\ \ \ profile\_probability\ operator+\ (\textcolor{keyword}{const}\ profile\_probability\ \&other)\textcolor{keyword}{\ const}}
+\DoxyCodeLine{00329\ \textcolor{keyword}{\ \ \ \ }\{}
+\DoxyCodeLine{00330\ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (other\ ==\ never\ ())}
+\DoxyCodeLine{00331\ \ \ \ \ \textcolor{keywordflow}{return}\ *\textcolor{keyword}{this};}
+\DoxyCodeLine{00332\ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (*\textcolor{keyword}{this}\ ==\ never\ ())}
+\DoxyCodeLine{00333\ \ \ \ \ \textcolor{keywordflow}{return}\ other;}
+\DoxyCodeLine{00334\ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (!initialized\_p\ ()\ ||\ !other.initialized\_p\ ())}
+\DoxyCodeLine{00335\ \ \ \ \ \textcolor{keywordflow}{return}\ uninitialized\ ();}
+\DoxyCodeLine{00336\ }
+\DoxyCodeLine{00337\ \ \ \ \ \ \ profile\_probability\ ret;}
+\DoxyCodeLine{00338\ \ \ \ \ \ \ ret.m\_val\ =\ \doxymbox{\hyperlink{system_8h_ad2f3678bf5eae3684fc497130b946eae}{MIN}}\ ((uint32\_t)(m\_val\ +\ other.m\_val),\ max\_probability);}
+\DoxyCodeLine{00339\ \ \ \ \ \ \ ret.m\_quality\ =\ \doxymbox{\hyperlink{system_8h_ad2f3678bf5eae3684fc497130b946eae}{MIN}}\ (m\_quality,\ other.m\_quality);}
+\DoxyCodeLine{00340\ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ ret;}
+\DoxyCodeLine{00341\ \ \ \ \ \}}
+\DoxyCodeLine{00342\ }
+\DoxyCodeLine{00343\ \ \ profile\_probability\ \&\doxymbox{\hyperlink{sreal_8h_ad8e28fc23d3b1c645fcba8395af2ea2a}{operator+=\ }}(\textcolor{keyword}{const}\ profile\_probability\ \&other)}
+\DoxyCodeLine{00344\ \ \ \ \ \{}
+\DoxyCodeLine{00345\ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (other\ ==\ never\ ())}
+\DoxyCodeLine{00346\ \ \ \ \ \textcolor{keywordflow}{return}\ *\textcolor{keyword}{this};}
+\DoxyCodeLine{00347\ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (*\textcolor{keyword}{this}\ ==\ never\ ())}
+\DoxyCodeLine{00348\ \ \ \ \ \{}
+\DoxyCodeLine{00349\ \ \ \ \ \ \ *\textcolor{keyword}{this}\ =\ other;}
+\DoxyCodeLine{00350\ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ *\textcolor{keyword}{this};}
+\DoxyCodeLine{00351\ \ \ \ \ \}}
+\DoxyCodeLine{00352\ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (!initialized\_p\ ()\ ||\ !other.initialized\_p\ ())}
+\DoxyCodeLine{00353\ \ \ \ \ \textcolor{keywordflow}{return}\ *\textcolor{keyword}{this}\ =\ uninitialized\ ();}
+\DoxyCodeLine{00354\ \ \ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00355\ \ \ \ \ \{}
+\DoxyCodeLine{00356\ \ \ \ \ \ \ m\_val\ =\ \doxymbox{\hyperlink{system_8h_ad2f3678bf5eae3684fc497130b946eae}{MIN}}\ ((uint32\_t)(m\_val\ +\ other.m\_val),\ max\_probability);}
+\DoxyCodeLine{00357\ \ \ \ \ \ \ m\_quality\ =\ \doxymbox{\hyperlink{system_8h_ad2f3678bf5eae3684fc497130b946eae}{MIN}}\ (m\_quality,\ other.m\_quality);}
+\DoxyCodeLine{00358\ \ \ \ \ \}}
+\DoxyCodeLine{00359\ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ *\textcolor{keyword}{this};}
+\DoxyCodeLine{00360\ \ \ \ \ \}}
+\DoxyCodeLine{00361\ }
+\DoxyCodeLine{00362\ \ \ profile\_probability\ operator-\/\ (\textcolor{keyword}{const}\ profile\_probability\ \&other)\textcolor{keyword}{\ const}}
+\DoxyCodeLine{00363\ \textcolor{keyword}{\ \ \ \ }\{}
+\DoxyCodeLine{00364\ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (*\textcolor{keyword}{this}\ ==\ never\ ()}
+\DoxyCodeLine{00365\ \ \ \ \ \ \ ||\ other\ ==\ never\ ())}
+\DoxyCodeLine{00366\ \ \ \ \ \textcolor{keywordflow}{return}\ *\textcolor{keyword}{this};}
+\DoxyCodeLine{00367\ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (!initialized\_p\ ()\ ||\ !other.initialized\_p\ ())}
+\DoxyCodeLine{00368\ \ \ \ \ \textcolor{keywordflow}{return}\ uninitialized\ ();}
+\DoxyCodeLine{00369\ \ \ \ \ \ \ profile\_probability\ ret;}
+\DoxyCodeLine{00370\ \ \ \ \ \ \ ret.m\_val\ =\ m\_val\ >=\ other.m\_val\ ?\ m\_val\ -\/\ other.m\_val\ :\ 0;}
+\DoxyCodeLine{00371\ \ \ \ \ \ \ ret.m\_quality\ =\ \doxymbox{\hyperlink{system_8h_ad2f3678bf5eae3684fc497130b946eae}{MIN}}\ (m\_quality,\ other.m\_quality);}
+\DoxyCodeLine{00372\ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ ret;}
+\DoxyCodeLine{00373\ \ \ \ \ \}}
+\DoxyCodeLine{00374\ }
+\DoxyCodeLine{00375\ \ \ profile\_probability\ \&\doxymbox{\hyperlink{sreal_8h_a9f3908db4243d0a6ee16a10f784790d3}{operator-\/=\ }}(\textcolor{keyword}{const}\ profile\_probability\ \&other)}
+\DoxyCodeLine{00376\ \ \ \ \ \{}
+\DoxyCodeLine{00377\ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (*\textcolor{keyword}{this}\ ==\ never\ ()}
+\DoxyCodeLine{00378\ \ \ \ \ \ \ ||\ other\ ==\ never\ ())}
+\DoxyCodeLine{00379\ \ \ \ \ \textcolor{keywordflow}{return}\ *\textcolor{keyword}{this};}
+\DoxyCodeLine{00380\ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (!initialized\_p\ ()\ ||\ !other.initialized\_p\ ())}
+\DoxyCodeLine{00381\ \ \ \ \ \textcolor{keywordflow}{return}\ *\textcolor{keyword}{this}\ =\ uninitialized\ ();}
+\DoxyCodeLine{00382\ \ \ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00383\ \ \ \ \ \{}
+\DoxyCodeLine{00384\ \ \ \ \ \ \ m\_val\ =\ m\_val\ >=\ other.m\_val\ ?\ m\_val\ -\/\ other.m\_val\ :\ 0;}
+\DoxyCodeLine{00385\ \ \ \ \ \ \ m\_quality\ =\ \doxymbox{\hyperlink{system_8h_ad2f3678bf5eae3684fc497130b946eae}{MIN}}\ (m\_quality,\ other.m\_quality);}
+\DoxyCodeLine{00386\ \ \ \ \ \}}
+\DoxyCodeLine{00387\ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ *\textcolor{keyword}{this};}
+\DoxyCodeLine{00388\ \ \ \ \ \}}
+\DoxyCodeLine{00389\ }
+\DoxyCodeLine{00390\ \ \ profile\_probability\ operator*\ (\textcolor{keyword}{const}\ profile\_probability\ \&other)\textcolor{keyword}{\ const}}
+\DoxyCodeLine{00391\ \textcolor{keyword}{\ \ \ \ }\{}
+\DoxyCodeLine{00392\ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (*\textcolor{keyword}{this}\ ==\ never\ ()}
+\DoxyCodeLine{00393\ \ \ \ \ \ \ ||\ other\ ==\ never\ ())}
+\DoxyCodeLine{00394\ \ \ \ \ \textcolor{keywordflow}{return}\ never\ ();}
+\DoxyCodeLine{00395\ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (!initialized\_p\ ()\ ||\ !other.initialized\_p\ ())}
+\DoxyCodeLine{00396\ \ \ \ \ \textcolor{keywordflow}{return}\ uninitialized\ ();}
+\DoxyCodeLine{00397\ \ \ \ \ \ \ profile\_probability\ ret;}
+\DoxyCodeLine{00398\ \ \ \ \ \ \ ret.m\_val\ =\ \doxymbox{\hyperlink{profile-count_8h_a202bd9b10241c405f250450bd30569f2}{RDIV}}\ ((uint64\_t)m\_val\ *\ other.m\_val,\ max\_probability);}
+\DoxyCodeLine{00399\ \ \ \ \ \ \ ret.m\_quality\ =\ \doxymbox{\hyperlink{system_8h_ad2f3678bf5eae3684fc497130b946eae}{MIN}}\ (\doxymbox{\hyperlink{system_8h_ad2f3678bf5eae3684fc497130b946eae}{MIN}}\ (m\_quality,\ other.m\_quality),\ \doxymbox{\hyperlink{profile-count_8h_a176a4353f013d9fd4215c4721c89b08aa11bda19fea1e90f64f65a8f278ecfd62}{ADJUSTED}});}
+\DoxyCodeLine{00400\ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ ret;}
+\DoxyCodeLine{00401\ \ \ \ \ \}}
+\DoxyCodeLine{00402\ }
+\DoxyCodeLine{00403\ \ \ profile\_probability\ \&\doxymbox{\hyperlink{sreal_8h_a7685c040cc48931e9604ca8ebbfd1bd4}{operator*=\ }}(\textcolor{keyword}{const}\ profile\_probability\ \&other)}
+\DoxyCodeLine{00404\ \ \ \ \ \{}
+\DoxyCodeLine{00405\ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (*\textcolor{keyword}{this}\ ==\ never\ ()}
+\DoxyCodeLine{00406\ \ \ \ \ \ \ ||\ other\ ==\ never\ ())}
+\DoxyCodeLine{00407\ \ \ \ \ \textcolor{keywordflow}{return}\ *\textcolor{keyword}{this}\ =\ never\ ();}
+\DoxyCodeLine{00408\ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (!initialized\_p\ ()\ ||\ !other.initialized\_p\ ())}
+\DoxyCodeLine{00409\ \ \ \ \ \textcolor{keywordflow}{return}\ *\textcolor{keyword}{this}\ =\ uninitialized\ ();}
+\DoxyCodeLine{00410\ \ \ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00411\ \ \ \ \ \{}
+\DoxyCodeLine{00412\ \ \ \ \ \ \ m\_val\ =\ \doxymbox{\hyperlink{profile-count_8h_a202bd9b10241c405f250450bd30569f2}{RDIV}}\ ((uint64\_t)m\_val\ *\ other.m\_val,\ max\_probability);}
+\DoxyCodeLine{00413\ \ \ \ \ \ \ m\_quality\ =\ \doxymbox{\hyperlink{system_8h_ad2f3678bf5eae3684fc497130b946eae}{MIN}}\ (\doxymbox{\hyperlink{system_8h_ad2f3678bf5eae3684fc497130b946eae}{MIN}}\ (m\_quality,\ other.m\_quality),\ \doxymbox{\hyperlink{profile-count_8h_a176a4353f013d9fd4215c4721c89b08aa11bda19fea1e90f64f65a8f278ecfd62}{ADJUSTED}});}
+\DoxyCodeLine{00414\ \ \ \ \ \}}
+\DoxyCodeLine{00415\ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ *\textcolor{keyword}{this};}
+\DoxyCodeLine{00416\ \ \ \ \ \}}
+\DoxyCodeLine{00417\ }
+\DoxyCodeLine{00418\ \ \ profile\_probability\ operator/\ (\textcolor{keyword}{const}\ profile\_probability\ \&other)\textcolor{keyword}{\ const}}
+\DoxyCodeLine{00419\ \textcolor{keyword}{\ \ \ \ }\{}
+\DoxyCodeLine{00420\ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (*\textcolor{keyword}{this}\ ==\ never\ ())}
+\DoxyCodeLine{00421\ \ \ \ \ \textcolor{keywordflow}{return}\ never\ ();}
+\DoxyCodeLine{00422\ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (!initialized\_p\ ()\ ||\ !other.initialized\_p\ ())}
+\DoxyCodeLine{00423\ \ \ \ \ \textcolor{keywordflow}{return}\ uninitialized\ ();}
+\DoxyCodeLine{00424\ \ \ \ \ \ \ profile\_probability\ ret;}
+\DoxyCodeLine{00425\ \ \ \ \ \ \ \textcolor{comment}{/*\ If\ we\ get\ probability\ above\ 1,\ mark\ it\ as\ unreliable\ and\ return\ 1.\ */}}
+\DoxyCodeLine{00426\ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (m\_val\ >=\ other.m\_val)}
+\DoxyCodeLine{00427\ \ \ \ \ \{}
+\DoxyCodeLine{00428\ \ \ \ \ \ \ ret.m\_val\ =\ max\_probability;}
+\DoxyCodeLine{00429\ \ \ \ \ \ \ \ \ \ \ ret.m\_quality\ =\ \doxymbox{\hyperlink{system_8h_ad2f3678bf5eae3684fc497130b946eae}{MIN}}\ (\doxymbox{\hyperlink{system_8h_ad2f3678bf5eae3684fc497130b946eae}{MIN}}\ (m\_quality,\ other.m\_quality),}
+\DoxyCodeLine{00430\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{profile-count_8h_a176a4353f013d9fd4215c4721c89b08aaf5a5c929d87138f872009eba2703c52e}{GUESSED}});}
+\DoxyCodeLine{00431\ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ ret;}
+\DoxyCodeLine{00432\ \ \ \ \ \}}
+\DoxyCodeLine{00433\ \ \ \ \ \ \ \textcolor{keywordflow}{else}\ \textcolor{keywordflow}{if}\ (!m\_val)}
+\DoxyCodeLine{00434\ \ \ \ \ ret.m\_val\ =\ 0;}
+\DoxyCodeLine{00435\ \ \ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00436\ \ \ \ \ \{}
+\DoxyCodeLine{00437\ \ \ \ \ \ \ \doxymbox{\hyperlink{system_8h_aff447899dc74d54931b2bc2d47de9423}{gcc\_checking\_assert}}\ (other.m\_val);}
+\DoxyCodeLine{00438\ \ \ \ \ \ \ ret.m\_val\ =\ \doxymbox{\hyperlink{system_8h_ad2f3678bf5eae3684fc497130b946eae}{MIN}}\ (\doxymbox{\hyperlink{profile-count_8h_a202bd9b10241c405f250450bd30569f2}{RDIV}}\ ((uint64\_t)m\_val\ *\ max\_probability,}
+\DoxyCodeLine{00439\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ other.m\_val),}
+\DoxyCodeLine{00440\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ max\_probability);}
+\DoxyCodeLine{00441\ \ \ \ \ \}}
+\DoxyCodeLine{00442\ \ \ \ \ \ \ ret.m\_quality\ =\ \doxymbox{\hyperlink{system_8h_ad2f3678bf5eae3684fc497130b946eae}{MIN}}\ (\doxymbox{\hyperlink{system_8h_ad2f3678bf5eae3684fc497130b946eae}{MIN}}\ (m\_quality,\ other.m\_quality),\ \doxymbox{\hyperlink{profile-count_8h_a176a4353f013d9fd4215c4721c89b08aa11bda19fea1e90f64f65a8f278ecfd62}{ADJUSTED}});}
+\DoxyCodeLine{00443\ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ ret;}
+\DoxyCodeLine{00444\ \ \ \ \ \}}
+\DoxyCodeLine{00445\ }
+\DoxyCodeLine{00446\ \ \ profile\_probability\ \&\doxymbox{\hyperlink{sreal_8h_a59d04fb12eb0c655644265c7d3d5d80e}{operator/=\ }}(\textcolor{keyword}{const}\ profile\_probability\ \&other)}
+\DoxyCodeLine{00447\ \ \ \ \ \{}
+\DoxyCodeLine{00448\ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (*\textcolor{keyword}{this}\ ==\ never\ ())}
+\DoxyCodeLine{00449\ \ \ \ \ \textcolor{keywordflow}{return}\ *\textcolor{keyword}{this}\ =\ never\ ();}
+\DoxyCodeLine{00450\ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (!initialized\_p\ ()\ ||\ !other.initialized\_p\ ())}
+\DoxyCodeLine{00451\ \ \ \ \ \textcolor{keywordflow}{return}\ *\textcolor{keyword}{this}\ =\ uninitialized\ ();}
+\DoxyCodeLine{00452\ \ \ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00453\ \ \ \ \ \{}
+\DoxyCodeLine{00454\ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{/*\ If\ we\ get\ probability\ above\ 1,\ mark\ it\ as\ unreliable}}
+\DoxyCodeLine{00455\ \textcolor{comment}{\ \ \ \ \ \ \ \ \ and\ return\ 1.\ */}}
+\DoxyCodeLine{00456\ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (m\_val\ >\ other.m\_val)}
+\DoxyCodeLine{00457\ \ \ \ \ \ \ \ \ \{}
+\DoxyCodeLine{00458\ \ \ \ \ \ \ \ \ \ \ m\_val\ =\ max\_probability;}
+\DoxyCodeLine{00459\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ m\_quality\ =\ \doxymbox{\hyperlink{system_8h_ad2f3678bf5eae3684fc497130b946eae}{MIN}}\ (\doxymbox{\hyperlink{system_8h_ad2f3678bf5eae3684fc497130b946eae}{MIN}}\ (m\_quality,\ other.m\_quality),}
+\DoxyCodeLine{00460\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{profile-count_8h_a176a4353f013d9fd4215c4721c89b08aaf5a5c929d87138f872009eba2703c52e}{GUESSED}});}
+\DoxyCodeLine{00461\ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ *\textcolor{keyword}{this};}
+\DoxyCodeLine{00462\ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00463\ \ \ \ \ \ \ \textcolor{keywordflow}{else}\ \textcolor{keywordflow}{if}\ (!m\_val)}
+\DoxyCodeLine{00464\ \ \ \ \ \ \ \ \ ;}
+\DoxyCodeLine{00465\ \ \ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00466\ \ \ \ \ \ \ \ \ \{}
+\DoxyCodeLine{00467\ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{system_8h_aff447899dc74d54931b2bc2d47de9423}{gcc\_checking\_assert}}\ (other.m\_val);}
+\DoxyCodeLine{00468\ \ \ \ \ \ \ \ \ \ \ m\_val\ =\ \doxymbox{\hyperlink{system_8h_ad2f3678bf5eae3684fc497130b946eae}{MIN}}\ (\doxymbox{\hyperlink{profile-count_8h_a202bd9b10241c405f250450bd30569f2}{RDIV}}\ ((uint64\_t)m\_val\ *\ max\_probability,}
+\DoxyCodeLine{00469\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ other.m\_val),}
+\DoxyCodeLine{00470\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ max\_probability);}
+\DoxyCodeLine{00471\ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00472\ \ \ \ \ \ \ m\_quality\ =\ \doxymbox{\hyperlink{system_8h_ad2f3678bf5eae3684fc497130b946eae}{MIN}}\ (\doxymbox{\hyperlink{system_8h_ad2f3678bf5eae3684fc497130b946eae}{MIN}}\ (m\_quality,\ other.m\_quality),\ \doxymbox{\hyperlink{profile-count_8h_a176a4353f013d9fd4215c4721c89b08aa11bda19fea1e90f64f65a8f278ecfd62}{ADJUSTED}});}
+\DoxyCodeLine{00473\ \ \ \ \ \}}
+\DoxyCodeLine{00474\ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ *\textcolor{keyword}{this};}
+\DoxyCodeLine{00475\ \ \ \ \ \}}
+\DoxyCodeLine{00476\ }
+\DoxyCodeLine{00477\ \ \ \textcolor{comment}{/*\ Split\ *THIS\ (ORIG)\ probability\ into\ 2\ probabilities,\ such\ that}}
+\DoxyCodeLine{00478\ \textcolor{comment}{\ \ \ \ \ the\ returned\ one\ (FIRST)\ is\ *THIS\ *\ CPROB\ and\ *THIS\ is}}
+\DoxyCodeLine{00479\ \textcolor{comment}{\ \ \ \ \ adjusted\ (SECOND)\ so\ that\ FIRST\ +\ FIRST.invert\ ()\ *\ SECOND}}
+\DoxyCodeLine{00480\ \textcolor{comment}{\ \ \ \ \ ==\ ORIG.\ \ This\ is\ useful\ e.g.\ when\ splitting\ a\ conditional}}
+\DoxyCodeLine{00481\ \textcolor{comment}{\ \ \ \ \ branch\ like:}}
+\DoxyCodeLine{00482\ \textcolor{comment}{\ \ \ \ \ if\ (cond)}}
+\DoxyCodeLine{00483\ \textcolor{comment}{\ \ \ \ \ \ \ goto\ lab;\ //\ ORIG\ probability}}
+\DoxyCodeLine{00484\ \textcolor{comment}{\ \ \ \ \ into}}
+\DoxyCodeLine{00485\ \textcolor{comment}{\ \ \ \ \ if\ (cond1)}}
+\DoxyCodeLine{00486\ \textcolor{comment}{\ \ \ \ \ \ \ goto\ lab;\ //\ FIRST\ =\ ORIG\ *\ CPROB\ probability}}
+\DoxyCodeLine{00487\ \textcolor{comment}{\ \ \ \ \ if\ (cond2)}}
+\DoxyCodeLine{00488\ \textcolor{comment}{\ \ \ \ \ \ \ goto\ lab;\ //\ SECOND\ probability}}
+\DoxyCodeLine{00489\ \textcolor{comment}{\ \ \ \ \ such\ that\ the\ overall\ probability\ of\ jumping\ to\ lab\ remains}}
+\DoxyCodeLine{00490\ \textcolor{comment}{\ \ \ \ \ the\ same.\ \ CPROB\ gives\ the\ relative\ probability\ between\ the}}
+\DoxyCodeLine{00491\ \textcolor{comment}{\ \ \ \ \ branches.\ \ */}}
+\DoxyCodeLine{00492\ \ \ profile\_probability\ split\ (\textcolor{keyword}{const}\ profile\_probability\ \&cprob)}
+\DoxyCodeLine{00493\ \ \ \ \ \{}
+\DoxyCodeLine{00494\ \ \ \ \ \ \ profile\_probability\ ret\ =\ *\textcolor{keyword}{this}\ *\ cprob;}
+\DoxyCodeLine{00495\ \ \ \ \ \ \ \textcolor{comment}{/*\ The\ following\ is\ equivalent\ to:}}
+\DoxyCodeLine{00496\ \textcolor{comment}{\ \ \ \ \ \ \ \ \ *this\ =\ cprob.invert\ ()\ *\ *this\ /\ ret.invert\ ();}}
+\DoxyCodeLine{00497\ \textcolor{comment}{\ \ \ \ \ Avoid\ scaling\ when\ overall\ outcome\ is\ supposed\ to\ be\ always.}}
+\DoxyCodeLine{00498\ \textcolor{comment}{\ \ \ \ \ Without\ knowing\ that\ one\ is\ inverse\ of\ other,\ the\ result\ would\ be}}
+\DoxyCodeLine{00499\ \textcolor{comment}{\ \ \ \ \ conservative.\ \ */}}
+\DoxyCodeLine{00500\ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (!(*\textcolor{keyword}{this}\ ==\ always\ ()))}
+\DoxyCodeLine{00501\ \ \ \ \ \ \ \ \ *\textcolor{keyword}{this}\ =\ (*\textcolor{keyword}{this}\ -\/\ ret)\ /\ ret.invert\ ();}
+\DoxyCodeLine{00502\ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ ret;}
+\DoxyCodeLine{00503\ \ \ \ \ \}}
+\DoxyCodeLine{00504\ }
+\DoxyCodeLine{00505\ \ \ \doxymbox{\hyperlink{coretypes_8h_ae8c03cc266a69e9635893ee0772d12e8}{gcov\_type}}\ apply\ (\doxymbox{\hyperlink{coretypes_8h_ae8c03cc266a69e9635893ee0772d12e8}{gcov\_type}}\ val)\textcolor{keyword}{\ const}}
+\DoxyCodeLine{00506\ \textcolor{keyword}{\ \ \ \ }\{}
+\DoxyCodeLine{00507\ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (*\textcolor{keyword}{this}\ ==\ uninitialized\ ())}
+\DoxyCodeLine{00508\ \ \ \ \ \textcolor{keywordflow}{return}\ val\ /\ 2;}
+\DoxyCodeLine{00509\ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{profile-count_8h_a202bd9b10241c405f250450bd30569f2}{RDIV}}\ (val\ *\ m\_val,\ max\_probability);}
+\DoxyCodeLine{00510\ \ \ \ \ \}}
+\DoxyCodeLine{00511\ }
+\DoxyCodeLine{00512\ \ \ \textcolor{comment}{/*\ Return\ 1-\/*THIS.\ \ */}}
+\DoxyCodeLine{00513\ \ \ profile\_probability\ invert\ ()\textcolor{keyword}{\ const}}
+\DoxyCodeLine{00514\ \textcolor{keyword}{\ \ \ \ }\{}
+\DoxyCodeLine{00515\ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ always()\ -\/\ *\textcolor{keyword}{this};}
+\DoxyCodeLine{00516\ \ \ \ \ \}}
+\DoxyCodeLine{00517\ }
+\DoxyCodeLine{00518\ \ \ \textcolor{comment}{/*\ Return\ THIS\ with\ quality\ dropped\ to\ GUESSED.\ \ */}}
+\DoxyCodeLine{00519\ \ \ profile\_probability\ guessed\ ()\textcolor{keyword}{\ const}}
+\DoxyCodeLine{00520\ \textcolor{keyword}{\ \ \ \ }\{}
+\DoxyCodeLine{00521\ \ \ \ \ \ \ profile\_probability\ ret\ =\ *\textcolor{keyword}{this};}
+\DoxyCodeLine{00522\ \ \ \ \ \ \ ret.m\_quality\ =\ \doxymbox{\hyperlink{profile-count_8h_a176a4353f013d9fd4215c4721c89b08aaf5a5c929d87138f872009eba2703c52e}{GUESSED}};}
+\DoxyCodeLine{00523\ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ ret;}
+\DoxyCodeLine{00524\ \ \ \ \ \}}
+\DoxyCodeLine{00525\ }
+\DoxyCodeLine{00526\ \ \ \textcolor{comment}{/*\ Return\ THIS\ with\ quality\ dropped\ to\ AFDO.\ \ */}}
+\DoxyCodeLine{00527\ \ \ profile\_probability\ afdo\ ()\textcolor{keyword}{\ const}}
+\DoxyCodeLine{00528\ \textcolor{keyword}{\ \ \ \ }\{}
+\DoxyCodeLine{00529\ \ \ \ \ \ \ profile\_probability\ ret\ =\ *\textcolor{keyword}{this};}
+\DoxyCodeLine{00530\ \ \ \ \ \ \ ret.m\_quality\ =\ \doxymbox{\hyperlink{profile-count_8h_a176a4353f013d9fd4215c4721c89b08aacd3fe5e8a7128ab4f13d0f4a107eb098}{AFDO}};}
+\DoxyCodeLine{00531\ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ ret;}
+\DoxyCodeLine{00532\ \ \ \ \ \}}
+\DoxyCodeLine{00533\ }
+\DoxyCodeLine{00534\ \ \ \textcolor{comment}{/*\ Return\ *THIS\ *\ NUM\ /\ DEN.\ \ */}}
+\DoxyCodeLine{00535\ \ \ profile\_probability\ \doxymbox{\hyperlink{basic-block_8h_a5830eccca0fe8ba8a7e01432ea402d7c}{apply\_scale}}\ (int64\_t\ num,\ int64\_t\ den)\textcolor{keyword}{\ const}}
+\DoxyCodeLine{00536\ \textcolor{keyword}{\ \ \ \ }\{}
+\DoxyCodeLine{00537\ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (*\textcolor{keyword}{this}\ ==\ never\ ())}
+\DoxyCodeLine{00538\ \ \ \ \ \textcolor{keywordflow}{return}\ *\textcolor{keyword}{this};}
+\DoxyCodeLine{00539\ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (!initialized\_p\ ())}
+\DoxyCodeLine{00540\ \ \ \ \ \textcolor{keywordflow}{return}\ uninitialized\ ();}
+\DoxyCodeLine{00541\ \ \ \ \ \ \ profile\_probability\ ret;}
+\DoxyCodeLine{00542\ \ \ \ \ \ \ uint64\_t\ tmp;}
+\DoxyCodeLine{00543\ \ \ \ \ \ \ \doxymbox{\hyperlink{profile-count_8h_abf7026d97ca7472a755d036768642b47}{safe\_scale\_64bit}}\ (m\_val,\ num,\ den,\ \&tmp);}
+\DoxyCodeLine{00544\ \ \ \ \ \ \ ret.m\_val\ =\ \doxymbox{\hyperlink{system_8h_ad2f3678bf5eae3684fc497130b946eae}{MIN}}\ (tmp,\ max\_probability);}
+\DoxyCodeLine{00545\ \ \ \ \ \ \ ret.m\_quality\ =\ \doxymbox{\hyperlink{system_8h_ad2f3678bf5eae3684fc497130b946eae}{MIN}}\ (m\_quality,\ \doxymbox{\hyperlink{profile-count_8h_a176a4353f013d9fd4215c4721c89b08aa11bda19fea1e90f64f65a8f278ecfd62}{ADJUSTED}});}
+\DoxyCodeLine{00546\ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ ret;}
+\DoxyCodeLine{00547\ \ \ \ \ \}}
+\DoxyCodeLine{00548\ }
+\DoxyCodeLine{00549\ \ \ \textcolor{comment}{/*\ Return\ *THIS\ *\ NUM\ /\ DEN.\ \ */}}
+\DoxyCodeLine{00550\ \ \ profile\_probability\ \doxymbox{\hyperlink{basic-block_8h_a5830eccca0fe8ba8a7e01432ea402d7c}{apply\_scale}}\ (profile\_probability\ num,}
+\DoxyCodeLine{00551\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ profile\_probability\ den)\textcolor{keyword}{\ const}}
+\DoxyCodeLine{00552\ \textcolor{keyword}{\ \ \ \ }\{}
+\DoxyCodeLine{00553\ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (*\textcolor{keyword}{this}\ ==\ never\ ())}
+\DoxyCodeLine{00554\ \ \ \ \ \textcolor{keywordflow}{return}\ *\textcolor{keyword}{this};}
+\DoxyCodeLine{00555\ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (num\ ==\ never\ ())}
+\DoxyCodeLine{00556\ \ \ \ \ \textcolor{keywordflow}{return}\ num;}
+\DoxyCodeLine{00557\ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (!initialized\_p\ ()\ ||\ !num.initialized\_p\ ()\ ||\ !den.initialized\_p\ ())}
+\DoxyCodeLine{00558\ \ \ \ \ \textcolor{keywordflow}{return}\ uninitialized\ ();}
+\DoxyCodeLine{00559\ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (num\ ==\ den)}
+\DoxyCodeLine{00560\ \ \ \ \ \textcolor{keywordflow}{return}\ *\textcolor{keyword}{this};}
+\DoxyCodeLine{00561\ \ \ \ \ \ \ \doxymbox{\hyperlink{system_8h_aff447899dc74d54931b2bc2d47de9423}{gcc\_checking\_assert}}\ (den.m\_val);}
+\DoxyCodeLine{00562\ }
+\DoxyCodeLine{00563\ \ \ \ \ \ \ profile\_probability\ ret;}
+\DoxyCodeLine{00564\ \ \ \ \ \ \ uint64\_t\ val;}
+\DoxyCodeLine{00565\ \ \ \ \ \ \ \doxymbox{\hyperlink{profile-count_8h_abf7026d97ca7472a755d036768642b47}{safe\_scale\_64bit}}\ (m\_val,\ num.m\_val,\ den.m\_val,\ \&val);}
+\DoxyCodeLine{00566\ \ \ \ \ \ \ ret.m\_val\ =\ \doxymbox{\hyperlink{system_8h_ad2f3678bf5eae3684fc497130b946eae}{MIN}}\ (val,\ max\_probability);}
+\DoxyCodeLine{00567\ \ \ \ \ \ \ ret.m\_quality\ =\ \doxymbox{\hyperlink{system_8h_ad2f3678bf5eae3684fc497130b946eae}{MIN}}\ (\doxymbox{\hyperlink{system_8h_ad2f3678bf5eae3684fc497130b946eae}{MIN}}\ (\doxymbox{\hyperlink{system_8h_ad2f3678bf5eae3684fc497130b946eae}{MIN}}\ (m\_quality,\ \doxymbox{\hyperlink{profile-count_8h_a176a4353f013d9fd4215c4721c89b08aa11bda19fea1e90f64f65a8f278ecfd62}{ADJUSTED}}),}
+\DoxyCodeLine{00568\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ num.m\_quality),\ den.m\_quality);}
+\DoxyCodeLine{00569\ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ ret;}
+\DoxyCodeLine{00570\ \ \ \ \ \}}
+\DoxyCodeLine{00571\ }
+\DoxyCodeLine{00572\ \ \ \textcolor{comment}{/*\ Return\ true\ when\ the\ probability\ of\ edge\ is\ reliable.}}
+\DoxyCodeLine{00573\ \textcolor{comment}{}}
+\DoxyCodeLine{00574\ \textcolor{comment}{\ \ \ \ \ The\ profile\ guessing\ code\ is\ good\ at\ predicting\ branch\ outcome\ (i.e.}}
+\DoxyCodeLine{00575\ \textcolor{comment}{\ \ \ \ \ taken/not\ taken),\ that\ is\ predicted\ right\ slightly\ over\ 75\%\ of\ time.}}
+\DoxyCodeLine{00576\ \textcolor{comment}{\ \ \ \ \ It\ is\ however\ notoriously\ poor\ on\ predicting\ the\ probability\ itself.}}
+\DoxyCodeLine{00577\ \textcolor{comment}{\ \ \ \ \ In\ general\ the\ profile\ appear\ a\ lot\ flatter\ (with\ probabilities\ closer}}
+\DoxyCodeLine{00578\ \textcolor{comment}{\ \ \ \ \ to\ 50\%)\ than\ the\ reality\ so\ it\ is\ bad\ idea\ to\ use\ it\ to\ drive\ optimization}}
+\DoxyCodeLine{00579\ \textcolor{comment}{\ \ \ \ \ such\ as\ those\ disabling\ dynamic\ branch\ prediction\ for\ well\ predictable}}
+\DoxyCodeLine{00580\ \textcolor{comment}{\ \ \ \ \ branches.}}
+\DoxyCodeLine{00581\ \textcolor{comment}{}}
+\DoxyCodeLine{00582\ \textcolor{comment}{\ \ \ \ \ There\ are\ two\ exceptions\ -\/\ edges\ leading\ to\ noreturn\ edges\ and\ edges}}
+\DoxyCodeLine{00583\ \textcolor{comment}{\ \ \ \ \ predicted\ by\ number\ of\ iterations\ heuristics\ are\ predicted\ well.\ \ This\ macro}}
+\DoxyCodeLine{00584\ \textcolor{comment}{\ \ \ \ \ should\ be\ able\ to\ distinguish\ those,\ but\ at\ the\ moment\ it\ simply\ check\ for}}
+\DoxyCodeLine{00585\ \textcolor{comment}{\ \ \ \ \ noreturn\ heuristic\ that\ is\ only\ one\ giving\ probability\ over\ 99\%\ or\ bellow}}
+\DoxyCodeLine{00586\ \textcolor{comment}{\ \ \ \ \ 1\%.\ \ In\ future\ we\ might\ want\ to\ propagate\ reliability\ information\ across\ the}}
+\DoxyCodeLine{00587\ \textcolor{comment}{\ \ \ \ \ CFG\ if\ we\ find\ this\ information\ useful\ on\ multiple\ places.\ \ \ */}}
+\DoxyCodeLine{00588\ \ \ \textcolor{keywordtype}{bool}\ probably\_reliable\_p\ ()\textcolor{keyword}{\ const}}
+\DoxyCodeLine{00589\ \textcolor{keyword}{\ \ \ \ }\{}
+\DoxyCodeLine{00590\ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (m\_quality\ >=\ \doxymbox{\hyperlink{profile-count_8h_a176a4353f013d9fd4215c4721c89b08aa11bda19fea1e90f64f65a8f278ecfd62}{ADJUSTED}})}
+\DoxyCodeLine{00591\ \ \ \ \ \textcolor{keywordflow}{return}\ \textcolor{keyword}{true};}
+\DoxyCodeLine{00592\ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (!initialized\_p\ ())}
+\DoxyCodeLine{00593\ \ \ \ \ \textcolor{keywordflow}{return}\ \textcolor{keyword}{false};}
+\DoxyCodeLine{00594\ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ m\_val\ <\ max\_probability\ /\ 100}
+\DoxyCodeLine{00595\ \ \ \ \ \ \ \ \ \ ||\ m\_val\ >\ max\_probability\ -\/\ max\_probability\ /\ 100;}
+\DoxyCodeLine{00596\ \ \ \ \ \}}
+\DoxyCodeLine{00597\ }
+\DoxyCodeLine{00598\ \ \ \textcolor{comment}{/*\ Return\ false\ if\ profile\_probability\ is\ bogus.\ \ */}}
+\DoxyCodeLine{00599\ \ \ \textcolor{keywordtype}{bool}\ verify\ ()\textcolor{keyword}{\ const}}
+\DoxyCodeLine{00600\ \textcolor{keyword}{\ \ \ \ }\{}
+\DoxyCodeLine{00601\ \ \ \ \ \ \ \doxymbox{\hyperlink{system_8h_aff447899dc74d54931b2bc2d47de9423}{gcc\_checking\_assert}}\ (m\_quality\ !=\ \doxymbox{\hyperlink{profile-count_8h_a176a4353f013d9fd4215c4721c89b08aa38e581a0ef8a137857aa3c958d75a6d7}{UNINITIALIZED\_PROFILE}});}
+\DoxyCodeLine{00602\ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (m\_val\ ==\ uninitialized\_probability)}
+\DoxyCodeLine{00603\ \ \ \ \ \textcolor{keywordflow}{return}\ m\_quality\ ==\ \doxymbox{\hyperlink{profile-count_8h_a176a4353f013d9fd4215c4721c89b08aaf5a5c929d87138f872009eba2703c52e}{GUESSED}};}
+\DoxyCodeLine{00604\ \ \ \ \ \ \ \textcolor{keywordflow}{else}\ \textcolor{keywordflow}{if}\ (m\_quality\ <\ \doxymbox{\hyperlink{profile-count_8h_a176a4353f013d9fd4215c4721c89b08aaf5a5c929d87138f872009eba2703c52e}{GUESSED}})}
+\DoxyCodeLine{00605\ \ \ \ \ \textcolor{keywordflow}{return}\ \textcolor{keyword}{false};}
+\DoxyCodeLine{00606\ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ m\_val\ <=\ max\_probability;}
+\DoxyCodeLine{00607\ \ \ \ \ \}}
+\DoxyCodeLine{00608\ }
+\DoxyCodeLine{00609\ \ \ \textcolor{comment}{/*\ Comparisons\ are\ three-\/state\ and\ conservative.\ \ False\ is\ returned\ if}}
+\DoxyCodeLine{00610\ \textcolor{comment}{\ \ \ \ \ the\ inequality\ cannot\ be\ decided.\ \ */}}
+\DoxyCodeLine{00611\ \ \ \textcolor{keywordtype}{bool}\ operator<\ (\textcolor{keyword}{const}\ profile\_probability\ \&other)\textcolor{keyword}{\ const}}
+\DoxyCodeLine{00612\ \textcolor{keyword}{\ \ \ \ }\{}
+\DoxyCodeLine{00613\ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ initialized\_p\ ()\ \&\&\ other.initialized\_p\ ()\ \&\&\ m\_val\ <\ other.m\_val;}
+\DoxyCodeLine{00614\ \ \ \ \ \}}
+\DoxyCodeLine{00615\ }
+\DoxyCodeLine{00616\ \ \ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{sreal_8h_a8318986fe87e4f64b53a339af55b5b37}{operator>\ }}(\textcolor{keyword}{const}\ profile\_probability\ \&other)\textcolor{keyword}{\ const}}
+\DoxyCodeLine{00617\ \textcolor{keyword}{\ \ \ \ }\{}
+\DoxyCodeLine{00618\ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ initialized\_p\ ()\ \&\&\ other.initialized\_p\ ()\ \&\&\ m\_val\ >\ other.m\_val;}
+\DoxyCodeLine{00619\ \ \ \ \ \}}
+\DoxyCodeLine{00620\ }
+\DoxyCodeLine{00621\ \ \ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{sreal_8h_a767ec1f14afbd86c69c249d0113b7f87}{operator<=\ }}(\textcolor{keyword}{const}\ profile\_probability\ \&other)\textcolor{keyword}{\ const}}
+\DoxyCodeLine{00622\ \textcolor{keyword}{\ \ \ \ }\{}
+\DoxyCodeLine{00623\ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ initialized\_p\ ()\ \&\&\ other.initialized\_p\ ()\ \&\&\ m\_val\ <=\ other.m\_val;}
+\DoxyCodeLine{00624\ \ \ \ \ \}}
+\DoxyCodeLine{00625\ }
+\DoxyCodeLine{00626\ \ \ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{sreal_8h_add3d3648571831a4519f319f4dea37c0}{operator>=\ }}(\textcolor{keyword}{const}\ profile\_probability\ \&other)\textcolor{keyword}{\ const}}
+\DoxyCodeLine{00627\ \textcolor{keyword}{\ \ \ \ }\{}
+\DoxyCodeLine{00628\ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ initialized\_p\ ()\ \&\&\ other.initialized\_p\ ()\ \&\&\ m\_val\ >=\ other.m\_val;}
+\DoxyCodeLine{00629\ \ \ \ \ \}}
+\DoxyCodeLine{00630\ }
+\DoxyCodeLine{00631\ \ \ profile\_probability\ operator*\ (int64\_t\ num)\textcolor{keyword}{\ const}}
+\DoxyCodeLine{00632\ \textcolor{keyword}{\ \ \ \ }\{}
+\DoxyCodeLine{00633\ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{basic-block_8h_a5830eccca0fe8ba8a7e01432ea402d7c}{apply\_scale}}\ (num,\ 1);}
+\DoxyCodeLine{00634\ \ \ \ \ \}}
+\DoxyCodeLine{00635\ }
+\DoxyCodeLine{00636\ \ \ profile\_probability\ \doxymbox{\hyperlink{sreal_8h_a7685c040cc48931e9604ca8ebbfd1bd4}{operator*=\ }}(int64\_t\ num)}
+\DoxyCodeLine{00637\ \ \ \ \ \{}
+\DoxyCodeLine{00638\ \ \ \ \ \ \ *\textcolor{keyword}{this}\ =\ \doxymbox{\hyperlink{basic-block_8h_a5830eccca0fe8ba8a7e01432ea402d7c}{apply\_scale}}\ (num,\ 1);}
+\DoxyCodeLine{00639\ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ *\textcolor{keyword}{this};}
+\DoxyCodeLine{00640\ \ \ \ \ \}}
+\DoxyCodeLine{00641\ }
+\DoxyCodeLine{00642\ \ \ profile\_probability\ operator/\ (int64\_t\ den)\textcolor{keyword}{\ const}}
+\DoxyCodeLine{00643\ \textcolor{keyword}{\ \ \ \ }\{}
+\DoxyCodeLine{00644\ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{basic-block_8h_a5830eccca0fe8ba8a7e01432ea402d7c}{apply\_scale}}\ (1,\ den);}
+\DoxyCodeLine{00645\ \ \ \ \ \}}
+\DoxyCodeLine{00646\ }
+\DoxyCodeLine{00647\ \ \ profile\_probability\ \doxymbox{\hyperlink{sreal_8h_a59d04fb12eb0c655644265c7d3d5d80e}{operator/=\ }}(int64\_t\ den)}
+\DoxyCodeLine{00648\ \ \ \ \ \{}
+\DoxyCodeLine{00649\ \ \ \ \ \ \ *\textcolor{keyword}{this}\ =\ \doxymbox{\hyperlink{basic-block_8h_a5830eccca0fe8ba8a7e01432ea402d7c}{apply\_scale}}\ (1,\ den);}
+\DoxyCodeLine{00650\ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ *\textcolor{keyword}{this};}
+\DoxyCodeLine{00651\ \ \ \ \ \}}
+\DoxyCodeLine{00652\ }
+\DoxyCodeLine{00653\ \ \ \textcolor{comment}{/*\ Compute\ n-\/th\ power.\ \ */}}
+\DoxyCodeLine{00654\ \ \ profile\_probability\ \doxymbox{\hyperlink{tgmath_8h_a490c36eca6590103f32eb0520a4c11f6}{pow}}\ (\textcolor{keywordtype}{int})\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00655\ }
+\DoxyCodeLine{00656\ \ \ \textcolor{comment}{/*\ Compute\ sware\ root.\ \ */}}
+\DoxyCodeLine{00657\ \ \ profile\_probability\ \doxymbox{\hyperlink{tgmath_8h_a86ab780bf1de516c739da6893b2e303a}{sqrt}}\ ()\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00658\ }
+\DoxyCodeLine{00659\ \ \ \textcolor{comment}{/*\ Get\ the\ value\ of\ the\ count.\ \ */}}
+\DoxyCodeLine{00660\ \ \ uint32\_t\ \doxymbox{\hyperlink{configargs_8h_a92d544bd66c050551f3d87fa55eb3f5d}{value}}\ ()\textcolor{keyword}{\ const\ }\{\ \textcolor{keywordflow}{return}\ m\_val;\ \}}
+\DoxyCodeLine{00661\ }
+\DoxyCodeLine{00662\ \ \ \textcolor{comment}{/*\ Get\ the\ quality\ of\ the\ count.\ \ */}}
+\DoxyCodeLine{00663\ \ \ \textcolor{keyword}{enum}\ \doxymbox{\hyperlink{profile-count_8h_a176a4353f013d9fd4215c4721c89b08a}{profile\_quality}}\ quality\ ()\textcolor{keyword}{\ const\ }\{\ \textcolor{keywordflow}{return}\ m\_quality;\ \}}
+\DoxyCodeLine{00664\ }
+\DoxyCodeLine{00665\ \ \ \textcolor{comment}{/*\ Output\ THIS\ to\ F.\ \ */}}
+\DoxyCodeLine{00666\ \ \ \textcolor{keywordtype}{void}\ dump\ (FILE\ *f)\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00667\ }
+\DoxyCodeLine{00668\ \ \ \textcolor{comment}{/*\ Output\ THIS\ to\ BUFFER.\ \ */}}
+\DoxyCodeLine{00669\ \ \ \textcolor{keywordtype}{void}\ dump\ (\textcolor{keywordtype}{char}\ *buffer)\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00670\ }
+\DoxyCodeLine{00671\ \ \ \textcolor{comment}{/*\ Print\ THIS\ to\ stderr.\ \ */}}
+\DoxyCodeLine{00672\ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{collect-utils_8h_a398527b3e9e358c345c5047b16871957}{debug}}\ ()\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00673\ }
+\DoxyCodeLine{00674\ \ \ \textcolor{comment}{/*\ Return\ true\ if\ THIS\ is\ known\ to\ differ\ significantly\ from\ OTHER.\ \ */}}
+\DoxyCodeLine{00675\ \ \ \textcolor{keywordtype}{bool}\ differs\_from\_p\ (profile\_probability\ other)\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00676\ }
+\DoxyCodeLine{00677\ \ \ \textcolor{comment}{/*\ Return\ if\ difference\ is\ greater\ than\ 50\%.\ \ */}}
+\DoxyCodeLine{00678\ \ \ \textcolor{keywordtype}{bool}\ differs\_lot\_from\_p\ (profile\_probability\ other)\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00679\ }
+\DoxyCodeLine{00680\ \ \ \textcolor{comment}{/*\ COUNT1\ times\ event\ happens\ with\ *THIS\ probability,\ COUNT2\ times\ OTHER}}
+\DoxyCodeLine{00681\ \textcolor{comment}{\ \ \ \ \ happens\ with\ COUNT2\ probability.\ Return\ probability\ that\ either\ *THIS\ or}}
+\DoxyCodeLine{00682\ \textcolor{comment}{\ \ \ \ \ OTHER\ happens.\ \ */}}
+\DoxyCodeLine{00683\ \ \ profile\_probability\ combine\_with\_count\ (profile\_count\ count1,}
+\DoxyCodeLine{00684\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ profile\_probability\ other,}
+\DoxyCodeLine{00685\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ profile\_count\ count2)\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00686\ }
+\DoxyCodeLine{00687\ \ \ \textcolor{comment}{/*\ Return\ probability\ as\ sreal.\ \ */}}
+\DoxyCodeLine{00688\ \ \ sreal\ to\_sreal\ ()\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00689\ \ \ \textcolor{comment}{/*\ LTO\ streaming\ support.\ \ */}}
+\DoxyCodeLine{00690\ \ \ \textcolor{keyword}{static}\ profile\_probability\ stream\_in\ (\textcolor{keyword}{class}\ lto\_input\_block\ *);}
+\DoxyCodeLine{00691\ \ \ \textcolor{keywordtype}{void}\ stream\_out\ (\textcolor{keyword}{struct}\ output\_block\ *);}
+\DoxyCodeLine{00692\ \ \ \textcolor{keywordtype}{void}\ stream\_out\ (\textcolor{keyword}{struct}\ lto\_output\_stream\ *);}
+\DoxyCodeLine{00693\ \};}
+\DoxyCodeLine{00694\ }
+\DoxyCodeLine{00695\ \textcolor{comment}{/*\ Main\ data\ type\ to\ hold\ profile\ counters\ in\ GCC.\ Profile\ counts\ originate}}
+\DoxyCodeLine{00696\ \textcolor{comment}{\ \ \ either\ from\ profile\ feedback,\ static\ profile\ estimation\ or\ both.\ \ We\ do\ not}}
+\DoxyCodeLine{00697\ \textcolor{comment}{\ \ \ perform\ whole\ program\ profile\ propagation\ and\ thus\ profile\ estimation}}
+\DoxyCodeLine{00698\ \textcolor{comment}{\ \ \ counters\ are\ often\ local\ to\ function,\ while\ counters\ from\ profile\ feedback}}
+\DoxyCodeLine{00699\ \textcolor{comment}{\ \ \ (or\ special\ cases\ of\ profile\ estimation)\ can\ be\ used\ inter-\/procedurally.}}
+\DoxyCodeLine{00700\ \textcolor{comment}{}}
+\DoxyCodeLine{00701\ \textcolor{comment}{\ \ \ There\ are\ 3\ basic\ types}}
+\DoxyCodeLine{00702\ \textcolor{comment}{\ \ \ \ \ 1)\ local\ counters\ which\ are\ result\ of\ intra-\/procedural\ static\ profile}}
+\DoxyCodeLine{00703\ \textcolor{comment}{\ \ \ \ \ \ \ \ estimation.}}
+\DoxyCodeLine{00704\ \textcolor{comment}{\ \ \ \ \ 2)\ ipa\ counters\ which\ are\ result\ of\ profile\ feedback\ or\ special\ case}}
+\DoxyCodeLine{00705\ \textcolor{comment}{\ \ \ \ \ \ \ \ of\ static\ profile\ estimation\ (such\ as\ in\ function\ main).}}
+\DoxyCodeLine{00706\ \textcolor{comment}{\ \ \ \ \ 3)\ counters\ which\ counts\ as\ 0\ inter-\/procedurally\ (because\ given\ function}}
+\DoxyCodeLine{00707\ \textcolor{comment}{\ \ \ \ \ \ \ \ was\ never\ run\ in\ train\ feedback)\ but\ they\ hold\ local\ static\ profile}}
+\DoxyCodeLine{00708\ \textcolor{comment}{\ \ \ \ \ \ \ \ estimate.}}
+\DoxyCodeLine{00709\ \textcolor{comment}{}}
+\DoxyCodeLine{00710\ \textcolor{comment}{\ \ \ Counters\ of\ type\ 1\ and\ 3\ cannot\ be\ mixed\ with\ counters\ of\ different\ type}}
+\DoxyCodeLine{00711\ \textcolor{comment}{\ \ \ within\ operation\ (because\ whole\ function\ should\ use\ one\ type\ of\ counter)}}
+\DoxyCodeLine{00712\ \textcolor{comment}{\ \ \ with\ exception\ that\ global\ zero\ mix\ in\ most\ operations\ where\ outcome\ is}}
+\DoxyCodeLine{00713\ \textcolor{comment}{\ \ \ well\ defined.}}
+\DoxyCodeLine{00714\ \textcolor{comment}{}}
+\DoxyCodeLine{00715\ \textcolor{comment}{\ \ \ To\ take\ local\ counter\ and\ use\ it\ inter-\/procedurally\ use\ ipa\ member\ function}}
+\DoxyCodeLine{00716\ \textcolor{comment}{\ \ \ which\ strips\ information\ irrelevant\ at\ the\ inter-\/procedural\ level.}}
+\DoxyCodeLine{00717\ \textcolor{comment}{}}
+\DoxyCodeLine{00718\ \textcolor{comment}{\ \ \ Counters\ are\ 61bit\ integers\ representing\ number\ of\ executions\ during\ the}}
+\DoxyCodeLine{00719\ \textcolor{comment}{\ \ \ train\ run\ or\ normalized\ frequency\ within\ the\ function.}}
+\DoxyCodeLine{00720\ \textcolor{comment}{}}
+\DoxyCodeLine{00721\ \textcolor{comment}{\ \ \ As\ the\ profile\ is\ maintained\ during\ the\ compilation,\ many\ adjustments\ are}}
+\DoxyCodeLine{00722\ \textcolor{comment}{\ \ \ made.\ \ Not\ all\ transformations\ can\ be\ made\ precisely,\ most\ importantly}}
+\DoxyCodeLine{00723\ \textcolor{comment}{\ \ \ when\ code\ is\ being\ duplicated.\ \ It\ also\ may\ happen\ that\ part\ of\ CFG\ has}}
+\DoxyCodeLine{00724\ \textcolor{comment}{\ \ \ profile\ counts\ known\ while\ other\ do\ not\ -\/\ for\ example\ when\ LTO\ optimizing}}
+\DoxyCodeLine{00725\ \textcolor{comment}{\ \ \ partly\ profiled\ program\ or\ when\ profile\ was\ lost\ due\ to\ COMDAT\ merging.}}
+\DoxyCodeLine{00726\ \textcolor{comment}{}}
+\DoxyCodeLine{00727\ \textcolor{comment}{\ \ \ For\ this\ reason\ profile\_count\ tracks\ more\ information\ than}}
+\DoxyCodeLine{00728\ \textcolor{comment}{\ \ \ just\ unsigned\ integer\ and\ it\ is\ also\ ready\ for\ profile\ mismatches.}}
+\DoxyCodeLine{00729\ \textcolor{comment}{\ \ \ The\ API\ of\ this\ data\ type\ represent\ operations\ that\ are\ natural}}
+\DoxyCodeLine{00730\ \textcolor{comment}{\ \ \ on\ profile\ counts\ -\/\ sum,\ difference\ and\ operation\ with\ scales\ and}}
+\DoxyCodeLine{00731\ \textcolor{comment}{\ \ \ probabilities.\ \ All\ operations\ are\ safe\ by\ never\ getting\ negative\ counts}}
+\DoxyCodeLine{00732\ \textcolor{comment}{\ \ \ and\ they\ do\ end\ up\ in\ uninitialized\ scale\ if\ any\ of\ the\ parameters\ is}}
+\DoxyCodeLine{00733\ \textcolor{comment}{\ \ \ uninitialized.}}
+\DoxyCodeLine{00734\ \textcolor{comment}{}}
+\DoxyCodeLine{00735\ \textcolor{comment}{\ \ \ All\ comparisons\ that\ are\ three\ state\ and\ handling\ of\ probabilities.\ \ Thus}}
+\DoxyCodeLine{00736\ \textcolor{comment}{\ \ \ a\ <\ b\ is\ not\ equal\ to\ !(a\ >=\ b).}}
+\DoxyCodeLine{00737\ \textcolor{comment}{}}
+\DoxyCodeLine{00738\ \textcolor{comment}{\ \ \ The\ following\ pre-\/defined\ counts\ are\ available:}}
+\DoxyCodeLine{00739\ \textcolor{comment}{}}
+\DoxyCodeLine{00740\ \textcolor{comment}{\ \ \ profile\_count::zero\ ()\ \ for\ code\ that\ is\ known\ to\ execute\ zero\ times\ at}}
+\DoxyCodeLine{00741\ \textcolor{comment}{\ \ \ \ \ \ runtime\ (this\ can\ be\ detected\ statically\ i.e.\ for\ paths\ leading\ to}}
+\DoxyCodeLine{00742\ \textcolor{comment}{\ \ \ \ \ \ abort\ ();}}
+\DoxyCodeLine{00743\ \textcolor{comment}{\ \ \ profile\_count::one\ ()\ for\ code\ that\ is\ known\ to\ execute\ once\ (such\ as}}
+\DoxyCodeLine{00744\ \textcolor{comment}{\ \ \ \ \ \ main\ ()\ function}}
+\DoxyCodeLine{00745\ \textcolor{comment}{\ \ \ profile\_count::uninitialized\ ()\ \ for\ unknown\ execution\ count.}}
+\DoxyCodeLine{00746\ \textcolor{comment}{}}
+\DoxyCodeLine{00747\ \textcolor{comment}{\ */}}
+\DoxyCodeLine{00748\ }
+\DoxyCodeLine{00749\ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{coretypes_8h_ae5708c4d4b300570eebe0bc0c78facbc}{GTY}}(())\ profile\_count}
+\DoxyCodeLine{00750\ \{}
+\DoxyCodeLine{00751\ \textcolor{keyword}{public}:}
+\DoxyCodeLine{00752\ \ \ \textcolor{comment}{/*\ Use\ 62bit\ to\ hold\ basic\ block\ counters.\ \ Should\ be\ at\ least}}
+\DoxyCodeLine{00753\ \textcolor{comment}{\ \ \ \ \ 64bit.\ \ Although\ a\ counter\ cannot\ be\ negative,\ we\ use\ a\ signed}}
+\DoxyCodeLine{00754\ \textcolor{comment}{\ \ \ \ \ type\ to\ hold\ various\ extra\ stages.\ \ */}}
+\DoxyCodeLine{00755\ }
+\DoxyCodeLine{00756\ \ \ \textcolor{keyword}{static}\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{int}\ n\_bits\ =\ 61;}
+\DoxyCodeLine{00757\ \ \ \textcolor{keyword}{static}\ \textcolor{keyword}{const}\ uint64\_t\ max\_count\ =\ ((uint64\_t)\ 1\ <<\ n\_bits)\ -\/\ 2;}
+\DoxyCodeLine{00758\ \textcolor{keyword}{private}:}
+\DoxyCodeLine{00759\ \ \ \textcolor{keyword}{static}\ \textcolor{keyword}{const}\ uint64\_t\ uninitialized\_count\ =\ ((uint64\_t)\ 1\ <<\ n\_bits)\ -\/\ 1;}
+\DoxyCodeLine{00760\ }
+\DoxyCodeLine{00761\ \textcolor{preprocessor}{\#if\ defined\ (\_\_arm\_\_)\ \&\&\ (\_\_GNUC\_\_\ >=\ 6\ \&\&\ \_\_GNUC\_\_\ <=\ 8)}}
+\DoxyCodeLine{00762\ \ \ \textcolor{comment}{/*\ Work-\/around\ for\ PR88469.\ \ A\ bug\ in\ the\ gcc-\/6/7/8\ PCS\ layout\ code}}
+\DoxyCodeLine{00763\ \textcolor{comment}{\ \ \ \ \ incorrectly\ detects\ the\ alignment\ of\ a\ structure\ where\ the\ only}}
+\DoxyCodeLine{00764\ \textcolor{comment}{\ \ \ \ \ 64-\/bit\ aligned\ object\ is\ a\ bit-\/field.\ \ We\ force\ the\ alignment\ of}}
+\DoxyCodeLine{00765\ \textcolor{comment}{\ \ \ \ \ the\ entire\ field\ to\ mitigate\ this.\ \ */}}
+\DoxyCodeLine{00766\ \textcolor{preprocessor}{\#define\ UINT64\_BIT\_FIELD\_ALIGN\ \_\_attribute\_\_\ ((aligned(8)))}}
+\DoxyCodeLine{00767\ \textcolor{preprocessor}{\#else}}
+\DoxyCodeLine{00768\ \textcolor{preprocessor}{\#define\ UINT64\_BIT\_FIELD\_ALIGN}}
+\DoxyCodeLine{00769\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00770\ \ \ uint64\_t\ \doxymbox{\hyperlink{profile-count_8h_a61940d0cbfadb0da9b581aaecf06bb32}{UINT64\_BIT\_FIELD\_ALIGN}}\ m\_val\ :\ n\_bits;}
+\DoxyCodeLine{00771\ \textcolor{preprocessor}{\#undef\ UINT64\_BIT\_FIELD\_ALIGN}}
+\DoxyCodeLine{00772\ \ \ \textcolor{keyword}{enum}\ \doxymbox{\hyperlink{profile-count_8h_a176a4353f013d9fd4215c4721c89b08a}{profile\_quality}}\ m\_quality\ :\ 3;}
+\DoxyCodeLine{00773\ \textcolor{keyword}{public}:}
+\DoxyCodeLine{00774\ }
+\DoxyCodeLine{00775\ \ \ \textcolor{comment}{/*\ Return\ true\ if\ both\ values\ can\ meaningfully\ appear\ in\ single\ function}}
+\DoxyCodeLine{00776\ \textcolor{comment}{\ \ \ \ \ body.\ \ We\ have\ either\ all\ counters\ in\ function\ local\ or\ global,\ otherwise}}
+\DoxyCodeLine{00777\ \textcolor{comment}{\ \ \ \ \ operations\ between\ them\ are\ not\ really\ defined\ well.\ \ */}}
+\DoxyCodeLine{00778\ \ \ \textcolor{keywordtype}{bool}\ compatible\_p\ (\textcolor{keyword}{const}\ profile\_count\ other)\textcolor{keyword}{\ const}}
+\DoxyCodeLine{00779\ \textcolor{keyword}{\ \ \ \ }\{}
+\DoxyCodeLine{00780\ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (!initialized\_p\ ()\ ||\ !other.initialized\_p\ ())}
+\DoxyCodeLine{00781\ \ \ \ \ \textcolor{keywordflow}{return}\ \textcolor{keyword}{true};}
+\DoxyCodeLine{00782\ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (*\textcolor{keyword}{this}\ ==\ zero\ ()}
+\DoxyCodeLine{00783\ \ \ \ \ \ \ ||\ other\ ==\ zero\ ())}
+\DoxyCodeLine{00784\ \ \ \ \ \textcolor{keywordflow}{return}\ \textcolor{keyword}{true};}
+\DoxyCodeLine{00785\ \ \ \ \ \ \ \textcolor{comment}{/*\ Do\ not\ allow\ nonzero\ global\ profile\ together\ with\ local\ guesses}}
+\DoxyCodeLine{00786\ \textcolor{comment}{\ \ \ \ \ that\ are\ globally0.\ \ */}}
+\DoxyCodeLine{00787\ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (ipa\ ().nonzero\_p\ ()}
+\DoxyCodeLine{00788\ \ \ \ \ \ \ \&\&\ !(other.ipa\ ()\ ==\ other))}
+\DoxyCodeLine{00789\ \ \ \ \ \textcolor{keywordflow}{return}\ \textcolor{keyword}{false};}
+\DoxyCodeLine{00790\ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (other.ipa\ ().nonzero\_p\ ()}
+\DoxyCodeLine{00791\ \ \ \ \ \ \ \&\&\ !(ipa\ ()\ ==\ *\textcolor{keyword}{this}))}
+\DoxyCodeLine{00792\ \ \ \ \ \textcolor{keywordflow}{return}\ \textcolor{keyword}{false};}
+\DoxyCodeLine{00793\ \ \ \ \ }
+\DoxyCodeLine{00794\ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ ipa\_p\ ()\ ==\ other.ipa\_p\ ();}
+\DoxyCodeLine{00795\ \ \ \ \ \}}
+\DoxyCodeLine{00796\ }
+\DoxyCodeLine{00797\ \ \ \textcolor{comment}{/*\ Used\ for\ counters\ which\ are\ expected\ to\ be\ never\ executed.\ \ */}}
+\DoxyCodeLine{00798\ \ \ \textcolor{keyword}{static}\ profile\_count\ \doxymbox{\hyperlink{namespacewi_a6e251260a135cc72c48d4be39baa9e28}{zero}}\ ()}
+\DoxyCodeLine{00799\ \ \ \ \ \{}
+\DoxyCodeLine{00800\ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ from\_gcov\_type\ (0);}
+\DoxyCodeLine{00801\ \ \ \ \ \}}
+\DoxyCodeLine{00802\ }
+\DoxyCodeLine{00803\ \ \ \textcolor{keyword}{static}\ profile\_count\ adjusted\_zero\ ()}
+\DoxyCodeLine{00804\ \ \ \ \ \{}
+\DoxyCodeLine{00805\ \ \ \ \ \ \ profile\_count\ c;}
+\DoxyCodeLine{00806\ \ \ \ \ \ \ c.m\_val\ =\ 0;}
+\DoxyCodeLine{00807\ \ \ \ \ \ \ c.m\_quality\ =\ \doxymbox{\hyperlink{profile-count_8h_a176a4353f013d9fd4215c4721c89b08aa11bda19fea1e90f64f65a8f278ecfd62}{ADJUSTED}};}
+\DoxyCodeLine{00808\ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ c;}
+\DoxyCodeLine{00809\ \ \ \ \ \}}
+\DoxyCodeLine{00810\ }
+\DoxyCodeLine{00811\ \ \ \textcolor{keyword}{static}\ profile\_count\ guessed\_zero\ ()}
+\DoxyCodeLine{00812\ \ \ \ \ \{}
+\DoxyCodeLine{00813\ \ \ \ \ \ \ profile\_count\ c;}
+\DoxyCodeLine{00814\ \ \ \ \ \ \ c.m\_val\ =\ 0;}
+\DoxyCodeLine{00815\ \ \ \ \ \ \ c.m\_quality\ =\ \doxymbox{\hyperlink{profile-count_8h_a176a4353f013d9fd4215c4721c89b08aaf5a5c929d87138f872009eba2703c52e}{GUESSED}};}
+\DoxyCodeLine{00816\ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ c;}
+\DoxyCodeLine{00817\ \ \ \ \ \}}
+\DoxyCodeLine{00818\ }
+\DoxyCodeLine{00819\ \ \ \textcolor{keyword}{static}\ profile\_count\ \doxymbox{\hyperlink{namespacewi_af93b01272e81b416abc70bcf468b2040}{one}}\ ()}
+\DoxyCodeLine{00820\ \ \ \ \ \{}
+\DoxyCodeLine{00821\ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ from\_gcov\_type\ (1);}
+\DoxyCodeLine{00822\ \ \ \ \ \}}
+\DoxyCodeLine{00823\ }
+\DoxyCodeLine{00824\ \ \ \textcolor{comment}{/*\ Value\ of\ counters\ which\ has\ not\ been\ initialized.\ Either\ because}}
+\DoxyCodeLine{00825\ \textcolor{comment}{\ \ \ \ \ initialization\ did\ not\ happen\ yet\ or\ because\ profile\ is\ unknown.\ \ */}}
+\DoxyCodeLine{00826\ \ \ \textcolor{keyword}{static}\ profile\_count\ uninitialized\ ()}
+\DoxyCodeLine{00827\ \ \ \ \ \{}
+\DoxyCodeLine{00828\ \ \ \ \ \ \ profile\_count\ c;}
+\DoxyCodeLine{00829\ \ \ \ \ \ \ c.m\_val\ =\ uninitialized\_count;}
+\DoxyCodeLine{00830\ \ \ \ \ \ \ c.m\_quality\ =\ \doxymbox{\hyperlink{profile-count_8h_a176a4353f013d9fd4215c4721c89b08aa24920ec18baa87c0dd0032b1b3cd7917}{GUESSED\_LOCAL}};}
+\DoxyCodeLine{00831\ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ c;}
+\DoxyCodeLine{00832\ \ \ \ \ \}}
+\DoxyCodeLine{00833\ }
+\DoxyCodeLine{00834\ \ \ \textcolor{comment}{/*\ Conversion\ to\ gcov\_type\ is\ lossy.\ \ */}}
+\DoxyCodeLine{00835\ \ \ \doxymbox{\hyperlink{coretypes_8h_ae8c03cc266a69e9635893ee0772d12e8}{gcov\_type}}\ to\_gcov\_type\ ()\textcolor{keyword}{\ const}}
+\DoxyCodeLine{00836\ \textcolor{keyword}{\ \ \ \ }\{}
+\DoxyCodeLine{00837\ \ \ \ \ \ \ \doxymbox{\hyperlink{system_8h_aff447899dc74d54931b2bc2d47de9423}{gcc\_checking\_assert}}\ (initialized\_p\ ());}
+\DoxyCodeLine{00838\ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ m\_val;}
+\DoxyCodeLine{00839\ \ \ \ \ \}}
+\DoxyCodeLine{00840\ }
+\DoxyCodeLine{00841\ \ \ \textcolor{comment}{/*\ Return\ true\ if\ value\ has\ been\ initialized.\ \ */}}
+\DoxyCodeLine{00842\ \ \ \textcolor{keywordtype}{bool}\ initialized\_p\ ()\textcolor{keyword}{\ const}}
+\DoxyCodeLine{00843\ \textcolor{keyword}{\ \ \ \ }\{}
+\DoxyCodeLine{00844\ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ m\_val\ !=\ uninitialized\_count;}
+\DoxyCodeLine{00845\ \ \ \ \ \}}
+\DoxyCodeLine{00846\ }
+\DoxyCodeLine{00847\ \ \ \textcolor{comment}{/*\ Return\ true\ if\ value\ can\ be\ trusted.\ \ */}}
+\DoxyCodeLine{00848\ \ \ \textcolor{keywordtype}{bool}\ reliable\_p\ ()\textcolor{keyword}{\ const}}
+\DoxyCodeLine{00849\ \textcolor{keyword}{\ \ \ \ }\{}
+\DoxyCodeLine{00850\ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ m\_quality\ >=\ \doxymbox{\hyperlink{profile-count_8h_a176a4353f013d9fd4215c4721c89b08aa11bda19fea1e90f64f65a8f278ecfd62}{ADJUSTED}};}
+\DoxyCodeLine{00851\ \ \ \ \ \}}
+\DoxyCodeLine{00852\ }
+\DoxyCodeLine{00853\ \ \ \textcolor{comment}{/*\ Return\ true\ if\ value\ can\ be\ operated\ inter-\/procedurally.\ \ */}}
+\DoxyCodeLine{00854\ \ \ \textcolor{keywordtype}{bool}\ ipa\_p\ ()\textcolor{keyword}{\ const}}
+\DoxyCodeLine{00855\ \textcolor{keyword}{\ \ \ \ }\{}
+\DoxyCodeLine{00856\ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ !initialized\_p\ ()\ ||\ m\_quality\ >=\ \doxymbox{\hyperlink{profile-count_8h_a176a4353f013d9fd4215c4721c89b08aabd539fab0a7c2b002a125566f011652c}{GUESSED\_GLOBAL0}};}
+\DoxyCodeLine{00857\ \ \ \ \ \}}
+\DoxyCodeLine{00858\ }
+\DoxyCodeLine{00859\ \ \ \textcolor{comment}{/*\ Return\ true\ if\ quality\ of\ profile\ is\ precise.\ \ */}}
+\DoxyCodeLine{00860\ \ \ \textcolor{keywordtype}{bool}\ precise\_p\ ()\textcolor{keyword}{\ const}}
+\DoxyCodeLine{00861\ \textcolor{keyword}{\ \ \ \ }\{}
+\DoxyCodeLine{00862\ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ m\_quality\ ==\ \doxymbox{\hyperlink{profile-count_8h_a176a4353f013d9fd4215c4721c89b08aaf18175cd0be2b1fce85e2d670ae1d24e}{PRECISE}};}
+\DoxyCodeLine{00863\ \ \ \ \ \}}
+\DoxyCodeLine{00864\ }
+\DoxyCodeLine{00865\ \ \ \textcolor{comment}{/*\ Get\ the\ value\ of\ the\ count.\ \ */}}
+\DoxyCodeLine{00866\ \ \ uint64\_t\ \doxymbox{\hyperlink{configargs_8h_a92d544bd66c050551f3d87fa55eb3f5d}{value}}\ ()\textcolor{keyword}{\ const\ }\{\ \textcolor{keywordflow}{return}\ m\_val;\ \}}
+\DoxyCodeLine{00867\ }
+\DoxyCodeLine{00868\ \ \ \textcolor{comment}{/*\ Get\ the\ quality\ of\ the\ count.\ \ */}}
+\DoxyCodeLine{00869\ \ \ \textcolor{keyword}{enum}\ \doxymbox{\hyperlink{profile-count_8h_a176a4353f013d9fd4215c4721c89b08a}{profile\_quality}}\ quality\ ()\textcolor{keyword}{\ const\ }\{\ \textcolor{keywordflow}{return}\ m\_quality;\ \}}
+\DoxyCodeLine{00870\ }
+\DoxyCodeLine{00871\ \ \ \textcolor{comment}{/*\ When\ merging\ basic\ blocks,\ the\ two\ different\ profile\ counts\ are\ unified.}}
+\DoxyCodeLine{00872\ \textcolor{comment}{\ \ \ \ \ Return\ true\ if\ this\ can\ be\ done\ without\ losing\ info\ about\ profile.}}
+\DoxyCodeLine{00873\ \textcolor{comment}{\ \ \ \ \ The\ only\ case\ we\ care\ about\ here\ is\ when\ first\ BB\ contains\ something}}
+\DoxyCodeLine{00874\ \textcolor{comment}{\ \ \ \ \ that\ makes\ it\ terminate\ in\ a\ way\ not\ visible\ in\ CFG.\ \ */}}
+\DoxyCodeLine{00875\ \ \ \textcolor{keywordtype}{bool}\ ok\_for\_merging\ (profile\_count\ other)\textcolor{keyword}{\ const}}
+\DoxyCodeLine{00876\ \textcolor{keyword}{\ \ \ \ }\{}
+\DoxyCodeLine{00877\ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (m\_quality\ <\ \doxymbox{\hyperlink{profile-count_8h_a176a4353f013d9fd4215c4721c89b08aa11bda19fea1e90f64f65a8f278ecfd62}{ADJUSTED}}}
+\DoxyCodeLine{00878\ \ \ \ \ \ \ ||\ other.m\_quality\ <\ \doxymbox{\hyperlink{profile-count_8h_a176a4353f013d9fd4215c4721c89b08aa11bda19fea1e90f64f65a8f278ecfd62}{ADJUSTED}})}
+\DoxyCodeLine{00879\ \ \ \ \ \textcolor{keywordflow}{return}\ \textcolor{keyword}{true};}
+\DoxyCodeLine{00880\ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ !(other\ <\ *\textcolor{keyword}{this});}
+\DoxyCodeLine{00881\ \ \ \ \ \}}
+\DoxyCodeLine{00882\ }
+\DoxyCodeLine{00883\ \ \ \textcolor{comment}{/*\ When\ merging\ two\ BBs\ with\ different\ counts,\ pick\ common\ count\ that\ looks}}
+\DoxyCodeLine{00884\ \textcolor{comment}{\ \ \ \ \ most\ representative.\ \ */}}
+\DoxyCodeLine{00885\ \ \ profile\_count\ merge\ (profile\_count\ other)\textcolor{keyword}{\ const}}
+\DoxyCodeLine{00886\ \textcolor{keyword}{\ \ \ \ }\{}
+\DoxyCodeLine{00887\ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (*\textcolor{keyword}{this}\ ==\ other\ ||\ !other.initialized\_p\ ()}
+\DoxyCodeLine{00888\ \ \ \ \ \ \ ||\ m\_quality\ >\ other.m\_quality)}
+\DoxyCodeLine{00889\ \ \ \ \ \textcolor{keywordflow}{return}\ *\textcolor{keyword}{this};}
+\DoxyCodeLine{00890\ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (other.m\_quality\ >\ m\_quality}
+\DoxyCodeLine{00891\ \ \ \ \ \ \ ||\ other\ >\ *\textcolor{keyword}{this})}
+\DoxyCodeLine{00892\ \ \ \ \ \textcolor{keywordflow}{return}\ other;}
+\DoxyCodeLine{00893\ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ *\textcolor{keyword}{this};}
+\DoxyCodeLine{00894\ \ \ \ \ \}}
+\DoxyCodeLine{00895\ }
+\DoxyCodeLine{00896\ \ \ \textcolor{comment}{/*\ Basic\ operations.\ \ */}}
+\DoxyCodeLine{00897\ \ \ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{cp-tree_8h_a4b9bd7e4e073a2a98d043c78719de59b}{operator==\ }}(\textcolor{keyword}{const}\ profile\_count\ \&other)\textcolor{keyword}{\ const}}
+\DoxyCodeLine{00898\ \textcolor{keyword}{\ \ \ \ }\{}
+\DoxyCodeLine{00899\ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ m\_val\ ==\ other.m\_val\ \&\&\ m\_quality\ ==\ other.m\_quality;}
+\DoxyCodeLine{00900\ \ \ \ \ \}}
+\DoxyCodeLine{00901\ }
+\DoxyCodeLine{00902\ \ \ profile\_count\ operator+\ (\textcolor{keyword}{const}\ profile\_count\ \&other)\textcolor{keyword}{\ const}}
+\DoxyCodeLine{00903\ \textcolor{keyword}{\ \ \ \ }\{}
+\DoxyCodeLine{00904\ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (other\ ==\ zero\ ())}
+\DoxyCodeLine{00905\ \ \ \ \ \textcolor{keywordflow}{return}\ *\textcolor{keyword}{this};}
+\DoxyCodeLine{00906\ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (*\textcolor{keyword}{this}\ ==\ zero\ ())}
+\DoxyCodeLine{00907\ \ \ \ \ \textcolor{keywordflow}{return}\ other;}
+\DoxyCodeLine{00908\ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (!initialized\_p\ ()\ ||\ !other.initialized\_p\ ())}
+\DoxyCodeLine{00909\ \ \ \ \ \textcolor{keywordflow}{return}\ uninitialized\ ();}
+\DoxyCodeLine{00910\ }
+\DoxyCodeLine{00911\ \ \ \ \ \ \ profile\_count\ ret;}
+\DoxyCodeLine{00912\ \ \ \ \ \ \ \doxymbox{\hyperlink{system_8h_aff447899dc74d54931b2bc2d47de9423}{gcc\_checking\_assert}}\ (compatible\_p\ (other));}
+\DoxyCodeLine{00913\ \ \ \ \ \ \ uint64\_t\ ret\_val\ =\ m\_val\ +\ other.m\_val;}
+\DoxyCodeLine{00914\ \ \ \ \ \ \ ret.m\_val\ =\ \doxymbox{\hyperlink{system_8h_ad2f3678bf5eae3684fc497130b946eae}{MIN}}\ (ret\_val,\ max\_count);}
+\DoxyCodeLine{00915\ \ \ \ \ \ \ ret.m\_quality\ =\ \doxymbox{\hyperlink{system_8h_ad2f3678bf5eae3684fc497130b946eae}{MIN}}\ (m\_quality,\ other.m\_quality);}
+\DoxyCodeLine{00916\ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ ret;}
+\DoxyCodeLine{00917\ \ \ \ \ \}}
+\DoxyCodeLine{00918\ }
+\DoxyCodeLine{00919\ \ \ profile\_count\ \&\doxymbox{\hyperlink{sreal_8h_ad8e28fc23d3b1c645fcba8395af2ea2a}{operator+=\ }}(\textcolor{keyword}{const}\ profile\_count\ \&other)}
+\DoxyCodeLine{00920\ \ \ \ \ \{}
+\DoxyCodeLine{00921\ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (other\ ==\ zero\ ())}
+\DoxyCodeLine{00922\ \ \ \ \ \textcolor{keywordflow}{return}\ *\textcolor{keyword}{this};}
+\DoxyCodeLine{00923\ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (*\textcolor{keyword}{this}\ ==\ zero\ ())}
+\DoxyCodeLine{00924\ \ \ \ \ \{}
+\DoxyCodeLine{00925\ \ \ \ \ \ \ *\textcolor{keyword}{this}\ =\ other;}
+\DoxyCodeLine{00926\ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ *\textcolor{keyword}{this};}
+\DoxyCodeLine{00927\ \ \ \ \ \}}
+\DoxyCodeLine{00928\ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (!initialized\_p\ ()\ ||\ !other.initialized\_p\ ())}
+\DoxyCodeLine{00929\ \ \ \ \ \textcolor{keywordflow}{return}\ *\textcolor{keyword}{this}\ =\ uninitialized\ ();}
+\DoxyCodeLine{00930\ \ \ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00931\ \ \ \ \ \{}
+\DoxyCodeLine{00932\ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{system_8h_aff447899dc74d54931b2bc2d47de9423}{gcc\_checking\_assert}}\ (compatible\_p\ (other));}
+\DoxyCodeLine{00933\ \ \ \ \ \ \ uint64\_t\ ret\_val\ =\ m\_val\ +\ other.m\_val;}
+\DoxyCodeLine{00934\ \ \ \ \ \ \ m\_val\ =\ \doxymbox{\hyperlink{system_8h_ad2f3678bf5eae3684fc497130b946eae}{MIN}}\ (ret\_val,\ max\_count);}
+\DoxyCodeLine{00935\ \ \ \ \ \ \ m\_quality\ =\ \doxymbox{\hyperlink{system_8h_ad2f3678bf5eae3684fc497130b946eae}{MIN}}\ (m\_quality,\ other.m\_quality);}
+\DoxyCodeLine{00936\ \ \ \ \ \}}
+\DoxyCodeLine{00937\ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ *\textcolor{keyword}{this};}
+\DoxyCodeLine{00938\ \ \ \ \ \}}
+\DoxyCodeLine{00939\ }
+\DoxyCodeLine{00940\ \ \ profile\_count\ operator-\/\ (\textcolor{keyword}{const}\ profile\_count\ \&other)\textcolor{keyword}{\ const}}
+\DoxyCodeLine{00941\ \textcolor{keyword}{\ \ \ \ }\{}
+\DoxyCodeLine{00942\ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (*\textcolor{keyword}{this}\ ==\ zero\ ()\ ||\ other\ ==\ zero\ ())}
+\DoxyCodeLine{00943\ \ \ \ \ \textcolor{keywordflow}{return}\ *\textcolor{keyword}{this};}
+\DoxyCodeLine{00944\ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (!initialized\_p\ ()\ ||\ !other.initialized\_p\ ())}
+\DoxyCodeLine{00945\ \ \ \ \ \textcolor{keywordflow}{return}\ uninitialized\ ();}
+\DoxyCodeLine{00946\ \ \ \ \ \ \ \doxymbox{\hyperlink{system_8h_aff447899dc74d54931b2bc2d47de9423}{gcc\_checking\_assert}}\ (compatible\_p\ (other));}
+\DoxyCodeLine{00947\ \ \ \ \ \ \ profile\_count\ ret;}
+\DoxyCodeLine{00948\ \ \ \ \ \ \ ret.m\_val\ =\ m\_val\ >=\ other.m\_val\ ?\ m\_val\ -\/\ other.m\_val\ :\ 0;}
+\DoxyCodeLine{00949\ \ \ \ \ \ \ ret.m\_quality\ =\ \doxymbox{\hyperlink{system_8h_ad2f3678bf5eae3684fc497130b946eae}{MIN}}\ (m\_quality,\ other.m\_quality);}
+\DoxyCodeLine{00950\ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ ret;}
+\DoxyCodeLine{00951\ \ \ \ \ \}}
+\DoxyCodeLine{00952\ }
+\DoxyCodeLine{00953\ \ \ profile\_count\ \&\doxymbox{\hyperlink{sreal_8h_a9f3908db4243d0a6ee16a10f784790d3}{operator-\/=\ }}(\textcolor{keyword}{const}\ profile\_count\ \&other)}
+\DoxyCodeLine{00954\ \ \ \ \ \{}
+\DoxyCodeLine{00955\ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (*\textcolor{keyword}{this}\ ==\ zero\ ()\ ||\ other\ ==\ zero\ ())}
+\DoxyCodeLine{00956\ \ \ \ \ \textcolor{keywordflow}{return}\ *\textcolor{keyword}{this};}
+\DoxyCodeLine{00957\ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (!initialized\_p\ ()\ ||\ !other.initialized\_p\ ())}
+\DoxyCodeLine{00958\ \ \ \ \ \textcolor{keywordflow}{return}\ *\textcolor{keyword}{this}\ =\ uninitialized\ ();}
+\DoxyCodeLine{00959\ \ \ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00960\ \ \ \ \ \{}
+\DoxyCodeLine{00961\ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{system_8h_aff447899dc74d54931b2bc2d47de9423}{gcc\_checking\_assert}}\ (compatible\_p\ (other));}
+\DoxyCodeLine{00962\ \ \ \ \ \ \ m\_val\ =\ m\_val\ >=\ other.m\_val\ ?\ m\_val\ -\/\ other.m\_val\ :\ 0;}
+\DoxyCodeLine{00963\ \ \ \ \ \ \ m\_quality\ =\ \doxymbox{\hyperlink{system_8h_ad2f3678bf5eae3684fc497130b946eae}{MIN}}\ (m\_quality,\ other.m\_quality);}
+\DoxyCodeLine{00964\ \ \ \ \ \}}
+\DoxyCodeLine{00965\ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ *\textcolor{keyword}{this};}
+\DoxyCodeLine{00966\ \ \ \ \ \}}
+\DoxyCodeLine{00967\ }
+\DoxyCodeLine{00968\ \ \ \textcolor{comment}{/*\ Return\ false\ if\ profile\_count\ is\ bogus.\ \ */}}
+\DoxyCodeLine{00969\ \ \ \textcolor{keywordtype}{bool}\ verify\ ()\textcolor{keyword}{\ const}}
+\DoxyCodeLine{00970\ \textcolor{keyword}{\ \ \ \ }\{}
+\DoxyCodeLine{00971\ \ \ \ \ \ \ \doxymbox{\hyperlink{system_8h_aff447899dc74d54931b2bc2d47de9423}{gcc\_checking\_assert}}\ (m\_quality\ !=\ \doxymbox{\hyperlink{profile-count_8h_a176a4353f013d9fd4215c4721c89b08aa38e581a0ef8a137857aa3c958d75a6d7}{UNINITIALIZED\_PROFILE}});}
+\DoxyCodeLine{00972\ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ m\_val\ !=\ uninitialized\_count\ ||\ m\_quality\ ==\ \doxymbox{\hyperlink{profile-count_8h_a176a4353f013d9fd4215c4721c89b08aa24920ec18baa87c0dd0032b1b3cd7917}{GUESSED\_LOCAL}};}
+\DoxyCodeLine{00973\ \ \ \ \ \}}
+\DoxyCodeLine{00974\ }
+\DoxyCodeLine{00975\ \ \ \textcolor{comment}{/*\ Comparisons\ are\ three-\/state\ and\ conservative.\ \ False\ is\ returned\ if}}
+\DoxyCodeLine{00976\ \textcolor{comment}{\ \ \ \ \ the\ inequality\ cannot\ be\ decided.\ \ */}}
+\DoxyCodeLine{00977\ \ \ \textcolor{keywordtype}{bool}\ operator<\ (\textcolor{keyword}{const}\ profile\_count\ \&other)\textcolor{keyword}{\ const}}
+\DoxyCodeLine{00978\ \textcolor{keyword}{\ \ \ \ }\{}
+\DoxyCodeLine{00979\ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (!initialized\_p\ ()\ ||\ !other.initialized\_p\ ())}
+\DoxyCodeLine{00980\ \ \ \ \ \textcolor{keywordflow}{return}\ \textcolor{keyword}{false};}
+\DoxyCodeLine{00981\ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (*\textcolor{keyword}{this}\ ==\ zero\ ())}
+\DoxyCodeLine{00982\ \ \ \ \ \textcolor{keywordflow}{return}\ !(other\ ==\ \doxymbox{\hyperlink{namespacewi_a6e251260a135cc72c48d4be39baa9e28}{zero}}\ ());}
+\DoxyCodeLine{00983\ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (other\ ==\ zero\ ())}
+\DoxyCodeLine{00984\ \ \ \ \ \textcolor{keywordflow}{return}\ \textcolor{keyword}{false};}
+\DoxyCodeLine{00985\ \ \ \ \ \ \ \doxymbox{\hyperlink{system_8h_aff447899dc74d54931b2bc2d47de9423}{gcc\_checking\_assert}}\ (compatible\_p\ (other));}
+\DoxyCodeLine{00986\ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ m\_val\ <\ other.m\_val;}
+\DoxyCodeLine{00987\ \ \ \ \ \}}
+\DoxyCodeLine{00988\ }
+\DoxyCodeLine{00989\ \ \ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{sreal_8h_a8318986fe87e4f64b53a339af55b5b37}{operator>\ }}(\textcolor{keyword}{const}\ profile\_count\ \&other)\textcolor{keyword}{\ const}}
+\DoxyCodeLine{00990\ \textcolor{keyword}{\ \ \ \ }\{}
+\DoxyCodeLine{00991\ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (!initialized\_p\ ()\ ||\ !other.initialized\_p\ ())}
+\DoxyCodeLine{00992\ \ \ \ \ \textcolor{keywordflow}{return}\ \textcolor{keyword}{false};}
+\DoxyCodeLine{00993\ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (*\textcolor{keyword}{this}\ \ ==\ zero\ ())}
+\DoxyCodeLine{00994\ \ \ \ \ \textcolor{keywordflow}{return}\ \textcolor{keyword}{false};}
+\DoxyCodeLine{00995\ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (other\ ==\ zero\ ())}
+\DoxyCodeLine{00996\ \ \ \ \ \textcolor{keywordflow}{return}\ !(*\textcolor{keyword}{this}\ ==\ \doxymbox{\hyperlink{namespacewi_a6e251260a135cc72c48d4be39baa9e28}{zero}}\ ());}
+\DoxyCodeLine{00997\ \ \ \ \ \ \ \doxymbox{\hyperlink{system_8h_aff447899dc74d54931b2bc2d47de9423}{gcc\_checking\_assert}}\ (compatible\_p\ (other));}
+\DoxyCodeLine{00998\ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ initialized\_p\ ()\ \&\&\ other.initialized\_p\ ()\ \&\&\ m\_val\ >\ other.m\_val;}
+\DoxyCodeLine{00999\ \ \ \ \ \}}
+\DoxyCodeLine{01000\ }
+\DoxyCodeLine{01001\ \ \ \textcolor{keywordtype}{bool}\ operator<\ (\textcolor{keyword}{const}\ \doxymbox{\hyperlink{coretypes_8h_ae8c03cc266a69e9635893ee0772d12e8}{gcov\_type}}\ other)\textcolor{keyword}{\ const}}
+\DoxyCodeLine{01002\ \textcolor{keyword}{\ \ \ \ }\{}
+\DoxyCodeLine{01003\ \ \ \ \ \ \ \doxymbox{\hyperlink{system_8h_aff447899dc74d54931b2bc2d47de9423}{gcc\_checking\_assert}}\ (ipa\_p\ ());}
+\DoxyCodeLine{01004\ \ \ \ \ \ \ \doxymbox{\hyperlink{system_8h_aff447899dc74d54931b2bc2d47de9423}{gcc\_checking\_assert}}\ (other\ >=\ 0);}
+\DoxyCodeLine{01005\ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ ipa\ ().initialized\_p\ ()\ \&\&\ ipa\ ().m\_val\ <\ (uint64\_t)\ other;}
+\DoxyCodeLine{01006\ \ \ \ \ \}}
+\DoxyCodeLine{01007\ }
+\DoxyCodeLine{01008\ \ \ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{sreal_8h_a8318986fe87e4f64b53a339af55b5b37}{operator>\ }}(\textcolor{keyword}{const}\ \doxymbox{\hyperlink{coretypes_8h_ae8c03cc266a69e9635893ee0772d12e8}{gcov\_type}}\ other)\textcolor{keyword}{\ const}}
+\DoxyCodeLine{01009\ \textcolor{keyword}{\ \ \ \ }\{}
+\DoxyCodeLine{01010\ \ \ \ \ \ \ \doxymbox{\hyperlink{system_8h_aff447899dc74d54931b2bc2d47de9423}{gcc\_checking\_assert}}\ (ipa\_p\ ());}
+\DoxyCodeLine{01011\ \ \ \ \ \ \ \doxymbox{\hyperlink{system_8h_aff447899dc74d54931b2bc2d47de9423}{gcc\_checking\_assert}}\ (other\ >=\ 0);}
+\DoxyCodeLine{01012\ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ ipa\ ().initialized\_p\ ()\ \&\&\ ipa\ ().m\_val\ >\ (uint64\_t)\ other;}
+\DoxyCodeLine{01013\ \ \ \ \ \}}
+\DoxyCodeLine{01014\ }
+\DoxyCodeLine{01015\ \ \ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{sreal_8h_a767ec1f14afbd86c69c249d0113b7f87}{operator<=\ }}(\textcolor{keyword}{const}\ profile\_count\ \&other)\textcolor{keyword}{\ const}}
+\DoxyCodeLine{01016\ \textcolor{keyword}{\ \ \ \ }\{}
+\DoxyCodeLine{01017\ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (!initialized\_p\ ()\ ||\ !other.initialized\_p\ ())}
+\DoxyCodeLine{01018\ \ \ \ \ \textcolor{keywordflow}{return}\ \textcolor{keyword}{false};}
+\DoxyCodeLine{01019\ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (*\textcolor{keyword}{this}\ ==\ zero\ ())}
+\DoxyCodeLine{01020\ \ \ \ \ \textcolor{keywordflow}{return}\ \textcolor{keyword}{true};}
+\DoxyCodeLine{01021\ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (other\ ==\ zero\ ())}
+\DoxyCodeLine{01022\ \ \ \ \ \textcolor{keywordflow}{return}\ (*\textcolor{keyword}{this}\ ==\ zero\ ());}
+\DoxyCodeLine{01023\ \ \ \ \ \ \ \doxymbox{\hyperlink{system_8h_aff447899dc74d54931b2bc2d47de9423}{gcc\_checking\_assert}}\ (compatible\_p\ (other));}
+\DoxyCodeLine{01024\ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ m\_val\ <=\ other.m\_val;}
+\DoxyCodeLine{01025\ \ \ \ \ \}}
+\DoxyCodeLine{01026\ }
+\DoxyCodeLine{01027\ \ \ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{sreal_8h_add3d3648571831a4519f319f4dea37c0}{operator>=\ }}(\textcolor{keyword}{const}\ profile\_count\ \&other)\textcolor{keyword}{\ const}}
+\DoxyCodeLine{01028\ \textcolor{keyword}{\ \ \ \ }\{}
+\DoxyCodeLine{01029\ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (!initialized\_p\ ()\ ||\ !other.initialized\_p\ ())}
+\DoxyCodeLine{01030\ \ \ \ \ \textcolor{keywordflow}{return}\ \textcolor{keyword}{false};}
+\DoxyCodeLine{01031\ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (other\ ==\ zero\ ())}
+\DoxyCodeLine{01032\ \ \ \ \ \textcolor{keywordflow}{return}\ \textcolor{keyword}{true};}
+\DoxyCodeLine{01033\ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (*\textcolor{keyword}{this}\ ==\ zero\ ())}
+\DoxyCodeLine{01034\ \ \ \ \ \textcolor{keywordflow}{return}\ (other\ ==\ zero\ ());}
+\DoxyCodeLine{01035\ \ \ \ \ \ \ \doxymbox{\hyperlink{system_8h_aff447899dc74d54931b2bc2d47de9423}{gcc\_checking\_assert}}\ (compatible\_p\ (other));}
+\DoxyCodeLine{01036\ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ m\_val\ >=\ other.m\_val;}
+\DoxyCodeLine{01037\ \ \ \ \ \}}
+\DoxyCodeLine{01038\ }
+\DoxyCodeLine{01039\ \ \ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{sreal_8h_a767ec1f14afbd86c69c249d0113b7f87}{operator<=\ }}(\textcolor{keyword}{const}\ \doxymbox{\hyperlink{coretypes_8h_ae8c03cc266a69e9635893ee0772d12e8}{gcov\_type}}\ other)\textcolor{keyword}{\ const}}
+\DoxyCodeLine{01040\ \textcolor{keyword}{\ \ \ \ }\{}
+\DoxyCodeLine{01041\ \ \ \ \ \ \ \doxymbox{\hyperlink{system_8h_aff447899dc74d54931b2bc2d47de9423}{gcc\_checking\_assert}}\ (ipa\_p\ ());}
+\DoxyCodeLine{01042\ \ \ \ \ \ \ \doxymbox{\hyperlink{system_8h_aff447899dc74d54931b2bc2d47de9423}{gcc\_checking\_assert}}\ (other\ >=\ 0);}
+\DoxyCodeLine{01043\ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ ipa\ ().initialized\_p\ ()\ \&\&\ ipa\ ().m\_val\ <=\ (uint64\_t)\ other;}
+\DoxyCodeLine{01044\ \ \ \ \ \}}
+\DoxyCodeLine{01045\ }
+\DoxyCodeLine{01046\ \ \ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{sreal_8h_add3d3648571831a4519f319f4dea37c0}{operator>=\ }}(\textcolor{keyword}{const}\ \doxymbox{\hyperlink{coretypes_8h_ae8c03cc266a69e9635893ee0772d12e8}{gcov\_type}}\ other)\textcolor{keyword}{\ const}}
+\DoxyCodeLine{01047\ \textcolor{keyword}{\ \ \ \ }\{}
+\DoxyCodeLine{01048\ \ \ \ \ \ \ \doxymbox{\hyperlink{system_8h_aff447899dc74d54931b2bc2d47de9423}{gcc\_checking\_assert}}\ (ipa\_p\ ());}
+\DoxyCodeLine{01049\ \ \ \ \ \ \ \doxymbox{\hyperlink{system_8h_aff447899dc74d54931b2bc2d47de9423}{gcc\_checking\_assert}}\ (other\ >=\ 0);}
+\DoxyCodeLine{01050\ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ ipa\ ().initialized\_p\ ()\ \&\&\ ipa\ ().m\_val\ >=\ (uint64\_t)\ other;}
+\DoxyCodeLine{01051\ \ \ \ \ \}}
+\DoxyCodeLine{01052\ }
+\DoxyCodeLine{01053\ \ \ profile\_count\ operator*\ (int64\_t\ num)\textcolor{keyword}{\ const}}
+\DoxyCodeLine{01054\ \textcolor{keyword}{\ \ \ \ }\{}
+\DoxyCodeLine{01055\ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{basic-block_8h_a5830eccca0fe8ba8a7e01432ea402d7c}{apply\_scale}}\ (num,\ 1);}
+\DoxyCodeLine{01056\ \ \ \ \ \}}
+\DoxyCodeLine{01057\ }
+\DoxyCodeLine{01058\ \ \ profile\_count\ \doxymbox{\hyperlink{sreal_8h_a7685c040cc48931e9604ca8ebbfd1bd4}{operator*=\ }}(int64\_t\ num)}
+\DoxyCodeLine{01059\ \ \ \ \ \{}
+\DoxyCodeLine{01060\ \ \ \ \ \ \ *\textcolor{keyword}{this}\ =\ \doxymbox{\hyperlink{basic-block_8h_a5830eccca0fe8ba8a7e01432ea402d7c}{apply\_scale}}\ (num,\ 1);}
+\DoxyCodeLine{01061\ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ *\textcolor{keyword}{this};}
+\DoxyCodeLine{01062\ \ \ \ \ \}}
+\DoxyCodeLine{01063\ }
+\DoxyCodeLine{01064\ \ \ profile\_count\ operator/\ (int64\_t\ den)\textcolor{keyword}{\ const}}
+\DoxyCodeLine{01065\ \textcolor{keyword}{\ \ \ \ }\{}
+\DoxyCodeLine{01066\ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{basic-block_8h_a5830eccca0fe8ba8a7e01432ea402d7c}{apply\_scale}}\ (1,\ den);}
+\DoxyCodeLine{01067\ \ \ \ \ \}}
+\DoxyCodeLine{01068\ }
+\DoxyCodeLine{01069\ \ \ profile\_count\ \doxymbox{\hyperlink{sreal_8h_a59d04fb12eb0c655644265c7d3d5d80e}{operator/=\ }}(int64\_t\ den)}
+\DoxyCodeLine{01070\ \ \ \ \ \{}
+\DoxyCodeLine{01071\ \ \ \ \ \ \ *\textcolor{keyword}{this}\ =\ \doxymbox{\hyperlink{basic-block_8h_a5830eccca0fe8ba8a7e01432ea402d7c}{apply\_scale}}\ (1,\ den);}
+\DoxyCodeLine{01072\ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ *\textcolor{keyword}{this};}
+\DoxyCodeLine{01073\ \ \ \ \ \}}
+\DoxyCodeLine{01074\ }
+\DoxyCodeLine{01075\ \ \ \textcolor{comment}{/*\ Return\ true\ when\ value\ is\ not\ zero\ and\ can\ be\ used\ for\ scaling.\ }}
+\DoxyCodeLine{01076\ \textcolor{comment}{\ \ \ \ \ This\ is\ different\ from\ *this\ >\ 0\ because\ that\ requires\ counter\ to}}
+\DoxyCodeLine{01077\ \textcolor{comment}{\ \ \ \ \ be\ IPA.\ \ */}}
+\DoxyCodeLine{01078\ \ \ \textcolor{keywordtype}{bool}\ nonzero\_p\ ()\textcolor{keyword}{\ const}}
+\DoxyCodeLine{01079\ \textcolor{keyword}{\ \ \ \ }\{}
+\DoxyCodeLine{01080\ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ initialized\_p\ ()\ \&\&\ m\_val\ !=\ 0;}
+\DoxyCodeLine{01081\ \ \ \ \ \}}
+\DoxyCodeLine{01082\ }
+\DoxyCodeLine{01083\ \ \ \textcolor{comment}{/*\ Make\ counter\ forcibly\ nonzero.\ \ */}}
+\DoxyCodeLine{01084\ \ \ profile\_count\ force\_nonzero\ ()\textcolor{keyword}{\ const}}
+\DoxyCodeLine{01085\ \textcolor{keyword}{\ \ \ \ }\{}
+\DoxyCodeLine{01086\ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (!initialized\_p\ ())}
+\DoxyCodeLine{01087\ \ \ \ \ \textcolor{keywordflow}{return}\ *\textcolor{keyword}{this};}
+\DoxyCodeLine{01088\ \ \ \ \ \ \ profile\_count\ ret\ =\ *\textcolor{keyword}{this};}
+\DoxyCodeLine{01089\ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (ret.m\_val\ ==\ 0)}
+\DoxyCodeLine{01090\ \ \ \ \ \{}
+\DoxyCodeLine{01091\ \ \ \ \ \ \ ret.m\_val\ =\ 1;}
+\DoxyCodeLine{01092\ \ \ \ \ \ \ \ \ \ \ ret.m\_quality\ =\ \doxymbox{\hyperlink{system_8h_ad2f3678bf5eae3684fc497130b946eae}{MIN}}\ (m\_quality,\ \doxymbox{\hyperlink{profile-count_8h_a176a4353f013d9fd4215c4721c89b08aa11bda19fea1e90f64f65a8f278ecfd62}{ADJUSTED}});}
+\DoxyCodeLine{01093\ \ \ \ \ \}}
+\DoxyCodeLine{01094\ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ ret;}
+\DoxyCodeLine{01095\ \ \ \ \ \}}
+\DoxyCodeLine{01096\ }
+\DoxyCodeLine{01097\ \ \ profile\_count\ \doxymbox{\hyperlink{namespacewi_afca4a88e7dbea2c02ac5df7d8e54f869}{max}}\ (profile\_count\ other)\textcolor{keyword}{\ const}}
+\DoxyCodeLine{01098\ \textcolor{keyword}{\ \ \ \ }\{}
+\DoxyCodeLine{01099\ \ \ \ \ \ \ profile\_count\ val\ =\ *\textcolor{keyword}{this};}
+\DoxyCodeLine{01100\ }
+\DoxyCodeLine{01101\ \ \ \ \ \ \ \textcolor{comment}{/*\ Always\ prefer\ nonzero\ IPA\ counts\ over\ local\ counts.\ \ */}}
+\DoxyCodeLine{01102\ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (ipa\ ().nonzero\_p\ ()\ ||\ other.ipa\ ().nonzero\_p\ ())}
+\DoxyCodeLine{01103\ \ \ \ \ \{}
+\DoxyCodeLine{01104\ \ \ \ \ \ \ val\ =\ ipa\ ();}
+\DoxyCodeLine{01105\ \ \ \ \ \ \ other\ =\ other.ipa\ ();}
+\DoxyCodeLine{01106\ \ \ \ \ \}}
+\DoxyCodeLine{01107\ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (!initialized\_p\ ())}
+\DoxyCodeLine{01108\ \ \ \ \ \textcolor{keywordflow}{return}\ other;}
+\DoxyCodeLine{01109\ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (!other.initialized\_p\ ())}
+\DoxyCodeLine{01110\ \ \ \ \ \textcolor{keywordflow}{return}\ *\textcolor{keyword}{this};}
+\DoxyCodeLine{01111\ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (*\textcolor{keyword}{this}\ ==\ zero\ ())}
+\DoxyCodeLine{01112\ \ \ \ \ \textcolor{keywordflow}{return}\ other;}
+\DoxyCodeLine{01113\ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (other\ ==\ zero\ ())}
+\DoxyCodeLine{01114\ \ \ \ \ \textcolor{keywordflow}{return}\ *\textcolor{keyword}{this};}
+\DoxyCodeLine{01115\ \ \ \ \ \ \ \doxymbox{\hyperlink{system_8h_aff447899dc74d54931b2bc2d47de9423}{gcc\_checking\_assert}}\ (compatible\_p\ (other));}
+\DoxyCodeLine{01116\ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (val.m\_val\ <\ other.m\_val\ ||\ (m\_val\ ==\ other.m\_val}
+\DoxyCodeLine{01117\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&\&\ val.m\_quality\ <\ other.m\_quality))}
+\DoxyCodeLine{01118\ \ \ \ \ \textcolor{keywordflow}{return}\ other;}
+\DoxyCodeLine{01119\ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ *\textcolor{keyword}{this};}
+\DoxyCodeLine{01120\ \ \ \ \ \}}
+\DoxyCodeLine{01121\ }
+\DoxyCodeLine{01122\ \ \ \textcolor{comment}{/*\ PROB\ is\ a\ probability\ in\ scale\ 0...REG\_BR\_PROB\_BASE.\ \ Scale\ counter}}
+\DoxyCodeLine{01123\ \textcolor{comment}{\ \ \ \ \ accordingly.\ \ */}}
+\DoxyCodeLine{01124\ \ \ profile\_count\ \doxymbox{\hyperlink{basic-block_8h_a132b1636f6c445c209dced5efbada945}{apply\_probability}}\ (\textcolor{keywordtype}{int}\ prob)\textcolor{keyword}{\ const}}
+\DoxyCodeLine{01125\ \textcolor{keyword}{\ \ \ \ }\{}
+\DoxyCodeLine{01126\ \ \ \ \ \ \ \doxymbox{\hyperlink{system_8h_aff447899dc74d54931b2bc2d47de9423}{gcc\_checking\_assert}}\ (prob\ >=\ 0\ \&\&\ prob\ <=\ \doxymbox{\hyperlink{profile-count_8h_a3c5bb681f2416299ceb4465de0a215c3}{REG\_BR\_PROB\_BASE}});}
+\DoxyCodeLine{01127\ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (m\_val\ ==\ 0)}
+\DoxyCodeLine{01128\ \ \ \ \ \textcolor{keywordflow}{return}\ *\textcolor{keyword}{this};}
+\DoxyCodeLine{01129\ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (!initialized\_p\ ())}
+\DoxyCodeLine{01130\ \ \ \ \ \textcolor{keywordflow}{return}\ uninitialized\ ();}
+\DoxyCodeLine{01131\ \ \ \ \ \ \ profile\_count\ ret;}
+\DoxyCodeLine{01132\ \ \ \ \ \ \ uint64\_t\ tmp;}
+\DoxyCodeLine{01133\ \ \ \ \ \ \ \doxymbox{\hyperlink{profile-count_8h_abf7026d97ca7472a755d036768642b47}{safe\_scale\_64bit}}\ (m\_val,\ prob,\ \doxymbox{\hyperlink{profile-count_8h_a3c5bb681f2416299ceb4465de0a215c3}{REG\_BR\_PROB\_BASE}},\ \&tmp);}
+\DoxyCodeLine{01134\ \ \ \ \ \ \ ret.m\_val\ =\ tmp;}
+\DoxyCodeLine{01135\ \ \ \ \ \ \ ret.m\_quality\ =\ \doxymbox{\hyperlink{system_8h_ad2f3678bf5eae3684fc497130b946eae}{MIN}}\ (m\_quality,\ \doxymbox{\hyperlink{profile-count_8h_a176a4353f013d9fd4215c4721c89b08aa11bda19fea1e90f64f65a8f278ecfd62}{ADJUSTED}});}
+\DoxyCodeLine{01136\ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ ret;}
+\DoxyCodeLine{01137\ \ \ \ \ \}}
+\DoxyCodeLine{01138\ }
+\DoxyCodeLine{01139\ \ \ \textcolor{comment}{/*\ Scale\ counter\ according\ to\ PROB.\ \ */}}
+\DoxyCodeLine{01140\ \ \ profile\_count\ \doxymbox{\hyperlink{basic-block_8h_a132b1636f6c445c209dced5efbada945}{apply\_probability}}\ (profile\_probability\ prob)\textcolor{keyword}{\ const}}
+\DoxyCodeLine{01141\ \textcolor{keyword}{\ \ \ \ }\{}
+\DoxyCodeLine{01142\ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (*\textcolor{keyword}{this}\ ==\ zero\ ()\ ||\ prob\ ==\ profile\_probability::always\ ())}
+\DoxyCodeLine{01143\ \ \ \ \ \textcolor{keywordflow}{return}\ *\textcolor{keyword}{this};}
+\DoxyCodeLine{01144\ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (prob\ ==\ profile\_probability::never\ ())}
+\DoxyCodeLine{01145\ \ \ \ \ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{namespacewi_a6e251260a135cc72c48d4be39baa9e28}{zero}}\ ();}
+\DoxyCodeLine{01146\ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (!initialized\_p\ ()\ ||\ !prob.initialized\_p\ ())}
+\DoxyCodeLine{01147\ \ \ \ \ \textcolor{keywordflow}{return}\ uninitialized\ ();}
+\DoxyCodeLine{01148\ \ \ \ \ \ \ profile\_count\ ret;}
+\DoxyCodeLine{01149\ \ \ \ \ \ \ uint64\_t\ tmp;}
+\DoxyCodeLine{01150\ \ \ \ \ \ \ \doxymbox{\hyperlink{profile-count_8h_abf7026d97ca7472a755d036768642b47}{safe\_scale\_64bit}}\ (m\_val,\ prob.m\_val,\ profile\_probability::max\_probability,}
+\DoxyCodeLine{01151\ \ \ \ \ \ \ \ \ \ \ \ \ \&tmp);}
+\DoxyCodeLine{01152\ \ \ \ \ \ \ ret.m\_val\ =\ tmp;}
+\DoxyCodeLine{01153\ \ \ \ \ \ \ ret.m\_quality\ =\ \doxymbox{\hyperlink{system_8h_ad2f3678bf5eae3684fc497130b946eae}{MIN}}\ (m\_quality,\ prob.m\_quality);}
+\DoxyCodeLine{01154\ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ ret;}
+\DoxyCodeLine{01155\ \ \ \ \ \}}
+\DoxyCodeLine{01156\ }
+\DoxyCodeLine{01157\ \ \ \textcolor{comment}{/*\ Return\ *THIS\ *\ NUM\ /\ DEN.\ \ */}}
+\DoxyCodeLine{01158\ \ \ profile\_count\ \doxymbox{\hyperlink{basic-block_8h_a5830eccca0fe8ba8a7e01432ea402d7c}{apply\_scale}}\ (int64\_t\ num,\ int64\_t\ den)\textcolor{keyword}{\ const}}
+\DoxyCodeLine{01159\ \textcolor{keyword}{\ \ \ \ }\{}
+\DoxyCodeLine{01160\ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (m\_val\ ==\ 0)}
+\DoxyCodeLine{01161\ \ \ \ \ \textcolor{keywordflow}{return}\ *\textcolor{keyword}{this};}
+\DoxyCodeLine{01162\ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (!initialized\_p\ ())}
+\DoxyCodeLine{01163\ \ \ \ \ \textcolor{keywordflow}{return}\ uninitialized\ ();}
+\DoxyCodeLine{01164\ \ \ \ \ \ \ profile\_count\ ret;}
+\DoxyCodeLine{01165\ \ \ \ \ \ \ uint64\_t\ tmp;}
+\DoxyCodeLine{01166\ }
+\DoxyCodeLine{01167\ \ \ \ \ \ \ \doxymbox{\hyperlink{system_8h_aff447899dc74d54931b2bc2d47de9423}{gcc\_checking\_assert}}\ (num\ >=\ 0\ \&\&\ den\ >\ 0);}
+\DoxyCodeLine{01168\ \ \ \ \ \ \ \doxymbox{\hyperlink{profile-count_8h_abf7026d97ca7472a755d036768642b47}{safe\_scale\_64bit}}\ (m\_val,\ num,\ den,\ \&tmp);}
+\DoxyCodeLine{01169\ \ \ \ \ \ \ ret.m\_val\ =\ \doxymbox{\hyperlink{system_8h_ad2f3678bf5eae3684fc497130b946eae}{MIN}}\ (tmp,\ max\_count);}
+\DoxyCodeLine{01170\ \ \ \ \ \ \ ret.m\_quality\ =\ \doxymbox{\hyperlink{system_8h_ad2f3678bf5eae3684fc497130b946eae}{MIN}}\ (m\_quality,\ \doxymbox{\hyperlink{profile-count_8h_a176a4353f013d9fd4215c4721c89b08aa11bda19fea1e90f64f65a8f278ecfd62}{ADJUSTED}});}
+\DoxyCodeLine{01171\ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ ret;}
+\DoxyCodeLine{01172\ \ \ \ \ \}}
+\DoxyCodeLine{01173\ }
+\DoxyCodeLine{01174\ \ \ profile\_count\ \doxymbox{\hyperlink{basic-block_8h_a5830eccca0fe8ba8a7e01432ea402d7c}{apply\_scale}}\ (profile\_count\ num,\ profile\_count\ den)\textcolor{keyword}{\ const}}
+\DoxyCodeLine{01175\ \textcolor{keyword}{\ \ \ \ }\{}
+\DoxyCodeLine{01176\ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (*\textcolor{keyword}{this}\ ==\ zero\ ())}
+\DoxyCodeLine{01177\ \ \ \ \ \textcolor{keywordflow}{return}\ *\textcolor{keyword}{this};}
+\DoxyCodeLine{01178\ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (num\ ==\ zero\ ())}
+\DoxyCodeLine{01179\ \ \ \ \ \textcolor{keywordflow}{return}\ num;}
+\DoxyCodeLine{01180\ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (!initialized\_p\ ()\ ||\ !num.initialized\_p\ ()\ ||\ !den.initialized\_p\ ())}
+\DoxyCodeLine{01181\ \ \ \ \ \textcolor{keywordflow}{return}\ uninitialized\ ();}
+\DoxyCodeLine{01182\ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (num\ ==\ den)}
+\DoxyCodeLine{01183\ \ \ \ \ \textcolor{keywordflow}{return}\ *\textcolor{keyword}{this};}
+\DoxyCodeLine{01184\ \ \ \ \ \ \ \doxymbox{\hyperlink{system_8h_aff447899dc74d54931b2bc2d47de9423}{gcc\_checking\_assert}}\ (den.m\_val);}
+\DoxyCodeLine{01185\ }
+\DoxyCodeLine{01186\ \ \ \ \ \ \ profile\_count\ ret;}
+\DoxyCodeLine{01187\ \ \ \ \ \ \ uint64\_t\ val;}
+\DoxyCodeLine{01188\ \ \ \ \ \ \ \doxymbox{\hyperlink{profile-count_8h_abf7026d97ca7472a755d036768642b47}{safe\_scale\_64bit}}\ (m\_val,\ num.m\_val,\ den.m\_val,\ \&val);}
+\DoxyCodeLine{01189\ \ \ \ \ \ \ ret.m\_val\ =\ \doxymbox{\hyperlink{system_8h_ad2f3678bf5eae3684fc497130b946eae}{MIN}}\ (val,\ max\_count);}
+\DoxyCodeLine{01190\ \ \ \ \ \ \ ret.m\_quality\ =\ \doxymbox{\hyperlink{system_8h_ad2f3678bf5eae3684fc497130b946eae}{MIN}}\ (\doxymbox{\hyperlink{system_8h_ad2f3678bf5eae3684fc497130b946eae}{MIN}}\ (\doxymbox{\hyperlink{system_8h_ad2f3678bf5eae3684fc497130b946eae}{MIN}}\ (m\_quality,\ \doxymbox{\hyperlink{profile-count_8h_a176a4353f013d9fd4215c4721c89b08aa11bda19fea1e90f64f65a8f278ecfd62}{ADJUSTED}}),}
+\DoxyCodeLine{01191\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ num.m\_quality),\ den.m\_quality);}
+\DoxyCodeLine{01192\ \ \ \ \ \ \ \textcolor{comment}{/*\ Be\ sure\ that\ ret\ is\ not\ local\ if\ num\ is\ global.}}
+\DoxyCodeLine{01193\ \textcolor{comment}{\ \ \ \ \ Also\ ensure\ that\ ret\ is\ not\ global0\ when\ num\ is\ global.\ \ */}}
+\DoxyCodeLine{01194\ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (num.ipa\_p\ ())}
+\DoxyCodeLine{01195\ \ \ \ \ ret.m\_quality\ =\ \doxymbox{\hyperlink{system_8h_aff9931d7524c88e07743af6535b20761}{MAX}}\ (ret.m\_quality,}
+\DoxyCodeLine{01196\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ num\ ==\ num.ipa\ ()\ ?\ \doxymbox{\hyperlink{profile-count_8h_a176a4353f013d9fd4215c4721c89b08aaf5a5c929d87138f872009eba2703c52e}{GUESSED}}\ :\ num.m\_quality);}
+\DoxyCodeLine{01197\ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ ret;}
+\DoxyCodeLine{01198\ \ \ \ \ \}}
+\DoxyCodeLine{01199\ }
+\DoxyCodeLine{01200\ \ \ \textcolor{comment}{/*\ Return\ THIS\ with\ quality\ dropped\ to\ GUESSED\_LOCAL.\ \ */}}
+\DoxyCodeLine{01201\ \ \ profile\_count\ guessed\_local\ ()\textcolor{keyword}{\ const}}
+\DoxyCodeLine{01202\ \textcolor{keyword}{\ \ \ \ }\{}
+\DoxyCodeLine{01203\ \ \ \ \ \ \ profile\_count\ ret\ =\ *\textcolor{keyword}{this};}
+\DoxyCodeLine{01204\ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (!initialized\_p\ ())}
+\DoxyCodeLine{01205\ \ \ \ \ \textcolor{keywordflow}{return}\ *\textcolor{keyword}{this};}
+\DoxyCodeLine{01206\ \ \ \ \ \ \ ret.m\_quality\ =\ \doxymbox{\hyperlink{profile-count_8h_a176a4353f013d9fd4215c4721c89b08aa24920ec18baa87c0dd0032b1b3cd7917}{GUESSED\_LOCAL}};}
+\DoxyCodeLine{01207\ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ ret;}
+\DoxyCodeLine{01208\ \ \ \ \ \}}
+\DoxyCodeLine{01209\ }
+\DoxyCodeLine{01210\ \ \ \textcolor{comment}{/*\ We\ know\ that\ profile\ is\ globally\ 0\ but\ keep\ local\ profile\ if\ present.\ \ */}}
+\DoxyCodeLine{01211\ \ \ profile\_count\ global0\ ()\textcolor{keyword}{\ const}}
+\DoxyCodeLine{01212\ \textcolor{keyword}{\ \ \ \ }\{}
+\DoxyCodeLine{01213\ \ \ \ \ \ \ profile\_count\ ret\ =\ *\textcolor{keyword}{this};}
+\DoxyCodeLine{01214\ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (!initialized\_p\ ())}
+\DoxyCodeLine{01215\ \ \ \ \ \textcolor{keywordflow}{return}\ *\textcolor{keyword}{this};}
+\DoxyCodeLine{01216\ \ \ \ \ \ \ ret.m\_quality\ =\ \doxymbox{\hyperlink{profile-count_8h_a176a4353f013d9fd4215c4721c89b08aabd539fab0a7c2b002a125566f011652c}{GUESSED\_GLOBAL0}};}
+\DoxyCodeLine{01217\ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ ret;}
+\DoxyCodeLine{01218\ \ \ \ \ \}}
+\DoxyCodeLine{01219\ }
+\DoxyCodeLine{01220\ \ \ \textcolor{comment}{/*\ We\ know\ that\ profile\ is\ globally\ adjusted\ 0\ but\ keep\ local\ profile}}
+\DoxyCodeLine{01221\ \textcolor{comment}{\ \ \ \ \ if\ present.\ \ */}}
+\DoxyCodeLine{01222\ \ \ profile\_count\ global0adjusted\ ()\textcolor{keyword}{\ const}}
+\DoxyCodeLine{01223\ \textcolor{keyword}{\ \ \ \ }\{}
+\DoxyCodeLine{01224\ \ \ \ \ \ \ profile\_count\ ret\ =\ *\textcolor{keyword}{this};}
+\DoxyCodeLine{01225\ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (!initialized\_p\ ())}
+\DoxyCodeLine{01226\ \ \ \ \ \textcolor{keywordflow}{return}\ *\textcolor{keyword}{this};}
+\DoxyCodeLine{01227\ \ \ \ \ \ \ ret.m\_quality\ =\ \doxymbox{\hyperlink{profile-count_8h_a176a4353f013d9fd4215c4721c89b08aa8a69e2f5dba175df7b2c5721d4ae3181}{GUESSED\_GLOBAL0\_ADJUSTED}};}
+\DoxyCodeLine{01228\ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ ret;}
+\DoxyCodeLine{01229\ \ \ \ \ \}}
+\DoxyCodeLine{01230\ }
+\DoxyCodeLine{01231\ \ \ \textcolor{comment}{/*\ Return\ THIS\ with\ quality\ dropped\ to\ GUESSED.\ \ */}}
+\DoxyCodeLine{01232\ \ \ profile\_count\ guessed\ ()\textcolor{keyword}{\ const}}
+\DoxyCodeLine{01233\ \textcolor{keyword}{\ \ \ \ }\{}
+\DoxyCodeLine{01234\ \ \ \ \ \ \ profile\_count\ ret\ =\ *\textcolor{keyword}{this};}
+\DoxyCodeLine{01235\ \ \ \ \ \ \ ret.m\_quality\ =\ \doxymbox{\hyperlink{system_8h_ad2f3678bf5eae3684fc497130b946eae}{MIN}}\ (ret.m\_quality,\ \doxymbox{\hyperlink{profile-count_8h_a176a4353f013d9fd4215c4721c89b08aaf5a5c929d87138f872009eba2703c52e}{GUESSED}});}
+\DoxyCodeLine{01236\ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ ret;}
+\DoxyCodeLine{01237\ \ \ \ \ \}}
+\DoxyCodeLine{01238\ }
+\DoxyCodeLine{01239\ \ \ \textcolor{comment}{/*\ Return\ variant\ of\ profile\ count\ which\ is\ always\ safe\ to\ compare}}
+\DoxyCodeLine{01240\ \textcolor{comment}{\ \ \ \ \ across\ functions.\ \ */}}
+\DoxyCodeLine{01241\ \ \ profile\_count\ ipa\ ()\textcolor{keyword}{\ const}}
+\DoxyCodeLine{01242\ \textcolor{keyword}{\ \ \ \ }\{}
+\DoxyCodeLine{01243\ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (m\_quality\ >\ \doxymbox{\hyperlink{profile-count_8h_a176a4353f013d9fd4215c4721c89b08aa8a69e2f5dba175df7b2c5721d4ae3181}{GUESSED\_GLOBAL0\_ADJUSTED}})}
+\DoxyCodeLine{01244\ \ \ \ \ \textcolor{keywordflow}{return}\ *\textcolor{keyword}{this};}
+\DoxyCodeLine{01245\ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (m\_quality\ ==\ \doxymbox{\hyperlink{profile-count_8h_a176a4353f013d9fd4215c4721c89b08aabd539fab0a7c2b002a125566f011652c}{GUESSED\_GLOBAL0}})}
+\DoxyCodeLine{01246\ \ \ \ \ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{namespacewi_a6e251260a135cc72c48d4be39baa9e28}{zero}}\ ();}
+\DoxyCodeLine{01247\ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (m\_quality\ ==\ \doxymbox{\hyperlink{profile-count_8h_a176a4353f013d9fd4215c4721c89b08aa8a69e2f5dba175df7b2c5721d4ae3181}{GUESSED\_GLOBAL0\_ADJUSTED}})}
+\DoxyCodeLine{01248\ \ \ \ \ \textcolor{keywordflow}{return}\ adjusted\_zero\ ();}
+\DoxyCodeLine{01249\ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ uninitialized\ ();}
+\DoxyCodeLine{01250\ \ \ \ \ \}}
+\DoxyCodeLine{01251\ }
+\DoxyCodeLine{01252\ \ \ \textcolor{comment}{/*\ Return\ THIS\ with\ quality\ dropped\ to\ AFDO.\ \ */}}
+\DoxyCodeLine{01253\ \ \ profile\_count\ afdo\ ()\textcolor{keyword}{\ const}}
+\DoxyCodeLine{01254\ \textcolor{keyword}{\ \ \ \ }\{}
+\DoxyCodeLine{01255\ \ \ \ \ \ \ profile\_count\ ret\ =\ *\textcolor{keyword}{this};}
+\DoxyCodeLine{01256\ \ \ \ \ \ \ ret.m\_quality\ =\ \doxymbox{\hyperlink{profile-count_8h_a176a4353f013d9fd4215c4721c89b08aacd3fe5e8a7128ab4f13d0f4a107eb098}{AFDO}};}
+\DoxyCodeLine{01257\ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ ret;}
+\DoxyCodeLine{01258\ \ \ \ \ \}}
+\DoxyCodeLine{01259\ }
+\DoxyCodeLine{01260\ \ \ \textcolor{comment}{/*\ Return\ probability\ of\ event\ with\ counter\ THIS\ within\ event\ with\ counter}}
+\DoxyCodeLine{01261\ \textcolor{comment}{\ \ \ \ \ OVERALL.\ \ */}}
+\DoxyCodeLine{01262\ \ \ profile\_probability\ probability\_in\ (\textcolor{keyword}{const}\ profile\_count\ overall)\textcolor{keyword}{\ const}}
+\DoxyCodeLine{01263\ \textcolor{keyword}{\ \ \ \ }\{}
+\DoxyCodeLine{01264\ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (*\textcolor{keyword}{this}\ ==\ zero\ ()}
+\DoxyCodeLine{01265\ \ \ \ \ \ \ \&\&\ !(overall\ ==\ zero\ ()))}
+\DoxyCodeLine{01266\ \ \ \ \ \textcolor{keywordflow}{return}\ profile\_probability::never\ ();}
+\DoxyCodeLine{01267\ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (!initialized\_p\ ()\ ||\ !overall.initialized\_p\ ()}
+\DoxyCodeLine{01268\ \ \ \ \ \ \ ||\ !overall.m\_val)}
+\DoxyCodeLine{01269\ \ \ \ \ \textcolor{keywordflow}{return}\ profile\_probability::uninitialized\ ();}
+\DoxyCodeLine{01270\ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (*\textcolor{keyword}{this}\ ==\ overall\ \&\&\ m\_quality\ ==\ \doxymbox{\hyperlink{profile-count_8h_a176a4353f013d9fd4215c4721c89b08aaf18175cd0be2b1fce85e2d670ae1d24e}{PRECISE}})}
+\DoxyCodeLine{01271\ \ \ \ \ \textcolor{keywordflow}{return}\ profile\_probability::always\ ();}
+\DoxyCodeLine{01272\ \ \ \ \ \ \ profile\_probability\ ret;}
+\DoxyCodeLine{01273\ \ \ \ \ \ \ \doxymbox{\hyperlink{system_8h_aff447899dc74d54931b2bc2d47de9423}{gcc\_checking\_assert}}\ (compatible\_p\ (overall));}
+\DoxyCodeLine{01274\ }
+\DoxyCodeLine{01275\ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (overall.m\_val\ <\ m\_val)}
+\DoxyCodeLine{01276\ \ \ \ \ \{}
+\DoxyCodeLine{01277\ \ \ \ \ \ \ ret.m\_val\ =\ profile\_probability::max\_probability;}
+\DoxyCodeLine{01278\ \ \ \ \ \ \ ret.m\_quality\ =\ \doxymbox{\hyperlink{profile-count_8h_a176a4353f013d9fd4215c4721c89b08aaf5a5c929d87138f872009eba2703c52e}{GUESSED}};}
+\DoxyCodeLine{01279\ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ ret;}
+\DoxyCodeLine{01280\ \ \ \ \ \}}
+\DoxyCodeLine{01281\ \ \ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{01282\ \ \ \ \ ret.m\_val\ =\ \doxymbox{\hyperlink{profile-count_8h_a202bd9b10241c405f250450bd30569f2}{RDIV}}\ (m\_val\ *\ profile\_probability::max\_probability,}
+\DoxyCodeLine{01283\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ overall.m\_val);}
+\DoxyCodeLine{01284\ \ \ \ \ \ \ ret.m\_quality\ =\ \doxymbox{\hyperlink{system_8h_ad2f3678bf5eae3684fc497130b946eae}{MIN}}\ (\doxymbox{\hyperlink{system_8h_aff9931d7524c88e07743af6535b20761}{MAX}}\ (\doxymbox{\hyperlink{system_8h_ad2f3678bf5eae3684fc497130b946eae}{MIN}}\ (m\_quality,\ overall.m\_quality),}
+\DoxyCodeLine{01285\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{profile-count_8h_a176a4353f013d9fd4215c4721c89b08aaf5a5c929d87138f872009eba2703c52e}{GUESSED}}),\ \doxymbox{\hyperlink{profile-count_8h_a176a4353f013d9fd4215c4721c89b08aa11bda19fea1e90f64f65a8f278ecfd62}{ADJUSTED}});}
+\DoxyCodeLine{01286\ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ ret;}
+\DoxyCodeLine{01287\ \ \ \ \ \}}
+\DoxyCodeLine{01288\ }
+\DoxyCodeLine{01289\ \ \ \textcolor{comment}{/*\ Return\ true\ if\ profile\ count\ is\ very\ large,\ so\ we\ risk\ overflows}}
+\DoxyCodeLine{01290\ \textcolor{comment}{\ \ \ \ \ with\ loop\ transformations.\ \ */}}
+\DoxyCodeLine{01291\ \ \ \textcolor{keywordtype}{bool}}
+\DoxyCodeLine{01292\ \ \ very\_large\_p\ ()}
+\DoxyCodeLine{01293\ \ \ \{}
+\DoxyCodeLine{01294\ \ \ \ \ \textcolor{keywordflow}{if}\ (!initialized\_p\ ())}
+\DoxyCodeLine{01295\ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ \textcolor{keyword}{false};}
+\DoxyCodeLine{01296\ \ \ \ \ \textcolor{keywordflow}{return}\ m\_val\ >\ max\_count\ /\ 65536;}
+\DoxyCodeLine{01297\ \ \ \}}
+\DoxyCodeLine{01298\ }
+\DoxyCodeLine{01299\ \ \ \textcolor{keywordtype}{int}\ to\_frequency\ (\textcolor{keyword}{struct}\ function\ *fun)\ \textcolor{keyword}{const};}
+\DoxyCodeLine{01300\ \ \ \textcolor{keywordtype}{int}\ to\_cgraph\_frequency\ (profile\_count\ entry\_bb\_count)\ \textcolor{keyword}{const};}
+\DoxyCodeLine{01301\ \ \ sreal\ to\_sreal\_scale\ (profile\_count\ in,\ \textcolor{keywordtype}{bool}\ *known\ =\ \doxymbox{\hyperlink{stddef_8h_a070d2ce7b6bb7e5c05602aa8c308d0c4}{NULL}})\ \textcolor{keyword}{const};}
+\DoxyCodeLine{01302\ }
+\DoxyCodeLine{01303\ \ \ \textcolor{comment}{/*\ Output\ THIS\ to\ F.\ \ */}}
+\DoxyCodeLine{01304\ \ \ \textcolor{keywordtype}{void}\ dump\ (FILE\ *f,\ \textcolor{keyword}{struct}\ function\ *fun\ =\ \doxymbox{\hyperlink{stddef_8h_a070d2ce7b6bb7e5c05602aa8c308d0c4}{NULL}})\ \textcolor{keyword}{const};}
+\DoxyCodeLine{01305\ }
+\DoxyCodeLine{01306\ \ \ \textcolor{comment}{/*\ Print\ THIS\ to\ stderr.\ \ */}}
+\DoxyCodeLine{01307\ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{collect-utils_8h_a398527b3e9e358c345c5047b16871957}{debug}}\ ()\ \textcolor{keyword}{const};}
+\DoxyCodeLine{01308\ }
+\DoxyCodeLine{01309\ \ \ \textcolor{comment}{/*\ Return\ true\ if\ THIS\ is\ known\ to\ differ\ significantly\ from\ OTHER.\ \ */}}
+\DoxyCodeLine{01310\ \ \ \textcolor{keywordtype}{bool}\ differs\_from\_p\ (profile\_count\ other)\ \textcolor{keyword}{const};}
+\DoxyCodeLine{01311\ }
+\DoxyCodeLine{01312\ \ \ \textcolor{comment}{/*\ We\ want\ to\ scale\ profile\ across\ function\ boundary\ from\ NUM\ to\ DEN.}}
+\DoxyCodeLine{01313\ \textcolor{comment}{\ \ \ \ \ Take\ care\ of\ the\ side\ case\ when\ NUM\ and\ DEN\ are\ zeros\ of\ incompatible}}
+\DoxyCodeLine{01314\ \textcolor{comment}{\ \ \ \ \ kinds.\ \ */}}
+\DoxyCodeLine{01315\ \ \ \textcolor{keyword}{static}\ \textcolor{keywordtype}{void}\ adjust\_for\_ipa\_scaling\ (profile\_count\ *num,\ profile\_count\ *den);}
+\DoxyCodeLine{01316\ }
+\DoxyCodeLine{01317\ \ \ \textcolor{comment}{/*\ THIS\ is\ a\ count\ of\ bb\ which\ is\ known\ to\ be\ executed\ IPA\ times.}}
+\DoxyCodeLine{01318\ \textcolor{comment}{\ \ \ \ \ Combine\ this\ information\ into\ bb\ counter.\ \ This\ means\ returning\ IPA}}
+\DoxyCodeLine{01319\ \textcolor{comment}{\ \ \ \ \ if\ it\ is\ nonzero,\ not\ changing\ anything\ if\ IPA\ is\ uninitialized}}
+\DoxyCodeLine{01320\ \textcolor{comment}{\ \ \ \ \ and\ if\ IPA\ is\ zero,\ turning\ THIS\ into\ corresponding\ local\ profile\ with}}
+\DoxyCodeLine{01321\ \textcolor{comment}{\ \ \ \ \ global0.\ \ */}}
+\DoxyCodeLine{01322\ \ \ profile\_count\ combine\_with\_ipa\_count\ (profile\_count\ ipa);}
+\DoxyCodeLine{01323\ }
+\DoxyCodeLine{01324\ \ \ \textcolor{comment}{/*\ Same\ as\ combine\_with\_ipa\_count\ but\ inside\ function\ with\ count\ IPA2.\ \ */}}
+\DoxyCodeLine{01325\ \ \ profile\_count\ combine\_with\_ipa\_count\_within}
+\DoxyCodeLine{01326\ \ \ \ \ \ \ \ \ \ (profile\_count\ ipa,\ profile\_count\ ipa2);}
+\DoxyCodeLine{01327\ }
+\DoxyCodeLine{01328\ \ \ \textcolor{comment}{/*\ The\ profiling\ runtime\ uses\ gcov\_type,\ which\ is\ usually\ 64bit\ integer.}}
+\DoxyCodeLine{01329\ \textcolor{comment}{\ \ \ \ \ Conversions\ back\ and\ forth\ are\ used\ to\ read\ the\ coverage\ and\ get\ it}}
+\DoxyCodeLine{01330\ \textcolor{comment}{\ \ \ \ \ into\ internal\ representation.\ \ */}}
+\DoxyCodeLine{01331\ \ \ \textcolor{keyword}{static}\ profile\_count\ from\_gcov\_type\ (\doxymbox{\hyperlink{coretypes_8h_ae8c03cc266a69e9635893ee0772d12e8}{gcov\_type}}\ v,}
+\DoxyCodeLine{01332\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{profile-count_8h_a176a4353f013d9fd4215c4721c89b08a}{profile\_quality}}\ quality\ =\ \doxymbox{\hyperlink{profile-count_8h_a176a4353f013d9fd4215c4721c89b08aaf18175cd0be2b1fce85e2d670ae1d24e}{PRECISE}});}
+\DoxyCodeLine{01333\ }
+\DoxyCodeLine{01334\ \ \ \textcolor{comment}{/*\ LTO\ streaming\ support.\ \ */}}
+\DoxyCodeLine{01335\ \ \ \textcolor{keyword}{static}\ profile\_count\ stream\_in\ (\textcolor{keyword}{class}\ lto\_input\_block\ *);}
+\DoxyCodeLine{01336\ \ \ \textcolor{keywordtype}{void}\ stream\_out\ (\textcolor{keyword}{struct}\ output\_block\ *);}
+\DoxyCodeLine{01337\ \ \ \textcolor{keywordtype}{void}\ stream\_out\ (\textcolor{keyword}{struct}\ lto\_output\_stream\ *);}
+\DoxyCodeLine{01338\ \};}
+\DoxyCodeLine{01339\ \textcolor{preprocessor}{\#endif}}
+
+\end{DoxyCode}

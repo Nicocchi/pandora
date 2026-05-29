@@ -1,0 +1,933 @@
+\doxysection{tree-\/switch-\/conversion.h}
+\hypertarget{tree-switch-conversion_8h_source}{}\label{tree-switch-conversion_8h_source}\index{toolchain/x86\_64-\/elf/lib/gcc/x86\_64-\/elf/14.2.0/plugin/include/tree-\/switch-\/conversion.h@{toolchain/x86\_64-\/elf/lib/gcc/x86\_64-\/elf/14.2.0/plugin/include/tree-\/switch-\/conversion.h}}
+\doxymbox{\hyperlink{tree-switch-conversion_8h}{Go to the documentation of this file.}}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001\ \textcolor{comment}{/*\ Tree\ switch\ conversion\ for\ GNU\ compiler.}}
+\DoxyCodeLine{00002\ \textcolor{comment}{\ \ \ Copyright\ (C)\ 2017-\/2024\ Free\ Software\ Foundation,\ Inc.}}
+\DoxyCodeLine{00003\ \textcolor{comment}{}}
+\DoxyCodeLine{00004\ \textcolor{comment}{This\ file\ is\ part\ of\ GCC.}}
+\DoxyCodeLine{00005\ \textcolor{comment}{}}
+\DoxyCodeLine{00006\ \textcolor{comment}{GCC\ is\ free\ software;\ you\ can\ redistribute\ it\ and/or\ modify\ it\ under}}
+\DoxyCodeLine{00007\ \textcolor{comment}{the\ terms\ of\ the\ GNU\ General\ Public\ License\ as\ published\ by\ the\ Free}}
+\DoxyCodeLine{00008\ \textcolor{comment}{Software\ Foundation;\ either\ version\ 3,\ or\ (at\ your\ option)\ any\ later}}
+\DoxyCodeLine{00009\ \textcolor{comment}{version.}}
+\DoxyCodeLine{00010\ \textcolor{comment}{}}
+\DoxyCodeLine{00011\ \textcolor{comment}{GCC\ is\ distributed\ in\ the\ hope\ that\ it\ will\ be\ useful,\ but\ WITHOUT\ ANY}}
+\DoxyCodeLine{00012\ \textcolor{comment}{WARRANTY;\ without\ even\ the\ implied\ warranty\ of\ MERCHANTABILITY\ or}}
+\DoxyCodeLine{00013\ \textcolor{comment}{FITNESS\ FOR\ A\ PARTICULAR\ PURPOSE.\ \ See\ the\ GNU\ General\ Public\ License}}
+\DoxyCodeLine{00014\ \textcolor{comment}{for\ more\ details.}}
+\DoxyCodeLine{00015\ \textcolor{comment}{}}
+\DoxyCodeLine{00016\ \textcolor{comment}{You\ should\ have\ received\ a\ copy\ of\ the\ GNU\ General\ Public\ License}}
+\DoxyCodeLine{00017\ \textcolor{comment}{along\ with\ GCC;\ see\ the\ file\ COPYING3.\ \ If\ not\ see}}
+\DoxyCodeLine{00018\ \textcolor{comment}{<http://www.gnu.org/licenses/>.\ \ */}}
+\DoxyCodeLine{00019\ }
+\DoxyCodeLine{00020\ \textcolor{preprocessor}{\#ifndef\ TREE\_SWITCH\_CONVERSION\_H}}
+\DoxyCodeLine{00021\ \textcolor{preprocessor}{\#define\ TREE\_SWITCH\_CONVERSION\_H}}
+\DoxyCodeLine{00022\ }
+\DoxyCodeLine{00023\ \textcolor{keyword}{namespace\ }\doxymbox{\hyperlink{namespacetree__switch__conversion}{tree\_switch\_conversion}}\ \{}
+\DoxyCodeLine{00024\ }
+\DoxyCodeLine{00025\ \textcolor{comment}{/*\ Type\ of\ cluster.\ \ */}}
+\DoxyCodeLine{00026\ }
+\DoxyCodeLine{00027\ \textcolor{keyword}{enum}\ \doxymbox{\hyperlink{namespacetree__switch__conversion_a46f573b26c35d21db69bda08e3451828}{cluster\_type}}}
+\DoxyCodeLine{00028\ \{}
+\DoxyCodeLine{00029\ \ \ \doxymbox{\hyperlink{namespacetree__switch__conversion_a46f573b26c35d21db69bda08e3451828a9283004557ce63126b8d6ed79311902f}{SIMPLE\_CASE}},}
+\DoxyCodeLine{00030\ \ \ \doxymbox{\hyperlink{namespacetree__switch__conversion_a46f573b26c35d21db69bda08e3451828a0635a9459909c0e614e267be3eda015a}{JUMP\_TABLE}},}
+\DoxyCodeLine{00031\ \ \ \doxymbox{\hyperlink{namespacetree__switch__conversion_a46f573b26c35d21db69bda08e3451828a038c08b5aa42a07e6239059ea631559a}{BIT\_TEST}}}
+\DoxyCodeLine{00032\ \};}
+\DoxyCodeLine{00033\ }
+\DoxyCodeLine{00034\ \textcolor{preprocessor}{\#define\ PRINT\_CASE(f,c)\ print\_generic\_expr\ (f,\ c)}}
+\DoxyCodeLine{00035\ }
+\DoxyCodeLine{00036\ \textcolor{comment}{/*\ Abstract\ base\ class\ for\ representing\ a\ cluster\ of\ cases.}}
+\DoxyCodeLine{00037\ \textcolor{comment}{}}
+\DoxyCodeLine{00038\ \textcolor{comment}{\ \ \ Here\ is\ the\ inheritance\ hierarachy,\ and\ the\ enum\_cluster\_type}}
+\DoxyCodeLine{00039\ \textcolor{comment}{\ \ \ values\ for\ the\ concrete\ subclasses:}}
+\DoxyCodeLine{00040\ \textcolor{comment}{}}
+\DoxyCodeLine{00041\ \textcolor{comment}{\ \ \ cluster}}
+\DoxyCodeLine{00042\ \textcolor{comment}{\ \ \ |-\/simple\_cluster\ (SIMPLE\_CASE)}}
+\DoxyCodeLine{00043\ \textcolor{comment}{\ \ \ \`{}-\/group\_cluster}}
+\DoxyCodeLine{00044\ \textcolor{comment}{\ \ \ \ \ |-\/jump\_table\_cluster\ (JUMP\_TABLE)}}
+\DoxyCodeLine{00045\ \textcolor{comment}{\ \ \ \ \ \`{}-\/bit\_test\_cluster\ \ \ (BIT\_TEST).\ \ */}}
+\DoxyCodeLine{00046\ }
+\DoxyCodeLine{00047\ \textcolor{keyword}{class\ }\doxymbox{\hyperlink{classtree__switch__conversion_1_1cluster_a8b6c3eeab330a3dfac903f35a807938e}{cluster}}}
+\DoxyCodeLine{00048\ \{}
+\DoxyCodeLine{00049\ \textcolor{keyword}{public}:}
+\DoxyCodeLine{00050\ \ \ \textcolor{comment}{/*\ Constructor.\ \ */}}
+\DoxyCodeLine{00051\ \ \ \textcolor{keyword}{inline}\ \doxymbox{\hyperlink{classtree__switch__conversion_1_1cluster_a52a6272517f7b56051e7d5a20c9bb1a6}{cluster}}\ (\doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ case\_label\_expr,\ \doxymbox{\hyperlink{coretypes_8h_a0469df20b471a4cd7c81fbdce5027487}{basic\_block}}\ case\_bb,}
+\DoxyCodeLine{00052\ \ \ \ \ \ \ \ \ \ \ profile\_probability\ prob,\ profile\_probability\ subtree\_prob);}
+\DoxyCodeLine{00053\ }
+\DoxyCodeLine{00054\ \ \ \textcolor{comment}{/*\ Destructor.\ \ */}}
+\DoxyCodeLine{00055\ \ \ \textcolor{keyword}{virtual}\ \doxymbox{\hyperlink{classtree__switch__conversion_1_1cluster_a93833e9536c4f46a494c72d84b611e06}{\string~cluster}}\ ()}
+\DoxyCodeLine{00056\ \ \ \{\}}
+\DoxyCodeLine{00057\ }
+\DoxyCodeLine{00058\ \ \ \textcolor{comment}{/*\ Return\ type.\ \ */}}
+\DoxyCodeLine{00059\ \ \ \textcolor{keyword}{virtual}\ \doxymbox{\hyperlink{namespacetree__switch__conversion_a46f573b26c35d21db69bda08e3451828}{cluster\_type}}\ \doxymbox{\hyperlink{classtree__switch__conversion_1_1cluster_a99096ccdc450fb2858a768e298839339}{get\_type}}\ ()\ =\ 0;}
+\DoxyCodeLine{00060\ }
+\DoxyCodeLine{00061\ \ \ \textcolor{comment}{/*\ Get\ low\ value\ covered\ by\ a\ cluster.\ \ */}}
+\DoxyCodeLine{00062\ \ \ \textcolor{keyword}{virtual}\ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ \doxymbox{\hyperlink{classtree__switch__conversion_1_1cluster_aea525412ff018fc5d93f5b9431852b10}{get\_low}}\ ()\ =\ 0;}
+\DoxyCodeLine{00063\ }
+\DoxyCodeLine{00064\ \ \ \textcolor{comment}{/*\ Get\ high\ value\ covered\ by\ a\ cluster.\ \ */}}
+\DoxyCodeLine{00065\ \ \ \textcolor{keyword}{virtual}\ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ \doxymbox{\hyperlink{classtree__switch__conversion_1_1cluster_a5c960ed4cb7fdab4d9310544e580b128}{get\_high}}\ ()\ =\ 0;}
+\DoxyCodeLine{00066\ }
+\DoxyCodeLine{00067\ \ \ \textcolor{comment}{/*\ Debug\ content\ of\ a\ cluster.\ \ */}}
+\DoxyCodeLine{00068\ \ \ \textcolor{keyword}{virtual}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classtree__switch__conversion_1_1cluster_a746c18db4f3a05a42787025720262fd1}{debug}}\ ()\ =\ 0;}
+\DoxyCodeLine{00069\ }
+\DoxyCodeLine{00070\ \ \ \textcolor{comment}{/*\ Dump\ content\ of\ a\ cluster.\ \ */}}
+\DoxyCodeLine{00071\ \ \ \textcolor{keyword}{virtual}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classtree__switch__conversion_1_1cluster_a280993cf64a2b1bd34bac84e17689383}{dump}}\ (FILE\ *f,\ \textcolor{keywordtype}{bool}\ details\ =\ \textcolor{keyword}{false})\ =\ 0;}
+\DoxyCodeLine{00072\ }
+\DoxyCodeLine{00073\ \ \ \textcolor{comment}{/*\ Emit\ GIMPLE\ code\ to\ handle\ the\ cluster.\ \ */}}
+\DoxyCodeLine{00074\ \ \ \textcolor{keyword}{virtual}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classtree__switch__conversion_1_1cluster_a3c9dd6708dd58f651f1ab3078c45c213}{emit}}\ (\doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}},\ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}},\ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}},\ \doxymbox{\hyperlink{coretypes_8h_a0469df20b471a4cd7c81fbdce5027487}{basic\_block}},\ \doxymbox{\hyperlink{line-map_8h_aedf25620511d64e43327f1a229906a96}{location\_t}})\ =\ 0;}
+\DoxyCodeLine{00075\ }
+\DoxyCodeLine{00076\ \ \ \textcolor{comment}{/*\ Return\ true\ if\ a\ cluster\ handles\ only\ a\ single\ case\ value\ and\ the}}
+\DoxyCodeLine{00077\ \textcolor{comment}{\ \ \ \ \ value\ is\ not\ a\ range.\ \ */}}
+\DoxyCodeLine{00078\ \ \ \textcolor{keyword}{virtual}\ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{classtree__switch__conversion_1_1cluster_a555c3a2fcaa3570597708fcb284e8af4}{is\_single\_value\_p}}\ ()}
+\DoxyCodeLine{00079\ \ \ \{}
+\DoxyCodeLine{00080\ \ \ \ \ \textcolor{keywordflow}{return}\ \textcolor{keyword}{false};}
+\DoxyCodeLine{00081\ \ \ \}}
+\DoxyCodeLine{00082\ }
+\DoxyCodeLine{00083\ \ \ \textcolor{comment}{/*\ Return\ range\ of\ a\ cluster.\ \ If\ value\ would\ overflow\ in\ type\ of\ LOW,}}
+\DoxyCodeLine{00084\ \textcolor{comment}{\ \ \ \ \ then\ return\ 0.\ \ */}}
+\DoxyCodeLine{00085\ \ \ \textcolor{keyword}{static}\ \textcolor{keywordtype}{unsigned}\ HOST\_WIDE\_INT\ \doxymbox{\hyperlink{classtree__switch__conversion_1_1cluster_a2bbc618481a149cdf59830e32b324df4}{get\_range}}\ (\doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ low,\ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ high)}
+\DoxyCodeLine{00086\ \ \ \{}
+\DoxyCodeLine{00087\ \ \ \ \ \doxymbox{\hyperlink{wide-int_8h_a9a29e47e2c40ae9adaf47df15970eced}{wide\_int}}\ w\ =\ \doxymbox{\hyperlink{namespacewi_abe399b8d3232570892cf60e69c298e13}{wi::to\_wide}}\ (high)\ -\/\ \doxymbox{\hyperlink{namespacewi_abe399b8d3232570892cf60e69c298e13}{wi::to\_wide}}\ (low);}
+\DoxyCodeLine{00088\ \ \ \ \ \textcolor{keywordflow}{if}\ (\doxymbox{\hyperlink{namespacewi_a2904f286d4a36c9be117a1c19759c6bd}{wi::neg\_p}}\ (w,\ \doxymbox{\hyperlink{tree_8h_a70a0c524456653691e82c11ce2b673d6}{TYPE\_SIGN}}\ (\doxymbox{\hyperlink{tree_8h_aac9b9df6e10564b46659fc4a617b71aa}{TREE\_TYPE}}\ (low)))\ ||\ !\doxymbox{\hyperlink{namespacewi_ab1bb91373771975adad992ec3d92b234}{wi::fits\_uhwi\_p}}\ (w))}
+\DoxyCodeLine{00089\ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ 0;}
+\DoxyCodeLine{00090\ \ \ \ \ \textcolor{keywordflow}{return}\ w.to\_uhwi\ ()\ +\ 1;}
+\DoxyCodeLine{00091\ \ \ \}}
+\DoxyCodeLine{00092\ }
+\DoxyCodeLine{00093\ \ \ \textcolor{comment}{/*\ Case\ label.\ \ */}}
+\DoxyCodeLine{00094\ \ \ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ \doxymbox{\hyperlink{classtree__switch__conversion_1_1cluster_a903ad8cdc7301ea81c817776372c350a}{m\_case\_label\_expr}};}
+\DoxyCodeLine{00095\ }
+\DoxyCodeLine{00096\ \ \ \textcolor{comment}{/*\ Basic\ block\ of\ the\ case.\ \ */}}
+\DoxyCodeLine{00097\ \ \ \doxymbox{\hyperlink{coretypes_8h_a0469df20b471a4cd7c81fbdce5027487}{basic\_block}}\ \doxymbox{\hyperlink{classtree__switch__conversion_1_1cluster_ab011d15924cdf354ca7e7cc0004cf8c9}{m\_case\_bb}};}
+\DoxyCodeLine{00098\ }
+\DoxyCodeLine{00099\ \ \ \textcolor{comment}{/*\ Probability\ of\ taking\ this\ cluster.\ \ */}}
+\DoxyCodeLine{00100\ \ \ profile\_probability\ \doxymbox{\hyperlink{classtree__switch__conversion_1_1cluster_a6522d50c92784ea30ebf4a852ac7279f}{m\_prob}};}
+\DoxyCodeLine{00101\ }
+\DoxyCodeLine{00102\ \ \ \textcolor{comment}{/*\ Probability\ of\ reaching\ subtree\ rooted\ at\ this\ node.\ \ */}}
+\DoxyCodeLine{00103\ \ \ profile\_probability\ \doxymbox{\hyperlink{classtree__switch__conversion_1_1cluster_acab9c592d79ef37bb5f8d29782c33409}{m\_subtree\_prob}};}
+\DoxyCodeLine{00104\ }
+\DoxyCodeLine{00105\ \ \ \textcolor{comment}{/*\ Probability\ of\ default\ case\ when\ reaching\ the\ node.}}
+\DoxyCodeLine{00106\ \textcolor{comment}{\ \ \ \ \ It\ is\ used\ by\ bit-\/test\ right\ now.\ \ */}}
+\DoxyCodeLine{00107\ \ \ profile\_probability\ \doxymbox{\hyperlink{classtree__switch__conversion_1_1cluster_a077bbb38079300d70a0a49e506efa7aa}{m\_default\_prob}};}
+\DoxyCodeLine{00108\ }
+\DoxyCodeLine{00109\ \textcolor{keyword}{protected}:}
+\DoxyCodeLine{00110\ \ \ \textcolor{comment}{/*\ Default\ constructor.\ \ */}}
+\DoxyCodeLine{00111\ \ \ \doxymbox{\hyperlink{classtree__switch__conversion_1_1cluster_a52a6272517f7b56051e7d5a20c9bb1a6}{cluster}}\ ()\ \{\}}
+\DoxyCodeLine{00112\ \};}
+\DoxyCodeLine{00113\ }
+\DoxyCodeLine{00114\ \doxymbox{\hyperlink{classtree__switch__conversion_1_1cluster_a52a6272517f7b56051e7d5a20c9bb1a6}{cluster::cluster}}\ (\doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ case\_label\_expr,\ \doxymbox{\hyperlink{coretypes_8h_a0469df20b471a4cd7c81fbdce5027487}{basic\_block}}\ case\_bb,}
+\DoxyCodeLine{00115\ \ \ \ \ \ \ \ \ \ \ profile\_probability\ prob,\ profile\_probability\ subtree\_prob):}
+\DoxyCodeLine{00116\ \ \ \doxymbox{\hyperlink{classtree__switch__conversion_1_1cluster_a903ad8cdc7301ea81c817776372c350a}{m\_case\_label\_expr}}\ (case\_label\_expr),\ \doxymbox{\hyperlink{classtree__switch__conversion_1_1cluster_ab011d15924cdf354ca7e7cc0004cf8c9}{m\_case\_bb}}\ (case\_bb),\ \doxymbox{\hyperlink{classtree__switch__conversion_1_1cluster_a6522d50c92784ea30ebf4a852ac7279f}{m\_prob}}\ (prob),}
+\DoxyCodeLine{00117\ \ \ \doxymbox{\hyperlink{classtree__switch__conversion_1_1cluster_acab9c592d79ef37bb5f8d29782c33409}{m\_subtree\_prob}}\ (subtree\_prob),}
+\DoxyCodeLine{00118\ \ \ \doxymbox{\hyperlink{classtree__switch__conversion_1_1cluster_a077bbb38079300d70a0a49e506efa7aa}{m\_default\_prob}}\ (profile\_probability::uninitialized\ ())}
+\DoxyCodeLine{00119\ \{}
+\DoxyCodeLine{00120\ \}}
+\DoxyCodeLine{00121\ }
+\DoxyCodeLine{00122\ \textcolor{comment}{/*\ Subclass\ of\ cluster\ representing\ a\ simple\ contiguous\ range}}
+\DoxyCodeLine{00123\ \textcolor{comment}{\ \ \ from\ [low..high].\ \ */}}
+\DoxyCodeLine{00124\ }
+\DoxyCodeLine{00125\ \textcolor{keyword}{class\ }\doxymbox{\hyperlink{classtree__switch__conversion_1_1simple__cluster_a308bd6a489dec1eb8a502b9ef0ba4765}{simple\_cluster}}:\ \textcolor{keyword}{public}\ \doxymbox{\hyperlink{classtree__switch__conversion_1_1cluster_a8b6c3eeab330a3dfac903f35a807938e}{cluster}}}
+\DoxyCodeLine{00126\ \{}
+\DoxyCodeLine{00127\ \textcolor{keyword}{public}:}
+\DoxyCodeLine{00128\ \ \ \textcolor{comment}{/*\ Constructor.\ \ */}}
+\DoxyCodeLine{00129\ \ \ \textcolor{keyword}{inline}\ \doxymbox{\hyperlink{classtree__switch__conversion_1_1simple__cluster_a308bd6a489dec1eb8a502b9ef0ba4765}{simple\_cluster}}\ (\doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ low,\ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ high,\ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ case\_label\_expr,}
+\DoxyCodeLine{00130\ \ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{coretypes_8h_a0469df20b471a4cd7c81fbdce5027487}{basic\_block}}\ case\_bb,\ profile\_probability\ prob,}
+\DoxyCodeLine{00131\ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{bool}\ has\_forward\_bb\ =\ \textcolor{keyword}{false});}
+\DoxyCodeLine{00132\ }
+\DoxyCodeLine{00133\ \ \ \textcolor{comment}{/*\ Destructor.\ \ */}}
+\DoxyCodeLine{00134\ \ \ \doxymbox{\hyperlink{classtree__switch__conversion_1_1simple__cluster_a42fede60274a90aab2d2f52496174ec6}{\string~simple\_cluster}}\ ()}
+\DoxyCodeLine{00135\ \ \ \{\}}
+\DoxyCodeLine{00136\ }
+\DoxyCodeLine{00137\ \ \ \doxymbox{\hyperlink{namespacetree__switch__conversion_a46f573b26c35d21db69bda08e3451828}{cluster\_type}}}
+\DoxyCodeLine{00138\ \ \ \doxymbox{\hyperlink{classtree__switch__conversion_1_1simple__cluster_ae317125a307fc97cd21fb71c1b54fc57}{get\_type}}\ ()\ \doxymbox{\hyperlink{output_8h_ab52ea22aac29575278d6a9e723d1d234}{final}}\textcolor{keyword}{\ override}}
+\DoxyCodeLine{00139\ \textcolor{keyword}{\ \ }\{}
+\DoxyCodeLine{00140\ \ \ \ \ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{namespacetree__switch__conversion_a46f573b26c35d21db69bda08e3451828a9283004557ce63126b8d6ed79311902f}{SIMPLE\_CASE}};}
+\DoxyCodeLine{00141\ \ \ \}}
+\DoxyCodeLine{00142\ }
+\DoxyCodeLine{00143\ \ \ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}}
+\DoxyCodeLine{00144\ \ \ \doxymbox{\hyperlink{classtree__switch__conversion_1_1simple__cluster_abca5d304b021e618085ca5566fd1f8e5}{get\_low}}\ ()\ \doxymbox{\hyperlink{output_8h_ab52ea22aac29575278d6a9e723d1d234}{final}}\textcolor{keyword}{\ override}}
+\DoxyCodeLine{00145\ \textcolor{keyword}{\ \ }\{}
+\DoxyCodeLine{00146\ \ \ \ \ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{classtree__switch__conversion_1_1simple__cluster_ac4c858d45a83dcef7610bb3807e0e435}{m\_low}};}
+\DoxyCodeLine{00147\ \ \ \}}
+\DoxyCodeLine{00148\ }
+\DoxyCodeLine{00149\ \ \ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}}
+\DoxyCodeLine{00150\ \ \ \doxymbox{\hyperlink{classtree__switch__conversion_1_1simple__cluster_aedc0ac6defc866ec5b47153f163d1a15}{get\_high}}\ ()\ \doxymbox{\hyperlink{output_8h_ab52ea22aac29575278d6a9e723d1d234}{final}}\textcolor{keyword}{\ override}}
+\DoxyCodeLine{00151\ \textcolor{keyword}{\ \ }\{}
+\DoxyCodeLine{00152\ \ \ \ \ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{classtree__switch__conversion_1_1simple__cluster_ad6e485adef92f1262488d9e72152f647}{m\_high}};}
+\DoxyCodeLine{00153\ \ \ \}}
+\DoxyCodeLine{00154\ }
+\DoxyCodeLine{00155\ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classtree__switch__conversion_1_1simple__cluster_a5e7db95b720451dbb75b38ddb5b9908e}{set\_high}}\ (\doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ high)}
+\DoxyCodeLine{00156\ \ \ \{}
+\DoxyCodeLine{00157\ \ \ \ \ \doxymbox{\hyperlink{classtree__switch__conversion_1_1simple__cluster_ad6e485adef92f1262488d9e72152f647}{m\_high}}\ =\ high;}
+\DoxyCodeLine{00158\ \ \ \}}
+\DoxyCodeLine{00159\ }
+\DoxyCodeLine{00160\ \ \ \textcolor{keywordtype}{void}}
+\DoxyCodeLine{00161\ \ \ \doxymbox{\hyperlink{classtree__switch__conversion_1_1simple__cluster_a56a18cf206a79814c5e91506cbfffe66}{debug}}\ ()\ \doxymbox{\hyperlink{output_8h_ab52ea22aac29575278d6a9e723d1d234}{final}}\textcolor{keyword}{\ override}}
+\DoxyCodeLine{00162\ \textcolor{keyword}{\ \ }\{}
+\DoxyCodeLine{00163\ \ \ \ \ \doxymbox{\hyperlink{classtree__switch__conversion_1_1simple__cluster_ab2d144e0a9267d9b515178af4991a307}{dump}}\ (stderr);}
+\DoxyCodeLine{00164\ \ \ \}}
+\DoxyCodeLine{00165\ }
+\DoxyCodeLine{00166\ \ \ \textcolor{keywordtype}{void}}
+\DoxyCodeLine{00167\ \ \ \doxymbox{\hyperlink{classtree__switch__conversion_1_1simple__cluster_ab2d144e0a9267d9b515178af4991a307}{dump}}\ (FILE\ *f,\ \textcolor{keywordtype}{bool}\ details\ \doxymbox{\hyperlink{ansidecl_8h_a635a8d08da53567d5c3b67deb7f98ed3}{ATTRIBUTE\_UNUSED}}\ =\ \textcolor{keyword}{false})\ \doxymbox{\hyperlink{output_8h_ab52ea22aac29575278d6a9e723d1d234}{final}}\textcolor{keyword}{\ override}}
+\DoxyCodeLine{00168\ \textcolor{keyword}{\ \ }\{}
+\DoxyCodeLine{00169\ \ \ \ \ \doxymbox{\hyperlink{tree-switch-conversion_8h_a31175f94df15bf32dc0dcc92ec6804b4}{PRINT\_CASE}}\ (f,\ \doxymbox{\hyperlink{classtree__switch__conversion_1_1simple__cluster_abca5d304b021e618085ca5566fd1f8e5}{get\_low}}\ ());}
+\DoxyCodeLine{00170\ \ \ \ \ \textcolor{keywordflow}{if}\ (\doxymbox{\hyperlink{classtree__switch__conversion_1_1simple__cluster_abca5d304b021e618085ca5566fd1f8e5}{get\_low}}\ ()\ !=\ \doxymbox{\hyperlink{classtree__switch__conversion_1_1simple__cluster_aedc0ac6defc866ec5b47153f163d1a15}{get\_high}}\ ())}
+\DoxyCodeLine{00171\ \ \ \ \ \ \ \{}
+\DoxyCodeLine{00172\ \ \ \ \ fprintf\ (f,\ \textcolor{stringliteral}{"{}-\/"{}});}
+\DoxyCodeLine{00173\ \ \ \ \ \doxymbox{\hyperlink{tree-switch-conversion_8h_a31175f94df15bf32dc0dcc92ec6804b4}{PRINT\_CASE}}\ (f,\ \doxymbox{\hyperlink{classtree__switch__conversion_1_1simple__cluster_aedc0ac6defc866ec5b47153f163d1a15}{get\_high}}\ ());}
+\DoxyCodeLine{00174\ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00175\ \ \ \ \ fprintf\ (f,\ \textcolor{stringliteral}{"{}\ "{}});}
+\DoxyCodeLine{00176\ \ \ \}}
+\DoxyCodeLine{00177\ }
+\DoxyCodeLine{00178\ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classtree__switch__conversion_1_1simple__cluster_a2be338969e38b60665f8ecb301646c82}{emit}}\ (\doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}},\ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}},\ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}},\ \doxymbox{\hyperlink{coretypes_8h_a0469df20b471a4cd7c81fbdce5027487}{basic\_block}},\ \doxymbox{\hyperlink{line-map_8h_aedf25620511d64e43327f1a229906a96}{location\_t}})\ \textcolor{keyword}{final}\ \textcolor{keyword}{override}}
+\DoxyCodeLine{00179\ \ \ \{}
+\DoxyCodeLine{00180\ \ \ \ \ \doxymbox{\hyperlink{system_8h_a32b3b26e9883686d3022c1ffe5ec3aa4}{gcc\_unreachable}}\ ();}
+\DoxyCodeLine{00181\ \ \ \}}
+\DoxyCodeLine{00182\ }
+\DoxyCodeLine{00183\ \ \ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{classtree__switch__conversion_1_1simple__cluster_a96d2de03edd9b018563eeec7a3c684aa}{is\_single\_value\_p}}\ ()\ \doxymbox{\hyperlink{output_8h_ab52ea22aac29575278d6a9e723d1d234}{final}}\textcolor{keyword}{\ override}}
+\DoxyCodeLine{00184\ \textcolor{keyword}{\ \ }\{}
+\DoxyCodeLine{00185\ \ \ \ \ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{tree_8h_aff2a1da7b1b80af6dce9dbf3b97590fb}{tree\_int\_cst\_equal}}\ (\doxymbox{\hyperlink{classtree__switch__conversion_1_1simple__cluster_abca5d304b021e618085ca5566fd1f8e5}{get\_low}}\ (),\ \doxymbox{\hyperlink{classtree__switch__conversion_1_1simple__cluster_aedc0ac6defc866ec5b47153f163d1a15}{get\_high}}\ ());}
+\DoxyCodeLine{00186\ \ \ \}}
+\DoxyCodeLine{00187\ }
+\DoxyCodeLine{00188\ \ \ \textcolor{comment}{/*\ Return\ number\ of\ comparisons\ needed\ for\ the\ case.\ \ */}}
+\DoxyCodeLine{00189\ \ \ \textcolor{keywordtype}{unsigned}}
+\DoxyCodeLine{00190\ \ \ \doxymbox{\hyperlink{classtree__switch__conversion_1_1simple__cluster_ae2f594d78c8393aa97d76fb8f77ee0aa}{get\_comparison\_count}}\ ()}
+\DoxyCodeLine{00191\ \ \ \{}
+\DoxyCodeLine{00192\ \ \ \ \ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{classtree__switch__conversion_1_1simple__cluster_ab18503b959c2168d545d2d5332689720}{m\_range\_p}}\ ?\ 2\ :\ 1;}
+\DoxyCodeLine{00193\ \ \ \}}
+\DoxyCodeLine{00194\ }
+\DoxyCodeLine{00195\ \ \ \textcolor{comment}{/*\ Low\ value\ of\ the\ case.\ \ */}}
+\DoxyCodeLine{00196\ \ \ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ \doxymbox{\hyperlink{classtree__switch__conversion_1_1simple__cluster_ac4c858d45a83dcef7610bb3807e0e435}{m\_low}};}
+\DoxyCodeLine{00197\ }
+\DoxyCodeLine{00198\ \ \ \textcolor{comment}{/*\ High\ value\ of\ the\ case.\ \ */}}
+\DoxyCodeLine{00199\ \ \ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ \doxymbox{\hyperlink{classtree__switch__conversion_1_1simple__cluster_ad6e485adef92f1262488d9e72152f647}{m\_high}};}
+\DoxyCodeLine{00200\ }
+\DoxyCodeLine{00201\ \ \ \textcolor{comment}{/*\ True\ if\ case\ is\ a\ range.\ \ */}}
+\DoxyCodeLine{00202\ \ \ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{classtree__switch__conversion_1_1simple__cluster_ab18503b959c2168d545d2d5332689720}{m\_range\_p}};}
+\DoxyCodeLine{00203\ }
+\DoxyCodeLine{00204\ \ \ \textcolor{comment}{/*\ True\ if\ the\ case\ will\ use\ a\ forwarder\ BB.\ \ */}}
+\DoxyCodeLine{00205\ \ \ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{classtree__switch__conversion_1_1simple__cluster_ad5a9c5a2663f95bba55b7ff08414fe6b}{m\_has\_forward\_bb}};}
+\DoxyCodeLine{00206\ \};}
+\DoxyCodeLine{00207\ }
+\DoxyCodeLine{00208\ \doxymbox{\hyperlink{classtree__switch__conversion_1_1simple__cluster_a308bd6a489dec1eb8a502b9ef0ba4765}{simple\_cluster::simple\_cluster}}\ (\doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ low,\ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ high,\ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ case\_label\_expr,}
+\DoxyCodeLine{00209\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{coretypes_8h_a0469df20b471a4cd7c81fbdce5027487}{basic\_block}}\ case\_bb,\ profile\_probability\ prob,}
+\DoxyCodeLine{00210\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{bool}\ has\_forward\_bb):}
+\DoxyCodeLine{00211\ \ \ \doxymbox{\hyperlink{classtree__switch__conversion_1_1cluster_a8b6c3eeab330a3dfac903f35a807938e}{cluster}}\ (case\_label\_expr,\ case\_bb,\ prob,\ prob),}
+\DoxyCodeLine{00212\ \ \ \doxymbox{\hyperlink{classtree__switch__conversion_1_1simple__cluster_ac4c858d45a83dcef7610bb3807e0e435}{m\_low}}\ (low),\ \doxymbox{\hyperlink{classtree__switch__conversion_1_1simple__cluster_ad6e485adef92f1262488d9e72152f647}{m\_high}}\ (high),\ \doxymbox{\hyperlink{classtree__switch__conversion_1_1simple__cluster_ad5a9c5a2663f95bba55b7ff08414fe6b}{m\_has\_forward\_bb}}\ (has\_forward\_bb)}
+\DoxyCodeLine{00213\ \{}
+\DoxyCodeLine{00214\ \ \ \doxymbox{\hyperlink{classtree__switch__conversion_1_1simple__cluster_ab18503b959c2168d545d2d5332689720}{m\_range\_p}}\ =\ \doxymbox{\hyperlink{classtree__switch__conversion_1_1simple__cluster_ad6e485adef92f1262488d9e72152f647}{m\_high}}\ !=\ \doxymbox{\hyperlink{stddef_8h_a070d2ce7b6bb7e5c05602aa8c308d0c4}{NULL}};}
+\DoxyCodeLine{00215\ \ \ \textcolor{keywordflow}{if}\ (\doxymbox{\hyperlink{classtree__switch__conversion_1_1simple__cluster_ad6e485adef92f1262488d9e72152f647}{m\_high}}\ ==\ \doxymbox{\hyperlink{stddef_8h_a070d2ce7b6bb7e5c05602aa8c308d0c4}{NULL}})}
+\DoxyCodeLine{00216\ \ \ \ \ \doxymbox{\hyperlink{classtree__switch__conversion_1_1simple__cluster_ad6e485adef92f1262488d9e72152f647}{m\_high}}\ =\ \doxymbox{\hyperlink{classtree__switch__conversion_1_1simple__cluster_ac4c858d45a83dcef7610bb3807e0e435}{m\_low}};}
+\DoxyCodeLine{00217\ \}}
+\DoxyCodeLine{00218\ }
+\DoxyCodeLine{00219\ \textcolor{comment}{/*\ Abstract\ subclass\ of\ jump\ table\ and\ bit\ test\ cluster,}}
+\DoxyCodeLine{00220\ \textcolor{comment}{\ \ \ handling\ a\ collection\ of\ simple\_cluster\ instances.\ \ */}}
+\DoxyCodeLine{00221\ }
+\DoxyCodeLine{00222\ \textcolor{keyword}{class\ }\doxymbox{\hyperlink{classtree__switch__conversion_1_1group__cluster_a66ace337b3dfc3782e4b23a46a3a487d}{group\_cluster}}:\ \textcolor{keyword}{public}\ \doxymbox{\hyperlink{classtree__switch__conversion_1_1cluster_a8b6c3eeab330a3dfac903f35a807938e}{cluster}}}
+\DoxyCodeLine{00223\ \{}
+\DoxyCodeLine{00224\ \textcolor{keyword}{public}:}
+\DoxyCodeLine{00225\ \ \ \textcolor{comment}{/*\ Constructor.\ \ */}}
+\DoxyCodeLine{00226\ \ \ \doxymbox{\hyperlink{classtree__switch__conversion_1_1group__cluster_a66ace337b3dfc3782e4b23a46a3a487d}{group\_cluster}}\ (\doxymbox{\hyperlink{structvec}{vec<cluster\ *>}}\ \&clusters,\ \textcolor{keywordtype}{unsigned}\ start,\ \textcolor{keywordtype}{unsigned}\ \doxymbox{\hyperlink{vec_8h_a17e1ff659cc80fc1b1a1c325dfe1a3aa}{end}});}
+\DoxyCodeLine{00227\ }
+\DoxyCodeLine{00228\ \ \ \textcolor{comment}{/*\ Destructor.\ \ */}}
+\DoxyCodeLine{00229\ \ \ \doxymbox{\hyperlink{classtree__switch__conversion_1_1group__cluster_a3a11e236b9ba34672bb89a7ee7979068}{\string~group\_cluster}}\ ();}
+\DoxyCodeLine{00230\ }
+\DoxyCodeLine{00231\ \ \ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}}
+\DoxyCodeLine{00232\ \ \ \doxymbox{\hyperlink{classtree__switch__conversion_1_1group__cluster_ab34542859d9d7b83cd19cc2e14e50ef7}{get\_low}}\ ()\ \doxymbox{\hyperlink{output_8h_ab52ea22aac29575278d6a9e723d1d234}{final}}\textcolor{keyword}{\ override}}
+\DoxyCodeLine{00233\ \textcolor{keyword}{\ \ }\{}
+\DoxyCodeLine{00234\ \ \ \ \ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{classtree__switch__conversion_1_1group__cluster_a48cfd359e8c7d1eeb63ae7e869ae03ee}{m\_cases}}[0]-\/>get\_low\ ();}
+\DoxyCodeLine{00235\ \ \ \}}
+\DoxyCodeLine{00236\ }
+\DoxyCodeLine{00237\ \ \ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}}
+\DoxyCodeLine{00238\ \ \ \doxymbox{\hyperlink{classtree__switch__conversion_1_1group__cluster_a9c9a97bf91d07b4751e5bb435a9a9831}{get\_high}}\ ()\ \doxymbox{\hyperlink{output_8h_ab52ea22aac29575278d6a9e723d1d234}{final}}\textcolor{keyword}{\ override}}
+\DoxyCodeLine{00239\ \textcolor{keyword}{\ \ }\{}
+\DoxyCodeLine{00240\ \ \ \ \ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{classtree__switch__conversion_1_1group__cluster_a48cfd359e8c7d1eeb63ae7e869ae03ee}{m\_cases}}[\doxymbox{\hyperlink{classtree__switch__conversion_1_1group__cluster_a48cfd359e8c7d1eeb63ae7e869ae03ee}{m\_cases}}.length\ ()\ -\/\ 1]-\/>get\_high\ ();}
+\DoxyCodeLine{00241\ \ \ \}}
+\DoxyCodeLine{00242\ }
+\DoxyCodeLine{00243\ \ \ \textcolor{keywordtype}{void}}
+\DoxyCodeLine{00244\ \ \ \doxymbox{\hyperlink{classtree__switch__conversion_1_1group__cluster_a7f9cc48babb498ddf849be3d604bfbbd}{debug}}\ ()\ \doxymbox{\hyperlink{output_8h_ab52ea22aac29575278d6a9e723d1d234}{final}}\textcolor{keyword}{\ override}}
+\DoxyCodeLine{00245\ \textcolor{keyword}{\ \ }\{}
+\DoxyCodeLine{00246\ \ \ \ \ \doxymbox{\hyperlink{classtree__switch__conversion_1_1group__cluster_a401600828992640bba0424407acd54c3}{dump}}\ (stderr);}
+\DoxyCodeLine{00247\ \ \ \}}
+\DoxyCodeLine{00248\ }
+\DoxyCodeLine{00249\ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classtree__switch__conversion_1_1group__cluster_a401600828992640bba0424407acd54c3}{dump}}\ (FILE\ *f,\ \textcolor{keywordtype}{bool}\ details\ =\ \textcolor{keyword}{false})\ \doxymbox{\hyperlink{output_8h_ab52ea22aac29575278d6a9e723d1d234}{final}}\ override;}
+\DoxyCodeLine{00250\ }
+\DoxyCodeLine{00251\ \ \ \textcolor{comment}{/*\ List\ of\ simple\ clusters\ handled\ by\ the\ group.\ \ */}}
+\DoxyCodeLine{00252\ \ \ \doxymbox{\hyperlink{structvec}{vec}}<\doxymbox{\hyperlink{classtree__switch__conversion_1_1simple__cluster}{simple\_cluster}}\ *>\ \doxymbox{\hyperlink{classtree__switch__conversion_1_1group__cluster_a48cfd359e8c7d1eeb63ae7e869ae03ee}{m\_cases}};}
+\DoxyCodeLine{00253\ \};}
+\DoxyCodeLine{00254\ }
+\DoxyCodeLine{00255\ \textcolor{comment}{/*\ Concrete\ subclass\ of\ group\_cluster\ representing\ a\ collection}}
+\DoxyCodeLine{00256\ \textcolor{comment}{\ \ \ of\ cases\ to\ be\ implemented\ as\ a\ jump\ table.}}
+\DoxyCodeLine{00257\ \textcolor{comment}{\ \ \ The\ "{}emit"{}\ vfunc\ generates\ a\ nested\ switch\ statement\ which}}
+\DoxyCodeLine{00258\ \textcolor{comment}{\ \ \ is\ later\ lowered\ to\ a\ jump\ table.\ \ */}}
+\DoxyCodeLine{00259\ }
+\DoxyCodeLine{00260\ class\ \doxymbox{\hyperlink{classtree__switch__conversion_1_1jump__table__cluster_a57d658c87ada3fc122e7fe26bfa1011f}{jump\_table\_cluster}}:\ public\ \doxymbox{\hyperlink{classtree__switch__conversion_1_1group__cluster_a66ace337b3dfc3782e4b23a46a3a487d}{group\_cluster}}}
+\DoxyCodeLine{00261\ \{}
+\DoxyCodeLine{00262\ \textcolor{keyword}{public}:}
+\DoxyCodeLine{00263\ \ \ \textcolor{comment}{/*\ Constructor.\ \ */}}
+\DoxyCodeLine{00264\ \ \ \doxymbox{\hyperlink{classtree__switch__conversion_1_1jump__table__cluster_a57d658c87ada3fc122e7fe26bfa1011f}{jump\_table\_cluster}}\ (\doxymbox{\hyperlink{structvec}{vec<cluster\ *>}}\ \&clusters,\ \textcolor{keywordtype}{unsigned}\ start,\ \textcolor{keywordtype}{unsigned}\ \doxymbox{\hyperlink{vec_8h_a17e1ff659cc80fc1b1a1c325dfe1a3aa}{end}})}
+\DoxyCodeLine{00265\ \ \ :\ \doxymbox{\hyperlink{classtree__switch__conversion_1_1group__cluster_a66ace337b3dfc3782e4b23a46a3a487d}{group\_cluster}}\ (clusters,\ start,\ \doxymbox{\hyperlink{vec_8h_a17e1ff659cc80fc1b1a1c325dfe1a3aa}{end}})}
+\DoxyCodeLine{00266\ \ \ \{\}}
+\DoxyCodeLine{00267\ }
+\DoxyCodeLine{00268\ \ \ \doxymbox{\hyperlink{namespacetree__switch__conversion_a46f573b26c35d21db69bda08e3451828}{cluster\_type}}}
+\DoxyCodeLine{00269\ \ \ \doxymbox{\hyperlink{classtree__switch__conversion_1_1jump__table__cluster_a62b7d28e2653f6e1adabecdf9bd43072}{get\_type}}\ ()\ \doxymbox{\hyperlink{output_8h_ab52ea22aac29575278d6a9e723d1d234}{final}}\textcolor{keyword}{\ override}}
+\DoxyCodeLine{00270\ \textcolor{keyword}{\ \ }\{}
+\DoxyCodeLine{00271\ \ \ \ \ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{namespacetree__switch__conversion_a46f573b26c35d21db69bda08e3451828a0635a9459909c0e614e267be3eda015a}{JUMP\_TABLE}};}
+\DoxyCodeLine{00272\ \ \ \}}
+\DoxyCodeLine{00273\ }
+\DoxyCodeLine{00274\ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classtree__switch__conversion_1_1jump__table__cluster_a939c16167a733b52275a3aac3b1ee779}{emit}}\ (\doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ index\_expr,\ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ index\_type,}
+\DoxyCodeLine{00275\ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ default\_label\_expr,\ \doxymbox{\hyperlink{coretypes_8h_a0469df20b471a4cd7c81fbdce5027487}{basic\_block}}\ default\_bb,\ \doxymbox{\hyperlink{line-map_8h_aedf25620511d64e43327f1a229906a96}{location\_t}}\ loc)}
+\DoxyCodeLine{00276\ \ \ \ \ \textcolor{keyword}{final}\ \textcolor{keyword}{override};}
+\DoxyCodeLine{00277\ }
+\DoxyCodeLine{00278\ \ \ \textcolor{comment}{/*\ Find\ jump\ tables\ of\ given\ CLUSTERS,\ where\ all\ members\ of\ the\ vector}}
+\DoxyCodeLine{00279\ \textcolor{comment}{\ \ \ \ \ are\ of\ type\ simple\_cluster.\ \ New\ clusters\ are\ returned.\ \ */}}
+\DoxyCodeLine{00280\ \ \ \textcolor{keyword}{static}\ \doxymbox{\hyperlink{structvec}{vec<cluster\ *>}}\ \doxymbox{\hyperlink{classtree__switch__conversion_1_1jump__table__cluster_ac0f30d5ac2ad3b9fe8fc65758b019067}{find\_jump\_tables}}\ (\doxymbox{\hyperlink{structvec}{vec<cluster\ *>}}\ \&clusters);}
+\DoxyCodeLine{00281\ }
+\DoxyCodeLine{00282\ \ \ \textcolor{comment}{/*\ Return\ true\ when\ cluster\ starting\ at\ START\ and\ ending\ at\ END\ (inclusive)}}
+\DoxyCodeLine{00283\ \textcolor{comment}{\ \ \ \ \ can\ build\ a\ jump-\/table.\ \ COMPARISON\_COUNT\ is\ number\ of\ comparison}}
+\DoxyCodeLine{00284\ \textcolor{comment}{\ \ \ \ \ operations\ needed\ if\ the\ clusters\ are\ expanded\ as\ decision\ tree.}}
+\DoxyCodeLine{00285\ \textcolor{comment}{\ \ \ \ \ MAX\_RATIO\ tells\ about\ the\ maximum\ code\ growth\ (in\ percent).\ \ */}}
+\DoxyCodeLine{00286\ \ \ \textcolor{keyword}{static}\ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{classtree__switch__conversion_1_1jump__table__cluster_aa8ab4a226a6087d4b5d9331c522158c7}{can\_be\_handled}}\ (\textcolor{keyword}{const}\ \doxymbox{\hyperlink{structvec}{vec<cluster\ *>}}\ \&clusters,\ \textcolor{keywordtype}{unsigned}\ start,}
+\DoxyCodeLine{00287\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{unsigned}\ \doxymbox{\hyperlink{vec_8h_a17e1ff659cc80fc1b1a1c325dfe1a3aa}{end}},\ \textcolor{keywordtype}{unsigned}\ HOST\_WIDE\_INT\ max\_ratio,}
+\DoxyCodeLine{00288\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{unsigned}\ HOST\_WIDE\_INT\ comparison\_count);}
+\DoxyCodeLine{00289\ }
+\DoxyCodeLine{00290\ \ \ \textcolor{comment}{/*\ Return\ true\ if\ cluster\ starting\ at\ START\ and\ ending\ at\ END\ (inclusive)}}
+\DoxyCodeLine{00291\ \textcolor{comment}{\ \ \ \ \ is\ profitable\ transformation.\ \ */}}
+\DoxyCodeLine{00292\ \ \ \textcolor{keyword}{static}\ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{classtree__switch__conversion_1_1jump__table__cluster_afde75b59cac4dcb98bc8a1d31e069159}{is\_beneficial}}\ (\textcolor{keyword}{const}\ \doxymbox{\hyperlink{structvec}{vec<cluster\ *>}}\ \&clusters,\ \textcolor{keywordtype}{unsigned}\ start,}
+\DoxyCodeLine{00293\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{unsigned}\ \doxymbox{\hyperlink{vec_8h_a17e1ff659cc80fc1b1a1c325dfe1a3aa}{end}});}
+\DoxyCodeLine{00294\ }
+\DoxyCodeLine{00295\ \ \ \textcolor{comment}{/*\ Return\ the\ smallest\ number\ of\ different\ values\ for\ which\ it\ is\ best}}
+\DoxyCodeLine{00296\ \textcolor{comment}{\ \ \ \ \ to\ use\ a\ jump-\/table\ instead\ of\ a\ tree\ of\ conditional\ branches.\ \ */}}
+\DoxyCodeLine{00297\ \ \ \textcolor{keyword}{static}\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{classtree__switch__conversion_1_1jump__table__cluster_aac3919abe7d450173846d391c8746558}{case\_values\_threshold}}\ (\textcolor{keywordtype}{void});}
+\DoxyCodeLine{00298\ }
+\DoxyCodeLine{00299\ \ \ \textcolor{comment}{/*\ Return\ whether\ jump\ table\ expansion\ is\ allowed.\ \ */}}
+\DoxyCodeLine{00300\ \ \ \textcolor{keyword}{static}\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{classtree__switch__conversion_1_1jump__table__cluster_a6f8ae54fa3b426c20072a942d72f2d56}{is\_enabled}}\ (\textcolor{keywordtype}{void});}
+\DoxyCodeLine{00301\ \};}
+\DoxyCodeLine{00302\ }
+\DoxyCodeLine{00303\ \textcolor{comment}{/*\ A\ GIMPLE\ switch\ statement\ can\ be\ expanded\ to\ a\ short\ sequence\ of\ bit-\/wise}}
+\DoxyCodeLine{00304\ \textcolor{comment}{comparisons.\ \ "{}switch(x)"{}\ is\ converted\ into\ "{}if\ ((1\ <<\ (x-\/MINVAL))\ \&\ CST)"{}}}
+\DoxyCodeLine{00305\ \textcolor{comment}{where\ CST\ and\ MINVAL\ are\ integer\ constants.\ \ This\ is\ better\ than\ a\ series}}
+\DoxyCodeLine{00306\ \textcolor{comment}{of\ compare-\/and-\/branch\ insns\ in\ some\ cases,\ \ e.g.\ we\ can\ implement:}}
+\DoxyCodeLine{00307\ \textcolor{comment}{}}
+\DoxyCodeLine{00308\ \textcolor{comment}{\ \ \ \ if\ ((x==4)\ ||\ (x==6)\ ||\ (x==9)\ ||\ (x==11))}}
+\DoxyCodeLine{00309\ \textcolor{comment}{}}
+\DoxyCodeLine{00310\ \textcolor{comment}{as\ a\ single\ bit\ test:}}
+\DoxyCodeLine{00311\ \textcolor{comment}{}}
+\DoxyCodeLine{00312\ \textcolor{comment}{\ \ \ \ if\ ((1<<x)\ \&\ ((1<<4)|(1<<6)|(1<<9)|(1<<11)))}}
+\DoxyCodeLine{00313\ \textcolor{comment}{}}
+\DoxyCodeLine{00314\ \textcolor{comment}{This\ transformation\ is\ only\ applied\ if\ the\ number\ of\ case\ targets\ is\ small,}}
+\DoxyCodeLine{00315\ \textcolor{comment}{if\ CST\ constains\ at\ least\ 3\ bits,\ and\ "{}1\ <<\ x"{}\ is\ cheap.\ \ The\ bit\ tests\ are}}
+\DoxyCodeLine{00316\ \textcolor{comment}{performed\ in\ "{}word\_mode"{}.}}
+\DoxyCodeLine{00317\ \textcolor{comment}{}}
+\DoxyCodeLine{00318\ \textcolor{comment}{The\ following\ example\ shows\ the\ code\ the\ transformation\ generates:}}
+\DoxyCodeLine{00319\ \textcolor{comment}{}}
+\DoxyCodeLine{00320\ \textcolor{comment}{\ \ \ \ int\ bar(int\ x)}}
+\DoxyCodeLine{00321\ \textcolor{comment}{\ \ \ \ \{}}
+\DoxyCodeLine{00322\ \textcolor{comment}{\ \ \ \ \ \ \ \ switch\ (x)}}
+\DoxyCodeLine{00323\ \textcolor{comment}{\ \ \ \ \ \ \ \ \{}}
+\DoxyCodeLine{00324\ \textcolor{comment}{\ \ \ \ \ \ \ \ case\ '0':\ \ case\ '1':\ \ case\ '2':\ \ case\ '3':\ \ case\ '4':}}
+\DoxyCodeLine{00325\ \textcolor{comment}{\ \ \ \ \ \ \ \ case\ '5':\ \ case\ '6':\ \ case\ '7':\ \ case\ '8':\ \ case\ '9':}}
+\DoxyCodeLine{00326\ \textcolor{comment}{\ \ \ \ \ \ \ \ case\ 'A':\ \ case\ 'B':\ \ case\ 'C':\ \ case\ 'D':\ \ case\ 'E':}}
+\DoxyCodeLine{00327\ \textcolor{comment}{\ \ \ \ \ \ \ \ case\ 'F':}}
+\DoxyCodeLine{00328\ \textcolor{comment}{\ \ \ \ \ \ \ \ \ \ \ \ return\ 1;}}
+\DoxyCodeLine{00329\ \textcolor{comment}{\ \ \ \ \ \ \ \ \}}}
+\DoxyCodeLine{00330\ \textcolor{comment}{\ \ \ \ \ \ \ \ return\ 0;}}
+\DoxyCodeLine{00331\ \textcolor{comment}{\ \ \ \ \}}}
+\DoxyCodeLine{00332\ \textcolor{comment}{}}
+\DoxyCodeLine{00333\ \textcolor{comment}{==>}}
+\DoxyCodeLine{00334\ \textcolor{comment}{}}
+\DoxyCodeLine{00335\ \textcolor{comment}{\ \ \ \ bar\ (int\ x)}}
+\DoxyCodeLine{00336\ \textcolor{comment}{\ \ \ \ \{}}
+\DoxyCodeLine{00337\ \textcolor{comment}{\ \ \ \ \ \ \ \ tmp1\ =\ x\ -\/\ 48;}}
+\DoxyCodeLine{00338\ \textcolor{comment}{\ \ \ \ \ \ \ \ if\ (tmp1\ >\ (70\ -\/\ 48))\ goto\ L2;}}
+\DoxyCodeLine{00339\ \textcolor{comment}{\ \ \ \ \ \ \ \ tmp2\ =\ 1\ <<\ tmp1;}}
+\DoxyCodeLine{00340\ \textcolor{comment}{\ \ \ \ \ \ \ \ tmp3\ =\ 0b11111100000001111111111;}}
+\DoxyCodeLine{00341\ \textcolor{comment}{\ \ \ \ \ \ \ \ if\ ((tmp2\ \&\ tmp3)\ !=\ 0)\ goto\ L1\ ;\ else\ goto\ L2;}}
+\DoxyCodeLine{00342\ \textcolor{comment}{\ \ \ \ L1:}}
+\DoxyCodeLine{00343\ \textcolor{comment}{\ \ \ \ \ \ \ \ return\ 1;}}
+\DoxyCodeLine{00344\ \textcolor{comment}{\ \ \ \ L2:}}
+\DoxyCodeLine{00345\ \textcolor{comment}{\ \ \ \ \ \ \ \ return\ 0;}}
+\DoxyCodeLine{00346\ \textcolor{comment}{\ \ \ \ \}}}
+\DoxyCodeLine{00347\ \textcolor{comment}{}}
+\DoxyCodeLine{00348\ \textcolor{comment}{TODO:\ There\ are\ still\ some\ improvements\ to\ this\ transformation\ that\ could}}
+\DoxyCodeLine{00349\ \textcolor{comment}{be\ implemented:}}
+\DoxyCodeLine{00350\ \textcolor{comment}{}}
+\DoxyCodeLine{00351\ \textcolor{comment}{*\ A\ narrower\ mode\ than\ word\_mode\ could\ be\ used\ if\ that\ is\ cheaper,\ e.g.}}
+\DoxyCodeLine{00352\ \textcolor{comment}{\ \ for\ x86\_64\ where\ a\ narrower-\/mode\ shift\ may\ result\ in\ smaller\ code.}}
+\DoxyCodeLine{00353\ \textcolor{comment}{}}
+\DoxyCodeLine{00354\ \textcolor{comment}{*\ The\ compounded\ constant\ could\ be\ shifted\ rather\ than\ the\ one.\ \ The}}
+\DoxyCodeLine{00355\ \textcolor{comment}{\ \ test\ would\ be\ either\ on\ the\ sign\ bit\ or\ on\ the\ least\ significant\ bit,}}
+\DoxyCodeLine{00356\ \textcolor{comment}{\ \ depending\ on\ the\ direction\ of\ the\ shift.\ \ On\ some\ machines,\ the\ test}}
+\DoxyCodeLine{00357\ \textcolor{comment}{\ \ for\ the\ branch\ would\ be\ free\ if\ the\ bit\ to\ test\ is\ already\ set\ by\ the}}
+\DoxyCodeLine{00358\ \textcolor{comment}{\ \ shift\ operation.}}
+\DoxyCodeLine{00359\ \textcolor{comment}{}}
+\DoxyCodeLine{00360\ \textcolor{comment}{This\ transformation\ was\ contributed\ by\ Roger\ Sayle,\ see\ this\ e-\/mail:}}
+\DoxyCodeLine{00361\ \textcolor{comment}{\ \ \ http://gcc.gnu.org/ml/gcc-\/patches/2003-\/01/msg01950.html}}
+\DoxyCodeLine{00362\ \textcolor{comment}{*/}}
+\DoxyCodeLine{00363\ }
+\DoxyCodeLine{00364\ \textcolor{keyword}{class\ }\doxymbox{\hyperlink{classtree__switch__conversion_1_1bit__test__cluster_a302b26773920b15dfcf311233595a75a}{bit\_test\_cluster}}:\ \textcolor{keyword}{public}\ \doxymbox{\hyperlink{classtree__switch__conversion_1_1group__cluster_a66ace337b3dfc3782e4b23a46a3a487d}{group\_cluster}}}
+\DoxyCodeLine{00365\ \{}
+\DoxyCodeLine{00366\ \textcolor{keyword}{public}:}
+\DoxyCodeLine{00367\ \ \ \textcolor{comment}{/*\ Constructor.\ \ */}}
+\DoxyCodeLine{00368\ \ \ \doxymbox{\hyperlink{classtree__switch__conversion_1_1bit__test__cluster_a302b26773920b15dfcf311233595a75a}{bit\_test\_cluster}}\ (\doxymbox{\hyperlink{structvec}{vec<cluster\ *>}}\ \&clusters,\ \textcolor{keywordtype}{unsigned}\ start,\ \textcolor{keywordtype}{unsigned}\ \doxymbox{\hyperlink{vec_8h_a17e1ff659cc80fc1b1a1c325dfe1a3aa}{end}},}
+\DoxyCodeLine{00369\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{bool}\ handles\_entire\_switch)}
+\DoxyCodeLine{00370\ \ \ :\doxymbox{\hyperlink{classtree__switch__conversion_1_1group__cluster_a66ace337b3dfc3782e4b23a46a3a487d}{group\_cluster}}\ (clusters,\ start,\ \doxymbox{\hyperlink{vec_8h_a17e1ff659cc80fc1b1a1c325dfe1a3aa}{end}}),}
+\DoxyCodeLine{00371\ \ \ \doxymbox{\hyperlink{classtree__switch__conversion_1_1bit__test__cluster_a0287bf6472be2e3eaa016ec63f7ff33e}{m\_handles\_entire\_switch}}\ (handles\_entire\_switch)}
+\DoxyCodeLine{00372\ \ \ \{\}}
+\DoxyCodeLine{00373\ }
+\DoxyCodeLine{00374\ \ \ \doxymbox{\hyperlink{namespacetree__switch__conversion_a46f573b26c35d21db69bda08e3451828}{cluster\_type}}}
+\DoxyCodeLine{00375\ \ \ \doxymbox{\hyperlink{classtree__switch__conversion_1_1bit__test__cluster_a9488a85747afa2bbdd79199b98d4f9ae}{get\_type}}\ ()\ \doxymbox{\hyperlink{output_8h_ab52ea22aac29575278d6a9e723d1d234}{final}}\textcolor{keyword}{\ override}}
+\DoxyCodeLine{00376\ \textcolor{keyword}{\ \ }\{}
+\DoxyCodeLine{00377\ \ \ \ \ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{namespacetree__switch__conversion_a46f573b26c35d21db69bda08e3451828a038c08b5aa42a07e6239059ea631559a}{BIT\_TEST}};}
+\DoxyCodeLine{00378\ \ \ \}}
+\DoxyCodeLine{00379\ }
+\DoxyCodeLine{00380\ \textcolor{comment}{/*\ \ Expand\ a\ switch\ statement\ by\ a\ short\ sequence\ of\ bit-\/wise}}
+\DoxyCodeLine{00381\ \textcolor{comment}{\ \ \ \ comparisons.\ \ "{}switch(x)"{}\ is\ effectively\ converted\ into}}
+\DoxyCodeLine{00382\ \textcolor{comment}{\ \ \ \ "{}if\ ((1\ <<\ (x-\/MINVAL))\ \&\ CST)"{}\ where\ CST\ and\ MINVAL\ are}}
+\DoxyCodeLine{00383\ \textcolor{comment}{\ \ \ \ integer\ constants.}}
+\DoxyCodeLine{00384\ \textcolor{comment}{}}
+\DoxyCodeLine{00385\ \textcolor{comment}{\ \ \ \ INDEX\_EXPR\ is\ the\ value\ being\ switched\ on.}}
+\DoxyCodeLine{00386\ \textcolor{comment}{}}
+\DoxyCodeLine{00387\ \textcolor{comment}{\ \ \ \ MINVAL\ is\ the\ lowest\ case\ value\ of\ in\ the\ case\ nodes,}}
+\DoxyCodeLine{00388\ \textcolor{comment}{\ \ \ \ and\ RANGE\ is\ highest\ value\ minus\ MINVAL.\ \ MINVAL\ and\ RANGE}}
+\DoxyCodeLine{00389\ \textcolor{comment}{\ \ \ \ are\ not\ guaranteed\ to\ be\ of\ the\ same\ type\ as\ INDEX\_EXPR}}
+\DoxyCodeLine{00390\ \textcolor{comment}{\ \ \ \ (the\ gimplifier\ doesn't\ change\ the\ type\ of\ case\ label\ values,}}
+\DoxyCodeLine{00391\ \textcolor{comment}{\ \ \ \ and\ MINVAL\ and\ RANGE\ are\ derived\ from\ those\ values).}}
+\DoxyCodeLine{00392\ \textcolor{comment}{\ \ \ \ MAXVAL\ is\ MINVAL\ +\ RANGE.}}
+\DoxyCodeLine{00393\ \textcolor{comment}{}}
+\DoxyCodeLine{00394\ \textcolor{comment}{\ \ \ \ There\ *MUST*\ be\ max\_case\_bit\_tests\ or\ less\ unique\ case}}
+\DoxyCodeLine{00395\ \textcolor{comment}{\ \ \ \ node\ targets.\ \ */}}
+\DoxyCodeLine{00396\ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classtree__switch__conversion_1_1bit__test__cluster_a9cfa03a835a44e5f0509efa6e441e29f}{emit}}\ (\doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ index\_expr,\ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ index\_type,}
+\DoxyCodeLine{00397\ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ default\_label\_expr,\ \doxymbox{\hyperlink{coretypes_8h_a0469df20b471a4cd7c81fbdce5027487}{basic\_block}}\ default\_bb,\ \doxymbox{\hyperlink{line-map_8h_aedf25620511d64e43327f1a229906a96}{location\_t}}\ loc)}
+\DoxyCodeLine{00398\ \ \ \ \ \ \textcolor{keyword}{final}\ \textcolor{keyword}{override};}
+\DoxyCodeLine{00399\ }
+\DoxyCodeLine{00400\ \ \ \textcolor{comment}{/*\ Find\ bit\ tests\ of\ given\ CLUSTERS,\ where\ all\ members\ of\ the\ vector}}
+\DoxyCodeLine{00401\ \textcolor{comment}{\ \ \ \ \ are\ of\ type\ simple\_cluster.\ \ New\ clusters\ are\ returned.\ \ */}}
+\DoxyCodeLine{00402\ \ \ \textcolor{keyword}{static}\ \doxymbox{\hyperlink{structvec}{vec<cluster\ *>}}\ \doxymbox{\hyperlink{classtree__switch__conversion_1_1bit__test__cluster_acec67ac19473dc01e50086f92e8e5c9e}{find\_bit\_tests}}\ (\doxymbox{\hyperlink{structvec}{vec<cluster\ *>}}\ \&clusters);}
+\DoxyCodeLine{00403\ }
+\DoxyCodeLine{00404\ \ \ \textcolor{comment}{/*\ Return\ true\ when\ RANGE\ of\ case\ values\ with\ UNIQ\ labels}}
+\DoxyCodeLine{00405\ \textcolor{comment}{\ \ \ \ \ can\ build\ a\ bit\ test.\ \ */}}
+\DoxyCodeLine{00406\ \ \ \textcolor{keyword}{static}\ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{classtree__switch__conversion_1_1bit__test__cluster_ad21435d3d96e08d553e44008dbbaddf8}{can\_be\_handled}}\ (\textcolor{keywordtype}{unsigned}\ HOST\_WIDE\_INT\ range,\ \textcolor{keywordtype}{unsigned}\ uniq);}
+\DoxyCodeLine{00407\ }
+\DoxyCodeLine{00408\ \ \ \textcolor{comment}{/*\ Return\ true\ when\ cluster\ starting\ at\ START\ and\ ending\ at\ END\ (inclusive)}}
+\DoxyCodeLine{00409\ \textcolor{comment}{\ \ \ \ \ can\ build\ a\ bit\ test.\ \ */}}
+\DoxyCodeLine{00410\ \ \ \textcolor{keyword}{static}\ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{classtree__switch__conversion_1_1bit__test__cluster_a45203c9a53ebf9e9c3f680b0b1d8f62e}{can\_be\_handled}}\ (\textcolor{keyword}{const}\ \doxymbox{\hyperlink{structvec}{vec<cluster\ *>}}\ \&clusters,\ \textcolor{keywordtype}{unsigned}\ start,}
+\DoxyCodeLine{00411\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{unsigned}\ \doxymbox{\hyperlink{vec_8h_a17e1ff659cc80fc1b1a1c325dfe1a3aa}{end}});}
+\DoxyCodeLine{00412\ }
+\DoxyCodeLine{00413\ \ \ \textcolor{comment}{/*\ Return\ true\ when\ COUNT\ of\ cases\ of\ UNIQ\ labels\ is\ beneficial\ for\ bit\ test}}
+\DoxyCodeLine{00414\ \textcolor{comment}{\ \ \ \ \ transformation.\ \ */}}
+\DoxyCodeLine{00415\ \ \ \textcolor{keyword}{static}\ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{classtree__switch__conversion_1_1bit__test__cluster_ae3f5727e7058b2972e6ca7e4023eae87}{is\_beneficial}}\ (\textcolor{keywordtype}{unsigned}\ count,\ \textcolor{keywordtype}{unsigned}\ uniq);}
+\DoxyCodeLine{00416\ }
+\DoxyCodeLine{00417\ \ \ \textcolor{comment}{/*\ Return\ true\ if\ cluster\ starting\ at\ START\ and\ ending\ at\ END\ (inclusive)}}
+\DoxyCodeLine{00418\ \textcolor{comment}{\ \ \ \ \ is\ profitable\ transformation.\ \ */}}
+\DoxyCodeLine{00419\ \ \ \textcolor{keyword}{static}\ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{classtree__switch__conversion_1_1bit__test__cluster_ac352e2b356410def7230e7b0da29deb2}{is\_beneficial}}\ (\textcolor{keyword}{const}\ \doxymbox{\hyperlink{structvec}{vec<cluster\ *>}}\ \&clusters,\ \textcolor{keywordtype}{unsigned}\ start,}
+\DoxyCodeLine{00420\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{unsigned}\ \doxymbox{\hyperlink{vec_8h_a17e1ff659cc80fc1b1a1c325dfe1a3aa}{end}});}
+\DoxyCodeLine{00421\ }
+\DoxyCodeLine{00422\ \textcolor{comment}{/*\ Split\ the\ basic\ block\ at\ the\ statement\ pointed\ to\ by\ GSIP,\ and\ insert}}
+\DoxyCodeLine{00423\ \textcolor{comment}{\ \ \ a\ branch\ to\ the\ target\ basic\ block\ of\ E\_TRUE\ conditional\ on\ tree}}
+\DoxyCodeLine{00424\ \textcolor{comment}{\ \ \ expression\ COND.}}
+\DoxyCodeLine{00425\ \textcolor{comment}{}}
+\DoxyCodeLine{00426\ \textcolor{comment}{\ \ \ It\ is\ assumed\ that\ there\ is\ already\ an\ edge\ from\ the\ to-\/be-\/split}}
+\DoxyCodeLine{00427\ \textcolor{comment}{\ \ \ basic\ block\ to\ E\_TRUE-\/>dest\ block.\ \ This\ edge\ is\ removed,\ and\ the}}
+\DoxyCodeLine{00428\ \textcolor{comment}{\ \ \ profile\ information\ on\ the\ edge\ is\ re-\/used\ for\ the\ new\ conditional}}
+\DoxyCodeLine{00429\ \textcolor{comment}{\ \ \ jump.}}
+\DoxyCodeLine{00430\ \textcolor{comment}{}}
+\DoxyCodeLine{00431\ \textcolor{comment}{\ \ \ The\ CFG\ is\ updated.\ \ The\ dominator\ tree\ will\ not\ be\ valid\ after}}
+\DoxyCodeLine{00432\ \textcolor{comment}{\ \ \ this\ transformation,\ but\ the\ immediate\ dominators\ are\ updated\ if}}
+\DoxyCodeLine{00433\ \textcolor{comment}{\ \ \ UPDATE\_DOMINATORS\ is\ true.}}
+\DoxyCodeLine{00434\ \textcolor{comment}{}}
+\DoxyCodeLine{00435\ \textcolor{comment}{\ \ \ Returns\ the\ newly\ created\ basic\ block.\ \ */}}
+\DoxyCodeLine{00436\ \ \ \textcolor{keyword}{static}\ \doxymbox{\hyperlink{coretypes_8h_a0469df20b471a4cd7c81fbdce5027487}{basic\_block}}\ \doxymbox{\hyperlink{classtree__switch__conversion_1_1bit__test__cluster_a307534bbd646ed6512df9a4412d6b8a1}{hoist\_edge\_and\_branch\_if\_true}}\ (\doxymbox{\hyperlink{structgimple__stmt__iterator}{gimple\_stmt\_iterator}}\ *gsip,}
+\DoxyCodeLine{00437\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ cond,}
+\DoxyCodeLine{00438\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{coretypes_8h_a0469df20b471a4cd7c81fbdce5027487}{basic\_block}}\ case\_bb,}
+\DoxyCodeLine{00439\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ profile\_probability\ prob,}
+\DoxyCodeLine{00440\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{line-map_8h_aedf25620511d64e43327f1a229906a96}{location\_t}});}
+\DoxyCodeLine{00441\ }
+\DoxyCodeLine{00442\ \ \ \textcolor{comment}{/*\ Return\ whether\ bit\ test\ expansion\ is\ allowed.\ \ */}}
+\DoxyCodeLine{00443\ \ \ \textcolor{keyword}{static}\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{classtree__switch__conversion_1_1bit__test__cluster_a1d66691b9675d097b1f17605e534aa3e}{is\_enabled}}\ (\textcolor{keywordtype}{void})}
+\DoxyCodeLine{00444\ \ \ \{}
+\DoxyCodeLine{00445\ \ \ \ \ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{options_8h_ac97ffa743ed8fddbf43c0d8a068be049}{flag\_bit\_tests}};}
+\DoxyCodeLine{00446\ \ \ \}}
+\DoxyCodeLine{00447\ }
+\DoxyCodeLine{00448\ \ \ \textcolor{comment}{/*\ True\ when\ the\ jump\ table\ handles\ an\ entire\ switch\ statement.\ \ */}}
+\DoxyCodeLine{00449\ \ \ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{classtree__switch__conversion_1_1bit__test__cluster_a0287bf6472be2e3eaa016ec63f7ff33e}{m\_handles\_entire\_switch}};}
+\DoxyCodeLine{00450\ }
+\DoxyCodeLine{00451\ \ \ \textcolor{comment}{/*\ Maximum\ number\ of\ different\ basic\ blocks\ that\ can\ be\ handled\ by}}
+\DoxyCodeLine{00452\ \textcolor{comment}{\ \ \ \ \ a\ bit\ test.\ \ */}}
+\DoxyCodeLine{00453\ \ \ \textcolor{keyword}{static}\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{classtree__switch__conversion_1_1bit__test__cluster_ac6937b6c85a9790e6c6ec68495e8634b}{m\_max\_case\_bit\_tests}}\ =\ 3;}
+\DoxyCodeLine{00454\ \};}
+\DoxyCodeLine{00455\ }
+\DoxyCodeLine{00456\ \textcolor{comment}{/*\ Helper\ struct\ to\ find\ minimal\ clusters.\ \ */}}
+\DoxyCodeLine{00457\ }
+\DoxyCodeLine{00458\ \textcolor{keyword}{class\ }\doxymbox{\hyperlink{classtree__switch__conversion_1_1min__cluster__item_a2a553fede42e1468c2e3c0dd5ac9e345}{min\_cluster\_item}}}
+\DoxyCodeLine{00459\ \{}
+\DoxyCodeLine{00460\ \textcolor{keyword}{public}:}
+\DoxyCodeLine{00461\ \ \ \textcolor{comment}{/*\ Constructor.\ \ */}}
+\DoxyCodeLine{00462\ \ \ \doxymbox{\hyperlink{classtree__switch__conversion_1_1min__cluster__item_a2a553fede42e1468c2e3c0dd5ac9e345}{min\_cluster\_item}}\ (\textcolor{keywordtype}{unsigned}\ count,\ \textcolor{keywordtype}{unsigned}\ start,\ \textcolor{keywordtype}{unsigned}\ non\_jt\_cases):}
+\DoxyCodeLine{00463\ \ \ \ \ \doxymbox{\hyperlink{classtree__switch__conversion_1_1min__cluster__item_a6df2f0efd4b0f64b9d4fad528ddc46d9}{m\_count}}\ (count),\ \doxymbox{\hyperlink{classtree__switch__conversion_1_1min__cluster__item_a2f0ae2954e96021ae6752f8d2f25958e}{m\_start}}\ (start),\ \doxymbox{\hyperlink{classtree__switch__conversion_1_1min__cluster__item_ad692e655804896d3950337a10b271b75}{m\_non\_jt\_cases}}\ (non\_jt\_cases)}
+\DoxyCodeLine{00464\ \ \ \{\}}
+\DoxyCodeLine{00465\ }
+\DoxyCodeLine{00466\ \ \ \textcolor{comment}{/*\ Count\ of\ clusters.\ \ */}}
+\DoxyCodeLine{00467\ \ \ \textcolor{keywordtype}{unsigned}\ \doxymbox{\hyperlink{classtree__switch__conversion_1_1min__cluster__item_a6df2f0efd4b0f64b9d4fad528ddc46d9}{m\_count}};}
+\DoxyCodeLine{00468\ }
+\DoxyCodeLine{00469\ \ \ \textcolor{comment}{/*\ Index\ where\ is\ cluster\ boundary.\ \ */}}
+\DoxyCodeLine{00470\ \ \ \textcolor{keywordtype}{unsigned}\ \doxymbox{\hyperlink{classtree__switch__conversion_1_1min__cluster__item_a2f0ae2954e96021ae6752f8d2f25958e}{m\_start}};}
+\DoxyCodeLine{00471\ }
+\DoxyCodeLine{00472\ \ \ \textcolor{comment}{/*\ Total\ number\ of\ cases\ that\ will\ not\ be\ in\ a\ jump\ table.\ \ */}}
+\DoxyCodeLine{00473\ \ \ \textcolor{keywordtype}{unsigned}\ \doxymbox{\hyperlink{classtree__switch__conversion_1_1min__cluster__item_ad692e655804896d3950337a10b271b75}{m\_non\_jt\_cases}};}
+\DoxyCodeLine{00474\ \};}
+\DoxyCodeLine{00475\ }
+\DoxyCodeLine{00476\ \textcolor{comment}{/*\ Helper\ struct\ to\ represent\ switch\ decision\ tree.\ \ */}}
+\DoxyCodeLine{00477\ }
+\DoxyCodeLine{00478\ \textcolor{keyword}{class\ }\doxymbox{\hyperlink{classtree__switch__conversion_1_1case__tree__node_afd59ab909d6b3dbfe09563634c24039c}{case\_tree\_node}}}
+\DoxyCodeLine{00479\ \{}
+\DoxyCodeLine{00480\ \textcolor{keyword}{public}:}
+\DoxyCodeLine{00481\ \ \ \textcolor{comment}{/*\ Empty\ Constructor.\ \ */}}
+\DoxyCodeLine{00482\ \ \ \doxymbox{\hyperlink{classtree__switch__conversion_1_1case__tree__node_afd59ab909d6b3dbfe09563634c24039c}{case\_tree\_node}}\ ();}
+\DoxyCodeLine{00483\ }
+\DoxyCodeLine{00484\ \ \ \textcolor{comment}{/*\ Return\ true\ when\ it\ has\ a\ child.\ \ */}}
+\DoxyCodeLine{00485\ \ \ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{classtree__switch__conversion_1_1case__tree__node_abfad2df644627563095a3341b69b5ad7}{has\_child}}\ ()}
+\DoxyCodeLine{00486\ \ \ \{}
+\DoxyCodeLine{00487\ \ \ \ \ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{classtree__switch__conversion_1_1case__tree__node_adaa41d0533f2d29fef48cd4a69c77d3e}{m\_left}}\ !=\ \doxymbox{\hyperlink{stddef_8h_a070d2ce7b6bb7e5c05602aa8c308d0c4}{NULL}}\ ||\ \doxymbox{\hyperlink{classtree__switch__conversion_1_1case__tree__node_a5dc1bcedcc9bb7e7ebd1a98e6e377587}{m\_right}}\ !=\ \doxymbox{\hyperlink{stddef_8h_a070d2ce7b6bb7e5c05602aa8c308d0c4}{NULL}};}
+\DoxyCodeLine{00488\ \ \ \}}
+\DoxyCodeLine{00489\ }
+\DoxyCodeLine{00490\ \ \ \textcolor{comment}{/*\ Left\ son\ in\ binary\ tree.\ \ */}}
+\DoxyCodeLine{00491\ \ \ \doxymbox{\hyperlink{classtree__switch__conversion_1_1case__tree__node_afd59ab909d6b3dbfe09563634c24039c}{case\_tree\_node}}\ *\doxymbox{\hyperlink{classtree__switch__conversion_1_1case__tree__node_adaa41d0533f2d29fef48cd4a69c77d3e}{m\_left}};}
+\DoxyCodeLine{00492\ }
+\DoxyCodeLine{00493\ \ \ \textcolor{comment}{/*\ Right\ son\ in\ binary\ tree;\ also\ node\ chain.\ \ */}}
+\DoxyCodeLine{00494\ \ \ \doxymbox{\hyperlink{classtree__switch__conversion_1_1case__tree__node_afd59ab909d6b3dbfe09563634c24039c}{case\_tree\_node}}\ *\doxymbox{\hyperlink{classtree__switch__conversion_1_1case__tree__node_a5dc1bcedcc9bb7e7ebd1a98e6e377587}{m\_right}};}
+\DoxyCodeLine{00495\ }
+\DoxyCodeLine{00496\ \ \ \textcolor{comment}{/*\ Parent\ of\ node\ in\ binary\ tree.\ \ */}}
+\DoxyCodeLine{00497\ \ \ \doxymbox{\hyperlink{classtree__switch__conversion_1_1case__tree__node_afd59ab909d6b3dbfe09563634c24039c}{case\_tree\_node}}\ *\doxymbox{\hyperlink{classtree__switch__conversion_1_1case__tree__node_ab64cbd8a3998795fe7ebb679b0647617}{m\_parent}};}
+\DoxyCodeLine{00498\ }
+\DoxyCodeLine{00499\ \ \ \textcolor{comment}{/*\ Cluster\ represented\ by\ this\ tree\ node.\ \ */}}
+\DoxyCodeLine{00500\ \ \ \doxymbox{\hyperlink{classtree__switch__conversion_1_1cluster}{cluster}}\ *\doxymbox{\hyperlink{classtree__switch__conversion_1_1case__tree__node_aed0e727998aaa324c04d4f6d7a422107}{m\_c}};}
+\DoxyCodeLine{00501\ \};}
+\DoxyCodeLine{00502\ }
+\DoxyCodeLine{00503\ \textcolor{keyword}{inline}}
+\DoxyCodeLine{00504\ \doxymbox{\hyperlink{classtree__switch__conversion_1_1case__tree__node_afd59ab909d6b3dbfe09563634c24039c}{case\_tree\_node::case\_tree\_node}}\ ():}
+\DoxyCodeLine{00505\ \ \ \doxymbox{\hyperlink{classtree__switch__conversion_1_1case__tree__node_adaa41d0533f2d29fef48cd4a69c77d3e}{m\_left}}\ (\doxymbox{\hyperlink{stddef_8h_a070d2ce7b6bb7e5c05602aa8c308d0c4}{NULL}}),\ \doxymbox{\hyperlink{classtree__switch__conversion_1_1case__tree__node_a5dc1bcedcc9bb7e7ebd1a98e6e377587}{m\_right}}\ (\doxymbox{\hyperlink{stddef_8h_a070d2ce7b6bb7e5c05602aa8c308d0c4}{NULL}}),\ \doxymbox{\hyperlink{classtree__switch__conversion_1_1case__tree__node_ab64cbd8a3998795fe7ebb679b0647617}{m\_parent}}\ (\doxymbox{\hyperlink{stddef_8h_a070d2ce7b6bb7e5c05602aa8c308d0c4}{NULL}}),\ \doxymbox{\hyperlink{classtree__switch__conversion_1_1case__tree__node_aed0e727998aaa324c04d4f6d7a422107}{m\_c}}\ (\doxymbox{\hyperlink{stddef_8h_a070d2ce7b6bb7e5c05602aa8c308d0c4}{NULL}})}
+\DoxyCodeLine{00506\ \{}
+\DoxyCodeLine{00507\ \}}
+\DoxyCodeLine{00508\ }
+\DoxyCodeLine{00509\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}}
+\DoxyCodeLine{00510\ \doxymbox{\hyperlink{classtree__switch__conversion_1_1jump__table__cluster_aac3919abe7d450173846d391c8746558}{jump\_table\_cluster::case\_values\_threshold}}\ (\textcolor{keywordtype}{void})}
+\DoxyCodeLine{00511\ \{}
+\DoxyCodeLine{00512\ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ threshold\ =\ \doxymbox{\hyperlink{options_8h_a447ca54feca208dc2c72c5fa85097c5e}{param\_case\_values\_threshold}};}
+\DoxyCodeLine{00513\ }
+\DoxyCodeLine{00514\ \ \ \textcolor{keywordflow}{if}\ (threshold\ ==\ 0)}
+\DoxyCodeLine{00515\ \ \ \ \ threshold\ =\ \doxymbox{\hyperlink{target_8h_ac618b85f3d002c20c0174584b5cc1b73}{targetm}}.case\_values\_threshold\ ();}
+\DoxyCodeLine{00516\ }
+\DoxyCodeLine{00517\ \ \ \textcolor{keywordflow}{return}\ threshold;}
+\DoxyCodeLine{00518\ \}}
+\DoxyCodeLine{00519\ }
+\DoxyCodeLine{00520\ \textcolor{comment}{/*\ Return\ whether\ jump\ table\ expansion\ is\ allowed.\ \ */}}
+\DoxyCodeLine{00521\ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{classtree__switch__conversion_1_1jump__table__cluster_a6f8ae54fa3b426c20072a942d72f2d56}{jump\_table\_cluster::is\_enabled}}\ (\textcolor{keywordtype}{void})}
+\DoxyCodeLine{00522\ \{}
+\DoxyCodeLine{00523\ \ \ \textcolor{comment}{/*\ If\ neither\ casesi\ or\ tablejump\ is\ available,\ or\ flag\_jump\_tables}}
+\DoxyCodeLine{00524\ \textcolor{comment}{\ \ \ \ \ over-\/ruled\ us,\ we\ really\ have\ no\ choice.\ \ */}}
+\DoxyCodeLine{00525\ \ \ \textcolor{keywordflow}{if}\ (!\doxymbox{\hyperlink{target_8h_ac618b85f3d002c20c0174584b5cc1b73}{targetm}}.have\_casesi\ ()\ \&\&\ !\doxymbox{\hyperlink{target_8h_ac618b85f3d002c20c0174584b5cc1b73}{targetm}}.have\_tablejump\ ())}
+\DoxyCodeLine{00526\ \ \ \ \ \textcolor{keywordflow}{return}\ \textcolor{keyword}{false};}
+\DoxyCodeLine{00527\ \ \ \textcolor{keywordflow}{if}\ (!\doxymbox{\hyperlink{options_8h_a477366ae6c70b4c49bd7434917c0fa18}{flag\_jump\_tables}})}
+\DoxyCodeLine{00528\ \ \ \ \ \textcolor{keywordflow}{return}\ \textcolor{keyword}{false};}
+\DoxyCodeLine{00529\ \textcolor{preprocessor}{\#ifndef\ ASM\_OUTPUT\_ADDR\_DIFF\_ELT}}
+\DoxyCodeLine{00530\ \ \ \textcolor{keywordflow}{if}\ (\doxymbox{\hyperlink{options_8h_ae7663af233d6cee443209a636c9d6329}{flag\_pic}})}
+\DoxyCodeLine{00531\ \ \ \ \ \textcolor{keywordflow}{return}\ \textcolor{keyword}{false};}
+\DoxyCodeLine{00532\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00533\ }
+\DoxyCodeLine{00534\ \ \ \textcolor{keywordflow}{return}\ \textcolor{keyword}{true};}
+\DoxyCodeLine{00535\ \}}
+\DoxyCodeLine{00536\ }
+\DoxyCodeLine{00537\ \textcolor{comment}{/*\ A\ case\_bit\_test\ represents\ a\ set\ of\ case\ nodes\ that\ may\ be}}
+\DoxyCodeLine{00538\ \textcolor{comment}{\ \ \ selected\ from\ using\ a\ bit-\/wise\ comparison.\ \ HI\ and\ LO\ hold}}
+\DoxyCodeLine{00539\ \textcolor{comment}{\ \ \ the\ integer\ to\ be\ tested\ against,\ TARGET\_EDGE\ contains\ the}}
+\DoxyCodeLine{00540\ \textcolor{comment}{\ \ \ edge\ to\ the\ basic\ block\ to\ jump\ to\ upon\ success\ and\ BITS}}
+\DoxyCodeLine{00541\ \textcolor{comment}{\ \ \ counts\ the\ number\ of\ case\ nodes\ handled\ by\ this\ test,}}
+\DoxyCodeLine{00542\ \textcolor{comment}{\ \ \ typically\ the\ number\ of\ bits\ set\ in\ HI:LO.\ \ The\ LABEL\ field}}
+\DoxyCodeLine{00543\ \textcolor{comment}{\ \ \ is\ used\ to\ quickly\ identify\ all\ cases\ in\ this\ set\ without}}
+\DoxyCodeLine{00544\ \textcolor{comment}{\ \ \ looking\ at\ label\_to\_block\ for\ every\ case\ label.\ \ */}}
+\DoxyCodeLine{00545\ }
+\DoxyCodeLine{00546\ \textcolor{keyword}{class\ }\doxymbox{\hyperlink{classtree__switch__conversion_1_1case__bit__test}{case\_bit\_test}}}
+\DoxyCodeLine{00547\ \{}
+\DoxyCodeLine{00548\ \textcolor{keyword}{public}:}
+\DoxyCodeLine{00549\ \ \ \doxymbox{\hyperlink{wide-int_8h_a9a29e47e2c40ae9adaf47df15970eced}{wide\_int}}\ \doxymbox{\hyperlink{classtree__switch__conversion_1_1case__bit__test_a088006311422f9f15ca45512a064080f}{mask}};}
+\DoxyCodeLine{00550\ \ \ \doxymbox{\hyperlink{coretypes_8h_a0469df20b471a4cd7c81fbdce5027487}{basic\_block}}\ \doxymbox{\hyperlink{classtree__switch__conversion_1_1case__bit__test_a740b29ff5f4bce29a0fdf7dd51f25466}{target\_bb}};}
+\DoxyCodeLine{00551\ \ \ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ \doxymbox{\hyperlink{classtree__switch__conversion_1_1case__bit__test_a9e0fcf47a8f37fd41215d458d2ef5695}{label}};}
+\DoxyCodeLine{00552\ \ \ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{classtree__switch__conversion_1_1case__bit__test_ab8090b35a4d98502ec0d18d86c6210ec}{bits}};}
+\DoxyCodeLine{00553\ \ \ profile\_probability\ \doxymbox{\hyperlink{classtree__switch__conversion_1_1case__bit__test_ad0e6214e940da2357f5a7d01ab451c04}{prob}};}
+\DoxyCodeLine{00554\ }
+\DoxyCodeLine{00555\ \ \ \textcolor{comment}{/*\ Comparison\ function\ for\ qsort\ to\ order\ bit\ tests\ by\ decreasing}}
+\DoxyCodeLine{00556\ \textcolor{comment}{\ \ \ \ \ probability\ of\ execution.\ \ */}}
+\DoxyCodeLine{00557\ \ \ \textcolor{keyword}{static}\ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{classtree__switch__conversion_1_1case__bit__test_a00e12f7b109a340503a219bcb0be51d7}{cmp}}\ (\textcolor{keyword}{const}\ \textcolor{keywordtype}{void}\ *p1,\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{void}\ *p2);}
+\DoxyCodeLine{00558\ \};}
+\DoxyCodeLine{00559\ }
+\DoxyCodeLine{00560\ \textcolor{keyword}{class\ }\doxymbox{\hyperlink{classtree__switch__conversion_1_1switch__decision__tree_a7fa291ed04da1521b343dd5bf0995494}{switch\_decision\_tree}}}
+\DoxyCodeLine{00561\ \{}
+\DoxyCodeLine{00562\ \textcolor{keyword}{public}:}
+\DoxyCodeLine{00563\ \ \ \textcolor{comment}{/*\ Constructor.\ \ */}}
+\DoxyCodeLine{00564\ \ \ \doxymbox{\hyperlink{classtree__switch__conversion_1_1switch__decision__tree_a7fa291ed04da1521b343dd5bf0995494}{switch\_decision\_tree}}\ (gswitch\ *swtch):\ \doxymbox{\hyperlink{classtree__switch__conversion_1_1switch__decision__tree_aad60fa61f5d4d48a3fb909384863f102}{m\_switch}}\ (swtch),\ \doxymbox{\hyperlink{classtree__switch__conversion_1_1switch__decision__tree_a729cc3bd3d4728b343d96f6d1daf6b3b}{m\_phi\_mapping}}\ (),}
+\DoxyCodeLine{00565\ \ \ \ \ \doxymbox{\hyperlink{classtree__switch__conversion_1_1switch__decision__tree_afff94cc6549b57459bf3938b2dffebbc}{m\_case\_bbs}}\ (),\ \doxymbox{\hyperlink{classtree__switch__conversion_1_1switch__decision__tree_ab5b033326a5b1d5376a9fae329b56403}{m\_case\_node\_pool}}\ (\textcolor{stringliteral}{"{}struct\ case\_node\ pool"{}}),}
+\DoxyCodeLine{00566\ \ \ \ \ \doxymbox{\hyperlink{classtree__switch__conversion_1_1switch__decision__tree_aaa6542221e82b21fd9e7118649edbd05}{m\_case\_list}}\ (\doxymbox{\hyperlink{stddef_8h_a070d2ce7b6bb7e5c05602aa8c308d0c4}{NULL}})}
+\DoxyCodeLine{00567\ \ \ \{}
+\DoxyCodeLine{00568\ \ \ \}}
+\DoxyCodeLine{00569\ }
+\DoxyCodeLine{00570\ \ \ \textcolor{comment}{/*\ Analyze\ switch\ statement\ and\ return\ true\ when\ the\ statement\ is\ expanded}}
+\DoxyCodeLine{00571\ \textcolor{comment}{\ \ \ \ \ as\ decision\ tree.\ \ */}}
+\DoxyCodeLine{00572\ \ \ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{classtree__switch__conversion_1_1switch__decision__tree_adde1cf41dfa4a1aa621087ec0743881a}{analyze\_switch\_statement}}\ ();}
+\DoxyCodeLine{00573\ }
+\DoxyCodeLine{00574\ \ \ \textcolor{comment}{/*\ Attempt\ to\ expand\ CLUSTERS\ as\ a\ decision\ tree.\ \ Return\ true\ when}}
+\DoxyCodeLine{00575\ \textcolor{comment}{\ \ \ \ \ expanded.\ \ */}}
+\DoxyCodeLine{00576\ \ \ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{classtree__switch__conversion_1_1switch__decision__tree_a3f6970063d7f924f0dc9aeb93518fb24}{try\_switch\_expansion}}\ (\doxymbox{\hyperlink{structvec}{vec<cluster\ *>}}\ \&clusters);}
+\DoxyCodeLine{00577\ \ \ \textcolor{comment}{/*\ Compute\ the\ number\ of\ case\ labels\ that\ correspond\ to\ each\ outgoing\ edge\ of}}
+\DoxyCodeLine{00578\ \textcolor{comment}{\ \ \ \ \ switch\ statement.\ \ Record\ this\ information\ in\ the\ aux\ field\ of\ the\ edge.}}
+\DoxyCodeLine{00579\ \textcolor{comment}{\ \ \ \ \ */}}
+\DoxyCodeLine{00580\ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classtree__switch__conversion_1_1switch__decision__tree_a3d56ada33c1f950423014caa7598a7c3}{compute\_cases\_per\_edge}}\ ();}
+\DoxyCodeLine{00581\ }
+\DoxyCodeLine{00582\ \ \ \textcolor{comment}{/*\ Before\ switch\ transformation,\ record\ all\ SSA\_NAMEs\ defined\ in\ switch\ BB}}
+\DoxyCodeLine{00583\ \textcolor{comment}{\ \ \ \ \ and\ used\ in\ a\ label\ basic\ block.\ \ */}}
+\DoxyCodeLine{00584\ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classtree__switch__conversion_1_1switch__decision__tree_a84149cf44794469490d4c67e4e340218}{record\_phi\_operand\_mapping}}\ ();}
+\DoxyCodeLine{00585\ }
+\DoxyCodeLine{00586\ \ \ \textcolor{comment}{/*\ Append\ new\ operands\ to\ PHI\ statements\ that\ were\ introduced\ due\ to}}
+\DoxyCodeLine{00587\ \textcolor{comment}{\ \ \ \ \ addition\ of\ new\ edges\ to\ case\ labels.\ \ */}}
+\DoxyCodeLine{00588\ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classtree__switch__conversion_1_1switch__decision__tree_a86c741caecb4f6b4218fcf04f98a4443}{fix\_phi\_operands\_for\_edges}}\ ();}
+\DoxyCodeLine{00589\ }
+\DoxyCodeLine{00590\ \ \ \textcolor{comment}{/*\ Generate\ a\ decision\ tree,\ switching\ on\ INDEX\_EXPR\ and\ jumping\ to}}
+\DoxyCodeLine{00591\ \textcolor{comment}{\ \ \ \ \ one\ of\ the\ labels\ in\ CASE\_LIST\ or\ to\ the\ DEFAULT\_LABEL.}}
+\DoxyCodeLine{00592\ \textcolor{comment}{}}
+\DoxyCodeLine{00593\ \textcolor{comment}{\ \ \ \ \ We\ generate\ a\ binary\ decision\ tree\ to\ select\ the\ appropriate\ target}}
+\DoxyCodeLine{00594\ \textcolor{comment}{\ \ \ \ \ code.\ \ */}}
+\DoxyCodeLine{00595\ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classtree__switch__conversion_1_1switch__decision__tree_a465f08397835e99cabc78939847f0e6c}{emit}}\ (\doxymbox{\hyperlink{coretypes_8h_a0469df20b471a4cd7c81fbdce5027487}{basic\_block}}\ bb,\ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ index\_expr,}
+\DoxyCodeLine{00596\ \ \ \ \ \ \ \ \ \ profile\_probability\ default\_prob,\ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ index\_type);}
+\DoxyCodeLine{00597\ }
+\DoxyCodeLine{00598\ \ \ \textcolor{comment}{/*\ Emit\ step-\/by-\/step\ code\ to\ select\ a\ case\ for\ the\ value\ of\ INDEX.}}
+\DoxyCodeLine{00599\ \textcolor{comment}{\ \ \ \ \ The\ thus\ generated\ decision\ tree\ follows\ the\ form\ of\ the}}
+\DoxyCodeLine{00600\ \textcolor{comment}{\ \ \ \ \ case-\/node\ binary\ tree\ NODE,\ whose\ nodes\ represent\ test\ conditions.}}
+\DoxyCodeLine{00601\ \textcolor{comment}{\ \ \ \ \ DEFAULT\_PROB\ is\ probability\ of\ cases\ leading\ to\ default\ BB.}}
+\DoxyCodeLine{00602\ \textcolor{comment}{\ \ \ \ \ INDEX\_TYPE\ is\ the\ type\ of\ the\ index\ of\ the\ switch.\ \ */}}
+\DoxyCodeLine{00603\ \ \ \doxymbox{\hyperlink{coretypes_8h_a0469df20b471a4cd7c81fbdce5027487}{basic\_block}}\ \doxymbox{\hyperlink{classtree__switch__conversion_1_1switch__decision__tree_aea4e08178ed2e1311dbc75faf33fa01e}{emit\_case\_nodes}}\ (\doxymbox{\hyperlink{coretypes_8h_a0469df20b471a4cd7c81fbdce5027487}{basic\_block}}\ bb,\ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ index,}
+\DoxyCodeLine{00604\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{classtree__switch__conversion_1_1case__tree__node}{case\_tree\_node}}\ *node,}
+\DoxyCodeLine{00605\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ profile\_probability\ default\_prob,}
+\DoxyCodeLine{00606\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ index\_type,\ \doxymbox{\hyperlink{line-map_8h_aedf25620511d64e43327f1a229906a96}{location\_t}});}
+\DoxyCodeLine{00607\ }
+\DoxyCodeLine{00608\ \ \ \textcolor{comment}{/*\ Take\ an\ ordered\ list\ of\ case\ nodes}}
+\DoxyCodeLine{00609\ \textcolor{comment}{\ \ \ \ \ and\ transform\ them\ into\ a\ near\ optimal\ binary\ tree,}}
+\DoxyCodeLine{00610\ \textcolor{comment}{\ \ \ \ \ on\ the\ assumption\ that\ any\ target\ code\ selection\ value\ is\ as}}
+\DoxyCodeLine{00611\ \textcolor{comment}{\ \ \ \ \ likely\ as\ any\ other.}}
+\DoxyCodeLine{00612\ \textcolor{comment}{}}
+\DoxyCodeLine{00613\ \textcolor{comment}{\ \ \ \ \ The\ transformation\ is\ performed\ by\ splitting\ the\ ordered}}
+\DoxyCodeLine{00614\ \textcolor{comment}{\ \ \ \ \ list\ into\ two\ equal\ sections\ plus\ a\ pivot.\ \ The\ parts\ are}}
+\DoxyCodeLine{00615\ \textcolor{comment}{\ \ \ \ \ then\ attached\ to\ the\ pivot\ as\ left\ and\ right\ branches.\ \ Each}}
+\DoxyCodeLine{00616\ \textcolor{comment}{\ \ \ \ \ branch\ is\ then\ transformed\ recursively.\ \ */}}
+\DoxyCodeLine{00617\ \ \ \textcolor{keyword}{static}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classtree__switch__conversion_1_1switch__decision__tree_a4d5bf710d713e3a60c044220fa14b050}{balance\_case\_nodes}}\ (\doxymbox{\hyperlink{classtree__switch__conversion_1_1case__tree__node}{case\_tree\_node}}\ **head,}
+\DoxyCodeLine{00618\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{classtree__switch__conversion_1_1case__tree__node}{case\_tree\_node}}\ *parent);}
+\DoxyCodeLine{00619\ }
+\DoxyCodeLine{00620\ \ \ \textcolor{comment}{/*\ Dump\ ROOT,\ a\ list\ or\ tree\ of\ case\ nodes,\ to\ file\ F.\ \ */}}
+\DoxyCodeLine{00621\ \ \ \textcolor{keyword}{static}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classtree__switch__conversion_1_1switch__decision__tree_adf9e1e62145222d5003112edc7f901f2}{dump\_case\_nodes}}\ (FILE\ *f,\ \doxymbox{\hyperlink{classtree__switch__conversion_1_1case__tree__node}{case\_tree\_node}}\ *root,\ \textcolor{keywordtype}{int}\ indent\_step,}
+\DoxyCodeLine{00622\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{int}\ indent\_level);}
+\DoxyCodeLine{00623\ }
+\DoxyCodeLine{00624\ \ \ \textcolor{comment}{/*\ Add\ an\ unconditional\ jump\ to\ CASE\_BB\ that\ happens\ in\ basic\ block\ BB.\ \ */}}
+\DoxyCodeLine{00625\ \ \ \textcolor{keyword}{static}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classtree__switch__conversion_1_1switch__decision__tree_a9ea9920e2c04d5abe21dd2f95eb4451f}{emit\_jump}}\ (\doxymbox{\hyperlink{coretypes_8h_a0469df20b471a4cd7c81fbdce5027487}{basic\_block}}\ bb,\ \doxymbox{\hyperlink{coretypes_8h_a0469df20b471a4cd7c81fbdce5027487}{basic\_block}}\ case\_bb);}
+\DoxyCodeLine{00626\ }
+\DoxyCodeLine{00627\ \ \ \textcolor{comment}{/*\ Generate\ code\ to\ compare\ OP0\ with\ OP1\ so\ that\ the\ condition\ codes\ are}}
+\DoxyCodeLine{00628\ \textcolor{comment}{\ \ \ \ \ set\ and\ to\ jump\ to\ LABEL\_BB\ if\ the\ condition\ is\ true.}}
+\DoxyCodeLine{00629\ \textcolor{comment}{\ \ \ \ \ COMPARISON\ is\ the\ GIMPLE\ comparison\ (EQ,\ NE,\ GT,\ etc.).}}
+\DoxyCodeLine{00630\ \textcolor{comment}{\ \ \ \ \ PROB\ is\ the\ probability\ of\ jumping\ to\ LABEL\_BB.\ \ */}}
+\DoxyCodeLine{00631\ \ \ \textcolor{keyword}{static}\ \doxymbox{\hyperlink{coretypes_8h_a0469df20b471a4cd7c81fbdce5027487}{basic\_block}}\ \doxymbox{\hyperlink{classtree__switch__conversion_1_1switch__decision__tree_aa6fd8f39bb34b389cd47bd721aa5e773}{emit\_cmp\_and\_jump\_insns}}\ (\doxymbox{\hyperlink{coretypes_8h_a0469df20b471a4cd7c81fbdce5027487}{basic\_block}}\ bb,\ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ op0,}
+\DoxyCodeLine{00632\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ op1,\ \doxymbox{\hyperlink{tree-core_8h_aee7678415f75b79d1651bfccce10c9f5}{tree\_code}}\ comparison,}
+\DoxyCodeLine{00633\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{coretypes_8h_a0469df20b471a4cd7c81fbdce5027487}{basic\_block}}\ label\_bb,}
+\DoxyCodeLine{00634\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ profile\_probability\ prob,}
+\DoxyCodeLine{00635\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{line-map_8h_aedf25620511d64e43327f1a229906a96}{location\_t}});}
+\DoxyCodeLine{00636\ }
+\DoxyCodeLine{00637\ \ \ \textcolor{comment}{/*\ Generate\ code\ to\ jump\ to\ LABEL\ if\ OP0\ and\ OP1\ are\ equal\ in\ mode\ MODE.}}
+\DoxyCodeLine{00638\ \textcolor{comment}{\ \ \ \ \ PROB\ is\ the\ probability\ of\ jumping\ to\ LABEL\_BB.\ \ */}}
+\DoxyCodeLine{00639\ \ \ \textcolor{keyword}{static}\ \doxymbox{\hyperlink{coretypes_8h_a0469df20b471a4cd7c81fbdce5027487}{basic\_block}}\ \doxymbox{\hyperlink{classtree__switch__conversion_1_1switch__decision__tree_aa7cdf52e2f74edcc89718c091c7de1db}{do\_jump\_if\_equal}}\ (\doxymbox{\hyperlink{coretypes_8h_a0469df20b471a4cd7c81fbdce5027487}{basic\_block}}\ bb,\ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ op0,\ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ op1,}
+\DoxyCodeLine{00640\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{coretypes_8h_a0469df20b471a4cd7c81fbdce5027487}{basic\_block}}\ label\_bb,}
+\DoxyCodeLine{00641\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ profile\_probability\ prob,}
+\DoxyCodeLine{00642\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{line-map_8h_aedf25620511d64e43327f1a229906a96}{location\_t}});}
+\DoxyCodeLine{00643\ }
+\DoxyCodeLine{00644\ \ \ \textcolor{comment}{/*\ Reset\ the\ aux\ field\ of\ all\ outgoing\ edges\ of\ switch\ basic\ block.\ \ */}}
+\DoxyCodeLine{00645\ \ \ \textcolor{keyword}{static}\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classtree__switch__conversion_1_1switch__decision__tree_a6248d0f80ff17ea79183ad332377c22f}{reset\_out\_edges\_aux}}\ (gswitch\ *swtch);}
+\DoxyCodeLine{00646\ }
+\DoxyCodeLine{00647\ \ \ \textcolor{comment}{/*\ Switch\ statement.\ \ */}}
+\DoxyCodeLine{00648\ \ \ gswitch\ *\doxymbox{\hyperlink{classtree__switch__conversion_1_1switch__decision__tree_aad60fa61f5d4d48a3fb909384863f102}{m\_switch}};}
+\DoxyCodeLine{00649\ }
+\DoxyCodeLine{00650\ \ \ \textcolor{comment}{/*\ Map\ of\ PHI\ nodes\ that\ have\ to\ be\ fixed\ after\ expansion.\ \ */}}
+\DoxyCodeLine{00651\ \ \ \doxymbox{\hyperlink{classhash__map}{hash\_map<tree,\ tree>}}\ \doxymbox{\hyperlink{classtree__switch__conversion_1_1switch__decision__tree_a729cc3bd3d4728b343d96f6d1daf6b3b}{m\_phi\_mapping}};}
+\DoxyCodeLine{00652\ }
+\DoxyCodeLine{00653\ \ \ \textcolor{comment}{/*\ List\ of\ basic\ blocks\ that\ belong\ to\ labels\ of\ the\ switch.\ \ */}}
+\DoxyCodeLine{00654\ \ \ \doxymbox{\hyperlink{classauto__vec}{auto\_vec<basic\_block>}}\ \doxymbox{\hyperlink{classtree__switch__conversion_1_1switch__decision__tree_afff94cc6549b57459bf3938b2dffebbc}{m\_case\_bbs}};}
+\DoxyCodeLine{00655\ }
+\DoxyCodeLine{00656\ \ \ \textcolor{comment}{/*\ Basic\ block\ with\ default\ label.\ \ */}}
+\DoxyCodeLine{00657\ \ \ \doxymbox{\hyperlink{coretypes_8h_a0469df20b471a4cd7c81fbdce5027487}{basic\_block}}\ \doxymbox{\hyperlink{classtree__switch__conversion_1_1switch__decision__tree_aef87d8a2531d30fa25723adab3a292ec}{m\_default\_bb}};}
+\DoxyCodeLine{00658\ }
+\DoxyCodeLine{00659\ \ \ \textcolor{comment}{/*\ A\ pool\ for\ case\ nodes.\ \ */}}
+\DoxyCodeLine{00660\ \ \ \doxymbox{\hyperlink{classobject__allocator}{object\_allocator<case\_tree\_node>}}\ \doxymbox{\hyperlink{classtree__switch__conversion_1_1switch__decision__tree_ab5b033326a5b1d5376a9fae329b56403}{m\_case\_node\_pool}};}
+\DoxyCodeLine{00661\ }
+\DoxyCodeLine{00662\ \ \ \textcolor{comment}{/*\ Balanced\ tree\ of\ case\ nodes.\ \ */}}
+\DoxyCodeLine{00663\ \ \ \doxymbox{\hyperlink{classtree__switch__conversion_1_1case__tree__node}{case\_tree\_node}}\ *\doxymbox{\hyperlink{classtree__switch__conversion_1_1switch__decision__tree_aaa6542221e82b21fd9e7118649edbd05}{m\_case\_list}};}
+\DoxyCodeLine{00664\ \};}
+\DoxyCodeLine{00665\ }
+\DoxyCodeLine{00666\ \textcolor{comment}{/*}}
+\DoxyCodeLine{00667\ \textcolor{comment}{\ \ \ \ \ Switch\ initialization\ conversion}}
+\DoxyCodeLine{00668\ \textcolor{comment}{}}
+\DoxyCodeLine{00669\ \textcolor{comment}{The\ following\ pass\ changes\ simple\ initializations\ of\ scalars\ in\ a\ switch}}
+\DoxyCodeLine{00670\ \textcolor{comment}{statement\ into\ initializations\ from\ a\ static\ array.\ \ Obviously,\ the\ values}}
+\DoxyCodeLine{00671\ \textcolor{comment}{must\ be\ constant\ and\ known\ at\ compile\ time\ and\ a\ default\ branch\ must\ be}}
+\DoxyCodeLine{00672\ \textcolor{comment}{provided.\ \ For\ example,\ the\ following\ code:}}
+\DoxyCodeLine{00673\ \textcolor{comment}{}}
+\DoxyCodeLine{00674\ \textcolor{comment}{\ \ \ \ int\ a,b;}}
+\DoxyCodeLine{00675\ \textcolor{comment}{}}
+\DoxyCodeLine{00676\ \textcolor{comment}{\ \ \ \ switch\ (argc)}}
+\DoxyCodeLine{00677\ \textcolor{comment}{\ \ \ \ \{}}
+\DoxyCodeLine{00678\ \textcolor{comment}{\ \ \ \ \ case\ 1:}}
+\DoxyCodeLine{00679\ \textcolor{comment}{\ \ \ \ \ case\ 2:}}
+\DoxyCodeLine{00680\ \textcolor{comment}{\ \ \ \ \ \ \ \ a\_1\ =\ 8;}}
+\DoxyCodeLine{00681\ \textcolor{comment}{\ \ \ \ \ \ \ \ b\_1\ =\ 6;}}
+\DoxyCodeLine{00682\ \textcolor{comment}{\ \ \ \ \ \ \ \ break;}}
+\DoxyCodeLine{00683\ \textcolor{comment}{\ \ \ \ \ case\ 3:}}
+\DoxyCodeLine{00684\ \textcolor{comment}{\ \ \ \ \ \ \ \ a\_2\ =\ 9;}}
+\DoxyCodeLine{00685\ \textcolor{comment}{\ \ \ \ \ \ \ \ b\_2\ =\ 5;}}
+\DoxyCodeLine{00686\ \textcolor{comment}{\ \ \ \ \ \ \ \ break;}}
+\DoxyCodeLine{00687\ \textcolor{comment}{\ \ \ \ \ case\ 12:}}
+\DoxyCodeLine{00688\ \textcolor{comment}{\ \ \ \ \ \ \ \ a\_3\ =\ 10;}}
+\DoxyCodeLine{00689\ \textcolor{comment}{\ \ \ \ \ \ \ \ b\_3\ =\ 4;}}
+\DoxyCodeLine{00690\ \textcolor{comment}{\ \ \ \ \ \ \ \ break;}}
+\DoxyCodeLine{00691\ \textcolor{comment}{\ \ \ \ \ default:}}
+\DoxyCodeLine{00692\ \textcolor{comment}{\ \ \ \ \ \ \ \ a\_4\ =\ 16;}}
+\DoxyCodeLine{00693\ \textcolor{comment}{\ \ \ \ \ \ \ \ b\_4\ =\ 1;}}
+\DoxyCodeLine{00694\ \textcolor{comment}{\ \ \ \ \ \ \ \ break;}}
+\DoxyCodeLine{00695\ \textcolor{comment}{\ \ \ \ \}}}
+\DoxyCodeLine{00696\ \textcolor{comment}{\ \ \ \ a\_5\ =\ PHI\ <a\_1,\ a\_2,\ a\_3,\ a\_4>}}
+\DoxyCodeLine{00697\ \textcolor{comment}{\ \ \ \ b\_5\ =\ PHI\ <b\_1,\ b\_2,\ b\_3,\ b\_4>}}
+\DoxyCodeLine{00698\ \textcolor{comment}{}}
+\DoxyCodeLine{00699\ \textcolor{comment}{}}
+\DoxyCodeLine{00700\ \textcolor{comment}{is\ changed\ into:}}
+\DoxyCodeLine{00701\ \textcolor{comment}{}}
+\DoxyCodeLine{00702\ \textcolor{comment}{\ \ \ \ static\ const\ int\ =\ CSWTCH01[]\ =\ \{6,\ 6,\ 5,\ 1,\ 1,\ 1,\ 1,\ 1,\ 1,\ 1,\ 1,\ 4\};}}
+\DoxyCodeLine{00703\ \textcolor{comment}{\ \ \ \ static\ const\ int\ =\ CSWTCH02[]\ =\ \{8,\ 8,\ 9,\ 16,\ 16,\ 16,\ 16,\ 16,\ 16,\ 16,}}
+\DoxyCodeLine{00704\ \textcolor{comment}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ 16,\ 16,\ 10\};}}
+\DoxyCodeLine{00705\ \textcolor{comment}{}}
+\DoxyCodeLine{00706\ \textcolor{comment}{\ \ \ \ if\ (((unsigned)\ argc)\ -\/\ 1\ <\ 11)}}
+\DoxyCodeLine{00707\ \textcolor{comment}{\ \ \ \ \ \ \{}}
+\DoxyCodeLine{00708\ \textcolor{comment}{\ \ \ \ \ \ \ \ a\_6\ =\ CSWTCH02[argc\ -\/\ 1];}}
+\DoxyCodeLine{00709\ \textcolor{comment}{\ \ \ \ \ \ \ \ b\_6\ =\ CSWTCH01[argc\ -\/\ 1];}}
+\DoxyCodeLine{00710\ \textcolor{comment}{\ \ \ \ \ \ \}}}
+\DoxyCodeLine{00711\ \textcolor{comment}{\ \ \ \ else}}
+\DoxyCodeLine{00712\ \textcolor{comment}{\ \ \ \ \ \ \{}}
+\DoxyCodeLine{00713\ \textcolor{comment}{\ \ \ \ \ \ \ \ a\_7\ =\ 16;}}
+\DoxyCodeLine{00714\ \textcolor{comment}{\ \ \ \ \ \ \ \ b\_7\ =\ 1;}}
+\DoxyCodeLine{00715\ \textcolor{comment}{\ \ \ \ \ \ \}}}
+\DoxyCodeLine{00716\ \textcolor{comment}{\ \ \ \ a\_5\ =\ PHI\ <a\_6,\ a\_7>}}
+\DoxyCodeLine{00717\ \textcolor{comment}{\ \ \ \ b\_b\ =\ PHI\ <b\_6,\ b\_7>}}
+\DoxyCodeLine{00718\ \textcolor{comment}{}}
+\DoxyCodeLine{00719\ \textcolor{comment}{There\ are\ further\ constraints.\ \ Specifically,\ the\ range\ of\ values\ across\ all}}
+\DoxyCodeLine{00720\ \textcolor{comment}{case\ labels\ must\ not\ be\ bigger\ than\ param\_switch\_conversion\_branch\_ratio}}
+\DoxyCodeLine{00721\ \textcolor{comment}{(default\ eight)\ times\ the\ number\ of\ the\ actual\ switch\ branches.}}
+\DoxyCodeLine{00722\ \textcolor{comment}{}}
+\DoxyCodeLine{00723\ \textcolor{comment}{This\ transformation\ was\ contributed\ by\ Martin\ Jambor,\ see\ this\ e-\/mail:}}
+\DoxyCodeLine{00724\ \textcolor{comment}{\ \ \ http://gcc.gnu.org/ml/gcc-\/patches/2008-\/07/msg00011.html\ \ */}}
+\DoxyCodeLine{00725\ }
+\DoxyCodeLine{00726\ \textcolor{comment}{/*\ The\ main\ structure\ of\ the\ pass.\ \ */}}
+\DoxyCodeLine{00727\ \textcolor{keyword}{class\ }\doxymbox{\hyperlink{classtree__switch__conversion_1_1switch__conversion_ad543b10de140760e129f42b4c87bedfa}{switch\_conversion}}}
+\DoxyCodeLine{00728\ \{}
+\DoxyCodeLine{00729\ \textcolor{keyword}{public}:}
+\DoxyCodeLine{00730\ \ \ \textcolor{comment}{/*\ Constructor.\ \ */}}
+\DoxyCodeLine{00731\ \ \ \doxymbox{\hyperlink{classtree__switch__conversion_1_1switch__conversion_ad543b10de140760e129f42b4c87bedfa}{switch\_conversion}}\ ();}
+\DoxyCodeLine{00732\ }
+\DoxyCodeLine{00733\ \ \ \textcolor{comment}{/*\ Destructor.\ \ */}}
+\DoxyCodeLine{00734\ \ \ \doxymbox{\hyperlink{classtree__switch__conversion_1_1switch__conversion_ae235c439762a9aba1e86e6811b6aa41f}{\string~switch\_conversion}}\ ();}
+\DoxyCodeLine{00735\ }
+\DoxyCodeLine{00736\ \ \ \textcolor{comment}{/*\ The\ following\ function\ is\ invoked\ on\ every\ switch\ statement\ (the\ current}}
+\DoxyCodeLine{00737\ \textcolor{comment}{\ \ \ \ \ one\ is\ given\ in\ SWTCH)\ and\ runs\ the\ individual\ phases\ of\ switch}}
+\DoxyCodeLine{00738\ \textcolor{comment}{\ \ \ \ \ conversion\ on\ it\ one\ after\ another\ until\ one\ fails\ or\ the\ conversion}}
+\DoxyCodeLine{00739\ \textcolor{comment}{\ \ \ \ \ is\ completed.\ \ On\ success,\ NULL\ is\ in\ m\_reason,\ otherwise\ points}}
+\DoxyCodeLine{00740\ \textcolor{comment}{\ \ \ \ \ to\ a\ string\ with\ the\ reason\ why\ the\ conversion\ failed.\ \ */}}
+\DoxyCodeLine{00741\ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classtree__switch__conversion_1_1switch__conversion_ada9dceaea1f56941fc34534d6c94870c}{expand}}\ (gswitch\ *swtch);}
+\DoxyCodeLine{00742\ }
+\DoxyCodeLine{00743\ \ \ \textcolor{comment}{/*\ Collection\ information\ about\ SWTCH\ statement.\ \ */}}
+\DoxyCodeLine{00744\ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classtree__switch__conversion_1_1switch__conversion_aba9a33af7492b6b8403920400375467f}{collect}}\ (gswitch\ *swtch);}
+\DoxyCodeLine{00745\ }
+\DoxyCodeLine{00746\ \ \ \textcolor{comment}{/*\ Checks\ whether\ the\ range\ given\ by\ individual\ case\ statements\ of\ the\ switch}}
+\DoxyCodeLine{00747\ \textcolor{comment}{\ \ \ \ \ switch\ statement\ isn't\ too\ big\ and\ whether\ the\ number\ of\ branches\ actually}}
+\DoxyCodeLine{00748\ \textcolor{comment}{\ \ \ \ \ satisfies\ the\ size\ of\ the\ new\ array.\ \ */}}
+\DoxyCodeLine{00749\ \ \ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{classtree__switch__conversion_1_1switch__conversion_aabaf60359ffc477111d84cec90ad26dd}{check\_range}}\ ();}
+\DoxyCodeLine{00750\ }
+\DoxyCodeLine{00751\ \ \ \textcolor{comment}{/*\ Checks\ whether\ all\ but\ the\ final\ BB\ basic\ blocks\ are\ empty.\ \ */}}
+\DoxyCodeLine{00752\ \ \ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{classtree__switch__conversion_1_1switch__conversion_a068276d3a401778274f6cc9da2001b56}{check\_all\_empty\_except\_final}}\ ();}
+\DoxyCodeLine{00753\ }
+\DoxyCodeLine{00754\ \ \ \textcolor{comment}{/*\ This\ function\ checks\ whether\ all\ required\ values\ in\ phi\ nodes\ in\ final\_bb}}
+\DoxyCodeLine{00755\ \textcolor{comment}{\ \ \ \ \ are\ constants.\ \ Required\ values\ are\ those\ that\ correspond\ to\ a\ basic\ block}}
+\DoxyCodeLine{00756\ \textcolor{comment}{\ \ \ \ \ which\ is\ a\ part\ of\ the\ examined\ switch\ statement.\ \ It\ returns\ true\ if\ the}}
+\DoxyCodeLine{00757\ \textcolor{comment}{\ \ \ \ \ phi\ nodes\ are\ OK,\ otherwise\ false.\ \ */}}
+\DoxyCodeLine{00758\ \ \ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{classtree__switch__conversion_1_1switch__conversion_a9bec66f7ac13cc5f09de96be5871d8b6}{check\_final\_bb}}\ ();}
+\DoxyCodeLine{00759\ }
+\DoxyCodeLine{00760\ \ \ \textcolor{comment}{/*\ The\ following\ function\ allocates\ default\_values,\ target\_\{in,out\}\_names\ and}}
+\DoxyCodeLine{00761\ \textcolor{comment}{\ \ \ \ \ constructors\ arrays.\ \ The\ last\ one\ is\ also\ populated\ with\ pointers\ to}}
+\DoxyCodeLine{00762\ \textcolor{comment}{\ \ \ \ \ vectors\ that\ will\ become\ constructors\ of\ new\ arrays.\ \ */}}
+\DoxyCodeLine{00763\ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classtree__switch__conversion_1_1switch__conversion_a3e17753cd0631d9397bb4ee9eedbf9f7}{create\_temp\_arrays}}\ ();}
+\DoxyCodeLine{00764\ }
+\DoxyCodeLine{00765\ \ \ \textcolor{comment}{/*\ Populate\ the\ array\ of\ default\ values\ in\ the\ order\ of\ phi\ nodes.}}
+\DoxyCodeLine{00766\ \textcolor{comment}{\ \ \ \ \ DEFAULT\_CASE\ is\ the\ CASE\_LABEL\_EXPR\ for\ the\ default\ switch\ branch}}
+\DoxyCodeLine{00767\ \textcolor{comment}{\ \ \ \ \ if\ the\ range\ is\ non-\/contiguous\ or\ the\ default\ case\ has\ standard}}
+\DoxyCodeLine{00768\ \textcolor{comment}{\ \ \ \ \ structure,\ otherwise\ it\ is\ the\ first\ non-\/default\ case\ instead.\ \ */}}
+\DoxyCodeLine{00769\ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classtree__switch__conversion_1_1switch__conversion_a798512151e617814d82623680ed83466}{gather\_default\_values}}\ (\doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ default\_case);}
+\DoxyCodeLine{00770\ }
+\DoxyCodeLine{00771\ \ \ \textcolor{comment}{/*\ The\ following\ function\ populates\ the\ vectors\ in\ the\ constructors\ array\ with}}
+\DoxyCodeLine{00772\ \textcolor{comment}{\ \ \ \ \ future\ contents\ of\ the\ static\ arrays.\ \ The\ vectors\ are\ populated\ in\ the}}
+\DoxyCodeLine{00773\ \textcolor{comment}{\ \ \ \ \ order\ of\ phi\ nodes.\ \ */}}
+\DoxyCodeLine{00774\ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classtree__switch__conversion_1_1switch__conversion_ae9b8a08f3f3fbf94c7cbc770e69f0f8f}{build\_constructors}}\ ();}
+\DoxyCodeLine{00775\ }
+\DoxyCodeLine{00776\ \ \ \textcolor{comment}{/*\ If\ all\ values\ in\ the\ constructor\ vector\ are\ products\ of\ a\ linear\ function}}
+\DoxyCodeLine{00777\ \textcolor{comment}{\ \ \ \ \ a\ *\ x\ +\ b,\ then\ return\ true.\ \ When\ true,\ COEFF\_A\ and\ COEFF\_B\ and}}
+\DoxyCodeLine{00778\ \textcolor{comment}{\ \ \ \ \ coefficients\ of\ the\ linear\ function.\ \ Note\ that\ equal\ values\ are\ special}}
+\DoxyCodeLine{00779\ \textcolor{comment}{\ \ \ \ \ case\ of\ a\ linear\ function\ with\ a\ and\ b\ equal\ to\ zero.\ \ */}}
+\DoxyCodeLine{00780\ \ \ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{classtree__switch__conversion_1_1switch__conversion_aaab378b8370ceb30b09fb781d0aa6c8c}{contains\_linear\_function\_p}}\ (\doxymbox{\hyperlink{structvec}{vec<constructor\_elt,\ va\_gc>}}\ *\doxymbox{\hyperlink{structvec}{vec}},}
+\DoxyCodeLine{00781\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{wide-int_8h_a9a29e47e2c40ae9adaf47df15970eced}{wide\_int}}\ *coeff\_a,\ \doxymbox{\hyperlink{wide-int_8h_a9a29e47e2c40ae9adaf47df15970eced}{wide\_int}}\ *coeff\_b);}
+\DoxyCodeLine{00782\ }
+\DoxyCodeLine{00783\ \ \ \textcolor{comment}{/*\ Return\ type\ which\ should\ be\ used\ for\ array\ elements,\ either\ TYPE's}}
+\DoxyCodeLine{00784\ \textcolor{comment}{\ \ \ \ \ main\ variant\ or,\ for\ integral\ types,\ some\ smaller\ integral\ type}}
+\DoxyCodeLine{00785\ \textcolor{comment}{\ \ \ \ \ that\ can\ still\ hold\ all\ the\ constants.\ \ */}}
+\DoxyCodeLine{00786\ \ \ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ \doxymbox{\hyperlink{classtree__switch__conversion_1_1switch__conversion_ab77dea76f571edf88a1b230d136b1346}{array\_value\_type}}\ (\doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ \doxymbox{\hyperlink{structtype}{type}},\ \textcolor{keywordtype}{int}\ num);}
+\DoxyCodeLine{00787\ }
+\DoxyCodeLine{00788\ \ \ \textcolor{comment}{/*\ Create\ an\ appropriate\ array\ type\ and\ declaration\ and\ assemble\ a\ static}}
+\DoxyCodeLine{00789\ \textcolor{comment}{\ \ \ \ \ array\ variable.\ \ Also\ create\ a\ load\ statement\ that\ initializes}}
+\DoxyCodeLine{00790\ \textcolor{comment}{\ \ \ \ \ the\ variable\ in\ question\ with\ a\ value\ from\ the\ static\ array.\ \ SWTCH\ is}}
+\DoxyCodeLine{00791\ \textcolor{comment}{\ \ \ \ \ the\ switch\ statement\ being\ converted,\ NUM\ is\ the\ index\ to}}
+\DoxyCodeLine{00792\ \textcolor{comment}{\ \ \ \ \ arrays\ of\ constructors,\ default\ values\ and\ target\ SSA\ names}}
+\DoxyCodeLine{00793\ \textcolor{comment}{\ \ \ \ \ for\ this\ particular\ array.\ \ ARR\_INDEX\_TYPE\ is\ the\ type\ of\ the\ index}}
+\DoxyCodeLine{00794\ \textcolor{comment}{\ \ \ \ \ of\ the\ new\ array,\ PHI\ is\ the\ phi\ node\ of\ the\ final\ BB\ that\ corresponds}}
+\DoxyCodeLine{00795\ \textcolor{comment}{\ \ \ \ \ to\ the\ value\ that\ will\ be\ loaded\ from\ the\ created\ array.\ \ TIDX}}
+\DoxyCodeLine{00796\ \textcolor{comment}{\ \ \ \ \ is\ an\ ssa\ name\ of\ a\ temporary\ variable\ holding\ the\ index\ for\ loads\ from\ the}}
+\DoxyCodeLine{00797\ \textcolor{comment}{\ \ \ \ \ new\ array.\ \ */}}
+\DoxyCodeLine{00798\ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classtree__switch__conversion_1_1switch__conversion_a6465f648390206a5665234a90d46bf67}{build\_one\_array}}\ (\textcolor{keywordtype}{int}\ num,\ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ arr\_index\_type,}
+\DoxyCodeLine{00799\ \ \ \ \ \ \ \ \ \ \ \ \ gphi\ *phi,\ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ tidx);}
+\DoxyCodeLine{00800\ }
+\DoxyCodeLine{00801\ \ \ \textcolor{comment}{/*\ Builds\ and\ initializes\ static\ arrays\ initialized\ with\ values\ gathered\ from}}
+\DoxyCodeLine{00802\ \textcolor{comment}{\ \ \ \ \ the\ switch\ statement.\ \ Also\ creates\ statements\ that\ load\ values\ from}}
+\DoxyCodeLine{00803\ \textcolor{comment}{\ \ \ \ \ them.\ \ */}}
+\DoxyCodeLine{00804\ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classtree__switch__conversion_1_1switch__conversion_a7dc5c2267cbbb6e5d164ed3b0a58475c}{build\_arrays}}\ ();}
+\DoxyCodeLine{00805\ }
+\DoxyCodeLine{00806\ \ \ \textcolor{comment}{/*\ Generates\ and\ appropriately\ inserts\ loads\ of\ default\ values\ at\ the\ position}}
+\DoxyCodeLine{00807\ \textcolor{comment}{\ \ \ \ \ given\ by\ GSI.\ \ Returns\ the\ last\ inserted\ statement.\ \ */}}
+\DoxyCodeLine{00808\ \ \ gassign\ *\doxymbox{\hyperlink{classtree__switch__conversion_1_1switch__conversion_a8fc962819adc9c968f129d648bceb0d6}{gen\_def\_assigns}}\ (\doxymbox{\hyperlink{structgimple__stmt__iterator}{gimple\_stmt\_iterator}}\ *gsi);}
+\DoxyCodeLine{00809\ }
+\DoxyCodeLine{00810\ \ \ \textcolor{comment}{/*\ Deletes\ the\ unused\ bbs\ and\ edges\ that\ now\ contain\ the\ switch\ statement\ and}}
+\DoxyCodeLine{00811\ \textcolor{comment}{\ \ \ \ \ its\ empty\ branch\ bbs.\ \ BBD\ is\ the\ now\ dead\ BB\ containing}}
+\DoxyCodeLine{00812\ \textcolor{comment}{\ \ \ \ \ the\ original\ switch\ statement,\ FINAL\ is\ the\ last\ BB\ of\ the\ converted}}
+\DoxyCodeLine{00813\ \textcolor{comment}{\ \ \ \ \ switch\ statement\ (in\ terms\ of\ succession).\ \ */}}
+\DoxyCodeLine{00814\ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classtree__switch__conversion_1_1switch__conversion_af327cff9257f7b817603994d8eb9afbb}{prune\_bbs}}\ (\doxymbox{\hyperlink{coretypes_8h_a0469df20b471a4cd7c81fbdce5027487}{basic\_block}}\ bbd,\ \doxymbox{\hyperlink{coretypes_8h_a0469df20b471a4cd7c81fbdce5027487}{basic\_block}}\ \textcolor{keyword}{final},\ \doxymbox{\hyperlink{coretypes_8h_a0469df20b471a4cd7c81fbdce5027487}{basic\_block}}\ default\_bb);}
+\DoxyCodeLine{00815\ }
+\DoxyCodeLine{00816\ \ \ \textcolor{comment}{/*\ Add\ values\ to\ phi\ nodes\ in\ final\_bb\ for\ the\ two\ new\ edges.\ \ E1F\ is\ the\ edge}}
+\DoxyCodeLine{00817\ \textcolor{comment}{\ \ \ \ \ from\ the\ basic\ block\ loading\ values\ from\ an\ array\ and\ E2F\ from\ the\ basic}}
+\DoxyCodeLine{00818\ \textcolor{comment}{\ \ \ \ \ block\ loading\ default\ values.\ \ BBF\ is\ the\ last\ switch\ basic\ block\ (see\ the}}
+\DoxyCodeLine{00819\ \textcolor{comment}{\ \ \ \ \ bbf\ description\ in\ the\ comment\ below).\ \ */}}
+\DoxyCodeLine{00820\ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classtree__switch__conversion_1_1switch__conversion_a63f2bff4cc9767db7351dcd0cc8efd21}{fix\_phi\_nodes}}\ (\doxymbox{\hyperlink{coretypes_8h_a44ae11f0c90646aa6208ad4bf486490b}{edge}}\ e1f,\ \doxymbox{\hyperlink{coretypes_8h_a44ae11f0c90646aa6208ad4bf486490b}{edge}}\ e2f,\ \doxymbox{\hyperlink{coretypes_8h_a0469df20b471a4cd7c81fbdce5027487}{basic\_block}}\ bbf);}
+\DoxyCodeLine{00821\ }
+\DoxyCodeLine{00822\ \ \ \textcolor{comment}{/*\ Creates\ a\ check\ whether\ the\ switch\ expression\ value\ actually\ falls\ into\ the}}
+\DoxyCodeLine{00823\ \textcolor{comment}{\ \ \ \ \ range\ given\ by\ all\ the\ cases.\ \ If\ it\ does\ not,\ the\ temporaries\ are\ loaded}}
+\DoxyCodeLine{00824\ \textcolor{comment}{\ \ \ \ \ with\ default\ values\ instead.\ \ */}}
+\DoxyCodeLine{00825\ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classtree__switch__conversion_1_1switch__conversion_ac0935101ce4390720a6ca8436db15b20}{gen\_inbound\_check}}\ ();}
+\DoxyCodeLine{00826\ }
+\DoxyCodeLine{00827\ \ \ \textcolor{comment}{/*\ Switch\ statement\ for\ which\ switch\ conversion\ takes\ place.\ \ */}}
+\DoxyCodeLine{00828\ \ \ gswitch\ *\doxymbox{\hyperlink{classtree__switch__conversion_1_1switch__conversion_afa75deb9992cdd92b93376c885baf96f}{m\_switch}};}
+\DoxyCodeLine{00829\ }
+\DoxyCodeLine{00830\ \ \ \textcolor{comment}{/*\ The\ expression\ used\ to\ decide\ the\ switch\ branch.\ \ */}}
+\DoxyCodeLine{00831\ \ \ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ \doxymbox{\hyperlink{classtree__switch__conversion_1_1switch__conversion_a71ca565242a1842a4b1b2a7bc1c41f98}{m\_index\_expr}};}
+\DoxyCodeLine{00832\ }
+\DoxyCodeLine{00833\ \ \ \textcolor{comment}{/*\ The\ following\ integer\ constants\ store\ the\ minimum\ and\ maximum\ value}}
+\DoxyCodeLine{00834\ \textcolor{comment}{\ \ \ \ \ covered\ by\ the\ case\ labels.\ \ */}}
+\DoxyCodeLine{00835\ \ \ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ \doxymbox{\hyperlink{classtree__switch__conversion_1_1switch__conversion_a366d771dbfb5316fc6cb87370fec8d47}{m\_range\_min}};}
+\DoxyCodeLine{00836\ \ \ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ \doxymbox{\hyperlink{classtree__switch__conversion_1_1switch__conversion_a517a8a122302289115f047f22a6a1c0b}{m\_range\_max}};}
+\DoxyCodeLine{00837\ }
+\DoxyCodeLine{00838\ \ \ \textcolor{comment}{/*\ The\ difference\ between\ the\ above\ two\ numbers.\ \ Stored\ here\ because\ it}}
+\DoxyCodeLine{00839\ \textcolor{comment}{\ \ \ \ \ is\ used\ in\ all\ the\ conversion\ heuristics,\ as\ well\ as\ for\ some\ of\ the}}
+\DoxyCodeLine{00840\ \textcolor{comment}{\ \ \ \ \ transformation,\ and\ it\ is\ expensive\ to\ re-\/compute\ it\ all\ the\ time.\ \ */}}
+\DoxyCodeLine{00841\ \ \ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ \doxymbox{\hyperlink{classtree__switch__conversion_1_1switch__conversion_ab683231af17e6a8a6ceba1fa434e4f5d}{m\_range\_size}};}
+\DoxyCodeLine{00842\ }
+\DoxyCodeLine{00843\ \ \ \textcolor{comment}{/*\ Basic\ block\ that\ contains\ the\ actual\ GIMPLE\_SWITCH.\ \ */}}
+\DoxyCodeLine{00844\ \ \ \doxymbox{\hyperlink{coretypes_8h_a0469df20b471a4cd7c81fbdce5027487}{basic\_block}}\ \doxymbox{\hyperlink{classtree__switch__conversion_1_1switch__conversion_a01c2ace923cb61f227ba1848d6d5bda6}{m\_switch\_bb}};}
+\DoxyCodeLine{00845\ }
+\DoxyCodeLine{00846\ \ \ \textcolor{comment}{/*\ Basic\ block\ that\ is\ the\ target\ of\ the\ default\ case.\ \ */}}
+\DoxyCodeLine{00847\ \ \ \doxymbox{\hyperlink{coretypes_8h_a0469df20b471a4cd7c81fbdce5027487}{basic\_block}}\ \doxymbox{\hyperlink{classtree__switch__conversion_1_1switch__conversion_aacc47665693f6eb99e58746b601f67d3}{m\_default\_bb}};}
+\DoxyCodeLine{00848\ }
+\DoxyCodeLine{00849\ \ \ \textcolor{comment}{/*\ The\ single\ successor\ block\ of\ all\ branches\ out\ of\ the\ GIMPLE\_SWITCH,}}
+\DoxyCodeLine{00850\ \textcolor{comment}{\ \ \ \ \ if\ such\ a\ block\ exists.\ \ Otherwise\ NULL.\ \ */}}
+\DoxyCodeLine{00851\ \ \ \doxymbox{\hyperlink{coretypes_8h_a0469df20b471a4cd7c81fbdce5027487}{basic\_block}}\ \doxymbox{\hyperlink{classtree__switch__conversion_1_1switch__conversion_a932c421be2102c11af1b57731940c583}{m\_final\_bb}};}
+\DoxyCodeLine{00852\ }
+\DoxyCodeLine{00853\ \ \ \textcolor{comment}{/*\ The\ probability\ of\ the\ default\ edge\ in\ the\ replaced\ switch.\ \ */}}
+\DoxyCodeLine{00854\ \ \ profile\_probability\ \doxymbox{\hyperlink{classtree__switch__conversion_1_1switch__conversion_adb5668a36cde3873d9986fc7ac5173b3}{m\_default\_prob}};}
+\DoxyCodeLine{00855\ }
+\DoxyCodeLine{00856\ \ \ \textcolor{comment}{/*\ Number\ of\ phi\ nodes\ in\ the\ final\ bb\ (that\ we'll\ be\ replacing).\ \ */}}
+\DoxyCodeLine{00857\ \ \ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{classtree__switch__conversion_1_1switch__conversion_a01eba50c3375fb7ed1789e02df99920c}{m\_phi\_count}};}
+\DoxyCodeLine{00858\ }
+\DoxyCodeLine{00859\ \ \ \textcolor{comment}{/*\ Constructors\ of\ new\ static\ arrays.\ \ */}}
+\DoxyCodeLine{00860\ \ \ \doxymbox{\hyperlink{structvec}{vec<constructor\_elt,\ va\_gc>}}\ **\doxymbox{\hyperlink{classtree__switch__conversion_1_1switch__conversion_afd076b57a4739599b230d9a63b4bd856}{m\_constructors}};}
+\DoxyCodeLine{00861\ }
+\DoxyCodeLine{00862\ \ \ \textcolor{comment}{/*\ Array\ of\ default\ values,\ in\ the\ same\ order\ as\ phi\ nodes.\ \ */}}
+\DoxyCodeLine{00863\ \ \ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ *\doxymbox{\hyperlink{classtree__switch__conversion_1_1switch__conversion_a86e83f862fa9c2a2cbc1da878eb9983b}{m\_default\_values}};}
+\DoxyCodeLine{00864\ }
+\DoxyCodeLine{00865\ \ \ \textcolor{comment}{/*\ Array\ of\ ssa\ names\ that\ are\ initialized\ with\ a\ value\ from\ a\ new\ static}}
+\DoxyCodeLine{00866\ \textcolor{comment}{\ \ \ \ \ array.\ \ */}}
+\DoxyCodeLine{00867\ \ \ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ *\doxymbox{\hyperlink{classtree__switch__conversion_1_1switch__conversion_a7d48150a3279ef6c62bdb277a5562d17}{m\_target\_inbound\_names}};}
+\DoxyCodeLine{00868\ }
+\DoxyCodeLine{00869\ \ \ \textcolor{comment}{/*\ Array\ of\ ssa\ names\ that\ are\ initialized\ with\ the\ default\ value\ if\ the}}
+\DoxyCodeLine{00870\ \textcolor{comment}{\ \ \ \ \ switch\ expression\ is\ out\ of\ range.\ \ */}}
+\DoxyCodeLine{00871\ \ \ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ *\doxymbox{\hyperlink{classtree__switch__conversion_1_1switch__conversion_a0dc20bd242d9355aec320ac1807411ee}{m\_target\_outbound\_names}};}
+\DoxyCodeLine{00872\ }
+\DoxyCodeLine{00873\ \ \ \textcolor{comment}{/*\ VOP\ SSA\_NAME.\ \ */}}
+\DoxyCodeLine{00874\ \ \ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ \doxymbox{\hyperlink{classtree__switch__conversion_1_1switch__conversion_af61f6d44fa58ca3f67735cc69dbc0278}{m\_target\_vop}};}
+\DoxyCodeLine{00875\ }
+\DoxyCodeLine{00876\ \ \ \textcolor{comment}{/*\ The\ first\ load\ statement\ that\ loads\ a\ temporary\ from\ a\ new\ static\ array.}}
+\DoxyCodeLine{00877\ \textcolor{comment}{\ \ \ */}}
+\DoxyCodeLine{00878\ \ \ gimple\ *\doxymbox{\hyperlink{classtree__switch__conversion_1_1switch__conversion_a2a249792c4200dde5d907516c2bb436c}{m\_arr\_ref\_first}};}
+\DoxyCodeLine{00879\ }
+\DoxyCodeLine{00880\ \ \ \textcolor{comment}{/*\ The\ last\ load\ statement\ that\ loads\ a\ temporary\ from\ a\ new\ static\ array.\ \ */}}
+\DoxyCodeLine{00881\ \ \ gimple\ *\doxymbox{\hyperlink{classtree__switch__conversion_1_1switch__conversion_a02e169ae7d30ef2167bf06816bbea9e7}{m\_arr\_ref\_last}};}
+\DoxyCodeLine{00882\ }
+\DoxyCodeLine{00883\ \ \ \textcolor{comment}{/*\ String\ reason\ why\ the\ case\ wasn't\ a\ good\ candidate\ that\ is\ written\ to\ the}}
+\DoxyCodeLine{00884\ \textcolor{comment}{\ \ \ \ \ dump\ file,\ if\ there\ is\ one.\ \ */}}
+\DoxyCodeLine{00885\ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *\doxymbox{\hyperlink{classtree__switch__conversion_1_1switch__conversion_a93ca527e7c6bb420b7a5880512caad75}{m\_reason}};}
+\DoxyCodeLine{00886\ }
+\DoxyCodeLine{00887\ \ \ \textcolor{comment}{/*\ True\ if\ default\ case\ is\ not\ used\ for\ any\ value\ between\ range\_min\ and}}
+\DoxyCodeLine{00888\ \textcolor{comment}{\ \ \ \ \ range\_max\ inclusive.\ \ */}}
+\DoxyCodeLine{00889\ \ \ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{classtree__switch__conversion_1_1switch__conversion_ad1dac7aba88cb20771969d6c2541d8d2}{m\_contiguous\_range}};}
+\DoxyCodeLine{00890\ }
+\DoxyCodeLine{00891\ \ \ \textcolor{comment}{/*\ True\ if\ default\ case\ does\ not\ have\ the\ required\ shape\ for\ other\ case}}
+\DoxyCodeLine{00892\ \textcolor{comment}{\ \ \ \ \ labels.\ \ */}}
+\DoxyCodeLine{00893\ \ \ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{classtree__switch__conversion_1_1switch__conversion_a7ec6c4d9ebbf22581b2243ba856fc05c}{m\_default\_case\_nonstandard}};}
+\DoxyCodeLine{00894\ }
+\DoxyCodeLine{00895\ \ \ \textcolor{comment}{/*\ Number\ of\ uniq\ labels\ for\ non-\/default\ edges.\ \ */}}
+\DoxyCodeLine{00896\ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{classtree__switch__conversion_1_1switch__conversion_acdcfc5563d3b9f9b4560b2e7e5e3abcf}{m\_uniq}};}
+\DoxyCodeLine{00897\ }
+\DoxyCodeLine{00898\ \ \ \textcolor{comment}{/*\ Count\ is\ number\ of\ non-\/default\ edges.\ \ */}}
+\DoxyCodeLine{00899\ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{classtree__switch__conversion_1_1switch__conversion_a06dbb838530c2a22eae646fda9951a6c}{m\_count}};}
+\DoxyCodeLine{00900\ }
+\DoxyCodeLine{00901\ \ \ \textcolor{comment}{/*\ True\ if\ CFG\ has\ been\ changed.\ \ */}}
+\DoxyCodeLine{00902\ \ \ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{classtree__switch__conversion_1_1switch__conversion_af6731f3849362d89853695ee84a6ded0}{m\_cfg\_altered}};}
+\DoxyCodeLine{00903\ \};}
+\DoxyCodeLine{00904\ }
+\DoxyCodeLine{00905\ \textcolor{keywordtype}{void}}
+\DoxyCodeLine{00906\ \doxymbox{\hyperlink{classtree__switch__conversion_1_1switch__decision__tree_a6248d0f80ff17ea79183ad332377c22f}{switch\_decision\_tree::reset\_out\_edges\_aux}}\ (gswitch\ *swtch)}
+\DoxyCodeLine{00907\ \{}
+\DoxyCodeLine{00908\ \ \ \doxymbox{\hyperlink{coretypes_8h_a0469df20b471a4cd7c81fbdce5027487}{basic\_block}}\ bb\ =\ \doxymbox{\hyperlink{gimple_8h_aa9d1c919bc5fba2f5851b1e342200e17}{gimple\_bb}}\ (swtch);}
+\DoxyCodeLine{00909\ \ \ \doxymbox{\hyperlink{coretypes_8h_a44ae11f0c90646aa6208ad4bf486490b}{edge}}\ e;}
+\DoxyCodeLine{00910\ \ \ \doxymbox{\hyperlink{structedge__iterator}{edge\_iterator}}\ ei;}
+\DoxyCodeLine{00911\ \ \ \doxymbox{\hyperlink{basic-block_8h_ad9116aef500c6bad6c2ed3d9d0295b61}{FOR\_EACH\_EDGE}}\ (e,\ ei,\ bb-\/>succs)}
+\DoxyCodeLine{00912\ \ \ \ \ e-\/>aux\ =\ (\textcolor{keywordtype}{void}\ *)\ 0;}
+\DoxyCodeLine{00913\ \}}
+\DoxyCodeLine{00914\ }
+\DoxyCodeLine{00915\ \textcolor{comment}{/*\ Release\ CLUSTERS\ vector\ and\ destruct\ all\ dynamically\ allocated\ items.\ \ */}}
+\DoxyCodeLine{00916\ }
+\DoxyCodeLine{00917\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{void}}
+\DoxyCodeLine{00918\ \doxymbox{\hyperlink{namespacetree__switch__conversion_a03b7262e8a0d93309a24fa7cd92059c1}{release\_clusters}}\ (\doxymbox{\hyperlink{structvec}{vec<cluster\ *>}}\ \&clusters)}
+\DoxyCodeLine{00919\ \{}
+\DoxyCodeLine{00920\ \ \ \textcolor{keywordflow}{for}\ (\textcolor{keywordtype}{unsigned}\ \doxymbox{\hyperlink{poly-int_8h_a7e98b8a17c0aad30ba64d47b74e2a6c1}{i}}\ =\ 0;\ \doxymbox{\hyperlink{poly-int_8h_a7e98b8a17c0aad30ba64d47b74e2a6c1}{i}}\ <\ clusters.length\ ();\ \doxymbox{\hyperlink{poly-int_8h_a7e98b8a17c0aad30ba64d47b74e2a6c1}{i}}++)}
+\DoxyCodeLine{00921\ \ \ \ \ \textcolor{keyword}{delete}\ clusters[\doxymbox{\hyperlink{poly-int_8h_a7e98b8a17c0aad30ba64d47b74e2a6c1}{i}}];}
+\DoxyCodeLine{00922\ \ \ clusters.release\ ();}
+\DoxyCodeLine{00923\ \}}
+\DoxyCodeLine{00924\ }
+\DoxyCodeLine{00925\ \}\ \textcolor{comment}{//\ tree\_switch\_conversion\ namespace}}
+\DoxyCodeLine{00926\ }
+\DoxyCodeLine{00927\ \textcolor{preprocessor}{\#endif\ }\textcolor{comment}{//\ TREE\_SWITCH\_CONVERSION\_H}}
+
+\end{DoxyCode}

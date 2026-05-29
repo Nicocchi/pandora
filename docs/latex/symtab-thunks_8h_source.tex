@@ -1,0 +1,179 @@
+\doxysection{symtab-\/thunks.h}
+\hypertarget{symtab-thunks_8h_source}{}\label{symtab-thunks_8h_source}\index{toolchain/x86\_64-\/elf/lib/gcc/x86\_64-\/elf/14.2.0/plugin/include/symtab-\/thunks.h@{toolchain/x86\_64-\/elf/lib/gcc/x86\_64-\/elf/14.2.0/plugin/include/symtab-\/thunks.h}}
+\doxymbox{\hyperlink{symtab-thunks_8h}{Go to the documentation of this file.}}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001\ \textcolor{comment}{/*\ Representation\ of\ thunks\ inside\ symbol\ table.}}
+\DoxyCodeLine{00002\ \textcolor{comment}{\ \ \ Copyright\ (C)\ 2003-\/2024\ Free\ Software\ Foundation,\ Inc.}}
+\DoxyCodeLine{00003\ \textcolor{comment}{\ \ \ Contributed\ by\ Jan\ Hubicka}}
+\DoxyCodeLine{00004\ \textcolor{comment}{}}
+\DoxyCodeLine{00005\ \textcolor{comment}{This\ file\ is\ part\ of\ GCC.}}
+\DoxyCodeLine{00006\ \textcolor{comment}{}}
+\DoxyCodeLine{00007\ \textcolor{comment}{GCC\ is\ free\ software;\ you\ can\ redistribute\ it\ and/or\ modify\ it\ under}}
+\DoxyCodeLine{00008\ \textcolor{comment}{the\ terms\ of\ the\ GNU\ General\ Public\ License\ as\ published\ by\ the\ Free}}
+\DoxyCodeLine{00009\ \textcolor{comment}{Software\ Foundation;\ either\ version\ 3,\ or\ (at\ your\ option)\ any\ later}}
+\DoxyCodeLine{00010\ \textcolor{comment}{version.}}
+\DoxyCodeLine{00011\ \textcolor{comment}{}}
+\DoxyCodeLine{00012\ \textcolor{comment}{GCC\ is\ distributed\ in\ the\ hope\ that\ it\ will\ be\ useful,\ but\ WITHOUT\ ANY}}
+\DoxyCodeLine{00013\ \textcolor{comment}{WARRANTY;\ without\ even\ the\ implied\ warranty\ of\ MERCHANTABILITY\ or}}
+\DoxyCodeLine{00014\ \textcolor{comment}{FITNESS\ FOR\ A\ PARTICULAR\ PURPOSE.\ \ See\ the\ GNU\ General\ Public\ License}}
+\DoxyCodeLine{00015\ \textcolor{comment}{for\ more\ details.}}
+\DoxyCodeLine{00016\ \textcolor{comment}{}}
+\DoxyCodeLine{00017\ \textcolor{comment}{You\ should\ have\ received\ a\ copy\ of\ the\ GNU\ General\ Public\ License}}
+\DoxyCodeLine{00018\ \textcolor{comment}{along\ with\ GCC;\ see\ the\ file\ COPYING3.\ \ If\ not\ see}}
+\DoxyCodeLine{00019\ \textcolor{comment}{<http://www.gnu.org/licenses/>.\ \ */}}
+\DoxyCodeLine{00020\ }
+\DoxyCodeLine{00021\ \textcolor{preprocessor}{\#ifndef\ GCC\_SYMTAB\_THUNKS\_H}}
+\DoxyCodeLine{00022\ \textcolor{preprocessor}{\#define\ GCC\_SYMTAB\_THUNKS\_H}}
+\DoxyCodeLine{00023\ }
+\DoxyCodeLine{00024\ \textcolor{comment}{/*\ This\ symbol\ annotation\ holds\ information\ about\ thunk.}}
+\DoxyCodeLine{00025\ \textcolor{comment}{}}
+\DoxyCodeLine{00026\ \textcolor{comment}{\ \ \ Thunks\ are\ basically\ wrappers\ around\ methods\ which\ are\ introduced\ in\ case}}
+\DoxyCodeLine{00027\ \textcolor{comment}{\ \ \ of\ multiple\ inheritance\ in\ order\ to\ adjust\ the\ value\ of\ the\ "{}this"{}\ pointer}}
+\DoxyCodeLine{00028\ \textcolor{comment}{\ \ \ or\ of\ the\ returned\ value.}}
+\DoxyCodeLine{00029\ \textcolor{comment}{}}
+\DoxyCodeLine{00030\ \textcolor{comment}{\ \ \ In\ the\ case\ of\ this-\/adjusting\ thunks,\ each\ back-\/end\ can\ override\ the}}
+\DoxyCodeLine{00031\ \textcolor{comment}{\ \ \ can\_output\_mi\_thunk/output\_mi\_thunk\ target\ hooks\ to\ generate\ a\ minimal\ thunk}}
+\DoxyCodeLine{00032\ \textcolor{comment}{\ \ \ (with\ a\ tail\ call\ for\ instance)\ directly\ as\ assembly.\ \ For\ the\ default\ hook}}
+\DoxyCodeLine{00033\ \textcolor{comment}{\ \ \ or\ for\ the\ case\ where\ the\ can\_output\_mi\_thunk\ hooks\ return\ false,\ the\ thunk}}
+\DoxyCodeLine{00034\ \textcolor{comment}{\ \ \ is\ gimplified\ and\ lowered\ using\ the\ regular\ machinery.\ \ */}}
+\DoxyCodeLine{00035\ }
+\DoxyCodeLine{00036\ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{coretypes_8h_ae5708c4d4b300570eebe0bc0c78facbc}{GTY}}(())\ thunk\_info\ \{}
+\DoxyCodeLine{00037\ \ \ \textcolor{comment}{/*\ Constructor.\ \ */}}
+\DoxyCodeLine{00038\ \ \ thunk\_info\ ()}
+\DoxyCodeLine{00039\ \ \ \ \ :\ fixed\_offset\ (0),}
+\DoxyCodeLine{00040\ \ \ \ \ \ \ virtual\_value\ (0),}
+\DoxyCodeLine{00041\ \ \ \ \ \ \ indirect\_offset\ (0),}
+\DoxyCodeLine{00042\ \ \ \ \ \ \ alias\ (\doxymbox{\hyperlink{stddef_8h_a070d2ce7b6bb7e5c05602aa8c308d0c4}{NULL}}),}
+\DoxyCodeLine{00043\ \ \ \ \ \ \ this\_adjusting\ (\textcolor{keyword}{false}),}
+\DoxyCodeLine{00044\ \ \ \ \ \ \ virtual\_offset\_p\ (\textcolor{keyword}{false})}
+\DoxyCodeLine{00045\ \ \ \{}
+\DoxyCodeLine{00046\ \ \ \}}
+\DoxyCodeLine{00047\ \ \ \textcolor{comment}{/*\ Copy\ constructor.\ \ */}}
+\DoxyCodeLine{00048\ \ \ thunk\_info\ (\textcolor{keyword}{const}\ thunk\_info\ \&t)}
+\DoxyCodeLine{00049\ \ \ \ \ :\ fixed\_offset\ (t.fixed\_offset),}
+\DoxyCodeLine{00050\ \ \ \ \ \ \ virtual\_value\ (t.virtual\_value),}
+\DoxyCodeLine{00051\ \ \ \ \ \ \ indirect\_offset\ (t.indirect\_offset),}
+\DoxyCodeLine{00052\ \ \ \ \ \ \ alias\ (t.alias),}
+\DoxyCodeLine{00053\ \ \ \ \ \ \ this\_adjusting\ (t.this\_adjusting),}
+\DoxyCodeLine{00054\ \ \ \ \ \ \ virtual\_offset\_p\ (t.virtual\_offset\_p)}
+\DoxyCodeLine{00055\ \ \ \{}
+\DoxyCodeLine{00056\ \ \ \}}
+\DoxyCodeLine{00057\ }
+\DoxyCodeLine{00058\ \ \ \textcolor{comment}{/*\ Compare\ for\ equiality.\ \ */}}
+\DoxyCodeLine{00059\ \ \ \textcolor{keywordtype}{bool}}
+\DoxyCodeLine{00060\ \ \ \doxymbox{\hyperlink{cp-tree_8h_a4b9bd7e4e073a2a98d043c78719de59b}{operator==}}(\textcolor{keyword}{const}\ thunk\_info\ \&other)\textcolor{keyword}{\ const}}
+\DoxyCodeLine{00061\ \textcolor{keyword}{\ \ }\{}
+\DoxyCodeLine{00062\ \ \ \ \ \textcolor{keywordflow}{return}\ fixed\_offset\ ==\ other.fixed\_offset}
+\DoxyCodeLine{00063\ \ \ \ \ \ \ \ \&\&\ virtual\_value\ ==\ other.virtual\_value}
+\DoxyCodeLine{00064\ \ \ \ \ \ \ \ \&\&\ indirect\_offset\ ==\ other.indirect\_offset}
+\DoxyCodeLine{00065\ \ \ \ \ \ \ \ \&\&\ this\_adjusting\ ==\ other.this\_adjusting}
+\DoxyCodeLine{00066\ \ \ \ \ \ \ \ \&\&\ virtual\_offset\_p\ ==\ other.virtual\_offset\_p;}
+\DoxyCodeLine{00067\ \ \ \}}
+\DoxyCodeLine{00068\ \ \ \textcolor{keywordtype}{bool}}
+\DoxyCodeLine{00069\ \ \ \doxymbox{\hyperlink{diagnostic-spec_8h_a6b5ad3fba66b4c54ae8afbdf1bbebfb7}{operator!=}}(\textcolor{keyword}{const}\ thunk\_info\ \&other)\textcolor{keyword}{\ const}}
+\DoxyCodeLine{00070\ \textcolor{keyword}{\ \ }\{}
+\DoxyCodeLine{00071\ \ \ \ \ \textcolor{keywordflow}{return}\ !(*\textcolor{keyword}{this}\ ==\ other);}
+\DoxyCodeLine{00072\ \ \ \}}
+\DoxyCodeLine{00073\ \ \ \textcolor{comment}{/*\ Copy\ operator.\ \ */}}
+\DoxyCodeLine{00074\ \ \ thunk\_info\ \&}
+\DoxyCodeLine{00075\ \ \ operator=(\textcolor{keyword}{const}\ thunk\_info\ \&other)}
+\DoxyCodeLine{00076\ \ \ \{}
+\DoxyCodeLine{00077\ \ \ \ \ fixed\_offset\ =\ other.fixed\_offset;}
+\DoxyCodeLine{00078\ \ \ \ \ virtual\_value\ =\ other.virtual\_value;}
+\DoxyCodeLine{00079\ \ \ \ \ indirect\_offset\ =\ other.indirect\_offset;}
+\DoxyCodeLine{00080\ \ \ \ \ alias\ =\ other.alias;}
+\DoxyCodeLine{00081\ \ \ \ \ this\_adjusting\ =\ other.this\_adjusting;}
+\DoxyCodeLine{00082\ \ \ \ \ virtual\_offset\_p\ =\ other.virtual\_offset\_p;}
+\DoxyCodeLine{00083\ \ \ \ \ \textcolor{keywordflow}{return}\ *\textcolor{keyword}{this};}
+\DoxyCodeLine{00084\ \ \ \}}
+\DoxyCodeLine{00085\ }
+\DoxyCodeLine{00086\ \ \ \textcolor{comment}{/*\ Offset\ used\ to\ adjust\ "{}this"{}.\ \ */}}
+\DoxyCodeLine{00087\ \ \ HOST\_WIDE\_INT\ fixed\_offset;}
+\DoxyCodeLine{00088\ }
+\DoxyCodeLine{00089\ \ \ \textcolor{comment}{/*\ Offset\ in\ the\ virtual\ table\ to\ get\ the\ offset\ to\ adjust\ "{}this"{}.\ \ Valid\ iff}}
+\DoxyCodeLine{00090\ \textcolor{comment}{\ \ \ \ \ VIRTUAL\_OFFSET\_P\ is\ true.\ \ */}}
+\DoxyCodeLine{00091\ \ \ HOST\_WIDE\_INT\ virtual\_value;}
+\DoxyCodeLine{00092\ }
+\DoxyCodeLine{00093\ \ \ \textcolor{comment}{/*\ Offset\ from\ "{}this"{}\ to\ get\ the\ offset\ to\ adjust\ "{}this"{}.\ \ Zero\ means:\ this}}
+\DoxyCodeLine{00094\ \textcolor{comment}{\ \ \ \ \ offset\ is\ to\ be\ ignored.\ \ */}}
+\DoxyCodeLine{00095\ \ \ HOST\_WIDE\_INT\ indirect\_offset;}
+\DoxyCodeLine{00096\ }
+\DoxyCodeLine{00097\ \ \ \textcolor{comment}{/*\ Thunk\ target,\ i.e.\ the\ method\ that\ this\ thunk\ wraps.\ \ Depending\ on\ the}}
+\DoxyCodeLine{00098\ \textcolor{comment}{\ \ \ \ \ TARGET\_USE\_LOCAL\_THUNK\_ALIAS\_P\ macro,\ this\ may\ have\ to\ be\ a\ new\ alias.\ \ */}}
+\DoxyCodeLine{00099\ \ \ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ alias;}
+\DoxyCodeLine{00100\ }
+\DoxyCodeLine{00101\ \ \ \textcolor{comment}{/*\ Nonzero\ for\ a\ "{}this"{}\ adjusting\ thunk\ and\ zero\ for\ a\ result\ adjusting}}
+\DoxyCodeLine{00102\ \textcolor{comment}{\ \ \ \ \ thunk.\ \ */}}
+\DoxyCodeLine{00103\ \ \ \textcolor{keywordtype}{bool}\ this\_adjusting;}
+\DoxyCodeLine{00104\ }
+\DoxyCodeLine{00105\ \ \ \textcolor{comment}{/*\ If\ true,\ this\ thunk\ is\ what\ we\ call\ a\ virtual\ thunk.\ \ In\ this\ case:}}
+\DoxyCodeLine{00106\ \textcolor{comment}{\ \ \ \ \ *\ for\ this-\/adjusting\ thunks,\ after\ the\ FIXED\_OFFSET\ based\ adjustment\ is}}
+\DoxyCodeLine{00107\ \textcolor{comment}{\ \ \ \ \ \ \ done,\ add\ to\ the\ result\ the\ offset\ found\ in\ the\ vtable\ at:}}
+\DoxyCodeLine{00108\ \textcolor{comment}{\ \ \ \ \ vptr\ +\ VIRTUAL\_VALUE}}
+\DoxyCodeLine{00109\ \textcolor{comment}{\ \ \ \ \ *\ for\ result-\/adjusting\ thunks,\ the\ FIXED\_OFFSET\ adjustment\ is\ done\ after}}
+\DoxyCodeLine{00110\ \textcolor{comment}{\ \ \ \ \ \ \ the\ virtual\ one.\ \ */}}
+\DoxyCodeLine{00111\ \ \ \textcolor{keywordtype}{bool}\ virtual\_offset\_p;}
+\DoxyCodeLine{00112\ }
+\DoxyCodeLine{00113\ }
+\DoxyCodeLine{00114\ }
+\DoxyCodeLine{00115\ \ \ \textcolor{comment}{/*\ Dump\ thunk\_info.\ \ */}}
+\DoxyCodeLine{00116\ \ \ \textcolor{keywordtype}{void}\ dump\ (FILE\ *);}
+\DoxyCodeLine{00117\ }
+\DoxyCodeLine{00118\ \ \ \textcolor{comment}{/*\ Stream\ out\ thunk\_info.\ \ */}}
+\DoxyCodeLine{00119\ \ \ \textcolor{keywordtype}{void}\ stream\_out\ (\textcolor{keyword}{class}\ \doxymbox{\hyperlink{structlto__simple__output__block}{lto\_simple\_output\_block}}\ *);}
+\DoxyCodeLine{00120\ }
+\DoxyCodeLine{00121\ \ \ \textcolor{comment}{/*\ Stream\ in\ trunk\_info.\ \ */}}
+\DoxyCodeLine{00122\ \ \ \textcolor{keywordtype}{void}\ stream\_in\ (\textcolor{keyword}{class}\ \doxymbox{\hyperlink{classlto__input__block}{lto\_input\_block}}\ *);}
+\DoxyCodeLine{00123\ }
+\DoxyCodeLine{00124\ \ \ \doxymbox{\hyperlink{hashtab_8h_a2d05e5049721cf3117dd6b34e20d4f65}{hashval\_t}}\ hash\ ();}
+\DoxyCodeLine{00125\ }
+\DoxyCodeLine{00126\ }
+\DoxyCodeLine{00127\ }
+\DoxyCodeLine{00128\ \ \ \textcolor{comment}{/*\ Return\ thunk\_info,\ if\ available.\ \ */}}
+\DoxyCodeLine{00129\ \ \ \textcolor{keyword}{static}\ thunk\_info\ *\doxymbox{\hyperlink{symbol-summary_8h_a47c1a2b92a5e66dbd23c840399c4488e}{get}}\ (cgraph\_node\ *node);}
+\DoxyCodeLine{00130\ }
+\DoxyCodeLine{00131\ \ \ \textcolor{comment}{/*\ Return\ thunk\_info\ possibly\ creating\ new\ one.\ \ */}}
+\DoxyCodeLine{00132\ \ \ \textcolor{keyword}{static}\ thunk\_info\ *\doxymbox{\hyperlink{symbol-summary_8h_ad431573bf82c28eff1f50f7af184c4d8}{get\_create}}\ (cgraph\_node\ *node);}
+\DoxyCodeLine{00133\ }
+\DoxyCodeLine{00134\ \ \ \textcolor{comment}{/*\ Remove\ thunk\_info.\ \ */}}
+\DoxyCodeLine{00135\ \ \ \textcolor{keyword}{static}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{symbol-summary_8h_aeee6c19b32ef7a2c7f1e31cf44773159}{remove}}\ (cgraph\_node\ *node);}
+\DoxyCodeLine{00136\ }
+\DoxyCodeLine{00137\ \ \ \textcolor{comment}{/*\ Add\ unprocessed\ thunk.\ \ */}}
+\DoxyCodeLine{00138\ \ \ \textcolor{keywordtype}{void}\ register\_early\ (cgraph\_node\ *node);}
+\DoxyCodeLine{00139\ }
+\DoxyCodeLine{00140\ \ \ \textcolor{comment}{/*\ Attach\ recorded\ thunks\ to\ cgraph\_nodes.\ \ */}}
+\DoxyCodeLine{00141\ \ \ \textcolor{keyword}{static}\ \textcolor{keywordtype}{void}\ process\_early\_thunks\ ();}
+\DoxyCodeLine{00142\ }
+\DoxyCodeLine{00143\ \ \ \textcolor{comment}{/*\ Release\ all\ thunk\_infos.\ \ */}}
+\DoxyCodeLine{00144\ \ \ \textcolor{keyword}{static}\ \textcolor{keywordtype}{void}\ release\ (\textcolor{keywordtype}{void});}
+\DoxyCodeLine{00145\ \};}
+\DoxyCodeLine{00146\ }
+\DoxyCodeLine{00147\ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{symtab-thunks_8h_af7274fad0a43a8bf22df3f096d2179f3}{expand\_thunk}}\ (cgraph\_node\ *,\ \textcolor{keywordtype}{bool},\ \textcolor{keywordtype}{bool});}
+\DoxyCodeLine{00148\ }
+\DoxyCodeLine{00149\ \textcolor{comment}{/*\ Return\ thunk\_info,\ if\ available.\ \ */}}
+\DoxyCodeLine{00150\ \textcolor{keyword}{inline}\ thunk\_info\ *}
+\DoxyCodeLine{00151\ thunk\_info::get\ (cgraph\_node\ *node)}
+\DoxyCodeLine{00152\ \{}
+\DoxyCodeLine{00153\ \ \ \textcolor{keywordflow}{if}\ (!symtab-\/>m\_thunks)}
+\DoxyCodeLine{00154\ \ \ \ \ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{stddef_8h_a070d2ce7b6bb7e5c05602aa8c308d0c4}{NULL}};}
+\DoxyCodeLine{00155\ \ \ \textcolor{keywordflow}{return}\ symtab-\/>m\_thunks-\/>get\ (node);}
+\DoxyCodeLine{00156\ \}}
+\DoxyCodeLine{00157\ }
+\DoxyCodeLine{00158\ \textcolor{comment}{/*\ Remove\ thunk\_info\ association\ for\ NODE.\ \ */}}
+\DoxyCodeLine{00159\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{void}}
+\DoxyCodeLine{00160\ thunk\_info::remove\ (cgraph\_node\ *node)}
+\DoxyCodeLine{00161\ \{}
+\DoxyCodeLine{00162\ \ \ symtab-\/>m\_thunks-\/>remove\ (node);}
+\DoxyCodeLine{00163\ \}}
+\DoxyCodeLine{00164\ }
+\DoxyCodeLine{00165\ \textcolor{comment}{/*\ Free\ thunk\ info\ summaries.\ \ */}}
+\DoxyCodeLine{00166\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{void}}
+\DoxyCodeLine{00167\ thunk\_info::release\ ()}
+\DoxyCodeLine{00168\ \{}
+\DoxyCodeLine{00169\ \ \ \textcolor{keywordflow}{if}\ (symtab-\/>m\_thunks)}
+\DoxyCodeLine{00170\ \ \ \ \ \doxymbox{\hyperlink{ggc_8h_a7f2087b08910c42833efa446261ddf1f}{ggc\_delete}}\ (symtab-\/>m\_thunks);}
+\DoxyCodeLine{00171\ \ \ symtab-\/>m\_thunks\ =\ \doxymbox{\hyperlink{stddef_8h_a070d2ce7b6bb7e5c05602aa8c308d0c4}{NULL}};}
+\DoxyCodeLine{00172\ \}}
+\DoxyCodeLine{00173\ \textcolor{preprocessor}{\#endif\ \ }\textcolor{comment}{/*\ GCC\_SYMTAB\_THUNKS\_H\ \ */}\textcolor{preprocessor}{}}
+
+\end{DoxyCode}

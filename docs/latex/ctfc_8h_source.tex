@@ -1,0 +1,459 @@
+\doxysection{ctfc.\+h}
+\hypertarget{ctfc_8h_source}{}\label{ctfc_8h_source}\index{toolchain/x86\_64-\/elf/lib/gcc/x86\_64-\/elf/14.2.0/plugin/include/ctfc.h@{toolchain/x86\_64-\/elf/lib/gcc/x86\_64-\/elf/14.2.0/plugin/include/ctfc.h}}
+\doxymbox{\hyperlink{ctfc_8h}{Go to the documentation of this file.}}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001\ \textcolor{comment}{/*\ ctfc.h\ -\/\ Declarations\ and\ definitions\ related\ to\ the\ CTF\ container.}}
+\DoxyCodeLine{00002\ \textcolor{comment}{\ \ \ Copyright\ (C)\ 2019-\/2024\ Free\ Software\ Foundation,\ Inc.}}
+\DoxyCodeLine{00003\ \textcolor{comment}{}}
+\DoxyCodeLine{00004\ \textcolor{comment}{This\ file\ is\ part\ of\ GCC.}}
+\DoxyCodeLine{00005\ \textcolor{comment}{}}
+\DoxyCodeLine{00006\ \textcolor{comment}{GCC\ is\ free\ software;\ you\ can\ redistribute\ it\ and/or\ modify\ it\ under}}
+\DoxyCodeLine{00007\ \textcolor{comment}{the\ terms\ of\ the\ GNU\ General\ Public\ License\ as\ published\ by\ the\ Free}}
+\DoxyCodeLine{00008\ \textcolor{comment}{Software\ Foundation;\ either\ version\ 3,\ or\ (at\ your\ option)\ any\ later}}
+\DoxyCodeLine{00009\ \textcolor{comment}{version.}}
+\DoxyCodeLine{00010\ \textcolor{comment}{}}
+\DoxyCodeLine{00011\ \textcolor{comment}{GCC\ is\ distributed\ in\ the\ hope\ that\ it\ will\ be\ useful,\ but\ WITHOUT\ ANY}}
+\DoxyCodeLine{00012\ \textcolor{comment}{WARRANTY;\ without\ even\ the\ implied\ warranty\ of\ MERCHANTABILITY\ or}}
+\DoxyCodeLine{00013\ \textcolor{comment}{FITNESS\ FOR\ A\ PARTICULAR\ PURPOSE.\ \ See\ the\ GNU\ General\ Public\ License}}
+\DoxyCodeLine{00014\ \textcolor{comment}{for\ more\ details.}}
+\DoxyCodeLine{00015\ \textcolor{comment}{}}
+\DoxyCodeLine{00016\ \textcolor{comment}{You\ should\ have\ received\ a\ copy\ of\ the\ GNU\ General\ Public\ License}}
+\DoxyCodeLine{00017\ \textcolor{comment}{along\ with\ GCC;\ see\ the\ file\ COPYING3.\ \ If\ not\ see}}
+\DoxyCodeLine{00018\ \textcolor{comment}{<http://www.gnu.org/licenses/>.\ \ */}}
+\DoxyCodeLine{00019\ }
+\DoxyCodeLine{00020\ \textcolor{comment}{/*\ This\ file\ defines\ the\ data\ structures\ and\ functions\ used\ by\ the\ compiler}}
+\DoxyCodeLine{00021\ \textcolor{comment}{\ \ \ to\ generate\ the\ CTF\ debug\ info.\ \ The\ definitions\ below\ are\ compiler\ internal}}
+\DoxyCodeLine{00022\ \textcolor{comment}{\ \ \ representations\ and\ closely\ reflect\ the\ CTF\ format\ requirements\ in\ <ctf.h>.}}
+\DoxyCodeLine{00023\ \textcolor{comment}{}}
+\DoxyCodeLine{00024\ \textcolor{comment}{\ \ \ The\ contents\ of\ the\ CTF\ container\ are\ used\ eventually\ for\ emission\ of\ both}}
+\DoxyCodeLine{00025\ \textcolor{comment}{\ \ \ CTF\ (ctfout.cc)\ and\ BTF\ debug\ info\ (btfout.cc),\ as\ the\ two\ type\ debug\ formats}}
+\DoxyCodeLine{00026\ \textcolor{comment}{\ \ \ are\ close\ cousins.\ \ */}}
+\DoxyCodeLine{00027\ }
+\DoxyCodeLine{00028\ \textcolor{preprocessor}{\#ifndef\ GCC\_CTFC\_H}}
+\DoxyCodeLine{00029\ \textcolor{preprocessor}{\#define\ GCC\_CTFC\_H\ 1}}
+\DoxyCodeLine{00030\ }
+\DoxyCodeLine{00031\ \textcolor{preprocessor}{\#include\ "{}\doxymbox{\hyperlink{config_8h}{config.h}}"{}}}
+\DoxyCodeLine{00032\ \textcolor{preprocessor}{\#include\ "{}\doxymbox{\hyperlink{system_8h}{system.h}}"{}}}
+\DoxyCodeLine{00033\ \textcolor{preprocessor}{\#include\ "{}\doxymbox{\hyperlink{tree_8h}{tree.h}}"{}}}
+\DoxyCodeLine{00034\ \textcolor{preprocessor}{\#include\ "{}\doxymbox{\hyperlink{fold-const_8h}{fold-\/const.h}}"{}}}
+\DoxyCodeLine{00035\ \textcolor{preprocessor}{\#include\ "{}\doxymbox{\hyperlink{dwarf2ctf_8h}{dwarf2ctf.h}}"{}}}
+\DoxyCodeLine{00036\ \textcolor{preprocessor}{\#include\ "{}ctf.h"{}}}
+\DoxyCodeLine{00037\ \textcolor{preprocessor}{\#include\ "{}btf.h"{}}}
+\DoxyCodeLine{00038\ }
+\DoxyCodeLine{00039\ \textcolor{comment}{/*\ Invalid\ CTF\ type\ ID\ definition.\ \ */}}
+\DoxyCodeLine{00040\ }
+\DoxyCodeLine{00041\ \textcolor{preprocessor}{\#define\ CTF\_NULL\_TYPEID\ 0}}
+\DoxyCodeLine{00042\ }
+\DoxyCodeLine{00043\ \textcolor{comment}{/*\ Value\ to\ start\ generating\ the\ CTF\ type\ ID\ from.\ \ */}}
+\DoxyCodeLine{00044\ }
+\DoxyCodeLine{00045\ \textcolor{preprocessor}{\#define\ CTF\_INIT\_TYPEID\ 1}}
+\DoxyCodeLine{00046\ }
+\DoxyCodeLine{00047\ \textcolor{comment}{/*\ CTF\ type\ ID.\ \ */}}
+\DoxyCodeLine{00048\ }
+\DoxyCodeLine{00049\ \textcolor{keyword}{typedef}\ uint64\_t\ \doxymbox{\hyperlink{ctfc_8h_a1a5f9546007f66078a6fe12dcaf9621c}{ctf\_id\_t}};}
+\DoxyCodeLine{00050\ }
+\DoxyCodeLine{00051\ \textcolor{comment}{/*\ CTF\ string\ table\ element\ (list\ node).\ \ */}}
+\DoxyCodeLine{00052\ }
+\DoxyCodeLine{00053\ \textcolor{keyword}{typedef}\ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{coretypes_8h_ae5708c4d4b300570eebe0bc0c78facbc}{GTY}}\ ((chain\_next\ (\textcolor{stringliteral}{"{}\%h.cts\_next"{}})))\ ctf\_string}
+\DoxyCodeLine{00054\ \{}
+\DoxyCodeLine{00055\ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *\ cts\_str;\ \ \ \ \ \ \ \textcolor{comment}{/*\ CTF\ string.\ \ */}}
+\DoxyCodeLine{00056\ \ \ \textcolor{keyword}{struct\ }ctf\_string\ *\ cts\_next;\ \ \ \textcolor{comment}{/*\ A\ list\ node.\ \ */}}
+\DoxyCodeLine{00057\ \}\ \doxymbox{\hyperlink{ctfc_8h_aff22f79666d670b2f145dd6169bf15ed}{ctf\_string\_t}};}
+\DoxyCodeLine{00058\ }
+\DoxyCodeLine{00059\ \textcolor{comment}{/*\ Internal\ representation\ of\ CTF\ string\ table.\ \ */}}
+\DoxyCodeLine{00060\ }
+\DoxyCodeLine{00061\ \textcolor{keyword}{typedef}\ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{coretypes_8h_ae5708c4d4b300570eebe0bc0c78facbc}{GTY}}\ (())\ ctf\_strtable}
+\DoxyCodeLine{00062\ \{}
+\DoxyCodeLine{00063\ \ \ \doxymbox{\hyperlink{ctfc_8h_aff22f79666d670b2f145dd6169bf15ed}{ctf\_string\_t}}\ *\ ctstab\_head;\ \ \ \ \ \ \ \textcolor{comment}{/*\ Head\ str\ ptr.\ \ */}}
+\DoxyCodeLine{00064\ \ \ \doxymbox{\hyperlink{ctfc_8h_aff22f79666d670b2f145dd6169bf15ed}{ctf\_string\_t}}\ *\ ctstab\_tail;\ \ \ \ \ \ \ \textcolor{comment}{/*\ Tail.\ \ new\ str\ appended\ to\ tail.\ \ */}}
+\DoxyCodeLine{00065\ \ \ \textcolor{keywordtype}{int}\ ctstab\_num;\ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{/*\ Number\ of\ strings\ in\ the\ table.\ \ */}}
+\DoxyCodeLine{00066\ \ \ \textcolor{keywordtype}{size\_t}\ ctstab\_len;\ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{/*\ Size\ of\ string\ table\ in\ bytes.\ \ */}}
+\DoxyCodeLine{00067\ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *\ ctstab\_estr;\ \ \ \ \ \textcolor{comment}{/*\ Empty\ string\ "{}"{}.\ \ */}}
+\DoxyCodeLine{00068\ \}\ \doxymbox{\hyperlink{ctfc_8h_abc46eafdd2f697fff9be4aa5b9ed3c21}{ctf\_strtable\_t}};}
+\DoxyCodeLine{00069\ }
+\DoxyCodeLine{00070\ \textcolor{comment}{/*\ Encoding\ information\ for\ integers,\ floating-\/point\ values\ etc.\ \ The\ flags}}
+\DoxyCodeLine{00071\ \textcolor{comment}{\ \ \ field\ will\ contain\ values\ appropriate\ for\ the\ type\ defined\ in\ <ctf.h>.\ \ */}}
+\DoxyCodeLine{00072\ }
+\DoxyCodeLine{00073\ \textcolor{keyword}{typedef}\ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{coretypes_8h_ae5708c4d4b300570eebe0bc0c78facbc}{GTY}}\ (())\ ctf\_encoding}
+\DoxyCodeLine{00074\ \{}
+\DoxyCodeLine{00075\ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ cte\_format;\ \ \textcolor{comment}{/*\ Data\ format\ (CTF\_INT\_*\ or\ CTF\_FP\_*\ flags).\ \ */}}
+\DoxyCodeLine{00076\ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ cte\_offset;\ \ \textcolor{comment}{/*\ Offset\ of\ value\ in\ bits.\ \ */}}
+\DoxyCodeLine{00077\ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ cte\_bits;\ \ \ \ \textcolor{comment}{/*\ Size\ of\ storage\ in\ bits.\ \ */}}
+\DoxyCodeLine{00078\ \}\ \doxymbox{\hyperlink{ctfc_8h_a5a45aaa21d272b4fc2a771e0760d368b}{ctf\_encoding\_t}};}
+\DoxyCodeLine{00079\ }
+\DoxyCodeLine{00080\ \textcolor{comment}{/*\ Array\ information\ for\ CTF\ generation.\ \ */}}
+\DoxyCodeLine{00081\ }
+\DoxyCodeLine{00082\ \textcolor{keyword}{typedef}\ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{coretypes_8h_ae5708c4d4b300570eebe0bc0c78facbc}{GTY}}\ (())\ ctf\_arinfo}
+\DoxyCodeLine{00083\ \{}
+\DoxyCodeLine{00084\ \ \ \doxymbox{\hyperlink{ctfc_8h_a1a5f9546007f66078a6fe12dcaf9621c}{ctf\_id\_t}}\ ctr\_contents;\ \ \ \ \textcolor{comment}{/*\ Type\ of\ array\ contents.\ \ */}}
+\DoxyCodeLine{00085\ \ \ \doxymbox{\hyperlink{ctfc_8h_a1a5f9546007f66078a6fe12dcaf9621c}{ctf\_id\_t}}\ ctr\_index;\ \ \ \ \ \ \ \textcolor{comment}{/*\ Type\ of\ array\ index.\ \ */}}
+\DoxyCodeLine{00086\ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ ctr\_nelems;\ \ \textcolor{comment}{/*\ Number\ of\ elements.\ \ */}}
+\DoxyCodeLine{00087\ \}\ \doxymbox{\hyperlink{ctfc_8h_a7aa3ac94df03f88b388da16040ed02e7}{ctf\_arinfo\_t}};}
+\DoxyCodeLine{00088\ }
+\DoxyCodeLine{00089\ \textcolor{comment}{/*\ Function\ information\ for\ CTF\ generation.\ \ */}}
+\DoxyCodeLine{00090\ }
+\DoxyCodeLine{00091\ \textcolor{keyword}{typedef}\ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{coretypes_8h_ae5708c4d4b300570eebe0bc0c78facbc}{GTY}}\ (())\ ctf\_funcinfo}
+\DoxyCodeLine{00092\ \{}
+\DoxyCodeLine{00093\ \ \ \doxymbox{\hyperlink{ctfc_8h_a1a5f9546007f66078a6fe12dcaf9621c}{ctf\_id\_t}}\ ctc\_return;\ \ \ \ \ \ \textcolor{comment}{/*\ Function\ return\ type.\ \ */}}
+\DoxyCodeLine{00094\ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ ctc\_argc;\ \ \ \ \textcolor{comment}{/*\ Number\ of\ typed\ arguments\ to\ function.\ \ */}}
+\DoxyCodeLine{00095\ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ ctc\_flags;\ \ \ \textcolor{comment}{/*\ Function\ attributes\ (see\ below).\ \ */}}
+\DoxyCodeLine{00096\ \}\ \doxymbox{\hyperlink{ctfc_8h_afab424621d9a6d090571996be3ea3980}{ctf\_funcinfo\_t}};}
+\DoxyCodeLine{00097\ }
+\DoxyCodeLine{00098\ \textcolor{keyword}{typedef}\ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{coretypes_8h_ae5708c4d4b300570eebe0bc0c78facbc}{GTY}}\ (())\ ctf\_sliceinfo}
+\DoxyCodeLine{00099\ \{}
+\DoxyCodeLine{00100\ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ cts\_type;\ \ \ \ \textcolor{comment}{/*\ Reference\ CTF\ type.\ \ */}}
+\DoxyCodeLine{00101\ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{short}\ cts\_offset;\ \ \ \ \textcolor{comment}{/*\ Offset\ in\ bits\ of\ the\ first\ bit.\ \ */}}
+\DoxyCodeLine{00102\ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{short}\ cts\_bits;\ \ \textcolor{comment}{/*\ Size\ in\ bits.\ \ */}}
+\DoxyCodeLine{00103\ \}\ \doxymbox{\hyperlink{ctfc_8h_a81994ce2f31eb2e31b2f2f26f3d3bf0d}{ctf\_sliceinfo\_t}};}
+\DoxyCodeLine{00104\ }
+\DoxyCodeLine{00105\ \textcolor{comment}{/*\ CTF\ type\ representation\ internal\ to\ the\ compiler.\ \ It\ closely\ reflects\ the}}
+\DoxyCodeLine{00106\ \textcolor{comment}{\ \ \ ctf\_type\_t\ type\ node\ in\ <ctf.h>\ except\ the\ GTY\ (())\ tags.\ \ */}}
+\DoxyCodeLine{00107\ }
+\DoxyCodeLine{00108\ \textcolor{keyword}{typedef}\ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{coretypes_8h_ae5708c4d4b300570eebe0bc0c78facbc}{GTY}}\ (())\ ctf\_itype}
+\DoxyCodeLine{00109\ \{}
+\DoxyCodeLine{00110\ \ \ uint32\_t\ ctti\_name;\ \ \ \ \ \ \ \textcolor{comment}{/*\ Reference\ to\ name\ in\ string\ table.\ \ */}}
+\DoxyCodeLine{00111\ \ \ uint32\_t\ ctti\_info;\ \ \ \ \ \ \ \textcolor{comment}{/*\ Encoded\ kind,\ variant\ length\ (see\ below).\ \ */}}
+\DoxyCodeLine{00112\ \ \ \textcolor{keyword}{union\ }\doxymbox{\hyperlink{coretypes_8h_ae5708c4d4b300570eebe0bc0c78facbc}{GTY}}\ ((desc\ (\textcolor{stringliteral}{"{}0"{}})))}
+\DoxyCodeLine{00113\ \ \ \{}
+\DoxyCodeLine{00114\ \ \ \ \ uint32\_t\ \doxymbox{\hyperlink{coretypes_8h_ae5708c4d4b300570eebe0bc0c78facbc}{GTY}}\ ((tag\ (\textcolor{stringliteral}{"{}0"{}})))\ \_size;\textcolor{comment}{/*\ Size\ of\ entire\ type\ in\ bytes.\ \ */}}
+\DoxyCodeLine{00115\ \ \ \ \ uint32\_t\ \doxymbox{\hyperlink{coretypes_8h_ae5708c4d4b300570eebe0bc0c78facbc}{GTY}}\ ((tag\ (\textcolor{stringliteral}{"{}1"{}})))\ \_type;\textcolor{comment}{/*\ Reference\ to\ another\ type.\ \ */}}
+\DoxyCodeLine{00116\ \ \ \}\ \_u;}
+\DoxyCodeLine{00117\ \ \ uint32\_t\ ctti\_lsizehi;\ \ \ \ \textcolor{comment}{/*\ High\ 32\ bits\ of\ type\ size\ in\ bytes.\ \ */}}
+\DoxyCodeLine{00118\ \ \ uint32\_t\ ctti\_lsizelo;\ \ \ \ \textcolor{comment}{/*\ Low\ 32\ bits\ of\ type\ size\ in\ bytes.\ \ */}}
+\DoxyCodeLine{00119\ \}\ \doxymbox{\hyperlink{ctfc_8h_a22b2a1c6f81a603ab2f43486b95bd4d1}{ctf\_itype\_t}};}
+\DoxyCodeLine{00120\ }
+\DoxyCodeLine{00121\ \textcolor{preprocessor}{\#define\ ctti\_size\ \_u.\_size}}
+\DoxyCodeLine{00122\ \textcolor{preprocessor}{\#define\ ctti\_type\ \_u.\_type}}
+\DoxyCodeLine{00123\ }
+\DoxyCodeLine{00124\ \textcolor{comment}{/*\ Function\ arguments\ end\ with\ varargs.\ \ */}}
+\DoxyCodeLine{00125\ }
+\DoxyCodeLine{00126\ \textcolor{preprocessor}{\#define\ CTF\_FUNC\_VARARG\ 0x1}}
+\DoxyCodeLine{00127\ }
+\DoxyCodeLine{00128\ \textcolor{comment}{/*\ Struct/union/enum\ member\ definition\ for\ CTF\ generation.\ \ */}}
+\DoxyCodeLine{00129\ }
+\DoxyCodeLine{00130\ \textcolor{keyword}{typedef}\ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{coretypes_8h_ae5708c4d4b300570eebe0bc0c78facbc}{GTY}}\ ((chain\_next\ (\textcolor{stringliteral}{"{}\%h.dmd\_next"{}})))\ ctf\_dmdef}
+\DoxyCodeLine{00131\ \{}
+\DoxyCodeLine{00132\ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *\ dmd\_name;\ \ \ \ \textcolor{comment}{/*\ Name\ of\ this\ member.\ \ */}}
+\DoxyCodeLine{00133\ \ \ \doxymbox{\hyperlink{ctfc_8h_a1a5f9546007f66078a6fe12dcaf9621c}{ctf\_id\_t}}\ dmd\_type;\ \ \ \ \ \ \ \ \textcolor{comment}{/*\ Type\ of\ this\ member\ (for\ sou).\ \ */}}
+\DoxyCodeLine{00134\ \ \ uint32\_t\ dmd\_name\_offset;\ \textcolor{comment}{/*\ Offset\ of\ the\ name\ in\ str\ table.\ \ */}}
+\DoxyCodeLine{00135\ \ \ uint64\_t\ dmd\_offset;\ \ \ \ \ \ \textcolor{comment}{/*\ Offset\ of\ this\ member\ in\ bits\ (for\ sou).\ \ */}}
+\DoxyCodeLine{00136\ \ \ HOST\_WIDE\_INT\ dmd\_value;\ \ \textcolor{comment}{/*\ Value\ of\ this\ member\ (for\ enum).\ \ */}}
+\DoxyCodeLine{00137\ \ \ \textcolor{keyword}{struct\ }ctf\_dmdef\ *\ dmd\_next;\ \ \textcolor{comment}{/*\ A\ list\ node.\ \ */}}
+\DoxyCodeLine{00138\ \}\ \doxymbox{\hyperlink{ctfc_8h_a62c3503abe6ebb4cf41a99767b1c7df9}{ctf\_dmdef\_t}};}
+\DoxyCodeLine{00139\ }
+\DoxyCodeLine{00140\ \textcolor{preprocessor}{\#define\ ctf\_dmd\_list\_next(elem)\ ((ctf\_dmdef\_t\ *)((elem)-\/>dmd\_next))}}
+\DoxyCodeLine{00141\ }
+\DoxyCodeLine{00142\ \textcolor{comment}{/*\ Function\ Argument.\ \ */}}
+\DoxyCodeLine{00143\ }
+\DoxyCodeLine{00144\ \textcolor{keyword}{typedef}\ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{coretypes_8h_ae5708c4d4b300570eebe0bc0c78facbc}{GTY}}\ (())\ ctf\_func\_arg}
+\DoxyCodeLine{00145\ \{}
+\DoxyCodeLine{00146\ \ \ \doxymbox{\hyperlink{ctfc_8h_a1a5f9546007f66078a6fe12dcaf9621c}{ctf\_id\_t}}\ farg\_type;\ \ \ \ \ \ \ \ \ \textcolor{comment}{/*\ Type\ identifier\ of\ the\ argument.\ \ */}}
+\DoxyCodeLine{00147\ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *\ farg\_name;\ \ \ \ \ \textcolor{comment}{/*\ Name\ of\ the\ argument.\ \ */}}
+\DoxyCodeLine{00148\ \ \ uint32\_t\ farg\_name\_offset;\ \ \ \ \ \ \textcolor{comment}{/*\ Offset\ of\ the\ name\ in\ str\ table.\ \ */}}
+\DoxyCodeLine{00149\ \ \ \textcolor{keyword}{struct\ }ctf\_func\_arg\ *\ farg\_next;\textcolor{comment}{/*\ A\ list\ node.\ \ */}}
+\DoxyCodeLine{00150\ \}\ \doxymbox{\hyperlink{ctfc_8h_a63b3401b413a771432c98518e24e17f7}{ctf\_func\_arg\_t}};}
+\DoxyCodeLine{00151\ }
+\DoxyCodeLine{00152\ \textcolor{preprocessor}{\#define\ ctf\_farg\_list\_next(elem)\ ((ctf\_func\_arg\_t\ *)((elem)-\/>farg\_next))}}
+\DoxyCodeLine{00153\ }
+\DoxyCodeLine{00154\ \textcolor{comment}{/*\ Type\ definition\ for\ CTF\ generation.\ \ */}}
+\DoxyCodeLine{00155\ }
+\DoxyCodeLine{00156\ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{coretypes_8h_ae5708c4d4b300570eebe0bc0c78facbc}{GTY}}\ ((for\_user))\ ctf\_dtdef}
+\DoxyCodeLine{00157\ \{}
+\DoxyCodeLine{00158\ \ \ \doxymbox{\hyperlink{dwarf2out_8h_a02706545bb70e7fd255dc3f5b48ce75f}{dw\_die\_ref}}\ dtd\_key;\ \ \ \ \ \ \ \ \ \textcolor{comment}{/*\ Type\ key\ for\ hashing.\ \ */}}
+\DoxyCodeLine{00159\ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *\ dtd\_name;\ \ \ \ \ \ \textcolor{comment}{/*\ Name\ associated\ with\ definition\ (if\ any).\ \ */}}
+\DoxyCodeLine{00160\ \ \ \doxymbox{\hyperlink{ctfc_8h_a1a5f9546007f66078a6fe12dcaf9621c}{ctf\_id\_t}}\ dtd\_type;\ \ \ \ \ \ \ \ \ \ \textcolor{comment}{/*\ Type\ identifier\ for\ this\ definition.\ \ */}}
+\DoxyCodeLine{00161\ \ \ \doxymbox{\hyperlink{ctfc_8h_a22b2a1c6f81a603ab2f43486b95bd4d1}{ctf\_itype\_t}}\ dtd\_data;\ \ \ \ \ \ \ \textcolor{comment}{/*\ Type\ node.\ \ */}}
+\DoxyCodeLine{00162\ \ \ \textcolor{keywordtype}{bool}\ from\_global\_func;\ \textcolor{comment}{/*\ Whether\ this\ type\ was\ added\ from\ a\ global}}
+\DoxyCodeLine{00163\ \textcolor{comment}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ function.\ \ */}}
+\DoxyCodeLine{00164\ \ \ uint32\_t\ linkage;\ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{/*\ Used\ in\ function\ types.\ \ 0=local,\ 1=global.\ \ */}}
+\DoxyCodeLine{00165\ \ \ \textcolor{keywordtype}{bool}\ dtd\_enum\_unsigned;\ \ \ \ \ \textcolor{comment}{/*\ Enum\ signedness.\ \ */}}
+\DoxyCodeLine{00166\ \ \ \textcolor{keyword}{union\ }\doxymbox{\hyperlink{coretypes_8h_ae5708c4d4b300570eebe0bc0c78facbc}{GTY}}\ ((desc\ (\textcolor{stringliteral}{"{}ctf\_dtu\_d\_union\_selector\ (\&\%1)"{}})))}
+\DoxyCodeLine{00167\ \ \ \{}
+\DoxyCodeLine{00168\ \ \ \ \ \textcolor{comment}{/*\ struct,\ union,\ or\ enum.\ \ */}}
+\DoxyCodeLine{00169\ \ \ \ \ \doxymbox{\hyperlink{ctfc_8h_a62c3503abe6ebb4cf41a99767b1c7df9}{ctf\_dmdef\_t}}\ *\ \doxymbox{\hyperlink{coretypes_8h_ae5708c4d4b300570eebe0bc0c78facbc}{GTY}}\ ((tag\ (\textcolor{stringliteral}{"{}CTF\_DTU\_D\_MEMBERS"{}})))\ dtu\_members;}
+\DoxyCodeLine{00170\ \ \ \ \ \textcolor{comment}{/*\ array.\ \ */}}
+\DoxyCodeLine{00171\ \ \ \ \ \doxymbox{\hyperlink{ctfc_8h_a7aa3ac94df03f88b388da16040ed02e7}{ctf\_arinfo\_t}}\ \doxymbox{\hyperlink{coretypes_8h_ae5708c4d4b300570eebe0bc0c78facbc}{GTY}}\ ((tag\ (\textcolor{stringliteral}{"{}CTF\_DTU\_D\_ARRAY"{}})))\ dtu\_arr;}
+\DoxyCodeLine{00172\ \ \ \ \ \textcolor{comment}{/*\ integer\ or\ float.\ \ */}}
+\DoxyCodeLine{00173\ \ \ \ \ \doxymbox{\hyperlink{ctfc_8h_a5a45aaa21d272b4fc2a771e0760d368b}{ctf\_encoding\_t}}\ \doxymbox{\hyperlink{coretypes_8h_ae5708c4d4b300570eebe0bc0c78facbc}{GTY}}\ ((tag\ (\textcolor{stringliteral}{"{}CTF\_DTU\_D\_ENCODING"{}})))\ dtu\_enc;}
+\DoxyCodeLine{00174\ \ \ \ \ \textcolor{comment}{/*\ function.\ \ */}}
+\DoxyCodeLine{00175\ \ \ \ \ \doxymbox{\hyperlink{ctfc_8h_a63b3401b413a771432c98518e24e17f7}{ctf\_func\_arg\_t}}\ *\ \doxymbox{\hyperlink{coretypes_8h_ae5708c4d4b300570eebe0bc0c78facbc}{GTY}}\ ((tag\ (\textcolor{stringliteral}{"{}CTF\_DTU\_D\_ARGUMENTS"{}})))\ dtu\_argv;}
+\DoxyCodeLine{00176\ \ \ \ \ \textcolor{comment}{/*\ slice.\ \ */}}
+\DoxyCodeLine{00177\ \ \ \ \ \doxymbox{\hyperlink{ctfc_8h_a81994ce2f31eb2e31b2f2f26f3d3bf0d}{ctf\_sliceinfo\_t}}\ \doxymbox{\hyperlink{coretypes_8h_ae5708c4d4b300570eebe0bc0c78facbc}{GTY}}\ ((tag\ (\textcolor{stringliteral}{"{}CTF\_DTU\_D\_SLICE"{}})))\ dtu\_slice;}
+\DoxyCodeLine{00178\ \ \ \}\ dtd\_u;}
+\DoxyCodeLine{00179\ \};}
+\DoxyCodeLine{00180\ }
+\DoxyCodeLine{00181\ \textcolor{keyword}{typedef}\ \textcolor{keyword}{struct\ }ctf\_dtdef\ \doxymbox{\hyperlink{ctfc_8h_aebf9bc2a1a79c416941ea08247dfda78}{ctf\_dtdef\_t}};}
+\DoxyCodeLine{00182\ }
+\DoxyCodeLine{00183\ \textcolor{comment}{/*\ Variable\ definition\ for\ CTF\ generation.\ \ */}}
+\DoxyCodeLine{00184\ }
+\DoxyCodeLine{00185\ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{coretypes_8h_ae5708c4d4b300570eebe0bc0c78facbc}{GTY}}\ ((for\_user))\ ctf\_dvdef}
+\DoxyCodeLine{00186\ \{}
+\DoxyCodeLine{00187\ \ \ \doxymbox{\hyperlink{dwarf2out_8h_a02706545bb70e7fd255dc3f5b48ce75f}{dw\_die\_ref}}\ dvd\_key;\ \ \ \ \ \ \ \textcolor{comment}{/*\ DWARF\ DIE\ corresponding\ to\ the\ variable.\ \ */}}
+\DoxyCodeLine{00188\ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *\ dvd\_name;\ \ \ \ \textcolor{comment}{/*\ Name\ associated\ with\ variable.\ \ */}}
+\DoxyCodeLine{00189\ \ \ uint32\_t\ dvd\_name\_offset;\ \textcolor{comment}{/*\ Offset\ of\ the\ name\ in\ str\ table.\ \ */}}
+\DoxyCodeLine{00190\ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ dvd\_visibility;\ \ \textcolor{comment}{/*\ External\ visibility.\ \ 0=static,1=global.\ \ */}}
+\DoxyCodeLine{00191\ \ \ \doxymbox{\hyperlink{ctfc_8h_a1a5f9546007f66078a6fe12dcaf9621c}{ctf\_id\_t}}\ dvd\_type;\ \ \ \ \ \ \ \ \textcolor{comment}{/*\ Type\ of\ variable.\ \ */}}
+\DoxyCodeLine{00192\ \};}
+\DoxyCodeLine{00193\ }
+\DoxyCodeLine{00194\ \textcolor{keyword}{typedef}\ \textcolor{keyword}{struct\ }ctf\_dvdef\ \doxymbox{\hyperlink{ctfc_8h_a55b5c5c878ac1cc62259d7673d35a0ae}{ctf\_dvdef\_t}};}
+\DoxyCodeLine{00195\ }
+\DoxyCodeLine{00196\ \textcolor{keyword}{typedef}\ \doxymbox{\hyperlink{ctfc_8h_a55b5c5c878ac1cc62259d7673d35a0ae}{ctf\_dvdef\_t}}\ *\ \doxymbox{\hyperlink{ctfc_8h_a388b31eda77a98d56cab17be8f017a70}{ctf\_dvdef\_ref}};}
+\DoxyCodeLine{00197\ \textcolor{keyword}{typedef}\ \doxymbox{\hyperlink{ctfc_8h_aebf9bc2a1a79c416941ea08247dfda78}{ctf\_dtdef\_t}}\ *\ \doxymbox{\hyperlink{ctfc_8h_a6eecc93f4b68cee35147cc02c7b615a3}{ctf\_dtdef\_ref}};}
+\DoxyCodeLine{00198\ }
+\DoxyCodeLine{00199\ \textcolor{comment}{/*\ Location\ information\ for\ CTF\ Types\ and\ CTF\ Variables.\ \ */}}
+\DoxyCodeLine{00200\ }
+\DoxyCodeLine{00201\ \textcolor{keyword}{typedef}\ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{coretypes_8h_ae5708c4d4b300570eebe0bc0c78facbc}{GTY}}\ (())\ ctf\_srcloc}
+\DoxyCodeLine{00202\ \{}
+\DoxyCodeLine{00203\ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *\ ctsloc\_file;}
+\DoxyCodeLine{00204\ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ ctsloc\_line;}
+\DoxyCodeLine{00205\ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ ctsloc\_col;}
+\DoxyCodeLine{00206\ \}\ \doxymbox{\hyperlink{ctfc_8h_a25b09c81e3a02ace3052a0562ceaa981}{ctf\_srcloc\_t}};}
+\DoxyCodeLine{00207\ }
+\DoxyCodeLine{00208\ \textcolor{keyword}{typedef}\ \doxymbox{\hyperlink{ctfc_8h_a25b09c81e3a02ace3052a0562ceaa981}{ctf\_srcloc\_t}}\ *\ \doxymbox{\hyperlink{ctfc_8h_abe0cdabf1f9c4a502691d5af38c4f0ce}{ctf\_srcloc\_ref}};}
+\DoxyCodeLine{00209\ }
+\DoxyCodeLine{00210\ \textcolor{comment}{/*\ Helper\ enum\ and\ api\ for\ the\ GTY\ machinery\ to\ work\ on\ union\ dtu\_d.\ \ */}}
+\DoxyCodeLine{00211\ }
+\DoxyCodeLine{00212\ \textcolor{keyword}{enum}\ \doxymbox{\hyperlink{ctfc_8h_a3817ec3da195eeb0146eab7cd7ae726b}{ctf\_dtu\_d\_union\_enum}}\ \{}
+\DoxyCodeLine{00213\ \ \ \doxymbox{\hyperlink{ctfc_8h_a3817ec3da195eeb0146eab7cd7ae726ba6c68343c6571545c49118f80eeb1a980}{CTF\_DTU\_D\_MEMBERS}},}
+\DoxyCodeLine{00214\ \ \ \doxymbox{\hyperlink{ctfc_8h_a3817ec3da195eeb0146eab7cd7ae726baf69a4c435b01f6855d66dd27bdbab07b}{CTF\_DTU\_D\_ARRAY}},}
+\DoxyCodeLine{00215\ \ \ \doxymbox{\hyperlink{ctfc_8h_a3817ec3da195eeb0146eab7cd7ae726bad81cbc9e6acd94824eac6d66c1d9646b}{CTF\_DTU\_D\_ENCODING}},}
+\DoxyCodeLine{00216\ \ \ \doxymbox{\hyperlink{ctfc_8h_a3817ec3da195eeb0146eab7cd7ae726ba1f90acdfef9791c9cbc439034a88c9dc}{CTF\_DTU\_D\_ARGUMENTS}},}
+\DoxyCodeLine{00217\ \ \ \doxymbox{\hyperlink{ctfc_8h_a3817ec3da195eeb0146eab7cd7ae726ba6aa444d1315894d6ca912c71cc28b0df}{CTF\_DTU\_D\_SLICE}}}
+\DoxyCodeLine{00218\ \};}
+\DoxyCodeLine{00219\ }
+\DoxyCodeLine{00220\ \textcolor{keyword}{enum}\ \doxymbox{\hyperlink{ctfc_8h_a3817ec3da195eeb0146eab7cd7ae726b}{ctf\_dtu\_d\_union\_enum}}}
+\DoxyCodeLine{00221\ \doxymbox{\hyperlink{ctfc_8h_a75058554eab85048fe2967dc260ce643}{ctf\_dtu\_d\_union\_selector}}\ (\doxymbox{\hyperlink{ctfc_8h_a6eecc93f4b68cee35147cc02c7b615a3}{ctf\_dtdef\_ref}});}
+\DoxyCodeLine{00222\ }
+\DoxyCodeLine{00223\ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{structctfc__dtd__hasher}{ctfc\_dtd\_hasher}}\ :\ \doxymbox{\hyperlink{structggc__ptr__hash}{ggc\_ptr\_hash}}\ <ctf\_dtdef\_t>}
+\DoxyCodeLine{00224\ \{}
+\DoxyCodeLine{00225\ \ \ \textcolor{keyword}{typedef}\ \doxymbox{\hyperlink{ctfc_8h_a6eecc93f4b68cee35147cc02c7b615a3}{ctf\_dtdef\_ref}}\ \doxymbox{\hyperlink{structctfc__dtd__hasher_a34855019ab2bf77d3ddb530627bc9d0f}{compare\_type}};}
+\DoxyCodeLine{00226\ }
+\DoxyCodeLine{00227\ \ \ \textcolor{keyword}{static}\ \doxymbox{\hyperlink{hashtab_8h_a2d05e5049721cf3117dd6b34e20d4f65}{hashval\_t}}\ \doxymbox{\hyperlink{structctfc__dtd__hasher_adf6d861a7511125fdd7a9726b4034a14}{hash}}\ (\doxymbox{\hyperlink{ctfc_8h_a6eecc93f4b68cee35147cc02c7b615a3}{ctf\_dtdef\_ref}});}
+\DoxyCodeLine{00228\ \ \ \textcolor{keyword}{static}\ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{structctfc__dtd__hasher_ab7911596b1959dfaa49fd026de03bae6}{equal}}\ (\doxymbox{\hyperlink{ctfc_8h_a6eecc93f4b68cee35147cc02c7b615a3}{ctf\_dtdef\_ref}},\ \doxymbox{\hyperlink{ctfc_8h_a6eecc93f4b68cee35147cc02c7b615a3}{ctf\_dtdef\_ref}});}
+\DoxyCodeLine{00229\ \};}
+\DoxyCodeLine{00230\ }
+\DoxyCodeLine{00231\ \textcolor{keyword}{inline}\ \doxymbox{\hyperlink{hashtab_8h_a2d05e5049721cf3117dd6b34e20d4f65}{hashval\_t}}}
+\DoxyCodeLine{00232\ \doxymbox{\hyperlink{structctfc__dtd__hasher_adf6d861a7511125fdd7a9726b4034a14}{ctfc\_dtd\_hasher::hash}}\ (\doxymbox{\hyperlink{ctfc_8h_a6eecc93f4b68cee35147cc02c7b615a3}{ctf\_dtdef\_ref}}\ dtd)}
+\DoxyCodeLine{00233\ \{}
+\DoxyCodeLine{00234\ \ \ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{hashtab_8h_a47e4c89c9c747e205b18b78657ce113a}{htab\_hash\_pointer}}\ (dtd-\/>dtd\_key);}
+\DoxyCodeLine{00235\ \}}
+\DoxyCodeLine{00236\ }
+\DoxyCodeLine{00237\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{bool}}
+\DoxyCodeLine{00238\ \doxymbox{\hyperlink{structctfc__dtd__hasher_ab7911596b1959dfaa49fd026de03bae6}{ctfc\_dtd\_hasher::equal}}\ (\doxymbox{\hyperlink{ctfc_8h_a6eecc93f4b68cee35147cc02c7b615a3}{ctf\_dtdef\_ref}}\ dtd,\ \doxymbox{\hyperlink{ctfc_8h_a6eecc93f4b68cee35147cc02c7b615a3}{ctf\_dtdef\_ref}}\ dtd2)}
+\DoxyCodeLine{00239\ \{}
+\DoxyCodeLine{00240\ \ \ \textcolor{keywordflow}{return}\ (dtd-\/>dtd\_key\ ==\ dtd2-\/>dtd\_key);}
+\DoxyCodeLine{00241\ \}}
+\DoxyCodeLine{00242\ }
+\DoxyCodeLine{00243\ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{structctfc__dvd__hasher}{ctfc\_dvd\_hasher}}\ :\ \doxymbox{\hyperlink{structggc__ptr__hash}{ggc\_ptr\_hash}}\ <ctf\_dvdef\_t>}
+\DoxyCodeLine{00244\ \{}
+\DoxyCodeLine{00245\ \ \ \textcolor{keyword}{typedef}\ \doxymbox{\hyperlink{ctfc_8h_a388b31eda77a98d56cab17be8f017a70}{ctf\_dvdef\_ref}}\ \doxymbox{\hyperlink{structctfc__dvd__hasher_a7be5b6027c26c06b1e43f88a1230e5d9}{compare\_type}};}
+\DoxyCodeLine{00246\ }
+\DoxyCodeLine{00247\ \ \ \textcolor{keyword}{static}\ \doxymbox{\hyperlink{hashtab_8h_a2d05e5049721cf3117dd6b34e20d4f65}{hashval\_t}}\ \doxymbox{\hyperlink{structctfc__dvd__hasher_add685fdf2b6996b2a18ae9823422c934}{hash}}\ (\doxymbox{\hyperlink{ctfc_8h_a388b31eda77a98d56cab17be8f017a70}{ctf\_dvdef\_ref}});}
+\DoxyCodeLine{00248\ \ \ \textcolor{keyword}{static}\ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{structctfc__dvd__hasher_acff4fa273aa295c51bfbff718a6a4a7a}{equal}}\ (\doxymbox{\hyperlink{ctfc_8h_a388b31eda77a98d56cab17be8f017a70}{ctf\_dvdef\_ref}},\ \doxymbox{\hyperlink{ctfc_8h_a388b31eda77a98d56cab17be8f017a70}{ctf\_dvdef\_ref}});}
+\DoxyCodeLine{00249\ \};}
+\DoxyCodeLine{00250\ }
+\DoxyCodeLine{00251\ \textcolor{keyword}{inline}\ \doxymbox{\hyperlink{hashtab_8h_a2d05e5049721cf3117dd6b34e20d4f65}{hashval\_t}}}
+\DoxyCodeLine{00252\ \doxymbox{\hyperlink{structctfc__dvd__hasher_add685fdf2b6996b2a18ae9823422c934}{ctfc\_dvd\_hasher::hash}}\ (\doxymbox{\hyperlink{ctfc_8h_a388b31eda77a98d56cab17be8f017a70}{ctf\_dvdef\_ref}}\ dvd)}
+\DoxyCodeLine{00253\ \{}
+\DoxyCodeLine{00254\ \ \ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{hashtab_8h_a47e4c89c9c747e205b18b78657ce113a}{htab\_hash\_pointer}}\ (dvd-\/>dvd\_key);}
+\DoxyCodeLine{00255\ \}}
+\DoxyCodeLine{00256\ }
+\DoxyCodeLine{00257\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{bool}}
+\DoxyCodeLine{00258\ \doxymbox{\hyperlink{structctfc__dvd__hasher_acff4fa273aa295c51bfbff718a6a4a7a}{ctfc\_dvd\_hasher::equal}}\ (\doxymbox{\hyperlink{ctfc_8h_a388b31eda77a98d56cab17be8f017a70}{ctf\_dvdef\_ref}}\ dvd,\ \doxymbox{\hyperlink{ctfc_8h_a388b31eda77a98d56cab17be8f017a70}{ctf\_dvdef\_ref}}\ dvd2)}
+\DoxyCodeLine{00259\ \{}
+\DoxyCodeLine{00260\ \ \ \textcolor{keywordflow}{return}\ (dvd-\/>dvd\_key\ ==\ dvd2-\/>dvd\_key);}
+\DoxyCodeLine{00261\ \}}
+\DoxyCodeLine{00262\ }
+\DoxyCodeLine{00263\ \textcolor{comment}{/*\ CTF\ container\ structure.}}
+\DoxyCodeLine{00264\ \textcolor{comment}{\ \ \ It\ is\ the\ context\ passed\ around\ when\ generating\ ctf\ debug\ info.\ \ There\ is}}
+\DoxyCodeLine{00265\ \textcolor{comment}{\ \ \ one\ container\ per\ translation\ unit.\ \ */}}
+\DoxyCodeLine{00266\ }
+\DoxyCodeLine{00267\ \textcolor{keyword}{typedef}\ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{coretypes_8h_ae5708c4d4b300570eebe0bc0c78facbc}{GTY}}\ (())\ ctf\_container}
+\DoxyCodeLine{00268\ \{}
+\DoxyCodeLine{00269\ \ \ \textcolor{comment}{/*\ CTF\ Preamble.\ \ */}}
+\DoxyCodeLine{00270\ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{short}\ ctfc\_magic;}
+\DoxyCodeLine{00271\ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{char}\ ctfc\_version;}
+\DoxyCodeLine{00272\ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{char}\ ctfc\_flags;}
+\DoxyCodeLine{00273\ \ \ uint32\_t\ ctfc\_cuname\_offset;}
+\DoxyCodeLine{00274\ }
+\DoxyCodeLine{00275\ \ \ \textcolor{comment}{/*\ CTF\ types.\ \ */}}
+\DoxyCodeLine{00276\ \ \ hash\_table\ <ctfc\_dtd\_hasher>\ *\ \doxymbox{\hyperlink{coretypes_8h_ae5708c4d4b300570eebe0bc0c78facbc}{GTY}}\ (())\ ctfc\_types;}
+\DoxyCodeLine{00277\ \ \ \textcolor{comment}{/*\ CTF\ variables.\ \ */}}
+\DoxyCodeLine{00278\ \ \ \doxymbox{\hyperlink{classhash__table}{hash\_table}}\ <\doxymbox{\hyperlink{structctfc__dvd__hasher}{ctfc\_dvd\_hasher}}>\ *\ \doxymbox{\hyperlink{coretypes_8h_ae5708c4d4b300570eebe0bc0c78facbc}{GTY}}\ (())\ ctfc\_vars;}
+\DoxyCodeLine{00279\ \ \ \textcolor{comment}{/*\ CTF\ variables\ to\ be\ ignored.\ \ */}}
+\DoxyCodeLine{00280\ \ \ \doxymbox{\hyperlink{classhash__table}{hash\_table}}\ <\doxymbox{\hyperlink{structctfc__dvd__hasher}{ctfc\_dvd\_hasher}}>\ *\ \doxymbox{\hyperlink{coretypes_8h_ae5708c4d4b300570eebe0bc0c78facbc}{GTY}}\ (())\ ctfc\_ignore\_vars;}
+\DoxyCodeLine{00281\ }
+\DoxyCodeLine{00282\ \ \ \textcolor{comment}{/*\ CTF\ string\ table.\ \ */}}
+\DoxyCodeLine{00283\ \ \ \doxymbox{\hyperlink{ctfc_8h_abc46eafdd2f697fff9be4aa5b9ed3c21}{ctf\_strtable\_t}}\ ctfc\_strtable;}
+\DoxyCodeLine{00284\ \ \ \textcolor{comment}{/*\ Auxilliary\ string\ table.\ \ At\ this\ time,\ used\ for\ keeping\ func\ arg\ names}}
+\DoxyCodeLine{00285\ \textcolor{comment}{\ \ \ \ \ for\ BTF.\ \ */}}
+\DoxyCodeLine{00286\ \ \ \doxymbox{\hyperlink{ctfc_8h_abc46eafdd2f697fff9be4aa5b9ed3c21}{ctf\_strtable\_t}}\ ctfc\_aux\_strtable;}
+\DoxyCodeLine{00287\ }
+\DoxyCodeLine{00288\ \ \ uint64\_t\ ctfc\_num\_types;}
+\DoxyCodeLine{00289\ \ \ uint64\_t\ ctfc\_num\_stypes;}
+\DoxyCodeLine{00290\ \ \ uint64\_t\ ctfc\_num\_global\_funcs;}
+\DoxyCodeLine{00291\ \ \ uint64\_t\ ctfc\_num\_global\_objts;}
+\DoxyCodeLine{00292\ }
+\DoxyCodeLine{00293\ \ \ \textcolor{comment}{/*\ Number\ of\ vlen\ bytes\ -\/\ the\ variable\ length\ portion\ after\ ctf\_type\_t\ and}}
+\DoxyCodeLine{00294\ \textcolor{comment}{\ \ \ \ \ ctf\_stype\_t\ in\ the\ CTF\ section.\ \ This\ is\ used\ to\ calculate\ the\ offsets\ in}}
+\DoxyCodeLine{00295\ \textcolor{comment}{\ \ \ \ \ the\ CTF\ header.\ \ */}}
+\DoxyCodeLine{00296\ \ \ uint64\_t\ ctfc\_num\_vlen\_bytes;}
+\DoxyCodeLine{00297\ }
+\DoxyCodeLine{00298\ \ \ \textcolor{comment}{/*\ Next\ CTF\ type\ id\ to\ assign.\ \ */}}
+\DoxyCodeLine{00299\ \ \ \doxymbox{\hyperlink{ctfc_8h_a1a5f9546007f66078a6fe12dcaf9621c}{ctf\_id\_t}}\ ctfc\_nextid;}
+\DoxyCodeLine{00300\ }
+\DoxyCodeLine{00301\ \ \ \textcolor{comment}{/*\ Specify\ an\ explicit\ length\ of\ 0\ so\ that\ the\ GC\ marking\ routines\ steer}}
+\DoxyCodeLine{00302\ \textcolor{comment}{\ \ \ \ \ clear\ of\ marking\ the\ CTF\ vars\ and\ CTF\ types\ twice.\ These\ lists\ below\ do}}
+\DoxyCodeLine{00303\ \textcolor{comment}{\ \ \ \ \ not\ own\ the\ pointed\ to\ objects,\ they\ simply\ hold\ references\ to\ them.\ \ */}}
+\DoxyCodeLine{00304\ }
+\DoxyCodeLine{00305\ \ \ \textcolor{comment}{/*\ List\ of\ pre-\/processed\ CTF\ Variables.\ \ CTF\ requires\ that\ the\ variables}}
+\DoxyCodeLine{00306\ \textcolor{comment}{\ \ \ \ \ appear\ in\ the\ sorted\ order\ of\ their\ names.\ \ */}}
+\DoxyCodeLine{00307\ \ \ \doxymbox{\hyperlink{ctfc_8h_a55b5c5c878ac1cc62259d7673d35a0ae}{ctf\_dvdef\_t}}\ **\ \doxymbox{\hyperlink{coretypes_8h_ae5708c4d4b300570eebe0bc0c78facbc}{GTY}}\ ((length\ (\textcolor{stringliteral}{"{}0"{}})))\ ctfc\_vars\_list;}
+\DoxyCodeLine{00308\ \ \ \textcolor{comment}{/*\ Count\ of\ pre-\/processed\ CTF\ Variables\ in\ the\ list.\ \ */}}
+\DoxyCodeLine{00309\ \ \ uint64\_t\ ctfc\_vars\_list\_count;}
+\DoxyCodeLine{00310\ \ \ \textcolor{comment}{/*\ List\ of\ pre-\/processed\ CTF\ types.\ \ CTF\ requires\ that\ a\ shared\ type\ must}}
+\DoxyCodeLine{00311\ \textcolor{comment}{\ \ \ \ \ appear\ before\ the\ type\ that\ uses\ it.\ \ For\ the\ compiler,\ this\ means\ types}}
+\DoxyCodeLine{00312\ \textcolor{comment}{\ \ \ \ \ are\ emitted\ in\ sorted\ order\ of\ their\ type\ IDs.\ \ */}}
+\DoxyCodeLine{00313\ \ \ \doxymbox{\hyperlink{ctfc_8h_aebf9bc2a1a79c416941ea08247dfda78}{ctf\_dtdef\_t}}\ **\ \doxymbox{\hyperlink{coretypes_8h_ae5708c4d4b300570eebe0bc0c78facbc}{GTY}}\ ((length\ (\textcolor{stringliteral}{"{}0"{}})))\ ctfc\_types\_list;}
+\DoxyCodeLine{00314\ \ \ \textcolor{comment}{/*\ List\ of\ CTF\ function\ types\ for\ global\ functions.\ \ The\ order\ of\ global}}
+\DoxyCodeLine{00315\ \textcolor{comment}{\ \ \ \ \ function\ entries\ in\ the\ CTF\ funcinfo\ section\ is\ undefined\ by\ the}}
+\DoxyCodeLine{00316\ \textcolor{comment}{\ \ \ \ \ compiler.\ \ */}}
+\DoxyCodeLine{00317\ \ \ \doxymbox{\hyperlink{ctfc_8h_aebf9bc2a1a79c416941ea08247dfda78}{ctf\_dtdef\_t}}\ **\ \doxymbox{\hyperlink{coretypes_8h_ae5708c4d4b300570eebe0bc0c78facbc}{GTY}}\ ((length\ (\textcolor{stringliteral}{"{}0"{}})))\ ctfc\_gfuncs\_list;}
+\DoxyCodeLine{00318\ \ \ \textcolor{comment}{/*\ List\ of\ CTF\ variables\ at\ global\ scope.\ \ The\ order\ of\ global\ object\ entries}}
+\DoxyCodeLine{00319\ \textcolor{comment}{\ \ \ \ \ in\ the\ CTF\ objinfo\ section\ is\ undefined\ by\ the\ \ compiler.\ \ */}}
+\DoxyCodeLine{00320\ \ \ \doxymbox{\hyperlink{ctfc_8h_a55b5c5c878ac1cc62259d7673d35a0ae}{ctf\_dvdef\_t}}\ **\ \doxymbox{\hyperlink{coretypes_8h_ae5708c4d4b300570eebe0bc0c78facbc}{GTY}}\ ((length\ (\textcolor{stringliteral}{"{}0"{}})))\ ctfc\_gobjts\_list;}
+\DoxyCodeLine{00321\ }
+\DoxyCodeLine{00322\ \ \ \textcolor{comment}{/*\ Following\ members\ are\ for\ debugging\ only.\ \ They\ do\ not\ add\ functional}}
+\DoxyCodeLine{00323\ \textcolor{comment}{\ \ \ \ \ value\ to\ the\ task\ of\ CTF\ creation.\ \ These\ can\ be\ cleaned\ up\ once\ CTF}}
+\DoxyCodeLine{00324\ \textcolor{comment}{\ \ \ \ \ generation\ stabilizes.\ \ */}}
+\DoxyCodeLine{00325\ }
+\DoxyCodeLine{00326\ \ \ \textcolor{comment}{/*\ Keep\ a\ count\ of\ the\ number\ of\ bytes\ dumped\ in\ asm\ for\ debugging}}
+\DoxyCodeLine{00327\ \textcolor{comment}{\ \ \ \ \ purposes.\ \ */}}
+\DoxyCodeLine{00328\ \ \ uint64\_t\ ctfc\_numbytes\_asm;}
+\DoxyCodeLine{00329\ \ \ \ \textcolor{comment}{/*\ Total\ length\ of\ all\ strings\ in\ CTF.\ \ */}}
+\DoxyCodeLine{00330\ \ \ \textcolor{keywordtype}{size\_t}\ ctfc\_strlen;}
+\DoxyCodeLine{00331\ \ \ \textcolor{comment}{/*\ Total\ length\ of\ all\ strings\ in\ aux\ string\ table.\ \ */}}
+\DoxyCodeLine{00332\ \ \ \textcolor{keywordtype}{size\_t}\ ctfc\_aux\_strlen;}
+\DoxyCodeLine{00333\ }
+\DoxyCodeLine{00334\ \}\ \doxymbox{\hyperlink{ctfc_8h_ac227fa86ad8d8ee6221ee72e114615dd}{ctf\_container\_t}};}
+\DoxyCodeLine{00335\ }
+\DoxyCodeLine{00336\ \textcolor{comment}{/*\ Markers\ for\ which\ string\ table\ from\ the\ CTF\ container\ to\ use.\ \ */}}
+\DoxyCodeLine{00337\ }
+\DoxyCodeLine{00338\ \textcolor{preprocessor}{\#define\ CTF\_STRTAB\ 0\ \ \ \ \ \ \ \ }\textcolor{comment}{/*\ CTF\ string\ table.\ \ */}\textcolor{preprocessor}{}}
+\DoxyCodeLine{00339\ \textcolor{preprocessor}{\#define\ CTF\_AUX\_STRTAB\ 1\ \ \ \ }\textcolor{comment}{/*\ CTF\ auxilliary\ string\ table.\ \ */}\textcolor{preprocessor}{}}
+\DoxyCodeLine{00340\ }
+\DoxyCodeLine{00341\ \textcolor{keyword}{typedef}\ \doxymbox{\hyperlink{ctfc_8h_ac227fa86ad8d8ee6221ee72e114615dd}{ctf\_container\_t}}\ *\ \doxymbox{\hyperlink{ctfc_8h_a288429be59ca3d171866dc2e0aed033e}{ctf\_container\_ref}};}
+\DoxyCodeLine{00342\ }
+\DoxyCodeLine{00343\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{coretypes_8h_ae5708c4d4b300570eebe0bc0c78facbc}{GTY}}\ (())\ \doxymbox{\hyperlink{ctfc_8h_a288429be59ca3d171866dc2e0aed033e}{ctf\_container\_ref}}\ tu\_ctfc;}
+\DoxyCodeLine{00344\ }
+\DoxyCodeLine{00345\ extern\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{ctfc_8h_a275ef466fcc897e87a6470a833e9b9d1}{ctfc\_delete\_container}}\ (\doxymbox{\hyperlink{ctfc_8h_a288429be59ca3d171866dc2e0aed033e}{ctf\_container\_ref}});}
+\DoxyCodeLine{00346\ }
+\DoxyCodeLine{00347\ \textcolor{comment}{/*\ If\ the\ next\ ctf\ type\ id\ is\ still\ set\ to\ the\ init\ value,\ no\ ctf\ records\ to}}
+\DoxyCodeLine{00348\ \textcolor{comment}{\ \ \ report.\ \ */}}
+\DoxyCodeLine{00349\ extern\ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{ctfc_8h_a96af450d5c5dac2390042cb4ec85c853}{ctfc\_is\_empty\_container}}\ (\doxymbox{\hyperlink{ctfc_8h_a288429be59ca3d171866dc2e0aed033e}{ctf\_container\_ref}});}
+\DoxyCodeLine{00350\ }
+\DoxyCodeLine{00351\ \textcolor{comment}{/*\ Get\ the\ total\ number\ of\ CTF\ types\ in\ the\ container.\ \ */}}
+\DoxyCodeLine{00352\ }
+\DoxyCodeLine{00353\ extern\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{ctfc_8h_a465984f3c048aa078c16f2bb76ffd26a}{ctfc\_get\_num\_ctf\_types}}\ (\doxymbox{\hyperlink{ctfc_8h_a288429be59ca3d171866dc2e0aed033e}{ctf\_container\_ref}});}
+\DoxyCodeLine{00354\ }
+\DoxyCodeLine{00355\ \textcolor{comment}{/*\ Get\ the\ total\ number\ of\ CTF\ variables\ in\ the\ container.\ \ */}}
+\DoxyCodeLine{00356\ }
+\DoxyCodeLine{00357\ extern\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{ctfc_8h_ac4670ce6b4e1959b6907ad5ba3096833}{ctfc\_get\_num\_ctf\_vars}}\ (\doxymbox{\hyperlink{ctfc_8h_a288429be59ca3d171866dc2e0aed033e}{ctf\_container\_ref}});}
+\DoxyCodeLine{00358\ }
+\DoxyCodeLine{00359\ \textcolor{comment}{/*\ Get\ reference\ to\ the\ CTF\ string\ table\ or\ the\ CTF\ auxilliary}}
+\DoxyCodeLine{00360\ \textcolor{comment}{\ \ \ string\ table.\ \ */}}
+\DoxyCodeLine{00361\ }
+\DoxyCodeLine{00362\ extern\ \doxymbox{\hyperlink{ctfc_8h_abc46eafdd2f697fff9be4aa5b9ed3c21}{ctf\_strtable\_t}}\ *\ \doxymbox{\hyperlink{ctfc_8h_a95740b64bfb98da8ab72fea717597ee8}{ctfc\_get\_strtab}}\ (\doxymbox{\hyperlink{ctfc_8h_a288429be59ca3d171866dc2e0aed033e}{ctf\_container\_ref}},\ \textcolor{keywordtype}{int});}
+\DoxyCodeLine{00363\ }
+\DoxyCodeLine{00364\ \textcolor{comment}{/*\ Get\ the\ length\ of\ the\ specified\ string\ table\ in\ the\ CTF\ container.\ \ */}}
+\DoxyCodeLine{00365\ }
+\DoxyCodeLine{00366\ extern\ \textcolor{keywordtype}{size\_t}\ \doxymbox{\hyperlink{ctfc_8h_ac809492abc5867bff39ffef30b3c454c}{ctfc\_get\_strtab\_len}}\ (\doxymbox{\hyperlink{ctfc_8h_a288429be59ca3d171866dc2e0aed033e}{ctf\_container\_ref}},\ \textcolor{keywordtype}{int});}
+\DoxyCodeLine{00367\ }
+\DoxyCodeLine{00368\ \textcolor{comment}{/*\ Get\ the\ number\ of\ bytes\ to\ represent\ the\ variable\ length\ portion\ of\ all\ CTF}}
+\DoxyCodeLine{00369\ \textcolor{comment}{\ \ \ types\ in\ the\ CTF\ container.\ \ */}}
+\DoxyCodeLine{00370\ }
+\DoxyCodeLine{00371\ extern\ \textcolor{keywordtype}{size\_t}\ \doxymbox{\hyperlink{ctfc_8h_a318fcc6082c6ab4be68c47de22d012f7}{ctfc\_get\_num\_vlen\_bytes}}\ (\doxymbox{\hyperlink{ctfc_8h_a288429be59ca3d171866dc2e0aed033e}{ctf\_container\_ref}});}
+\DoxyCodeLine{00372\ }
+\DoxyCodeLine{00373\ \textcolor{comment}{/*\ The\ compiler\ demarcates\ whether\ types\ are\ visible\ at\ top-\/level\ scope\ or\ not.}}
+\DoxyCodeLine{00374\ \textcolor{comment}{\ \ \ The\ only\ example\ so\ far\ of\ a\ type\ not\ visible\ at\ top-\/level\ scope\ is\ slices.}}
+\DoxyCodeLine{00375\ \textcolor{comment}{\ \ \ CTF\_ADD\_NONROOT\ is\ used\ to\ indicate\ the\ latter.\ \ */}}
+\DoxyCodeLine{00376\ \textcolor{preprocessor}{\#define\ CTF\_ADD\_NONROOT\ 0\ \ \ }\textcolor{comment}{/*\ CTF\ type\ only\ visible\ in\ nested\ scope.\ \ */}\textcolor{preprocessor}{}}
+\DoxyCodeLine{00377\ \textcolor{preprocessor}{\#define\ CTF\_ADD\_ROOT\ \ \ \ 1\ \ \ }\textcolor{comment}{/*\ CTF\ type\ visible\ at\ top-\/level\ scope.\ \ */}\textcolor{preprocessor}{}}
+\DoxyCodeLine{00378\ }
+\DoxyCodeLine{00379\ \textcolor{comment}{/*\ These\ APIs\ allow\ to\ initialize\ and\ finalize\ the\ CTF\ machinery\ and}}
+\DoxyCodeLine{00380\ \textcolor{comment}{\ \ \ to\ add\ types\ to\ the\ CTF\ container\ associated\ to\ the\ current}}
+\DoxyCodeLine{00381\ \textcolor{comment}{\ \ \ translation\ unit.\ \ Used\ in\ dwarf2ctf.cc.\ \ */}}
+\DoxyCodeLine{00382\ }
+\DoxyCodeLine{00383\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{ctfc_8h_a566c267b769c1063c7b230708413a43a}{ctf\_init}}\ (\textcolor{keywordtype}{void});}
+\DoxyCodeLine{00384\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{ctfc_8h_ab2652dd6f8bb09d6c7e777e38876cf72}{ctf\_output}}\ (\textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *\ filename);}
+\DoxyCodeLine{00385\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{ctfc_8h_af25cc827e38083da397a797bb82b0895}{ctf\_finalize}}\ (\textcolor{keywordtype}{void});}
+\DoxyCodeLine{00386\ }
+\DoxyCodeLine{00387\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{ctfc_8h_af36ae1aeb6de44ff27a309e9c9e56390}{btf\_output}}\ (\textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *\ filename);}
+\DoxyCodeLine{00388\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{ctfc_8h_a214e8c447ff33eb339d192a76a5e3a90}{btf\_init\_postprocess}}\ (\textcolor{keywordtype}{void});}
+\DoxyCodeLine{00389\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{ctfc_8h_a93f212f631a721c63f61a91ef206cc3c}{btf\_finalize}}\ (\textcolor{keywordtype}{void});}
+\DoxyCodeLine{00390\ }
+\DoxyCodeLine{00391\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{ctfc_8h_a288429be59ca3d171866dc2e0aed033e}{ctf\_container\_ref}}\ \doxymbox{\hyperlink{ctfc_8h_a5cd2db031d35c8d3d84428ff68cffed7}{ctf\_get\_tu\_ctfc}}\ (\textcolor{keywordtype}{void});}
+\DoxyCodeLine{00392\ }
+\DoxyCodeLine{00393\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{ctfc_8h_a1b8c4578657733a1a56ce97e427f64aa}{ctf\_type\_exists}}\ (\doxymbox{\hyperlink{ctfc_8h_a288429be59ca3d171866dc2e0aed033e}{ctf\_container\_ref}},\ \doxymbox{\hyperlink{dwarf2out_8h_a02706545bb70e7fd255dc3f5b48ce75f}{dw\_die\_ref}},\ \doxymbox{\hyperlink{ctfc_8h_a1a5f9546007f66078a6fe12dcaf9621c}{ctf\_id\_t}}\ *);}
+\DoxyCodeLine{00394\ }
+\DoxyCodeLine{00395\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{ctfc_8h_a2e70ec780700e1091043093333f5117f}{ctf\_add\_cuname}}\ (\doxymbox{\hyperlink{ctfc_8h_a288429be59ca3d171866dc2e0aed033e}{ctf\_container\_ref}},\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *);}
+\DoxyCodeLine{00396\ }
+\DoxyCodeLine{00397\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{ctfc_8h_a6eecc93f4b68cee35147cc02c7b615a3}{ctf\_dtdef\_ref}}\ \doxymbox{\hyperlink{ctfc_8h_afdeaefba4b370eef3b7afe84bfb5dd99}{ctf\_dtd\_lookup}}\ (\textcolor{keyword}{const}\ \doxymbox{\hyperlink{ctfc_8h_a288429be59ca3d171866dc2e0aed033e}{ctf\_container\_ref}}\ ctfc,}
+\DoxyCodeLine{00398\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{dwarf2out_8h_a02706545bb70e7fd255dc3f5b48ce75f}{dw\_die\_ref}}\ die);}
+\DoxyCodeLine{00399\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{ctfc_8h_a388b31eda77a98d56cab17be8f017a70}{ctf\_dvdef\_ref}}\ \doxymbox{\hyperlink{ctfc_8h_a02c7d1f5d403c52eae2f52bea46ffe98}{ctf\_dvd\_lookup}}\ (\textcolor{keyword}{const}\ \doxymbox{\hyperlink{ctfc_8h_a288429be59ca3d171866dc2e0aed033e}{ctf\_container\_ref}}\ ctfc,}
+\DoxyCodeLine{00400\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{dwarf2out_8h_a02706545bb70e7fd255dc3f5b48ce75f}{dw\_die\_ref}}\ die);}
+\DoxyCodeLine{00401\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{ctfc_8h_aecbae26edb2a64b6d38807ea5bf50ff6}{ctf\_dvd\_ignore\_lookup}}\ (\textcolor{keyword}{const}\ \doxymbox{\hyperlink{ctfc_8h_a288429be59ca3d171866dc2e0aed033e}{ctf\_container\_ref}}\ ctfc,}
+\DoxyCodeLine{00402\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{dwarf2out_8h_a02706545bb70e7fd255dc3f5b48ce75f}{dw\_die\_ref}}\ die);}
+\DoxyCodeLine{00403\ }
+\DoxyCodeLine{00404\ \textcolor{keyword}{extern}\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *\ \doxymbox{\hyperlink{ctfc_8h_a9d6a9968e32482776c4810ba575bb864}{ctf\_add\_string}}\ (\doxymbox{\hyperlink{ctfc_8h_a288429be59ca3d171866dc2e0aed033e}{ctf\_container\_ref}},\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *,}
+\DoxyCodeLine{00405\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ uint32\_t\ *,\ \textcolor{keywordtype}{int});}
+\DoxyCodeLine{00406\ }
+\DoxyCodeLine{00407\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{ctfc_8h_a1a5f9546007f66078a6fe12dcaf9621c}{ctf\_id\_t}}\ \doxymbox{\hyperlink{ctfc_8h_a84058ab009748e40e90bcd98d11e1e69}{ctf\_add\_reftype}}\ (\doxymbox{\hyperlink{ctfc_8h_a288429be59ca3d171866dc2e0aed033e}{ctf\_container\_ref}},\ uint32\_t,\ \doxymbox{\hyperlink{ctfc_8h_a1a5f9546007f66078a6fe12dcaf9621c}{ctf\_id\_t}},}
+\DoxyCodeLine{00408\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ uint32\_t,\ \doxymbox{\hyperlink{dwarf2out_8h_a02706545bb70e7fd255dc3f5b48ce75f}{dw\_die\_ref}});}
+\DoxyCodeLine{00409\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{ctfc_8h_a1a5f9546007f66078a6fe12dcaf9621c}{ctf\_id\_t}}\ \doxymbox{\hyperlink{ctfc_8h_a995d4eb0c9f0329eb7841e52faa402bc}{ctf\_add\_enum}}\ (\doxymbox{\hyperlink{ctfc_8h_a288429be59ca3d171866dc2e0aed033e}{ctf\_container\_ref}},\ uint32\_t,\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *,}
+\DoxyCodeLine{00410\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ HOST\_WIDE\_INT,\ \textcolor{keywordtype}{bool},\ \doxymbox{\hyperlink{dwarf2out_8h_a02706545bb70e7fd255dc3f5b48ce75f}{dw\_die\_ref}});}
+\DoxyCodeLine{00411\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{ctfc_8h_a1a5f9546007f66078a6fe12dcaf9621c}{ctf\_id\_t}}\ \doxymbox{\hyperlink{ctfc_8h_aca85852e27d8a9b3d583aec5bd1efb49}{ctf\_add\_slice}}\ (\doxymbox{\hyperlink{ctfc_8h_a288429be59ca3d171866dc2e0aed033e}{ctf\_container\_ref}},\ uint32\_t,\ \doxymbox{\hyperlink{ctfc_8h_a1a5f9546007f66078a6fe12dcaf9621c}{ctf\_id\_t}},}
+\DoxyCodeLine{00412\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ uint32\_t,\ uint32\_t,\ \doxymbox{\hyperlink{dwarf2out_8h_a02706545bb70e7fd255dc3f5b48ce75f}{dw\_die\_ref}});}
+\DoxyCodeLine{00413\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{ctfc_8h_a1a5f9546007f66078a6fe12dcaf9621c}{ctf\_id\_t}}\ \doxymbox{\hyperlink{ctfc_8h_a5cfb8f6cefedb68197042091f0d71a56}{ctf\_add\_float}}\ (\doxymbox{\hyperlink{ctfc_8h_a288429be59ca3d171866dc2e0aed033e}{ctf\_container\_ref}},\ uint32\_t,\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *,}
+\DoxyCodeLine{00414\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{ctfc_8h_a5a45aaa21d272b4fc2a771e0760d368b}{ctf\_encoding\_t}}\ *,\ \doxymbox{\hyperlink{dwarf2out_8h_a02706545bb70e7fd255dc3f5b48ce75f}{dw\_die\_ref}});}
+\DoxyCodeLine{00415\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{ctfc_8h_a1a5f9546007f66078a6fe12dcaf9621c}{ctf\_id\_t}}\ \doxymbox{\hyperlink{ctfc_8h_ab01f70711935cdf58ddda7a2bb2c96c3}{ctf\_add\_integer}}\ (\doxymbox{\hyperlink{ctfc_8h_a288429be59ca3d171866dc2e0aed033e}{ctf\_container\_ref}},\ uint32\_t,\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *,}
+\DoxyCodeLine{00416\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{ctfc_8h_a5a45aaa21d272b4fc2a771e0760d368b}{ctf\_encoding\_t}}\ *,\ \doxymbox{\hyperlink{dwarf2out_8h_a02706545bb70e7fd255dc3f5b48ce75f}{dw\_die\_ref}});}
+\DoxyCodeLine{00417\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{ctfc_8h_a1a5f9546007f66078a6fe12dcaf9621c}{ctf\_id\_t}}\ \doxymbox{\hyperlink{ctfc_8h_ac3cb842183649cbc16c1b94cca6e704d}{ctf\_add\_unknown}}\ (\doxymbox{\hyperlink{ctfc_8h_a288429be59ca3d171866dc2e0aed033e}{ctf\_container\_ref}},\ uint32\_t,\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *,}
+\DoxyCodeLine{00418\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{ctfc_8h_a5a45aaa21d272b4fc2a771e0760d368b}{ctf\_encoding\_t}}\ *,\ \doxymbox{\hyperlink{dwarf2out_8h_a02706545bb70e7fd255dc3f5b48ce75f}{dw\_die\_ref}});}
+\DoxyCodeLine{00419\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{ctfc_8h_a1a5f9546007f66078a6fe12dcaf9621c}{ctf\_id\_t}}\ \doxymbox{\hyperlink{ctfc_8h_abc4e50eb4c326244cf0b1a3172f58839}{ctf\_add\_pointer}}\ (\doxymbox{\hyperlink{ctfc_8h_a288429be59ca3d171866dc2e0aed033e}{ctf\_container\_ref}},\ uint32\_t,\ \doxymbox{\hyperlink{ctfc_8h_a1a5f9546007f66078a6fe12dcaf9621c}{ctf\_id\_t}},}
+\DoxyCodeLine{00420\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{dwarf2out_8h_a02706545bb70e7fd255dc3f5b48ce75f}{dw\_die\_ref}});}
+\DoxyCodeLine{00421\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{ctfc_8h_a1a5f9546007f66078a6fe12dcaf9621c}{ctf\_id\_t}}\ \doxymbox{\hyperlink{ctfc_8h_a4aee938bf3a5560a0e861f6b0c375a26}{ctf\_add\_array}}\ (\doxymbox{\hyperlink{ctfc_8h_a288429be59ca3d171866dc2e0aed033e}{ctf\_container\_ref}},\ uint32\_t,}
+\DoxyCodeLine{00422\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{ctfc_8h_a7aa3ac94df03f88b388da16040ed02e7}{ctf\_arinfo\_t}}\ *,\ \doxymbox{\hyperlink{dwarf2out_8h_a02706545bb70e7fd255dc3f5b48ce75f}{dw\_die\_ref}});}
+\DoxyCodeLine{00423\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{ctfc_8h_a1a5f9546007f66078a6fe12dcaf9621c}{ctf\_id\_t}}\ \doxymbox{\hyperlink{ctfc_8h_aee8b1b8a74c9a2f5d4da78f50e122710}{ctf\_add\_forward}}\ (\doxymbox{\hyperlink{ctfc_8h_a288429be59ca3d171866dc2e0aed033e}{ctf\_container\_ref}},\ uint32\_t,\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *,}
+\DoxyCodeLine{00424\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ uint32\_t,\ \doxymbox{\hyperlink{dwarf2out_8h_a02706545bb70e7fd255dc3f5b48ce75f}{dw\_die\_ref}});}
+\DoxyCodeLine{00425\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{ctfc_8h_a1a5f9546007f66078a6fe12dcaf9621c}{ctf\_id\_t}}\ \doxymbox{\hyperlink{ctfc_8h_aa5d9022accaa4c8cafe1d717553b1f39}{ctf\_add\_typedef}}\ (\doxymbox{\hyperlink{ctfc_8h_a288429be59ca3d171866dc2e0aed033e}{ctf\_container\_ref}},\ uint32\_t,\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *,}
+\DoxyCodeLine{00426\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{ctfc_8h_a1a5f9546007f66078a6fe12dcaf9621c}{ctf\_id\_t}},\ \doxymbox{\hyperlink{dwarf2out_8h_a02706545bb70e7fd255dc3f5b48ce75f}{dw\_die\_ref}});}
+\DoxyCodeLine{00427\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{ctfc_8h_a1a5f9546007f66078a6fe12dcaf9621c}{ctf\_id\_t}}\ \doxymbox{\hyperlink{ctfc_8h_a9fe14bceb207aadbeaf8ecda53ba0f81}{ctf\_add\_function}}\ (\doxymbox{\hyperlink{ctfc_8h_a288429be59ca3d171866dc2e0aed033e}{ctf\_container\_ref}},\ uint32\_t,\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *,}
+\DoxyCodeLine{00428\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{ctfc_8h_afab424621d9a6d090571996be3ea3980}{ctf\_funcinfo\_t}}\ *,\ \doxymbox{\hyperlink{dwarf2out_8h_a02706545bb70e7fd255dc3f5b48ce75f}{dw\_die\_ref}},\ \textcolor{keywordtype}{bool},\ \textcolor{keywordtype}{int});}
+\DoxyCodeLine{00429\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{ctfc_8h_a1a5f9546007f66078a6fe12dcaf9621c}{ctf\_id\_t}}\ \doxymbox{\hyperlink{ctfc_8h_ae3ef1224dbaf594fe7aa846967b8bbe6}{ctf\_add\_sou}}\ (\doxymbox{\hyperlink{ctfc_8h_a288429be59ca3d171866dc2e0aed033e}{ctf\_container\_ref}},\ uint32\_t,\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *,}
+\DoxyCodeLine{00430\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ uint32\_t,\ \textcolor{keywordtype}{size\_t},\ \doxymbox{\hyperlink{dwarf2out_8h_a02706545bb70e7fd255dc3f5b48ce75f}{dw\_die\_ref}});}
+\DoxyCodeLine{00431\ }
+\DoxyCodeLine{00432\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{ctfc_8h_a3aba94eccf1816e11840485c16977f3f}{ctf\_add\_enumerator}}\ (\doxymbox{\hyperlink{ctfc_8h_a288429be59ca3d171866dc2e0aed033e}{ctf\_container\_ref}},\ \doxymbox{\hyperlink{ctfc_8h_a1a5f9546007f66078a6fe12dcaf9621c}{ctf\_id\_t}},\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *,}
+\DoxyCodeLine{00433\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ HOST\_WIDE\_INT,\ \doxymbox{\hyperlink{dwarf2out_8h_a02706545bb70e7fd255dc3f5b48ce75f}{dw\_die\_ref}});}
+\DoxyCodeLine{00434\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{ctfc_8h_abec0731b6ca31e4c45a61aeb7048c89f}{ctf\_add\_member\_offset}}\ (\doxymbox{\hyperlink{ctfc_8h_a288429be59ca3d171866dc2e0aed033e}{ctf\_container\_ref}},\ \doxymbox{\hyperlink{dwarf2out_8h_a02706545bb70e7fd255dc3f5b48ce75f}{dw\_die\_ref}},\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *,}
+\DoxyCodeLine{00435\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{ctfc_8h_a1a5f9546007f66078a6fe12dcaf9621c}{ctf\_id\_t}},\ uint64\_t);}
+\DoxyCodeLine{00436\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{ctfc_8h_a870e04197a1fd90c1bf015e52eb7206b}{ctf\_add\_function\_arg}}\ (\doxymbox{\hyperlink{ctfc_8h_a288429be59ca3d171866dc2e0aed033e}{ctf\_container\_ref}},\ \doxymbox{\hyperlink{dwarf2out_8h_a02706545bb70e7fd255dc3f5b48ce75f}{dw\_die\_ref}},}
+\DoxyCodeLine{00437\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *,\ \doxymbox{\hyperlink{ctfc_8h_a1a5f9546007f66078a6fe12dcaf9621c}{ctf\_id\_t}});}
+\DoxyCodeLine{00438\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{ctfc_8h_a32f9f9f9910caf335f122e5e72600643}{ctf\_add\_variable}}\ (\doxymbox{\hyperlink{ctfc_8h_a288429be59ca3d171866dc2e0aed033e}{ctf\_container\_ref}},\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *,\ \doxymbox{\hyperlink{ctfc_8h_a1a5f9546007f66078a6fe12dcaf9621c}{ctf\_id\_t}},}
+\DoxyCodeLine{00439\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{dwarf2out_8h_a02706545bb70e7fd255dc3f5b48ce75f}{dw\_die\_ref}},\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int},\ \doxymbox{\hyperlink{dwarf2out_8h_a02706545bb70e7fd255dc3f5b48ce75f}{dw\_die\_ref}});}
+\DoxyCodeLine{00440\ }
+\DoxyCodeLine{00441\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{ctfc_8h_a1a5f9546007f66078a6fe12dcaf9621c}{ctf\_id\_t}}\ \doxymbox{\hyperlink{ctfc_8h_a67ceb614d5de84f7c97dfb7e1d353543}{ctf\_lookup\_tree\_type}}\ (\doxymbox{\hyperlink{ctfc_8h_a288429be59ca3d171866dc2e0aed033e}{ctf\_container\_ref}},\ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}});}
+\DoxyCodeLine{00442\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{ctfc_8h_a1a5f9546007f66078a6fe12dcaf9621c}{ctf\_id\_t}}\ \doxymbox{\hyperlink{ctfc_8h_a3b6b00fb33f9605d4dc71f52b8025cc8}{get\_btf\_id}}\ (\doxymbox{\hyperlink{ctfc_8h_a1a5f9546007f66078a6fe12dcaf9621c}{ctf\_id\_t}});}
+\DoxyCodeLine{00443\ }
+\DoxyCodeLine{00444\ \textcolor{keyword}{typedef}\ \doxymbox{\hyperlink{stdbool_8h_abb452686968e48b67397da5f97445f5b}{bool}}\ (*\doxymbox{\hyperlink{ctfc_8h_a65f835eb4d940a2a1379d8d4193c2b86}{funcs\_traverse\_callback}})\ (\doxymbox{\hyperlink{ctfc_8h_a6eecc93f4b68cee35147cc02c7b615a3}{ctf\_dtdef\_ref}},\ \textcolor{keywordtype}{void}\ *);}
+\DoxyCodeLine{00445\ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{ctfc_8h_ab7d855d261f82de2cf23c3ecd5aa4119}{traverse\_btf\_func\_types}}\ (\doxymbox{\hyperlink{ctfc_8h_a65f835eb4d940a2a1379d8d4193c2b86}{funcs\_traverse\_callback}},\ \textcolor{keywordtype}{void}\ *);}
+\DoxyCodeLine{00446\ }
+\DoxyCodeLine{00447\ \textcolor{comment}{/*\ CTF\ section\ does\ not\ emit\ location\ information;\ at\ this\ time,\ location}}
+\DoxyCodeLine{00448\ \textcolor{comment}{\ \ \ information\ is\ needed\ for\ BTF\ CO-\/RE\ use-\/cases.\ \ */}}
+\DoxyCodeLine{00449\ }
+\DoxyCodeLine{00450\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{ctfc_8h_ad4b622dd0045c09e68405de844d79945}{ctfc\_get\_dtd\_srcloc}}\ (\doxymbox{\hyperlink{ctfc_8h_a6eecc93f4b68cee35147cc02c7b615a3}{ctf\_dtdef\_ref}},\ \doxymbox{\hyperlink{ctfc_8h_abe0cdabf1f9c4a502691d5af38c4f0ce}{ctf\_srcloc\_ref}});}
+\DoxyCodeLine{00451\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{ctfc_8h_a8cf264b5f56b9efed1232e5eb53ddc23}{ctfc\_get\_dvd\_srcloc}}\ (\doxymbox{\hyperlink{ctfc_8h_a388b31eda77a98d56cab17be8f017a70}{ctf\_dvdef\_ref}},\ \doxymbox{\hyperlink{ctfc_8h_abe0cdabf1f9c4a502691d5af38c4f0ce}{ctf\_srcloc\_ref}});}
+\DoxyCodeLine{00452\ }
+\DoxyCodeLine{00453\ \textcolor{preprocessor}{\#endif\ }\textcolor{comment}{/*\ GCC\_CTFC\_H\ */}\textcolor{preprocessor}{}}
+
+\end{DoxyCode}

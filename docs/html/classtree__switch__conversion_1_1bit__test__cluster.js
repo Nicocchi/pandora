@@ -1,0 +1,27 @@
+var classtree__switch__conversion_1_1bit__test__cluster =
+[
+    [ "bit_test_cluster", "classtree__switch__conversion_1_1bit__test__cluster.html#a302b26773920b15dfcf311233595a75a", null ],
+    [ "can_be_handled", "classtree__switch__conversion_1_1bit__test__cluster.html#a45203c9a53ebf9e9c3f680b0b1d8f62e", null ],
+    [ "can_be_handled", "classtree__switch__conversion_1_1bit__test__cluster.html#ad21435d3d96e08d553e44008dbbaddf8", null ],
+    [ "debug", "classtree__switch__conversion_1_1bit__test__cluster.html#a7f9cc48babb498ddf849be3d604bfbbd", null ],
+    [ "dump", "classtree__switch__conversion_1_1bit__test__cluster.html#a401600828992640bba0424407acd54c3", null ],
+    [ "emit", "classtree__switch__conversion_1_1bit__test__cluster.html#a9cfa03a835a44e5f0509efa6e441e29f", null ],
+    [ "find_bit_tests", "classtree__switch__conversion_1_1bit__test__cluster.html#acec67ac19473dc01e50086f92e8e5c9e", null ],
+    [ "get_high", "classtree__switch__conversion_1_1bit__test__cluster.html#a9c9a97bf91d07b4751e5bb435a9a9831", null ],
+    [ "get_low", "classtree__switch__conversion_1_1bit__test__cluster.html#ab34542859d9d7b83cd19cc2e14e50ef7", null ],
+    [ "get_range", "classtree__switch__conversion_1_1bit__test__cluster.html#a2bbc618481a149cdf59830e32b324df4", null ],
+    [ "get_type", "classtree__switch__conversion_1_1bit__test__cluster.html#a9488a85747afa2bbdd79199b98d4f9ae", null ],
+    [ "hoist_edge_and_branch_if_true", "classtree__switch__conversion_1_1bit__test__cluster.html#a307534bbd646ed6512df9a4412d6b8a1", null ],
+    [ "is_beneficial", "classtree__switch__conversion_1_1bit__test__cluster.html#ac352e2b356410def7230e7b0da29deb2", null ],
+    [ "is_beneficial", "classtree__switch__conversion_1_1bit__test__cluster.html#ae3f5727e7058b2972e6ca7e4023eae87", null ],
+    [ "is_enabled", "classtree__switch__conversion_1_1bit__test__cluster.html#a1d66691b9675d097b1f17605e534aa3e", null ],
+    [ "is_single_value_p", "classtree__switch__conversion_1_1bit__test__cluster.html#a555c3a2fcaa3570597708fcb284e8af4", null ],
+    [ "m_case_bb", "classtree__switch__conversion_1_1bit__test__cluster.html#ab011d15924cdf354ca7e7cc0004cf8c9", null ],
+    [ "m_case_label_expr", "classtree__switch__conversion_1_1bit__test__cluster.html#a903ad8cdc7301ea81c817776372c350a", null ],
+    [ "m_cases", "classtree__switch__conversion_1_1bit__test__cluster.html#a48cfd359e8c7d1eeb63ae7e869ae03ee", null ],
+    [ "m_default_prob", "classtree__switch__conversion_1_1bit__test__cluster.html#a077bbb38079300d70a0a49e506efa7aa", null ],
+    [ "m_handles_entire_switch", "classtree__switch__conversion_1_1bit__test__cluster.html#a0287bf6472be2e3eaa016ec63f7ff33e", null ],
+    [ "m_max_case_bit_tests", "classtree__switch__conversion_1_1bit__test__cluster.html#ac6937b6c85a9790e6c6ec68495e8634b", null ],
+    [ "m_prob", "classtree__switch__conversion_1_1bit__test__cluster.html#a6522d50c92784ea30ebf4a852ac7279f", null ],
+    [ "m_subtree_prob", "classtree__switch__conversion_1_1bit__test__cluster.html#acab9c592d79ef37bb5f8d29782c33409", null ]
+];

@@ -1,0 +1,702 @@
+\doxysection{tree-\/pass.h}
+\hypertarget{tree-pass_8h_source}{}\label{tree-pass_8h_source}\index{toolchain/x86\_64-\/elf/lib/gcc/x86\_64-\/elf/14.2.0/plugin/include/tree-\/pass.h@{toolchain/x86\_64-\/elf/lib/gcc/x86\_64-\/elf/14.2.0/plugin/include/tree-\/pass.h}}
+\doxymbox{\hyperlink{tree-pass_8h}{Go to the documentation of this file.}}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001\ \textcolor{comment}{/*\ Definitions\ for\ describing\ one\ tree-\/ssa\ optimization\ pass.}}
+\DoxyCodeLine{00002\ \textcolor{comment}{\ \ \ Copyright\ (C)\ 2004-\/2024\ Free\ Software\ Foundation,\ Inc.}}
+\DoxyCodeLine{00003\ \textcolor{comment}{\ \ \ Contributed\ by\ Richard\ Henderson\ <rth@redhat.com>}}
+\DoxyCodeLine{00004\ \textcolor{comment}{}}
+\DoxyCodeLine{00005\ \textcolor{comment}{This\ file\ is\ part\ of\ GCC.}}
+\DoxyCodeLine{00006\ \textcolor{comment}{}}
+\DoxyCodeLine{00007\ \textcolor{comment}{GCC\ is\ free\ software;\ you\ can\ redistribute\ it\ and/or\ modify}}
+\DoxyCodeLine{00008\ \textcolor{comment}{it\ under\ the\ terms\ of\ the\ GNU\ General\ Public\ License\ as\ published\ by}}
+\DoxyCodeLine{00009\ \textcolor{comment}{the\ Free\ Software\ Foundation;\ either\ version\ 3,\ or\ (at\ your\ option)}}
+\DoxyCodeLine{00010\ \textcolor{comment}{any\ later\ version.}}
+\DoxyCodeLine{00011\ \textcolor{comment}{}}
+\DoxyCodeLine{00012\ \textcolor{comment}{GCC\ is\ distributed\ in\ the\ hope\ that\ it\ will\ be\ useful,}}
+\DoxyCodeLine{00013\ \textcolor{comment}{but\ WITHOUT\ ANY\ WARRANTY;\ without\ even\ the\ implied\ warranty\ of}}
+\DoxyCodeLine{00014\ \textcolor{comment}{MERCHANTABILITY\ or\ FITNESS\ FOR\ A\ PARTICULAR\ PURPOSE.\ \ See\ the}}
+\DoxyCodeLine{00015\ \textcolor{comment}{GNU\ General\ Public\ License\ for\ more\ details.}}
+\DoxyCodeLine{00016\ \textcolor{comment}{}}
+\DoxyCodeLine{00017\ \textcolor{comment}{You\ should\ have\ received\ a\ copy\ of\ the\ GNU\ General\ Public\ License}}
+\DoxyCodeLine{00018\ \textcolor{comment}{along\ with\ GCC;\ see\ the\ file\ COPYING3.\ \ If\ not\ see}}
+\DoxyCodeLine{00019\ \textcolor{comment}{<http://www.gnu.org/licenses/>.\ \ */}}
+\DoxyCodeLine{00020\ }
+\DoxyCodeLine{00021\ }
+\DoxyCodeLine{00022\ \textcolor{preprocessor}{\#ifndef\ GCC\_TREE\_PASS\_H}}
+\DoxyCodeLine{00023\ \textcolor{preprocessor}{\#define\ GCC\_TREE\_PASS\_H\ 1}}
+\DoxyCodeLine{00024\ }
+\DoxyCodeLine{00025\ \textcolor{preprocessor}{\#include\ "{}\doxymbox{\hyperlink{timevar_8h}{timevar.h}}"{}}}
+\DoxyCodeLine{00026\ \textcolor{preprocessor}{\#include\ "{}\doxymbox{\hyperlink{dumpfile_8h}{dumpfile.h}}"{}}}
+\DoxyCodeLine{00027\ }
+\DoxyCodeLine{00028\ \textcolor{keyword}{struct\ }function;}
+\DoxyCodeLine{00029\ }
+\DoxyCodeLine{00030\ \textcolor{comment}{/*\ Optimization\ pass\ type.\ \ */}}
+\DoxyCodeLine{00031\ \textcolor{keyword}{enum}\ \doxymbox{\hyperlink{tree-pass_8h_a0da5117631a8452de87b43b9c3f23c13}{opt\_pass\_type}}}
+\DoxyCodeLine{00032\ \{}
+\DoxyCodeLine{00033\ \ \ \doxymbox{\hyperlink{tree-pass_8h_a0da5117631a8452de87b43b9c3f23c13ab6d64e458ea3f26b6093140607447b9e}{GIMPLE\_PASS}},}
+\DoxyCodeLine{00034\ \ \ \doxymbox{\hyperlink{tree-pass_8h_a0da5117631a8452de87b43b9c3f23c13a1f69b53ccd76fef9d81e0eeb686118e3}{RTL\_PASS}},}
+\DoxyCodeLine{00035\ \ \ \doxymbox{\hyperlink{tree-pass_8h_a0da5117631a8452de87b43b9c3f23c13a22000476f95d1b99d76d1bc6fd9166bc}{SIMPLE\_IPA\_PASS}},}
+\DoxyCodeLine{00036\ \ \ \doxymbox{\hyperlink{tree-pass_8h_a0da5117631a8452de87b43b9c3f23c13ac8c1db69af5643577de97aaa16cbb5eb}{IPA\_PASS}}}
+\DoxyCodeLine{00037\ \};}
+\DoxyCodeLine{00038\ }
+\DoxyCodeLine{00039\ \textcolor{comment}{/*\ Metadata\ for\ a\ pass,\ non-\/varying\ across\ all\ instances\ of\ a\ pass.\ \ */}}
+\DoxyCodeLine{00040\ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{structpass__data}{pass\_data}}}
+\DoxyCodeLine{00041\ \{}
+\DoxyCodeLine{00042\ \ \ \textcolor{comment}{/*\ Optimization\ pass\ type.\ \ */}}
+\DoxyCodeLine{00043\ \ \ \textcolor{keyword}{enum}\ \doxymbox{\hyperlink{tree-pass_8h_a0da5117631a8452de87b43b9c3f23c13}{opt\_pass\_type}}\ \doxymbox{\hyperlink{structpass__data_a67bc6fd0c320d6dc9dfeb00bcfdb240e}{type}};}
+\DoxyCodeLine{00044\ }
+\DoxyCodeLine{00045\ \ \ \textcolor{comment}{/*\ Terse\ name\ of\ the\ pass\ used\ as\ a\ fragment\ of\ the\ dump\ file}}
+\DoxyCodeLine{00046\ \textcolor{comment}{\ \ \ \ \ name.\ \ If\ the\ name\ starts\ with\ a\ star,\ no\ dump\ happens.\ */}}
+\DoxyCodeLine{00047\ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *\doxymbox{\hyperlink{structpass__data_aa95a4131f9884030d2d5e6932a74975e}{name}};}
+\DoxyCodeLine{00048\ }
+\DoxyCodeLine{00049\ \ \ \textcolor{comment}{/*\ The\ -\/fopt-\/info\ optimization\ group\ flags\ as\ defined\ in\ dumpfile.h.\ */}}
+\DoxyCodeLine{00050\ \ \ \doxymbox{\hyperlink{dumpfile_8h_aec8802a1feb1be15a2db0213999cd289}{optgroup\_flags\_t}}\ \doxymbox{\hyperlink{structpass__data_a9888274a286a0156f78ba15411ddd7bc}{optinfo\_flags}};}
+\DoxyCodeLine{00051\ }
+\DoxyCodeLine{00052\ \ \ \textcolor{comment}{/*\ The\ timevar\ id\ associated\ with\ this\ pass.\ \ */}}
+\DoxyCodeLine{00053\ \ \ \textcolor{comment}{/*\ ???\ Ideally\ would\ be\ dynamically\ assigned.\ \ */}}
+\DoxyCodeLine{00054\ \ \ \doxymbox{\hyperlink{timevar_8h_acccab19270de2ddc66108651820950fd}{timevar\_id\_t}}\ \doxymbox{\hyperlink{structpass__data_a25c09cdbfbec0bcaca1280b3ccaa3ef1}{tv\_id}};}
+\DoxyCodeLine{00055\ }
+\DoxyCodeLine{00056\ \ \ \textcolor{comment}{/*\ Sets\ of\ properties\ input\ and\ output\ from\ this\ pass.\ \ */}}
+\DoxyCodeLine{00057\ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{structpass__data_a1506fb96a1a23bd8728706d176f1b1ba}{properties\_required}};}
+\DoxyCodeLine{00058\ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{structpass__data_af465b9d422f3706048b180d0306c7ed6}{properties\_provided}};}
+\DoxyCodeLine{00059\ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{structpass__data_a871d409ffd58554bcbd6392ebbaa1d6f}{properties\_destroyed}};}
+\DoxyCodeLine{00060\ }
+\DoxyCodeLine{00061\ \ \ \textcolor{comment}{/*\ Flags\ indicating\ common\ sets\ things\ to\ do\ before\ and\ after.\ \ */}}
+\DoxyCodeLine{00062\ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{structpass__data_af0166362897567de81dc0e1d6ec8f353}{todo\_flags\_start}};}
+\DoxyCodeLine{00063\ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{structpass__data_adac6d48c8a4ad8aaa39564126b0099b1}{todo\_flags\_finish}};}
+\DoxyCodeLine{00064\ \};}
+\DoxyCodeLine{00065\ }
+\DoxyCodeLine{00066\ \textcolor{keyword}{namespace\ }\doxymbox{\hyperlink{namespacegcc}{gcc}}}
+\DoxyCodeLine{00067\ \{}
+\DoxyCodeLine{00068\ \ \ \textcolor{keyword}{class\ }context;}
+\DoxyCodeLine{00069\ \}\ \textcolor{comment}{//\ namespace\ gcc}}
+\DoxyCodeLine{00070\ }
+\DoxyCodeLine{00071\ \textcolor{comment}{/*\ An\ instance\ of\ a\ pass.\ \ This\ is\ also\ "{}pass\_data"{}\ to\ minimize\ the}}
+\DoxyCodeLine{00072\ \textcolor{comment}{\ \ \ changes\ in\ existing\ code.\ \ */}}
+\DoxyCodeLine{00073\ \textcolor{keyword}{class\ }\doxymbox{\hyperlink{classopt__pass_a7a2a9ad6458f0c2ce6d545dedc6668b0}{opt\_pass}}\ :\ \textcolor{keyword}{public}\ \doxymbox{\hyperlink{structpass__data}{pass\_data}}}
+\DoxyCodeLine{00074\ \{}
+\DoxyCodeLine{00075\ \textcolor{keyword}{public}:}
+\DoxyCodeLine{00076\ \ \ \textcolor{keyword}{virtual}\ \doxymbox{\hyperlink{classopt__pass_abc516248049bc989d9184d9540861604}{\string~opt\_pass}}\ ()\ \{\ \}}
+\DoxyCodeLine{00077\ }
+\DoxyCodeLine{00078\ \ \ \textcolor{comment}{/*\ Create\ a\ copy\ of\ this\ pass.}}
+\DoxyCodeLine{00079\ \textcolor{comment}{}}
+\DoxyCodeLine{00080\ \textcolor{comment}{\ \ \ \ \ Passes\ that\ can\ have\ multiple\ instances\ must\ provide\ their\ own}}
+\DoxyCodeLine{00081\ \textcolor{comment}{\ \ \ \ \ implementation\ of\ this,\ to\ ensure\ that\ any\ sharing\ of\ state\ between}}
+\DoxyCodeLine{00082\ \textcolor{comment}{\ \ \ \ \ this\ instance\ and\ the\ copy\ is\ "{}wired\ up"{}\ correctly.}}
+\DoxyCodeLine{00083\ \textcolor{comment}{}}
+\DoxyCodeLine{00084\ \textcolor{comment}{\ \ \ \ \ The\ default\ implementation\ prints\ an\ error\ message\ and\ aborts.\ \ */}}
+\DoxyCodeLine{00085\ \ \ \textcolor{keyword}{virtual}\ \doxymbox{\hyperlink{classopt__pass_a7a2a9ad6458f0c2ce6d545dedc6668b0}{opt\_pass}}\ *\doxymbox{\hyperlink{classopt__pass_a64ad50f0c56afb9ee7bbafebd06f9d49}{clone}}\ ();}
+\DoxyCodeLine{00086\ \ \ \textcolor{keyword}{virtual}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classopt__pass_a6913ac3d6d1e06ebc20dd84c55329e34}{set\_pass\_param}}\ (\textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int},\ \textcolor{keywordtype}{bool});}
+\DoxyCodeLine{00087\ }
+\DoxyCodeLine{00088\ \ \ \textcolor{comment}{/*\ This\ pass\ and\ all\ sub-\/passes\ are\ executed\ only\ if\ the\ function\ returns}}
+\DoxyCodeLine{00089\ \textcolor{comment}{\ \ \ \ \ true.\ \ The\ default\ implementation\ returns\ true.\ \ */}}
+\DoxyCodeLine{00090\ \ \ \textcolor{keyword}{virtual}\ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{classopt__pass_a8d7b49ce18c69a2005b894903cc7879f}{gate}}\ (function\ *fun);}
+\DoxyCodeLine{00091\ }
+\DoxyCodeLine{00092\ \ \ \textcolor{comment}{/*\ This\ is\ the\ code\ to\ run.\ \ If\ this\ is\ not\ overridden,\ then\ there\ should}}
+\DoxyCodeLine{00093\ \textcolor{comment}{\ \ \ \ \ be\ sub-\/passes\ otherwise\ this\ pass\ does\ nothing.}}
+\DoxyCodeLine{00094\ \textcolor{comment}{\ \ \ \ \ The\ return\ value\ contains\ TODOs\ to\ execute\ in\ addition\ to\ those\ in}}
+\DoxyCodeLine{00095\ \textcolor{comment}{\ \ \ \ \ TODO\_flags\_finish.\ \ \ */}}
+\DoxyCodeLine{00096\ \ \ \textcolor{keyword}{virtual}\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{classopt__pass_a3f5441a8f3b8cc01b67e5bcca9ecdf29}{execute}}\ (function\ *fun);}
+\DoxyCodeLine{00097\ }
+\DoxyCodeLine{00098\ \textcolor{keyword}{protected}:}
+\DoxyCodeLine{00099\ \ \ \doxymbox{\hyperlink{classopt__pass_a7a2a9ad6458f0c2ce6d545dedc6668b0}{opt\_pass}}\ (\textcolor{keyword}{const}\ \doxymbox{\hyperlink{structpass__data}{pass\_data}}\&,\ \doxymbox{\hyperlink{classgcc_1_1context}{gcc::context}}\ *);}
+\DoxyCodeLine{00100\ }
+\DoxyCodeLine{00101\ \textcolor{keyword}{public}:}
+\DoxyCodeLine{00102\ \ \ \textcolor{comment}{/*\ A\ list\ of\ sub-\/passes\ to\ run,\ dependent\ on\ gate\ predicate.\ \ */}}
+\DoxyCodeLine{00103\ \ \ \doxymbox{\hyperlink{classopt__pass_a7a2a9ad6458f0c2ce6d545dedc6668b0}{opt\_pass}}\ *\doxymbox{\hyperlink{classopt__pass_abc9b3aa41b9902eda2a198a4b5517c9d}{sub}};}
+\DoxyCodeLine{00104\ }
+\DoxyCodeLine{00105\ \ \ \textcolor{comment}{/*\ Next\ in\ the\ list\ of\ passes\ to\ run,\ independent\ of\ gate\ predicate.\ \ */}}
+\DoxyCodeLine{00106\ \ \ \doxymbox{\hyperlink{classopt__pass_a7a2a9ad6458f0c2ce6d545dedc6668b0}{opt\_pass}}\ *\doxymbox{\hyperlink{classopt__pass_a3d98266a20c47735c08748e806d52733}{next}};}
+\DoxyCodeLine{00107\ }
+\DoxyCodeLine{00108\ \ \ \textcolor{comment}{/*\ Static\ pass\ number,\ used\ as\ a\ fragment\ of\ the\ dump\ file\ name.\ \ */}}
+\DoxyCodeLine{00109\ \ \ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{classopt__pass_a1cbbe85148d879820e00545e4ee6b11b}{static\_pass\_number}};}
+\DoxyCodeLine{00110\ }
+\DoxyCodeLine{00111\ \textcolor{keyword}{protected}:}
+\DoxyCodeLine{00112\ \ \ \doxymbox{\hyperlink{classgcc_1_1context}{gcc::context}}\ *\doxymbox{\hyperlink{classopt__pass_ae9c5e90bda29e671fb668b0f7b1bcf22}{m\_ctxt}};}
+\DoxyCodeLine{00113\ \};}
+\DoxyCodeLine{00114\ }
+\DoxyCodeLine{00115\ \textcolor{comment}{/*\ Description\ of\ GIMPLE\ pass.\ \ */}}
+\DoxyCodeLine{00116\ \textcolor{keyword}{class\ }\doxymbox{\hyperlink{classgimple__opt__pass_a69c6c043944af166892208392aca1f4a}{gimple\_opt\_pass}}\ :\ \textcolor{keyword}{public}\ \doxymbox{\hyperlink{classopt__pass_a7a2a9ad6458f0c2ce6d545dedc6668b0}{opt\_pass}}}
+\DoxyCodeLine{00117\ \{}
+\DoxyCodeLine{00118\ \textcolor{keyword}{protected}:}
+\DoxyCodeLine{00119\ \ \ \doxymbox{\hyperlink{classgimple__opt__pass_a69c6c043944af166892208392aca1f4a}{gimple\_opt\_pass}}\ (\textcolor{keyword}{const}\ \doxymbox{\hyperlink{structpass__data}{pass\_data}}\&\ data,\ \doxymbox{\hyperlink{classgcc_1_1context}{gcc::context}}\ *ctxt)}
+\DoxyCodeLine{00120\ \ \ \ \ :\ \doxymbox{\hyperlink{classopt__pass_a7a2a9ad6458f0c2ce6d545dedc6668b0}{opt\_pass}}\ (data,\ ctxt)}
+\DoxyCodeLine{00121\ \ \ \{}
+\DoxyCodeLine{00122\ \ \ \}}
+\DoxyCodeLine{00123\ \};}
+\DoxyCodeLine{00124\ }
+\DoxyCodeLine{00125\ \textcolor{comment}{/*\ Description\ of\ RTL\ pass.\ \ */}}
+\DoxyCodeLine{00126\ \textcolor{keyword}{class\ }\doxymbox{\hyperlink{classrtl__opt__pass_a1ffa21a86930ac8875520e976d3acf06}{rtl\_opt\_pass}}\ :\ \textcolor{keyword}{public}\ \doxymbox{\hyperlink{classopt__pass_a7a2a9ad6458f0c2ce6d545dedc6668b0}{opt\_pass}}}
+\DoxyCodeLine{00127\ \{}
+\DoxyCodeLine{00128\ \textcolor{keyword}{protected}:}
+\DoxyCodeLine{00129\ \ \ \doxymbox{\hyperlink{classrtl__opt__pass_a1ffa21a86930ac8875520e976d3acf06}{rtl\_opt\_pass}}\ (\textcolor{keyword}{const}\ \doxymbox{\hyperlink{structpass__data}{pass\_data}}\&\ data,\ \doxymbox{\hyperlink{classgcc_1_1context}{gcc::context}}\ *ctxt)}
+\DoxyCodeLine{00130\ \ \ \ \ :\ \doxymbox{\hyperlink{classopt__pass_a7a2a9ad6458f0c2ce6d545dedc6668b0}{opt\_pass}}\ (data,\ ctxt)}
+\DoxyCodeLine{00131\ \ \ \{}
+\DoxyCodeLine{00132\ \ \ \}}
+\DoxyCodeLine{00133\ \};}
+\DoxyCodeLine{00134\ }
+\DoxyCodeLine{00135\ \textcolor{keyword}{struct\ }varpool\_node;}
+\DoxyCodeLine{00136\ \textcolor{keyword}{struct\ }cgraph\_node;}
+\DoxyCodeLine{00137\ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{structlto__symtab__encoder__d}{lto\_symtab\_encoder\_d}};}
+\DoxyCodeLine{00138\ }
+\DoxyCodeLine{00139\ \textcolor{comment}{/*\ Description\ of\ IPA\ pass\ with\ generate\ summary,\ write,\ execute,\ read\ and}}
+\DoxyCodeLine{00140\ \textcolor{comment}{\ \ \ transform\ stages.\ \ */}}
+\DoxyCodeLine{00141\ \textcolor{keyword}{class\ }\doxymbox{\hyperlink{classipa__opt__pass__d_a6a0d6eb9d941d3064e66db444908dc1e}{ipa\_opt\_pass\_d}}\ :\ \textcolor{keyword}{public}\ \doxymbox{\hyperlink{classopt__pass_a7a2a9ad6458f0c2ce6d545dedc6668b0}{opt\_pass}}}
+\DoxyCodeLine{00142\ \{}
+\DoxyCodeLine{00143\ \textcolor{keyword}{public}:}
+\DoxyCodeLine{00144\ \ \ \textcolor{comment}{/*\ IPA\ passes\ can\ analyze\ function\ body\ and\ variable\ initializers}}
+\DoxyCodeLine{00145\ \textcolor{comment}{\ \ \ \ \ \ using\ this\ hook\ and\ produce\ summary.\ \ */}}
+\DoxyCodeLine{00146\ \ \ void\ (*\doxymbox{\hyperlink{classipa__opt__pass__d_aca72fabe53ad1b3344922a84030b657b}{generate\_summary}})\ (void);}
+\DoxyCodeLine{00147\ }
+\DoxyCodeLine{00148\ \ \ \textcolor{comment}{/*\ This\ hook\ is\ used\ to\ serialize\ IPA\ summaries\ on\ disk.\ \ */}}
+\DoxyCodeLine{00149\ \ \ void\ (*\doxymbox{\hyperlink{classipa__opt__pass__d_aebc8cafe62754e80076dc20f5fff04e5}{write\_summary}})\ (void);}
+\DoxyCodeLine{00150\ }
+\DoxyCodeLine{00151\ \ \ \textcolor{comment}{/*\ This\ hook\ is\ used\ to\ deserialize\ IPA\ summaries\ from\ disk.\ \ */}}
+\DoxyCodeLine{00152\ \ \ void\ (*\doxymbox{\hyperlink{classipa__opt__pass__d_a6f3bec978c1406d160029a0c8a1bcbe2}{read\_summary}})\ (void);}
+\DoxyCodeLine{00153\ }
+\DoxyCodeLine{00154\ \ \ \textcolor{comment}{/*\ This\ hook\ is\ used\ to\ serialize\ IPA\ optimization\ summaries\ on\ disk.\ \ */}}
+\DoxyCodeLine{00155\ \ \ void\ (*\doxymbox{\hyperlink{classipa__opt__pass__d_aed8e7dad26a19e9e73400c075c74c1d7}{write\_optimization\_summary}})\ (void);}
+\DoxyCodeLine{00156\ }
+\DoxyCodeLine{00157\ \ \ \textcolor{comment}{/*\ This\ hook\ is\ used\ to\ deserialize\ IPA\ summaries\ from\ disk.\ \ */}}
+\DoxyCodeLine{00158\ \ \ void\ (*\doxymbox{\hyperlink{classipa__opt__pass__d_a19e35d11f4ce1a950b62aaca3e4b458f}{read\_optimization\_summary}})\ (void);}
+\DoxyCodeLine{00159\ }
+\DoxyCodeLine{00160\ \ \ \textcolor{comment}{/*\ Hook\ to\ convert\ gimple\ stmt\ uids\ into\ true\ gimple\ statements.\ \ The\ second}}
+\DoxyCodeLine{00161\ \textcolor{comment}{\ \ \ \ \ parameter\ is\ an\ array\ of\ statements\ indexed\ by\ their\ uid.\ */}}
+\DoxyCodeLine{00162\ \ \ void\ (*\doxymbox{\hyperlink{classipa__opt__pass__d_adbcd7184475e3a4ababdc31dbf6615b2}{stmt\_fixup}})\ (\textcolor{keyword}{struct\ }cgraph\_node\ *,\ gimple\ **);}
+\DoxyCodeLine{00163\ }
+\DoxyCodeLine{00164\ \ \ \textcolor{comment}{/*\ Results\ of\ interprocedural\ propagation\ of\ an\ IPA\ pass\ is\ applied\ to}}
+\DoxyCodeLine{00165\ \textcolor{comment}{\ \ \ \ \ function\ body\ via\ this\ hook.\ \ */}}
+\DoxyCodeLine{00166\ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{classipa__opt__pass__d_aaaf971e61d1eee2a3e4028e2d6c88079}{function\_transform\_todo\_flags\_start}};}
+\DoxyCodeLine{00167\ \ \ \textcolor{keywordtype}{unsigned}\ int\ (*\doxymbox{\hyperlink{classipa__opt__pass__d_a6843659e16315d56d7bf43ae2bc8c3fd}{function\_transform}})\ (\textcolor{keyword}{struct\ }cgraph\_node\ *);}
+\DoxyCodeLine{00168\ \ \ void\ (*\doxymbox{\hyperlink{classipa__opt__pass__d_a8cdc548cb0770e239e621cd013dd8e8a}{variable\_transform}})\ (varpool\_node\ *);}
+\DoxyCodeLine{00169\ }
+\DoxyCodeLine{00170\ \textcolor{keyword}{protected}:}
+\DoxyCodeLine{00171\ \ \ \doxymbox{\hyperlink{classipa__opt__pass__d_a6a0d6eb9d941d3064e66db444908dc1e}{ipa\_opt\_pass\_d}}\ (\textcolor{keyword}{const}\ \doxymbox{\hyperlink{structpass__data}{pass\_data}}\&\ data,\ \doxymbox{\hyperlink{classgcc_1_1context}{gcc::context}}\ *ctxt,}
+\DoxyCodeLine{00172\ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{void}\ (*\doxymbox{\hyperlink{classipa__opt__pass__d_aca72fabe53ad1b3344922a84030b657b}{generate\_summary}})\ (\textcolor{keywordtype}{void}),}
+\DoxyCodeLine{00173\ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{void}\ (*\doxymbox{\hyperlink{classipa__opt__pass__d_aebc8cafe62754e80076dc20f5fff04e5}{write\_summary}})\ (\textcolor{keywordtype}{void}),}
+\DoxyCodeLine{00174\ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{void}\ (*\doxymbox{\hyperlink{classipa__opt__pass__d_a6f3bec978c1406d160029a0c8a1bcbe2}{read\_summary}})\ (\textcolor{keywordtype}{void}),}
+\DoxyCodeLine{00175\ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{void}\ (*\doxymbox{\hyperlink{classipa__opt__pass__d_aed8e7dad26a19e9e73400c075c74c1d7}{write\_optimization\_summary}})\ (\textcolor{keywordtype}{void}),}
+\DoxyCodeLine{00176\ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{void}\ (*\doxymbox{\hyperlink{classipa__opt__pass__d_a19e35d11f4ce1a950b62aaca3e4b458f}{read\_optimization\_summary}})\ (\textcolor{keywordtype}{void}),}
+\DoxyCodeLine{00177\ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{void}\ (*\doxymbox{\hyperlink{classipa__opt__pass__d_adbcd7184475e3a4ababdc31dbf6615b2}{stmt\_fixup}})\ (\textcolor{keyword}{struct}\ cgraph\_node\ *,\ gimple\ **),}
+\DoxyCodeLine{00178\ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{classipa__opt__pass__d_aaaf971e61d1eee2a3e4028e2d6c88079}{function\_transform\_todo\_flags\_start}},}
+\DoxyCodeLine{00179\ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ (*\doxymbox{\hyperlink{classipa__opt__pass__d_a6843659e16315d56d7bf43ae2bc8c3fd}{function\_transform}})\ (\textcolor{keyword}{struct}\ cgraph\_node\ *),}
+\DoxyCodeLine{00180\ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{void}\ (*\doxymbox{\hyperlink{classipa__opt__pass__d_a8cdc548cb0770e239e621cd013dd8e8a}{variable\_transform}})\ (varpool\_node\ *))}
+\DoxyCodeLine{00181\ \ \ \ \ :\ \doxymbox{\hyperlink{classopt__pass_a7a2a9ad6458f0c2ce6d545dedc6668b0}{opt\_pass}}\ (data,\ ctxt),}
+\DoxyCodeLine{00182\ \ \ \ \ \ \ \doxymbox{\hyperlink{classipa__opt__pass__d_aca72fabe53ad1b3344922a84030b657b}{generate\_summary}}\ (\doxymbox{\hyperlink{classipa__opt__pass__d_aca72fabe53ad1b3344922a84030b657b}{generate\_summary}}),}
+\DoxyCodeLine{00183\ \ \ \ \ \ \ \doxymbox{\hyperlink{classipa__opt__pass__d_aebc8cafe62754e80076dc20f5fff04e5}{write\_summary}}\ (\doxymbox{\hyperlink{classipa__opt__pass__d_aebc8cafe62754e80076dc20f5fff04e5}{write\_summary}}),}
+\DoxyCodeLine{00184\ \ \ \ \ \ \ \doxymbox{\hyperlink{classipa__opt__pass__d_a6f3bec978c1406d160029a0c8a1bcbe2}{read\_summary}}\ (\doxymbox{\hyperlink{classipa__opt__pass__d_a6f3bec978c1406d160029a0c8a1bcbe2}{read\_summary}}),}
+\DoxyCodeLine{00185\ \ \ \ \ \ \ \doxymbox{\hyperlink{classipa__opt__pass__d_aed8e7dad26a19e9e73400c075c74c1d7}{write\_optimization\_summary}}\ (\doxymbox{\hyperlink{classipa__opt__pass__d_aed8e7dad26a19e9e73400c075c74c1d7}{write\_optimization\_summary}}),}
+\DoxyCodeLine{00186\ \ \ \ \ \ \ \doxymbox{\hyperlink{classipa__opt__pass__d_a19e35d11f4ce1a950b62aaca3e4b458f}{read\_optimization\_summary}}\ (\doxymbox{\hyperlink{classipa__opt__pass__d_a19e35d11f4ce1a950b62aaca3e4b458f}{read\_optimization\_summary}}),}
+\DoxyCodeLine{00187\ \ \ \ \ \ \ \doxymbox{\hyperlink{classipa__opt__pass__d_adbcd7184475e3a4ababdc31dbf6615b2}{stmt\_fixup}}\ (\doxymbox{\hyperlink{classipa__opt__pass__d_adbcd7184475e3a4ababdc31dbf6615b2}{stmt\_fixup}}),}
+\DoxyCodeLine{00188\ \ \ \ \ \ \ \doxymbox{\hyperlink{classipa__opt__pass__d_aaaf971e61d1eee2a3e4028e2d6c88079}{function\_transform\_todo\_flags\_start}}\ (\doxymbox{\hyperlink{classipa__opt__pass__d_aaaf971e61d1eee2a3e4028e2d6c88079}{function\_transform\_todo\_flags\_start}}),}
+\DoxyCodeLine{00189\ \ \ \ \ \ \ \doxymbox{\hyperlink{classipa__opt__pass__d_a6843659e16315d56d7bf43ae2bc8c3fd}{function\_transform}}\ (\doxymbox{\hyperlink{classipa__opt__pass__d_a6843659e16315d56d7bf43ae2bc8c3fd}{function\_transform}}),}
+\DoxyCodeLine{00190\ \ \ \ \ \ \ \doxymbox{\hyperlink{classipa__opt__pass__d_a8cdc548cb0770e239e621cd013dd8e8a}{variable\_transform}}\ (\doxymbox{\hyperlink{classipa__opt__pass__d_a8cdc548cb0770e239e621cd013dd8e8a}{variable\_transform}})}
+\DoxyCodeLine{00191\ \ \ \{}
+\DoxyCodeLine{00192\ \ \ \}}
+\DoxyCodeLine{00193\ \};}
+\DoxyCodeLine{00194\ }
+\DoxyCodeLine{00195\ \textcolor{comment}{/*\ Description\ of\ simple\ IPA\ pass.\ \ Simple\ IPA\ passes\ have\ just\ one\ execute}}
+\DoxyCodeLine{00196\ \textcolor{comment}{\ \ \ hook.\ \ */}}
+\DoxyCodeLine{00197\ \textcolor{keyword}{class\ }\doxymbox{\hyperlink{classsimple__ipa__opt__pass_a53ad70c5aab9b7b73f27603c74e86997}{simple\_ipa\_opt\_pass}}\ :\ \textcolor{keyword}{public}\ \doxymbox{\hyperlink{classopt__pass_a7a2a9ad6458f0c2ce6d545dedc6668b0}{opt\_pass}}}
+\DoxyCodeLine{00198\ \{}
+\DoxyCodeLine{00199\ \textcolor{keyword}{protected}:}
+\DoxyCodeLine{00200\ \ \ \doxymbox{\hyperlink{classsimple__ipa__opt__pass_a53ad70c5aab9b7b73f27603c74e86997}{simple\_ipa\_opt\_pass}}\ (\textcolor{keyword}{const}\ \doxymbox{\hyperlink{structpass__data}{pass\_data}}\&\ data,\ \doxymbox{\hyperlink{classgcc_1_1context}{gcc::context}}\ *ctxt)}
+\DoxyCodeLine{00201\ \ \ \ \ :\ \doxymbox{\hyperlink{classopt__pass_a7a2a9ad6458f0c2ce6d545dedc6668b0}{opt\_pass}}\ (data,\ ctxt)}
+\DoxyCodeLine{00202\ \ \ \{}
+\DoxyCodeLine{00203\ \ \ \}}
+\DoxyCodeLine{00204\ \};}
+\DoxyCodeLine{00205\ }
+\DoxyCodeLine{00206\ \textcolor{comment}{/*\ Pass\ properties.\ \ */}}
+\DoxyCodeLine{00207\ \textcolor{preprocessor}{\#define\ PROP\_gimple\_any\ \ \ \ \ (1\ <<\ 0)\ \ \ \ }\textcolor{comment}{/*\ entire\ gimple\ grammar\ */}\textcolor{preprocessor}{}}
+\DoxyCodeLine{00208\ \textcolor{preprocessor}{\#define\ PROP\_gimple\_lcf\ \ \ \ \ (1\ <<\ 1)\ \ \ \ }\textcolor{comment}{/*\ lowered\ control\ flow\ */}\textcolor{preprocessor}{}}
+\DoxyCodeLine{00209\ \textcolor{preprocessor}{\#define\ PROP\_gimple\_leh\ \ \ \ \ (1\ <<\ 2)\ \ \ \ }\textcolor{comment}{/*\ lowered\ eh\ */}\textcolor{preprocessor}{}}
+\DoxyCodeLine{00210\ \textcolor{preprocessor}{\#define\ PROP\_cfg\ \ \ \ \ \ \ \ (1\ <<\ 3)}}
+\DoxyCodeLine{00211\ \textcolor{preprocessor}{\#define\ PROP\_objsz\ \ \ \ \ \ (1\ <<\ 4)\ \ \ \ }\textcolor{comment}{/*\ object\ sizes\ computed\ */}\textcolor{preprocessor}{}}
+\DoxyCodeLine{00212\ \textcolor{preprocessor}{\#define\ PROP\_ssa\ \ \ \ \ \ \ \ (1\ <<\ 5)}}
+\DoxyCodeLine{00213\ \textcolor{preprocessor}{\#define\ PROP\_no\_crit\_edges\ \ \ \ \ \ (1\ <<\ 6)}}
+\DoxyCodeLine{00214\ \textcolor{preprocessor}{\#define\ PROP\_rtl\ \ \ \ \ \ \ \ (1\ <<\ 7)}}
+\DoxyCodeLine{00215\ \textcolor{preprocessor}{\#define\ PROP\_gimple\_lomp\ \ \ \ (1\ <<\ 8)\ \ \ \ }\textcolor{comment}{/*\ lowered\ OpenMP\ directives\ */}\textcolor{preprocessor}{}}
+\DoxyCodeLine{00216\ \textcolor{preprocessor}{\#define\ PROP\_cfglayout\ \ \ \ \ \ (1\ <<\ 9)\ \ \ \ }\textcolor{comment}{/*\ cfglayout\ mode\ on\ RTL\ */}\textcolor{preprocessor}{}}
+\DoxyCodeLine{00217\ \textcolor{preprocessor}{\#define\ PROP\_gimple\_lcx\ \ \ \ \ (1\ <<\ 10)\ \ \ \ \ \ \ }\textcolor{comment}{/*\ lowered\ complex\ */}\textcolor{preprocessor}{}}
+\DoxyCodeLine{00218\ \textcolor{preprocessor}{\#define\ PROP\_loops\ \ \ \ \ \ (1\ <<\ 11)\ \ \ }\textcolor{comment}{/*\ preserve\ loop\ structures\ */}\textcolor{preprocessor}{}}
+\DoxyCodeLine{00219\ \textcolor{preprocessor}{\#define\ PROP\_gimple\_lvec\ \ \ \ (1\ <<\ 12)\ \ \ \ \ \ \ }\textcolor{comment}{/*\ lowered\ vector\ */}\textcolor{preprocessor}{}}
+\DoxyCodeLine{00220\ \textcolor{preprocessor}{\#define\ PROP\_gimple\_eomp\ \ \ \ (1\ <<\ 13)\ \ \ \ \ \ \ }\textcolor{comment}{/*\ no\ OpenMP\ directives\ */}\textcolor{preprocessor}{}}
+\DoxyCodeLine{00221\ \textcolor{preprocessor}{\#define\ PROP\_gimple\_lva\ \ \ \ \ (1\ <<\ 14)\ \ \ \ \ \ \ }\textcolor{comment}{/*\ No\ va\_arg\ internal\ function.\ \ */}\textcolor{preprocessor}{}}
+\DoxyCodeLine{00222\ \textcolor{preprocessor}{\#define\ PROP\_gimple\_opt\_math\ \ \ \ (1\ <<\ 15)\ \ \ }\textcolor{comment}{/*\ Disable\ canonicalization}}
+\DoxyCodeLine{00223\ \textcolor{comment}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ of\ math\ functions;\ the}}
+\DoxyCodeLine{00224\ \textcolor{comment}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ current\ choices\ have}}
+\DoxyCodeLine{00225\ \textcolor{comment}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ been\ optimized.\ \ */}\textcolor{preprocessor}{}}
+\DoxyCodeLine{00226\ \textcolor{preprocessor}{\#define\ PROP\_gimple\_lomp\_dev\ \ \ \ (1\ <<\ 16)\ \ \ }\textcolor{comment}{/*\ done\ omp\_device\_lower\ */}\textcolor{preprocessor}{}}
+\DoxyCodeLine{00227\ \textcolor{preprocessor}{\#define\ PROP\_rtl\_split\_insns\ \ \ \ (1\ <<\ 17)\ \ \ }\textcolor{comment}{/*\ RTL\ has\ insns\ split.\ \ */}\textcolor{preprocessor}{}}
+\DoxyCodeLine{00228\ \textcolor{preprocessor}{\#define\ PROP\_loop\_opts\_done\ (1\ <<\ 18)\ \ \ }\textcolor{comment}{/*\ SSA\ loop\ optimizations}}
+\DoxyCodeLine{00229\ \textcolor{comment}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ have\ completed.\ \ */}\textcolor{preprocessor}{}}
+\DoxyCodeLine{00230\ \textcolor{preprocessor}{\#define\ PROP\_assumptions\_done\ \ \ (1\ <<\ 19)\ \ \ }\textcolor{comment}{/*\ Assume\ function\ kept}}
+\DoxyCodeLine{00231\ \textcolor{comment}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ around.\ \ */}\textcolor{preprocessor}{}}
+\DoxyCodeLine{00232\ \textcolor{preprocessor}{\#define\ PROP\_gimple\_lbitint\ (1\ <<\ 20)\ \ \ \ \ \ \ }\textcolor{comment}{/*\ lowered\ large\ \_BitInt\ */}\textcolor{preprocessor}{}}
+\DoxyCodeLine{00233\ }
+\DoxyCodeLine{00234\ \textcolor{preprocessor}{\#define\ PROP\_gimple\ \(\backslash\)}}
+\DoxyCodeLine{00235\ \textcolor{preprocessor}{\ \ (PROP\_gimple\_any\ |\ PROP\_gimple\_lcf\ |\ PROP\_gimple\_leh\ |\ PROP\_gimple\_lomp)}}
+\DoxyCodeLine{00236\ }
+\DoxyCodeLine{00237\ \textcolor{comment}{/*\ To-\/do\ flags.\ \ */}}
+\DoxyCodeLine{00238\ \textcolor{preprocessor}{\#define\ TODO\_do\_not\_ggc\_collect\ \ \ \ \ (1\ <<\ 1)}}
+\DoxyCodeLine{00239\ \textcolor{preprocessor}{\#define\ TODO\_cleanup\_cfg\ \ \ \ \ \ \ \ \ \ \ \ (1\ <<\ 5)}}
+\DoxyCodeLine{00240\ \textcolor{preprocessor}{\#define\ TODO\_verify\_il\ \ \ \ \ \ \ \ \ \ (1\ <<\ 6)}}
+\DoxyCodeLine{00241\ \textcolor{preprocessor}{\#define\ TODO\_dump\_symtab\ \ \ \ \ \ \ \ (1\ <<\ 7)}}
+\DoxyCodeLine{00242\ \textcolor{preprocessor}{\#define\ TODO\_remove\_functions\ \ \ \ \ \ \ (1\ <<\ 8)}}
+\DoxyCodeLine{00243\ }
+\DoxyCodeLine{00244\ \textcolor{comment}{/*\ To-\/do\ flags\ for\ calls\ to\ update\_ssa.\ \ */}}
+\DoxyCodeLine{00245\ }
+\DoxyCodeLine{00246\ \textcolor{comment}{/*\ Update\ the\ SSA\ form\ inserting\ PHI\ nodes\ for\ newly\ exposed\ symbols}}
+\DoxyCodeLine{00247\ \textcolor{comment}{\ \ \ and\ virtual\ names\ marked\ for\ updating.\ \ When\ updating\ real\ names,}}
+\DoxyCodeLine{00248\ \textcolor{comment}{\ \ \ only\ insert\ PHI\ nodes\ for\ a\ real\ name\ O\_j\ in\ blocks\ reached\ by\ all}}
+\DoxyCodeLine{00249\ \textcolor{comment}{\ \ \ the\ new\ and\ old\ definitions\ for\ O\_j.\ \ If\ the\ iterated\ dominance}}
+\DoxyCodeLine{00250\ \textcolor{comment}{\ \ \ frontier\ for\ O\_j\ is\ not\ pruned,\ we\ may\ end\ up\ inserting\ PHI\ nodes}}
+\DoxyCodeLine{00251\ \textcolor{comment}{\ \ \ in\ blocks\ that\ have\ one\ or\ more\ edges\ with\ no\ incoming\ definition}}
+\DoxyCodeLine{00252\ \textcolor{comment}{\ \ \ for\ O\_j.\ \ This\ would\ lead\ to\ uninitialized\ warnings\ for\ O\_j's}}
+\DoxyCodeLine{00253\ \textcolor{comment}{\ \ \ symbol.\ \ */}}
+\DoxyCodeLine{00254\ \textcolor{preprocessor}{\#define\ TODO\_update\_ssa\ \ \ \ \ \ \ \ \ (1\ <<\ 11)}}
+\DoxyCodeLine{00255\ }
+\DoxyCodeLine{00256\ \textcolor{comment}{/*\ Update\ the\ SSA\ form\ without\ inserting\ any\ new\ PHI\ nodes\ at\ all.}}
+\DoxyCodeLine{00257\ \textcolor{comment}{\ \ \ This\ is\ used\ by\ passes\ that\ have\ either\ inserted\ all\ the\ PHI\ nodes}}
+\DoxyCodeLine{00258\ \textcolor{comment}{\ \ \ themselves\ or\ passes\ that\ need\ only\ to\ patch\ use-\/def\ and\ def-\/def}}
+\DoxyCodeLine{00259\ \textcolor{comment}{\ \ \ chains\ for\ virtuals\ (e.g.,\ DCE).\ \ */}}
+\DoxyCodeLine{00260\ \textcolor{preprocessor}{\#define\ TODO\_update\_ssa\_no\_phi\ \ \ \ \ \ (1\ <<\ 12)}}
+\DoxyCodeLine{00261\ }
+\DoxyCodeLine{00262\ \textcolor{comment}{/*\ Insert\ PHI\ nodes\ everywhere\ they\ are\ needed.\ \ No\ pruning\ of\ the}}
+\DoxyCodeLine{00263\ \textcolor{comment}{\ \ \ IDF\ is\ done.\ \ This\ is\ used\ by\ passes\ that\ need\ the\ PHI\ nodes\ for}}
+\DoxyCodeLine{00264\ \textcolor{comment}{\ \ \ O\_j\ even\ if\ it\ means\ that\ some\ arguments\ will\ come\ from\ the\ default}}
+\DoxyCodeLine{00265\ \textcolor{comment}{\ \ \ definition\ of\ O\_j's\ symbol.}}
+\DoxyCodeLine{00266\ \textcolor{comment}{}}
+\DoxyCodeLine{00267\ \textcolor{comment}{\ \ \ WARNING:\ If\ you\ need\ to\ use\ this\ flag,\ chances\ are\ that\ your\ pass}}
+\DoxyCodeLine{00268\ \textcolor{comment}{\ \ \ may\ be\ doing\ something\ wrong.\ \ Inserting\ PHI\ nodes\ for\ an\ old\ name}}
+\DoxyCodeLine{00269\ \textcolor{comment}{\ \ \ where\ not\ all\ edges\ carry\ a\ new\ replacement\ may\ lead\ to\ silent}}
+\DoxyCodeLine{00270\ \textcolor{comment}{\ \ \ codegen\ errors\ or\ spurious\ uninitialized\ warnings.\ \ */}}
+\DoxyCodeLine{00271\ \textcolor{preprocessor}{\#define\ TODO\_update\_ssa\_full\_phi\ \ \ \ (1\ <<\ 13)}}
+\DoxyCodeLine{00272\ }
+\DoxyCodeLine{00273\ \textcolor{comment}{/*\ Passes\ that\ update\ the\ SSA\ form\ on\ their\ own\ may\ want\ to\ delegate}}
+\DoxyCodeLine{00274\ \textcolor{comment}{\ \ \ the\ updating\ of\ virtual\ names\ to\ the\ generic\ updater.\ \ Since\ FUD}}
+\DoxyCodeLine{00275\ \textcolor{comment}{\ \ \ chains\ are\ easier\ to\ maintain,\ this\ simplifies\ the\ work\ they\ need}}
+\DoxyCodeLine{00276\ \textcolor{comment}{\ \ \ to\ do.\ \ NOTE:\ If\ this\ flag\ is\ used,\ any\ OLD-\/>NEW\ mappings\ for\ real}}
+\DoxyCodeLine{00277\ \textcolor{comment}{\ \ \ names\ are\ explicitly\ destroyed\ and\ only\ the\ symbols\ marked\ for}}
+\DoxyCodeLine{00278\ \textcolor{comment}{\ \ \ renaming\ are\ processed.\ \ */}}
+\DoxyCodeLine{00279\ \textcolor{preprocessor}{\#define\ TODO\_update\_ssa\_only\_virtuals\ \ \ (1\ <<\ 14)}}
+\DoxyCodeLine{00280\ }
+\DoxyCodeLine{00281\ \textcolor{comment}{/*\ Some\ passes\ leave\ unused\ local\ variables\ that\ can\ be\ removed\ from}}
+\DoxyCodeLine{00282\ \textcolor{comment}{\ \ \ cfun-\/>local\_decls.\ \ This\ reduces\ the\ size\ of\ dump\ files}}
+\DoxyCodeLine{00283\ \textcolor{comment}{\ \ \ and\ the\ memory\ footprint\ for\ VAR\_DECLs.\ \ */}}
+\DoxyCodeLine{00284\ \textcolor{preprocessor}{\#define\ TODO\_remove\_unused\_locals\ \ \ (1\ <<\ 15)}}
+\DoxyCodeLine{00285\ }
+\DoxyCodeLine{00286\ \textcolor{comment}{/*\ Call\ df\_finish\ at\ the\ end\ of\ the\ pass.\ \ This\ is\ done\ after\ all\ of}}
+\DoxyCodeLine{00287\ \textcolor{comment}{\ \ \ the\ dumpers\ have\ been\ allowed\ to\ run\ so\ that\ they\ have\ access\ to}}
+\DoxyCodeLine{00288\ \textcolor{comment}{\ \ \ the\ instance\ before\ it\ is\ destroyed.\ \ */}}
+\DoxyCodeLine{00289\ \textcolor{preprocessor}{\#define\ TODO\_df\_finish\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ (1\ <<\ 17)}}
+\DoxyCodeLine{00290\ }
+\DoxyCodeLine{00291\ \textcolor{comment}{/*\ Call\ df\_verify\ at\ the\ end\ of\ the\ pass\ if\ checking\ is\ enabled.\ \ */}}
+\DoxyCodeLine{00292\ \textcolor{preprocessor}{\#define\ TODO\_df\_verify\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ (1\ <<\ 18)}}
+\DoxyCodeLine{00293\ }
+\DoxyCodeLine{00294\ \textcolor{comment}{/*\ Internally\ used\ for\ the\ first\ instance\ of\ a\ pass.\ \ */}}
+\DoxyCodeLine{00295\ \textcolor{preprocessor}{\#define\ TODO\_mark\_first\_instance\ \ \ \ (1\ <<\ 19)}}
+\DoxyCodeLine{00296\ }
+\DoxyCodeLine{00297\ \textcolor{comment}{/*\ Rebuild\ aliasing\ info.\ \ */}}
+\DoxyCodeLine{00298\ \textcolor{preprocessor}{\#define\ TODO\_rebuild\_alias\ \ \ \ \ \ \ \ \ \ \ \ \ \ (1\ <<\ 20)}}
+\DoxyCodeLine{00299\ }
+\DoxyCodeLine{00300\ \textcolor{comment}{/*\ Rebuild\ the\ addressable-\/vars\ bitmap\ and\ do\ register\ promotion.\ \ */}}
+\DoxyCodeLine{00301\ \textcolor{preprocessor}{\#define\ TODO\_update\_address\_taken\ \ \ (1\ <<\ 21)}}
+\DoxyCodeLine{00302\ }
+\DoxyCodeLine{00303\ \textcolor{comment}{/*\ Rebuild\ the\ callgraph\ edges.\ \ */}}
+\DoxyCodeLine{00304\ \textcolor{preprocessor}{\#define\ TODO\_rebuild\_cgraph\_edges\ \ \ \ \ \ \ (1\ <<\ 22)}}
+\DoxyCodeLine{00305\ }
+\DoxyCodeLine{00306\ \textcolor{comment}{/*\ Release\ function\ body\ (unless\ assumption\ function)}}
+\DoxyCodeLine{00307\ \textcolor{comment}{\ \ \ and\ stop\ pass\ manager.\ \ */}}
+\DoxyCodeLine{00308\ \textcolor{preprocessor}{\#define\ TODO\_discard\_function\ \ \ \ \ \ \ (1\ <<\ 23)}}
+\DoxyCodeLine{00309\ }
+\DoxyCodeLine{00310\ \textcolor{comment}{/*\ Internally\ used\ in\ execute\_function\_todo().\ \ */}}
+\DoxyCodeLine{00311\ \textcolor{preprocessor}{\#define\ TODO\_update\_ssa\_any\ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00312\ \textcolor{preprocessor}{\ \ \ \ (TODO\_update\_ssa\ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00313\ \textcolor{preprocessor}{\ \ \ \ \ |\ TODO\_update\_ssa\_no\_phi\ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00314\ \textcolor{preprocessor}{\ \ \ \ \ |\ TODO\_update\_ssa\_full\_phi\ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00315\ \textcolor{preprocessor}{\ \ \ \ \ |\ TODO\_update\_ssa\_only\_virtuals)}}
+\DoxyCodeLine{00316\ }
+\DoxyCodeLine{00317\ \textcolor{preprocessor}{\#define\ TODO\_verify\_all\ TODO\_verify\_il}}
+\DoxyCodeLine{00318\ }
+\DoxyCodeLine{00319\ \textcolor{comment}{/*\ To-\/do\ flags\ for\ pending\_TODOs.\ \ */}}
+\DoxyCodeLine{00320\ }
+\DoxyCodeLine{00321\ \textcolor{comment}{/*\ Tell\ the\ next\ scalar\ cleanup\ pass\ that\ there\ is}}
+\DoxyCodeLine{00322\ \textcolor{comment}{\ \ \ work\ for\ it\ to\ do.\ \ */}}
+\DoxyCodeLine{00323\ \textcolor{preprocessor}{\#define\ PENDING\_TODO\_force\_next\_scalar\_cleanup\ \ (1\ <<\ 1)}}
+\DoxyCodeLine{00324\ }
+\DoxyCodeLine{00325\ \textcolor{comment}{/*\ Register\ pass\ info.\ */}}
+\DoxyCodeLine{00326\ }
+\DoxyCodeLine{00327\ \textcolor{keyword}{enum}\ \doxymbox{\hyperlink{tree-pass_8h_acac5953384855eadb50707f79f3d5e2c}{pass\_positioning\_ops}}}
+\DoxyCodeLine{00328\ \{}
+\DoxyCodeLine{00329\ \ \ \doxymbox{\hyperlink{tree-pass_8h_acac5953384855eadb50707f79f3d5e2cafbd2a00756bc8c8d6a3bef40b5e6804f}{PASS\_POS\_INSERT\_AFTER}},\ \ \textcolor{comment}{/*\ Insert\ after\ the\ reference\ pass.\ \ */}}
+\DoxyCodeLine{00330\ \ \ \doxymbox{\hyperlink{tree-pass_8h_acac5953384855eadb50707f79f3d5e2cad314859427beadada2455ca035f2b2e9}{PASS\_POS\_INSERT\_BEFORE}},\ \textcolor{comment}{/*\ Insert\ before\ the\ reference\ pass.\ \ */}}
+\DoxyCodeLine{00331\ \ \ \doxymbox{\hyperlink{tree-pass_8h_acac5953384855eadb50707f79f3d5e2cab03db4ff69983779be74cd10bbed1f16}{PASS\_POS\_REPLACE}}\ \ \ \ \ \ \ \ \textcolor{comment}{/*\ Replace\ the\ reference\ pass.\ \ */}}
+\DoxyCodeLine{00332\ \};}
+\DoxyCodeLine{00333\ }
+\DoxyCodeLine{00334\ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{structregister__pass__info}{register\_pass\_info}}}
+\DoxyCodeLine{00335\ \{}
+\DoxyCodeLine{00336\ \ \ \doxymbox{\hyperlink{classopt__pass}{opt\_pass}}\ *\doxymbox{\hyperlink{structregister__pass__info_a47cee3faee2d6e374d65bef4b2474ada}{pass}};\ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{/*\ New\ pass\ to\ register.\ \ */}}
+\DoxyCodeLine{00337\ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *\doxymbox{\hyperlink{structregister__pass__info_aa70caaa2fa2d00c455ffbdc90aaf34be}{reference\_pass\_name}};\ \ \textcolor{comment}{/*\ Name\ of\ the\ reference\ pass\ for\ hooking}}
+\DoxyCodeLine{00338\ \textcolor{comment}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ up\ the\ new\ pass.\ \ */}}
+\DoxyCodeLine{00339\ \ \ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{structregister__pass__info_a0732a1addf80b43c823980437038f638}{ref\_pass\_instance\_number}};\ \ \ \ \ \textcolor{comment}{/*\ Insert\ the\ pass\ at\ the\ specified}}
+\DoxyCodeLine{00340\ \textcolor{comment}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ instance\ number\ of\ the\ reference\ pass.}}
+\DoxyCodeLine{00341\ \textcolor{comment}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ Do\ it\ for\ every\ instance\ if\ it\ is\ 0.\ \ */}}
+\DoxyCodeLine{00342\ \ \ \textcolor{keyword}{enum}\ \doxymbox{\hyperlink{tree-pass_8h_acac5953384855eadb50707f79f3d5e2c}{pass\_positioning\_ops}}\ \doxymbox{\hyperlink{structregister__pass__info_a001de0cc7efbe08b476bca299bd0f809}{pos\_op}};\ \textcolor{comment}{/*\ how\ to\ insert\ the\ new\ pass.\ \ */}}
+\DoxyCodeLine{00343\ \};}
+\DoxyCodeLine{00344\ }
+\DoxyCodeLine{00345\ \textcolor{comment}{/*\ Registers\ a\ new\ pass.\ \ Either\ fill\ out\ the\ register\_pass\_info\ or\ specify}}
+\DoxyCodeLine{00346\ \textcolor{comment}{\ \ \ the\ individual\ parameters.\ \ The\ pass\ object\ is\ expected\ to\ have\ been}}
+\DoxyCodeLine{00347\ \textcolor{comment}{\ \ \ allocated\ using\ operator\ new\ and\ the\ pass\ manager\ takes\ the\ ownership\ of}}
+\DoxyCodeLine{00348\ \textcolor{comment}{\ \ \ the\ pass\ object.\ \ */}}
+\DoxyCodeLine{00349\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{tree-pass_8h_a1090f3ae419b120cb91abfaa17c4313e}{register\_pass}}\ (\doxymbox{\hyperlink{structregister__pass__info}{register\_pass\_info}}\ *);}
+\DoxyCodeLine{00350\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{tree-pass_8h_a1090f3ae419b120cb91abfaa17c4313e}{register\_pass}}\ (\doxymbox{\hyperlink{classopt__pass}{opt\_pass}}*\ pass,\ \doxymbox{\hyperlink{tree-pass_8h_acac5953384855eadb50707f79f3d5e2c}{pass\_positioning\_ops}}\ pos,}
+\DoxyCodeLine{00351\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}*\ ref\_pass\_name,\ \textcolor{keywordtype}{int}\ ref\_pass\_inst\_number);}
+\DoxyCodeLine{00352\ }
+\DoxyCodeLine{00353\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{classgimple__opt__pass}{gimple\_opt\_pass}}\ *\doxymbox{\hyperlink{tree-pass_8h_a146ecb1099cb9bf8fae98b7801fd6c60}{make\_pass\_asan}}\ (\doxymbox{\hyperlink{classgcc_1_1context}{gcc::context}}\ *ctxt);}
+\DoxyCodeLine{00354\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{classgimple__opt__pass}{gimple\_opt\_pass}}\ *\doxymbox{\hyperlink{tree-pass_8h_a8ec6f5143d722495fd60b9f844406992}{make\_pass\_asan\_O0}}\ (\doxymbox{\hyperlink{classgcc_1_1context}{gcc::context}}\ *ctxt);}
+\DoxyCodeLine{00355\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{classgimple__opt__pass}{gimple\_opt\_pass}}\ *\doxymbox{\hyperlink{tree-pass_8h_a28537e933af720163886366a586adf91}{make\_pass\_tsan}}\ (\doxymbox{\hyperlink{classgcc_1_1context}{gcc::context}}\ *ctxt);}
+\DoxyCodeLine{00356\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{classgimple__opt__pass}{gimple\_opt\_pass}}\ *\doxymbox{\hyperlink{tree-pass_8h_a58af104bc0579faa1fa03e177e63a10f}{make\_pass\_tsan\_O0}}\ (\doxymbox{\hyperlink{classgcc_1_1context}{gcc::context}}\ *ctxt);}
+\DoxyCodeLine{00357\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{classgimple__opt__pass}{gimple\_opt\_pass}}\ *\doxymbox{\hyperlink{tree-pass_8h_a21e95cf8bc84ab5b00e62f1147454de6}{make\_pass\_sancov}}\ (\doxymbox{\hyperlink{classgcc_1_1context}{gcc::context}}\ *ctxt);}
+\DoxyCodeLine{00358\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{classgimple__opt__pass}{gimple\_opt\_pass}}\ *\doxymbox{\hyperlink{tree-pass_8h_a76a1f4cd02015a41e9ef92484f3d0425}{make\_pass\_sancov\_O0}}\ (\doxymbox{\hyperlink{classgcc_1_1context}{gcc::context}}\ *ctxt);}
+\DoxyCodeLine{00359\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{classgimple__opt__pass}{gimple\_opt\_pass}}\ *\doxymbox{\hyperlink{tree-pass_8h_aad2039ea912011d130797241c708e106}{make\_pass\_lower\_cf}}\ (\doxymbox{\hyperlink{classgcc_1_1context}{gcc::context}}\ *ctxt);}
+\DoxyCodeLine{00360\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{classgimple__opt__pass}{gimple\_opt\_pass}}\ *\doxymbox{\hyperlink{tree-pass_8h_a4292950abf32063710fa6509a3af936c}{make\_pass\_refactor\_eh}}\ (\doxymbox{\hyperlink{classgcc_1_1context}{gcc::context}}\ *ctxt);}
+\DoxyCodeLine{00361\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{classgimple__opt__pass}{gimple\_opt\_pass}}\ *\doxymbox{\hyperlink{tree-pass_8h_adf5ca0e64cde2e51bd6fbf131d724f3d}{make\_pass\_lower\_eh}}\ (\doxymbox{\hyperlink{classgcc_1_1context}{gcc::context}}\ *ctxt);}
+\DoxyCodeLine{00362\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{classgimple__opt__pass}{gimple\_opt\_pass}}\ *\doxymbox{\hyperlink{tree-pass_8h_a51ae6c1b5d5f9faaab5e137881ddae21}{make\_pass\_lower\_eh\_dispatch}}\ (\doxymbox{\hyperlink{classgcc_1_1context}{gcc::context}}\ *ctxt);}
+\DoxyCodeLine{00363\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{classgimple__opt__pass}{gimple\_opt\_pass}}\ *\doxymbox{\hyperlink{tree-pass_8h_af2cebc104c7b8675a3d74ccc1553a7ae}{make\_pass\_lower\_resx}}\ (\doxymbox{\hyperlink{classgcc_1_1context}{gcc::context}}\ *ctxt);}
+\DoxyCodeLine{00364\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{classgimple__opt__pass}{gimple\_opt\_pass}}\ *\doxymbox{\hyperlink{tree-pass_8h_a37f54c62fd76df787bb7f4589512d3f9}{make\_pass\_build\_cfg}}\ (\doxymbox{\hyperlink{classgcc_1_1context}{gcc::context}}\ *ctxt);}
+\DoxyCodeLine{00365\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{classgimple__opt__pass}{gimple\_opt\_pass}}\ *\doxymbox{\hyperlink{tree-pass_8h_a974b58a749bc4f616027afc12d34a06b}{make\_pass\_early\_tree\_profile}}\ (\doxymbox{\hyperlink{classgcc_1_1context}{gcc::context}}\ *ctxt);}
+\DoxyCodeLine{00366\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{classgimple__opt__pass}{gimple\_opt\_pass}}\ *\doxymbox{\hyperlink{tree-pass_8h_ae2f0da2605a3878b1926011a17f96f69}{make\_pass\_cleanup\_eh}}\ (\doxymbox{\hyperlink{classgcc_1_1context}{gcc::context}}\ *ctxt);}
+\DoxyCodeLine{00367\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{classgimple__opt__pass}{gimple\_opt\_pass}}\ *\doxymbox{\hyperlink{tree-pass_8h_a2b427f531715f3923cc1704b04599fa0}{make\_pass\_sra}}\ (\doxymbox{\hyperlink{classgcc_1_1context}{gcc::context}}\ *ctxt);}
+\DoxyCodeLine{00368\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{classgimple__opt__pass}{gimple\_opt\_pass}}\ *\doxymbox{\hyperlink{tree-pass_8h_a69951aa006ecfcbb2852d2e9e377f140}{make\_pass\_sra\_early}}\ (\doxymbox{\hyperlink{classgcc_1_1context}{gcc::context}}\ *ctxt);}
+\DoxyCodeLine{00369\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{classgimple__opt__pass}{gimple\_opt\_pass}}\ *\doxymbox{\hyperlink{tree-pass_8h_ac0f21d78807faed32f7cfef97d9fd24f}{make\_pass\_tail\_recursion}}\ (\doxymbox{\hyperlink{classgcc_1_1context}{gcc::context}}\ *ctxt);}
+\DoxyCodeLine{00370\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{classgimple__opt__pass}{gimple\_opt\_pass}}\ *\doxymbox{\hyperlink{tree-pass_8h_a9486e6dedcd309732e62344ae038ba83}{make\_pass\_tail\_calls}}\ (\doxymbox{\hyperlink{classgcc_1_1context}{gcc::context}}\ *ctxt);}
+\DoxyCodeLine{00371\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{classgimple__opt__pass}{gimple\_opt\_pass}}\ *\doxymbox{\hyperlink{tree-pass_8h_ad252a102acb25b678f723613a1261d6b}{make\_pass\_fix\_loops}}\ (\doxymbox{\hyperlink{classgcc_1_1context}{gcc::context}}\ *ctxt);}
+\DoxyCodeLine{00372\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{classgimple__opt__pass}{gimple\_opt\_pass}}\ *\doxymbox{\hyperlink{tree-pass_8h_ab30276f650d756a48c7e855e8d99a19f}{make\_pass\_tree\_loop}}\ (\doxymbox{\hyperlink{classgcc_1_1context}{gcc::context}}\ *ctxt);}
+\DoxyCodeLine{00373\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{classgimple__opt__pass}{gimple\_opt\_pass}}\ *\doxymbox{\hyperlink{tree-pass_8h_a033e8fec61629d49817a7e4da65d369b}{make\_pass\_tree\_no\_loop}}\ (\doxymbox{\hyperlink{classgcc_1_1context}{gcc::context}}\ *ctxt);}
+\DoxyCodeLine{00374\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{classgimple__opt__pass}{gimple\_opt\_pass}}\ *\doxymbox{\hyperlink{tree-pass_8h_ae5da2260a4afa79b6ae4d85a7e77b084}{make\_pass\_tree\_loop\_init}}\ (\doxymbox{\hyperlink{classgcc_1_1context}{gcc::context}}\ *ctxt);}
+\DoxyCodeLine{00375\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{classgimple__opt__pass}{gimple\_opt\_pass}}\ *\doxymbox{\hyperlink{tree-pass_8h_a43761fc072755b443c23a2f9f79b89b7}{make\_pass\_loop\_versioning}}\ (\doxymbox{\hyperlink{classgcc_1_1context}{gcc::context}}\ *ctxt);}
+\DoxyCodeLine{00376\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{classgimple__opt__pass}{gimple\_opt\_pass}}\ *\doxymbox{\hyperlink{tree-pass_8h_a4d9b7781f5ffe1502e08ed89a6af4950}{make\_pass\_lim}}\ (\doxymbox{\hyperlink{classgcc_1_1context}{gcc::context}}\ *ctxt);}
+\DoxyCodeLine{00377\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{classgimple__opt__pass}{gimple\_opt\_pass}}\ *\doxymbox{\hyperlink{tree-pass_8h_ac3aa849575c5d3424238bfe00b08fb65}{make\_pass\_linterchange}}\ (\doxymbox{\hyperlink{classgcc_1_1context}{gcc::context}}\ *ctxt);}
+\DoxyCodeLine{00378\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{classgimple__opt__pass}{gimple\_opt\_pass}}\ *\doxymbox{\hyperlink{tree-pass_8h_abebcc6a2561d8916c70d57f895767ba6}{make\_pass\_tree\_unswitch}}\ (\doxymbox{\hyperlink{classgcc_1_1context}{gcc::context}}\ *ctxt);}
+\DoxyCodeLine{00379\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{classgimple__opt__pass}{gimple\_opt\_pass}}\ *\doxymbox{\hyperlink{tree-pass_8h_a330417a1e1ff40cc2af98e1ba099157a}{make\_pass\_loop\_split}}\ (\doxymbox{\hyperlink{classgcc_1_1context}{gcc::context}}\ *ctxt);}
+\DoxyCodeLine{00380\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{classgimple__opt__pass}{gimple\_opt\_pass}}\ *\doxymbox{\hyperlink{tree-pass_8h_ab2e26604fc2e88cb4f2a2af264ec1827}{make\_pass\_loop\_jam}}\ (\doxymbox{\hyperlink{classgcc_1_1context}{gcc::context}}\ *ctxt);}
+\DoxyCodeLine{00381\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{classgimple__opt__pass}{gimple\_opt\_pass}}\ *\doxymbox{\hyperlink{tree-pass_8h_aaeed271ce3c82c259aca49260cc75728}{make\_pass\_predcom}}\ (\doxymbox{\hyperlink{classgcc_1_1context}{gcc::context}}\ *ctxt);}
+\DoxyCodeLine{00382\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{classgimple__opt__pass}{gimple\_opt\_pass}}\ *\doxymbox{\hyperlink{tree-pass_8h_aef53b5fb8cff6bc2a6c6cb6b863e4974}{make\_pass\_iv\_canon}}\ (\doxymbox{\hyperlink{classgcc_1_1context}{gcc::context}}\ *ctxt);}
+\DoxyCodeLine{00383\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{classgimple__opt__pass}{gimple\_opt\_pass}}\ *\doxymbox{\hyperlink{tree-pass_8h_acd6252a9a46302b0a0cede82fca090b3}{make\_pass\_scev\_cprop}}\ (\doxymbox{\hyperlink{classgcc_1_1context}{gcc::context}}\ *ctxt);}
+\DoxyCodeLine{00384\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{classgimple__opt__pass}{gimple\_opt\_pass}}\ *\doxymbox{\hyperlink{tree-pass_8h_a3b87bfbe12efa857c8d153976065513e}{make\_pass\_empty\_loop}}\ (\doxymbox{\hyperlink{classgcc_1_1context}{gcc::context}}\ *ctxt);}
+\DoxyCodeLine{00385\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{classgimple__opt__pass}{gimple\_opt\_pass}}\ *\doxymbox{\hyperlink{tree-pass_8h_adeee050be1956c1e7a3da799cab9c14a}{make\_pass\_graphite}}\ (\doxymbox{\hyperlink{classgcc_1_1context}{gcc::context}}\ *ctxt);}
+\DoxyCodeLine{00386\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{classgimple__opt__pass}{gimple\_opt\_pass}}\ *\doxymbox{\hyperlink{tree-pass_8h_acc8b8b31c55bc1e530a285c5b73f6fca}{make\_pass\_graphite\_transforms}}\ (\doxymbox{\hyperlink{classgcc_1_1context}{gcc::context}}\ *ctxt);}
+\DoxyCodeLine{00387\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{classgimple__opt__pass}{gimple\_opt\_pass}}\ *\doxymbox{\hyperlink{tree-pass_8h_a1c305b658a8414d77ce07db76f030a2b}{make\_pass\_if\_conversion}}\ (\doxymbox{\hyperlink{classgcc_1_1context}{gcc::context}}\ *ctxt);}
+\DoxyCodeLine{00388\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{classgimple__opt__pass}{gimple\_opt\_pass}}\ *\doxymbox{\hyperlink{tree-pass_8h_ac49c200db78f1d1c724470a1b47a7142}{make\_pass\_if\_to\_switch}}\ (\doxymbox{\hyperlink{classgcc_1_1context}{gcc::context}}\ *ctxt);}
+\DoxyCodeLine{00389\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{classgimple__opt__pass}{gimple\_opt\_pass}}\ *\doxymbox{\hyperlink{tree-pass_8h_a584f056b4fc661eb7ca9e34b25a26d72}{make\_pass\_loop\_distribution}}\ (\doxymbox{\hyperlink{classgcc_1_1context}{gcc::context}}\ *ctxt);}
+\DoxyCodeLine{00390\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{classgimple__opt__pass}{gimple\_opt\_pass}}\ *\doxymbox{\hyperlink{tree-pass_8h_aa21c3bc5729dd6fb6a22582107363636}{make\_pass\_vectorize}}\ (\doxymbox{\hyperlink{classgcc_1_1context}{gcc::context}}\ *ctxt);}
+\DoxyCodeLine{00391\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{classgimple__opt__pass}{gimple\_opt\_pass}}\ *\doxymbox{\hyperlink{tree-pass_8h_a64854f456c0207731bd022bdab80f567}{make\_pass\_simduid\_cleanup}}\ (\doxymbox{\hyperlink{classgcc_1_1context}{gcc::context}}\ *ctxt);}
+\DoxyCodeLine{00392\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{classgimple__opt__pass}{gimple\_opt\_pass}}\ *\doxymbox{\hyperlink{tree-pass_8h_aeb51ab8c49e644957931a5473cd33beb}{make\_pass\_slp\_vectorize}}\ (\doxymbox{\hyperlink{classgcc_1_1context}{gcc::context}}\ *ctxt);}
+\DoxyCodeLine{00393\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{classgimple__opt__pass}{gimple\_opt\_pass}}\ *\doxymbox{\hyperlink{tree-pass_8h_aabce41d223d738590727bceafe52dd1e}{make\_pass\_complete\_unroll}}\ (\doxymbox{\hyperlink{classgcc_1_1context}{gcc::context}}\ *ctxt);}
+\DoxyCodeLine{00394\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{classgimple__opt__pass}{gimple\_opt\_pass}}\ *\doxymbox{\hyperlink{tree-pass_8h_a6a42201e33112b0c6db5a4cfd99db47c}{make\_pass\_complete\_unrolli}}\ (\doxymbox{\hyperlink{classgcc_1_1context}{gcc::context}}\ *ctxt);}
+\DoxyCodeLine{00395\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{classgimple__opt__pass}{gimple\_opt\_pass}}\ *\doxymbox{\hyperlink{tree-pass_8h_a97c229bb0a04a34f8f3edd35d5767cc6}{make\_pass\_pre\_slp\_scalar\_cleanup}}\ (\doxymbox{\hyperlink{classgcc_1_1context}{gcc::context}}\ *ctxt);}
+\DoxyCodeLine{00396\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{classgimple__opt__pass}{gimple\_opt\_pass}}\ *\doxymbox{\hyperlink{tree-pass_8h_a361fecef32607d6bdd67691c368147ef}{make\_pass\_parallelize\_loops}}\ (\doxymbox{\hyperlink{classgcc_1_1context}{gcc::context}}\ *ctxt);}
+\DoxyCodeLine{00397\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{classgimple__opt__pass}{gimple\_opt\_pass}}\ *\doxymbox{\hyperlink{tree-pass_8h_a743645e441477d71ec85d89ae41c2473}{make\_pass\_loop\_prefetch}}\ (\doxymbox{\hyperlink{classgcc_1_1context}{gcc::context}}\ *ctxt);}
+\DoxyCodeLine{00398\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{classgimple__opt__pass}{gimple\_opt\_pass}}\ *\doxymbox{\hyperlink{tree-pass_8h_ab6fd6590bb2de07332d93c69fbeb83e3}{make\_pass\_iv\_optimize}}\ (\doxymbox{\hyperlink{classgcc_1_1context}{gcc::context}}\ *ctxt);}
+\DoxyCodeLine{00399\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{classgimple__opt__pass}{gimple\_opt\_pass}}\ *\doxymbox{\hyperlink{tree-pass_8h_a6de2d2d8bb3cf6e86b0d9212c3ccdbff}{make\_pass\_tree\_loop\_done}}\ (\doxymbox{\hyperlink{classgcc_1_1context}{gcc::context}}\ *ctxt);}
+\DoxyCodeLine{00400\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{classgimple__opt__pass}{gimple\_opt\_pass}}\ *\doxymbox{\hyperlink{tree-pass_8h_a89bbdd281467897d7b87ff239bfcd58b}{make\_pass\_ch}}\ (\doxymbox{\hyperlink{classgcc_1_1context}{gcc::context}}\ *ctxt);}
+\DoxyCodeLine{00401\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{classgimple__opt__pass}{gimple\_opt\_pass}}\ *\doxymbox{\hyperlink{tree-pass_8h_ae485cacfc1a8461d753dac0663dde69c}{make\_pass\_ch\_vect}}\ (\doxymbox{\hyperlink{classgcc_1_1context}{gcc::context}}\ *ctxt);}
+\DoxyCodeLine{00402\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{classgimple__opt__pass}{gimple\_opt\_pass}}\ *\doxymbox{\hyperlink{tree-pass_8h_a43ac8c22b157c1547e53a12a6947036d}{make\_pass\_sccopy}}\ (\doxymbox{\hyperlink{classgcc_1_1context}{gcc::context}}\ *ctxt);}
+\DoxyCodeLine{00403\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{classgimple__opt__pass}{gimple\_opt\_pass}}\ *\doxymbox{\hyperlink{tree-pass_8h_abd7654a037be413815ee5d13694ba8b4}{make\_pass\_ccp}}\ (\doxymbox{\hyperlink{classgcc_1_1context}{gcc::context}}\ *ctxt);}
+\DoxyCodeLine{00404\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{classgimple__opt__pass}{gimple\_opt\_pass}}\ *\doxymbox{\hyperlink{tree-pass_8h_a3521f957c3075dbb318b9040ad26e620}{make\_pass\_split\_paths}}\ (\doxymbox{\hyperlink{classgcc_1_1context}{gcc::context}}\ *ctxt);}
+\DoxyCodeLine{00405\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{classgimple__opt__pass}{gimple\_opt\_pass}}\ *\doxymbox{\hyperlink{tree-pass_8h_a0b42352a9e51766d67d5ae0c00367aab}{make\_pass\_build\_ssa}}\ (\doxymbox{\hyperlink{classgcc_1_1context}{gcc::context}}\ *ctxt);}
+\DoxyCodeLine{00406\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{classgimple__opt__pass}{gimple\_opt\_pass}}\ *\doxymbox{\hyperlink{tree-pass_8h_a68a76a3cd52867461a3087ed2ba93301}{make\_pass\_build\_alias}}\ (\doxymbox{\hyperlink{classgcc_1_1context}{gcc::context}}\ *ctxt);}
+\DoxyCodeLine{00407\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{classgimple__opt__pass}{gimple\_opt\_pass}}\ *\doxymbox{\hyperlink{tree-pass_8h_ab23d72f4b5656a9dd2b323d3a0800850}{make\_pass\_build\_ealias}}\ (\doxymbox{\hyperlink{classgcc_1_1context}{gcc::context}}\ *ctxt);}
+\DoxyCodeLine{00408\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{classgimple__opt__pass}{gimple\_opt\_pass}}\ *\doxymbox{\hyperlink{tree-pass_8h_a52375c72f16c2b293fc4712f0b13285b}{make\_pass\_dominator}}\ (\doxymbox{\hyperlink{classgcc_1_1context}{gcc::context}}\ *ctxt);}
+\DoxyCodeLine{00409\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{classgimple__opt__pass}{gimple\_opt\_pass}}\ *\doxymbox{\hyperlink{tree-pass_8h_a89ff3fb339f9ce9ee0a1c70aee64e9cd}{make\_pass\_dce}}\ (\doxymbox{\hyperlink{classgcc_1_1context}{gcc::context}}\ *ctxt);}
+\DoxyCodeLine{00410\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{classgimple__opt__pass}{gimple\_opt\_pass}}\ *\doxymbox{\hyperlink{tree-pass_8h_adfcd87d3a16077f304eab6b8c0129498}{make\_pass\_cd\_dce}}\ (\doxymbox{\hyperlink{classgcc_1_1context}{gcc::context}}\ *ctxt);}
+\DoxyCodeLine{00411\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{classgimple__opt__pass}{gimple\_opt\_pass}}\ *\doxymbox{\hyperlink{tree-pass_8h_aa19bc81dda42c8acde0dd2ba430fc157}{make\_pass\_call\_cdce}}\ (\doxymbox{\hyperlink{classgcc_1_1context}{gcc::context}}\ *ctxt);}
+\DoxyCodeLine{00412\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{classgimple__opt__pass}{gimple\_opt\_pass}}\ *\doxymbox{\hyperlink{tree-pass_8h_a45923afd346774988d5de35e07afd762}{make\_pass\_merge\_phi}}\ (\doxymbox{\hyperlink{classgcc_1_1context}{gcc::context}}\ *ctxt);}
+\DoxyCodeLine{00413\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{classgimple__opt__pass}{gimple\_opt\_pass}}\ *\doxymbox{\hyperlink{tree-pass_8h_a0651f33cefe1d900a34d01303818e5c4}{make\_pass\_thread\_jumps}}\ (\doxymbox{\hyperlink{classgcc_1_1context}{gcc::context}}\ *ctxt);}
+\DoxyCodeLine{00414\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{classgimple__opt__pass}{gimple\_opt\_pass}}\ *\doxymbox{\hyperlink{tree-pass_8h_ac35cbe68ee78adce2f71ad68f2802b67}{make\_pass\_thread\_jumps\_full}}\ (\doxymbox{\hyperlink{classgcc_1_1context}{gcc::context}}\ *ctxt);}
+\DoxyCodeLine{00415\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{classgimple__opt__pass}{gimple\_opt\_pass}}\ *\doxymbox{\hyperlink{tree-pass_8h_ad0e2c795c1be558660c18571448662a2}{make\_pass\_early\_thread\_jumps}}\ (\doxymbox{\hyperlink{classgcc_1_1context}{gcc::context}}\ *ctxt);}
+\DoxyCodeLine{00416\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{classgimple__opt__pass}{gimple\_opt\_pass}}\ *\doxymbox{\hyperlink{tree-pass_8h_ad6128365ca84f2759cd16a8a5631ce7a}{make\_pass\_split\_crit\_edges}}\ (\doxymbox{\hyperlink{classgcc_1_1context}{gcc::context}}\ *ctxt);}
+\DoxyCodeLine{00417\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{classgimple__opt__pass}{gimple\_opt\_pass}}\ *\doxymbox{\hyperlink{tree-pass_8h_a20061b76b8582614be3e5d9e6f93606e}{make\_pass\_laddress}}\ (\doxymbox{\hyperlink{classgcc_1_1context}{gcc::context}}\ *ctxt);}
+\DoxyCodeLine{00418\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{classgimple__opt__pass}{gimple\_opt\_pass}}\ *\doxymbox{\hyperlink{tree-pass_8h_ab617fcfc0a7719c15043bfbb07de25e0}{make\_pass\_pre}}\ (\doxymbox{\hyperlink{classgcc_1_1context}{gcc::context}}\ *ctxt);}
+\DoxyCodeLine{00419\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{tree-pass_8h_a43a64e486e6ce4ab7c2200da9e5baa0d}{tail\_merge\_optimize}}\ (\textcolor{keywordtype}{bool});}
+\DoxyCodeLine{00420\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{classgimple__opt__pass}{gimple\_opt\_pass}}\ *\doxymbox{\hyperlink{tree-pass_8h_abfe541ed964b0f81fb46404e8852eb85}{make\_pass\_profile}}\ (\doxymbox{\hyperlink{classgcc_1_1context}{gcc::context}}\ *ctxt);}
+\DoxyCodeLine{00421\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{classgimple__opt__pass}{gimple\_opt\_pass}}\ *\doxymbox{\hyperlink{tree-pass_8h_a3fa7632115fcd417b814d28df78b9b1f}{make\_pass\_strip\_predict\_hints}}\ (\doxymbox{\hyperlink{classgcc_1_1context}{gcc::context}}\ *ctxt);}
+\DoxyCodeLine{00422\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{classgimple__opt__pass}{gimple\_opt\_pass}}\ *\doxymbox{\hyperlink{tree-pass_8h_aa46d1a72211e1508ce0e32f8ef8f7e5d}{make\_pass\_rebuild\_frequencies}}\ (\doxymbox{\hyperlink{classgcc_1_1context}{gcc::context}}\ *ctxt);}
+\DoxyCodeLine{00423\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{classgimple__opt__pass}{gimple\_opt\_pass}}\ *\doxymbox{\hyperlink{tree-pass_8h_aafe822b9620d181348849279010c434e}{make\_pass\_lower\_complex\_O0}}\ (\doxymbox{\hyperlink{classgcc_1_1context}{gcc::context}}\ *ctxt);}
+\DoxyCodeLine{00424\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{classgimple__opt__pass}{gimple\_opt\_pass}}\ *\doxymbox{\hyperlink{tree-pass_8h_a2d9005e471f635172240253327843161}{make\_pass\_lower\_complex}}\ (\doxymbox{\hyperlink{classgcc_1_1context}{gcc::context}}\ *ctxt);}
+\DoxyCodeLine{00425\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{classgimple__opt__pass}{gimple\_opt\_pass}}\ *\doxymbox{\hyperlink{tree-pass_8h_a2998eb7aee1788347d3aebacf297715b}{make\_pass\_lower\_bitint\_O0}}\ (\doxymbox{\hyperlink{classgcc_1_1context}{gcc::context}}\ *ctxt);}
+\DoxyCodeLine{00426\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{classgimple__opt__pass}{gimple\_opt\_pass}}\ *\doxymbox{\hyperlink{tree-pass_8h_a4766bfe3e3d145525d55107a1a1b29d4}{make\_pass\_lower\_bitint}}\ (\doxymbox{\hyperlink{classgcc_1_1context}{gcc::context}}\ *ctxt);}
+\DoxyCodeLine{00427\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{classgimple__opt__pass}{gimple\_opt\_pass}}\ *\doxymbox{\hyperlink{tree-pass_8h_a2496b290b12271e030dd1c43e3ff9781}{make\_pass\_lower\_switch}}\ (\doxymbox{\hyperlink{classgcc_1_1context}{gcc::context}}\ *ctxt);}
+\DoxyCodeLine{00428\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{classgimple__opt__pass}{gimple\_opt\_pass}}\ *\doxymbox{\hyperlink{tree-pass_8h_acffd94fc36deeb52dede82f6ae182109}{make\_pass\_lower\_switch\_O0}}\ (\doxymbox{\hyperlink{classgcc_1_1context}{gcc::context}}\ *ctxt);}
+\DoxyCodeLine{00429\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{classgimple__opt__pass}{gimple\_opt\_pass}}\ *\doxymbox{\hyperlink{tree-pass_8h_ad30c8d77812442c71588112085e8d1d0}{make\_pass\_lower\_vector}}\ (\doxymbox{\hyperlink{classgcc_1_1context}{gcc::context}}\ *ctxt);}
+\DoxyCodeLine{00430\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{classgimple__opt__pass}{gimple\_opt\_pass}}\ *\doxymbox{\hyperlink{tree-pass_8h_abf7479dbbb983b066ff904073db90653}{make\_pass\_lower\_vector\_ssa}}\ (\doxymbox{\hyperlink{classgcc_1_1context}{gcc::context}}\ *ctxt);}
+\DoxyCodeLine{00431\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{classgimple__opt__pass}{gimple\_opt\_pass}}\ *\doxymbox{\hyperlink{tree-pass_8h_ae1376eb6b48ffdbddda3772783796eb5}{make\_pass\_omp\_oacc\_kernels\_decompose}}\ (\doxymbox{\hyperlink{classgcc_1_1context}{gcc::context}}\ *ctxt);}
+\DoxyCodeLine{00432\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{classgimple__opt__pass}{gimple\_opt\_pass}}\ *\doxymbox{\hyperlink{tree-pass_8h_a0edefd783a1c820f5f438ea55ef725ea}{make\_pass\_lower\_omp}}\ (\doxymbox{\hyperlink{classgcc_1_1context}{gcc::context}}\ *ctxt);}
+\DoxyCodeLine{00433\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{classgimple__opt__pass}{gimple\_opt\_pass}}\ *\doxymbox{\hyperlink{tree-pass_8h_ab5b20001d0fe32bf1fbc8f29d67ebaea}{make\_pass\_diagnose\_omp\_blocks}}\ (\doxymbox{\hyperlink{classgcc_1_1context}{gcc::context}}\ *ctxt);}
+\DoxyCodeLine{00434\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{classgimple__opt__pass}{gimple\_opt\_pass}}\ *\doxymbox{\hyperlink{tree-pass_8h_aae720f68170f8f5c1fa719b3c6ed7974}{make\_pass\_expand\_omp}}\ (\doxymbox{\hyperlink{classgcc_1_1context}{gcc::context}}\ *ctxt);}
+\DoxyCodeLine{00435\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{classgimple__opt__pass}{gimple\_opt\_pass}}\ *\doxymbox{\hyperlink{tree-pass_8h_af5c0f4b49bced25c97383a741c6cf09d}{make\_pass\_expand\_omp\_ssa}}\ (\doxymbox{\hyperlink{classgcc_1_1context}{gcc::context}}\ *ctxt);}
+\DoxyCodeLine{00436\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{classgimple__opt__pass}{gimple\_opt\_pass}}\ *\doxymbox{\hyperlink{tree-pass_8h_ac1f1e6f07716389cf93f8cb3614dbd47}{make\_pass\_omp\_target\_link}}\ (\doxymbox{\hyperlink{classgcc_1_1context}{gcc::context}}\ *ctxt);}
+\DoxyCodeLine{00437\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{classgimple__opt__pass}{gimple\_opt\_pass}}\ *\doxymbox{\hyperlink{tree-pass_8h_a62cff65287524ccc10e6fe183e4407d4}{make\_pass\_oacc\_loop\_designation}}\ (\doxymbox{\hyperlink{classgcc_1_1context}{gcc::context}}\ *ctxt);}
+\DoxyCodeLine{00438\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{classgimple__opt__pass}{gimple\_opt\_pass}}\ *\doxymbox{\hyperlink{tree-pass_8h_ab04269e8b7b8b074bd6fe003819f553d}{make\_pass\_omp\_oacc\_neuter\_broadcast}}\ (\doxymbox{\hyperlink{classgcc_1_1context}{gcc::context}}\ *ctxt);}
+\DoxyCodeLine{00439\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{classgimple__opt__pass}{gimple\_opt\_pass}}\ *\doxymbox{\hyperlink{tree-pass_8h_a38ace87d4cae2aa7cb5a6e271d52f61f}{make\_pass\_oacc\_device\_lower}}\ (\doxymbox{\hyperlink{classgcc_1_1context}{gcc::context}}\ *ctxt);}
+\DoxyCodeLine{00440\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{classgimple__opt__pass}{gimple\_opt\_pass}}\ *\doxymbox{\hyperlink{tree-pass_8h_ab7a8869b0f75a28690f6c0923f250e7f}{make\_pass\_omp\_device\_lower}}\ (\doxymbox{\hyperlink{classgcc_1_1context}{gcc::context}}\ *ctxt);}
+\DoxyCodeLine{00441\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{classgimple__opt__pass}{gimple\_opt\_pass}}\ *\doxymbox{\hyperlink{tree-pass_8h_aed1eb5c14348f7cdb1664ab7f80ebc27}{make\_pass\_object\_sizes}}\ (\doxymbox{\hyperlink{classgcc_1_1context}{gcc::context}}\ *ctxt);}
+\DoxyCodeLine{00442\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{classgimple__opt__pass}{gimple\_opt\_pass}}\ *\doxymbox{\hyperlink{tree-pass_8h_a31dc7535ce1a303c115894ef5d7609aa}{make\_pass\_early\_object\_sizes}}\ (\doxymbox{\hyperlink{classgcc_1_1context}{gcc::context}}\ *ctxt);}
+\DoxyCodeLine{00443\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{classgimple__opt__pass}{gimple\_opt\_pass}}\ *\doxymbox{\hyperlink{tree-pass_8h_a32513ed592729a4041a1e9bfca6eb888}{make\_pass\_warn\_access}}\ (\doxymbox{\hyperlink{classgcc_1_1context}{gcc::context}}\ *ctxt);}
+\DoxyCodeLine{00444\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{classgimple__opt__pass}{gimple\_opt\_pass}}\ *\doxymbox{\hyperlink{tree-pass_8h_aa087c78b4bf4b17ec7ed0249ed41c6dd}{make\_pass\_warn\_printf}}\ (\doxymbox{\hyperlink{classgcc_1_1context}{gcc::context}}\ *ctxt);}
+\DoxyCodeLine{00445\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{classgimple__opt__pass}{gimple\_opt\_pass}}\ *\doxymbox{\hyperlink{tree-pass_8h_a201aecfb961c737fa8f9feac041007b8}{make\_pass\_warn\_recursion}}\ (\doxymbox{\hyperlink{classgcc_1_1context}{gcc::context}}\ *ctxt);}
+\DoxyCodeLine{00446\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{classgimple__opt__pass}{gimple\_opt\_pass}}\ *\doxymbox{\hyperlink{tree-pass_8h_a70a68bb2a7d051a48476f9065e9123e2}{make\_pass\_strlen}}\ (\doxymbox{\hyperlink{classgcc_1_1context}{gcc::context}}\ *ctxt);}
+\DoxyCodeLine{00447\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{classgimple__opt__pass}{gimple\_opt\_pass}}\ *\doxymbox{\hyperlink{tree-pass_8h_ab18b6a1674c3d2239fd3e507208e2ad6}{make\_pass\_fold\_builtins}}\ (\doxymbox{\hyperlink{classgcc_1_1context}{gcc::context}}\ *ctxt);}
+\DoxyCodeLine{00448\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{classgimple__opt__pass}{gimple\_opt\_pass}}\ *\doxymbox{\hyperlink{tree-pass_8h_ab5d5c4615f46f00785c296c08588d8e3}{make\_pass\_post\_ipa\_warn}}\ (\doxymbox{\hyperlink{classgcc_1_1context}{gcc::context}}\ *ctxt);}
+\DoxyCodeLine{00449\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{classgimple__opt__pass}{gimple\_opt\_pass}}\ *\doxymbox{\hyperlink{tree-pass_8h_a7044fff5b3f4ddd2b5888567de57fbe0}{make\_pass\_stdarg}}\ (\doxymbox{\hyperlink{classgcc_1_1context}{gcc::context}}\ *ctxt);}
+\DoxyCodeLine{00450\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{classgimple__opt__pass}{gimple\_opt\_pass}}\ *\doxymbox{\hyperlink{tree-pass_8h_a95513eb3a5c3d6eebf9da353f4699f2f}{make\_pass\_early\_warn\_uninitialized}}\ (\doxymbox{\hyperlink{classgcc_1_1context}{gcc::context}}\ *ctxt);}
+\DoxyCodeLine{00451\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{classgimple__opt__pass}{gimple\_opt\_pass}}\ *\doxymbox{\hyperlink{tree-pass_8h_a7c1da47ab0c8970373769713f046e9e0}{make\_pass\_late\_warn\_uninitialized}}\ (\doxymbox{\hyperlink{classgcc_1_1context}{gcc::context}}\ *ctxt);}
+\DoxyCodeLine{00452\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{classgimple__opt__pass}{gimple\_opt\_pass}}\ *\doxymbox{\hyperlink{tree-pass_8h_ab2d4413c2a2464dbb8d031f2a3da81b4}{make\_pass\_cse\_reciprocals}}\ (\doxymbox{\hyperlink{classgcc_1_1context}{gcc::context}}\ *ctxt);}
+\DoxyCodeLine{00453\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{classgimple__opt__pass}{gimple\_opt\_pass}}\ *\doxymbox{\hyperlink{tree-pass_8h_a35263e212c1746ef6919182abbf0d156}{make\_pass\_cse\_sincos}}\ (\doxymbox{\hyperlink{classgcc_1_1context}{gcc::context}}\ *ctxt);}
+\DoxyCodeLine{00454\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{classgimple__opt__pass}{gimple\_opt\_pass}}\ *\doxymbox{\hyperlink{tree-pass_8h_aeba9941cb1eadf5864c77d966b133df1}{make\_pass\_expand\_powcabs}}\ (\doxymbox{\hyperlink{classgcc_1_1context}{gcc::context}}\ *ctxt);}
+\DoxyCodeLine{00455\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{classgimple__opt__pass}{gimple\_opt\_pass}}\ *\doxymbox{\hyperlink{tree-pass_8h_af36abe7b5bd512afe23695c6a8046686}{make\_pass\_optimize\_bswap}}\ (\doxymbox{\hyperlink{classgcc_1_1context}{gcc::context}}\ *ctxt);}
+\DoxyCodeLine{00456\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{classgimple__opt__pass}{gimple\_opt\_pass}}\ *\doxymbox{\hyperlink{tree-pass_8h_a3201a8f0d5eb8814919b55d1d67d1259}{make\_pass\_store\_merging}}\ (\doxymbox{\hyperlink{classgcc_1_1context}{gcc::context}}\ *ctxt);}
+\DoxyCodeLine{00457\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{classgimple__opt__pass}{gimple\_opt\_pass}}\ *\doxymbox{\hyperlink{tree-pass_8h_a0d7213a04f03b943f0f9bff30e61bce9}{make\_pass\_optimize\_widening\_mul}}\ (\doxymbox{\hyperlink{classgcc_1_1context}{gcc::context}}\ *ctxt);}
+\DoxyCodeLine{00458\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{classgimple__opt__pass}{gimple\_opt\_pass}}\ *\doxymbox{\hyperlink{tree-pass_8h_a745f6b018f30be3f25eb8bec01851891}{make\_pass\_warn\_function\_return}}\ (\doxymbox{\hyperlink{classgcc_1_1context}{gcc::context}}\ *ctxt);}
+\DoxyCodeLine{00459\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{classgimple__opt__pass}{gimple\_opt\_pass}}\ *\doxymbox{\hyperlink{tree-pass_8h_adfb2008da58cd69aa48d76c54283a06f}{make\_pass\_warn\_function\_noreturn}}\ (\doxymbox{\hyperlink{classgcc_1_1context}{gcc::context}}\ *ctxt);}
+\DoxyCodeLine{00460\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{classgimple__opt__pass}{gimple\_opt\_pass}}\ *\doxymbox{\hyperlink{tree-pass_8h_af3920235969a68770b4f9822300d870f}{make\_pass\_cselim}}\ (\doxymbox{\hyperlink{classgcc_1_1context}{gcc::context}}\ *ctxt);}
+\DoxyCodeLine{00461\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{classgimple__opt__pass}{gimple\_opt\_pass}}\ *\doxymbox{\hyperlink{tree-pass_8h_a4724d8bb0f33c07ed5eb7eefcd0d6b03}{make\_pass\_phiopt}}\ (\doxymbox{\hyperlink{classgcc_1_1context}{gcc::context}}\ *ctxt);}
+\DoxyCodeLine{00462\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{classgimple__opt__pass}{gimple\_opt\_pass}}\ *\doxymbox{\hyperlink{tree-pass_8h_a3e2d24bebbf68a04ed465ca682187da9}{make\_pass\_forwprop}}\ (\doxymbox{\hyperlink{classgcc_1_1context}{gcc::context}}\ *ctxt);}
+\DoxyCodeLine{00463\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{classgimple__opt__pass}{gimple\_opt\_pass}}\ *\doxymbox{\hyperlink{tree-pass_8h_a5b5a9705d7fb7eaff0b0865575c02f09}{make\_pass\_phiprop}}\ (\doxymbox{\hyperlink{classgcc_1_1context}{gcc::context}}\ *ctxt);}
+\DoxyCodeLine{00464\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{classgimple__opt__pass}{gimple\_opt\_pass}}\ *\doxymbox{\hyperlink{tree-pass_8h_a6a8cadfab24424df5bea6be257344687}{make\_pass\_tree\_ifcombine}}\ (\doxymbox{\hyperlink{classgcc_1_1context}{gcc::context}}\ *ctxt);}
+\DoxyCodeLine{00465\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{classgimple__opt__pass}{gimple\_opt\_pass}}\ *\doxymbox{\hyperlink{tree-pass_8h_a718b3759abacf86b4938dcb159b775c6}{make\_pass\_dse}}\ (\doxymbox{\hyperlink{classgcc_1_1context}{gcc::context}}\ *ctxt);}
+\DoxyCodeLine{00466\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{classgimple__opt__pass}{gimple\_opt\_pass}}\ *\doxymbox{\hyperlink{tree-pass_8h_afc0171b738381c8aa6c2dd9a2f2bdebb}{make\_pass\_nrv}}\ (\doxymbox{\hyperlink{classgcc_1_1context}{gcc::context}}\ *ctxt);}
+\DoxyCodeLine{00467\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{classgimple__opt__pass}{gimple\_opt\_pass}}\ *\doxymbox{\hyperlink{tree-pass_8h_a4dd8439980075a09970f4d8aec4939d3}{make\_pass\_rename\_ssa\_copies}}\ (\doxymbox{\hyperlink{classgcc_1_1context}{gcc::context}}\ *ctxt);}
+\DoxyCodeLine{00468\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{classgimple__opt__pass}{gimple\_opt\_pass}}\ *\doxymbox{\hyperlink{tree-pass_8h_a4f93434565d9acdbc9c287c1c284b91c}{make\_pass\_sink\_code}}\ (\doxymbox{\hyperlink{classgcc_1_1context}{gcc::context}}\ *ctxt);}
+\DoxyCodeLine{00469\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{classgimple__opt__pass}{gimple\_opt\_pass}}\ *\doxymbox{\hyperlink{tree-pass_8h_a629be1859e13e6c3610196be5ad41c5e}{make\_pass\_fre}}\ (\doxymbox{\hyperlink{classgcc_1_1context}{gcc::context}}\ *ctxt);}
+\DoxyCodeLine{00470\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{classgimple__opt__pass}{gimple\_opt\_pass}}\ *\doxymbox{\hyperlink{tree-pass_8h_a972ea735386070f73084aba074723b4e}{make\_pass\_check\_data\_deps}}\ (\doxymbox{\hyperlink{classgcc_1_1context}{gcc::context}}\ *ctxt);}
+\DoxyCodeLine{00471\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{classgimple__opt__pass}{gimple\_opt\_pass}}\ *\doxymbox{\hyperlink{tree-pass_8h_aa3a24ddb20871801679915873a05f191}{make\_pass\_copy\_prop}}\ (\doxymbox{\hyperlink{classgcc_1_1context}{gcc::context}}\ *ctxt);}
+\DoxyCodeLine{00472\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{classgimple__opt__pass}{gimple\_opt\_pass}}\ *\doxymbox{\hyperlink{tree-pass_8h_a4f01d51f800e1112e27cd7d360ddbc00}{make\_pass\_isolate\_erroneous\_paths}}\ (\doxymbox{\hyperlink{classgcc_1_1context}{gcc::context}}\ *ctxt);}
+\DoxyCodeLine{00473\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{classgimple__opt__pass}{gimple\_opt\_pass}}\ *\doxymbox{\hyperlink{tree-pass_8h_a78fc700996014245ef2d9f25d036a5cc}{make\_pass\_early\_vrp}}\ (\doxymbox{\hyperlink{classgcc_1_1context}{gcc::context}}\ *ctxt);}
+\DoxyCodeLine{00474\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{classgimple__opt__pass}{gimple\_opt\_pass}}\ *\doxymbox{\hyperlink{tree-pass_8h_ae7a074e864a8174528e21841873e2a52}{make\_pass\_fast\_vrp}}\ (\doxymbox{\hyperlink{classgcc_1_1context}{gcc::context}}\ *ctxt);}
+\DoxyCodeLine{00475\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{classgimple__opt__pass}{gimple\_opt\_pass}}\ *\doxymbox{\hyperlink{tree-pass_8h_a622e56b856cc457b098cbe7f26b2055d}{make\_pass\_vrp}}\ (\doxymbox{\hyperlink{classgcc_1_1context}{gcc::context}}\ *ctxt);}
+\DoxyCodeLine{00476\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{classgimple__opt__pass}{gimple\_opt\_pass}}\ *\doxymbox{\hyperlink{tree-pass_8h_af9be694b39fa3847e86e2a8c8d67e086}{make\_pass\_assumptions}}\ (\doxymbox{\hyperlink{classgcc_1_1context}{gcc::context}}\ *ctxt);}
+\DoxyCodeLine{00477\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{classgimple__opt__pass}{gimple\_opt\_pass}}\ *\doxymbox{\hyperlink{tree-pass_8h_ac628e7d376d5379ef5800b6dcbef40f2}{make\_pass\_uncprop}}\ (\doxymbox{\hyperlink{classgcc_1_1context}{gcc::context}}\ *ctxt);}
+\DoxyCodeLine{00478\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{classgimple__opt__pass}{gimple\_opt\_pass}}\ *\doxymbox{\hyperlink{tree-pass_8h_a13007e1b1e53cc0eb844d13ea4079ef0}{make\_pass\_return\_slot}}\ (\doxymbox{\hyperlink{classgcc_1_1context}{gcc::context}}\ *ctxt);}
+\DoxyCodeLine{00479\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{classgimple__opt__pass}{gimple\_opt\_pass}}\ *\doxymbox{\hyperlink{tree-pass_8h_a082c67c8a8ca694296fc419be25aa25b}{make\_pass\_reassoc}}\ (\doxymbox{\hyperlink{classgcc_1_1context}{gcc::context}}\ *ctxt);}
+\DoxyCodeLine{00480\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{classgimple__opt__pass}{gimple\_opt\_pass}}\ *\doxymbox{\hyperlink{tree-pass_8h_ae0901d8ae3c7d95ef9b54031214424e7}{make\_pass\_rebuild\_cgraph\_edges}}\ (\doxymbox{\hyperlink{classgcc_1_1context}{gcc::context}}\ *ctxt);}
+\DoxyCodeLine{00481\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{classgimple__opt__pass}{gimple\_opt\_pass}}\ *\doxymbox{\hyperlink{tree-pass_8h_affc9d6a9d824578e41f7c024d4b9f69e}{make\_pass\_remove\_cgraph\_callee\_edges}}\ (\doxymbox{\hyperlink{classgcc_1_1context}{gcc::context}}}
+\DoxyCodeLine{00482\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ *ctxt);}
+\DoxyCodeLine{00483\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{classgimple__opt__pass}{gimple\_opt\_pass}}\ *\doxymbox{\hyperlink{tree-pass_8h_aa066c8b52d78e8f63c3bf0a1d173de51}{make\_pass\_build\_cgraph\_edges}}\ (\doxymbox{\hyperlink{classgcc_1_1context}{gcc::context}}\ *ctxt);}
+\DoxyCodeLine{00484\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{classgimple__opt__pass}{gimple\_opt\_pass}}\ *\doxymbox{\hyperlink{tree-pass_8h_a7dd008495fa042b6438ad5f987154638}{make\_pass\_local\_pure\_const}}\ (\doxymbox{\hyperlink{classgcc_1_1context}{gcc::context}}\ *ctxt);}
+\DoxyCodeLine{00485\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{classgimple__opt__pass}{gimple\_opt\_pass}}\ *\doxymbox{\hyperlink{tree-pass_8h_a17c4e40e0039a685bf338c0f95f34f77}{make\_pass\_nothrow}}\ (\doxymbox{\hyperlink{classgcc_1_1context}{gcc::context}}\ *ctxt);}
+\DoxyCodeLine{00486\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{classgimple__opt__pass}{gimple\_opt\_pass}}\ *\doxymbox{\hyperlink{tree-pass_8h_a8ef60b09bc89d0a618e0a7d71f1942b5}{make\_pass\_tracer}}\ (\doxymbox{\hyperlink{classgcc_1_1context}{gcc::context}}\ *ctxt);}
+\DoxyCodeLine{00487\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{classgimple__opt__pass}{gimple\_opt\_pass}}\ *\doxymbox{\hyperlink{tree-pass_8h_ace5be899f0a6a0f68cf7001ff17938ed}{make\_pass\_warn\_restrict}}\ (\doxymbox{\hyperlink{classgcc_1_1context}{gcc::context}}\ *ctxt);}
+\DoxyCodeLine{00488\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{classgimple__opt__pass}{gimple\_opt\_pass}}\ *\doxymbox{\hyperlink{tree-pass_8h_a8bb04eeaa5a0ec84bb2af119c7e5d107}{make\_pass\_warn\_unused\_result}}\ (\doxymbox{\hyperlink{classgcc_1_1context}{gcc::context}}\ *ctxt);}
+\DoxyCodeLine{00489\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{classgimple__opt__pass}{gimple\_opt\_pass}}\ *\doxymbox{\hyperlink{tree-pass_8h_af10d0377e1ffe29516e3c78da39790f0}{make\_pass\_diagnose\_tm\_blocks}}\ (\doxymbox{\hyperlink{classgcc_1_1context}{gcc::context}}\ *ctxt);}
+\DoxyCodeLine{00490\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{classgimple__opt__pass}{gimple\_opt\_pass}}\ *\doxymbox{\hyperlink{tree-pass_8h_ac96ea88e1906217492074477a067fd27}{make\_pass\_lower\_tm}}\ (\doxymbox{\hyperlink{classgcc_1_1context}{gcc::context}}\ *ctxt);}
+\DoxyCodeLine{00491\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{classgimple__opt__pass}{gimple\_opt\_pass}}\ *\doxymbox{\hyperlink{tree-pass_8h_a535c8fa3b6705a4c49b5e86d18501744}{make\_pass\_tm\_init}}\ (\doxymbox{\hyperlink{classgcc_1_1context}{gcc::context}}\ *ctxt);}
+\DoxyCodeLine{00492\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{classgimple__opt__pass}{gimple\_opt\_pass}}\ *\doxymbox{\hyperlink{tree-pass_8h_a7c8215b82dd81b6cfdc2c5b4f43f8d29}{make\_pass\_tm\_mark}}\ (\doxymbox{\hyperlink{classgcc_1_1context}{gcc::context}}\ *ctxt);}
+\DoxyCodeLine{00493\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{classgimple__opt__pass}{gimple\_opt\_pass}}\ *\doxymbox{\hyperlink{tree-pass_8h_acb780262e46c2d0d57eb4c5150cbaf3d}{make\_pass\_tm\_memopt}}\ (\doxymbox{\hyperlink{classgcc_1_1context}{gcc::context}}\ *ctxt);}
+\DoxyCodeLine{00494\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{classgimple__opt__pass}{gimple\_opt\_pass}}\ *\doxymbox{\hyperlink{tree-pass_8h_a410c48f9f129520b91a390e21c71521d}{make\_pass\_tm\_edges}}\ (\doxymbox{\hyperlink{classgcc_1_1context}{gcc::context}}\ *ctxt);}
+\DoxyCodeLine{00495\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{classgimple__opt__pass}{gimple\_opt\_pass}}\ *\doxymbox{\hyperlink{tree-pass_8h_ab260b6261b6ca661eead97b041c284de}{make\_pass\_split\_functions}}\ (\doxymbox{\hyperlink{classgcc_1_1context}{gcc::context}}\ *ctxt);}
+\DoxyCodeLine{00496\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{classgimple__opt__pass}{gimple\_opt\_pass}}\ *\doxymbox{\hyperlink{tree-pass_8h_a725e63e7d68ec0f20fa05793ed1ec940}{make\_pass\_feedback\_split\_functions}}\ (\doxymbox{\hyperlink{classgcc_1_1context}{gcc::context}}\ *ctxt);}
+\DoxyCodeLine{00497\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{classgimple__opt__pass}{gimple\_opt\_pass}}\ *\doxymbox{\hyperlink{tree-pass_8h_a28fbec8ab309067bb19d0447fc9acbb7}{make\_pass\_strength\_reduction}}\ (\doxymbox{\hyperlink{classgcc_1_1context}{gcc::context}}\ *ctxt);}
+\DoxyCodeLine{00498\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{classgimple__opt__pass}{gimple\_opt\_pass}}\ *\doxymbox{\hyperlink{tree-pass_8h_a411df2f6e1c2823e87a8ff1f70ddf4b9}{make\_pass\_vtable\_verify}}\ (\doxymbox{\hyperlink{classgcc_1_1context}{gcc::context}}\ *ctxt);}
+\DoxyCodeLine{00499\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{classgimple__opt__pass}{gimple\_opt\_pass}}\ *\doxymbox{\hyperlink{tree-pass_8h_a5486c38accdefba7a6d2257525b5889a}{make\_pass\_ubsan}}\ (\doxymbox{\hyperlink{classgcc_1_1context}{gcc::context}}\ *ctxt);}
+\DoxyCodeLine{00500\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{classgimple__opt__pass}{gimple\_opt\_pass}}\ *\doxymbox{\hyperlink{tree-pass_8h_af61c79717399df5f9adef1b0614aa22b}{make\_pass\_sanopt}}\ (\doxymbox{\hyperlink{classgcc_1_1context}{gcc::context}}\ *ctxt);}
+\DoxyCodeLine{00501\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{classgimple__opt__pass}{gimple\_opt\_pass}}\ *\doxymbox{\hyperlink{tree-pass_8h_afb2b55935ac6a68bdd699361390787e7}{make\_pass\_oacc\_kernels}}\ (\doxymbox{\hyperlink{classgcc_1_1context}{gcc::context}}\ *ctxt);}
+\DoxyCodeLine{00502\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{classsimple__ipa__opt__pass}{simple\_ipa\_opt\_pass}}\ *\doxymbox{\hyperlink{tree-pass_8h_acf747ce16cef5ae1ad7054735db9041f}{make\_pass\_ipa\_oacc}}\ (\doxymbox{\hyperlink{classgcc_1_1context}{gcc::context}}\ *ctxt);}
+\DoxyCodeLine{00503\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{classsimple__ipa__opt__pass}{simple\_ipa\_opt\_pass}}\ *\doxymbox{\hyperlink{tree-pass_8h_a9c1834e568e6dfac40dd2f2d69ad8a73}{make\_pass\_ipa\_oacc\_kernels}}\ (\doxymbox{\hyperlink{classgcc_1_1context}{gcc::context}}\ *ctxt);}
+\DoxyCodeLine{00504\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{classgimple__opt__pass}{gimple\_opt\_pass}}\ *\doxymbox{\hyperlink{tree-pass_8h_a22e401b044232ebc84dd94447cee14bc}{make\_pass\_warn\_nonnull\_compare}}\ (\doxymbox{\hyperlink{classgcc_1_1context}{gcc::context}}\ *ctxt);}
+\DoxyCodeLine{00505\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{classgimple__opt__pass}{gimple\_opt\_pass}}\ *\doxymbox{\hyperlink{tree-pass_8h_a565e38c3b920cbf59da8b99868c00086}{make\_pass\_sprintf\_length}}\ (\doxymbox{\hyperlink{classgcc_1_1context}{gcc::context}}\ *ctxt);}
+\DoxyCodeLine{00506\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{classgimple__opt__pass}{gimple\_opt\_pass}}\ *\doxymbox{\hyperlink{tree-pass_8h_a8646299d6b0818912623e57027debf7d}{make\_pass\_walloca}}\ (\doxymbox{\hyperlink{classgcc_1_1context}{gcc::context}}\ *ctxt);}
+\DoxyCodeLine{00507\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{classgimple__opt__pass}{gimple\_opt\_pass}}\ *\doxymbox{\hyperlink{tree-pass_8h_a59ec46ec16a68f7ae36f17f721193cdc}{make\_pass\_modref}}\ (\doxymbox{\hyperlink{classgcc_1_1context}{gcc::context}}\ *ctxt);}
+\DoxyCodeLine{00508\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{classgimple__opt__pass}{gimple\_opt\_pass}}\ *\doxymbox{\hyperlink{tree-pass_8h_a724fc94e5e420413821613a8c0c1f8f9}{make\_pass\_coroutine\_lower\_builtins}}\ (\doxymbox{\hyperlink{classgcc_1_1context}{gcc::context}}\ *ctxt);}
+\DoxyCodeLine{00509\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{classgimple__opt__pass}{gimple\_opt\_pass}}\ *\doxymbox{\hyperlink{tree-pass_8h_af9f541829012e44f25a8500a667eb58b}{make\_pass\_coroutine\_early\_expand\_ifns}}\ (\doxymbox{\hyperlink{classgcc_1_1context}{gcc::context}}\ *ctxt);}
+\DoxyCodeLine{00510\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{classgimple__opt__pass}{gimple\_opt\_pass}}\ *\doxymbox{\hyperlink{tree-pass_8h_ab766dc0038afe9d9597b5575dd7735b3}{make\_pass\_adjust\_alignment}}\ (\doxymbox{\hyperlink{classgcc_1_1context}{gcc::context}}\ *ctxt);}
+\DoxyCodeLine{00511\ }
+\DoxyCodeLine{00512\ \textcolor{comment}{/*\ IPA\ Passes\ */}}
+\DoxyCodeLine{00513\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{classsimple__ipa__opt__pass}{simple\_ipa\_opt\_pass}}\ *\doxymbox{\hyperlink{tree-pass_8h_a6a601a75d21943c7bc07ecac693c06af}{make\_pass\_ipa\_lower\_emutls}}\ (\doxymbox{\hyperlink{classgcc_1_1context}{gcc::context}}\ *ctxt);}
+\DoxyCodeLine{00514\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{classsimple__ipa__opt__pass}{simple\_ipa\_opt\_pass}}\ *\doxymbox{\hyperlink{tree-pass_8h_a39be0ac9e92df910607e92c1f4396e1a}{make\_pass\_ipa\_function\_and\_variable\_visibility}}\ (\doxymbox{\hyperlink{classgcc_1_1context}{gcc::context}}\ *ctxt);}
+\DoxyCodeLine{00515\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{classsimple__ipa__opt__pass}{simple\_ipa\_opt\_pass}}\ *\doxymbox{\hyperlink{tree-pass_8h_ad68f6bddb289594ec983d0d3e18b7525}{make\_pass\_ipa\_strub\_mode}}\ (\doxymbox{\hyperlink{classgcc_1_1context}{gcc::context}}\ *ctxt);}
+\DoxyCodeLine{00516\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{classsimple__ipa__opt__pass}{simple\_ipa\_opt\_pass}}\ *\doxymbox{\hyperlink{tree-pass_8h_ad71613f4d69cf45e40ab433296d1f416}{make\_pass\_ipa\_strub}}\ (\doxymbox{\hyperlink{classgcc_1_1context}{gcc::context}}\ *ctxt);}
+\DoxyCodeLine{00517\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{classsimple__ipa__opt__pass}{simple\_ipa\_opt\_pass}}\ *\doxymbox{\hyperlink{tree-pass_8h_a07745bebf49f97f091666a585dcc86db}{make\_pass\_ipa\_tree\_profile}}\ (\doxymbox{\hyperlink{classgcc_1_1context}{gcc::context}}\ *ctxt);}
+\DoxyCodeLine{00518\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{classsimple__ipa__opt__pass}{simple\_ipa\_opt\_pass}}\ *\doxymbox{\hyperlink{tree-pass_8h_ad80d537941bc7b120fca4d5ecba1822f}{make\_pass\_ipa\_auto\_profile}}\ (\doxymbox{\hyperlink{classgcc_1_1context}{gcc::context}}\ *ctxt);}
+\DoxyCodeLine{00519\ }
+\DoxyCodeLine{00520\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{classsimple__ipa__opt__pass}{simple\_ipa\_opt\_pass}}\ *\doxymbox{\hyperlink{tree-pass_8h_a5c21f5eaac3526767ce83d645d88232c}{make\_pass\_build\_ssa\_passes}}\ (\doxymbox{\hyperlink{classgcc_1_1context}{gcc::context}}\ *ctxt);}
+\DoxyCodeLine{00521\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{classsimple__ipa__opt__pass}{simple\_ipa\_opt\_pass}}\ *\doxymbox{\hyperlink{tree-pass_8h_abed8ac8c5da181cf0fc10992a23d6224}{make\_pass\_local\_optimization\_passes}}\ (\doxymbox{\hyperlink{classgcc_1_1context}{gcc::context}}\ *ctxt);}
+\DoxyCodeLine{00522\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{classsimple__ipa__opt__pass}{simple\_ipa\_opt\_pass}}\ *\doxymbox{\hyperlink{tree-pass_8h_acfc56a57d5f6c0ae4b2199d520992f6b}{make\_pass\_ipa\_remove\_symbols}}\ (\doxymbox{\hyperlink{classgcc_1_1context}{gcc::context}}\ *ctxt);}
+\DoxyCodeLine{00523\ }
+\DoxyCodeLine{00524\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{classipa__opt__pass__d}{ipa\_opt\_pass\_d}}\ *\doxymbox{\hyperlink{tree-pass_8h_aaf70eb4ab7d0d4d58db80b0837c3eb27}{make\_pass\_analyzer}}\ (\doxymbox{\hyperlink{classgcc_1_1context}{gcc::context}}\ *ctxt);}
+\DoxyCodeLine{00525\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{classipa__opt__pass__d}{ipa\_opt\_pass\_d}}\ *\doxymbox{\hyperlink{tree-pass_8h_a14c020b08a168dae1457af9143f15242}{make\_pass\_ipa\_whole\_program\_visibility}}\ (\doxymbox{\hyperlink{classgcc_1_1context}{gcc::context}}}
+\DoxyCodeLine{00526\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ *ctxt);}
+\DoxyCodeLine{00527\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{classsimple__ipa__opt__pass}{simple\_ipa\_opt\_pass}}\ *\doxymbox{\hyperlink{tree-pass_8h_a584be03fe9e47ee74c69236a79ff7d9b}{make\_pass\_ipa\_increase\_alignment}}\ (\doxymbox{\hyperlink{classgcc_1_1context}{gcc::context}}}
+\DoxyCodeLine{00528\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ *ctxt);}
+\DoxyCodeLine{00529\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{classipa__opt__pass__d}{ipa\_opt\_pass\_d}}\ *\doxymbox{\hyperlink{tree-pass_8h_af7f292e62595fa08bfd2b31af8084fc3}{make\_pass\_ipa\_fn\_summary}}\ (\doxymbox{\hyperlink{classgcc_1_1context}{gcc::context}}\ *ctxt);}
+\DoxyCodeLine{00530\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{classipa__opt__pass__d}{ipa\_opt\_pass\_d}}\ *\doxymbox{\hyperlink{tree-pass_8h_a0ddcaf843071cf8380f0b0b0322c709e}{make\_pass\_ipa\_inline}}\ (\doxymbox{\hyperlink{classgcc_1_1context}{gcc::context}}\ *ctxt);}
+\DoxyCodeLine{00531\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{classsimple__ipa__opt__pass}{simple\_ipa\_opt\_pass}}\ *\doxymbox{\hyperlink{tree-pass_8h_a8d51b1a9649ea97f3b3256affa993fbc}{make\_pass\_ipa\_free\_lang\_data}}\ (\doxymbox{\hyperlink{classgcc_1_1context}{gcc::context}}\ *ctxt);}
+\DoxyCodeLine{00532\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{classsimple__ipa__opt__pass}{simple\_ipa\_opt\_pass}}\ *\doxymbox{\hyperlink{tree-pass_8h_aee815ddb618598b1796c6446bbc9a1b5}{make\_pass\_ipa\_free\_fn\_summary}}\ (\doxymbox{\hyperlink{classgcc_1_1context}{gcc::context}}\ *ctxt);}
+\DoxyCodeLine{00533\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{classipa__opt__pass__d}{ipa\_opt\_pass\_d}}\ *\doxymbox{\hyperlink{tree-pass_8h_ab44a83f95df0734b2aefea471f77231b}{make\_pass\_ipa\_cp}}\ (\doxymbox{\hyperlink{classgcc_1_1context}{gcc::context}}\ *ctxt);}
+\DoxyCodeLine{00534\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{classipa__opt__pass__d}{ipa\_opt\_pass\_d}}\ *\doxymbox{\hyperlink{tree-pass_8h_a49c2a70043b93c47ab0d2d964d491ea6}{make\_pass\_ipa\_sra}}\ (\doxymbox{\hyperlink{classgcc_1_1context}{gcc::context}}\ *ctxt);}
+\DoxyCodeLine{00535\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{classipa__opt__pass__d}{ipa\_opt\_pass\_d}}\ *\doxymbox{\hyperlink{tree-pass_8h_a23d3f56876a619302f6c5d251056d517}{make\_pass\_ipa\_icf}}\ (\doxymbox{\hyperlink{classgcc_1_1context}{gcc::context}}\ *ctxt);}
+\DoxyCodeLine{00536\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{classipa__opt__pass__d}{ipa\_opt\_pass\_d}}\ *\doxymbox{\hyperlink{tree-pass_8h_a298b6f57e6adaed171e4ea5b1950ca96}{make\_pass\_ipa\_devirt}}\ (\doxymbox{\hyperlink{classgcc_1_1context}{gcc::context}}\ *ctxt);}
+\DoxyCodeLine{00537\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{classipa__opt__pass__d}{ipa\_opt\_pass\_d}}\ *\doxymbox{\hyperlink{tree-pass_8h_a904aaee8975d45b222fc379dbbf3673b}{make\_pass\_ipa\_odr}}\ (\doxymbox{\hyperlink{classgcc_1_1context}{gcc::context}}\ *ctxt);}
+\DoxyCodeLine{00538\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{classipa__opt__pass__d}{ipa\_opt\_pass\_d}}\ *\doxymbox{\hyperlink{tree-pass_8h_ab7206f4bdebfc75626cfc58b1ac0cd7b}{make\_pass\_ipa\_reference}}\ (\doxymbox{\hyperlink{classgcc_1_1context}{gcc::context}}\ *ctxt);}
+\DoxyCodeLine{00539\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{classipa__opt__pass__d}{ipa\_opt\_pass\_d}}\ *\doxymbox{\hyperlink{tree-pass_8h_ae8bfce92ea6b66768d7cfcf6d8344c9c}{make\_pass\_ipa\_pure\_const}}\ (\doxymbox{\hyperlink{classgcc_1_1context}{gcc::context}}\ *ctxt);}
+\DoxyCodeLine{00540\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{classsimple__ipa__opt__pass}{simple\_ipa\_opt\_pass}}\ *\doxymbox{\hyperlink{tree-pass_8h_a7a5dcda09d8c7de6a8a5d152212bc26c}{make\_pass\_ipa\_pta}}\ (\doxymbox{\hyperlink{classgcc_1_1context}{gcc::context}}\ *ctxt);}
+\DoxyCodeLine{00541\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{classsimple__ipa__opt__pass}{simple\_ipa\_opt\_pass}}\ *\doxymbox{\hyperlink{tree-pass_8h_a5ecb3735041d2253ed4de67acae5dfb5}{make\_pass\_ipa\_tm}}\ (\doxymbox{\hyperlink{classgcc_1_1context}{gcc::context}}\ *ctxt);}
+\DoxyCodeLine{00542\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{classsimple__ipa__opt__pass}{simple\_ipa\_opt\_pass}}\ *\doxymbox{\hyperlink{tree-pass_8h_adf035c4b0b85c9d10f7b3d2bd12aec3a}{make\_pass\_target\_clone}}\ (\doxymbox{\hyperlink{classgcc_1_1context}{gcc::context}}\ *ctxt);}
+\DoxyCodeLine{00543\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{classsimple__ipa__opt__pass}{simple\_ipa\_opt\_pass}}\ *\doxymbox{\hyperlink{tree-pass_8h_a52614866cdf129fa946d38b698583b86}{make\_pass\_dispatcher\_calls}}\ (\doxymbox{\hyperlink{classgcc_1_1context}{gcc::context}}\ *ctxt);}
+\DoxyCodeLine{00544\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{classsimple__ipa__opt__pass}{simple\_ipa\_opt\_pass}}\ *\doxymbox{\hyperlink{tree-pass_8h_aa02ac3187bf5a81b5f33d44a5be4bb3d}{make\_pass\_omp\_simd\_clone}}\ (\doxymbox{\hyperlink{classgcc_1_1context}{gcc::context}}\ *ctxt);}
+\DoxyCodeLine{00545\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{classipa__opt__pass__d}{ipa\_opt\_pass\_d}}\ *\doxymbox{\hyperlink{tree-pass_8h_a6284a7ed0685e6385c3c0719094ae66d}{make\_pass\_ipa\_profile}}\ (\doxymbox{\hyperlink{classgcc_1_1context}{gcc::context}}\ *ctxt);}
+\DoxyCodeLine{00546\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{classipa__opt__pass__d}{ipa\_opt\_pass\_d}}\ *\doxymbox{\hyperlink{tree-pass_8h_a801669f398fd41c89f9cb06916cfceaf}{make\_pass\_ipa\_cdtor\_merge}}\ (\doxymbox{\hyperlink{classgcc_1_1context}{gcc::context}}\ *ctxt);}
+\DoxyCodeLine{00547\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{classipa__opt__pass__d}{ipa\_opt\_pass\_d}}\ *\doxymbox{\hyperlink{tree-pass_8h_a745eb8b0a0876ebc6b72c1226857fcae}{make\_pass\_ipa\_single\_use}}\ (\doxymbox{\hyperlink{classgcc_1_1context}{gcc::context}}\ *ctxt);}
+\DoxyCodeLine{00548\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{classipa__opt__pass__d}{ipa\_opt\_pass\_d}}\ *\doxymbox{\hyperlink{tree-pass_8h_a3f96a69ad53031f8bbaeafb571fc2e2f}{make\_pass\_ipa\_comdats}}\ (\doxymbox{\hyperlink{classgcc_1_1context}{gcc::context}}\ *ctxt);}
+\DoxyCodeLine{00549\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{classipa__opt__pass__d}{ipa\_opt\_pass\_d}}\ *\doxymbox{\hyperlink{tree-pass_8h_aac0d894e1406881f78dcd23e944c3cf6}{make\_pass\_ipa\_modref}}\ (\doxymbox{\hyperlink{classgcc_1_1context}{gcc::context}}\ *ctxt);}
+\DoxyCodeLine{00550\ }
+\DoxyCodeLine{00551\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{classgimple__opt__pass}{gimple\_opt\_pass}}\ *\doxymbox{\hyperlink{tree-pass_8h_aa8f95adae35f64acd2902780c3d4f896}{make\_pass\_cleanup\_cfg\_post\_optimizing}}\ (\doxymbox{\hyperlink{classgcc_1_1context}{gcc::context}}}
+\DoxyCodeLine{00552\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ *ctxt);}
+\DoxyCodeLine{00553\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{classgimple__opt__pass}{gimple\_opt\_pass}}\ *\doxymbox{\hyperlink{tree-pass_8h_a648cc71b2d44d219508319f6e00b736b}{make\_pass\_fixup\_cfg}}\ (\doxymbox{\hyperlink{classgcc_1_1context}{gcc::context}}\ *ctxt);}
+\DoxyCodeLine{00554\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{classgimple__opt__pass}{gimple\_opt\_pass}}\ *\doxymbox{\hyperlink{tree-pass_8h_ad93e9a951b007e5746ce188872ea75e6}{make\_pass\_backprop}}\ (\doxymbox{\hyperlink{classgcc_1_1context}{gcc::context}}\ *ctxt);}
+\DoxyCodeLine{00555\ }
+\DoxyCodeLine{00556\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{classrtl__opt__pass}{rtl\_opt\_pass}}\ *\doxymbox{\hyperlink{tree-pass_8h_ae5367f8188984c6ba741b000a4864296}{make\_pass\_expand}}\ (\doxymbox{\hyperlink{classgcc_1_1context}{gcc::context}}\ *ctxt);}
+\DoxyCodeLine{00557\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{classrtl__opt__pass}{rtl\_opt\_pass}}\ *\doxymbox{\hyperlink{tree-pass_8h_af9b96ac73d1bc946fd9c098595a49d8b}{make\_pass\_instantiate\_virtual\_regs}}\ (\doxymbox{\hyperlink{classgcc_1_1context}{gcc::context}}\ *ctxt);}
+\DoxyCodeLine{00558\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{classrtl__opt__pass}{rtl\_opt\_pass}}\ *\doxymbox{\hyperlink{tree-pass_8h_ad1bc34b5436585c17acd29363e15fa10}{make\_pass\_rtl\_fwprop}}\ (\doxymbox{\hyperlink{classgcc_1_1context}{gcc::context}}\ *ctxt);}
+\DoxyCodeLine{00559\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{classrtl__opt__pass}{rtl\_opt\_pass}}\ *\doxymbox{\hyperlink{tree-pass_8h_aafe81b6cd60da4894dc80aee4720c52c}{make\_pass\_rtl\_fwprop\_addr}}\ (\doxymbox{\hyperlink{classgcc_1_1context}{gcc::context}}\ *ctxt);}
+\DoxyCodeLine{00560\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{classrtl__opt__pass}{rtl\_opt\_pass}}\ *\doxymbox{\hyperlink{tree-pass_8h_a79052c65def0db877eedf04e5c46f59f}{make\_pass\_jump}}\ (\doxymbox{\hyperlink{classgcc_1_1context}{gcc::context}}\ *ctxt);}
+\DoxyCodeLine{00561\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{classrtl__opt__pass}{rtl\_opt\_pass}}\ *\doxymbox{\hyperlink{tree-pass_8h_ad9ef899f823f093703850a5b0aaf7516}{make\_pass\_jump2}}\ (\doxymbox{\hyperlink{classgcc_1_1context}{gcc::context}}\ *ctxt);}
+\DoxyCodeLine{00562\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{classrtl__opt__pass}{rtl\_opt\_pass}}\ *\doxymbox{\hyperlink{tree-pass_8h_a66cbf7524db8896a1c58e18c5d269a27}{make\_pass\_lower\_subreg}}\ (\doxymbox{\hyperlink{classgcc_1_1context}{gcc::context}}\ *ctxt);}
+\DoxyCodeLine{00563\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{classrtl__opt__pass}{rtl\_opt\_pass}}\ *\doxymbox{\hyperlink{tree-pass_8h_af2d64c25de9e98edf5046b33a4f5023c}{make\_pass\_cse}}\ (\doxymbox{\hyperlink{classgcc_1_1context}{gcc::context}}\ *ctxt);}
+\DoxyCodeLine{00564\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{classrtl__opt__pass}{rtl\_opt\_pass}}\ *\doxymbox{\hyperlink{tree-pass_8h_a9d0674e4336ca6ace02a7b3d90c9b61c}{make\_pass\_fast\_rtl\_dce}}\ (\doxymbox{\hyperlink{classgcc_1_1context}{gcc::context}}\ *ctxt);}
+\DoxyCodeLine{00565\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{classrtl__opt__pass}{rtl\_opt\_pass}}\ *\doxymbox{\hyperlink{tree-pass_8h_a8e5cd00c8637411b8e568d0a08ee7b7f}{make\_pass\_ud\_rtl\_dce}}\ (\doxymbox{\hyperlink{classgcc_1_1context}{gcc::context}}\ *ctxt);}
+\DoxyCodeLine{00566\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{classrtl__opt__pass}{rtl\_opt\_pass}}\ *\doxymbox{\hyperlink{tree-pass_8h_a53ae5640b8ff343ab46ffe5670643b17}{make\_pass\_rtl\_dce}}\ (\doxymbox{\hyperlink{classgcc_1_1context}{gcc::context}}\ *ctxt);}
+\DoxyCodeLine{00567\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{classrtl__opt__pass}{rtl\_opt\_pass}}\ *\doxymbox{\hyperlink{tree-pass_8h_a0322eaffdd4466e4856ff7cbddb462de}{make\_pass\_rtl\_dse1}}\ (\doxymbox{\hyperlink{classgcc_1_1context}{gcc::context}}\ *ctxt);}
+\DoxyCodeLine{00568\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{classrtl__opt__pass}{rtl\_opt\_pass}}\ *\doxymbox{\hyperlink{tree-pass_8h_a8dd43febe746207df15730af5f4a47e6}{make\_pass\_rtl\_dse2}}\ (\doxymbox{\hyperlink{classgcc_1_1context}{gcc::context}}\ *ctxt);}
+\DoxyCodeLine{00569\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{classrtl__opt__pass}{rtl\_opt\_pass}}\ *\doxymbox{\hyperlink{tree-pass_8h_a105e3e7fc576ec19747efcc0376aedd6}{make\_pass\_rtl\_dse3}}\ (\doxymbox{\hyperlink{classgcc_1_1context}{gcc::context}}\ *ctxt);}
+\DoxyCodeLine{00570\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{classrtl__opt__pass}{rtl\_opt\_pass}}\ *\doxymbox{\hyperlink{tree-pass_8h_a67f2f1c66a46b3b2a486228f9564502d}{make\_pass\_rtl\_cprop}}\ (\doxymbox{\hyperlink{classgcc_1_1context}{gcc::context}}\ *ctxt);}
+\DoxyCodeLine{00571\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{classrtl__opt__pass}{rtl\_opt\_pass}}\ *\doxymbox{\hyperlink{tree-pass_8h_a70eb156d2f861eb30bd3612f8d04f969}{make\_pass\_rtl\_pre}}\ (\doxymbox{\hyperlink{classgcc_1_1context}{gcc::context}}\ *ctxt);}
+\DoxyCodeLine{00572\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{classrtl__opt__pass}{rtl\_opt\_pass}}\ *\doxymbox{\hyperlink{tree-pass_8h_af4a15fdbc5a394eb96b9fccdf1090f44}{make\_pass\_rtl\_hoist}}\ (\doxymbox{\hyperlink{classgcc_1_1context}{gcc::context}}\ *ctxt);}
+\DoxyCodeLine{00573\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{classrtl__opt__pass}{rtl\_opt\_pass}}\ *\doxymbox{\hyperlink{tree-pass_8h_ab88a434ecd393384553e5331b5dc6b9b}{make\_pass\_rtl\_store\_motion}}\ (\doxymbox{\hyperlink{classgcc_1_1context}{gcc::context}}\ *ctxt);}
+\DoxyCodeLine{00574\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{classrtl__opt__pass}{rtl\_opt\_pass}}\ *\doxymbox{\hyperlink{tree-pass_8h_ab71d3425f2dfc8c0c04eff78cd7952e0}{make\_pass\_cse\_after\_global\_opts}}\ (\doxymbox{\hyperlink{classgcc_1_1context}{gcc::context}}\ *ctxt);}
+\DoxyCodeLine{00575\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{classrtl__opt__pass}{rtl\_opt\_pass}}\ *\doxymbox{\hyperlink{tree-pass_8h_ab04aaca0bda3c1aea2112c043a1a0ed6}{make\_pass\_rtl\_ifcvt}}\ (\doxymbox{\hyperlink{classgcc_1_1context}{gcc::context}}\ *ctxt);}
+\DoxyCodeLine{00576\ }
+\DoxyCodeLine{00577\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{classrtl__opt__pass}{rtl\_opt\_pass}}\ *\doxymbox{\hyperlink{tree-pass_8h_a254013056630470ea4048c413611f562}{make\_pass\_into\_cfg\_layout\_mode}}\ (\doxymbox{\hyperlink{classgcc_1_1context}{gcc::context}}\ *ctxt);}
+\DoxyCodeLine{00578\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{classrtl__opt__pass}{rtl\_opt\_pass}}\ *\doxymbox{\hyperlink{tree-pass_8h_aeabc660dd250c915f4090beb1ec75387}{make\_pass\_outof\_cfg\_layout\_mode}}\ (\doxymbox{\hyperlink{classgcc_1_1context}{gcc::context}}\ *ctxt);}
+\DoxyCodeLine{00579\ }
+\DoxyCodeLine{00580\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{classrtl__opt__pass}{rtl\_opt\_pass}}\ *\doxymbox{\hyperlink{tree-pass_8h_a8150788b828a10d7233085a3347c6c47}{make\_pass\_loop2}}\ (\doxymbox{\hyperlink{classgcc_1_1context}{gcc::context}}\ *ctxt);}
+\DoxyCodeLine{00581\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{classrtl__opt__pass}{rtl\_opt\_pass}}\ *\doxymbox{\hyperlink{tree-pass_8h_a4fcf4229ef7a9e807a562d334d229510}{make\_pass\_rtl\_loop\_init}}\ (\doxymbox{\hyperlink{classgcc_1_1context}{gcc::context}}\ *ctxt);}
+\DoxyCodeLine{00582\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{classrtl__opt__pass}{rtl\_opt\_pass}}\ *\doxymbox{\hyperlink{tree-pass_8h_acebab37a663d67f99486b60a8c55a9ca}{make\_pass\_rtl\_move\_loop\_invariants}}\ (\doxymbox{\hyperlink{classgcc_1_1context}{gcc::context}}\ *ctxt);}
+\DoxyCodeLine{00583\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{classrtl__opt__pass}{rtl\_opt\_pass}}\ *\doxymbox{\hyperlink{tree-pass_8h_af45d8ac06be39799c7523407c98e2e6b}{make\_pass\_rtl\_unroll\_loops}}\ (\doxymbox{\hyperlink{classgcc_1_1context}{gcc::context}}\ *ctxt);}
+\DoxyCodeLine{00584\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{classrtl__opt__pass}{rtl\_opt\_pass}}\ *\doxymbox{\hyperlink{tree-pass_8h_a1431162d5688557ae7a57b01aba25514}{make\_pass\_rtl\_doloop}}\ (\doxymbox{\hyperlink{classgcc_1_1context}{gcc::context}}\ *ctxt);}
+\DoxyCodeLine{00585\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{classrtl__opt__pass}{rtl\_opt\_pass}}\ *\doxymbox{\hyperlink{tree-pass_8h_aee8f7a01595c4f53efd8d3a0573c72e4}{make\_pass\_rtl\_loop\_done}}\ (\doxymbox{\hyperlink{classgcc_1_1context}{gcc::context}}\ *ctxt);}
+\DoxyCodeLine{00586\ }
+\DoxyCodeLine{00587\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{classrtl__opt__pass}{rtl\_opt\_pass}}\ *\doxymbox{\hyperlink{tree-pass_8h_a98e5343d2c6e3d39f503aaf90a6c8132}{make\_pass\_lower\_subreg2}}\ (\doxymbox{\hyperlink{classgcc_1_1context}{gcc::context}}\ *ctxt);}
+\DoxyCodeLine{00588\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{classrtl__opt__pass}{rtl\_opt\_pass}}\ *\doxymbox{\hyperlink{tree-pass_8h_a76bec727e34d76cc4dd069d2e6371349}{make\_pass\_web}}\ (\doxymbox{\hyperlink{classgcc_1_1context}{gcc::context}}\ *ctxt);}
+\DoxyCodeLine{00589\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{classrtl__opt__pass}{rtl\_opt\_pass}}\ *\doxymbox{\hyperlink{tree-pass_8h_ae5faf63e0e1a0468cc4eba253741bd91}{make\_pass\_cse2}}\ (\doxymbox{\hyperlink{classgcc_1_1context}{gcc::context}}\ *ctxt);}
+\DoxyCodeLine{00590\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{classrtl__opt__pass}{rtl\_opt\_pass}}\ *\doxymbox{\hyperlink{tree-pass_8h_ae8f53313d94547b6b520ee716789bba0}{make\_pass\_df\_initialize\_opt}}\ (\doxymbox{\hyperlink{classgcc_1_1context}{gcc::context}}\ *ctxt);}
+\DoxyCodeLine{00591\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{classrtl__opt__pass}{rtl\_opt\_pass}}\ *\doxymbox{\hyperlink{tree-pass_8h_ae69a737d1385eaa26647009994ba7540}{make\_pass\_df\_initialize\_no\_opt}}\ (\doxymbox{\hyperlink{classgcc_1_1context}{gcc::context}}\ *ctxt);}
+\DoxyCodeLine{00592\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{classrtl__opt__pass}{rtl\_opt\_pass}}\ *\doxymbox{\hyperlink{tree-pass_8h_aa305455a3877554e879d720ad6d6ec0b}{make\_pass\_reginfo\_init}}\ (\doxymbox{\hyperlink{classgcc_1_1context}{gcc::context}}\ *ctxt);}
+\DoxyCodeLine{00593\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{classrtl__opt__pass}{rtl\_opt\_pass}}\ *\doxymbox{\hyperlink{tree-pass_8h_ad124599d61dcfc890ad536b68dad7ebd}{make\_pass\_inc\_dec}}\ (\doxymbox{\hyperlink{classgcc_1_1context}{gcc::context}}\ *ctxt);}
+\DoxyCodeLine{00594\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{classrtl__opt__pass}{rtl\_opt\_pass}}\ *\doxymbox{\hyperlink{tree-pass_8h_a159fff399d3eb45ba63c6b3dcb473a87}{make\_pass\_stack\_ptr\_mod}}\ (\doxymbox{\hyperlink{classgcc_1_1context}{gcc::context}}\ *ctxt);}
+\DoxyCodeLine{00595\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{classrtl__opt__pass}{rtl\_opt\_pass}}\ *\doxymbox{\hyperlink{tree-pass_8h_a3c5c10c34337daac28adf0de58cdd431}{make\_pass\_initialize\_regs}}\ (\doxymbox{\hyperlink{classgcc_1_1context}{gcc::context}}\ *ctxt);}
+\DoxyCodeLine{00596\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{classrtl__opt__pass}{rtl\_opt\_pass}}\ *\doxymbox{\hyperlink{tree-pass_8h_a8518cb9353933cb98e62546c8fe27d8c}{make\_pass\_combine}}\ (\doxymbox{\hyperlink{classgcc_1_1context}{gcc::context}}\ *ctxt);}
+\DoxyCodeLine{00597\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{classrtl__opt__pass}{rtl\_opt\_pass}}\ *\doxymbox{\hyperlink{tree-pass_8h_a39027ed3c726e8307f4ac3e1c785350b}{make\_pass\_if\_after\_combine}}\ (\doxymbox{\hyperlink{classgcc_1_1context}{gcc::context}}\ *ctxt);}
+\DoxyCodeLine{00598\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{classrtl__opt__pass}{rtl\_opt\_pass}}\ *\doxymbox{\hyperlink{tree-pass_8h_a0d36137a55d20b9b2ab5ef26cc596b30}{make\_pass\_jump\_after\_combine}}\ (\doxymbox{\hyperlink{classgcc_1_1context}{gcc::context}}\ *ctxt);}
+\DoxyCodeLine{00599\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{classrtl__opt__pass}{rtl\_opt\_pass}}\ *\doxymbox{\hyperlink{tree-pass_8h_a334ac89f2486d348111f8d5bd110a888}{make\_pass\_ree}}\ (\doxymbox{\hyperlink{classgcc_1_1context}{gcc::context}}\ *ctxt);}
+\DoxyCodeLine{00600\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{classrtl__opt__pass}{rtl\_opt\_pass}}\ *\doxymbox{\hyperlink{tree-pass_8h_aef01417dad9c2f5c4798700e3d932d6a}{make\_pass\_partition\_blocks}}\ (\doxymbox{\hyperlink{classgcc_1_1context}{gcc::context}}\ *ctxt);}
+\DoxyCodeLine{00601\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{classrtl__opt__pass}{rtl\_opt\_pass}}\ *\doxymbox{\hyperlink{tree-pass_8h_adcbb7f1afca831619e900d8be22e0c65}{make\_pass\_match\_asm\_constraints}}\ (\doxymbox{\hyperlink{classgcc_1_1context}{gcc::context}}\ *ctxt);}
+\DoxyCodeLine{00602\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{classrtl__opt__pass}{rtl\_opt\_pass}}\ *\doxymbox{\hyperlink{tree-pass_8h_a5dde76f7dcce7c26424a99a6e4e43e84}{make\_pass\_split\_all\_insns}}\ (\doxymbox{\hyperlink{classgcc_1_1context}{gcc::context}}\ *ctxt);}
+\DoxyCodeLine{00603\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{classrtl__opt__pass}{rtl\_opt\_pass}}\ *\doxymbox{\hyperlink{tree-pass_8h_a588cdfd0753cbba8895941cbfe61383c}{make\_pass\_fast\_rtl\_byte\_dce}}\ (\doxymbox{\hyperlink{classgcc_1_1context}{gcc::context}}\ *ctxt);}
+\DoxyCodeLine{00604\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{classrtl__opt__pass}{rtl\_opt\_pass}}\ *\doxymbox{\hyperlink{tree-pass_8h_a1f20f6d9ce86a0861ba468f8f5a6f74f}{make\_pass\_lower\_subreg3}}\ (\doxymbox{\hyperlink{classgcc_1_1context}{gcc::context}}\ *ctxt);}
+\DoxyCodeLine{00605\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{classrtl__opt__pass}{rtl\_opt\_pass}}\ *\doxymbox{\hyperlink{tree-pass_8h_a14468f8c7622eb2cc16516849c55bd05}{make\_pass\_mode\_switching}}\ (\doxymbox{\hyperlink{classgcc_1_1context}{gcc::context}}\ *ctxt);}
+\DoxyCodeLine{00606\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{classrtl__opt__pass}{rtl\_opt\_pass}}\ *\doxymbox{\hyperlink{tree-pass_8h_a82b38e283ddfc476a725f936fe5482a9}{make\_pass\_sms}}\ (\doxymbox{\hyperlink{classgcc_1_1context}{gcc::context}}\ *ctxt);}
+\DoxyCodeLine{00607\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{classrtl__opt__pass}{rtl\_opt\_pass}}\ *\doxymbox{\hyperlink{tree-pass_8h_a7b8d77a6a6c68c887dd7093c46188bd0}{make\_pass\_sched}}\ (\doxymbox{\hyperlink{classgcc_1_1context}{gcc::context}}\ *ctxt);}
+\DoxyCodeLine{00608\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{classrtl__opt__pass}{rtl\_opt\_pass}}\ *\doxymbox{\hyperlink{tree-pass_8h_a32c9beadbae542270a37fb4bf44f71c9}{make\_pass\_live\_range\_shrinkage}}\ (\doxymbox{\hyperlink{classgcc_1_1context}{gcc::context}}\ *ctxt);}
+\DoxyCodeLine{00609\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{classrtl__opt__pass}{rtl\_opt\_pass}}\ *\doxymbox{\hyperlink{tree-pass_8h_ad1964146ca4559d3a5010fe55f35ddb3}{make\_pass\_early\_remat}}\ (\doxymbox{\hyperlink{classgcc_1_1context}{gcc::context}}\ *ctxt);}
+\DoxyCodeLine{00610\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{classrtl__opt__pass}{rtl\_opt\_pass}}\ *\doxymbox{\hyperlink{tree-pass_8h_a00fa924a844e7c4bbd88c9510a92d0cd}{make\_pass\_ira}}\ (\doxymbox{\hyperlink{classgcc_1_1context}{gcc::context}}\ *ctxt);}
+\DoxyCodeLine{00611\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{classrtl__opt__pass}{rtl\_opt\_pass}}\ *\doxymbox{\hyperlink{tree-pass_8h_a904ae62cce9d62712e71d3bf13f984e6}{make\_pass\_reload}}\ (\doxymbox{\hyperlink{classgcc_1_1context}{gcc::context}}\ *ctxt);}
+\DoxyCodeLine{00612\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{classrtl__opt__pass}{rtl\_opt\_pass}}\ *\doxymbox{\hyperlink{tree-pass_8h_a1d3cdc849f24b916fd129524d058caa7}{make\_pass\_clean\_state}}\ (\doxymbox{\hyperlink{classgcc_1_1context}{gcc::context}}\ *ctxt);}
+\DoxyCodeLine{00613\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{classrtl__opt__pass}{rtl\_opt\_pass}}\ *\doxymbox{\hyperlink{tree-pass_8h_a91abfd4e55939ed29653549108aac839}{make\_pass\_branch\_prob}}\ (\doxymbox{\hyperlink{classgcc_1_1context}{gcc::context}}\ *ctxt);}
+\DoxyCodeLine{00614\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{classrtl__opt__pass}{rtl\_opt\_pass}}\ *\doxymbox{\hyperlink{tree-pass_8h_a753b0c56c839e77944e36509b6c0c741}{make\_pass\_value\_profile\_transformations}}\ (\doxymbox{\hyperlink{classgcc_1_1context}{gcc::context}}}
+\DoxyCodeLine{00615\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ *ctxt);}
+\DoxyCodeLine{00616\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{classrtl__opt__pass}{rtl\_opt\_pass}}\ *\doxymbox{\hyperlink{tree-pass_8h_ae715e53bf2be333fefdfab10efb9b4c9}{make\_pass\_postreload\_cse}}\ (\doxymbox{\hyperlink{classgcc_1_1context}{gcc::context}}\ *ctxt);}
+\DoxyCodeLine{00617\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{classrtl__opt__pass}{rtl\_opt\_pass}}\ *\doxymbox{\hyperlink{tree-pass_8h_a7090a031b2db7b10fbace2ae9e534be8}{make\_pass\_gcse2}}\ (\doxymbox{\hyperlink{classgcc_1_1context}{gcc::context}}\ *ctxt);}
+\DoxyCodeLine{00618\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{classrtl__opt__pass}{rtl\_opt\_pass}}\ *\doxymbox{\hyperlink{tree-pass_8h_ac28abe205714c3fa99e343884390b7d5}{make\_pass\_split\_after\_reload}}\ (\doxymbox{\hyperlink{classgcc_1_1context}{gcc::context}}\ *ctxt);}
+\DoxyCodeLine{00619\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{classrtl__opt__pass}{rtl\_opt\_pass}}\ *\doxymbox{\hyperlink{tree-pass_8h_afa4ffd8734ca440e155b1de952599af9}{make\_pass\_thread\_prologue\_and\_epilogue}}\ (\doxymbox{\hyperlink{classgcc_1_1context}{gcc::context}}}
+\DoxyCodeLine{00620\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ *ctxt);}
+\DoxyCodeLine{00621\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{classrtl__opt__pass}{rtl\_opt\_pass}}\ *\doxymbox{\hyperlink{tree-pass_8h_ac833fd675657779634ca7aea8a9b1131}{make\_pass\_late\_thread\_prologue\_and\_epilogue}}\ (\doxymbox{\hyperlink{classgcc_1_1context}{gcc::context}}}
+\DoxyCodeLine{00622\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ *ctxt);}
+\DoxyCodeLine{00623\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{classrtl__opt__pass}{rtl\_opt\_pass}}\ *\doxymbox{\hyperlink{tree-pass_8h_a1c263aad7621c5c1f896fcb18b0ee6db}{make\_pass\_zero\_call\_used\_regs}}\ (\doxymbox{\hyperlink{classgcc_1_1context}{gcc::context}}\ *ctxt);}
+\DoxyCodeLine{00624\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{classrtl__opt__pass}{rtl\_opt\_pass}}\ *\doxymbox{\hyperlink{tree-pass_8h_acca0036e29abb14acf901ae59542a9c1}{make\_pass\_stack\_adjustments}}\ (\doxymbox{\hyperlink{classgcc_1_1context}{gcc::context}}\ *ctxt);}
+\DoxyCodeLine{00625\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{classrtl__opt__pass}{rtl\_opt\_pass}}\ *\doxymbox{\hyperlink{tree-pass_8h_afd46ecb0a0e541a7d6de0c56fa394bc1}{make\_pass\_sched\_fusion}}\ (\doxymbox{\hyperlink{classgcc_1_1context}{gcc::context}}\ *ctxt);}
+\DoxyCodeLine{00626\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{classrtl__opt__pass}{rtl\_opt\_pass}}\ *\doxymbox{\hyperlink{tree-pass_8h_af229a65bf46236e4109f63deebb75392}{make\_pass\_peephole2}}\ (\doxymbox{\hyperlink{classgcc_1_1context}{gcc::context}}\ *ctxt);}
+\DoxyCodeLine{00627\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{classrtl__opt__pass}{rtl\_opt\_pass}}\ *\doxymbox{\hyperlink{tree-pass_8h_a2072c81621f5594c4558a7354db19899}{make\_pass\_if\_after\_reload}}\ (\doxymbox{\hyperlink{classgcc_1_1context}{gcc::context}}\ *ctxt);}
+\DoxyCodeLine{00628\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{classrtl__opt__pass}{rtl\_opt\_pass}}\ *\doxymbox{\hyperlink{tree-pass_8h_a384f1e3dc7ea318c54c11c020d9029e9}{make\_pass\_regrename}}\ (\doxymbox{\hyperlink{classgcc_1_1context}{gcc::context}}\ *ctxt);}
+\DoxyCodeLine{00629\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{classrtl__opt__pass}{rtl\_opt\_pass}}\ *\doxymbox{\hyperlink{tree-pass_8h_a73c40f10d243210ea45bc282b9a4f0f0}{make\_pass\_fold\_mem\_offsets}}\ (\doxymbox{\hyperlink{classgcc_1_1context}{gcc::context}}\ *ctxt);}
+\DoxyCodeLine{00630\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{classrtl__opt__pass}{rtl\_opt\_pass}}\ *\doxymbox{\hyperlink{tree-pass_8h_a3fef465831ec00d6bee28cf0862399e0}{make\_pass\_cprop\_hardreg}}\ (\doxymbox{\hyperlink{classgcc_1_1context}{gcc::context}}\ *ctxt);}
+\DoxyCodeLine{00631\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{classrtl__opt__pass}{rtl\_opt\_pass}}\ *\doxymbox{\hyperlink{tree-pass_8h_a5fec4fc993ed7db8fa4344ecdf778f92}{make\_pass\_reorder\_blocks}}\ (\doxymbox{\hyperlink{classgcc_1_1context}{gcc::context}}\ *ctxt);}
+\DoxyCodeLine{00632\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{classrtl__opt__pass}{rtl\_opt\_pass}}\ *\doxymbox{\hyperlink{tree-pass_8h_ab22cccc074f2611c621597ccef5b4e9c}{make\_pass\_leaf\_regs}}\ (\doxymbox{\hyperlink{classgcc_1_1context}{gcc::context}}\ *ctxt);}
+\DoxyCodeLine{00633\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{classrtl__opt__pass}{rtl\_opt\_pass}}\ *\doxymbox{\hyperlink{tree-pass_8h_a6a4a87feb6fe55f33611b43d894ad317}{make\_pass\_split\_before\_sched2}}\ (\doxymbox{\hyperlink{classgcc_1_1context}{gcc::context}}\ *ctxt);}
+\DoxyCodeLine{00634\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{classrtl__opt__pass}{rtl\_opt\_pass}}\ *\doxymbox{\hyperlink{tree-pass_8h_a3424166c3868819b6e84acae03908538}{make\_pass\_compare\_elim\_after\_reload}}\ (\doxymbox{\hyperlink{classgcc_1_1context}{gcc::context}}\ *ctxt);}
+\DoxyCodeLine{00635\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{classrtl__opt__pass}{rtl\_opt\_pass}}\ *\doxymbox{\hyperlink{tree-pass_8h_ae825e1fda94bda413d895228b4d2430b}{make\_pass\_sched2}}\ (\doxymbox{\hyperlink{classgcc_1_1context}{gcc::context}}\ *ctxt);}
+\DoxyCodeLine{00636\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{classrtl__opt__pass}{rtl\_opt\_pass}}\ *\doxymbox{\hyperlink{tree-pass_8h_a8d13016414569096f939f54e4c3580b8}{make\_pass\_stack\_regs}}\ (\doxymbox{\hyperlink{classgcc_1_1context}{gcc::context}}\ *ctxt);}
+\DoxyCodeLine{00637\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{classrtl__opt__pass}{rtl\_opt\_pass}}\ *\doxymbox{\hyperlink{tree-pass_8h_a4758d0a461f17da9bf6ea68e288f6055}{make\_pass\_stack\_regs\_run}}\ (\doxymbox{\hyperlink{classgcc_1_1context}{gcc::context}}\ *ctxt);}
+\DoxyCodeLine{00638\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{classrtl__opt__pass}{rtl\_opt\_pass}}\ *\doxymbox{\hyperlink{tree-pass_8h_aac1af12fbb8ca091a93a1f4a61600b58}{make\_pass\_df\_finish}}\ (\doxymbox{\hyperlink{classgcc_1_1context}{gcc::context}}\ *ctxt);}
+\DoxyCodeLine{00639\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{classrtl__opt__pass}{rtl\_opt\_pass}}\ *\doxymbox{\hyperlink{tree-pass_8h_aa138e5da4aa2464483652b87799471c1}{make\_pass\_compute\_alignments}}\ (\doxymbox{\hyperlink{classgcc_1_1context}{gcc::context}}\ *ctxt);}
+\DoxyCodeLine{00640\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{classrtl__opt__pass}{rtl\_opt\_pass}}\ *\doxymbox{\hyperlink{tree-pass_8h_a9a227402bfcde2deb3175c719ee3dec6}{make\_pass\_duplicate\_computed\_gotos}}\ (\doxymbox{\hyperlink{classgcc_1_1context}{gcc::context}}\ *ctxt);}
+\DoxyCodeLine{00641\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{classrtl__opt__pass}{rtl\_opt\_pass}}\ *\doxymbox{\hyperlink{tree-pass_8h_ab873a507668bd4d6104ba3ed660fe11d}{make\_pass\_variable\_tracking}}\ (\doxymbox{\hyperlink{classgcc_1_1context}{gcc::context}}\ *ctxt);}
+\DoxyCodeLine{00642\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{classrtl__opt__pass}{rtl\_opt\_pass}}\ *\doxymbox{\hyperlink{tree-pass_8h_a14d24c7220d2ff9d178f131dd29e81bc}{make\_pass\_free\_cfg}}\ (\doxymbox{\hyperlink{classgcc_1_1context}{gcc::context}}\ *ctxt);}
+\DoxyCodeLine{00643\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{classrtl__opt__pass}{rtl\_opt\_pass}}\ *\doxymbox{\hyperlink{tree-pass_8h_a82f97832665d66e7085d847a99ab9e4c}{make\_pass\_machine\_reorg}}\ (\doxymbox{\hyperlink{classgcc_1_1context}{gcc::context}}\ *ctxt);}
+\DoxyCodeLine{00644\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{classrtl__opt__pass}{rtl\_opt\_pass}}\ *\doxymbox{\hyperlink{tree-pass_8h_a8162030af904561a3594203ac37f7823}{make\_pass\_cleanup\_barriers}}\ (\doxymbox{\hyperlink{classgcc_1_1context}{gcc::context}}\ *ctxt);}
+\DoxyCodeLine{00645\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{classrtl__opt__pass}{rtl\_opt\_pass}}\ *\doxymbox{\hyperlink{tree-pass_8h_a73f5ea014a07aae748e56231c6c4b696}{make\_pass\_delay\_slots}}\ (\doxymbox{\hyperlink{classgcc_1_1context}{gcc::context}}\ *ctxt);}
+\DoxyCodeLine{00646\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{classrtl__opt__pass}{rtl\_opt\_pass}}\ *\doxymbox{\hyperlink{tree-pass_8h_a0db68d95a388e1fa98f825fbff9fc56a}{make\_pass\_split\_for\_shorten\_branches}}\ (\doxymbox{\hyperlink{classgcc_1_1context}{gcc::context}}\ *ctxt);}
+\DoxyCodeLine{00647\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{classrtl__opt__pass}{rtl\_opt\_pass}}\ *\doxymbox{\hyperlink{tree-pass_8h_a01c9f6a57b857c7b9208b059f7ef7058}{make\_pass\_split\_before\_regstack}}\ (\doxymbox{\hyperlink{classgcc_1_1context}{gcc::context}}\ *ctxt);}
+\DoxyCodeLine{00648\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{classrtl__opt__pass}{rtl\_opt\_pass}}\ *\doxymbox{\hyperlink{tree-pass_8h_a2c68d3943ebf7d137e5f9a2636de134c}{make\_pass\_convert\_to\_eh\_region\_ranges}}\ (\doxymbox{\hyperlink{classgcc_1_1context}{gcc::context}}\ *ctxt);}
+\DoxyCodeLine{00649\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{classrtl__opt__pass}{rtl\_opt\_pass}}\ *\doxymbox{\hyperlink{tree-pass_8h_a7da9d7bc82b4cf366e594593f1cc27cf}{make\_pass\_shorten\_branches}}\ (\doxymbox{\hyperlink{classgcc_1_1context}{gcc::context}}\ *ctxt);}
+\DoxyCodeLine{00650\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{classrtl__opt__pass}{rtl\_opt\_pass}}\ *\doxymbox{\hyperlink{tree-pass_8h_abad294e99d6875aeda908bfe32c0bec9}{make\_pass\_set\_nothrow\_function\_flags}}\ (\doxymbox{\hyperlink{classgcc_1_1context}{gcc::context}}\ *ctxt);}
+\DoxyCodeLine{00651\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{classrtl__opt__pass}{rtl\_opt\_pass}}\ *\doxymbox{\hyperlink{tree-pass_8h_aa15e63600bbdf6822a119e90ffc9f419}{make\_pass\_dwarf2\_frame}}\ (\doxymbox{\hyperlink{classgcc_1_1context}{gcc::context}}\ *ctxt);}
+\DoxyCodeLine{00652\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{classrtl__opt__pass}{rtl\_opt\_pass}}\ *\doxymbox{\hyperlink{tree-pass_8h_ac234c8b370750091e9a17c881a6c527a}{make\_pass\_final}}\ (\doxymbox{\hyperlink{classgcc_1_1context}{gcc::context}}\ *ctxt);}
+\DoxyCodeLine{00653\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{classrtl__opt__pass}{rtl\_opt\_pass}}\ *\doxymbox{\hyperlink{tree-pass_8h_a9583321df1bc65f250058cefb2b35595}{make\_pass\_rtl\_seqabstr}}\ (\doxymbox{\hyperlink{classgcc_1_1context}{gcc::context}}\ *ctxt);}
+\DoxyCodeLine{00654\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{classgimple__opt__pass}{gimple\_opt\_pass}}\ *\doxymbox{\hyperlink{tree-pass_8h_a77e253d88b3b874542db7a07db1f168d}{make\_pass\_release\_ssa\_names}}\ (\doxymbox{\hyperlink{classgcc_1_1context}{gcc::context}}\ *ctxt);}
+\DoxyCodeLine{00655\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{classgimple__opt__pass}{gimple\_opt\_pass}}\ *\doxymbox{\hyperlink{tree-pass_8h_acc4dcd267ef13f31035fd08b061e455a}{make\_pass\_early\_inline}}\ (\doxymbox{\hyperlink{classgcc_1_1context}{gcc::context}}\ *ctxt);}
+\DoxyCodeLine{00656\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{classgimple__opt__pass}{gimple\_opt\_pass}}\ *\doxymbox{\hyperlink{tree-pass_8h_a72709af1af51dc83b0c6b2f84b667552}{make\_pass\_local\_fn\_summary}}\ (\doxymbox{\hyperlink{classgcc_1_1context}{gcc::context}}\ *ctxt);}
+\DoxyCodeLine{00657\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{classgimple__opt__pass}{gimple\_opt\_pass}}\ *\doxymbox{\hyperlink{tree-pass_8h_a896da5bde24281f4ad7d1aab86d1a7fd}{make\_pass\_update\_address\_taken}}\ (\doxymbox{\hyperlink{classgcc_1_1context}{gcc::context}}\ *ctxt);}
+\DoxyCodeLine{00658\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{classgimple__opt__pass}{gimple\_opt\_pass}}\ *\doxymbox{\hyperlink{tree-pass_8h_a86de68919dc240016b3b7fae64095d2e}{make\_pass\_convert\_switch}}\ (\doxymbox{\hyperlink{classgcc_1_1context}{gcc::context}}\ *ctxt);}
+\DoxyCodeLine{00659\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{classgimple__opt__pass}{gimple\_opt\_pass}}\ *\doxymbox{\hyperlink{tree-pass_8h_a2f7f82d4e7781575cbfca8e191572a51}{make\_pass\_lower\_vaarg}}\ (\doxymbox{\hyperlink{classgcc_1_1context}{gcc::context}}\ *ctxt);}
+\DoxyCodeLine{00660\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{classgimple__opt__pass}{gimple\_opt\_pass}}\ *\doxymbox{\hyperlink{tree-pass_8h_a10fb552a5499b9a55ac3e73cce6ac57d}{make\_pass\_gimple\_isel}}\ (\doxymbox{\hyperlink{classgcc_1_1context}{gcc::context}}\ *ctxt);}
+\DoxyCodeLine{00661\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{classgimple__opt__pass}{gimple\_opt\_pass}}\ *\doxymbox{\hyperlink{tree-pass_8h_a82c5c93a10ac22d031a4184bdde8eeac}{make\_pass\_harden\_compares}}\ (\doxymbox{\hyperlink{classgcc_1_1context}{gcc::context}}\ *ctxt);}
+\DoxyCodeLine{00662\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{classgimple__opt__pass}{gimple\_opt\_pass}}\ *\doxymbox{\hyperlink{tree-pass_8h_a6d59625715d2410750e93071af2b080c}{make\_pass\_harden\_conditional\_branches}}\ (\doxymbox{\hyperlink{classgcc_1_1context}{gcc::context}}}
+\DoxyCodeLine{00663\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ *ctxt);}
+\DoxyCodeLine{00664\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{classgimple__opt__pass}{gimple\_opt\_pass}}\ *\doxymbox{\hyperlink{tree-pass_8h_a25f963462e62dda4a8e66380c2dfc838}{make\_pass\_harden\_control\_flow\_redundancy}}\ (\doxymbox{\hyperlink{classgcc_1_1context}{gcc::context}}}
+\DoxyCodeLine{00665\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ *ctxt);}
+\DoxyCodeLine{00666\ }
+\DoxyCodeLine{00667\ \textcolor{comment}{/*\ Current\ optimization\ pass.\ \ */}}
+\DoxyCodeLine{00668\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{classopt__pass}{opt\_pass}}\ *\doxymbox{\hyperlink{tree-pass_8h_abb1a36d5388908113335c2ff37daab10}{current\_pass}};}
+\DoxyCodeLine{00669\ }
+\DoxyCodeLine{00670\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{tree-pass_8h_a2b587ba69620e9d764ab4dd613eb0b10}{execute\_one\_pass}}\ (\doxymbox{\hyperlink{classopt__pass}{opt\_pass}}\ *);}
+\DoxyCodeLine{00671\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{tree-pass_8h_ad9b1d4f3b85cbc534a5feadb0f09ac69}{execute\_pass\_list}}\ (function\ *,\ \doxymbox{\hyperlink{classopt__pass}{opt\_pass}}\ *);}
+\DoxyCodeLine{00672\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{tree-pass_8h_a61361bcf04bff25882d26e3068cd5423}{execute\_ipa\_pass\_list}}\ (\doxymbox{\hyperlink{classopt__pass}{opt\_pass}}\ *);}
+\DoxyCodeLine{00673\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{tree-pass_8h_aca394dbb14ae254877f38aa8e798c2b4}{execute\_ipa\_summary\_passes}}\ (\doxymbox{\hyperlink{classipa__opt__pass__d}{ipa\_opt\_pass\_d}}\ *);}
+\DoxyCodeLine{00674\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{tree-pass_8h_a5b2e750ba20a9fa3c0a6db208bda90f1}{execute\_all\_ipa\_transforms}}\ (\textcolor{keywordtype}{bool});}
+\DoxyCodeLine{00675\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{tree-pass_8h_a9f7a63b1af2e093de4415b3a24a0e395}{execute\_all\_ipa\_stmt\_fixups}}\ (\textcolor{keyword}{struct}\ cgraph\_node\ *,\ gimple\ **);}
+\DoxyCodeLine{00676\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{tree-pass_8h_af28b957d99eb70a5a13a49bb3b161402}{pass\_init\_dump\_file}}\ (\doxymbox{\hyperlink{classopt__pass}{opt\_pass}}\ *);}
+\DoxyCodeLine{00677\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{tree-pass_8h_a8718eaa647518822694fbf595636203a}{pass\_fini\_dump\_file}}\ (\doxymbox{\hyperlink{classopt__pass}{opt\_pass}}\ *);}
+\DoxyCodeLine{00678\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{tree-pass_8h_a3878015f9e4fa36dcac46e233e8f9c9a}{emergency\_dump\_function}}\ (\textcolor{keywordtype}{void});}
+\DoxyCodeLine{00679\ }
+\DoxyCodeLine{00680\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{tree-pass_8h_a37a5076386ca1d337204c68bcd372208}{print\_current\_pass}}\ (FILE\ *);}
+\DoxyCodeLine{00681\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{tree-pass_8h_a429961cefe03458df61f11269df96951}{debug\_pass}}\ (\textcolor{keywordtype}{void});}
+\DoxyCodeLine{00682\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{tree-pass_8h_af073a8ef375ea140256a46387bc87c35}{ipa\_write\_summaries}}\ (\textcolor{keywordtype}{void});}
+\DoxyCodeLine{00683\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{tree-pass_8h_a9941c4c96de686388f72cd149229583d}{ipa\_write\_optimization\_summaries}}\ (\textcolor{keyword}{struct}\ \doxymbox{\hyperlink{structlto__symtab__encoder__d}{lto\_symtab\_encoder\_d}}\ *);}
+\DoxyCodeLine{00684\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{tree-pass_8h_a9b1a0dc90747bdaffcd30383a30b9ab5}{ipa\_read\_summaries}}\ (\textcolor{keywordtype}{void});}
+\DoxyCodeLine{00685\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{tree-pass_8h_ad72494beb6a2582f13a9adc9d6d33946}{ipa\_read\_optimization\_summaries}}\ (\textcolor{keywordtype}{void});}
+\DoxyCodeLine{00686\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{tree-pass_8h_a6725d41bc613d0a40646e342378afd6f}{register\_one\_dump\_file}}\ (\doxymbox{\hyperlink{classopt__pass}{opt\_pass}}\ *);}
+\DoxyCodeLine{00687\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{tree-pass_8h_aba7f9f27e6c560551f9c9759f23ddb22}{function\_called\_by\_processed\_nodes\_p}}\ (\textcolor{keywordtype}{void});}
+\DoxyCodeLine{00688\ }
+\DoxyCodeLine{00689\ \textcolor{comment}{/*\ Declare\ for\ plugins.\ \ */}}
+\DoxyCodeLine{00690\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{tree-pass_8h_a2242eac8bf4488a41c348bc27b91bb76}{do\_per\_function\_toporder}}\ (\textcolor{keywordtype}{void}\ (*)\ (function\ *,\ \textcolor{keywordtype}{void}\ *),\ \textcolor{keywordtype}{void}\ *);}
+\DoxyCodeLine{00691\ }
+\DoxyCodeLine{00692\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{tree-pass_8h_ab7b69d4a7f9356a52923fa77f6011cb7}{disable\_pass}}\ (\textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *);}
+\DoxyCodeLine{00693\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{tree-pass_8h_afc42af5d61b4487bb0658887c093f622}{enable\_pass}}\ (\textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *);}
+\DoxyCodeLine{00694\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{tree-pass_8h_a382f6b374ec333a5b1c09446e9f5a3d2}{dump\_passes}}\ (\textcolor{keywordtype}{void});}
+\DoxyCodeLine{00695\ }
+\DoxyCodeLine{00696\ \textcolor{preprocessor}{\#endif\ }\textcolor{comment}{/*\ GCC\_TREE\_PASS\_H\ */}\textcolor{preprocessor}{}}
+
+\end{DoxyCode}

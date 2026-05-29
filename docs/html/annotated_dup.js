@@ -1,5 +1,6 @@
 var annotated_dup =
 [
+    [ "GDTDescriptor", "structGDTDescriptor.html", "structGDTDescriptor" ],
     [ "KFramebuffer", "structKFramebuffer.html", "structKFramebuffer" ],
     [ "KRenderer", "structKRenderer.html", "structKRenderer" ],
     [ "limine_bootloader_info_request", "structlimine__bootloader__info__request.html", "structlimine__bootloader__info__request" ],
@@ -59,5 +60,8 @@ var annotated_dup =
     [ "limine_x86_64_keep_iommu_request", "structlimine__x86__64__keep__iommu__request.html", "structlimine__x86__64__keep__iommu__request" ],
     [ "limine_x86_64_keep_iommu_response", "structlimine__x86__64__keep__iommu__response.html", "structlimine__x86__64__keep__iommu__response" ],
     [ "PSF1_Font", "structPSF1__Font.html", "structPSF1__Font" ],
-    [ "PSF1_Header", "structPSF1__Header.html", "structPSF1__Header" ]
+    [ "PSF1_Header", "structPSF1__Header.html", "structPSF1__Header" ],
+    [ "SegmentDescriptor", "structSegmentDescriptor.html", "structSegmentDescriptor" ],
+    [ "TSSDescriptor", "structTSSDescriptor.html", "structTSSDescriptor" ],
+    [ "TSSEntry", "structTSSEntry.html", "structTSSEntry" ]
 ];

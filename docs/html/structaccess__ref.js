@@ -1,0 +1,28 @@
+var structaccess__ref =
+[
+    [ "access_ref", "structaccess__ref.html#aebf4701de4eca85d3c7f2e7f30af3d30", null ],
+    [ "add_max_offset", "structaccess__ref.html#a2aef6c5f122557255ad9e40a0a1ff783", null ],
+    [ "add_offset", "structaccess__ref.html#a2bc5ab609b050c69c7566eb4450724f0", null ],
+    [ "add_offset", "structaccess__ref.html#a01770edd4723d36a296cdd3282a94f0d", null ],
+    [ "dump", "structaccess__ref.html#aceade3cebf2ffc2dd49036949699d171", null ],
+    [ "get_ref", "structaccess__ref.html#abe6ab2fbbbb43cbe9ca913839a5f251f", null ],
+    [ "inform_access", "structaccess__ref.html#a5f33f1d04bb4631e2e77bab44c0d8f32", null ],
+    [ "merge_ref", "structaccess__ref.html#ae23b8caefb87c744b83f915b93bb76bf", null ],
+    [ "offset_bounded", "structaccess__ref.html#a76b4e9d083754512cf221618f9ae2bae", null ],
+    [ "offset_in_range", "structaccess__ref.html#ac7b4d67112ced0cba3ec867d386c9fbe", null ],
+    [ "offset_zero", "structaccess__ref.html#a2af7d48544ab761f4da834f9a1b9239a", null ],
+    [ "phi", "structaccess__ref.html#a6ee54b328a2dddb30f27f4bccdf08c82", null ],
+    [ "ref_declared", "structaccess__ref.html#a226858aa2cb24d0d7c10ea57eff9faef", null ],
+    [ "set_max_size_range", "structaccess__ref.html#a151f46fbdcaae1ea2832815f17b32eee", null ],
+    [ "size_remaining", "structaccess__ref.html#aed456b01079363abcd4e5a93419200c6", null ],
+    [ "base0", "structaccess__ref.html#a88233d29c43041b59d683b8e3054a062", null ],
+    [ "deref", "structaccess__ref.html#a06ae4818c1b5623b6ff7e6e5465ff9ea", null ],
+    [ "eval", "structaccess__ref.html#a4965c69705c6189c4b6bfe5391c1a187", null ],
+    [ "offmax", "structaccess__ref.html#aad782ff5da7ad553c596ab0579cf2c05", null ],
+    [ "offrng", "structaccess__ref.html#a8c8f491ec8be763d9e53a25b776678c4", null ],
+    [ "parmarray", "structaccess__ref.html#a5371dcd3736d1672dee253763bc57569", null ],
+    [ "ref", "structaccess__ref.html#a763e7b44da4cd47fa17fe84c960f00e4", null ],
+    [ "ref_nullptr_p", "structaccess__ref.html#ab27327d20999cfe52be3eb5271de8d8a", null ],
+    [ "sizrng", "structaccess__ref.html#a14919afd0e745cdebbd9f425a1003a4f", null ],
+    [ "trail1special", "structaccess__ref.html#a2982c50f725c9e207b2b0e3ef368ae20", null ]
+];

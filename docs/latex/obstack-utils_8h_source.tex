@@ -1,0 +1,92 @@
+\doxysection{obstack-\/utils.h}
+\hypertarget{obstack-utils_8h_source}{}\label{obstack-utils_8h_source}\index{toolchain/x86\_64-\/elf/lib/gcc/x86\_64-\/elf/14.2.0/plugin/include/obstack-\/utils.h@{toolchain/x86\_64-\/elf/lib/gcc/x86\_64-\/elf/14.2.0/plugin/include/obstack-\/utils.h}}
+\doxymbox{\hyperlink{obstack-utils_8h}{Go to the documentation of this file.}}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001\ \textcolor{comment}{//\ Obstack-\/related\ utilities.}}
+\DoxyCodeLine{00002\ \textcolor{comment}{//\ Copyright\ (C)\ 2020-\/2024\ Free\ Software\ Foundation,\ Inc.}}
+\DoxyCodeLine{00003\ \textcolor{comment}{//}}
+\DoxyCodeLine{00004\ \textcolor{comment}{//\ This\ file\ is\ part\ of\ GCC.}}
+\DoxyCodeLine{00005\ \textcolor{comment}{//}}
+\DoxyCodeLine{00006\ \textcolor{comment}{//\ GCC\ is\ free\ software;\ you\ can\ redistribute\ it\ and/or\ modify\ it\ under}}
+\DoxyCodeLine{00007\ \textcolor{comment}{//\ the\ terms\ of\ the\ GNU\ General\ Public\ License\ as\ published\ by\ the\ Free}}
+\DoxyCodeLine{00008\ \textcolor{comment}{//\ Software\ Foundation;\ either\ version\ 3,\ or\ (at\ your\ option)\ any\ later}}
+\DoxyCodeLine{00009\ \textcolor{comment}{//\ version.}}
+\DoxyCodeLine{00010\ \textcolor{comment}{//}}
+\DoxyCodeLine{00011\ \textcolor{comment}{//\ GCC\ is\ distributed\ in\ the\ hope\ that\ it\ will\ be\ useful,\ but\ WITHOUT\ ANY}}
+\DoxyCodeLine{00012\ \textcolor{comment}{//\ WARRANTY;\ without\ even\ the\ implied\ warranty\ of\ MERCHANTABILITY\ or}}
+\DoxyCodeLine{00013\ \textcolor{comment}{//\ FITNESS\ FOR\ A\ PARTICULAR\ PURPOSE.\ \ See\ the\ GNU\ General\ Public\ License}}
+\DoxyCodeLine{00014\ \textcolor{comment}{//\ for\ more\ details.}}
+\DoxyCodeLine{00015\ \textcolor{comment}{//}}
+\DoxyCodeLine{00016\ \textcolor{comment}{//\ You\ should\ have\ received\ a\ copy\ of\ the\ GNU\ General\ Public\ License}}
+\DoxyCodeLine{00017\ \textcolor{comment}{//\ along\ with\ GCC;\ see\ the\ file\ COPYING3.\ \ If\ not\ see}}
+\DoxyCodeLine{00018\ \textcolor{comment}{//\ <http://www.gnu.org/licenses/>.}}
+\DoxyCodeLine{00019\ }
+\DoxyCodeLine{00020\ \textcolor{preprocessor}{\#ifndef\ GCC\_OBSTACK\_UTILS\_H}}
+\DoxyCodeLine{00021\ \textcolor{preprocessor}{\#define\ GCC\_OBSTACK\_UTILS\_H}}
+\DoxyCodeLine{00022\ }
+\DoxyCodeLine{00023\ \textcolor{comment}{//\ This\ RAII\ class\ automatically\ frees\ memory\ allocated\ on\ an\ obstack,}}
+\DoxyCodeLine{00024\ \textcolor{comment}{//\ unless\ told\ not\ to\ via\ keep\ ().\ \ It\ automatically\ converts\ to\ an}}
+\DoxyCodeLine{00025\ \textcolor{comment}{//\ obstack,\ so\ it\ can\ (optionally)\ be\ used\ in\ place\ of\ the\ obstack}}
+\DoxyCodeLine{00026\ \textcolor{comment}{//\ to\ make\ the\ scoping\ clearer.\ \ For\ example:}}
+\DoxyCodeLine{00027\ \textcolor{comment}{//}}
+\DoxyCodeLine{00028\ \textcolor{comment}{//\ \ \ \ \ obstack\_watermark\ watermark\ (ob);}}
+\DoxyCodeLine{00029\ \textcolor{comment}{//\ \ \ \ \ auto\ *ptr1\ =\ XOBNEW\ (watermark,\ struct1);}}
+\DoxyCodeLine{00030\ \textcolor{comment}{//\ \ \ \ \ if\ (...)}}
+\DoxyCodeLine{00031\ \textcolor{comment}{//\ \ \ \ \ \ \ //\ Frees\ ptr1.}}
+\DoxyCodeLine{00032\ \textcolor{comment}{//\ \ \ \ \ \ \ return\ false;}}
+\DoxyCodeLine{00033\ \textcolor{comment}{//}}
+\DoxyCodeLine{00034\ \textcolor{comment}{//\ \ \ \ \ auto\ *ptr2\ =\ XOBNEW\ (watermark,\ struct2);}}
+\DoxyCodeLine{00035\ \textcolor{comment}{//\ \ \ \ \ if\ (...)}}
+\DoxyCodeLine{00036\ \textcolor{comment}{//\ \ \ \ \ \ \ //\ Frees\ ptr1\ and\ ptr2.}}
+\DoxyCodeLine{00037\ \textcolor{comment}{//\ \ \ \ \ \ \ return\ false;}}
+\DoxyCodeLine{00038\ \textcolor{comment}{//}}
+\DoxyCodeLine{00039\ \textcolor{comment}{//\ \ \ \ \ //\ Retains\ ptr1\ and\ ptr2.}}
+\DoxyCodeLine{00040\ \textcolor{comment}{//\ \ \ \ \ watermark.keep\ ();}}
+\DoxyCodeLine{00041\ \textcolor{comment}{//}}
+\DoxyCodeLine{00042\ \textcolor{comment}{//\ \ \ \ \ auto\ *ptr3\ =\ XOBNEW\ (watermark,\ struct3);}}
+\DoxyCodeLine{00043\ \textcolor{comment}{//\ \ \ \ \ if\ (...)}}
+\DoxyCodeLine{00044\ \textcolor{comment}{//\ \ \ \ \ \ \ //\ Frees\ ptr3.}}
+\DoxyCodeLine{00045\ \textcolor{comment}{//\ \ \ \ \ \ \ return\ false;}}
+\DoxyCodeLine{00046\ \textcolor{comment}{//}}
+\DoxyCodeLine{00047\ \textcolor{comment}{//\ \ \ \ \ //\ Retains\ ptr3\ (in\ addition\ to\ ptr1\ and\ ptr2\ above).}}
+\DoxyCodeLine{00048\ \textcolor{comment}{//\ \ \ \ \ watermark.keep\ ();}}
+\DoxyCodeLine{00049\ \textcolor{comment}{//\ \ \ \ \ return\ true;}}
+\DoxyCodeLine{00050\ \textcolor{comment}{//}}
+\DoxyCodeLine{00051\ \textcolor{comment}{//\ The\ move\ constructor\ makes\ it\ possible\ to\ transfer\ ownership\ to\ a\ caller:}}
+\DoxyCodeLine{00052\ \textcolor{comment}{//}}
+\DoxyCodeLine{00053\ \textcolor{comment}{//\ \ \ \ \ obstack\_watermark}}
+\DoxyCodeLine{00054\ \textcolor{comment}{//\ \ \ \ \ foo\ ()}}
+\DoxyCodeLine{00055\ \textcolor{comment}{//\ \ \ \ \ \{}}
+\DoxyCodeLine{00056\ \textcolor{comment}{//\ \ \ \ \ \ \ obstack\_watermark\ watermark\ (ob);}}
+\DoxyCodeLine{00057\ \textcolor{comment}{//\ \ \ \ \ \ \ ...}}
+\DoxyCodeLine{00058\ \textcolor{comment}{//\ \ \ \ \ \ \ return\ watermark;}}
+\DoxyCodeLine{00059\ \textcolor{comment}{//\ \ \ \ \ \}}}
+\DoxyCodeLine{00060\ \textcolor{comment}{//}}
+\DoxyCodeLine{00061\ \textcolor{comment}{//\ \ \ \ \ void}}
+\DoxyCodeLine{00062\ \textcolor{comment}{//\ \ \ \ \ bar\ ()}}
+\DoxyCodeLine{00063\ \textcolor{comment}{//\ \ \ \ \ \{}}
+\DoxyCodeLine{00064\ \textcolor{comment}{//\ \ \ \ \ \ \ //\ Inherit\ ownership\ of\ everything\ that\ foo\ allocated.}}
+\DoxyCodeLine{00065\ \textcolor{comment}{//\ \ \ \ \ \ \ obstack\_watermark\ watermark\ =\ foo\ ();}}
+\DoxyCodeLine{00066\ \textcolor{comment}{//\ \ \ \ \ \ \ ...}}
+\DoxyCodeLine{00067\ \textcolor{comment}{//\ \ \ \ \ \}}}
+\DoxyCodeLine{00068\ \textcolor{keyword}{class\ }\doxymbox{\hyperlink{classobstack__watermark_a31b7a3c4d264a534eab4a87eb11d84b7}{obstack\_watermark}}}
+\DoxyCodeLine{00069\ \{}
+\DoxyCodeLine{00070\ \textcolor{keyword}{public}:}
+\DoxyCodeLine{00071\ \ \ \doxymbox{\hyperlink{classobstack__watermark_a31b7a3c4d264a534eab4a87eb11d84b7}{obstack\_watermark}}\ (\doxymbox{\hyperlink{structobstack}{obstack}}\ *ob)\ :\ \doxymbox{\hyperlink{classobstack__watermark_a5207a7930b4e97754cd4e37fecb773f1}{m\_obstack}}\ (ob)\ \{\ \doxymbox{\hyperlink{classobstack__watermark_a1b7818eec509b16dad5805d6ba6ed0bf}{keep}}\ ();\ \}}
+\DoxyCodeLine{00072\ \ \ \textcolor{keyword}{constexpr}\ \doxymbox{\hyperlink{classobstack__watermark_a8378fff008633a7c7a0c137c5b7a1c32}{obstack\_watermark}}\ (\doxymbox{\hyperlink{classobstack__watermark_a31b7a3c4d264a534eab4a87eb11d84b7}{obstack\_watermark}}\ \&\&)\ =\ \textcolor{keywordflow}{default};}
+\DoxyCodeLine{00073\ \ \ \doxymbox{\hyperlink{classobstack__watermark_aab3527b186a21b7b8528f9b98d604c40}{\string~obstack\_watermark}}\ ()\ \{\ \doxymbox{\hyperlink{obstack_8h_aa0162ae95bd02f3d5be6d05bbbe948fc}{obstack\_free}}\ (\doxymbox{\hyperlink{classobstack__watermark_a5207a7930b4e97754cd4e37fecb773f1}{m\_obstack}},\ \doxymbox{\hyperlink{classobstack__watermark_ad1368a4852ea59a1a8aded4a5cd301be}{m\_start}});\ \}}
+\DoxyCodeLine{00074\ }
+\DoxyCodeLine{00075\ \ \ \textcolor{keyword}{operator}\ \doxymbox{\hyperlink{structobstack}{obstack}}\ *()\ \textcolor{keyword}{const}\ \{\ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{classobstack__watermark_a5207a7930b4e97754cd4e37fecb773f1}{m\_obstack}};\ \}}
+\DoxyCodeLine{00076\ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classobstack__watermark_a1b7818eec509b16dad5805d6ba6ed0bf}{keep}}\ ()\ \{\ \doxymbox{\hyperlink{classobstack__watermark_ad1368a4852ea59a1a8aded4a5cd301be}{m\_start}}\ =\ \doxymbox{\hyperlink{libiberty_8h_a28291291d9f198a9d8cd699d3dbdc8b4}{XOBNEWVAR}}\ (\doxymbox{\hyperlink{classobstack__watermark_a5207a7930b4e97754cd4e37fecb773f1}{m\_obstack}},\ \textcolor{keywordtype}{char},\ 0);\ \}}
+\DoxyCodeLine{00077\ }
+\DoxyCodeLine{00078\ \textcolor{keyword}{private}:}
+\DoxyCodeLine{00079\ \ \ \doxymbox{\hyperlink{classobstack__watermark_a1bad2a52d8372ebf9a52e8f090a19891}{DISABLE\_COPY\_AND\_ASSIGN}}\ (\doxymbox{\hyperlink{classobstack__watermark_a31b7a3c4d264a534eab4a87eb11d84b7}{obstack\_watermark}});}
+\DoxyCodeLine{00080\ }
+\DoxyCodeLine{00081\ \textcolor{keyword}{protected}:}
+\DoxyCodeLine{00082\ \ \ \doxymbox{\hyperlink{structobstack}{obstack}}\ *\doxymbox{\hyperlink{classobstack__watermark_a5207a7930b4e97754cd4e37fecb773f1}{m\_obstack}};}
+\DoxyCodeLine{00083\ \ \ \textcolor{keywordtype}{char}\ *\doxymbox{\hyperlink{classobstack__watermark_ad1368a4852ea59a1a8aded4a5cd301be}{m\_start}};}
+\DoxyCodeLine{00084\ \};}
+\DoxyCodeLine{00085\ }
+\DoxyCodeLine{00086\ \textcolor{preprocessor}{\#endif}}
+
+\end{DoxyCode}

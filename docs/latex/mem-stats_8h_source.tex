@@ -1,0 +1,664 @@
+\doxysection{mem-\/stats.h}
+\hypertarget{mem-stats_8h_source}{}\label{mem-stats_8h_source}\index{toolchain/x86\_64-\/elf/lib/gcc/x86\_64-\/elf/14.2.0/plugin/include/mem-\/stats.h@{toolchain/x86\_64-\/elf/lib/gcc/x86\_64-\/elf/14.2.0/plugin/include/mem-\/stats.h}}
+\doxymbox{\hyperlink{mem-stats_8h}{Go to the documentation of this file.}}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001\ \textcolor{comment}{/*\ A\ memory\ statistics\ tracking\ infrastructure.}}
+\DoxyCodeLine{00002\ \textcolor{comment}{\ \ \ Copyright\ (C)\ 2015-\/2024\ Free\ Software\ Foundation,\ Inc.}}
+\DoxyCodeLine{00003\ \textcolor{comment}{\ \ \ Contributed\ by\ Martin\ Liska\ \ <mliska@suse.cz>}}
+\DoxyCodeLine{00004\ \textcolor{comment}{}}
+\DoxyCodeLine{00005\ \textcolor{comment}{This\ file\ is\ part\ of\ GCC.}}
+\DoxyCodeLine{00006\ \textcolor{comment}{}}
+\DoxyCodeLine{00007\ \textcolor{comment}{GCC\ is\ free\ software;\ you\ can\ redistribute\ it\ and/or\ modify\ it\ under}}
+\DoxyCodeLine{00008\ \textcolor{comment}{the\ terms\ of\ the\ GNU\ General\ Public\ License\ as\ published\ by\ the\ Free}}
+\DoxyCodeLine{00009\ \textcolor{comment}{Software\ Foundation;\ either\ version\ 3,\ or\ (at\ your\ option)\ any\ later}}
+\DoxyCodeLine{00010\ \textcolor{comment}{version.}}
+\DoxyCodeLine{00011\ \textcolor{comment}{}}
+\DoxyCodeLine{00012\ \textcolor{comment}{GCC\ is\ distributed\ in\ the\ hope\ that\ it\ will\ be\ useful,\ but\ WITHOUT\ ANY}}
+\DoxyCodeLine{00013\ \textcolor{comment}{WARRANTY;\ without\ even\ the\ implied\ warranty\ of\ MERCHANTABILITY\ or}}
+\DoxyCodeLine{00014\ \textcolor{comment}{FITNESS\ FOR\ A\ PARTICULAR\ PURPOSE.\ \ See\ the\ GNU\ General\ Public\ License}}
+\DoxyCodeLine{00015\ \textcolor{comment}{for\ more\ details.}}
+\DoxyCodeLine{00016\ \textcolor{comment}{}}
+\DoxyCodeLine{00017\ \textcolor{comment}{You\ should\ have\ received\ a\ copy\ of\ the\ GNU\ General\ Public\ License}}
+\DoxyCodeLine{00018\ \textcolor{comment}{along\ with\ GCC;\ see\ the\ file\ COPYING3.\ \ If\ not\ see}}
+\DoxyCodeLine{00019\ \textcolor{comment}{<http://www.gnu.org/licenses/>.\ \ */}}
+\DoxyCodeLine{00020\ }
+\DoxyCodeLine{00021\ \textcolor{preprocessor}{\#ifndef\ GCC\_MEM\_STATS\_H}}
+\DoxyCodeLine{00022\ \textcolor{preprocessor}{\#define\ GCC\_MEM\_STATS\_H}}
+\DoxyCodeLine{00023\ }
+\DoxyCodeLine{00024\ \textcolor{comment}{/*\ Forward\ declaration.\ \ */}}
+\DoxyCodeLine{00025\ \textcolor{keyword}{template}<\textcolor{keyword}{typename}\ Key,\ \textcolor{keyword}{typename}\ Value,}
+\DoxyCodeLine{00026\ \ \ \ \ \ \textcolor{keyword}{typename}\ Traits\ =\ \doxymbox{\hyperlink{structsimple__hashmap__traits}{simple\_hashmap\_traits<default\_hash\_traits<Key>}},}
+\DoxyCodeLine{00027\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ Value>\ >}
+\DoxyCodeLine{00028\ \textcolor{keyword}{class\ }\doxymbox{\hyperlink{classhash__map}{hash\_map}};}
+\DoxyCodeLine{00029\ }
+\DoxyCodeLine{00030\ \textcolor{preprocessor}{\#define\ LOCATION\_LINE\_EXTRA\_SPACE\ 30}}
+\DoxyCodeLine{00031\ \textcolor{preprocessor}{\#define\ LOCATION\_LINE\_WIDTH\ \ \ 48}}
+\DoxyCodeLine{00032\ }
+\DoxyCodeLine{00033\ \textcolor{comment}{/*\ Memory\ allocation\ location.\ \ */}}
+\DoxyCodeLine{00034\ \textcolor{keyword}{class\ }\doxymbox{\hyperlink{classmem__location_a6148071efd88a108ae6741f2b28e1f57}{mem\_location}}}
+\DoxyCodeLine{00035\ \{}
+\DoxyCodeLine{00036\ \textcolor{keyword}{public}:}
+\DoxyCodeLine{00037\ \ \ \textcolor{comment}{/*\ Default\ constructor.\ \ */}}
+\DoxyCodeLine{00038\ \ \ \textcolor{keyword}{inline}}
+\DoxyCodeLine{00039\ \ \ \doxymbox{\hyperlink{classmem__location_a6148071efd88a108ae6741f2b28e1f57}{mem\_location}}\ ()\ \{\}}
+\DoxyCodeLine{00040\ }
+\DoxyCodeLine{00041\ \ \ \textcolor{comment}{/*\ Constructor.\ \ */}}
+\DoxyCodeLine{00042\ \ \ \textcolor{keyword}{inline}}
+\DoxyCodeLine{00043\ \ \ \doxymbox{\hyperlink{classmem__location_abd0c53559da1c2894121df74c4d4fe28}{mem\_location}}\ (\doxymbox{\hyperlink{mem-stats-traits_8h_a0d4f79870c794434cebd6c6513313d1a}{mem\_alloc\_origin}}\ origin,\ \textcolor{keywordtype}{bool}\ ggc,}
+\DoxyCodeLine{00044\ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *filename\ =\ \doxymbox{\hyperlink{stddef_8h_a070d2ce7b6bb7e5c05602aa8c308d0c4}{NULL}},\ \textcolor{keywordtype}{int}\ line\ =\ 0,}
+\DoxyCodeLine{00045\ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *function\ =\ \doxymbox{\hyperlink{stddef_8h_a070d2ce7b6bb7e5c05602aa8c308d0c4}{NULL}}):}
+\DoxyCodeLine{00046\ \ \ \ \ \doxymbox{\hyperlink{classmem__location_a284e65c076642cbd77206eff9aabcfb7}{m\_filename}}\ (filename),\ \doxymbox{\hyperlink{classmem__location_a73900d64f127ab93437cb745ab747a0d}{m\_function}}\ (function),\ \doxymbox{\hyperlink{classmem__location_a389cceb1c629b3f59473da1c10539eb2}{m\_line}}\ (line),\ \doxymbox{\hyperlink{classmem__location_a6e46a35fc7f2e72371cfa33ab132dc9d}{m\_origin}}}
+\DoxyCodeLine{00047\ \ \ \ \ (origin),\ \doxymbox{\hyperlink{classmem__location_a6f3af9e185da8a7a2aff4becce272949}{m\_ggc}}\ (ggc)\ \{\}}
+\DoxyCodeLine{00048\ }
+\DoxyCodeLine{00049\ \ \ \textcolor{comment}{/*\ Copy\ constructor.\ \ */}}
+\DoxyCodeLine{00050\ \ \ \textcolor{keyword}{inline}}
+\DoxyCodeLine{00051\ \ \ \doxymbox{\hyperlink{classmem__location_a67aad2ee68dec7ddcaaeb189ff9eec7a}{mem\_location}}\ (\doxymbox{\hyperlink{classmem__location_a6148071efd88a108ae6741f2b28e1f57}{mem\_location}}\ \&other):\ \doxymbox{\hyperlink{classmem__location_a284e65c076642cbd77206eff9aabcfb7}{m\_filename}}\ (other.\doxymbox{\hyperlink{classmem__location_a284e65c076642cbd77206eff9aabcfb7}{m\_filename}}),}
+\DoxyCodeLine{00052\ \ \ \ \ \doxymbox{\hyperlink{classmem__location_a73900d64f127ab93437cb745ab747a0d}{m\_function}}\ (other.\doxymbox{\hyperlink{classmem__location_a73900d64f127ab93437cb745ab747a0d}{m\_function}}),\ \doxymbox{\hyperlink{classmem__location_a389cceb1c629b3f59473da1c10539eb2}{m\_line}}\ (other.\doxymbox{\hyperlink{classmem__location_a389cceb1c629b3f59473da1c10539eb2}{m\_line}}),}
+\DoxyCodeLine{00053\ \ \ \ \ \doxymbox{\hyperlink{classmem__location_a6e46a35fc7f2e72371cfa33ab132dc9d}{m\_origin}}\ (other.\doxymbox{\hyperlink{classmem__location_a6e46a35fc7f2e72371cfa33ab132dc9d}{m\_origin}}),\ \doxymbox{\hyperlink{classmem__location_a6f3af9e185da8a7a2aff4becce272949}{m\_ggc}}\ (other.\doxymbox{\hyperlink{classmem__location_a6f3af9e185da8a7a2aff4becce272949}{m\_ggc}})\ \{\}}
+\DoxyCodeLine{00054\ }
+\DoxyCodeLine{00055\ \ \ \textcolor{comment}{/*\ Compute\ hash\ value\ based\ on\ file\ name,\ function\ name\ and\ line\ in}}
+\DoxyCodeLine{00056\ \textcolor{comment}{\ \ \ \ \ source\ code.\ As\ there\ is\ just\ a\ single\ pointer\ registered\ for\ every}}
+\DoxyCodeLine{00057\ \textcolor{comment}{\ \ \ \ \ constant\ that\ points\ to\ e.g.\ the\ same\ file\ name,\ we\ can\ use\ hash}}
+\DoxyCodeLine{00058\ \textcolor{comment}{\ \ \ \ \ of\ the\ pointer.\ \ */}}
+\DoxyCodeLine{00059\ \ \ \doxymbox{\hyperlink{hashtab_8h_a2d05e5049721cf3117dd6b34e20d4f65}{hashval\_t}}}
+\DoxyCodeLine{00060\ \ \ \doxymbox{\hyperlink{classmem__location_a67f725302e45407905d46a382d79a329}{hash}}\ ()}
+\DoxyCodeLine{00061\ \ \ \{}
+\DoxyCodeLine{00062\ \ \ \ \ \doxymbox{\hyperlink{classinchash_1_1hash}{inchash::hash}}\ \doxymbox{\hyperlink{classmem__location_a67f725302e45407905d46a382d79a329}{hash}};}
+\DoxyCodeLine{00063\ }
+\DoxyCodeLine{00064\ \ \ \ \ \doxymbox{\hyperlink{classmem__location_a67f725302e45407905d46a382d79a329}{hash}}.add\_ptr\ (\doxymbox{\hyperlink{classmem__location_a284e65c076642cbd77206eff9aabcfb7}{m\_filename}});}
+\DoxyCodeLine{00065\ \ \ \ \ \doxymbox{\hyperlink{classmem__location_a67f725302e45407905d46a382d79a329}{hash}}.add\_ptr\ (\doxymbox{\hyperlink{classmem__location_a73900d64f127ab93437cb745ab747a0d}{m\_function}});}
+\DoxyCodeLine{00066\ \ \ \ \ \doxymbox{\hyperlink{classmem__location_a67f725302e45407905d46a382d79a329}{hash}}.add\_int\ (\doxymbox{\hyperlink{classmem__location_a389cceb1c629b3f59473da1c10539eb2}{m\_line}});}
+\DoxyCodeLine{00067\ }
+\DoxyCodeLine{00068\ \ \ \ \ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{classmem__location_a67f725302e45407905d46a382d79a329}{hash}}.end\ ();}
+\DoxyCodeLine{00069\ \ \ \}}
+\DoxyCodeLine{00070\ }
+\DoxyCodeLine{00071\ \ \ \textcolor{comment}{/*\ Return\ true\ if\ the\ memory\ location\ is\ equal\ to\ OTHER.\ \ */}}
+\DoxyCodeLine{00072\ \ \ \textcolor{keywordtype}{int}}
+\DoxyCodeLine{00073\ \ \ \doxymbox{\hyperlink{classmem__location_a32fe9187c5b9962ba7663eed5cd6fd89}{equal}}\ (\textcolor{keyword}{const}\ \doxymbox{\hyperlink{classmem__location_a6148071efd88a108ae6741f2b28e1f57}{mem\_location}}\ \&other)}
+\DoxyCodeLine{00074\ \ \ \{}
+\DoxyCodeLine{00075\ \ \ \ \ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{classmem__location_a284e65c076642cbd77206eff9aabcfb7}{m\_filename}}\ ==\ other.\doxymbox{\hyperlink{classmem__location_a284e65c076642cbd77206eff9aabcfb7}{m\_filename}}\ \&\&\ \doxymbox{\hyperlink{classmem__location_a73900d64f127ab93437cb745ab747a0d}{m\_function}}\ ==\ other.\doxymbox{\hyperlink{classmem__location_a73900d64f127ab93437cb745ab747a0d}{m\_function}}}
+\DoxyCodeLine{00076\ \ \ \ \ \ \ \&\&\ \doxymbox{\hyperlink{classmem__location_a389cceb1c629b3f59473da1c10539eb2}{m\_line}}\ ==\ other.\doxymbox{\hyperlink{classmem__location_a389cceb1c629b3f59473da1c10539eb2}{m\_line}};}
+\DoxyCodeLine{00077\ \ \ \}}
+\DoxyCodeLine{00078\ }
+\DoxyCodeLine{00079\ \ \ \textcolor{comment}{/*\ Return\ trimmed\ filename\ for\ the\ location.\ \ */}}
+\DoxyCodeLine{00080\ \ \ \textcolor{keyword}{inline}\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *}
+\DoxyCodeLine{00081\ \ \ \doxymbox{\hyperlink{classmem__location_aaf7863ef934bb921664019bc271469f9}{get\_trimmed\_filename}}\ ()}
+\DoxyCodeLine{00082\ \ \ \{}
+\DoxyCodeLine{00083\ \ \ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *s1\ =\ \doxymbox{\hyperlink{classmem__location_a284e65c076642cbd77206eff9aabcfb7}{m\_filename}};}
+\DoxyCodeLine{00084\ \ \ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *s2;}
+\DoxyCodeLine{00085\ }
+\DoxyCodeLine{00086\ \ \ \ \ \textcolor{keywordflow}{while}\ ((s2\ =\ strstr\ (s1,\ \textcolor{stringliteral}{"{}gcc/"{}})))}
+\DoxyCodeLine{00087\ \ \ \ \ \ \ s1\ =\ s2\ +\ 4;}
+\DoxyCodeLine{00088\ }
+\DoxyCodeLine{00089\ \ \ \ \ \textcolor{keywordflow}{return}\ s1;}
+\DoxyCodeLine{00090\ \ \ \}}
+\DoxyCodeLine{00091\ }
+\DoxyCodeLine{00092\ \ \ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{char}\ *}
+\DoxyCodeLine{00093\ \ \ \doxymbox{\hyperlink{classmem__location_a1d2b7852a95f6b32a280c9d3126a56a4}{to\_string}}\ ()}
+\DoxyCodeLine{00094\ \ \ \{}
+\DoxyCodeLine{00095\ \ \ \ \ \textcolor{keywordtype}{unsigned}\ l\ =\ \doxymbox{\hyperlink{string_8cpp_a688836b83c3a8edbdf3bf7f9de1236d9}{strlen}}\ (\doxymbox{\hyperlink{classmem__location_aaf7863ef934bb921664019bc271469f9}{get\_trimmed\_filename}}\ ())\ +\ \doxymbox{\hyperlink{string_8cpp_a688836b83c3a8edbdf3bf7f9de1236d9}{strlen}}\ (\doxymbox{\hyperlink{classmem__location_a73900d64f127ab93437cb745ab747a0d}{m\_function}})}
+\DoxyCodeLine{00096\ \ \ \ \ \ \ +\ \doxymbox{\hyperlink{mem-stats_8h_a935cedf6e39c9c3f749732aa5a76b6b4}{LOCATION\_LINE\_EXTRA\_SPACE}};}
+\DoxyCodeLine{00097\ }
+\DoxyCodeLine{00098\ \ \ \ \ \textcolor{keywordtype}{char}\ *s\ =\ \doxymbox{\hyperlink{libiberty_8h_a68af31d7426d8cb576b61256e77a3f33}{XNEWVEC}}\ (\textcolor{keywordtype}{char},\ l);}
+\DoxyCodeLine{00099\ \ \ \ \ sprintf\ (s,\ \textcolor{stringliteral}{"{}\%s:\%i\ (\%s)"{}},\ \doxymbox{\hyperlink{classmem__location_aaf7863ef934bb921664019bc271469f9}{get\_trimmed\_filename}}\ (),}
+\DoxyCodeLine{00100\ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{classmem__location_a389cceb1c629b3f59473da1c10539eb2}{m\_line}},\ \doxymbox{\hyperlink{classmem__location_a73900d64f127ab93437cb745ab747a0d}{m\_function}});}
+\DoxyCodeLine{00101\ }
+\DoxyCodeLine{00102\ \ \ \ \ s[\doxymbox{\hyperlink{system_8h_ad2f3678bf5eae3684fc497130b946eae}{MIN}}\ (\doxymbox{\hyperlink{mem-stats_8h_aa7ec2e1aa170f6d2cbe42f9cd572d95b}{LOCATION\_LINE\_WIDTH}},\ l\ -\/\ 1)]\ =\ \textcolor{charliteral}{'\(\backslash\)0'};}
+\DoxyCodeLine{00103\ }
+\DoxyCodeLine{00104\ \ \ \ \ \textcolor{keywordflow}{return}\ s;}
+\DoxyCodeLine{00105\ \ \ \}}
+\DoxyCodeLine{00106\ }
+\DoxyCodeLine{00107\ \ \ \textcolor{comment}{/*\ Return\ display\ name\ associated\ to\ ORIGIN\ type.\ \ */}}
+\DoxyCodeLine{00108\ \ \ \textcolor{keyword}{static}\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *}
+\DoxyCodeLine{00109\ \ \ \doxymbox{\hyperlink{classmem__location_a6050cb7c9aba71c267578bdb7020e993}{get\_origin\_name}}\ (\doxymbox{\hyperlink{mem-stats-traits_8h_a0d4f79870c794434cebd6c6513313d1a}{mem\_alloc\_origin}}\ origin)}
+\DoxyCodeLine{00110\ \ \ \{}
+\DoxyCodeLine{00111\ \ \ \ \ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{mem-stats-traits_8h_a94cab6a8a070d93281203a416ad02e6e}{mem\_alloc\_origin\_names}}[(unsigned)\ origin];}
+\DoxyCodeLine{00112\ \ \ \}}
+\DoxyCodeLine{00113\ }
+\DoxyCodeLine{00114\ \ \ \textcolor{comment}{/*\ File\ name\ of\ source\ code.\ \ */}}
+\DoxyCodeLine{00115\ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *\doxymbox{\hyperlink{classmem__location_a284e65c076642cbd77206eff9aabcfb7}{m\_filename}};}
+\DoxyCodeLine{00116\ \ \ \textcolor{comment}{/*\ Funcation\ name.\ \ */}}
+\DoxyCodeLine{00117\ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *\doxymbox{\hyperlink{classmem__location_a73900d64f127ab93437cb745ab747a0d}{m\_function}};}
+\DoxyCodeLine{00118\ \ \ \textcolor{comment}{/*\ Line\ number\ in\ source\ code.\ \ */}}
+\DoxyCodeLine{00119\ \ \ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{classmem__location_a389cceb1c629b3f59473da1c10539eb2}{m\_line}};}
+\DoxyCodeLine{00120\ \ \ \textcolor{comment}{/*\ Origin\ type.\ \ */}}
+\DoxyCodeLine{00121\ \ \ \doxymbox{\hyperlink{mem-stats-traits_8h_a0d4f79870c794434cebd6c6513313d1a}{mem\_alloc\_origin}}\ \doxymbox{\hyperlink{classmem__location_a6e46a35fc7f2e72371cfa33ab132dc9d}{m\_origin}};}
+\DoxyCodeLine{00122\ \ \ \textcolor{comment}{/*\ Flag\ if\ used\ by\ GGC\ allocation.\ \ */}}
+\DoxyCodeLine{00123\ \ \ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{classmem__location_a6f3af9e185da8a7a2aff4becce272949}{m\_ggc}};}
+\DoxyCodeLine{00124\ \};}
+\DoxyCodeLine{00125\ }
+\DoxyCodeLine{00126\ \textcolor{comment}{/*\ Memory\ usage\ register\ to\ a\ memory\ location.\ \ */}}
+\DoxyCodeLine{00127\ \textcolor{keyword}{class\ }\doxymbox{\hyperlink{classmem__usage_a77cc2da8b90f68d4be2b6e7d8968bbb6}{mem\_usage}}}
+\DoxyCodeLine{00128\ \{}
+\DoxyCodeLine{00129\ \textcolor{keyword}{public}:}
+\DoxyCodeLine{00130\ \ \ \textcolor{comment}{/*\ Default\ constructor.\ \ */}}
+\DoxyCodeLine{00131\ \ \ \doxymbox{\hyperlink{classmem__usage_a77cc2da8b90f68d4be2b6e7d8968bbb6}{mem\_usage}}\ ():\ \doxymbox{\hyperlink{classmem__usage_a8911fca980b190c9f0b3f73f57c9a4df}{m\_allocated}}\ (0),\ \doxymbox{\hyperlink{classmem__usage_ad5b165e5c31194bea16e6d45351c8b07}{m\_times}}\ (0),\ \doxymbox{\hyperlink{classmem__usage_aa1897689923bfd5444c59962e2219430}{m\_peak}}\ (0),\ \doxymbox{\hyperlink{classmem__usage_abdd646c68ea4db29d51702ba7409d86c}{m\_instances}}\ (1)\ \{\}}
+\DoxyCodeLine{00132\ }
+\DoxyCodeLine{00133\ \ \ \textcolor{comment}{/*\ Constructor.\ \ */}}
+\DoxyCodeLine{00134\ \ \ \doxymbox{\hyperlink{classmem__usage_a0740500007405167dc36c5442ea9c204}{mem\_usage}}\ (\textcolor{keywordtype}{size\_t}\ allocated,\ \textcolor{keywordtype}{size\_t}\ times,\ \textcolor{keywordtype}{size\_t}\ peak,\ \textcolor{keywordtype}{size\_t}\ instances\ =\ 0):}
+\DoxyCodeLine{00135\ \ \ \ \ \doxymbox{\hyperlink{classmem__usage_a8911fca980b190c9f0b3f73f57c9a4df}{m\_allocated}}\ (allocated),\ \doxymbox{\hyperlink{classmem__usage_ad5b165e5c31194bea16e6d45351c8b07}{m\_times}}\ (times),\ \doxymbox{\hyperlink{classmem__usage_aa1897689923bfd5444c59962e2219430}{m\_peak}}\ (peak),}
+\DoxyCodeLine{00136\ \ \ \ \ \doxymbox{\hyperlink{classmem__usage_abdd646c68ea4db29d51702ba7409d86c}{m\_instances}}\ (instances)\ \{\}}
+\DoxyCodeLine{00137\ }
+\DoxyCodeLine{00138\ \ \ \textcolor{comment}{/*\ Register\ overhead\ of\ SIZE\ bytes.\ \ */}}
+\DoxyCodeLine{00139\ \ \ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{void}}
+\DoxyCodeLine{00140\ \ \ \doxymbox{\hyperlink{classmem__usage_a50578b75243061d18b2780d8f65d825d}{register\_overhead}}\ (\textcolor{keywordtype}{size\_t}\ size)}
+\DoxyCodeLine{00141\ \ \ \{}
+\DoxyCodeLine{00142\ \ \ \ \ \doxymbox{\hyperlink{classmem__usage_a8911fca980b190c9f0b3f73f57c9a4df}{m\_allocated}}\ +=\ size;}
+\DoxyCodeLine{00143\ \ \ \ \ \doxymbox{\hyperlink{classmem__usage_ad5b165e5c31194bea16e6d45351c8b07}{m\_times}}++;}
+\DoxyCodeLine{00144\ }
+\DoxyCodeLine{00145\ \ \ \ \ \textcolor{keywordflow}{if}\ (\doxymbox{\hyperlink{classmem__usage_aa1897689923bfd5444c59962e2219430}{m\_peak}}\ <\ \doxymbox{\hyperlink{classmem__usage_a8911fca980b190c9f0b3f73f57c9a4df}{m\_allocated}})}
+\DoxyCodeLine{00146\ \ \ \ \ \ \ \doxymbox{\hyperlink{classmem__usage_aa1897689923bfd5444c59962e2219430}{m\_peak}}\ =\ \doxymbox{\hyperlink{classmem__usage_a8911fca980b190c9f0b3f73f57c9a4df}{m\_allocated}};}
+\DoxyCodeLine{00147\ \ \ \}}
+\DoxyCodeLine{00148\ }
+\DoxyCodeLine{00149\ \ \ \textcolor{comment}{/*\ Release\ overhead\ of\ SIZE\ bytes.\ \ */}}
+\DoxyCodeLine{00150\ \ \ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{void}}
+\DoxyCodeLine{00151\ \ \ \doxymbox{\hyperlink{classmem__usage_aee42dfa2ad25c852eb255d5438e78250}{release\_overhead}}\ (\textcolor{keywordtype}{size\_t}\ size)}
+\DoxyCodeLine{00152\ \ \ \{}
+\DoxyCodeLine{00153\ \ \ \ \ \doxymbox{\hyperlink{system_8h_a0deee0ddaa8ce3bbd400ab5f75de06ff}{gcc\_assert}}\ (size\ <=\ \doxymbox{\hyperlink{classmem__usage_a8911fca980b190c9f0b3f73f57c9a4df}{m\_allocated}});}
+\DoxyCodeLine{00154\ }
+\DoxyCodeLine{00155\ \ \ \ \ \doxymbox{\hyperlink{classmem__usage_a8911fca980b190c9f0b3f73f57c9a4df}{m\_allocated}}\ -\/=\ size;}
+\DoxyCodeLine{00156\ \ \ \}}
+\DoxyCodeLine{00157\ }
+\DoxyCodeLine{00158\ \ \ \textcolor{comment}{/*\ Sum\ the\ usage\ with\ SECOND\ usage.\ \ */}}
+\DoxyCodeLine{00159\ \ \ \doxymbox{\hyperlink{classmem__usage}{mem\_usage}}}
+\DoxyCodeLine{00160\ \ \ \doxymbox{\hyperlink{classmem__usage_aad002fc964c67b9214c895b7c8ac1634}{operator+\ }}(\textcolor{keyword}{const}\ \doxymbox{\hyperlink{classmem__usage_a77cc2da8b90f68d4be2b6e7d8968bbb6}{mem\_usage}}\ \&second)}
+\DoxyCodeLine{00161\ \ \ \{}
+\DoxyCodeLine{00162\ \ \ \ \ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{classmem__usage_a77cc2da8b90f68d4be2b6e7d8968bbb6}{mem\_usage}}\ (\doxymbox{\hyperlink{classmem__usage_a8911fca980b190c9f0b3f73f57c9a4df}{m\_allocated}}\ +\ second.\doxymbox{\hyperlink{classmem__usage_a8911fca980b190c9f0b3f73f57c9a4df}{m\_allocated}},}
+\DoxyCodeLine{00163\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{classmem__usage_ad5b165e5c31194bea16e6d45351c8b07}{m\_times}}\ +\ second.\doxymbox{\hyperlink{classmem__usage_ad5b165e5c31194bea16e6d45351c8b07}{m\_times}},}
+\DoxyCodeLine{00164\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{classmem__usage_aa1897689923bfd5444c59962e2219430}{m\_peak}}\ +\ second.\doxymbox{\hyperlink{classmem__usage_aa1897689923bfd5444c59962e2219430}{m\_peak}},}
+\DoxyCodeLine{00165\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{classmem__usage_abdd646c68ea4db29d51702ba7409d86c}{m\_instances}}\ +\ second.\doxymbox{\hyperlink{classmem__usage_abdd646c68ea4db29d51702ba7409d86c}{m\_instances}});}
+\DoxyCodeLine{00166\ \ \ \}}
+\DoxyCodeLine{00167\ }
+\DoxyCodeLine{00168\ \ \ \textcolor{comment}{/*\ Equality\ operator.\ \ */}}
+\DoxyCodeLine{00169\ \ \ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{bool}}
+\DoxyCodeLine{00170\ \ \ \doxymbox{\hyperlink{classmem__usage_a30c8426fe4e9468bdfb02b637881378d}{operator==\ }}(\textcolor{keyword}{const}\ \doxymbox{\hyperlink{classmem__usage_a77cc2da8b90f68d4be2b6e7d8968bbb6}{mem\_usage}}\ \&second)\textcolor{keyword}{\ const}}
+\DoxyCodeLine{00171\ \textcolor{keyword}{\ \ }\{}
+\DoxyCodeLine{00172\ \ \ \ \ \textcolor{keywordflow}{return}\ (\doxymbox{\hyperlink{classmem__usage_a8911fca980b190c9f0b3f73f57c9a4df}{m\_allocated}}\ ==\ second.\doxymbox{\hyperlink{classmem__usage_a8911fca980b190c9f0b3f73f57c9a4df}{m\_allocated}}}
+\DoxyCodeLine{00173\ \ \ \ \ \ \ \ \ \&\&\ \doxymbox{\hyperlink{classmem__usage_aa1897689923bfd5444c59962e2219430}{m\_peak}}\ ==\ second.\doxymbox{\hyperlink{classmem__usage_aa1897689923bfd5444c59962e2219430}{m\_peak}}}
+\DoxyCodeLine{00174\ \ \ \ \ \ \ \ \ \&\&\ \doxymbox{\hyperlink{classmem__usage_ad5b165e5c31194bea16e6d45351c8b07}{m\_times}}\ ==\ second.\doxymbox{\hyperlink{classmem__usage_ad5b165e5c31194bea16e6d45351c8b07}{m\_times}});}
+\DoxyCodeLine{00175\ \ \ \}}
+\DoxyCodeLine{00176\ }
+\DoxyCodeLine{00177\ \ \ \textcolor{comment}{/*\ Comparison\ operator.\ \ */}}
+\DoxyCodeLine{00178\ \ \ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{bool}}
+\DoxyCodeLine{00179\ \ \ \doxymbox{\hyperlink{classmem__usage_ab6f65534570268d0b73ff1b6b68fb33f}{operator<\ }}(\textcolor{keyword}{const}\ \doxymbox{\hyperlink{classmem__usage_a77cc2da8b90f68d4be2b6e7d8968bbb6}{mem\_usage}}\ \&second)\textcolor{keyword}{\ const}}
+\DoxyCodeLine{00180\ \textcolor{keyword}{\ \ }\{}
+\DoxyCodeLine{00181\ \ \ \ \ \textcolor{keywordflow}{if}\ (*\textcolor{keyword}{this}\ ==\ second)}
+\DoxyCodeLine{00182\ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ \textcolor{keyword}{false};}
+\DoxyCodeLine{00183\ }
+\DoxyCodeLine{00184\ \ \ \ \ \textcolor{keywordflow}{return}\ (\doxymbox{\hyperlink{classmem__usage_a8911fca980b190c9f0b3f73f57c9a4df}{m\_allocated}}\ ==\ second.\doxymbox{\hyperlink{classmem__usage_a8911fca980b190c9f0b3f73f57c9a4df}{m\_allocated}}\ ?}
+\DoxyCodeLine{00185\ \ \ \ \ \ \ \ \ (\doxymbox{\hyperlink{classmem__usage_aa1897689923bfd5444c59962e2219430}{m\_peak}}\ ==\ second.\doxymbox{\hyperlink{classmem__usage_aa1897689923bfd5444c59962e2219430}{m\_peak}}\ ?\ \doxymbox{\hyperlink{classmem__usage_ad5b165e5c31194bea16e6d45351c8b07}{m\_times}}\ <\ second.\doxymbox{\hyperlink{classmem__usage_ad5b165e5c31194bea16e6d45351c8b07}{m\_times}}}
+\DoxyCodeLine{00186\ \ \ \ \ \ \ \ \ \ :\ \doxymbox{\hyperlink{classmem__usage_aa1897689923bfd5444c59962e2219430}{m\_peak}}\ <\ second.\doxymbox{\hyperlink{classmem__usage_aa1897689923bfd5444c59962e2219430}{m\_peak}})\ :\ \doxymbox{\hyperlink{classmem__usage_a8911fca980b190c9f0b3f73f57c9a4df}{m\_allocated}}\ <\ second.\doxymbox{\hyperlink{classmem__usage_a8911fca980b190c9f0b3f73f57c9a4df}{m\_allocated}});}
+\DoxyCodeLine{00187\ \ \ \}}
+\DoxyCodeLine{00188\ }
+\DoxyCodeLine{00189\ \ \ \textcolor{comment}{/*\ Compare\ wrapper\ used\ by\ qsort\ method.\ \ */}}
+\DoxyCodeLine{00190\ \ \ \textcolor{keyword}{static}\ \textcolor{keywordtype}{int}}
+\DoxyCodeLine{00191\ \ \ \doxymbox{\hyperlink{classmem__usage_a6ba36f0a36bbed15886839eaae0ba7bf}{compare}}\ (\textcolor{keyword}{const}\ \textcolor{keywordtype}{void}\ *first,\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{void}\ *second)}
+\DoxyCodeLine{00192\ \ \ \{}
+\DoxyCodeLine{00193\ \ \ \ \ \textcolor{keyword}{typedef}\ std::pair<mem\_location\ *,\ mem\_usage\ *>\ mem\_pair\_t;}
+\DoxyCodeLine{00194\ }
+\DoxyCodeLine{00195\ \ \ \ \ \textcolor{keyword}{const}\ mem\_pair\_t\ f\ =\ *(\textcolor{keyword}{const}\ mem\_pair\_t\ *)first;}
+\DoxyCodeLine{00196\ \ \ \ \ \textcolor{keyword}{const}\ mem\_pair\_t\ s\ =\ *(\textcolor{keyword}{const}\ mem\_pair\_t\ *)second;}
+\DoxyCodeLine{00197\ }
+\DoxyCodeLine{00198\ \ \ \ \ \textcolor{keywordflow}{if}\ (*f.second\ ==\ *s.second)}
+\DoxyCodeLine{00199\ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ 0;}
+\DoxyCodeLine{00200\ }
+\DoxyCodeLine{00201\ \ \ \ \ \textcolor{keywordflow}{return}\ *f.second\ <\ *s.second\ ?\ 1\ :\ -\/1;}
+\DoxyCodeLine{00202\ \ \ \}}
+\DoxyCodeLine{00203\ }
+\DoxyCodeLine{00204\ \ \ \textcolor{comment}{/*\ Dump\ usage\ coupled\ to\ LOC\ location,\ where\ TOTAL\ is\ sum\ of\ all\ rows.\ \ */}}
+\DoxyCodeLine{00205\ \ \ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{void}}
+\DoxyCodeLine{00206\ \ \ \doxymbox{\hyperlink{classmem__usage_ad18c4fa931db7f6f080016ed4b6a773e}{dump}}\ (\doxymbox{\hyperlink{classmem__location}{mem\_location}}\ *loc,\ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classmem__usage_a77cc2da8b90f68d4be2b6e7d8968bbb6}{mem\_usage}}\ \&total)\textcolor{keyword}{\ const}}
+\DoxyCodeLine{00207\ \textcolor{keyword}{\ \ }\{}
+\DoxyCodeLine{00208\ \ \ \ \ \textcolor{keywordtype}{char}\ *location\_string\ =\ loc-\/>\doxymbox{\hyperlink{classmem__location_a1d2b7852a95f6b32a280c9d3126a56a4}{to\_string}}\ ();}
+\DoxyCodeLine{00209\ }
+\DoxyCodeLine{00210\ \ \ \ \ fprintf\ (stderr,\ \textcolor{stringliteral}{"{}\%-\/48s\ "{}}\ \doxymbox{\hyperlink{system_8h_adc258baf74f7ed9d1e1ac1396c7d55a4}{PRsa}}\ (9)\ \textcolor{stringliteral}{"{}:\%5.1f\%\%"{}}}
+\DoxyCodeLine{00211\ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{system_8h_adc258baf74f7ed9d1e1ac1396c7d55a4}{PRsa}}\ (9)\ \doxymbox{\hyperlink{system_8h_adc258baf74f7ed9d1e1ac1396c7d55a4}{PRsa}}\ (9)\ \textcolor{stringliteral}{"{}:\%5.1f\%\%\%10s\(\backslash\)n"{}},}
+\DoxyCodeLine{00212\ \ \ \ \ \ \ \ \ \ location\_string,\ \doxymbox{\hyperlink{system_8h_ace0edec0ca6c7554c112e42a6f9d9b33}{SIZE\_AMOUNT}}\ (\doxymbox{\hyperlink{classmem__usage_a8911fca980b190c9f0b3f73f57c9a4df}{m\_allocated}}),}
+\DoxyCodeLine{00213\ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{classmem__usage_afecd3b15257724f46073834d386f65e6}{get\_percent}}\ (\doxymbox{\hyperlink{classmem__usage_a8911fca980b190c9f0b3f73f57c9a4df}{m\_allocated}},\ total.\doxymbox{\hyperlink{classmem__usage_a8911fca980b190c9f0b3f73f57c9a4df}{m\_allocated}}),}
+\DoxyCodeLine{00214\ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{system_8h_ace0edec0ca6c7554c112e42a6f9d9b33}{SIZE\_AMOUNT}}\ (\doxymbox{\hyperlink{classmem__usage_aa1897689923bfd5444c59962e2219430}{m\_peak}}),\ \doxymbox{\hyperlink{system_8h_ace0edec0ca6c7554c112e42a6f9d9b33}{SIZE\_AMOUNT}}\ (\doxymbox{\hyperlink{classmem__usage_ad5b165e5c31194bea16e6d45351c8b07}{m\_times}}),}
+\DoxyCodeLine{00215\ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{classmem__usage_afecd3b15257724f46073834d386f65e6}{get\_percent}}\ (\doxymbox{\hyperlink{classmem__usage_ad5b165e5c31194bea16e6d45351c8b07}{m\_times}},\ total.\doxymbox{\hyperlink{classmem__usage_ad5b165e5c31194bea16e6d45351c8b07}{m\_times}}),\ loc-\/>\doxymbox{\hyperlink{classmem__location_a6f3af9e185da8a7a2aff4becce272949}{m\_ggc}}\ ?\ \textcolor{stringliteral}{"{}ggc"{}}\ :\ \textcolor{stringliteral}{"{}heap"{}});}
+\DoxyCodeLine{00216\ }
+\DoxyCodeLine{00217\ \ \ \ \ free\ (location\_string);}
+\DoxyCodeLine{00218\ \ \ \}}
+\DoxyCodeLine{00219\ }
+\DoxyCodeLine{00220\ \ \ \textcolor{comment}{/*\ Dump\ footer.\ \ */}}
+\DoxyCodeLine{00221\ \ \ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{void}}
+\DoxyCodeLine{00222\ \ \ \doxymbox{\hyperlink{classmem__usage_a4508964f05ed3f893ffdad0e853f1969}{dump\_footer}}\ ()\textcolor{keyword}{\ const}}
+\DoxyCodeLine{00223\ \textcolor{keyword}{\ \ }\{}
+\DoxyCodeLine{00224\ \ \ \ \ fprintf\ (stderr,\ \textcolor{stringliteral}{"{}\%s"{}}\ \doxymbox{\hyperlink{system_8h_adc258baf74f7ed9d1e1ac1396c7d55a4}{PRsa}}\ (53)\ \doxymbox{\hyperlink{system_8h_adc258baf74f7ed9d1e1ac1396c7d55a4}{PRsa}}\ (26)\ \textcolor{stringliteral}{"{}\(\backslash\)n"{}},\ \textcolor{stringliteral}{"{}Total"{}},}
+\DoxyCodeLine{00225\ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{system_8h_ace0edec0ca6c7554c112e42a6f9d9b33}{SIZE\_AMOUNT}}\ (\doxymbox{\hyperlink{classmem__usage_a8911fca980b190c9f0b3f73f57c9a4df}{m\_allocated}}),\ \doxymbox{\hyperlink{system_8h_ace0edec0ca6c7554c112e42a6f9d9b33}{SIZE\_AMOUNT}}\ (\doxymbox{\hyperlink{classmem__usage_ad5b165e5c31194bea16e6d45351c8b07}{m\_times}}));}
+\DoxyCodeLine{00226\ \ \ \}}
+\DoxyCodeLine{00227\ }
+\DoxyCodeLine{00228\ \ \ \textcolor{comment}{/*\ Return\ fraction\ of\ NOMINATOR\ and\ DENOMINATOR\ in\ percent.\ \ */}}
+\DoxyCodeLine{00229\ \ \ \textcolor{keyword}{static}\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{float}}
+\DoxyCodeLine{00230\ \ \ \doxymbox{\hyperlink{classmem__usage_afecd3b15257724f46073834d386f65e6}{get\_percent}}\ (\textcolor{keywordtype}{size\_t}\ nominator,\ \textcolor{keywordtype}{size\_t}\ denominator)}
+\DoxyCodeLine{00231\ \ \ \{}
+\DoxyCodeLine{00232\ \ \ \ \ \textcolor{keywordflow}{return}\ denominator\ ==\ 0\ ?\ 0.0f\ :\ nominator\ *\ 100.0\ /\ denominator;}
+\DoxyCodeLine{00233\ \ \ \}}
+\DoxyCodeLine{00234\ }
+\DoxyCodeLine{00235\ \ \ \textcolor{comment}{/*\ Print\ line\ made\ of\ dashes.\ \ */}}
+\DoxyCodeLine{00236\ \ \ \textcolor{keyword}{static}\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{void}}
+\DoxyCodeLine{00237\ \ \ \doxymbox{\hyperlink{classmem__usage_a34175ba7f68ea848518042ba0a1e4fd1}{print\_dash\_line}}\ (\textcolor{keywordtype}{size\_t}\ count\ =\ 140)}
+\DoxyCodeLine{00238\ \ \ \{}
+\DoxyCodeLine{00239\ \ \ \ \ \textcolor{keywordflow}{while}\ (count-\/-\/)}
+\DoxyCodeLine{00240\ \ \ \ \ \ \ fputc\ (\textcolor{charliteral}{'-\/'},\ stderr);}
+\DoxyCodeLine{00241\ \ \ \ \ fputc\ (\textcolor{charliteral}{'\(\backslash\)n'},\ stderr);}
+\DoxyCodeLine{00242\ \ \ \}}
+\DoxyCodeLine{00243\ }
+\DoxyCodeLine{00244\ \ \ \textcolor{comment}{/*\ Dump\ header\ with\ NAME.\ \ */}}
+\DoxyCodeLine{00245\ \ \ \textcolor{keyword}{static}\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{void}}
+\DoxyCodeLine{00246\ \ \ \doxymbox{\hyperlink{classmem__usage_a0ed944b5add5e8d7490cff4950be35cf}{dump\_header}}\ (\textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *\doxymbox{\hyperlink{configargs_8h_a8f8f80d37794cde9472343e4487ba3eb}{name}})}
+\DoxyCodeLine{00247\ \ \ \{}
+\DoxyCodeLine{00248\ \ \ \ \ fprintf\ (stderr,\ \textcolor{stringliteral}{"{}\%-\/48s\ \%11s\%16s\%10s\%17s\(\backslash\)n"{}},\ \doxymbox{\hyperlink{configargs_8h_a8f8f80d37794cde9472343e4487ba3eb}{name}},\ \textcolor{stringliteral}{"{}Leak"{}},\ \textcolor{stringliteral}{"{}Peak"{}},}
+\DoxyCodeLine{00249\ \ \ \ \ \ \ \ \ \ \textcolor{stringliteral}{"{}Times"{}},\ \textcolor{stringliteral}{"{}Type"{}});}
+\DoxyCodeLine{00250\ \ \ \}}
+\DoxyCodeLine{00251\ }
+\DoxyCodeLine{00252\ \ \ \textcolor{comment}{/*\ Current\ number\ of\ allocated\ bytes.\ \ */}}
+\DoxyCodeLine{00253\ \ \ \textcolor{keywordtype}{size\_t}\ \doxymbox{\hyperlink{classmem__usage_a8911fca980b190c9f0b3f73f57c9a4df}{m\_allocated}};}
+\DoxyCodeLine{00254\ \ \ \textcolor{comment}{/*\ Number\ of\ allocations.\ \ */}}
+\DoxyCodeLine{00255\ \ \ \textcolor{keywordtype}{size\_t}\ \doxymbox{\hyperlink{classmem__usage_ad5b165e5c31194bea16e6d45351c8b07}{m\_times}};}
+\DoxyCodeLine{00256\ \ \ \textcolor{comment}{/*\ Peak\ allocation\ in\ bytes.\ \ */}}
+\DoxyCodeLine{00257\ \ \ \textcolor{keywordtype}{size\_t}\ \doxymbox{\hyperlink{classmem__usage_aa1897689923bfd5444c59962e2219430}{m\_peak}};}
+\DoxyCodeLine{00258\ \ \ \textcolor{comment}{/*\ Number\ of\ container\ instances.\ \ */}}
+\DoxyCodeLine{00259\ \ \ \textcolor{keywordtype}{size\_t}\ \doxymbox{\hyperlink{classmem__usage_abdd646c68ea4db29d51702ba7409d86c}{m\_instances}};}
+\DoxyCodeLine{00260\ \};}
+\DoxyCodeLine{00261\ }
+\DoxyCodeLine{00262\ \textcolor{comment}{/*\ Memory\ usage\ pair\ that\ connectes\ memory\ usage\ and\ number}}
+\DoxyCodeLine{00263\ \textcolor{comment}{\ \ \ of\ allocated\ bytes.\ \ */}}
+\DoxyCodeLine{00264\ \textcolor{keyword}{template}\ <\textcolor{keyword}{class}\ T>}
+\DoxyCodeLine{00265\ \textcolor{keyword}{class\ }\doxymbox{\hyperlink{classmem__usage__pair_abfbb01e4db52edd5f467fdc0451d679e}{mem\_usage\_pair}}}
+\DoxyCodeLine{00266\ \{}
+\DoxyCodeLine{00267\ \textcolor{keyword}{public}:}
+\DoxyCodeLine{00268\ \ \ \doxymbox{\hyperlink{classmem__usage__pair_abfbb01e4db52edd5f467fdc0451d679e}{mem\_usage\_pair}}\ (T\ *usage\_,\ \textcolor{keywordtype}{size\_t}\ allocated\_):\ \doxymbox{\hyperlink{classmem__usage__pair_a6d8e03bb536bb9e7336d1b5e1793b580}{usage}}\ (usage\_),}
+\DoxyCodeLine{00269\ \ \ \doxymbox{\hyperlink{classmem__usage__pair_a13149503f38567d6f55dc4d1bb6b86f5}{allocated}}\ (allocated\_)\ \{\}}
+\DoxyCodeLine{00270\ }
+\DoxyCodeLine{00271\ \ \ T\ *\doxymbox{\hyperlink{classmem__usage__pair_a6d8e03bb536bb9e7336d1b5e1793b580}{usage}};}
+\DoxyCodeLine{00272\ \ \ \textcolor{keywordtype}{size\_t}\ \doxymbox{\hyperlink{classmem__usage__pair_a13149503f38567d6f55dc4d1bb6b86f5}{allocated}};}
+\DoxyCodeLine{00273\ \};}
+\DoxyCodeLine{00274\ }
+\DoxyCodeLine{00275\ \textcolor{comment}{/*\ Memory\ allocation\ description.\ \ */}}
+\DoxyCodeLine{00276\ \textcolor{keyword}{template}\ <\textcolor{keyword}{class}\ T>}
+\DoxyCodeLine{00277\ \textcolor{keyword}{class\ }\doxymbox{\hyperlink{classmem__alloc__description_ad2cbe0a50d731ad3d74ee96cb8d1efef}{mem\_alloc\_description}}}
+\DoxyCodeLine{00278\ \{}
+\DoxyCodeLine{00279\ \textcolor{keyword}{public}:}
+\DoxyCodeLine{00280\ \ \ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{structmem__alloc__description_1_1mem__location__hash}{mem\_location\_hash}}\ :\ \doxymbox{\hyperlink{structnofree__ptr__hash}{nofree\_ptr\_hash}}\ <mem\_location>}
+\DoxyCodeLine{00281\ \ \ \{}
+\DoxyCodeLine{00282\ \ \ \ \ \textcolor{keyword}{static}\ \doxymbox{\hyperlink{hashtab_8h_a2d05e5049721cf3117dd6b34e20d4f65}{hashval\_t}}}
+\DoxyCodeLine{00283\ \ \ \ \ \doxymbox{\hyperlink{structmem__alloc__description_1_1mem__location__hash_a34ae6f6f7e04e85567061a58d4a021bb}{hash}}\ (\doxymbox{\hyperlink{structpointer__hash_ac6dc5a34e4e8483037750c19850a3198}{value\_type}}\ l)}
+\DoxyCodeLine{00284\ \ \ \ \ \{}
+\DoxyCodeLine{00285\ \ \ \ \ \ \ \doxymbox{\hyperlink{classinchash_1_1hash}{inchash::hash}}\ hstate;}
+\DoxyCodeLine{00286\ }
+\DoxyCodeLine{00287\ \ \ \ \ \ \ hstate.\doxymbox{\hyperlink{classinchash_1_1hash_aff714f51e9a2c0c61f2aebde19a5f0a0}{add\_ptr}}\ ((\textcolor{keyword}{const}\ \textcolor{keywordtype}{void}\ *)l-\/>\doxymbox{\hyperlink{classmem__location_a284e65c076642cbd77206eff9aabcfb7}{m\_filename}});}
+\DoxyCodeLine{00288\ \ \ \ \ \ \ hstate.\doxymbox{\hyperlink{classinchash_1_1hash_aff714f51e9a2c0c61f2aebde19a5f0a0}{add\_ptr}}\ (l-\/>\doxymbox{\hyperlink{classmem__location_a73900d64f127ab93437cb745ab747a0d}{m\_function}});}
+\DoxyCodeLine{00289\ \ \ \ \ \ \ hstate.\doxymbox{\hyperlink{classinchash_1_1hash_a254cdd0915b3d594c725bda753ba07a2}{add\_int}}\ (l-\/>\doxymbox{\hyperlink{classmem__location_a389cceb1c629b3f59473da1c10539eb2}{m\_line}});}
+\DoxyCodeLine{00290\ }
+\DoxyCodeLine{00291\ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ hstate.\doxymbox{\hyperlink{classinchash_1_1hash_abbb8b89688e2bc759f3f4585887bc96a}{end}}\ ();}
+\DoxyCodeLine{00292\ \ \ \ \ \}}
+\DoxyCodeLine{00293\ }
+\DoxyCodeLine{00294\ \ \ \ \ \textcolor{keyword}{static}\ \textcolor{keywordtype}{bool}}
+\DoxyCodeLine{00295\ \ \ \ \ \doxymbox{\hyperlink{structmem__alloc__description_1_1mem__location__hash_a4a1f841c60eda2ccefbf326a248f1b2d}{equal}}\ (\doxymbox{\hyperlink{structpointer__hash_ac6dc5a34e4e8483037750c19850a3198}{value\_type}}\ l1,\ \doxymbox{\hyperlink{structpointer__hash_ac6dc5a34e4e8483037750c19850a3198}{value\_type}}\ l2)}
+\DoxyCodeLine{00296\ \ \ \ \ \{}
+\DoxyCodeLine{00297\ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ (l1-\/>\doxymbox{\hyperlink{classmem__location_a284e65c076642cbd77206eff9aabcfb7}{m\_filename}}\ ==\ l2-\/>\doxymbox{\hyperlink{classmem__location_a284e65c076642cbd77206eff9aabcfb7}{m\_filename}}}
+\DoxyCodeLine{00298\ \ \ \ \ \ \ \ \ \ \ \&\&\ l1-\/>\doxymbox{\hyperlink{classmem__location_a73900d64f127ab93437cb745ab747a0d}{m\_function}}\ ==\ l2-\/>\doxymbox{\hyperlink{classmem__location_a73900d64f127ab93437cb745ab747a0d}{m\_function}}}
+\DoxyCodeLine{00299\ \ \ \ \ \ \ \ \ \ \ \&\&\ l1-\/>\doxymbox{\hyperlink{classmem__location_a389cceb1c629b3f59473da1c10539eb2}{m\_line}}\ ==\ l2-\/>\doxymbox{\hyperlink{classmem__location_a389cceb1c629b3f59473da1c10539eb2}{m\_line}});}
+\DoxyCodeLine{00300\ \ \ \ \ \}}
+\DoxyCodeLine{00301\ \ \ \};}
+\DoxyCodeLine{00302\ }
+\DoxyCodeLine{00303\ \ \ \textcolor{comment}{/*\ Internal\ class\ type\ definitions.\ \ */}}
+\DoxyCodeLine{00304\ \ \ \textcolor{keyword}{typedef}\ hash\_map\ <mem\_location\_hash,\ T\ *>\ \doxymbox{\hyperlink{classmem__alloc__description_a53f16cf0becb05acf350680c18b269f5}{mem\_map\_t}};}
+\DoxyCodeLine{00305\ \ \ \textcolor{keyword}{typedef}\ hash\_map\ <const\ void\ *,\ mem\_usage\_pair<T>\ >\ \doxymbox{\hyperlink{classmem__alloc__description_ab2d56945a57a66ad7f668f338aa561d7}{reverse\_mem\_map\_t}};}
+\DoxyCodeLine{00306\ \ \ \textcolor{keyword}{typedef}\ hash\_map\ <const\ void\ *,\ std::pair<T\ *,\ size\_t>\ >\ \doxymbox{\hyperlink{classmem__alloc__description_a13a1361b793b687bcde64027a9e0b909}{reverse\_object\_map\_t}};}
+\DoxyCodeLine{00307\ \ \ \textcolor{keyword}{typedef}\ std::pair\ <mem\_location\ *,\ T\ *>\ \doxymbox{\hyperlink{classmem__alloc__description_a56029902bc4ed894e80b58efae9e5347}{mem\_list\_t}};}
+\DoxyCodeLine{00308\ }
+\DoxyCodeLine{00309\ \ \ \textcolor{comment}{/*\ Default\ contructor.\ \ */}}
+\DoxyCodeLine{00310\ \ \ \doxymbox{\hyperlink{classmem__alloc__description_ad2cbe0a50d731ad3d74ee96cb8d1efef}{mem\_alloc\_description}}\ ();}
+\DoxyCodeLine{00311\ }
+\DoxyCodeLine{00312\ \ \ \textcolor{comment}{/*\ Default\ destructor.\ \ */}}
+\DoxyCodeLine{00313\ \ \ \doxymbox{\hyperlink{classmem__alloc__description_a6df53ae6958b6bc0849a43427cda1a6a}{\string~mem\_alloc\_description}}\ ();}
+\DoxyCodeLine{00314\ }
+\DoxyCodeLine{00315\ \ \ \textcolor{comment}{/*\ Returns\ true\ if\ instance\ PTR\ is\ registered\ by\ the\ memory\ description.\ \ */}}
+\DoxyCodeLine{00316\ \ \ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{classmem__alloc__description_aa34a780c55f085285ed7983a9e2c3341}{contains\_descriptor\_for\_instance}}\ (\textcolor{keyword}{const}\ \textcolor{keywordtype}{void}\ *ptr);}
+\DoxyCodeLine{00317\ }
+\DoxyCodeLine{00318\ \ \ \textcolor{comment}{/*\ Return\ descriptor\ for\ instance\ PTR.\ \ */}}
+\DoxyCodeLine{00319\ \ \ T\ *\doxymbox{\hyperlink{classmem__alloc__description_af4c01abcc8e307760e6ee338371537d6}{get\_descriptor\_for\_instance}}\ (\textcolor{keyword}{const}\ \textcolor{keywordtype}{void}\ *ptr);}
+\DoxyCodeLine{00320\ }
+\DoxyCodeLine{00321\ \ \ \textcolor{comment}{/*\ Register\ memory\ allocation\ descriptor\ for\ container\ PTR\ which\ is}}
+\DoxyCodeLine{00322\ \textcolor{comment}{\ \ \ \ \ described\ by\ a\ memory\ LOCATION.\ \ */}}
+\DoxyCodeLine{00323\ \ \ T\ *\doxymbox{\hyperlink{classmem__alloc__description_a5d43b0e8f3dbc042bc38fba8fcee690a}{register\_descriptor}}\ (\textcolor{keyword}{const}\ \textcolor{keywordtype}{void}\ *ptr,\ \doxymbox{\hyperlink{classmem__location}{mem\_location}}\ *location);}
+\DoxyCodeLine{00324\ }
+\DoxyCodeLine{00325\ \ \ \textcolor{comment}{/*\ Register\ memory\ allocation\ descriptor\ for\ container\ PTR.\ \ ORIGIN\ identifies}}
+\DoxyCodeLine{00326\ \textcolor{comment}{\ \ \ \ \ type\ of\ container\ and\ GGC\ identifes\ if\ the\ allocation\ is\ handled\ in\ GGC}}
+\DoxyCodeLine{00327\ \textcolor{comment}{\ \ \ \ \ memory.\ \ Each\ location\ is\ identified\ by\ file\ NAME,\ LINE\ in\ source\ code\ and}}
+\DoxyCodeLine{00328\ \textcolor{comment}{\ \ \ \ \ FUNCTION\ name.\ \ */}}
+\DoxyCodeLine{00329\ \ \ T\ *\doxymbox{\hyperlink{classmem__alloc__description_a5d43b0e8f3dbc042bc38fba8fcee690a}{register\_descriptor}}\ (\textcolor{keyword}{const}\ \textcolor{keywordtype}{void}\ *ptr,\ \doxymbox{\hyperlink{mem-stats-traits_8h_a0d4f79870c794434cebd6c6513313d1a}{mem\_alloc\_origin}}\ origin,}
+\DoxyCodeLine{00330\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{bool}\ ggc,\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *\doxymbox{\hyperlink{configargs_8h_a8f8f80d37794cde9472343e4487ba3eb}{name}},\ \textcolor{keywordtype}{int}\ line,}
+\DoxyCodeLine{00331\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *function);}
+\DoxyCodeLine{00332\ }
+\DoxyCodeLine{00333\ \ \ \textcolor{comment}{/*\ Register\ instance\ overhead\ identified\ by\ PTR\ pointer.\ Allocation\ takes}}
+\DoxyCodeLine{00334\ \textcolor{comment}{\ \ \ \ \ SIZE\ bytes.\ \ */}}
+\DoxyCodeLine{00335\ \ \ T\ *\doxymbox{\hyperlink{classmem__alloc__description_a9bafd651868317e7920bbe857c2d51b5}{register\_instance\_overhead}}\ (\textcolor{keywordtype}{size\_t}\ size,\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{void}\ *ptr);}
+\DoxyCodeLine{00336\ }
+\DoxyCodeLine{00337\ \ \ \textcolor{comment}{/*\ For\ containers\ (and\ GGC)\ where\ we\ want\ to\ track\ every\ instance\ object,}}
+\DoxyCodeLine{00338\ \textcolor{comment}{\ \ \ \ \ we\ register\ allocation\ of\ SIZE\ bytes,\ identified\ by\ PTR\ pointer,\ belonging}}
+\DoxyCodeLine{00339\ \textcolor{comment}{\ \ \ \ \ to\ USAGE\ descriptor.\ \ */}}
+\DoxyCodeLine{00340\ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classmem__alloc__description_a2c810c6d8a5e9c49b51acf7d55a3817e}{register\_object\_overhead}}\ (T\ *usage,\ \textcolor{keywordtype}{size\_t}\ size,\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{void}\ *ptr);}
+\DoxyCodeLine{00341\ }
+\DoxyCodeLine{00342\ \ \ \textcolor{comment}{/*\ Release\ PTR\ pointer\ of\ SIZE\ bytes.\ If\ REMOVE\_FROM\_MAP\ is\ set\ to\ true,}}
+\DoxyCodeLine{00343\ \textcolor{comment}{\ \ \ \ \ remove\ the\ instance\ from\ reverse\ map.\ \ Return\ memory\ usage\ that\ belongs}}
+\DoxyCodeLine{00344\ \textcolor{comment}{\ \ \ \ \ to\ this\ memory\ description.\ \ */}}
+\DoxyCodeLine{00345\ \ \ T\ *\doxymbox{\hyperlink{classmem__alloc__description_aa7884be82925af42cfa53de115375c12}{release\_instance\_overhead}}\ (\textcolor{keywordtype}{void}\ *ptr,\ \textcolor{keywordtype}{size\_t}\ size,}
+\DoxyCodeLine{00346\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{bool}\ remove\_from\_map\ =\ \textcolor{keyword}{false});}
+\DoxyCodeLine{00347\ }
+\DoxyCodeLine{00348\ \ \ \textcolor{comment}{/*\ Release\ instance\ object\ identified\ by\ PTR\ pointer.\ \ */}}
+\DoxyCodeLine{00349\ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classmem__alloc__description_a9e595472229e0f4c4c59b2bbc42a012f}{release\_object\_overhead}}\ (\textcolor{keywordtype}{void}\ *ptr);}
+\DoxyCodeLine{00350\ }
+\DoxyCodeLine{00351\ \ \ \textcolor{comment}{/*\ Unregister\ a\ memory\ allocation\ descriptor\ registered\ with}}
+\DoxyCodeLine{00352\ \textcolor{comment}{\ \ \ \ \ register\_descriptor\ (remove\ from\ reverse\ map),\ unless\ it\ is}}
+\DoxyCodeLine{00353\ \textcolor{comment}{\ \ \ \ \ unregistered\ through\ release\_instance\_overhead\ with}}
+\DoxyCodeLine{00354\ \textcolor{comment}{\ \ \ \ \ REMOVE\_FROM\_MAP\ =\ true.\ \ */}}
+\DoxyCodeLine{00355\ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classmem__alloc__description_a6ee6969a83970a07cd693175444f4af4}{unregister\_descriptor}}\ (\textcolor{keywordtype}{void}\ *ptr);}
+\DoxyCodeLine{00356\ }
+\DoxyCodeLine{00357\ \ \ \textcolor{comment}{/*\ Get\ sum\ value\ for\ ORIGIN\ type\ of\ allocation\ for\ the\ descriptor.\ \ */}}
+\DoxyCodeLine{00358\ \ \ T\ \doxymbox{\hyperlink{classmem__alloc__description_a0aeea6cd90279b14295cbd016b7730ea}{get\_sum}}\ (\doxymbox{\hyperlink{mem-stats-traits_8h_a0d4f79870c794434cebd6c6513313d1a}{mem\_alloc\_origin}}\ origin);}
+\DoxyCodeLine{00359\ }
+\DoxyCodeLine{00360\ \ \ \textcolor{comment}{/*\ Get\ all\ tracked\ instances\ registered\ by\ the\ description.\ Items}}
+\DoxyCodeLine{00361\ \textcolor{comment}{\ \ \ \ \ are\ filtered\ by\ ORIGIN\ type,\ LENGTH\ is\ return\ value\ where\ we\ register}}
+\DoxyCodeLine{00362\ \textcolor{comment}{\ \ \ \ \ the\ number\ of\ elements\ in\ the\ list.\ If\ we\ want\ to\ process\ custom\ order,}}
+\DoxyCodeLine{00363\ \textcolor{comment}{\ \ \ \ \ CMP\ comparator\ can\ be\ provided.\ \ */}}
+\DoxyCodeLine{00364\ \ \ \doxymbox{\hyperlink{classmem__alloc__description_a56029902bc4ed894e80b58efae9e5347}{mem\_list\_t}}\ *\doxymbox{\hyperlink{classmem__alloc__description_aeb3f29b878510da68bd73c8b1ac08d8d}{get\_list}}\ (\doxymbox{\hyperlink{mem-stats-traits_8h_a0d4f79870c794434cebd6c6513313d1a}{mem\_alloc\_origin}}\ origin,\ \textcolor{keywordtype}{unsigned}\ *length);}
+\DoxyCodeLine{00365\ }
+\DoxyCodeLine{00366\ \ \ \textcolor{comment}{/*\ Dump\ all\ tracked\ instances\ of\ type\ ORIGIN.\ If\ we\ want\ to\ process\ custom}}
+\DoxyCodeLine{00367\ \textcolor{comment}{\ \ \ \ \ order,\ CMP\ comparator\ can\ be\ provided.\ \ */}}
+\DoxyCodeLine{00368\ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classmem__alloc__description_a0f38dd6b3b1917e3b608fedf1e88cb0e}{dump}}\ (\doxymbox{\hyperlink{mem-stats-traits_8h_a0d4f79870c794434cebd6c6513313d1a}{mem\_alloc\_origin}}\ origin);}
+\DoxyCodeLine{00369\ }
+\DoxyCodeLine{00370\ \ \ \textcolor{comment}{/*\ Reverse\ object\ map\ used\ for\ every\ object\ allocation\ mapping.\ \ */}}
+\DoxyCodeLine{00371\ \ \ \doxymbox{\hyperlink{classmem__alloc__description_a13a1361b793b687bcde64027a9e0b909}{reverse\_object\_map\_t}}\ *\doxymbox{\hyperlink{classmem__alloc__description_a71ad79a70aad920ee4ee91272e529f0f}{m\_reverse\_object\_map}};}
+\DoxyCodeLine{00372\ }
+\DoxyCodeLine{00373\ \textcolor{keyword}{private}:}
+\DoxyCodeLine{00374\ \ \ \textcolor{comment}{/*\ Register\ overhead\ of\ SIZE\ bytes\ of\ ORIGIN\ type.\ PTR\ pointer\ is\ allocated}}
+\DoxyCodeLine{00375\ \textcolor{comment}{\ \ \ \ \ in\ NAME\ source\ file,\ at\ LINE\ in\ source\ code,\ in\ FUNCTION.\ \ */}}
+\DoxyCodeLine{00376\ \ \ T\ *\doxymbox{\hyperlink{classmem__alloc__description_a8be8fc27801361aaf940ca3b16fc98e5}{register\_overhead}}\ (\textcolor{keywordtype}{size\_t}\ size,\ \doxymbox{\hyperlink{mem-stats-traits_8h_a0d4f79870c794434cebd6c6513313d1a}{mem\_alloc\_origin}}\ origin,\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *\doxymbox{\hyperlink{configargs_8h_a8f8f80d37794cde9472343e4487ba3eb}{name}},}
+\DoxyCodeLine{00377\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{int}\ line,\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *function,\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{void}\ *ptr);}
+\DoxyCodeLine{00378\ }
+\DoxyCodeLine{00379\ \ \ \textcolor{comment}{/*\ Allocation\ location\ coupled\ to\ the\ description.\ \ */}}
+\DoxyCodeLine{00380\ \ \ \doxymbox{\hyperlink{classmem__location}{mem\_location}}\ \doxymbox{\hyperlink{classmem__alloc__description_a736687944a220c3c6cb75afd7c24cba1}{m\_location}};}
+\DoxyCodeLine{00381\ }
+\DoxyCodeLine{00382\ \ \ \textcolor{comment}{/*\ Location\ to\ usage\ mapping.\ \ */}}
+\DoxyCodeLine{00383\ \ \ \doxymbox{\hyperlink{classmem__alloc__description_a53f16cf0becb05acf350680c18b269f5}{mem\_map\_t}}\ *\doxymbox{\hyperlink{classmem__alloc__description_aac3c1a82612a022cc708979268668a5b}{m\_map}};}
+\DoxyCodeLine{00384\ }
+\DoxyCodeLine{00385\ \ \ \textcolor{comment}{/*\ Reverse\ pointer\ to\ usage\ mapping.\ \ */}}
+\DoxyCodeLine{00386\ \ \ \doxymbox{\hyperlink{classmem__alloc__description_ab2d56945a57a66ad7f668f338aa561d7}{reverse\_mem\_map\_t}}\ *\doxymbox{\hyperlink{classmem__alloc__description_a765e63987bef5a11766b6815059afc34}{m\_reverse\_map}};}
+\DoxyCodeLine{00387\ \};}
+\DoxyCodeLine{00388\ }
+\DoxyCodeLine{00389\ \textcolor{comment}{/*\ Returns\ true\ if\ instance\ PTR\ is\ registered\ by\ the\ memory\ description.\ \ */}}
+\DoxyCodeLine{00390\ }
+\DoxyCodeLine{00391\ \textcolor{keyword}{template}\ <\textcolor{keyword}{class}\ T>}
+\DoxyCodeLine{00392\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{bool}}
+\DoxyCodeLine{00393\ \doxymbox{\hyperlink{classmem__alloc__description_aa34a780c55f085285ed7983a9e2c3341}{mem\_alloc\_description<T>::contains\_descriptor\_for\_instance}}\ (\textcolor{keyword}{const}\ \textcolor{keywordtype}{void}\ *ptr)}
+\DoxyCodeLine{00394\ \{}
+\DoxyCodeLine{00395\ \ \ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{classmem__alloc__description_a765e63987bef5a11766b6815059afc34}{m\_reverse\_map}}-\/>get\ (ptr);}
+\DoxyCodeLine{00396\ \}}
+\DoxyCodeLine{00397\ }
+\DoxyCodeLine{00398\ \textcolor{comment}{/*\ Return\ descriptor\ for\ instance\ PTR.\ \ */}}
+\DoxyCodeLine{00399\ }
+\DoxyCodeLine{00400\ \textcolor{keyword}{template}\ <\textcolor{keyword}{class}\ T>}
+\DoxyCodeLine{00401\ \textcolor{keyword}{inline}\ T*}
+\DoxyCodeLine{00402\ \doxymbox{\hyperlink{classmem__alloc__description_af4c01abcc8e307760e6ee338371537d6}{mem\_alloc\_description<T>::get\_descriptor\_for\_instance}}\ (\textcolor{keyword}{const}\ \textcolor{keywordtype}{void}\ *ptr)}
+\DoxyCodeLine{00403\ \{}
+\DoxyCodeLine{00404\ \ \ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{classmem__alloc__description_a765e63987bef5a11766b6815059afc34}{m\_reverse\_map}}-\/>get\ (ptr)\ ?\ (*\doxymbox{\hyperlink{classmem__alloc__description_a765e63987bef5a11766b6815059afc34}{m\_reverse\_map}}-\/>get\ (ptr)).usage\ :\ \doxymbox{\hyperlink{stddef_8h_a070d2ce7b6bb7e5c05602aa8c308d0c4}{NULL}};}
+\DoxyCodeLine{00405\ \}}
+\DoxyCodeLine{00406\ }
+\DoxyCodeLine{00407\ \textcolor{comment}{/*\ Register\ memory\ allocation\ descriptor\ for\ container\ PTR\ which\ is}}
+\DoxyCodeLine{00408\ \textcolor{comment}{\ \ \ described\ by\ a\ memory\ LOCATION.\ \ */}}
+\DoxyCodeLine{00409\ }
+\DoxyCodeLine{00410\ \textcolor{keyword}{template}\ <\textcolor{keyword}{class}\ T>}
+\DoxyCodeLine{00411\ \textcolor{keyword}{inline}\ T*}
+\DoxyCodeLine{00412\ \doxymbox{\hyperlink{classmem__alloc__description_a5d43b0e8f3dbc042bc38fba8fcee690a}{mem\_alloc\_description<T>::register\_descriptor}}\ (\textcolor{keyword}{const}\ \textcolor{keywordtype}{void}\ *ptr,}
+\DoxyCodeLine{00413\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{classmem__location}{mem\_location}}\ *location)}
+\DoxyCodeLine{00414\ \{}
+\DoxyCodeLine{00415\ \ \ T\ *usage\ =\ \doxymbox{\hyperlink{stddef_8h_a070d2ce7b6bb7e5c05602aa8c308d0c4}{NULL}};}
+\DoxyCodeLine{00416\ }
+\DoxyCodeLine{00417\ \ \ T\ **slot\ =\ \doxymbox{\hyperlink{classmem__alloc__description_aac3c1a82612a022cc708979268668a5b}{m\_map}}-\/>get\ (location);}
+\DoxyCodeLine{00418\ \ \ \textcolor{keywordflow}{if}\ (slot)}
+\DoxyCodeLine{00419\ \ \ \ \ \{}
+\DoxyCodeLine{00420\ \ \ \ \ \ \ \textcolor{keyword}{delete}\ location;}
+\DoxyCodeLine{00421\ \ \ \ \ \ \ usage\ =\ *slot;}
+\DoxyCodeLine{00422\ \ \ \ \ \ \ usage-\/>m\_instances++;}
+\DoxyCodeLine{00423\ \ \ \ \ \}}
+\DoxyCodeLine{00424\ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00425\ \ \ \ \ \{}
+\DoxyCodeLine{00426\ \ \ \ \ \ \ usage\ =\ \textcolor{keyword}{new}\ T\ ();}
+\DoxyCodeLine{00427\ \ \ \ \ \ \ \doxymbox{\hyperlink{classmem__alloc__description_aac3c1a82612a022cc708979268668a5b}{m\_map}}-\/>put\ (location,\ usage);}
+\DoxyCodeLine{00428\ \ \ \ \ \}}
+\DoxyCodeLine{00429\ }
+\DoxyCodeLine{00430\ \ \ \textcolor{keywordflow}{if}\ (!\doxymbox{\hyperlink{classmem__alloc__description_a765e63987bef5a11766b6815059afc34}{m\_reverse\_map}}-\/>get\ (ptr))}
+\DoxyCodeLine{00431\ \ \ \ \ \doxymbox{\hyperlink{classmem__alloc__description_a765e63987bef5a11766b6815059afc34}{m\_reverse\_map}}-\/>put\ (ptr,\ \doxymbox{\hyperlink{classmem__usage__pair}{mem\_usage\_pair<T>}}\ (usage,\ 0));}
+\DoxyCodeLine{00432\ }
+\DoxyCodeLine{00433\ \ \ \textcolor{keywordflow}{return}\ usage;}
+\DoxyCodeLine{00434\ \}}
+\DoxyCodeLine{00435\ }
+\DoxyCodeLine{00436\ \textcolor{comment}{/*\ Register\ memory\ allocation\ descriptor\ for\ container\ PTR.\ \ ORIGIN\ identifies}}
+\DoxyCodeLine{00437\ \textcolor{comment}{\ \ \ type\ of\ container\ and\ GGC\ identifes\ if\ the\ allocation\ is\ handled\ in\ GGC}}
+\DoxyCodeLine{00438\ \textcolor{comment}{\ \ \ memory.\ \ Each\ location\ is\ identified\ by\ file\ NAME,\ LINE\ in\ source\ code\ and}}
+\DoxyCodeLine{00439\ \textcolor{comment}{\ \ \ FUNCTION\ name.\ \ */}}
+\DoxyCodeLine{00440\ }
+\DoxyCodeLine{00441\ \textcolor{keyword}{template}\ <\textcolor{keyword}{class}\ T>}
+\DoxyCodeLine{00442\ \textcolor{keyword}{inline}\ T*}
+\DoxyCodeLine{00443\ \doxymbox{\hyperlink{classmem__alloc__description_a5d43b0e8f3dbc042bc38fba8fcee690a}{mem\_alloc\_description<T>::register\_descriptor}}\ (\textcolor{keyword}{const}\ \textcolor{keywordtype}{void}\ *ptr,}
+\DoxyCodeLine{00444\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{mem-stats-traits_8h_a0d4f79870c794434cebd6c6513313d1a}{mem\_alloc\_origin}}\ origin,}
+\DoxyCodeLine{00445\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{bool}\ ggc,}
+\DoxyCodeLine{00446\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *filename,}
+\DoxyCodeLine{00447\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{int}\ line,}
+\DoxyCodeLine{00448\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *function)}
+\DoxyCodeLine{00449\ \{}
+\DoxyCodeLine{00450\ \ \ \doxymbox{\hyperlink{classmem__location}{mem\_location}}\ *l\ =\ \textcolor{keyword}{new}\ \doxymbox{\hyperlink{classmem__location}{mem\_location}}\ (origin,\ ggc,\ filename,\ line,\ function);}
+\DoxyCodeLine{00451\ \ \ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{classmem__alloc__description_a5d43b0e8f3dbc042bc38fba8fcee690a}{register\_descriptor}}\ (ptr,\ l);}
+\DoxyCodeLine{00452\ \}}
+\DoxyCodeLine{00453\ }
+\DoxyCodeLine{00454\ \textcolor{comment}{/*\ Register\ instance\ overhead\ identified\ by\ PTR\ pointer.\ Allocation\ takes}}
+\DoxyCodeLine{00455\ \textcolor{comment}{\ \ \ SIZE\ bytes.\ \ */}}
+\DoxyCodeLine{00456\ }
+\DoxyCodeLine{00457\ \textcolor{keyword}{template}\ <\textcolor{keyword}{class}\ T>}
+\DoxyCodeLine{00458\ \textcolor{keyword}{inline}\ T*}
+\DoxyCodeLine{00459\ \doxymbox{\hyperlink{classmem__alloc__description_a9bafd651868317e7920bbe857c2d51b5}{mem\_alloc\_description<T>::register\_instance\_overhead}}\ (\textcolor{keywordtype}{size\_t}\ size,}
+\DoxyCodeLine{00460\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{void}\ *ptr)}
+\DoxyCodeLine{00461\ \{}
+\DoxyCodeLine{00462\ \ \ mem\_usage\_pair\ <T>\ *slot\ =\ \doxymbox{\hyperlink{classmem__alloc__description_a765e63987bef5a11766b6815059afc34}{m\_reverse\_map}}-\/>get\ (ptr);}
+\DoxyCodeLine{00463\ \ \ \textcolor{keywordflow}{if}\ (!slot)}
+\DoxyCodeLine{00464\ \ \ \ \ \{}
+\DoxyCodeLine{00465\ \ \ \ \ \ \ \textcolor{comment}{/*\ Due\ to\ PCH,\ it\ can\ really\ happen.\ \ */}}
+\DoxyCodeLine{00466\ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{stddef_8h_a070d2ce7b6bb7e5c05602aa8c308d0c4}{NULL}};}
+\DoxyCodeLine{00467\ \ \ \ \ \}}
+\DoxyCodeLine{00468\ }
+\DoxyCodeLine{00469\ \ \ T\ *usage\ =\ (*slot).usage;}
+\DoxyCodeLine{00470\ \ \ usage-\/>register\_overhead\ (size);}
+\DoxyCodeLine{00471\ }
+\DoxyCodeLine{00472\ \ \ \textcolor{keywordflow}{return}\ usage;}
+\DoxyCodeLine{00473\ \}}
+\DoxyCodeLine{00474\ }
+\DoxyCodeLine{00475\ \textcolor{comment}{/*\ For\ containers\ (and\ GGC)\ where\ we\ want\ to\ track\ every\ instance\ object,}}
+\DoxyCodeLine{00476\ \textcolor{comment}{\ \ \ we\ register\ allocation\ of\ SIZE\ bytes,\ identified\ by\ PTR\ pointer,\ belonging}}
+\DoxyCodeLine{00477\ \textcolor{comment}{\ \ \ to\ USAGE\ descriptor.\ \ */}}
+\DoxyCodeLine{00478\ }
+\DoxyCodeLine{00479\ \textcolor{keyword}{template}\ <\textcolor{keyword}{class}\ T>}
+\DoxyCodeLine{00480\ \textcolor{keywordtype}{void}}
+\DoxyCodeLine{00481\ \doxymbox{\hyperlink{classmem__alloc__description_a2c810c6d8a5e9c49b51acf7d55a3817e}{mem\_alloc\_description<T>::register\_object\_overhead}}\ (T\ *usage,\ \textcolor{keywordtype}{size\_t}\ size,}
+\DoxyCodeLine{00482\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{void}\ *ptr)}
+\DoxyCodeLine{00483\ \{}
+\DoxyCodeLine{00484\ \ \ \textcolor{comment}{/*\ In\ case\ of\ GGC,\ it\ is\ possible\ to\ have\ already\ occupied\ the\ memory}}
+\DoxyCodeLine{00485\ \textcolor{comment}{\ \ \ \ \ location.\ \ */}}
+\DoxyCodeLine{00486\ \ \ \doxymbox{\hyperlink{classmem__alloc__description_a71ad79a70aad920ee4ee91272e529f0f}{m\_reverse\_object\_map}}-\/>put\ (ptr,\ std::pair<T\ *,\ size\_t>\ (usage,\ size));}
+\DoxyCodeLine{00487\ \}}
+\DoxyCodeLine{00488\ }
+\DoxyCodeLine{00489\ \textcolor{comment}{/*\ Register\ overhead\ of\ SIZE\ bytes\ of\ ORIGIN\ type.\ PTR\ pointer\ is\ allocated}}
+\DoxyCodeLine{00490\ \textcolor{comment}{\ \ \ in\ NAME\ source\ file,\ at\ LINE\ in\ source\ code,\ in\ FUNCTION.\ \ */}}
+\DoxyCodeLine{00491\ }
+\DoxyCodeLine{00492\ \textcolor{keyword}{template}\ <\textcolor{keyword}{class}\ T>}
+\DoxyCodeLine{00493\ \textcolor{keyword}{inline}\ T*}
+\DoxyCodeLine{00494\ \doxymbox{\hyperlink{classmem__alloc__description_a8be8fc27801361aaf940ca3b16fc98e5}{mem\_alloc\_description<T>::register\_overhead}}\ (\textcolor{keywordtype}{size\_t}\ size,}
+\DoxyCodeLine{00495\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{mem-stats-traits_8h_a0d4f79870c794434cebd6c6513313d1a}{mem\_alloc\_origin}}\ origin,}
+\DoxyCodeLine{00496\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *filename,}
+\DoxyCodeLine{00497\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{int}\ line,}
+\DoxyCodeLine{00498\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *function,}
+\DoxyCodeLine{00499\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{void}\ *ptr)}
+\DoxyCodeLine{00500\ \{}
+\DoxyCodeLine{00501\ \ \ T\ *usage\ =\ \doxymbox{\hyperlink{classmem__alloc__description_a5d43b0e8f3dbc042bc38fba8fcee690a}{register\_descriptor}}\ (ptr,\ origin,\ filename,\ line,\ function);}
+\DoxyCodeLine{00502\ \ \ usage-\/>register\_overhead\ (size);}
+\DoxyCodeLine{00503\ }
+\DoxyCodeLine{00504\ \ \ \textcolor{keywordflow}{return}\ usage;}
+\DoxyCodeLine{00505\ \}}
+\DoxyCodeLine{00506\ }
+\DoxyCodeLine{00507\ \textcolor{comment}{/*\ Release\ PTR\ pointer\ of\ SIZE\ bytes.\ \ */}}
+\DoxyCodeLine{00508\ }
+\DoxyCodeLine{00509\ \textcolor{keyword}{template}\ <\textcolor{keyword}{class}\ T>}
+\DoxyCodeLine{00510\ \textcolor{keyword}{inline}\ T\ *}
+\DoxyCodeLine{00511\ \doxymbox{\hyperlink{classmem__alloc__description_aa7884be82925af42cfa53de115375c12}{mem\_alloc\_description<T>::release\_instance\_overhead}}\ (\textcolor{keywordtype}{void}\ *ptr,\ \textcolor{keywordtype}{size\_t}\ size,}
+\DoxyCodeLine{00512\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{bool}\ remove\_from\_map)}
+\DoxyCodeLine{00513\ \{}
+\DoxyCodeLine{00514\ \ \ \doxymbox{\hyperlink{classmem__usage__pair}{mem\_usage\_pair<T>}}\ *slot\ =\ \doxymbox{\hyperlink{classmem__alloc__description_a765e63987bef5a11766b6815059afc34}{m\_reverse\_map}}-\/>get\ (ptr);}
+\DoxyCodeLine{00515\ }
+\DoxyCodeLine{00516\ \ \ \textcolor{keywordflow}{if}\ (!slot)}
+\DoxyCodeLine{00517\ \ \ \ \ \{}
+\DoxyCodeLine{00518\ \ \ \ \ \ \ \textcolor{comment}{/*\ Due\ to\ PCH,\ it\ can\ really\ happen.\ \ */}}
+\DoxyCodeLine{00519\ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{stddef_8h_a070d2ce7b6bb7e5c05602aa8c308d0c4}{NULL}};}
+\DoxyCodeLine{00520\ \ \ \ \ \}}
+\DoxyCodeLine{00521\ }
+\DoxyCodeLine{00522\ \ \ T\ *usage\ =\ (*slot).usage;}
+\DoxyCodeLine{00523\ \ \ usage-\/>release\_overhead\ (size);}
+\DoxyCodeLine{00524\ }
+\DoxyCodeLine{00525\ \ \ \textcolor{keywordflow}{if}\ (remove\_from\_map)}
+\DoxyCodeLine{00526\ \ \ \ \ \doxymbox{\hyperlink{classmem__alloc__description_a765e63987bef5a11766b6815059afc34}{m\_reverse\_map}}-\/>remove\ (ptr);}
+\DoxyCodeLine{00527\ }
+\DoxyCodeLine{00528\ \ \ \textcolor{keywordflow}{return}\ usage;}
+\DoxyCodeLine{00529\ \}}
+\DoxyCodeLine{00530\ }
+\DoxyCodeLine{00531\ \textcolor{comment}{/*\ Release\ instance\ object\ identified\ by\ PTR\ pointer.\ \ */}}
+\DoxyCodeLine{00532\ }
+\DoxyCodeLine{00533\ \textcolor{keyword}{template}\ <\textcolor{keyword}{class}\ T>}
+\DoxyCodeLine{00534\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{void}}
+\DoxyCodeLine{00535\ \doxymbox{\hyperlink{classmem__alloc__description_a9e595472229e0f4c4c59b2bbc42a012f}{mem\_alloc\_description<T>::release\_object\_overhead}}\ (\textcolor{keywordtype}{void}\ *ptr)}
+\DoxyCodeLine{00536\ \{}
+\DoxyCodeLine{00537\ \ \ std::pair\ <T\ *,\ size\_t>\ *entry\ =\ \doxymbox{\hyperlink{classmem__alloc__description_a71ad79a70aad920ee4ee91272e529f0f}{m\_reverse\_object\_map}}-\/>get\ (ptr);}
+\DoxyCodeLine{00538\ \ \ entry-\/>first-\/>release\_overhead\ (entry-\/>second);}
+\DoxyCodeLine{00539\ \ \ \doxymbox{\hyperlink{classmem__alloc__description_a71ad79a70aad920ee4ee91272e529f0f}{m\_reverse\_object\_map}}-\/>remove\ (ptr);}
+\DoxyCodeLine{00540\ \}}
+\DoxyCodeLine{00541\ }
+\DoxyCodeLine{00542\ \textcolor{comment}{/*\ Unregister\ a\ memory\ allocation\ descriptor\ registered\ with}}
+\DoxyCodeLine{00543\ \textcolor{comment}{\ \ \ register\_descriptor\ (remove\ from\ reverse\ map),\ unless\ it\ is}}
+\DoxyCodeLine{00544\ \textcolor{comment}{\ \ \ unregistered\ through\ release\_instance\_overhead\ with}}
+\DoxyCodeLine{00545\ \textcolor{comment}{\ \ \ REMOVE\_FROM\_MAP\ =\ true.\ \ */}}
+\DoxyCodeLine{00546\ \textcolor{keyword}{template}\ <\textcolor{keyword}{class}\ T>}
+\DoxyCodeLine{00547\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{void}}
+\DoxyCodeLine{00548\ \doxymbox{\hyperlink{classmem__alloc__description_a6ee6969a83970a07cd693175444f4af4}{mem\_alloc\_description<T>::unregister\_descriptor}}\ (\textcolor{keywordtype}{void}\ *ptr)}
+\DoxyCodeLine{00549\ \{}
+\DoxyCodeLine{00550\ \ \ \doxymbox{\hyperlink{classmem__alloc__description_a765e63987bef5a11766b6815059afc34}{m\_reverse\_map}}-\/>remove\ (ptr);}
+\DoxyCodeLine{00551\ \}}
+\DoxyCodeLine{00552\ }
+\DoxyCodeLine{00553\ \textcolor{comment}{/*\ Default\ contructor.\ \ */}}
+\DoxyCodeLine{00554\ }
+\DoxyCodeLine{00555\ \textcolor{keyword}{template}\ <\textcolor{keyword}{class}\ T>}
+\DoxyCodeLine{00556\ \textcolor{keyword}{inline}}
+\DoxyCodeLine{00557\ \doxymbox{\hyperlink{classmem__alloc__description_ad2cbe0a50d731ad3d74ee96cb8d1efef}{mem\_alloc\_description<T>::mem\_alloc\_description}}\ ()}
+\DoxyCodeLine{00558\ \{}
+\DoxyCodeLine{00559\ \ \ \doxymbox{\hyperlink{classmem__alloc__description_aac3c1a82612a022cc708979268668a5b}{m\_map}}\ =\ \textcolor{keyword}{new}\ \doxymbox{\hyperlink{classmem__alloc__description_a53f16cf0becb05acf350680c18b269f5}{mem\_map\_t}}\ (13,\ \textcolor{keyword}{false},\ \textcolor{keyword}{false},\ \textcolor{keyword}{false});}
+\DoxyCodeLine{00560\ \ \ \doxymbox{\hyperlink{classmem__alloc__description_a765e63987bef5a11766b6815059afc34}{m\_reverse\_map}}\ =\ \textcolor{keyword}{new}\ \doxymbox{\hyperlink{classmem__alloc__description_ab2d56945a57a66ad7f668f338aa561d7}{reverse\_mem\_map\_t}}\ (13,\ \textcolor{keyword}{false},\ \textcolor{keyword}{false},\ \textcolor{keyword}{false});}
+\DoxyCodeLine{00561\ \ \ \doxymbox{\hyperlink{classmem__alloc__description_a71ad79a70aad920ee4ee91272e529f0f}{m\_reverse\_object\_map}}\ =\ \textcolor{keyword}{new}\ \doxymbox{\hyperlink{classmem__alloc__description_a13a1361b793b687bcde64027a9e0b909}{reverse\_object\_map\_t}}\ (13,\ \textcolor{keyword}{false},\ \textcolor{keyword}{false},\ \textcolor{keyword}{false});}
+\DoxyCodeLine{00562\ \}}
+\DoxyCodeLine{00563\ }
+\DoxyCodeLine{00564\ \textcolor{comment}{/*\ Default\ destructor.\ \ */}}
+\DoxyCodeLine{00565\ }
+\DoxyCodeLine{00566\ \textcolor{keyword}{template}\ <\textcolor{keyword}{class}\ T>}
+\DoxyCodeLine{00567\ \textcolor{keyword}{inline}}
+\DoxyCodeLine{00568\ \doxymbox{\hyperlink{classmem__alloc__description_a6df53ae6958b6bc0849a43427cda1a6a}{mem\_alloc\_description<T>::\string~mem\_alloc\_description}}\ ()}
+\DoxyCodeLine{00569\ \{}
+\DoxyCodeLine{00570\ \ \ \textcolor{keywordflow}{for}\ (\textcolor{keyword}{typename}\ mem\_map\_t::iterator\ it\ =\ \doxymbox{\hyperlink{classmem__alloc__description_aac3c1a82612a022cc708979268668a5b}{m\_map}}-\/>begin\ ();\ it\ !=\ \doxymbox{\hyperlink{classmem__alloc__description_aac3c1a82612a022cc708979268668a5b}{m\_map}}-\/>end\ ();}
+\DoxyCodeLine{00571\ \ \ \ \ \ \ \ ++it)}
+\DoxyCodeLine{00572\ \ \ \ \ \{}
+\DoxyCodeLine{00573\ \ \ \ \ \ \ \textcolor{keyword}{delete}\ (*it).first;}
+\DoxyCodeLine{00574\ \ \ \ \ \ \ \textcolor{keyword}{delete}\ (*it).second;}
+\DoxyCodeLine{00575\ \ \ \ \ \}}
+\DoxyCodeLine{00576\ }
+\DoxyCodeLine{00577\ \ \ \textcolor{keyword}{delete}\ \doxymbox{\hyperlink{classmem__alloc__description_aac3c1a82612a022cc708979268668a5b}{m\_map}};}
+\DoxyCodeLine{00578\ \ \ \textcolor{keyword}{delete}\ \doxymbox{\hyperlink{classmem__alloc__description_a765e63987bef5a11766b6815059afc34}{m\_reverse\_map}};}
+\DoxyCodeLine{00579\ \ \ \textcolor{keyword}{delete}\ \doxymbox{\hyperlink{classmem__alloc__description_a71ad79a70aad920ee4ee91272e529f0f}{m\_reverse\_object\_map}};}
+\DoxyCodeLine{00580\ \}}
+\DoxyCodeLine{00581\ }
+\DoxyCodeLine{00582\ \textcolor{comment}{/*\ Get\ all\ tracked\ instances\ registered\ by\ the\ description.\ Items\ are\ filtered}}
+\DoxyCodeLine{00583\ \textcolor{comment}{\ \ \ by\ ORIGIN\ type,\ LENGTH\ is\ return\ value\ where\ we\ register\ the\ number\ of}}
+\DoxyCodeLine{00584\ \textcolor{comment}{\ \ \ elements\ in\ the\ list.\ If\ we\ want\ to\ process\ custom\ order,\ CMP\ comparator}}
+\DoxyCodeLine{00585\ \textcolor{comment}{\ \ \ can\ be\ provided.\ \ */}}
+\DoxyCodeLine{00586\ }
+\DoxyCodeLine{00587\ \textcolor{keyword}{template}\ <\textcolor{keyword}{class}\ T>}
+\DoxyCodeLine{00588\ \textcolor{keyword}{inline}}
+\DoxyCodeLine{00589\ \textcolor{keyword}{typename}\ \doxymbox{\hyperlink{classmem__alloc__description_a56029902bc4ed894e80b58efae9e5347}{mem\_alloc\_description<T>::mem\_list\_t}}\ *}
+\DoxyCodeLine{00590\ \doxymbox{\hyperlink{classmem__alloc__description_aeb3f29b878510da68bd73c8b1ac08d8d}{mem\_alloc\_description<T>::get\_list}}\ (\doxymbox{\hyperlink{mem-stats-traits_8h_a0d4f79870c794434cebd6c6513313d1a}{mem\_alloc\_origin}}\ origin,\ \textcolor{keywordtype}{unsigned}\ *length)}
+\DoxyCodeLine{00591\ \{}
+\DoxyCodeLine{00592\ \ \ \textcolor{comment}{/*\ vec\ data\ structure\ is\ not\ used\ because\ all\ vectors\ generate\ memory}}
+\DoxyCodeLine{00593\ \textcolor{comment}{\ \ \ \ \ allocation\ info\ a\ it\ would\ create\ a\ cycle.\ \ */}}
+\DoxyCodeLine{00594\ \ \ \textcolor{keywordtype}{size\_t}\ element\_size\ =\ \textcolor{keyword}{sizeof}\ (\doxymbox{\hyperlink{classmem__alloc__description_a56029902bc4ed894e80b58efae9e5347}{mem\_list\_t}});}
+\DoxyCodeLine{00595\ \ \ \doxymbox{\hyperlink{classmem__alloc__description_a56029902bc4ed894e80b58efae9e5347}{mem\_list\_t}}\ *list\ =\ \doxymbox{\hyperlink{libiberty_8h_af5fbfbf57fcfe9984099612cdc9eb17c}{XCNEWVEC}}\ (\doxymbox{\hyperlink{classmem__alloc__description_a56029902bc4ed894e80b58efae9e5347}{mem\_list\_t}},\ \doxymbox{\hyperlink{classmem__alloc__description_aac3c1a82612a022cc708979268668a5b}{m\_map}}-\/>elements\ ());}
+\DoxyCodeLine{00596\ \ \ \textcolor{keywordtype}{unsigned}\ \doxymbox{\hyperlink{poly-int_8h_a7e98b8a17c0aad30ba64d47b74e2a6c1}{i}}\ =\ 0;}
+\DoxyCodeLine{00597\ }
+\DoxyCodeLine{00598\ \ \ \textcolor{keywordflow}{for}\ (\textcolor{keyword}{typename}\ mem\_map\_t::iterator\ it\ =\ \doxymbox{\hyperlink{classmem__alloc__description_aac3c1a82612a022cc708979268668a5b}{m\_map}}-\/>begin\ ();\ it\ !=\ \doxymbox{\hyperlink{classmem__alloc__description_aac3c1a82612a022cc708979268668a5b}{m\_map}}-\/>end\ ();}
+\DoxyCodeLine{00599\ \ \ \ \ \ \ \ ++it)}
+\DoxyCodeLine{00600\ \ \ \ \ \textcolor{keywordflow}{if}\ ((*it).first-\/>m\_origin\ ==\ origin)}
+\DoxyCodeLine{00601\ \ \ \ \ \ \ list[\doxymbox{\hyperlink{poly-int_8h_a7e98b8a17c0aad30ba64d47b74e2a6c1}{i}}++]\ =\ std::pair<mem\_location*,\ T*>\ (*it);}
+\DoxyCodeLine{00602\ }
+\DoxyCodeLine{00603\ \ \ \doxymbox{\hyperlink{system_8h_a9f05ff60727db71ac2fc874c8476a36c}{qsort}}\ (list,\ \doxymbox{\hyperlink{poly-int_8h_a7e98b8a17c0aad30ba64d47b74e2a6c1}{i}},\ element\_size,\ T::compare);}
+\DoxyCodeLine{00604\ \ \ *length\ =\ \doxymbox{\hyperlink{poly-int_8h_a7e98b8a17c0aad30ba64d47b74e2a6c1}{i}};}
+\DoxyCodeLine{00605\ }
+\DoxyCodeLine{00606\ \ \ \textcolor{keywordflow}{return}\ list;}
+\DoxyCodeLine{00607\ \}}
+\DoxyCodeLine{00608\ }
+\DoxyCodeLine{00609\ \textcolor{comment}{/*\ Get\ sum\ value\ for\ ORIGIN\ type\ of\ allocation\ for\ the\ descriptor.\ \ */}}
+\DoxyCodeLine{00610\ }
+\DoxyCodeLine{00611\ \textcolor{keyword}{template}\ <\textcolor{keyword}{class}\ T>}
+\DoxyCodeLine{00612\ \textcolor{keyword}{inline}\ T}
+\DoxyCodeLine{00613\ \doxymbox{\hyperlink{classmem__alloc__description_a0aeea6cd90279b14295cbd016b7730ea}{mem\_alloc\_description<T>::get\_sum}}\ (\doxymbox{\hyperlink{mem-stats-traits_8h_a0d4f79870c794434cebd6c6513313d1a}{mem\_alloc\_origin}}\ origin)}
+\DoxyCodeLine{00614\ \{}
+\DoxyCodeLine{00615\ \ \ \textcolor{keywordtype}{unsigned}\ length;}
+\DoxyCodeLine{00616\ \ \ \doxymbox{\hyperlink{classmem__alloc__description_a56029902bc4ed894e80b58efae9e5347}{mem\_list\_t}}\ *list\ =\ \doxymbox{\hyperlink{classmem__alloc__description_aeb3f29b878510da68bd73c8b1ac08d8d}{get\_list}}\ (origin,\ \&length);}
+\DoxyCodeLine{00617\ \ \ T\ sum;}
+\DoxyCodeLine{00618\ }
+\DoxyCodeLine{00619\ \ \ \textcolor{keywordflow}{for}\ (\textcolor{keywordtype}{unsigned}\ \doxymbox{\hyperlink{poly-int_8h_a7e98b8a17c0aad30ba64d47b74e2a6c1}{i}}\ =\ 0;\ \doxymbox{\hyperlink{poly-int_8h_a7e98b8a17c0aad30ba64d47b74e2a6c1}{i}}\ <\ length;\ \doxymbox{\hyperlink{poly-int_8h_a7e98b8a17c0aad30ba64d47b74e2a6c1}{i}}++)}
+\DoxyCodeLine{00620\ \ \ \ \ sum\ =\ sum\ +\ *list[\doxymbox{\hyperlink{poly-int_8h_a7e98b8a17c0aad30ba64d47b74e2a6c1}{i}}].second;}
+\DoxyCodeLine{00621\ }
+\DoxyCodeLine{00622\ \ \ \doxymbox{\hyperlink{libiberty_8h_a383edbfc2f7d01cc32edb6ed1337c600}{XDELETEVEC}}\ (list);}
+\DoxyCodeLine{00623\ }
+\DoxyCodeLine{00624\ \ \ \textcolor{keywordflow}{return}\ sum;}
+\DoxyCodeLine{00625\ \}}
+\DoxyCodeLine{00626\ }
+\DoxyCodeLine{00627\ \textcolor{comment}{/*\ Dump\ all\ tracked\ instances\ of\ type\ ORIGIN.\ If\ we\ want\ to\ process\ custom}}
+\DoxyCodeLine{00628\ \textcolor{comment}{\ \ \ order,\ CMP\ comparator\ can\ be\ provided.\ \ */}}
+\DoxyCodeLine{00629\ }
+\DoxyCodeLine{00630\ \textcolor{keyword}{template}\ <\textcolor{keyword}{class}\ T>}
+\DoxyCodeLine{00631\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{void}}
+\DoxyCodeLine{00632\ \doxymbox{\hyperlink{classmem__alloc__description_a0f38dd6b3b1917e3b608fedf1e88cb0e}{mem\_alloc\_description<T>::dump}}\ (\doxymbox{\hyperlink{mem-stats-traits_8h_a0d4f79870c794434cebd6c6513313d1a}{mem\_alloc\_origin}}\ origin)}
+\DoxyCodeLine{00633\ \{}
+\DoxyCodeLine{00634\ \ \ \textcolor{keywordtype}{unsigned}\ length;}
+\DoxyCodeLine{00635\ }
+\DoxyCodeLine{00636\ \ \ fprintf\ (stderr,\ \textcolor{stringliteral}{"{}\(\backslash\)n"{}});}
+\DoxyCodeLine{00637\ }
+\DoxyCodeLine{00638\ \ \ \doxymbox{\hyperlink{classmem__alloc__description_a56029902bc4ed894e80b58efae9e5347}{mem\_list\_t}}\ *list\ =\ \doxymbox{\hyperlink{classmem__alloc__description_aeb3f29b878510da68bd73c8b1ac08d8d}{get\_list}}\ (origin,\ \&length);}
+\DoxyCodeLine{00639\ \ \ T\ total\ =\ \doxymbox{\hyperlink{classmem__alloc__description_a0aeea6cd90279b14295cbd016b7730ea}{get\_sum}}\ (origin);}
+\DoxyCodeLine{00640\ }
+\DoxyCodeLine{00641\ \ \ T::print\_dash\_line\ ();}
+\DoxyCodeLine{00642\ \ \ T::dump\_header\ (\doxymbox{\hyperlink{classmem__location_a6050cb7c9aba71c267578bdb7020e993}{mem\_location::get\_origin\_name}}\ (origin));}
+\DoxyCodeLine{00643\ \ \ T::print\_dash\_line\ ();}
+\DoxyCodeLine{00644\ \ \ \textcolor{keywordflow}{for}\ (\textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{poly-int_8h_a7e98b8a17c0aad30ba64d47b74e2a6c1}{i}}\ =\ length\ -\/\ 1;\ \doxymbox{\hyperlink{poly-int_8h_a7e98b8a17c0aad30ba64d47b74e2a6c1}{i}}\ >=\ 0;\ \doxymbox{\hyperlink{poly-int_8h_a7e98b8a17c0aad30ba64d47b74e2a6c1}{i}}-\/-\/)}
+\DoxyCodeLine{00645\ \ \ \ \ list[\doxymbox{\hyperlink{poly-int_8h_a7e98b8a17c0aad30ba64d47b74e2a6c1}{i}}].second-\/>dump\ (list[\doxymbox{\hyperlink{poly-int_8h_a7e98b8a17c0aad30ba64d47b74e2a6c1}{i}}].first,\ total);}
+\DoxyCodeLine{00646\ \ \ T::print\_dash\_line\ ();}
+\DoxyCodeLine{00647\ }
+\DoxyCodeLine{00648\ \ \ T::dump\_header\ (\doxymbox{\hyperlink{classmem__location_a6050cb7c9aba71c267578bdb7020e993}{mem\_location::get\_origin\_name}}\ (origin));}
+\DoxyCodeLine{00649\ \ \ T::print\_dash\_line\ ();}
+\DoxyCodeLine{00650\ \ \ total.dump\_footer\ ();}
+\DoxyCodeLine{00651\ \ \ T::print\_dash\_line\ ();}
+\DoxyCodeLine{00652\ }
+\DoxyCodeLine{00653\ \ \ \doxymbox{\hyperlink{libiberty_8h_a383edbfc2f7d01cc32edb6ed1337c600}{XDELETEVEC}}\ (list);}
+\DoxyCodeLine{00654\ }
+\DoxyCodeLine{00655\ \ \ fprintf\ (stderr,\ \textcolor{stringliteral}{"{}\(\backslash\)n"{}});}
+\DoxyCodeLine{00656\ \}}
+\DoxyCodeLine{00657\ }
+\DoxyCodeLine{00658\ \textcolor{preprocessor}{\#endif\ }\textcolor{comment}{//\ GCC\_MEM\_STATS\_H}}
+
+\end{DoxyCode}

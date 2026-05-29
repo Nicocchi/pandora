@@ -1,0 +1,28 @@
+var classbase__pool__allocator =
+[
+    [ "allocation_object", "structbase__pool__allocator_1_1allocation__object.html", "structbase__pool__allocator_1_1allocation__object" ],
+    [ "allocation_pool_list", "structbase__pool__allocator_1_1allocation__pool__list.html", "structbase__pool__allocator_1_1allocation__pool__list" ],
+    [ "base_pool_allocator", "classbase__pool__allocator.html#aba4165e99865cfe917e2c457bc9fe62f", null ],
+    [ "~base_pool_allocator", "classbase__pool__allocator.html#a2edcdc708f01bde9b098361905b570ea", null ],
+    [ "align_eight", "classbase__pool__allocator.html#ad7610ef802c1cf21ff88e2a2be0372f7", null ],
+    [ "allocate", "classbase__pool__allocator.html#af530711b11f3f261b93af61041b3af44", null ],
+    [ "initialize", "classbase__pool__allocator.html#a8e999ab49f858989528ff0cdf4a7161b", null ],
+    [ "num_elts_current", "classbase__pool__allocator.html#ac0a924488e60dcba3217a1577480a696", null ],
+    [ "release", "classbase__pool__allocator.html#aee8fb60ae89a3c6490163734bffa188e", null ],
+    [ "release_if_empty", "classbase__pool__allocator.html#a3189ad59bd6027b68e4682666f59a657", null ],
+    [ "remove", "classbase__pool__allocator.html#ad00a867682d954b1bb93dbdc871e6516", null ],
+    [ "m_block_list", "classbase__pool__allocator.html#a5b2fc5281508b2b6884db972a05be627", null ],
+    [ "m_blocks_allocated", "classbase__pool__allocator.html#ac66fc4bdb30d2b688458ba7270b72063", null ],
+    [ "m_elt_size", "classbase__pool__allocator.html#addff7d5727970e08d02c159350a1e445", null ],
+    [ "m_elts_allocated", "classbase__pool__allocator.html#ae3d23db3935abc98cad2ac95bd686b05", null ],
+    [ "m_elts_free", "classbase__pool__allocator.html#a08a7df3bae7f8320ef2b3275cee1ae6b", null ],
+    [ "m_elts_per_block", "classbase__pool__allocator.html#abc75c797f55058ec6a29bcd68cf6a428", null ],
+    [ "m_id", "classbase__pool__allocator.html#a4ae271e2cfe8ccaa31d14283c050012d", null ],
+    [ "m_initialized", "classbase__pool__allocator.html#af79674222c418f284c543dce89e76030", null ],
+    [ "m_location", "classbase__pool__allocator.html#af0d078a2d4d4b3d990b3e45d5161f180", null ],
+    [ "m_name", "classbase__pool__allocator.html#a263d802e25bcc486e87f27e9cab51a85", null ],
+    [ "m_returned_free_list", "classbase__pool__allocator.html#a6fda96f6b40f0f97d4db7b3853d33b31", null ],
+    [ "m_size", "classbase__pool__allocator.html#a97dbd86b8d12c066185a28032193a04d", null ],
+    [ "m_virgin_elts_remaining", "classbase__pool__allocator.html#a41aa0af946f8c24d53d8933b4be39f68", null ],
+    [ "m_virgin_free_list", "classbase__pool__allocator.html#a2ee59ca56f77b6356c4c950f170e5b98", null ]
+];

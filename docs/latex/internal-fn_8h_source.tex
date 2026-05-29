@@ -1,0 +1,289 @@
+\doxysection{internal-\/fn.h}
+\hypertarget{internal-fn_8h_source}{}\label{internal-fn_8h_source}\index{toolchain/x86\_64-\/elf/lib/gcc/x86\_64-\/elf/14.2.0/plugin/include/internal-\/fn.h@{toolchain/x86\_64-\/elf/lib/gcc/x86\_64-\/elf/14.2.0/plugin/include/internal-\/fn.h}}
+\doxymbox{\hyperlink{internal-fn_8h}{Go to the documentation of this file.}}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001\ \textcolor{comment}{/*\ Internal\ functions.}}
+\DoxyCodeLine{00002\ \textcolor{comment}{\ \ \ Copyright\ (C)\ 2011-\/2024\ Free\ Software\ Foundation,\ Inc.}}
+\DoxyCodeLine{00003\ \textcolor{comment}{}}
+\DoxyCodeLine{00004\ \textcolor{comment}{This\ file\ is\ part\ of\ GCC.}}
+\DoxyCodeLine{00005\ \textcolor{comment}{}}
+\DoxyCodeLine{00006\ \textcolor{comment}{GCC\ is\ free\ software;\ you\ can\ redistribute\ it\ and/or\ modify\ it\ under}}
+\DoxyCodeLine{00007\ \textcolor{comment}{the\ terms\ of\ the\ GNU\ General\ Public\ License\ as\ published\ by\ the\ Free}}
+\DoxyCodeLine{00008\ \textcolor{comment}{Software\ Foundation;\ either\ version\ 3,\ or\ (at\ your\ option)\ any\ later}}
+\DoxyCodeLine{00009\ \textcolor{comment}{version.}}
+\DoxyCodeLine{00010\ \textcolor{comment}{}}
+\DoxyCodeLine{00011\ \textcolor{comment}{GCC\ is\ distributed\ in\ the\ hope\ that\ it\ will\ be\ useful,\ but\ WITHOUT\ ANY}}
+\DoxyCodeLine{00012\ \textcolor{comment}{WARRANTY;\ without\ even\ the\ implied\ warranty\ of\ MERCHANTABILITY\ or}}
+\DoxyCodeLine{00013\ \textcolor{comment}{FITNESS\ FOR\ A\ PARTICULAR\ PURPOSE.\ \ See\ the\ GNU\ General\ Public\ License}}
+\DoxyCodeLine{00014\ \textcolor{comment}{for\ more\ details.}}
+\DoxyCodeLine{00015\ \textcolor{comment}{}}
+\DoxyCodeLine{00016\ \textcolor{comment}{You\ should\ have\ received\ a\ copy\ of\ the\ GNU\ General\ Public\ License}}
+\DoxyCodeLine{00017\ \textcolor{comment}{along\ with\ GCC;\ see\ the\ file\ COPYING3.\ \ If\ not\ see}}
+\DoxyCodeLine{00018\ \textcolor{comment}{<http://www.gnu.org/licenses/>.\ \ */}}
+\DoxyCodeLine{00019\ }
+\DoxyCodeLine{00020\ \textcolor{preprocessor}{\#ifndef\ GCC\_INTERNAL\_FN\_H}}
+\DoxyCodeLine{00021\ \textcolor{preprocessor}{\#define\ GCC\_INTERNAL\_FN\_H}}
+\DoxyCodeLine{00022\ }
+\DoxyCodeLine{00023\ \textcolor{preprocessor}{\#include\ "{}\doxymbox{\hyperlink{insn-codes_8h}{insn-\/codes.h}}"{}}}
+\DoxyCodeLine{00024\ \textcolor{preprocessor}{\#include\ "{}\doxymbox{\hyperlink{insn-opinit_8h}{insn-\/opinit.h}}"{}}}
+\DoxyCodeLine{00025\ }
+\DoxyCodeLine{00026\ }
+\DoxyCodeLine{00027\ \textcolor{comment}{/*\ INTEGER\_CST\ values\ for\ IFN\_UNIQUE\ function\ arg-\/0.}}
+\DoxyCodeLine{00028\ \textcolor{comment}{}}
+\DoxyCodeLine{00029\ \textcolor{comment}{\ \ \ UNSPEC:\ Undifferentiated\ UNIQUE.}}
+\DoxyCodeLine{00030\ \textcolor{comment}{}}
+\DoxyCodeLine{00031\ \textcolor{comment}{\ \ \ FORK\ and\ JOIN\ mark\ the\ points\ at\ which\ OpenACC\ partitioned}}
+\DoxyCodeLine{00032\ \textcolor{comment}{\ \ \ execution\ is\ entered\ or\ exited.}}
+\DoxyCodeLine{00033\ \textcolor{comment}{\ \ \ \ \ \ DEP\_VAR\ =\ UNIQUE\ (\{FORK,JOIN\},\ DEP\_VAR,\ AXIS)}}
+\DoxyCodeLine{00034\ \textcolor{comment}{}}
+\DoxyCodeLine{00035\ \textcolor{comment}{\ \ \ HEAD\_MARK\ and\ TAIL\_MARK\ are\ used\ to\ demark\ the\ sequence\ entering}}
+\DoxyCodeLine{00036\ \textcolor{comment}{\ \ \ or\ leaving\ partitioned\ execution.}}
+\DoxyCodeLine{00037\ \textcolor{comment}{\ \ \ \ \ \ DEP\_VAR\ =\ UNIQUE\ (\{HEAD,TAIL\}\_MARK,\ REMAINING\_MARKS,\ ...PRIMARY\_FLAGS)}}
+\DoxyCodeLine{00038\ \textcolor{comment}{}}
+\DoxyCodeLine{00039\ \textcolor{comment}{\ \ \ The\ PRIMARY\_FLAGS\ only\ occur\ on\ the\ first\ HEAD\_MARK\ of\ a\ sequence.}}
+\DoxyCodeLine{00040\ \textcolor{comment}{}}
+\DoxyCodeLine{00041\ \textcolor{comment}{\ \ \ PRIVATE\ captures\ variables\ to\ be\ made\ private\ at\ the\ surrounding\ parallelism}}
+\DoxyCodeLine{00042\ \textcolor{comment}{\ \ \ level.\ \ */}}
+\DoxyCodeLine{00043\ \textcolor{preprocessor}{\#define\ IFN\_UNIQUE\_CODES\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00044\ \textcolor{preprocessor}{\ \ DEF(UNSPEC),\ \ \(\backslash\)}}
+\DoxyCodeLine{00045\ \textcolor{preprocessor}{\ \ \ \ DEF(OACC\_FORK),\ DEF(OACC\_JOIN),\ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00046\ \textcolor{preprocessor}{\ \ \ \ DEF(OACC\_HEAD\_MARK),\ DEF(OACC\_TAIL\_MARK),\ \ \ \(\backslash\)}}
+\DoxyCodeLine{00047\ \textcolor{preprocessor}{\ \ \ \ DEF(OACC\_PRIVATE)}}
+\DoxyCodeLine{00048\ }
+\DoxyCodeLine{00049\ \textcolor{keyword}{enum}\ \doxymbox{\hyperlink{internal-fn_8h_a786c0602df68eb610d605b6e36e6a9db}{ifn\_unique\_kind}}\ \{}
+\DoxyCodeLine{00050\ \textcolor{preprocessor}{\#define\ DEF(X)\ IFN\_UNIQUE\_\#\#X}}
+\DoxyCodeLine{00051\ \ \ \doxymbox{\hyperlink{internal-fn_8h_a99124598cd47c692ff9f3aff0a2b020e}{IFN\_UNIQUE\_CODES}}}
+\DoxyCodeLine{00052\ \textcolor{preprocessor}{\#undef\ DEF}}
+\DoxyCodeLine{00053\ \};}
+\DoxyCodeLine{00054\ }
+\DoxyCodeLine{00055\ \textcolor{comment}{/*\ INTEGER\_CST\ values\ for\ IFN\_GOACC\_LOOP\ arg-\/0.\ \ Allows\ the\ precise}}
+\DoxyCodeLine{00056\ \textcolor{comment}{\ \ \ stepping\ of\ the\ compute\ geometry\ over\ the\ loop\ iterations\ to\ be}}
+\DoxyCodeLine{00057\ \textcolor{comment}{\ \ \ deferred\ until\ it\ is\ known\ which\ compiler\ is\ generating\ the\ code.}}
+\DoxyCodeLine{00058\ \textcolor{comment}{\ \ \ The\ action\ is\ encoded\ in\ a\ constant\ first\ argument.}}
+\DoxyCodeLine{00059\ \textcolor{comment}{}}
+\DoxyCodeLine{00060\ \textcolor{comment}{\ \ \ \ \ CHUNK\_MAX\ =\ LOOP\ (CODE\_CHUNKS,\ DIR,\ RANGE,\ STEP,\ CHUNK\_SIZE,\ MASK)}}
+\DoxyCodeLine{00061\ \textcolor{comment}{\ \ \ \ \ STEP\ =\ LOOP\ (CODE\_STEP,\ DIR,\ RANGE,\ STEP,\ CHUNK\_SIZE,\ MASK)}}
+\DoxyCodeLine{00062\ \textcolor{comment}{\ \ \ \ \ OFFSET\ =\ LOOP\ (CODE\_OFFSET,\ DIR,\ RANGE,\ STEP,\ CHUNK\_SIZE,\ MASK,\ CHUNK\_NO)}}
+\DoxyCodeLine{00063\ \textcolor{comment}{\ \ \ \ \ BOUND\ =\ LOOP\ (CODE\_BOUND,\ DIR,\ RANGE,\ STEP,\ CHUNK\_SIZE,\ MASK,\ OFFSET)}}
+\DoxyCodeLine{00064\ \textcolor{comment}{}}
+\DoxyCodeLine{00065\ \textcolor{comment}{\ \ \ \ \ DIR\ -\/\ +1\ for\ up\ loop,\ -\/1\ for\ down\ loop}}
+\DoxyCodeLine{00066\ \textcolor{comment}{\ \ \ \ \ RANGE\ -\/\ Range\ of\ loop\ (END\ -\/\ BASE)}}
+\DoxyCodeLine{00067\ \textcolor{comment}{\ \ \ \ \ STEP\ -\/\ iteration\ step\ size}}
+\DoxyCodeLine{00068\ \textcolor{comment}{\ \ \ \ \ CHUNKING\ -\/\ size\ of\ chunking,\ (constant\ zero\ for\ no\ chunking)}}
+\DoxyCodeLine{00069\ \textcolor{comment}{\ \ \ \ \ CHUNK\_NO\ -\/\ chunk\ number}}
+\DoxyCodeLine{00070\ \textcolor{comment}{\ \ \ \ \ MASK\ -\/\ partitioning\ mask.\ \ */}}
+\DoxyCodeLine{00071\ }
+\DoxyCodeLine{00072\ \textcolor{preprocessor}{\#define\ IFN\_GOACC\_LOOP\_CODES\ \(\backslash\)}}
+\DoxyCodeLine{00073\ \textcolor{preprocessor}{\ \ DEF(CHUNKS),\ DEF(STEP),\ DEF(OFFSET),\ DEF(BOUND)}}
+\DoxyCodeLine{00074\ \textcolor{keyword}{enum}\ \doxymbox{\hyperlink{internal-fn_8h_a8fd233cd7c74a73ca35fd2ebc3373521}{ifn\_goacc\_loop\_kind}}\ \{}
+\DoxyCodeLine{00075\ \textcolor{preprocessor}{\#define\ DEF(X)\ IFN\_GOACC\_LOOP\_\#\#X}}
+\DoxyCodeLine{00076\ \ \ \doxymbox{\hyperlink{internal-fn_8h_a6c2fff1e2a1e837823f077e5e0b5f810}{IFN\_GOACC\_LOOP\_CODES}}}
+\DoxyCodeLine{00077\ \textcolor{preprocessor}{\#undef\ DEF}}
+\DoxyCodeLine{00078\ \};}
+\DoxyCodeLine{00079\ }
+\DoxyCodeLine{00080\ \textcolor{comment}{/*\ The\ GOACC\_REDUCTION\ function\ defines\ a\ generic\ interface\ to\ support}}
+\DoxyCodeLine{00081\ \textcolor{comment}{\ \ \ gang,\ worker\ and\ vector\ reductions.\ \ All\ calls\ are\ of\ the\ following}}
+\DoxyCodeLine{00082\ \textcolor{comment}{\ \ \ form:}}
+\DoxyCodeLine{00083\ \textcolor{comment}{}}
+\DoxyCodeLine{00084\ \textcolor{comment}{\ \ \ \ \ V\ =\ REDUCTION\ (CODE,\ REF\_TO\_RES,\ LOCAL\_VAR,\ LEVEL,\ OP,\ OFFSET)}}
+\DoxyCodeLine{00085\ \textcolor{comment}{}}
+\DoxyCodeLine{00086\ \textcolor{comment}{\ \ \ REF\_TO\_RES\ -\/\ is\ a\ reference\ to\ the\ original\ reduction\ varl,\ may\ be\ NULL}}
+\DoxyCodeLine{00087\ \textcolor{comment}{\ \ \ LOCAL\_VAR\ is\ the\ intermediate\ reduction\ variable}}
+\DoxyCodeLine{00088\ \textcolor{comment}{\ \ \ LEVEL\ corresponds\ to\ the\ GOMP\_DIM\ of\ the\ reduction}}
+\DoxyCodeLine{00089\ \textcolor{comment}{\ \ \ OP\ is\ the\ tree\ code\ of\ the\ reduction\ operation}}
+\DoxyCodeLine{00090\ \textcolor{comment}{\ \ \ OFFSET\ may\ be\ used\ as\ an\ offset\ into\ a\ reduction\ array\ for\ the}}
+\DoxyCodeLine{00091\ \textcolor{comment}{\ \ \ \ \ \ \ \ \ \ reductions\ occuring\ at\ this\ level.}}
+\DoxyCodeLine{00092\ \textcolor{comment}{\ \ \ In\ general\ the\ return\ value\ is\ LOCAL\_VAR,\ which\ creates\ a\ data}}
+\DoxyCodeLine{00093\ \textcolor{comment}{\ \ \ dependency\ between\ calls\ operating\ on\ the\ same\ reduction.\ \ */}}
+\DoxyCodeLine{00094\ }
+\DoxyCodeLine{00095\ \textcolor{preprocessor}{\#define\ IFN\_GOACC\_REDUCTION\_CODES\ \(\backslash\)}}
+\DoxyCodeLine{00096\ \textcolor{preprocessor}{\ \ DEF(SETUP),\ DEF(INIT),\ DEF(FINI),\ DEF(TEARDOWN)}}
+\DoxyCodeLine{00097\ \textcolor{keyword}{enum}\ \doxymbox{\hyperlink{internal-fn_8h_aa1ef225dd780b0cc130fb280332d2832}{ifn\_goacc\_reduction\_kind}}\ \{}
+\DoxyCodeLine{00098\ \textcolor{preprocessor}{\#define\ DEF(X)\ IFN\_GOACC\_REDUCTION\_\#\#X}}
+\DoxyCodeLine{00099\ \ \ \doxymbox{\hyperlink{internal-fn_8h_a1c4fe2b2b73daa7d13998c3c3c964980}{IFN\_GOACC\_REDUCTION\_CODES}}}
+\DoxyCodeLine{00100\ \textcolor{preprocessor}{\#undef\ DEF}}
+\DoxyCodeLine{00101\ \};}
+\DoxyCodeLine{00102\ }
+\DoxyCodeLine{00103\ \textcolor{comment}{/*\ Initialize\ internal\ function\ tables.\ \ */}}
+\DoxyCodeLine{00104\ }
+\DoxyCodeLine{00105\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{internal-fn_8h_a62c89df8269f10ded6ec5c7996b6cc47}{init\_internal\_fns}}\ ();}
+\DoxyCodeLine{00106\ }
+\DoxyCodeLine{00107\ \textcolor{comment}{/*\ Return\ the\ name\ of\ internal\ function\ FN.\ \ The\ name\ is\ only\ meaningful}}
+\DoxyCodeLine{00108\ \textcolor{comment}{\ \ \ for\ dumps;\ it\ has\ no\ linkage.\ \ */}}
+\DoxyCodeLine{00109\ }
+\DoxyCodeLine{00110\ \textcolor{keyword}{extern}\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *\textcolor{keyword}{const}\ \doxymbox{\hyperlink{internal-fn_8h_a7c84ed982e1f5fb4bd8548c3f049066c}{internal\_fn\_name\_array}}[];}
+\DoxyCodeLine{00111\ }
+\DoxyCodeLine{00112\ \textcolor{keyword}{inline}\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *}
+\DoxyCodeLine{00113\ \doxymbox{\hyperlink{internal-fn_8h_a4eebf40bb83d59e1dbccf5d913685cc6}{internal\_fn\_name}}\ (\textcolor{keyword}{enum}\ \doxymbox{\hyperlink{tree-core_8h_a998e964673e553e753a2d04c9d19d143}{internal\_fn}}\ fn)}
+\DoxyCodeLine{00114\ \{}
+\DoxyCodeLine{00115\ \ \ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{internal-fn_8h_a7c84ed982e1f5fb4bd8548c3f049066c}{internal\_fn\_name\_array}}[(int)\ fn];}
+\DoxyCodeLine{00116\ \}}
+\DoxyCodeLine{00117\ }
+\DoxyCodeLine{00118\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{tree-core_8h_a998e964673e553e753a2d04c9d19d143}{internal\_fn}}\ \doxymbox{\hyperlink{internal-fn_8h_afa61380c96a2623f1250ef1a547c047b}{lookup\_internal\_fn}}\ (\textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *);}
+\DoxyCodeLine{00119\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{internal-fn_8h_a9a1e2c3342d1eaeb1c5ed80fddc213dc}{lookup\_hilo\_internal\_fn}}\ (\doxymbox{\hyperlink{tree-core_8h_a998e964673e553e753a2d04c9d19d143}{internal\_fn}},\ \doxymbox{\hyperlink{tree-core_8h_a998e964673e553e753a2d04c9d19d143}{internal\_fn}}\ *,\ \doxymbox{\hyperlink{tree-core_8h_a998e964673e553e753a2d04c9d19d143}{internal\_fn}}\ *);}
+\DoxyCodeLine{00120\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{internal-fn_8h_acc36de8e0215cd79442e171fbe192ca2}{lookup\_evenodd\_internal\_fn}}\ (\doxymbox{\hyperlink{tree-core_8h_a998e964673e553e753a2d04c9d19d143}{internal\_fn}},\ \doxymbox{\hyperlink{tree-core_8h_a998e964673e553e753a2d04c9d19d143}{internal\_fn}}\ *,}
+\DoxyCodeLine{00121\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{tree-core_8h_a998e964673e553e753a2d04c9d19d143}{internal\_fn}}\ *);}
+\DoxyCodeLine{00122\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{gensupport_8h_a87f582150cd9b610f1910aff8687894f}{optab}}\ \doxymbox{\hyperlink{internal-fn_8h_abc68c0019aa08103aaf1a4b0b381ec20}{direct\_internal\_fn\_optab}}\ (\doxymbox{\hyperlink{tree-core_8h_a998e964673e553e753a2d04c9d19d143}{internal\_fn}},\ \doxymbox{\hyperlink{coretypes_8h_a7d5d4df21b1d84d1d7a847fdd8ebe6a9}{tree\_pair}});}
+\DoxyCodeLine{00123\ }
+\DoxyCodeLine{00124\ \textcolor{comment}{/*\ Return\ the\ ECF\_*\ flags\ for\ function\ FN.\ \ */}}
+\DoxyCodeLine{00125\ }
+\DoxyCodeLine{00126\ \textcolor{keyword}{extern}\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{internal-fn_8h_a904bc01934f3a5bd4e8ef3bf41991b84}{internal\_fn\_flags\_array}}[];}
+\DoxyCodeLine{00127\ }
+\DoxyCodeLine{00128\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{int}}
+\DoxyCodeLine{00129\ \doxymbox{\hyperlink{internal-fn_8h_a441f752fd9d3620adb4183bbf37e17d8}{internal\_fn\_flags}}\ (\textcolor{keyword}{enum}\ \doxymbox{\hyperlink{tree-core_8h_a998e964673e553e753a2d04c9d19d143}{internal\_fn}}\ fn)}
+\DoxyCodeLine{00130\ \{}
+\DoxyCodeLine{00131\ \ \ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{internal-fn_8h_a904bc01934f3a5bd4e8ef3bf41991b84}{internal\_fn\_flags\_array}}[(int)\ fn];}
+\DoxyCodeLine{00132\ \}}
+\DoxyCodeLine{00133\ }
+\DoxyCodeLine{00134\ \textcolor{comment}{/*\ Return\ fnspec\ for\ function\ FN.\ \ */}}
+\DoxyCodeLine{00135\ }
+\DoxyCodeLine{00136\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{coretypes_8h_ae5708c4d4b300570eebe0bc0c78facbc}{GTY}}(())\ \doxymbox{\hyperlink{coretypes_8h_ad41eb6a6028ff5b3fd00b1ee9f35ed46}{const\_tree}}\ internal\_fn\_fnspec\_array[IFN\_LAST\ +\ 1];}
+\DoxyCodeLine{00137\ }
+\DoxyCodeLine{00138\ \doxymbox{\hyperlink{ansidecl_8h_a00d24c7231be28dbaf71f5408f30e44c}{inline}}\ \doxymbox{\hyperlink{coretypes_8h_ad41eb6a6028ff5b3fd00b1ee9f35ed46}{const\_tree}}}
+\DoxyCodeLine{00139\ \doxymbox{\hyperlink{internal-fn_8h_a38a270e0b0febbf305d3136fd90eebe6}{internal\_fn\_fnspec}}\ (enum\ \doxymbox{\hyperlink{tree-core_8h_a998e964673e553e753a2d04c9d19d143}{internal\_fn}}\ fn)}
+\DoxyCodeLine{00140\ \{}
+\DoxyCodeLine{00141\ \ \ \textcolor{keywordflow}{return}\ internal\_fn\_fnspec\_array[(int)\ fn];}
+\DoxyCodeLine{00142\ \}}
+\DoxyCodeLine{00143\ }
+\DoxyCodeLine{00144\ \textcolor{comment}{/*\ Describes\ an\ internal\ function\ that\ maps\ directly\ to\ an\ optab.\ \ */}}
+\DoxyCodeLine{00145\ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{structdirect__internal__fn__info}{direct\_internal\_fn\_info}}}
+\DoxyCodeLine{00146\ \{}
+\DoxyCodeLine{00147\ \ \ \textcolor{comment}{/*\ optabs\ can\ be\ parameterized\ by\ one\ or\ two\ modes.\ \ These\ fields\ describe}}
+\DoxyCodeLine{00148\ \textcolor{comment}{\ \ \ \ \ how\ to\ select\ those\ modes\ from\ the\ types\ of\ the\ return\ value\ and}}
+\DoxyCodeLine{00149\ \textcolor{comment}{\ \ \ \ \ arguments.\ \ A\ value\ of\ -\/1\ says\ that\ the\ mode\ is\ determined\ by\ the}}
+\DoxyCodeLine{00150\ \textcolor{comment}{\ \ \ \ \ return\ type\ while\ a\ value\ N\ >=\ 0\ says\ that\ the\ mode\ is\ determined\ by}}
+\DoxyCodeLine{00151\ \textcolor{comment}{\ \ \ \ \ the\ type\ of\ argument\ N.\ \ A\ value\ of\ -\/2\ says\ that\ this\ internal}}
+\DoxyCodeLine{00152\ \textcolor{comment}{\ \ \ \ \ function\ isn't\ directly\ mapped\ to\ an\ optab.\ \ */}}
+\DoxyCodeLine{00153\ \ \ \textcolor{keywordtype}{signed}\ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{structdirect__internal__fn__info_a55cee21ba0a4ac6809819feaf9784809}{type0}}\ :\ 8;}
+\DoxyCodeLine{00154\ \ \ \textcolor{keywordtype}{signed}\ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{structdirect__internal__fn__info_a1ded31c5b19619359ec28a03aec04912}{type1}}\ :\ 8;}
+\DoxyCodeLine{00155\ \ \ \textcolor{comment}{/*\ True\ if\ the\ function\ is\ pointwise,\ so\ that\ it\ can\ be\ vectorized\ by}}
+\DoxyCodeLine{00156\ \textcolor{comment}{\ \ \ \ \ converting\ the\ return\ type\ and\ all\ argument\ types\ to\ vectors\ of\ the}}
+\DoxyCodeLine{00157\ \textcolor{comment}{\ \ \ \ \ same\ number\ of\ elements.\ \ E.g.\ we\ can\ vectorize\ an\ IFN\_SQRT\ on}}
+\DoxyCodeLine{00158\ \textcolor{comment}{\ \ \ \ \ floats\ as\ an\ IFN\_SQRT\ on\ vectors\ of\ N\ floats.}}
+\DoxyCodeLine{00159\ \textcolor{comment}{}}
+\DoxyCodeLine{00160\ \textcolor{comment}{\ \ \ \ \ This\ only\ needs\ 1\ bit,\ but\ occupies\ the\ full\ 16\ to\ ensure\ a\ nice}}
+\DoxyCodeLine{00161\ \textcolor{comment}{\ \ \ \ \ layout.\ \ */}}
+\DoxyCodeLine{00162\ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{structdirect__internal__fn__info_ab826b05ce1f568d6c4c64ce25dc0d3e8}{vectorizable}}\ :\ 16;}
+\DoxyCodeLine{00163\ \};}
+\DoxyCodeLine{00164\ }
+\DoxyCodeLine{00165\ \textcolor{keyword}{extern}\ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{structdirect__internal__fn__info}{direct\_internal\_fn\_info}}\ \doxymbox{\hyperlink{internal-fn_8h_a618190a2a9cdc4bfe649639478991a8f}{direct\_internal\_fn\_array}}[IFN\_LAST\ +\ 1];}
+\DoxyCodeLine{00166\ }
+\DoxyCodeLine{00167\ \textcolor{comment}{/*\ Return\ true\ if\ FN\ is\ mapped\ directly\ to\ an\ optab.\ \ */}}
+\DoxyCodeLine{00168\ }
+\DoxyCodeLine{00169\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{bool}}
+\DoxyCodeLine{00170\ \doxymbox{\hyperlink{internal-fn_8h_a15c1cd1a317401eb33b6e17dc025de9b}{direct\_internal\_fn\_p}}\ (\doxymbox{\hyperlink{tree-core_8h_a998e964673e553e753a2d04c9d19d143}{internal\_fn}}\ fn)}
+\DoxyCodeLine{00171\ \{}
+\DoxyCodeLine{00172\ \ \ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{internal-fn_8h_a618190a2a9cdc4bfe649639478991a8f}{direct\_internal\_fn\_array}}[fn].type0\ >=\ -\/1;}
+\DoxyCodeLine{00173\ \}}
+\DoxyCodeLine{00174\ }
+\DoxyCodeLine{00175\ \textcolor{comment}{/*\ Return\ true\ if\ FN\ is\ a\ direct\ internal\ function\ that\ can\ be\ vectorized\ by}}
+\DoxyCodeLine{00176\ \textcolor{comment}{\ \ \ converting\ the\ return\ type\ and\ all\ argument\ types\ to\ vectors\ of\ the\ same}}
+\DoxyCodeLine{00177\ \textcolor{comment}{\ \ \ number\ of\ elements.\ \ E.g.\ we\ can\ vectorize\ an\ IFN\_SQRT\ on\ floats\ as\ an}}
+\DoxyCodeLine{00178\ \textcolor{comment}{\ \ \ IFN\_SQRT\ on\ vectors\ of\ N\ floats.\ \ */}}
+\DoxyCodeLine{00179\ }
+\DoxyCodeLine{00180\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{bool}}
+\DoxyCodeLine{00181\ \doxymbox{\hyperlink{internal-fn_8h_a05985022013dedf6ffa75fd345d17b3c}{vectorizable\_internal\_fn\_p}}\ (\doxymbox{\hyperlink{tree-core_8h_a998e964673e553e753a2d04c9d19d143}{internal\_fn}}\ fn)}
+\DoxyCodeLine{00182\ \{}
+\DoxyCodeLine{00183\ \ \ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{internal-fn_8h_a618190a2a9cdc4bfe649639478991a8f}{direct\_internal\_fn\_array}}[fn].vectorizable;}
+\DoxyCodeLine{00184\ \}}
+\DoxyCodeLine{00185\ }
+\DoxyCodeLine{00186\ \textcolor{comment}{/*\ Return\ optab\ information\ about\ internal\ function\ FN.\ \ Only\ meaningful}}
+\DoxyCodeLine{00187\ \textcolor{comment}{\ \ \ if\ direct\_internal\_fn\_p\ (FN).\ \ */}}
+\DoxyCodeLine{00188\ }
+\DoxyCodeLine{00189\ \textcolor{keyword}{inline}\ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{structdirect__internal__fn__info}{direct\_internal\_fn\_info}}\ \&}
+\DoxyCodeLine{00190\ \doxymbox{\hyperlink{internal-fn_8h_a0f7beaffc2e7fa1a7a3ed635158995fe}{direct\_internal\_fn}}\ (\doxymbox{\hyperlink{tree-core_8h_a998e964673e553e753a2d04c9d19d143}{internal\_fn}}\ fn)}
+\DoxyCodeLine{00191\ \{}
+\DoxyCodeLine{00192\ \ \ \doxymbox{\hyperlink{system_8h_aff447899dc74d54931b2bc2d47de9423}{gcc\_checking\_assert}}\ (\doxymbox{\hyperlink{internal-fn_8h_a15c1cd1a317401eb33b6e17dc025de9b}{direct\_internal\_fn\_p}}\ (fn));}
+\DoxyCodeLine{00193\ \ \ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{internal-fn_8h_a618190a2a9cdc4bfe649639478991a8f}{direct\_internal\_fn\_array}}[fn];}
+\DoxyCodeLine{00194\ \}}
+\DoxyCodeLine{00195\ }
+\DoxyCodeLine{00196\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{coretypes_8h_a7d5d4df21b1d84d1d7a847fdd8ebe6a9}{tree\_pair}}\ \doxymbox{\hyperlink{internal-fn_8h_a27c78bca13a4ef639e71a796bab38a22}{direct\_internal\_fn\_types}}\ (\doxymbox{\hyperlink{tree-core_8h_a998e964673e553e753a2d04c9d19d143}{internal\_fn}},\ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}},\ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ *);}
+\DoxyCodeLine{00197\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{coretypes_8h_a7d5d4df21b1d84d1d7a847fdd8ebe6a9}{tree\_pair}}\ \doxymbox{\hyperlink{internal-fn_8h_a27c78bca13a4ef639e71a796bab38a22}{direct\_internal\_fn\_types}}\ (\doxymbox{\hyperlink{tree-core_8h_a998e964673e553e753a2d04c9d19d143}{internal\_fn}},\ gcall\ *);}
+\DoxyCodeLine{00198\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{internal-fn_8h_ae937f12f042f415243ed4e72585fc3e6}{direct\_internal\_fn\_supported\_p}}\ (\doxymbox{\hyperlink{tree-core_8h_a998e964673e553e753a2d04c9d19d143}{internal\_fn}},\ \doxymbox{\hyperlink{coretypes_8h_a7d5d4df21b1d84d1d7a847fdd8ebe6a9}{tree\_pair}},}
+\DoxyCodeLine{00199\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{coretypes_8h_af31190b5420383995cae816e41bc545a}{optimization\_type}});}
+\DoxyCodeLine{00200\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{internal-fn_8h_ae937f12f042f415243ed4e72585fc3e6}{direct\_internal\_fn\_supported\_p}}\ (\doxymbox{\hyperlink{tree-core_8h_a998e964673e553e753a2d04c9d19d143}{internal\_fn}},\ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}},}
+\DoxyCodeLine{00201\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{coretypes_8h_af31190b5420383995cae816e41bc545a}{optimization\_type}});}
+\DoxyCodeLine{00202\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{internal-fn_8h_ae937f12f042f415243ed4e72585fc3e6}{direct\_internal\_fn\_supported\_p}}\ (gcall\ *,\ \doxymbox{\hyperlink{coretypes_8h_af31190b5420383995cae816e41bc545a}{optimization\_type}});}
+\DoxyCodeLine{00203\ }
+\DoxyCodeLine{00204\ \textcolor{comment}{/*\ Return\ true\ if\ FN\ is\ supported\ for\ types\ TYPE0\ and\ TYPE1\ when\ the}}
+\DoxyCodeLine{00205\ \textcolor{comment}{\ \ \ optimization\ type\ is\ OPT\_TYPE.\ \ The\ types\ are\ those\ associated\ with}}
+\DoxyCodeLine{00206\ \textcolor{comment}{\ \ \ the\ "{}type0"{}\ and\ "{}type1"{}\ fields\ of\ FN's\ direct\_internal\_fn\_info}}
+\DoxyCodeLine{00207\ \textcolor{comment}{\ \ \ structure.\ \ */}}
+\DoxyCodeLine{00208\ }
+\DoxyCodeLine{00209\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{bool}}
+\DoxyCodeLine{00210\ \doxymbox{\hyperlink{internal-fn_8h_ae937f12f042f415243ed4e72585fc3e6}{direct\_internal\_fn\_supported\_p}}\ (\doxymbox{\hyperlink{tree-core_8h_a998e964673e553e753a2d04c9d19d143}{internal\_fn}}\ fn,\ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ type0,\ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ type1,}
+\DoxyCodeLine{00211\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{coretypes_8h_af31190b5420383995cae816e41bc545a}{optimization\_type}}\ opt\_type)}
+\DoxyCodeLine{00212\ \{}
+\DoxyCodeLine{00213\ \ \ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{internal-fn_8h_ae937f12f042f415243ed4e72585fc3e6}{direct\_internal\_fn\_supported\_p}}\ (fn,\ \doxymbox{\hyperlink{coretypes_8h_a7d5d4df21b1d84d1d7a847fdd8ebe6a9}{tree\_pair}}\ (type0,\ type1),}
+\DoxyCodeLine{00214\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ opt\_type);}
+\DoxyCodeLine{00215\ \}}
+\DoxyCodeLine{00216\ }
+\DoxyCodeLine{00217\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{internal-fn_8h_a369558f70473993f075f9b923da3ad40}{commutative\_binary\_fn\_p}}\ (\doxymbox{\hyperlink{tree-core_8h_a998e964673e553e753a2d04c9d19d143}{internal\_fn}});}
+\DoxyCodeLine{00218\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{internal-fn_8h_a9f2318341486ad1a68dd29ec7797a2cb}{commutative\_ternary\_fn\_p}}\ (\doxymbox{\hyperlink{tree-core_8h_a998e964673e553e753a2d04c9d19d143}{internal\_fn}});}
+\DoxyCodeLine{00219\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{internal-fn_8h_a1d821502960e5c401c0ccc708018478f}{first\_commutative\_argument}}\ (\doxymbox{\hyperlink{tree-core_8h_a998e964673e553e753a2d04c9d19d143}{internal\_fn}});}
+\DoxyCodeLine{00220\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{internal-fn_8h_ab420c5d6153229c1ae97c607190dd5d3}{associative\_binary\_fn\_p}}\ (\doxymbox{\hyperlink{tree-core_8h_a998e964673e553e753a2d04c9d19d143}{internal\_fn}});}
+\DoxyCodeLine{00221\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{internal-fn_8h_a7e8845b5bfc6b6581b5b5d859294b226}{widening\_fn\_p}}\ (\doxymbox{\hyperlink{classcode__helper}{code\_helper}});}
+\DoxyCodeLine{00222\ }
+\DoxyCodeLine{00223\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{internal-fn_8h_a0257681782a625c5b4eb8a1604b7a435}{set\_edom\_supported\_p}}\ (\textcolor{keywordtype}{void});}
+\DoxyCodeLine{00224\ }
+\DoxyCodeLine{00225\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{tree-core_8h_a998e964673e553e753a2d04c9d19d143}{internal\_fn}}\ \doxymbox{\hyperlink{internal-fn_8h_ab99011a9bf304d8fd07a2ef0a93d7176}{get\_conditional\_internal\_fn}}\ (\doxymbox{\hyperlink{tree-core_8h_aee7678415f75b79d1651bfccce10c9f5}{tree\_code}});}
+\DoxyCodeLine{00226\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{tree-core_8h_a998e964673e553e753a2d04c9d19d143}{internal\_fn}}\ \doxymbox{\hyperlink{internal-fn_8h_ab99011a9bf304d8fd07a2ef0a93d7176}{get\_conditional\_internal\_fn}}\ (\doxymbox{\hyperlink{tree-core_8h_a998e964673e553e753a2d04c9d19d143}{internal\_fn}});}
+\DoxyCodeLine{00227\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{tree-core_8h_a998e964673e553e753a2d04c9d19d143}{internal\_fn}}\ \doxymbox{\hyperlink{internal-fn_8h_a3ea590b4327c0eed75bc678b46f8cc92}{get\_len\_internal\_fn}}\ (\doxymbox{\hyperlink{tree-core_8h_a998e964673e553e753a2d04c9d19d143}{internal\_fn}});}
+\DoxyCodeLine{00228\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{tree-core_8h_a998e964673e553e753a2d04c9d19d143}{internal\_fn}}\ \doxymbox{\hyperlink{internal-fn_8h_a667e4b7cbe57f9205e1b6735812c7993}{get\_conditional\_len\_internal\_fn}}\ (\doxymbox{\hyperlink{tree-core_8h_aee7678415f75b79d1651bfccce10c9f5}{tree\_code}});}
+\DoxyCodeLine{00229\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{tree-core_8h_aee7678415f75b79d1651bfccce10c9f5}{tree\_code}}\ \doxymbox{\hyperlink{internal-fn_8h_a3374299768dbf6deeccccd1d3a000aee}{conditional\_internal\_fn\_code}}\ (\doxymbox{\hyperlink{tree-core_8h_a998e964673e553e753a2d04c9d19d143}{internal\_fn}});}
+\DoxyCodeLine{00230\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{tree-core_8h_a998e964673e553e753a2d04c9d19d143}{internal\_fn}}\ \doxymbox{\hyperlink{internal-fn_8h_a466672e3cd21960724e8695156c7f358}{get\_unconditional\_internal\_fn}}\ (\doxymbox{\hyperlink{tree-core_8h_a998e964673e553e753a2d04c9d19d143}{internal\_fn}});}
+\DoxyCodeLine{00231\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{internal-fn_8h_aabb2c29c0a9b9e9066429f1cac8fb2d3}{can\_interpret\_as\_conditional\_op\_p}}\ (gimple\ *,\ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ *,}
+\DoxyCodeLine{00232\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{tree-core_8h_aee7678415f75b79d1651bfccce10c9f5}{tree\_code}}\ *,\ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ (\&)[3],}
+\DoxyCodeLine{00233\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ *,\ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ *,\ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ *);}
+\DoxyCodeLine{00234\ }
+\DoxyCodeLine{00235\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{internal-fn_8h_a59aa1066fbc012caea50f8d2b2375f40}{internal\_load\_fn\_p}}\ (\doxymbox{\hyperlink{tree-core_8h_a998e964673e553e753a2d04c9d19d143}{internal\_fn}});}
+\DoxyCodeLine{00236\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{internal-fn_8h_af7a7e0e3a6bcb7af1cc439fdc9d863ce}{internal\_store\_fn\_p}}\ (\doxymbox{\hyperlink{tree-core_8h_a998e964673e553e753a2d04c9d19d143}{internal\_fn}});}
+\DoxyCodeLine{00237\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{internal-fn_8h_a187b59a599ea24b39df8f537b53c0439}{internal\_gather\_scatter\_fn\_p}}\ (\doxymbox{\hyperlink{tree-core_8h_a998e964673e553e753a2d04c9d19d143}{internal\_fn}});}
+\DoxyCodeLine{00238\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{internal-fn_8h_a192e46cfb15985a9c94f8951b83954da}{internal\_fn\_mask\_index}}\ (\doxymbox{\hyperlink{tree-core_8h_a998e964673e553e753a2d04c9d19d143}{internal\_fn}});}
+\DoxyCodeLine{00239\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{internal-fn_8h_a824eca2f456d0850efb240c969e7aac9}{internal\_fn\_len\_index}}\ (\doxymbox{\hyperlink{tree-core_8h_a998e964673e553e753a2d04c9d19d143}{internal\_fn}});}
+\DoxyCodeLine{00240\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{internal-fn_8h_ab6feb5f4f8e086986fc0463f5ddc6350}{internal\_fn\_else\_index}}\ (\doxymbox{\hyperlink{tree-core_8h_a998e964673e553e753a2d04c9d19d143}{internal\_fn}});}
+\DoxyCodeLine{00241\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{internal-fn_8h_a762b795cf7706e31a77b6c0f901cfd4e}{internal\_fn\_stored\_value\_index}}\ (\doxymbox{\hyperlink{tree-core_8h_a998e964673e553e753a2d04c9d19d143}{internal\_fn}});}
+\DoxyCodeLine{00242\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{internal-fn_8h_adbc63623903ffa6b572152895b4c872c}{internal\_gather\_scatter\_fn\_supported\_p}}\ (\doxymbox{\hyperlink{tree-core_8h_a998e964673e553e753a2d04c9d19d143}{internal\_fn}},\ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}},}
+\DoxyCodeLine{00243\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}},\ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}},\ \textcolor{keywordtype}{int});}
+\DoxyCodeLine{00244\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{internal-fn_8h_a6e37a096a38301c7a98e6545131eee9e}{internal\_check\_ptrs\_fn\_supported\_p}}\ (\doxymbox{\hyperlink{tree-core_8h_a998e964673e553e753a2d04c9d19d143}{internal\_fn}},\ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}},}
+\DoxyCodeLine{00245\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{poly-int-types_8h_a6d0ddbcb345e1192ca8249c789c1cb0f}{poly\_uint64}},\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int});}
+\DoxyCodeLine{00246\ \textcolor{preprocessor}{\#define\ VECT\_PARTIAL\_BIAS\_UNSUPPORTED\ 127}}
+\DoxyCodeLine{00247\ }
+\DoxyCodeLine{00248\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{signed}\ \textcolor{keywordtype}{char}\ \doxymbox{\hyperlink{internal-fn_8h_a0d97129d53cd15da3363b7725389af72}{internal\_len\_load\_store\_bias}}\ (\doxymbox{\hyperlink{tree-core_8h_a998e964673e553e753a2d04c9d19d143}{internal\_fn}}\ ifn,}
+\DoxyCodeLine{00249\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{insn-modes_8h_a3c592bc51c57098d62602b12c9468e92}{machine\_mode}});}
+\DoxyCodeLine{00250\ }
+\DoxyCodeLine{00251\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{internal-fn_8h_a5719e9b5c42a216866ab20019301032b}{expand\_addsub\_overflow}}\ (\doxymbox{\hyperlink{line-map_8h_aedf25620511d64e43327f1a229906a96}{location\_t}},\ \doxymbox{\hyperlink{tree-core_8h_aee7678415f75b79d1651bfccce10c9f5}{tree\_code}},\ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}},\ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}},\ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}},}
+\DoxyCodeLine{00252\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{bool},\ \textcolor{keywordtype}{bool},\ \textcolor{keywordtype}{bool},\ \textcolor{keywordtype}{bool},\ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ *);}
+\DoxyCodeLine{00253\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{internal-fn_8h_ab003dad26fc7df6e90ce42f25f5fe61e}{expand\_internal\_call}}\ (gcall\ *);}
+\DoxyCodeLine{00254\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{internal-fn_8h_ab003dad26fc7df6e90ce42f25f5fe61e}{expand\_internal\_call}}\ (\doxymbox{\hyperlink{tree-core_8h_a998e964673e553e753a2d04c9d19d143}{internal\_fn}},\ gcall\ *);}
+\DoxyCodeLine{00255\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{internal-fn_8h_aa6ca8d3ef9c67e319c75e4f56ff51d70}{expand\_PHI}}\ (\doxymbox{\hyperlink{tree-core_8h_a998e964673e553e753a2d04c9d19d143}{internal\_fn}},\ gcall\ *);}
+\DoxyCodeLine{00256\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{internal-fn_8h_a8612b21a864e9805eefdc59d32cd277c}{expand\_SHUFFLEVECTOR}}\ (\doxymbox{\hyperlink{tree-core_8h_a998e964673e553e753a2d04c9d19d143}{internal\_fn}},\ gcall\ *);}
+\DoxyCodeLine{00257\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{internal-fn_8h_a9061311788858231e1d55dd96abac60a}{expand\_SPACESHIP}}\ (\doxymbox{\hyperlink{tree-core_8h_a998e964673e553e753a2d04c9d19d143}{internal\_fn}},\ gcall\ *);}
+\DoxyCodeLine{00258\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{internal-fn_8h_a91b5f32afa91f579da49d0acc47d7d0f}{expand\_TRAP}}\ (\doxymbox{\hyperlink{tree-core_8h_a998e964673e553e753a2d04c9d19d143}{internal\_fn}},\ gcall\ *);}
+\DoxyCodeLine{00259\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{internal-fn_8h_af93db8ac8b81d2cbdbda457ca0f57a07}{expand\_ASSUME}}\ (\doxymbox{\hyperlink{tree-core_8h_a998e964673e553e753a2d04c9d19d143}{internal\_fn}},\ gcall\ *);}
+\DoxyCodeLine{00260\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{internal-fn_8h_ab2afdbac1f5cf277ad89068b3ba55426}{expand\_MASK\_CALL}}\ (\doxymbox{\hyperlink{tree-core_8h_a998e964673e553e753a2d04c9d19d143}{internal\_fn}},\ gcall\ *);}
+\DoxyCodeLine{00261\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{internal-fn_8h_a597beafb274806f310e5301d400a6e32}{expand\_MULBITINT}}\ (\doxymbox{\hyperlink{tree-core_8h_a998e964673e553e753a2d04c9d19d143}{internal\_fn}},\ gcall\ *);}
+\DoxyCodeLine{00262\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{internal-fn_8h_a67b1b9943cffe2ab980c4bdb395610bb}{expand\_DIVMODBITINT}}\ (\doxymbox{\hyperlink{tree-core_8h_a998e964673e553e753a2d04c9d19d143}{internal\_fn}},\ gcall\ *);}
+\DoxyCodeLine{00263\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{internal-fn_8h_a796389433b3df3130481c0cb2b726599}{expand\_FLOATTOBITINT}}\ (\doxymbox{\hyperlink{tree-core_8h_a998e964673e553e753a2d04c9d19d143}{internal\_fn}},\ gcall\ *);}
+\DoxyCodeLine{00264\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{internal-fn_8h_aea0a1331eb2cdc0f1db69610a81d5209}{expand\_BITINTTOFLOAT}}\ (\doxymbox{\hyperlink{tree-core_8h_a998e964673e553e753a2d04c9d19d143}{internal\_fn}},\ gcall\ *);}
+\DoxyCodeLine{00265\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{internal-fn_8h_acc625804be9af624b71eeef27fb21ae4}{expand\_CLRSB}}\ (\doxymbox{\hyperlink{tree-core_8h_a998e964673e553e753a2d04c9d19d143}{internal\_fn}},\ gcall\ *);}
+\DoxyCodeLine{00266\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{internal-fn_8h_a2755ff35a2201ec4b405fbdb6d846cda}{expand\_CLZ}}\ (\doxymbox{\hyperlink{tree-core_8h_a998e964673e553e753a2d04c9d19d143}{internal\_fn}},\ gcall\ *);}
+\DoxyCodeLine{00267\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{internal-fn_8h_a7b401edaf43958682256c1527526c911}{expand\_CTZ}}\ (\doxymbox{\hyperlink{tree-core_8h_a998e964673e553e753a2d04c9d19d143}{internal\_fn}},\ gcall\ *);}
+\DoxyCodeLine{00268\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{internal-fn_8h_a848ca8790f7dd2d0aa5fbd00ed7641ec}{expand\_FFS}}\ (\doxymbox{\hyperlink{tree-core_8h_a998e964673e553e753a2d04c9d19d143}{internal\_fn}},\ gcall\ *);}
+\DoxyCodeLine{00269\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{internal-fn_8h_af74b1d8db88908865094613564d7c0b9}{expand\_PARITY}}\ (\doxymbox{\hyperlink{tree-core_8h_a998e964673e553e753a2d04c9d19d143}{internal\_fn}},\ gcall\ *);}
+\DoxyCodeLine{00270\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{internal-fn_8h_a729b3b3c09994f8a8449451ef3c4ac99}{expand\_POPCOUNT}}\ (\doxymbox{\hyperlink{tree-core_8h_a998e964673e553e753a2d04c9d19d143}{internal\_fn}},\ gcall\ *);}
+\DoxyCodeLine{00271\ }
+\DoxyCodeLine{00272\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{internal-fn_8h_affbef4a6b61e94a35c463be44be65e9e}{vectorized\_internal\_fn\_supported\_p}}\ (\doxymbox{\hyperlink{tree-core_8h_a998e964673e553e753a2d04c9d19d143}{internal\_fn}},\ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}});}
+\DoxyCodeLine{00273\ }
+\DoxyCodeLine{00274\ \textcolor{keyword}{enum}\ \{}
+\DoxyCodeLine{00275\ \ \ \doxymbox{\hyperlink{internal-fn_8h_a0f4c1382ab8c59ba41a6234ae7eb8b89a445f379c40d03d6a1b5ae60d0de45a1c}{ATOMIC\_OP\_FETCH\_CMP\_0\_EQ}}\ =\ 0,}
+\DoxyCodeLine{00276\ \ \ \doxymbox{\hyperlink{internal-fn_8h_a0f4c1382ab8c59ba41a6234ae7eb8b89afe738fc9cdfea9bae14072c04096d51e}{ATOMIC\_OP\_FETCH\_CMP\_0\_NE}}\ =\ 1,}
+\DoxyCodeLine{00277\ \ \ \doxymbox{\hyperlink{internal-fn_8h_a0f4c1382ab8c59ba41a6234ae7eb8b89ad5b838d082019c9636bb32a0f4c50fa8}{ATOMIC\_OP\_FETCH\_CMP\_0\_LT}}\ =\ 2,}
+\DoxyCodeLine{00278\ \ \ \doxymbox{\hyperlink{internal-fn_8h_a0f4c1382ab8c59ba41a6234ae7eb8b89a58bf6353d6c4b2016f08d6a74a2155e2}{ATOMIC\_OP\_FETCH\_CMP\_0\_LE}}\ =\ 3,}
+\DoxyCodeLine{00279\ \ \ \doxymbox{\hyperlink{internal-fn_8h_a0f4c1382ab8c59ba41a6234ae7eb8b89a4e63c6f85da12b9db6490858bc13fb03}{ATOMIC\_OP\_FETCH\_CMP\_0\_GT}}\ =\ 4,}
+\DoxyCodeLine{00280\ \ \ \doxymbox{\hyperlink{internal-fn_8h_a0f4c1382ab8c59ba41a6234ae7eb8b89ae1fef805408cb8aee30c29e2ebb88728}{ATOMIC\_OP\_FETCH\_CMP\_0\_GE}}\ =\ 5}
+\DoxyCodeLine{00281\ \};}
+\DoxyCodeLine{00282\ }
+\DoxyCodeLine{00283\ \textcolor{preprocessor}{\#endif}}
+
+\end{DoxyCode}

@@ -1,0 +1,454 @@
+\doxysection{ipa-\/param-\/manipulation.h}
+\hypertarget{ipa-param-manipulation_8h_source}{}\label{ipa-param-manipulation_8h_source}\index{toolchain/x86\_64-\/elf/lib/gcc/x86\_64-\/elf/14.2.0/plugin/include/ipa-\/param-\/manipulation.h@{toolchain/x86\_64-\/elf/lib/gcc/x86\_64-\/elf/14.2.0/plugin/include/ipa-\/param-\/manipulation.h}}
+\doxymbox{\hyperlink{ipa-param-manipulation_8h}{Go to the documentation of this file.}}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001\ \textcolor{comment}{/*\ Manipulation\ of\ formal\ and\ actual\ parameters\ of\ functions\ and\ function}}
+\DoxyCodeLine{00002\ \textcolor{comment}{\ \ \ calls.}}
+\DoxyCodeLine{00003\ \textcolor{comment}{\ \ \ Copyright\ (C)\ 2017-\/2024\ Free\ Software\ Foundation,\ Inc.}}
+\DoxyCodeLine{00004\ \textcolor{comment}{}}
+\DoxyCodeLine{00005\ \textcolor{comment}{This\ file\ is\ part\ of\ GCC.}}
+\DoxyCodeLine{00006\ \textcolor{comment}{}}
+\DoxyCodeLine{00007\ \textcolor{comment}{GCC\ is\ free\ software;\ you\ can\ redistribute\ it\ and/or\ modify\ it\ under}}
+\DoxyCodeLine{00008\ \textcolor{comment}{the\ terms\ of\ the\ GNU\ General\ Public\ License\ as\ published\ by\ the\ Free}}
+\DoxyCodeLine{00009\ \textcolor{comment}{Software\ Foundation;\ either\ version\ 3,\ or\ (at\ your\ option)\ any\ later}}
+\DoxyCodeLine{00010\ \textcolor{comment}{version.}}
+\DoxyCodeLine{00011\ \textcolor{comment}{}}
+\DoxyCodeLine{00012\ \textcolor{comment}{GCC\ is\ distributed\ in\ the\ hope\ that\ it\ will\ be\ useful,\ but\ WITHOUT\ ANY}}
+\DoxyCodeLine{00013\ \textcolor{comment}{WARRANTY;\ without\ even\ the\ implied\ warranty\ of\ MERCHANTABILITY\ or}}
+\DoxyCodeLine{00014\ \textcolor{comment}{FITNESS\ FOR\ A\ PARTICULAR\ PURPOSE.\ \ See\ the\ GNU\ General\ Public\ License}}
+\DoxyCodeLine{00015\ \textcolor{comment}{for\ more\ details.}}
+\DoxyCodeLine{00016\ \textcolor{comment}{}}
+\DoxyCodeLine{00017\ \textcolor{comment}{You\ should\ have\ received\ a\ copy\ of\ the\ GNU\ General\ Public\ License}}
+\DoxyCodeLine{00018\ \textcolor{comment}{along\ with\ GCC;\ see\ the\ file\ COPYING3.\ \ If\ not\ see}}
+\DoxyCodeLine{00019\ \textcolor{comment}{<http://www.gnu.org/licenses/>.}}
+\DoxyCodeLine{00020\ \textcolor{comment}{}}
+\DoxyCodeLine{00021\ \textcolor{comment}{}}
+\DoxyCodeLine{00022\ \textcolor{comment}{}}
+\DoxyCodeLine{00023\ \textcolor{comment}{This\ file\ defines\ classes\ and\ other\ data\ structures\ that\ are\ used\ to\ manipulate}}
+\DoxyCodeLine{00024\ \textcolor{comment}{the\ prototype\ of\ a\ function,\ especially\ to\ create,\ remove\ or\ split\ its\ formal}}
+\DoxyCodeLine{00025\ \textcolor{comment}{parameters,\ but\ also\ to\ remove\ its\ return\ value,\ and\ also\ its\ call\ statements}}
+\DoxyCodeLine{00026\ \textcolor{comment}{correspondingly.}}
+\DoxyCodeLine{00027\ \textcolor{comment}{}}
+\DoxyCodeLine{00028\ \textcolor{comment}{The\ most\ basic\ one\ is\ a\ vector\ of\ structures\ ipa\_adjusted\_param.\ \ It\ is\ simply}}
+\DoxyCodeLine{00029\ \textcolor{comment}{a\ description\ how\ the\ new\ parameters\ should\ look\ like\ after\ the\ transformation}}
+\DoxyCodeLine{00030\ \textcolor{comment}{in\ what\ way\ they\ relate\ to\ the\ previous\ ones\ (if\ in\ any).\ \ Such\ relation\ to\ an}}
+\DoxyCodeLine{00031\ \textcolor{comment}{old\ parameter\ can\ be\ an\ outright\ copy\ or\ an\ IPA-\/SRA\ replacement.\ If\ an\ old}}
+\DoxyCodeLine{00032\ \textcolor{comment}{parameter\ is\ not\ listed\ or\ otherwise\ mentioned,\ it\ is\ removed\ as\ unused\ or\ at}}
+\DoxyCodeLine{00033\ \textcolor{comment}{least\ unnecessary.\ \ Note\ that\ this\ most\ basic\ structure\ does\ not\ work\ for}}
+\DoxyCodeLine{00034\ \textcolor{comment}{modifying\ calls\ of\ functions\ with\ variable\ number\ of\ arguments.}}
+\DoxyCodeLine{00035\ \textcolor{comment}{}}
+\DoxyCodeLine{00036\ \textcolor{comment}{Class\ ipa\_param\_adjustments\ is\ only\ a\ little\ more\ than\ a\ thin\ encapsulation\ of}}
+\DoxyCodeLine{00037\ \textcolor{comment}{a\ vector\ of\ ipa\_param\_adjustments.\ \ Along\ with\ this\ vector\ it\ contains\ an\ index}}
+\DoxyCodeLine{00038\ \textcolor{comment}{of\ the\ first\ potential\ vararg\ argument\ and\ a\ boolean\ flag\ whether\ the\ return}}
+\DoxyCodeLine{00039\ \textcolor{comment}{value\ should\ be\ removed\ or\ not.\ \ Moreover,\ the\ class\ contains\ method}}
+\DoxyCodeLine{00040\ \textcolor{comment}{modify\_call\ which\ can\ transform\ a\ call\ statement\ so\ that\ it\ correctly\ calls\ a}}
+\DoxyCodeLine{00041\ \textcolor{comment}{modified\ function.\ \ These\ two\ data\ structures\ were\ designed\ to\ have\ a\ small}}
+\DoxyCodeLine{00042\ \textcolor{comment}{memory\ footprint\ because\ they\ are\ allocated\ for\ each\ clone\ of\ a\ call\ graph\ node}}
+\DoxyCodeLine{00043\ \textcolor{comment}{that\ has\ its\ prototype\ changed\ and\ live\ until\ the\ end\ of\ IPA\ clone}}
+\DoxyCodeLine{00044\ \textcolor{comment}{materialization\ and\ call\ redirection\ phase.}}
+\DoxyCodeLine{00045\ \textcolor{comment}{}}
+\DoxyCodeLine{00046\ \textcolor{comment}{On\ the\ other\ hand,\ class\ ipa\_param\_body\_adjustments\ can\ afford\ to\ allocate\ more}}
+\DoxyCodeLine{00047\ \textcolor{comment}{data\ because\ its\ life\ span\ is\ much\ smaller,\ it\ is\ allocated\ and\ destroyed\ in}}
+\DoxyCodeLine{00048\ \textcolor{comment}{the\ course\ of\ materialization\ of\ each\ single\ clone\ that\ needs\ it\ or\ only\ when\ a}}
+\DoxyCodeLine{00049\ \textcolor{comment}{particular\ pass\ needs\ to\ change\ a\ function\ it\ is\ operating\ on.\ \ This\ class\ has}}
+\DoxyCodeLine{00050\ \textcolor{comment}{various\ methods\ required\ to\ change\ function\ declaration\ and\ the\ body\ of\ the}}
+\DoxyCodeLine{00051\ \textcolor{comment}{function\ according\ to\ instructions\ given\ either\ by\ class\ ipa\_param\_adjustments}}
+\DoxyCodeLine{00052\ \textcolor{comment}{or\ only\ a\ vector\ of\ ipa\_adjusted\_params.}}
+\DoxyCodeLine{00053\ \textcolor{comment}{}}
+\DoxyCodeLine{00054\ \textcolor{comment}{When\ these\ classes\ are\ used\ in\ the\ context\ of\ call\ graph\ clone\ materialization}}
+\DoxyCodeLine{00055\ \textcolor{comment}{and\ subsequent\ call\ statement\ redirection\ -\/\ which\ is\ the\ point\ at\ which\ we}}
+\DoxyCodeLine{00056\ \textcolor{comment}{modify\ arguments\ in\ call\ statements\ -\/\ they\ need\ to\ cooperate\ with\ each\ other\ in}}
+\DoxyCodeLine{00057\ \textcolor{comment}{order\ to\ handle\ what\ we\ refer\ to\ as\ pass-\/through\ (IPA-\/SRA)\ splits.\ \ These\ are}}
+\DoxyCodeLine{00058\ \textcolor{comment}{situations\ when\ a\ formal\ parameter\ of\ one\ function\ is\ split\ into\ several}}
+\DoxyCodeLine{00059\ \textcolor{comment}{smaller\ ones\ and\ some\ of\ them\ are\ then\ passed\ on\ in\ a\ call\ to\ another\ function}}
+\DoxyCodeLine{00060\ \textcolor{comment}{because\ the\ formal\ parameter\ of\ this\ callee\ has\ also\ been\ split.}}
+\DoxyCodeLine{00061\ \textcolor{comment}{}}
+\DoxyCodeLine{00062\ \textcolor{comment}{Consider\ a\ simple\ example:}}
+\DoxyCodeLine{00063\ \textcolor{comment}{}}
+\DoxyCodeLine{00064\ \textcolor{comment}{struct\ S\ \{int\ a,\ b,\ c;\};}}
+\DoxyCodeLine{00065\ \textcolor{comment}{struct\ Z\ \{int\ x;\ S\ s;\};}}
+\DoxyCodeLine{00066\ \textcolor{comment}{}}
+\DoxyCodeLine{00067\ \textcolor{comment}{foo\ (S\ s)}}
+\DoxyCodeLine{00068\ \textcolor{comment}{\{}}
+\DoxyCodeLine{00069\ \textcolor{comment}{\ \ use\ (s.b);}}
+\DoxyCodeLine{00070\ \textcolor{comment}{\}}}
+\DoxyCodeLine{00071\ \textcolor{comment}{}}
+\DoxyCodeLine{00072\ \textcolor{comment}{bar\ (Z\ z)}}
+\DoxyCodeLine{00073\ \textcolor{comment}{\{}}
+\DoxyCodeLine{00074\ \textcolor{comment}{\ \ use\ (z.s.a);}}
+\DoxyCodeLine{00075\ \textcolor{comment}{\ \ foo\ (z.s);}}
+\DoxyCodeLine{00076\ \textcolor{comment}{\}}}
+\DoxyCodeLine{00077\ \textcolor{comment}{}}
+\DoxyCodeLine{00078\ \textcolor{comment}{baz\ ()}}
+\DoxyCodeLine{00079\ \textcolor{comment}{\{}}
+\DoxyCodeLine{00080\ \textcolor{comment}{\ \ bar\ (*global);}}
+\DoxyCodeLine{00081\ \textcolor{comment}{\}}}
+\DoxyCodeLine{00082\ \textcolor{comment}{}}
+\DoxyCodeLine{00083\ \textcolor{comment}{Both\ bar\ and\ foo\ would\ have\ their\ parameter\ split.\ \ Foo\ would\ receive\ one}}
+\DoxyCodeLine{00084\ \textcolor{comment}{replacement\ representing\ s.b.\ \ Function\ bar\ would\ see\ its\ parameter\ split\ into}}
+\DoxyCodeLine{00085\ \textcolor{comment}{one\ replacement\ representing\ z.s.a\ and\ another\ representing\ z.s.b\ which\ would}}
+\DoxyCodeLine{00086\ \textcolor{comment}{be\ passed\ on\ to\ foo.\ \ It\ would\ be\ a\ so\ called\ pass-\/through\ split\ IPA-\/SRA}}
+\DoxyCodeLine{00087\ \textcolor{comment}{replacement,\ one\ which\ is\ passed\ in\ a\ call\ as\ an\ actual\ argument\ to\ another}}
+\DoxyCodeLine{00088\ \textcolor{comment}{IPA-\/SRA\ replacement\ in\ another\ function.}}
+\DoxyCodeLine{00089\ \textcolor{comment}{}}
+\DoxyCodeLine{00090\ \textcolor{comment}{Note\ that\ the\ call\ chain\ the\ example\ can\ be\ arbitrarily\ long\ and\ recursive\ and}}
+\DoxyCodeLine{00091\ \textcolor{comment}{that\ any\ function\ in\ it\ can\ be\ cloned\ by\ another\ IPA\ pass\ and\ any\ number\ of}}
+\DoxyCodeLine{00092\ \textcolor{comment}{adjacent\ functions\ in\ the\ call\ chain\ can\ be\ inlined\ into\ each\ other.\ \ Call}}
+\DoxyCodeLine{00093\ \textcolor{comment}{redirection\ takes\ place\ only\ after\ bodies\ of\ the\ function\ have\ been\ modified\ by}}
+\DoxyCodeLine{00094\ \textcolor{comment}{all\ of\ the\ above.}}
+\DoxyCodeLine{00095\ \textcolor{comment}{}}
+\DoxyCodeLine{00096\ \textcolor{comment}{Call\ redirection\ has\ to\ be\ able\ to\ find\ the\ right\ decl\ or\ SSA\_NAME\ that}}
+\DoxyCodeLine{00097\ \textcolor{comment}{corresponds\ to\ the\ transitive\ split\ in\ the\ caller.\ \ The\ SSA\ names\ are\ assigned}}
+\DoxyCodeLine{00098\ \textcolor{comment}{right\ after\ clone\ materialization/\ modification\ and\ cannot\ be\ "{}added"{}\ to\ call}}
+\DoxyCodeLine{00099\ \textcolor{comment}{arguments\ at\ any\ later\ point.\ \ Moreover,\ if\ the\ caller\ has\ been\ inlined\ the}}
+\DoxyCodeLine{00100\ \textcolor{comment}{SSA\_NAMEs\ in\ question\ no\ longer\ belong\ to\ PARM\_DECLs\ but\ to\ VAR\_DECLs,}}
+\DoxyCodeLine{00101\ \textcolor{comment}{indistinguishable\ from\ any\ others.}}
+\DoxyCodeLine{00102\ \textcolor{comment}{}}
+\DoxyCodeLine{00103\ \textcolor{comment}{Therefore,\ when\ clone\ materialization\ finds\ a\ call\ statement\ which\ it\ knows\ is}}
+\DoxyCodeLine{00104\ \textcolor{comment}{a\ part\ of\ a\ transitive\ split,\ it\ will\ simply\ add\ as\ arguments\ all\ new\ "{}split"{}}}
+\DoxyCodeLine{00105\ \textcolor{comment}{replacements\ (that\ have\ grater\ or\ equal\ offset\ than\ the\ original\ call}}
+\DoxyCodeLine{00106\ \textcolor{comment}{argument):}}
+\DoxyCodeLine{00107\ \textcolor{comment}{}}
+\DoxyCodeLine{00108\ \textcolor{comment}{\ \ foo\ (repl\_for\_a,\ repl\_for\_b,\ <rest\ of\ original\ arguments>);}}
+\DoxyCodeLine{00109\ \textcolor{comment}{}}
+\DoxyCodeLine{00110\ \textcolor{comment}{It\ will\ also\ store\ into\ ipa\_edge\_modification\_info\ (which\ is\ internal\ to}}
+\DoxyCodeLine{00111\ \textcolor{comment}{ipa-\/param-\/modification.c)\ information\ about\ which\ replacement\ is\ which\ and}}
+\DoxyCodeLine{00112\ \textcolor{comment}{where\ original\ arguments\ are.\ \ Call\ redirection\ will\ then\ invoke}}
+\DoxyCodeLine{00113\ \textcolor{comment}{ipa\_param\_adjustments::modify\_call\ which\ will\ access\ this\ information\ and}}
+\DoxyCodeLine{00114\ \textcolor{comment}{eliminate\ all\ replacements\ which\ the\ callee\ does\ not\ expect\ (repl\_for\_a\ in\ our}}
+\DoxyCodeLine{00115\ \textcolor{comment}{example\ above).\ \ In\ between\ these\ two\ steps,\ however,\ a\ call\ statement\ might}}
+\DoxyCodeLine{00116\ \textcolor{comment}{have\ extraneous\ arguments.\ \ */}}
+\DoxyCodeLine{00117\ }
+\DoxyCodeLine{00118\ \textcolor{preprocessor}{\#ifndef\ IPA\_PARAM\_MANIPULATION\_H}}
+\DoxyCodeLine{00119\ \textcolor{preprocessor}{\#define\ IPA\_PARAM\_MANIPULATION\_H}}
+\DoxyCodeLine{00120\ }
+\DoxyCodeLine{00121\ \textcolor{comment}{/*\ Indices\ into\ ipa\_param\_prefixes\ to\ identify\ a\ human-\/readable\ prefix\ for\ newly}}
+\DoxyCodeLine{00122\ \textcolor{comment}{\ \ \ synthesized\ parameters.\ \ Keep\ in\ sync\ with\ the\ array.\ \ */}}
+\DoxyCodeLine{00123\ \textcolor{keyword}{enum}\ \doxymbox{\hyperlink{ipa-param-manipulation_8h_a04b835558414cfc6d780ae854155b958}{ipa\_param\_name\_prefix\_indices}}}
+\DoxyCodeLine{00124\ \ \ \{}
+\DoxyCodeLine{00125\ \ \ \ \doxymbox{\hyperlink{ipa-param-manipulation_8h_a04b835558414cfc6d780ae854155b958a6eee2fb3727434d1c243748aa6fdf336}{IPA\_PARAM\_PREFIX\_SYNTH}},}
+\DoxyCodeLine{00126\ \ \ \ \doxymbox{\hyperlink{ipa-param-manipulation_8h_a04b835558414cfc6d780ae854155b958a4625b6de022379db79856332f8878c19}{IPA\_PARAM\_PREFIX\_ISRA}},}
+\DoxyCodeLine{00127\ \ \ \ \doxymbox{\hyperlink{ipa-param-manipulation_8h_a04b835558414cfc6d780ae854155b958a87590f38f206cc255834fbe166f2fbfc}{IPA\_PARAM\_PREFIX\_SIMD}},}
+\DoxyCodeLine{00128\ \ \ \ \doxymbox{\hyperlink{ipa-param-manipulation_8h_a04b835558414cfc6d780ae854155b958ad81dd8f208bc997d8de2425062ea8638}{IPA\_PARAM\_PREFIX\_MASK}},}
+\DoxyCodeLine{00129\ \ \ \ \doxymbox{\hyperlink{ipa-param-manipulation_8h_a04b835558414cfc6d780ae854155b958a46d7f7ae0aa28b0c794a7fba98483321}{IPA\_PARAM\_PREFIX\_COUNT}}}
+\DoxyCodeLine{00130\ \};}
+\DoxyCodeLine{00131\ }
+\DoxyCodeLine{00132\ \textcolor{comment}{/*\ We\ do\ not\ support\ manipulating\ functions\ with\ more\ than}}
+\DoxyCodeLine{00133\ \textcolor{comment}{\ \ \ 1<<IPA\_PARAM\_MAX\_INDEX\_BITS\ parameters.\ \ */}}
+\DoxyCodeLine{00134\ \textcolor{preprocessor}{\#define\ IPA\_PARAM\_MAX\_INDEX\_BITS\ 16}}
+\DoxyCodeLine{00135\ }
+\DoxyCodeLine{00136\ \textcolor{comment}{/*\ Operation\ to\ be\ performed\ for\ the\ parameter\ in\ ipa\_parm\_adjustment}}
+\DoxyCodeLine{00137\ \textcolor{comment}{\ \ \ below.\ \ */}}
+\DoxyCodeLine{00138\ }
+\DoxyCodeLine{00139\ \textcolor{keyword}{enum}\ \doxymbox{\hyperlink{ipa-param-manipulation_8h_a5f75006c23da763935e7968bee7c23a7}{ipa\_parm\_op}}}
+\DoxyCodeLine{00140\ \{}
+\DoxyCodeLine{00141\ \ \ \textcolor{comment}{/*\ Do\ not\ use\ or\ you\ will\ trigger\ an\ assert.\ \ */}}
+\DoxyCodeLine{00142\ \ \ \doxymbox{\hyperlink{ipa-param-manipulation_8h_a5f75006c23da763935e7968bee7c23a7a59b09e3b8f3baea87ae3b04921665327}{IPA\_PARAM\_OP\_UNDEFINED}},}
+\DoxyCodeLine{00143\ }
+\DoxyCodeLine{00144\ \ \ \textcolor{comment}{/*\ This\ new\ parameter\ is\ an\ unmodified\ parameter\ at\ index\ base\_index.\ */}}
+\DoxyCodeLine{00145\ \ \ \doxymbox{\hyperlink{ipa-param-manipulation_8h_a5f75006c23da763935e7968bee7c23a7a06ec83dc6f7bb80c51e0010632e72fe3}{IPA\_PARAM\_OP\_COPY}},}
+\DoxyCodeLine{00146\ }
+\DoxyCodeLine{00147\ \ \ \textcolor{comment}{/*\ This\ describes\ a\ brand\ new\ parameter.\ \ If\ it\ somehow\ relates\ to\ any}}
+\DoxyCodeLine{00148\ \textcolor{comment}{\ \ \ \ \ original\ parameters,\ the\ user\ needs\ to\ manage\ the\ transition\ itself.\ \ */}}
+\DoxyCodeLine{00149\ \ \ \doxymbox{\hyperlink{ipa-param-manipulation_8h_a5f75006c23da763935e7968bee7c23a7ac938aa8d53b68538a555c58b56fd423b}{IPA\_PARAM\_OP\_NEW}},}
+\DoxyCodeLine{00150\ }
+\DoxyCodeLine{00151\ \ \ \ \ \textcolor{comment}{/*\ Split\ parameter\ as\ indicated\ by\ fields\ base\_index,\ offset\ and\ type.\ \ */}}
+\DoxyCodeLine{00152\ \ \ \doxymbox{\hyperlink{ipa-param-manipulation_8h_a5f75006c23da763935e7968bee7c23a7acc42327afddd484a5b7efaf288242dc3}{IPA\_PARAM\_OP\_SPLIT}}}
+\DoxyCodeLine{00153\ \};}
+\DoxyCodeLine{00154\ }
+\DoxyCodeLine{00155\ \textcolor{comment}{/*\ Structure\ that\ describes\ one\ parameter\ of\ a\ function\ after\ transformation.}}
+\DoxyCodeLine{00156\ \textcolor{comment}{\ \ \ Omitted\ parameters\ will\ be\ removed.\ \ */}}
+\DoxyCodeLine{00157\ }
+\DoxyCodeLine{00158\ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{coretypes_8h_ae5708c4d4b300570eebe0bc0c78facbc}{GTY}}(())\ ipa\_adjusted\_param}
+\DoxyCodeLine{00159\ \{}
+\DoxyCodeLine{00160\ \ \ \textcolor{comment}{/*\ Type\ of\ the\ new\ parameter.\ \ Required\ for\ all\ operations\ except}}
+\DoxyCodeLine{00161\ \textcolor{comment}{\ \ \ \ \ IPA\_PARM\_OP\_COPY\ when\ the\ original\ type\ will\ be\ preserved.\ \ */}}
+\DoxyCodeLine{00162\ \ \ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ type;}
+\DoxyCodeLine{00163\ }
+\DoxyCodeLine{00164\ \ \ \textcolor{comment}{/*\ Alias\ reference\ type\ to\ be\ used\ in\ MEM\_REFs\ when\ adjusting\ caller}}
+\DoxyCodeLine{00165\ \textcolor{comment}{\ \ \ \ \ arguments.\ \ Required\ for\ IPA\_PARM\_OP\_SPLIT\ operation.\ \ */}}
+\DoxyCodeLine{00166\ \ \ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ alias\_ptr\_type;}
+\DoxyCodeLine{00167\ }
+\DoxyCodeLine{00168\ \ \ \textcolor{comment}{/*\ Offset\ into\ the\ original\ parameter\ (for\ the\ cases\ when\ the\ new\ parameter}}
+\DoxyCodeLine{00169\ \textcolor{comment}{\ \ \ \ \ is\ a\ component\ of\ an\ original\ one).\ \ Required\ for\ IPA\_PARM\_OP\_SPLIT}}
+\DoxyCodeLine{00170\ \textcolor{comment}{\ \ \ \ \ operation.\ \ */}}
+\DoxyCodeLine{00171\ \ \ \textcolor{keywordtype}{unsigned}\ unit\_offset;}
+\DoxyCodeLine{00172\ }
+\DoxyCodeLine{00173\ \ \ \textcolor{comment}{/*\ Zero\ based\ index\ of\ the\ original\ parameter\ this\ one\ is\ based\ on.\ \ Required}}
+\DoxyCodeLine{00174\ \textcolor{comment}{\ \ \ \ \ for\ IPA\_PARAM\_OP\_COPY\ and\ IPA\_PARAM\_OP\_SPLIT,\ users\ of\ IPA\_PARAM\_OP\_NEW}}
+\DoxyCodeLine{00175\ \textcolor{comment}{\ \ \ \ \ only\ need\ to\ specify\ it\ if\ they\ use\ replacement\ lookup\ provided\ by}}
+\DoxyCodeLine{00176\ \textcolor{comment}{\ \ \ \ \ ipa\_param\_body\_adjustments.\ \ */}}
+\DoxyCodeLine{00177\ \ \ \textcolor{keywordtype}{unsigned}\ base\_index\ :\ \doxymbox{\hyperlink{ipa-param-manipulation_8h_a718825728a0acee47241762a94f66107}{IPA\_PARAM\_MAX\_INDEX\_BITS}};}
+\DoxyCodeLine{00178\ }
+\DoxyCodeLine{00179\ \ \ \textcolor{comment}{/*\ Zero\ based\ index\ of\ the\ parameter\ this\ one\ is\ based\ on\ in\ the\ previous}}
+\DoxyCodeLine{00180\ \textcolor{comment}{\ \ \ \ \ clone.\ \ If\ there\ is\ no\ previous\ clone,\ it\ must\ be\ equal\ to\ base\_index.\ \ */}}
+\DoxyCodeLine{00181\ \ \ \textcolor{keywordtype}{unsigned}\ prev\_clone\_index\ :\ \doxymbox{\hyperlink{ipa-param-manipulation_8h_a718825728a0acee47241762a94f66107}{IPA\_PARAM\_MAX\_INDEX\_BITS}};}
+\DoxyCodeLine{00182\ }
+\DoxyCodeLine{00183\ \ \ \textcolor{comment}{/*\ Specify\ the\ operation,\ if\ any,\ to\ be\ performed\ on\ the\ parameter.\ \ */}}
+\DoxyCodeLine{00184\ \ \ \textcolor{keyword}{enum}\ \doxymbox{\hyperlink{ipa-param-manipulation_8h_a5f75006c23da763935e7968bee7c23a7}{ipa\_parm\_op}}\ op\ :\ 2;}
+\DoxyCodeLine{00185\ }
+\DoxyCodeLine{00186\ \ \ \textcolor{comment}{/*\ If\ set,\ this\ structure\ describes\ a\ parameter\ copied\ over\ from\ a\ previous}}
+\DoxyCodeLine{00187\ \textcolor{comment}{\ \ \ \ \ IPA\ clone,\ any\ transformations\ are\ thus\ not\ to\ be\ re-\/done.\ \ */}}
+\DoxyCodeLine{00188\ \ \ \textcolor{keywordtype}{unsigned}\ prev\_clone\_adjustment\ :\ 1;}
+\DoxyCodeLine{00189\ }
+\DoxyCodeLine{00190\ \ \ \textcolor{comment}{/*\ Index\ into\ ipa\_param\_prefixes\ specifying\ a\ prefix\ to\ be\ used\ with}}
+\DoxyCodeLine{00191\ \textcolor{comment}{\ \ \ \ \ DECL\_NAMEs\ of\ newly\ synthesized\ parameters.\ \ */}}
+\DoxyCodeLine{00192\ \ \ \textcolor{keywordtype}{unsigned}\ param\_prefix\_index\ :\ 2;}
+\DoxyCodeLine{00193\ }
+\DoxyCodeLine{00194\ \ \ \textcolor{comment}{/*\ Storage\ order\ of\ the\ original\ parameter\ (for\ the\ cases\ when\ the\ new}}
+\DoxyCodeLine{00195\ \textcolor{comment}{\ \ \ \ \ parameter\ is\ a\ component\ of\ an\ original\ one).\ \ */}}
+\DoxyCodeLine{00196\ \ \ \textcolor{keywordtype}{unsigned}\ reverse\ :\ 1;}
+\DoxyCodeLine{00197\ }
+\DoxyCodeLine{00198\ \ \ \textcolor{comment}{/*\ A\ bit\ free\ for\ the\ user.\ \ */}}
+\DoxyCodeLine{00199\ \ \ \textcolor{keywordtype}{unsigned}\ user\_flag\ :\ 1;}
+\DoxyCodeLine{00200\ \};}
+\DoxyCodeLine{00201\ }
+\DoxyCodeLine{00202\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{ipa-param-manipulation_8h_a7287e4d817509ff85a3e3bf22926d0a5}{ipa\_dump\_adjusted\_parameters}}\ (FILE\ *f,}
+\DoxyCodeLine{00203\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{structvec}{vec<ipa\_adjusted\_param,\ va\_gc>}}\ *adj\_params);}
+\DoxyCodeLine{00204\ }
+\DoxyCodeLine{00205\ \textcolor{comment}{/*\ Class\ used\ to\ record\ planned\ modifications\ to\ parameters\ of\ a\ function\ and}}
+\DoxyCodeLine{00206\ \textcolor{comment}{\ \ \ also\ to\ perform\ necessary\ modifications\ at\ the\ caller\ side\ at\ the\ gimple}}
+\DoxyCodeLine{00207\ \textcolor{comment}{\ \ \ level.\ \ Used\ to\ describe\ all\ cgraph\ node\ clones\ that\ have\ their\ parameters}}
+\DoxyCodeLine{00208\ \textcolor{comment}{\ \ \ changed,\ therefore\ the\ class\ should\ only\ have\ a\ small\ memory\ footprint.\ \ */}}
+\DoxyCodeLine{00209\ }
+\DoxyCodeLine{00210\ \textcolor{keyword}{class\ }\doxymbox{\hyperlink{coretypes_8h_ae5708c4d4b300570eebe0bc0c78facbc}{GTY}}(())\ ipa\_param\_adjustments}
+\DoxyCodeLine{00211\ \{}
+\DoxyCodeLine{00212\ \textcolor{keyword}{public}:}
+\DoxyCodeLine{00213\ \ \ \textcolor{comment}{/*\ Constructor\ from\ NEW\_PARAMS\ showing\ how\ new\ parameters\ should\ look\ like}}
+\DoxyCodeLine{00214\ \textcolor{comment}{\ \ \ \ \ \ plus\ copying\ any\ pre-\/existing\ actual\ arguments\ starting\ from\ argument}}
+\DoxyCodeLine{00215\ \textcolor{comment}{\ \ \ \ \ \ with\ index\ ALWAYS\_COPY\_START\ (if\ non-\/negative,\ negative\ means\ do\ not\ copy}}
+\DoxyCodeLine{00216\ \textcolor{comment}{\ \ \ \ \ \ anything\ beyond\ what\ is\ described\ in\ NEW\_PARAMS),\ and\ SKIP\_RETURN,\ which}}
+\DoxyCodeLine{00217\ \textcolor{comment}{\ \ \ \ \ \ indicates\ that\ the\ function\ should\ return\ void\ after\ transformation.\ \ */}}
+\DoxyCodeLine{00218\ }
+\DoxyCodeLine{00219\ \ \ ipa\_param\_adjustments\ (\doxymbox{\hyperlink{structvec}{vec<ipa\_adjusted\_param,\ va\_gc>}}\ *new\_params,}
+\DoxyCodeLine{00220\ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{int}\ always\_copy\_start,\ \textcolor{keywordtype}{bool}\ skip\_return)}
+\DoxyCodeLine{00221\ \ \ \ \ :\ m\_adj\_params\ (new\_params),\ m\_always\_copy\_start\ (always\_copy\_start),}
+\DoxyCodeLine{00222\ \ \ \ \ m\_skip\_return\ (skip\_return)}
+\DoxyCodeLine{00223\ \ \ \ \ \{\}}
+\DoxyCodeLine{00224\ }
+\DoxyCodeLine{00225\ \ \ \textcolor{comment}{/*\ Modify\ a\ call\ statement\ arguments\ (and\ possibly\ remove\ the\ return\ value)}}
+\DoxyCodeLine{00226\ \textcolor{comment}{\ \ \ \ \ as\ described\ in\ the\ data\ fields\ of\ this\ class.\ \ */}}
+\DoxyCodeLine{00227\ \ \ gcall\ *modify\_call\ (cgraph\_edge\ *cs,\ \textcolor{keywordtype}{bool}\ update\_references,}
+\DoxyCodeLine{00228\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ hash\_set\ <tree>\ *killed\_ssas);}
+\DoxyCodeLine{00229\ \ \ \textcolor{comment}{/*\ Return\ if\ the\ first\ parameter\ is\ left\ intact.\ \ */}}
+\DoxyCodeLine{00230\ \ \ \textcolor{keywordtype}{bool}\ first\_param\_intact\_p\ ();}
+\DoxyCodeLine{00231\ \ \ \textcolor{comment}{/*\ Build\ a\ function\ type\ corresponding\ to\ the\ modified\ call.\ \ */}}
+\DoxyCodeLine{00232\ \ \ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ build\_new\_function\_type\ (\doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ old\_type,\ \textcolor{keywordtype}{bool}\ type\_is\_original\_p);}
+\DoxyCodeLine{00233\ \ \ \textcolor{comment}{/*\ Build\ a\ declaration\ corresponding\ to\ the\ target\ of\ the\ modified\ call.\ \ */}}
+\DoxyCodeLine{00234\ \ \ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ adjust\_decl\ (\doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ orig\_decl);}
+\DoxyCodeLine{00235\ \ \ \textcolor{comment}{/*\ Fill\ a\ vector\ marking\ which\ parameters\ are\ intact\ by\ the\ described}}
+\DoxyCodeLine{00236\ \textcolor{comment}{\ \ \ \ \ modifications.\ */}}
+\DoxyCodeLine{00237\ \ \ \textcolor{keywordtype}{void}\ get\_surviving\_params\ (\doxymbox{\hyperlink{vec_8h_ac6299229087b122e17686611255dfa27}{vec<bool>}}\ *surviving\_params);}
+\DoxyCodeLine{00238\ \ \ \textcolor{comment}{/*\ Fill\ a\ vector\ with\ new\ indices\ of\ surviving\ original\ parameters.\ \ */}}
+\DoxyCodeLine{00239\ \ \ \textcolor{keywordtype}{void}\ get\_updated\_indices\ (vec<int>\ *new\_indices);}
+\DoxyCodeLine{00240\ \ \ \textcolor{comment}{/*\ Return\ the\ original\ index\ for\ the\ given\ new\ parameter\ index.\ \ Return\ a}}
+\DoxyCodeLine{00241\ \textcolor{comment}{\ \ \ \ \ negative\ number\ if\ not\ available.\ \ */}}
+\DoxyCodeLine{00242\ \ \ \textcolor{keywordtype}{int}\ get\_original\_index\ (\textcolor{keywordtype}{int}\ newidx);}
+\DoxyCodeLine{00243\ }
+\DoxyCodeLine{00244\ \ \ \textcolor{keywordtype}{void}\ dump\ (FILE\ *f);}
+\DoxyCodeLine{00245\ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{collect-utils_8h_a398527b3e9e358c345c5047b16871957}{debug}}\ ();}
+\DoxyCodeLine{00246\ }
+\DoxyCodeLine{00247\ \ \ \textcolor{comment}{/*\ How\ the\ known\ part\ of\ arguments\ should\ look\ like.\ \ */}}
+\DoxyCodeLine{00248\ \ \ vec<ipa\_adjusted\_param,\ va\_gc>\ *m\_adj\_params;}
+\DoxyCodeLine{00249\ }
+\DoxyCodeLine{00250\ \ \ \textcolor{comment}{/*\ If\ non-\/negative,\ copy\ any\ arguments\ starting\ at\ this\ offset\ without\ any}}
+\DoxyCodeLine{00251\ \textcolor{comment}{\ \ \ \ \ modifications\ so\ that\ functions\ with\ variable\ number\ of\ arguments\ can\ be}}
+\DoxyCodeLine{00252\ \textcolor{comment}{\ \ \ \ \ modified.\ This\ number\ should\ be\ equal\ to\ the\ number\ of\ original\ forma}}
+\DoxyCodeLine{00253\ \textcolor{comment}{\ \ \ \ \ parameters.\ \ */}}
+\DoxyCodeLine{00254\ \ \ \textcolor{keywordtype}{int}\ m\_always\_copy\_start;}
+\DoxyCodeLine{00255\ \ \ \textcolor{comment}{/*\ If\ true,\ make\ the\ function\ not\ return\ any\ value.\ \ */}}
+\DoxyCodeLine{00256\ \ \ \textcolor{keywordtype}{bool}\ m\_skip\_return;}
+\DoxyCodeLine{00257\ }
+\DoxyCodeLine{00258\ \ \ \textcolor{keyword}{static}\ \textcolor{keywordtype}{bool}\ type\_attribute\_allowed\_p\ (\doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}});}
+\DoxyCodeLine{00259\ \textcolor{keyword}{private}:}
+\DoxyCodeLine{00260\ \ \ ipa\_param\_adjustments\ ()\ \{\}}
+\DoxyCodeLine{00261\ }
+\DoxyCodeLine{00262\ \ \ \textcolor{keywordtype}{void}\ init\ (vec<tree>\ *cur\_params);}
+\DoxyCodeLine{00263\ \ \ \textcolor{keywordtype}{int}\ get\_max\_base\_index\ ();}
+\DoxyCodeLine{00264\ \ \ \textcolor{keywordtype}{bool}\ method2func\_p\ (\doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ orig\_type);}
+\DoxyCodeLine{00265\ \};}
+\DoxyCodeLine{00266\ }
+\DoxyCodeLine{00267\ \textcolor{comment}{/*\ Structure\ used\ to\ map\ expressions\ accessing\ split\ or\ replaced\ parameters\ to}}
+\DoxyCodeLine{00268\ \textcolor{comment}{\ \ \ new\ PARM\_DECLs.\ \ */}}
+\DoxyCodeLine{00269\ }
+\DoxyCodeLine{00270\ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{structipa__param__body__replacement}{ipa\_param\_body\_replacement}}}
+\DoxyCodeLine{00271\ \{}
+\DoxyCodeLine{00272\ \ \ \textcolor{comment}{/*\ The\ old\ decl\ of\ the\ original\ parameter.\ \ \ */}}
+\DoxyCodeLine{00273\ \ \ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ \doxymbox{\hyperlink{structipa__param__body__replacement_a8c20ff871bda86f0f39b0b90c5b36acf}{base}};}
+\DoxyCodeLine{00274\ \ \ \textcolor{comment}{/*\ The\ new\ decl\ it\ should\ be\ replaced\ with.\ \ */}}
+\DoxyCodeLine{00275\ \ \ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ \doxymbox{\hyperlink{structipa__param__body__replacement_a47fc480e8638f1d95458766f6e9de5bb}{repl}};}
+\DoxyCodeLine{00276\ \ \ \textcolor{comment}{/*\ Users\ of\ ipa\_param\_body\_adjustments\ that\ modify\ standalone\ functions}}
+\DoxyCodeLine{00277\ \textcolor{comment}{\ \ \ \ \ outside\ of\ IPA\ clone\ materialization\ can\ use\ the\ following\ field\ for\ their}}
+\DoxyCodeLine{00278\ \textcolor{comment}{\ \ \ \ \ internal\ purposes.\ \ */}}
+\DoxyCodeLine{00279\ \ \ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ \doxymbox{\hyperlink{structipa__param__body__replacement_ab2685dc04ed4be3ecd70dbdeeec5025d}{dummy}};}
+\DoxyCodeLine{00280\ \ \ \textcolor{comment}{/*\ The\ offset\ within\ BASE\ that\ REPL\ represents.\ \ */}}
+\DoxyCodeLine{00281\ \ \ \textcolor{keywordtype}{unsigned}\ \doxymbox{\hyperlink{structipa__param__body__replacement_ad321340f8504e8916e9e588e61a25136}{unit\_offset}};}
+\DoxyCodeLine{00282\ \};}
+\DoxyCodeLine{00283\ }
+\DoxyCodeLine{00284\ \textcolor{keyword}{struct\ }ipa\_replace\_map;}
+\DoxyCodeLine{00285\ }
+\DoxyCodeLine{00286\ \textcolor{comment}{/*\ Class\ used\ when\ actually\ performing\ adjustments\ to\ formal\ parameters\ of\ a}}
+\DoxyCodeLine{00287\ \textcolor{comment}{\ \ \ function\ to\ map\ accesses\ that\ need\ to\ be\ replaced\ to\ replacements.\ \ The}}
+\DoxyCodeLine{00288\ \textcolor{comment}{\ \ \ class\ attempts\ to\ work\ in\ two\ very\ different\ sets\ of\ circumstances:\ as\ a}}
+\DoxyCodeLine{00289\ \textcolor{comment}{\ \ \ part\ of\ tree-\/inine.c's\ tree\_function\_versioning\ machinery\ to\ clone\ functions}}
+\DoxyCodeLine{00290\ \textcolor{comment}{\ \ \ (when\ M\_ID\ is\ not\ NULL)\ and\ in\ s\ standalone\ fashion,\ modifying\ an\ existing}}
+\DoxyCodeLine{00291\ \textcolor{comment}{\ \ \ function\ in\ place\ (when\ M\_ID\ is\ NULL).\ \ While\ a\ lot\ of\ stuff\ handled\ in\ a}}
+\DoxyCodeLine{00292\ \textcolor{comment}{\ \ \ unified\ way\ in\ both\ modes,\ there\ are\ many\ aspects\ of\ the\ processs\ that}}
+\DoxyCodeLine{00293\ \textcolor{comment}{\ \ \ requires\ distinct\ paths.\ \ */}}
+\DoxyCodeLine{00294\ }
+\DoxyCodeLine{00295\ \textcolor{keyword}{class\ }\doxymbox{\hyperlink{classipa__param__body__adjustments_a25b67a952f50fabff8ed930fbbcbe689}{ipa\_param\_body\_adjustments}}}
+\DoxyCodeLine{00296\ \{}
+\DoxyCodeLine{00297\ \textcolor{keyword}{public}:}
+\DoxyCodeLine{00298\ \ \ \textcolor{comment}{/*\ Constructor\ to\ use\ from\ within\ tree-\/inline.\ \ */}}
+\DoxyCodeLine{00299\ \ \ \doxymbox{\hyperlink{classipa__param__body__adjustments_a25b67a952f50fabff8ed930fbbcbe689}{ipa\_param\_body\_adjustments}}\ (ipa\_param\_adjustments\ *adjustments,}
+\DoxyCodeLine{00300\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ fndecl,\ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ old\_fndecl,}
+\DoxyCodeLine{00301\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{struct}\ \doxymbox{\hyperlink{structcopy__body__data}{copy\_body\_data}}\ *\textcolor{keywordtype}{id},\ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ *vars,}
+\DoxyCodeLine{00302\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{structvec}{vec<ipa\_replace\_map\ *,\ va\_gc>}}\ *tree\_map);}
+\DoxyCodeLine{00303\ \ \ \textcolor{comment}{/*\ Constructor\ to\ use\ for\ modifying\ a\ function\ outside\ of\ tree-\/inline\ from\ an}}
+\DoxyCodeLine{00304\ \textcolor{comment}{\ \ \ \ \ instance\ of\ ipa\_param\_adjustments.\ \ */}}
+\DoxyCodeLine{00305\ \ \ \doxymbox{\hyperlink{classipa__param__body__adjustments_a7881661a13ff6302865eb2914af2059d}{ipa\_param\_body\_adjustments}}\ (ipa\_param\_adjustments\ *adjustments,}
+\DoxyCodeLine{00306\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ fndecl);}
+\DoxyCodeLine{00307\ \ \ \textcolor{comment}{/*\ Constructor\ to\ use\ for\ modifying\ a\ function\ outside\ of\ tree-\/inline\ from\ a}}
+\DoxyCodeLine{00308\ \textcolor{comment}{\ \ \ \ \ simple\ vector\ of\ desired\ parameter\ modification.\ \ */}}
+\DoxyCodeLine{00309\ \ \ \doxymbox{\hyperlink{classipa__param__body__adjustments_a8e5c24584a6fcfb9ad21241816a84e21}{ipa\_param\_body\_adjustments}}\ (\doxymbox{\hyperlink{structvec}{vec<ipa\_adjusted\_param,\ va\_gc>}}\ *adj\_params,}
+\DoxyCodeLine{00310\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ fndecl);}
+\DoxyCodeLine{00311\ }
+\DoxyCodeLine{00312\ \ \ \textcolor{comment}{/*\ The\ do-\/it-\/all\ function\ for\ modifying\ a\ function\ outside\ of}}
+\DoxyCodeLine{00313\ \textcolor{comment}{\ \ \ \ \ tree-\/inline.\ \ */}}
+\DoxyCodeLine{00314\ \ \ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{classipa__param__body__adjustments_a175fdc48ed10e9bce1a08ef44e10f776}{perform\_cfun\_body\_modifications}}\ ();}
+\DoxyCodeLine{00315\ }
+\DoxyCodeLine{00316\ \ \ \textcolor{comment}{/*\ Change\ the\ PARM\_DECLs.\ \ */}}
+\DoxyCodeLine{00317\ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classipa__param__body__adjustments_af86b3a523238714a96b0982859745301}{modify\_formal\_parameters}}\ ();}
+\DoxyCodeLine{00318\ \ \ \textcolor{comment}{/*\ Register\ a\ REPLACEMENT\ for\ accesses\ to\ BASE\ at\ UNIT\_OFFSET.\ \ */}}
+\DoxyCodeLine{00319\ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classipa__param__body__adjustments_ac29c2bb8c0dfad3f977274346aa0a652}{register\_replacement}}\ (\doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ base,\ \textcolor{keywordtype}{unsigned}\ unit\_offset,\ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ replacement);}
+\DoxyCodeLine{00320\ \ \ \textcolor{comment}{/*\ Register\ a\ replacement\ decl\ for\ the\ transformation\ done\ in\ APM.\ \ */}}
+\DoxyCodeLine{00321\ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classipa__param__body__adjustments_a1f3d2336bc44bfae2d1cc83cfe479325}{register\_replacement}}\ (ipa\_adjusted\_param\ *apm,\ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ replacement);}
+\DoxyCodeLine{00322\ \ \ \textcolor{comment}{/*\ Sort\ m\_replacements\ and\ set\ m\_sorted\_replacements\_p\ to\ true.\ \ Users\ that}}
+\DoxyCodeLine{00323\ \textcolor{comment}{\ \ \ \ \ call\ register\_replacement\ themselves\ must\ call\ the\ method\ before\ any}}
+\DoxyCodeLine{00324\ \textcolor{comment}{\ \ \ \ \ lookup\ and\ thus\ also\ any\ statement\ or\ expression\ modification.\ \ */}}
+\DoxyCodeLine{00325\ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classipa__param__body__adjustments_ac1ba2264cdde850e0b0cc69c19a0ed8d}{sort\_replacements}}\ ();}
+\DoxyCodeLine{00326\ \ \ \textcolor{comment}{/*\ Lookup\ a\ replacement\ for\ a\ given\ offset\ within\ a\ given\ parameter.\ \ */}}
+\DoxyCodeLine{00327\ \ \ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ \doxymbox{\hyperlink{classipa__param__body__adjustments_ad529cbcccc136d4b2c52529d1a341601}{lookup\_replacement}}\ (\doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ base,\ \textcolor{keywordtype}{unsigned}\ unit\_offset);}
+\DoxyCodeLine{00328\ \ \ \textcolor{comment}{/*\ Lookup\ a\ replacement\ for\ an\ expression,\ if\ there\ is\ one.\ \ */}}
+\DoxyCodeLine{00329\ \ \ \doxymbox{\hyperlink{structipa__param__body__replacement}{ipa\_param\_body\_replacement}}\ *\doxymbox{\hyperlink{classipa__param__body__adjustments_a178289fc066ba1e54802ea80c7ef0e63}{get\_expr\_replacement}}\ (\doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ expr,}
+\DoxyCodeLine{00330\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{bool}\ ignore\_default\_def);}
+\DoxyCodeLine{00331\ \ \ \textcolor{comment}{/*\ Lookup\ the\ new\ base\ for\ surviving\ names\ previously\ belonging\ to\ a}}
+\DoxyCodeLine{00332\ \textcolor{comment}{\ \ \ \ \ parameter.\ */}}
+\DoxyCodeLine{00333\ \ \ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ \doxymbox{\hyperlink{classipa__param__body__adjustments_ac54d0c8d275b03cc557a0ecf67709403}{get\_replacement\_ssa\_base}}\ (\doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ old\_decl);}
+\DoxyCodeLine{00334\ \ \ \textcolor{comment}{/*\ Modify\ a\ statement.\ \ */}}
+\DoxyCodeLine{00335\ \ \ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{classipa__param__body__adjustments_a4b35cf217b7e29a48a4d53dda29de7a8}{modify\_gimple\_stmt}}\ (gimple\ **stmt,\ \doxymbox{\hyperlink{coretypes_8h_a4b4e58d1e0dada604ccfc7965bb9a3df}{gimple\_seq}}\ *extra\_stmts,}
+\DoxyCodeLine{00336\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ gimple\ *orig\_stmt);}
+\DoxyCodeLine{00337\ \ \ \textcolor{comment}{/*\ Return\ the\ new\ chain\ of\ parameters.\ \ */}}
+\DoxyCodeLine{00338\ \ \ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ \doxymbox{\hyperlink{classipa__param__body__adjustments_a4626e6f2b984ac94af2d69efc5e360e5}{get\_new\_param\_chain}}\ ();}
+\DoxyCodeLine{00339\ \ \ \textcolor{comment}{/*\ Replace\ all\ occurances\ of\ SSAs\ in\ m\_dead\_ssa\_debug\_equiv\ in\ t\ with\ what}}
+\DoxyCodeLine{00340\ \textcolor{comment}{\ \ \ \ \ they\ are\ mapped\ to.\ \ */}}
+\DoxyCodeLine{00341\ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classipa__param__body__adjustments_a148467128f427dbb65005bde0a5fdb07}{remap\_with\_debug\_expressions}}\ (\doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ *t);}
+\DoxyCodeLine{00342\ }
+\DoxyCodeLine{00343\ \ \ \textcolor{comment}{/*\ If\ there\ are\ any\ initialization\ statements\ that\ need\ to\ be\ emitted\ into}}
+\DoxyCodeLine{00344\ \textcolor{comment}{\ \ \ \ \ the\ basic\ block\ BB\ right\ at\ ther\ start\ of\ the\ new\ function,\ do\ so.\ \ */}}
+\DoxyCodeLine{00345\ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classipa__param__body__adjustments_a7ef0e5f454ed508dd0ddcf2d4e203729}{append\_init\_stmts}}\ (\doxymbox{\hyperlink{coretypes_8h_a0469df20b471a4cd7c81fbdce5027487}{basic\_block}}\ bb);}
+\DoxyCodeLine{00346\ }
+\DoxyCodeLine{00347\ \ \ \textcolor{comment}{/*\ Pointers\ to\ data\ structures\ defining\ how\ the\ function\ should\ be}}
+\DoxyCodeLine{00348\ \textcolor{comment}{\ \ \ \ \ modified.\ \ */}}
+\DoxyCodeLine{00349\ \ \ \doxymbox{\hyperlink{structvec}{vec<ipa\_adjusted\_param,\ va\_gc>}}\ *\doxymbox{\hyperlink{classipa__param__body__adjustments_a6aa43bbaaced1b6e2fb94d295bebcb9c}{m\_adj\_params}};}
+\DoxyCodeLine{00350\ \ \ ipa\_param\_adjustments\ *\doxymbox{\hyperlink{classipa__param__body__adjustments_aef1563cff5d05dcd72cf361baaa89ff0}{m\_adjustments}};}
+\DoxyCodeLine{00351\ }
+\DoxyCodeLine{00352\ \ \ \textcolor{comment}{/*\ Vector\ of\ old\ parameter\ declarations\ that\ must\ have\ their\ debug\ bind}}
+\DoxyCodeLine{00353\ \textcolor{comment}{\ \ \ \ \ statements\ re-\/mapped\ and\ debug\ decls\ created.\ \ */}}
+\DoxyCodeLine{00354\ }
+\DoxyCodeLine{00355\ \ \ \doxymbox{\hyperlink{classauto__vec}{auto\_vec<tree,\ 16>}}\ \doxymbox{\hyperlink{classipa__param__body__adjustments_ac327385c8b76fbf31ffef0fe5b4cd1e7}{m\_reset\_debug\_decls}};}
+\DoxyCodeLine{00356\ }
+\DoxyCodeLine{00357\ \ \ \textcolor{comment}{/*\ Sets\ of\ statements\ and\ SSA\_NAMEs\ that\ only\ manipulate\ data\ from\ parameters}}
+\DoxyCodeLine{00358\ \textcolor{comment}{\ \ \ \ \ removed\ because\ they\ are\ not\ necessary.\ \ */}}
+\DoxyCodeLine{00359\ \ \ \doxymbox{\hyperlink{classhash__set}{hash\_set<gimple\ *>}}\ \doxymbox{\hyperlink{classipa__param__body__adjustments_a9a023a1e9371e95d0b10f74f3027d8a8}{m\_dead\_stmts}};}
+\DoxyCodeLine{00360\ \ \ \doxymbox{\hyperlink{classhash__set}{hash\_set<tree>}}\ \doxymbox{\hyperlink{classipa__param__body__adjustments_a71b29c6ad8616082356dd91c3b1dec78}{m\_dead\_ssas}};}
+\DoxyCodeLine{00361\ }
+\DoxyCodeLine{00362\ \ \ \textcolor{comment}{/*\ Mapping\ from\ DCEd\ SSAs\ to\ what\ their\ potential\ debug\_binds\ should\ be.\ \ */}}
+\DoxyCodeLine{00363\ \ \ \doxymbox{\hyperlink{classhash__map}{hash\_map<tree,\ tree>}}\ \doxymbox{\hyperlink{classipa__param__body__adjustments_a2aa97b4c8c54455302b3b1baa114d5ef}{m\_dead\_ssa\_debug\_equiv}};}
+\DoxyCodeLine{00364\ \ \ \textcolor{comment}{/*\ Mapping\ from\ DCEd\ statements\ to\ debug\ expressions\ that\ will\ be\ placed\ on}}
+\DoxyCodeLine{00365\ \textcolor{comment}{\ \ \ \ \ the\ RHS\ of\ debug\ statement\ that\ will\ replace\ this\ one.\ \ */}}
+\DoxyCodeLine{00366\ \ \ \doxymbox{\hyperlink{classhash__map}{hash\_map<gimple\ *,\ tree>}}\ \doxymbox{\hyperlink{classipa__param__body__adjustments_afe50603c7e7c654c91843fd02b5ffa68}{m\_dead\_stmt\_debug\_equiv}};}
+\DoxyCodeLine{00367\ }
+\DoxyCodeLine{00368\ \textcolor{keyword}{private}:}
+\DoxyCodeLine{00369\ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classipa__param__body__adjustments_a52299432c027fb7f4c470d1ee9da3049}{common\_initialization}}\ (\doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ old\_fndecl,\ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ *vars,}
+\DoxyCodeLine{00370\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{structvec}{vec<ipa\_replace\_map\ *,\ va\_gc>}}\ *tree\_map);}
+\DoxyCodeLine{00371\ \ \ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ \doxymbox{\hyperlink{classipa__param__body__adjustments_a4b2e346ea2010d4d737174a863267502}{carry\_over\_param}}\ (\doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ t);}
+\DoxyCodeLine{00372\ \ \ \textcolor{keywordtype}{unsigned}\ \doxymbox{\hyperlink{classipa__param__body__adjustments_a0da6cc53abab1fee09ad154bcd8fc1fc}{get\_base\_index}}\ (ipa\_adjusted\_param\ *apm);}
+\DoxyCodeLine{00373\ \ \ \doxymbox{\hyperlink{structipa__param__body__replacement}{ipa\_param\_body\_replacement}}\ *\doxymbox{\hyperlink{classipa__param__body__adjustments_a469cb15c30cc54efc6760b6737862daa}{lookup\_replacement\_1}}\ (\doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ base,}
+\DoxyCodeLine{00374\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{unsigned}\ unit\_offset);}
+\DoxyCodeLine{00375\ \ \ \doxymbox{\hyperlink{structipa__param__body__replacement}{ipa\_param\_body\_replacement}}\ *\doxymbox{\hyperlink{classipa__param__body__adjustments_a20019d222ca419886ec2844816361138}{lookup\_first\_base\_replacement}}\ (\doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ base);}
+\DoxyCodeLine{00376\ \ \ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ \doxymbox{\hyperlink{classipa__param__body__adjustments_ad58ef5583ae08c29141a5b87e84963ba}{replace\_removed\_params\_ssa\_names}}\ (\doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ old\_name,\ gimple\ *stmt);}
+\DoxyCodeLine{00377\ \ \ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{classipa__param__body__adjustments_a4cf4e18463051c83a2034079723adb0f}{modify\_expression}}\ (\doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ *expr\_p,\ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{tree_8h_a2608e9a38b5c1634a3836d55691d10c4}{convert}},\ \doxymbox{\hyperlink{coretypes_8h_a4b4e58d1e0dada604ccfc7965bb9a3df}{gimple\_seq}}\ *\ =\ \textcolor{keyword}{nullptr});}
+\DoxyCodeLine{00378\ \ \ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{classipa__param__body__adjustments_a2f87e826182bd5f7677b58fddc441c09}{modify\_assignment}}\ (gimple\ *stmt,\ \doxymbox{\hyperlink{coretypes_8h_a4b4e58d1e0dada604ccfc7965bb9a3df}{gimple\_seq}}\ *extra\_stmts);}
+\DoxyCodeLine{00379\ \ \ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{classipa__param__body__adjustments_a4eace5f3c6ae483fac7fbdc962cb2faa}{modify\_call\_stmt}}\ (gcall\ **stmt\_p,\ gimple\ *orig\_stmt);}
+\DoxyCodeLine{00380\ \ \ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{classipa__param__body__adjustments_a19cb91a014d70f5c7c651b3be2d7bebf}{modify\_cfun\_body}}\ ();}
+\DoxyCodeLine{00381\ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classipa__param__body__adjustments_acd3b6f37fd000bfa295c1f00a188ca33}{reset\_debug\_stmts}}\ ();}
+\DoxyCodeLine{00382\ \ \ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ \doxymbox{\hyperlink{classipa__param__body__adjustments_adf136f738cff8382269c4bc19ea12d76}{get\_ddef\_if\_exists\_and\_is\_used}}\ (\doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ decl);}
+\DoxyCodeLine{00383\ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classipa__param__body__adjustments_a6bbb2ffd7c2c2051b21b78c38decedf1}{mark\_dead\_statements}}\ (\doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ dead\_param,\ \doxymbox{\hyperlink{structvec}{vec<tree>}}\ *debugstack);}
+\DoxyCodeLine{00384\ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classipa__param__body__adjustments_a92ff5d312d61a2e0b8021d5d370adb13}{mark\_clobbers\_dead}}\ (\doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ dead\_param);}
+\DoxyCodeLine{00385\ \ \ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{classipa__param__body__adjustments_aa6bca84eb860b792b6c2f6f42abd8825}{prepare\_debug\_expressions}}\ (\doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ dead\_ssa);}
+\DoxyCodeLine{00386\ }
+\DoxyCodeLine{00387\ \ \ \textcolor{comment}{/*\ Declaration\ of\ the\ function\ that\ is\ being\ transformed.\ \ */}}
+\DoxyCodeLine{00388\ }
+\DoxyCodeLine{00389\ \ \ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ \doxymbox{\hyperlink{classipa__param__body__adjustments_ab4ccaeed7980459d4dc0ed79c4052799}{m\_fndecl}};}
+\DoxyCodeLine{00390\ }
+\DoxyCodeLine{00391\ \ \ \textcolor{comment}{/*\ If\ non-\/NULL,\ the\ tree-\/inline\ master\ data\ structure\ guiding\ materialization}}
+\DoxyCodeLine{00392\ \textcolor{comment}{\ \ \ \ \ of\ the\ current\ clone.\ \ */}}
+\DoxyCodeLine{00393\ \ \ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{structcopy__body__data}{copy\_body\_data}}\ *\doxymbox{\hyperlink{classipa__param__body__adjustments_ace6e23badc05388ae0fa1ff56d48e998}{m\_id}};}
+\DoxyCodeLine{00394\ }
+\DoxyCodeLine{00395\ \ \ \textcolor{comment}{/*\ Vector\ of\ old\ parameter\ declarations\ (before\ changing\ them).\ \ */}}
+\DoxyCodeLine{00396\ }
+\DoxyCodeLine{00397\ \ \ \doxymbox{\hyperlink{classauto__vec}{auto\_vec<tree,\ 16>}}\ \doxymbox{\hyperlink{classipa__param__body__adjustments_a386dfcbc8f5be456c48dd37945e2dbd4}{m\_oparms}};}
+\DoxyCodeLine{00398\ }
+\DoxyCodeLine{00399\ \ \ \textcolor{comment}{/*\ Vector\ of\ parameter\ declarations\ the\ function\ will\ have\ after}}
+\DoxyCodeLine{00400\ \textcolor{comment}{\ \ \ \ \ transformation.\ \ */}}
+\DoxyCodeLine{00401\ }
+\DoxyCodeLine{00402\ \ \ \doxymbox{\hyperlink{classauto__vec}{auto\_vec<tree,\ 16>}}\ \doxymbox{\hyperlink{classipa__param__body__adjustments_a981dfb93d86dd491fe0f9041af3e0906}{m\_new\_decls}};}
+\DoxyCodeLine{00403\ }
+\DoxyCodeLine{00404\ \ \ \textcolor{comment}{/*\ If\ the\ function\ type\ has\ non-\/NULL\ TYPE\_ARG\_TYPES,\ this\ is\ the\ vector\ of}}
+\DoxyCodeLine{00405\ \textcolor{comment}{\ \ \ \ \ these\ types\ after\ transformation,\ otherwise\ an\ empty\ one.\ \ */}}
+\DoxyCodeLine{00406\ }
+\DoxyCodeLine{00407\ \ \ \doxymbox{\hyperlink{classauto__vec}{auto\_vec<tree,\ 16>}}\ \doxymbox{\hyperlink{classipa__param__body__adjustments_a2669868fe55e641d80329b91c887fa19}{m\_new\_types}};}
+\DoxyCodeLine{00408\ }
+\DoxyCodeLine{00409\ \ \ \textcolor{comment}{/*\ Vector\ of\ structures\ telling\ how\ to\ replace\ old\ parameters\ in\ the}}
+\DoxyCodeLine{00410\ \textcolor{comment}{\ \ \ \ \ function\ body.\ \ TODO:\ Even\ though\ there\ usually\ be\ only\ few,\ but\ should\ we}}
+\DoxyCodeLine{00411\ \textcolor{comment}{\ \ \ \ \ use\ a\ hash?\ \ */}}
+\DoxyCodeLine{00412\ }
+\DoxyCodeLine{00413\ \ \ \doxymbox{\hyperlink{classauto__vec}{auto\_vec<ipa\_param\_body\_replacement,\ 16>}}\ \doxymbox{\hyperlink{classipa__param__body__adjustments_a773c22e89dee9c13405018f71964401b}{m\_replacements}};}
+\DoxyCodeLine{00414\ }
+\DoxyCodeLine{00415\ \ \ \textcolor{comment}{/*\ List\ of\ initialization\ assignments\ to\ be\ put\ at\ the\ beginning\ of\ the}}
+\DoxyCodeLine{00416\ \textcolor{comment}{\ \ \ \ \ cloned\ function\ to\ deal\ with\ split\ aggregates\ which\ however\ have\ known}}
+\DoxyCodeLine{00417\ \textcolor{comment}{\ \ \ \ \ constant\ value\ and\ so\ their\ PARM\_DECL\ disappears.\ \ */}}
+\DoxyCodeLine{00418\ }
+\DoxyCodeLine{00419\ \ \ \doxymbox{\hyperlink{classauto__vec}{auto\_vec<gimple\ *,\ 8>}}\ \doxymbox{\hyperlink{classipa__param__body__adjustments_a342011927c4a71470b39b741f4260f0c}{m\_split\_agg\_csts\_inits}};}
+\DoxyCodeLine{00420\ }
+\DoxyCodeLine{00421\ \ \ \textcolor{comment}{/*\ Vector\ for\ remapping\ SSA\_BASES\ from\ old\ parameter\ declarations\ that\ are}}
+\DoxyCodeLine{00422\ \textcolor{comment}{\ \ \ \ \ being\ removed\ as\ a\ part\ of\ the\ transformation.\ \ Before\ a\ new\ VAR\_DECL\ is}}
+\DoxyCodeLine{00423\ \textcolor{comment}{\ \ \ \ \ created,\ it\ holds\ the\ old\ PARM\_DECL,\ once\ the\ variable\ is\ built\ it\ is}}
+\DoxyCodeLine{00424\ \textcolor{comment}{\ \ \ \ \ stored\ here.\ \ */}}
+\DoxyCodeLine{00425\ }
+\DoxyCodeLine{00426\ \ \ \doxymbox{\hyperlink{classauto__vec}{auto\_vec<tree>}}\ \doxymbox{\hyperlink{classipa__param__body__adjustments_a5d43d7fdc5c478ca3f0bdef135400afc}{m\_removed\_decls}};}
+\DoxyCodeLine{00427\ }
+\DoxyCodeLine{00428\ \ \ \textcolor{comment}{/*\ Hash\ to\ quickly\ lookup\ the\ item\ in\ m\_removed\_decls\ given\ the\ old\ decl.\ \ */}}
+\DoxyCodeLine{00429\ }
+\DoxyCodeLine{00430\ \ \ \doxymbox{\hyperlink{classhash__map}{hash\_map<tree,\ unsigned>}}\ \doxymbox{\hyperlink{classipa__param__body__adjustments_af2f3ba503b3df6b51fcbab1edf259fa9}{m\_removed\_map}};}
+\DoxyCodeLine{00431\ }
+\DoxyCodeLine{00432\ \ \ \textcolor{comment}{/*\ True\ iff\ the\ transformed\ function\ is\ a\ class\ method\ that\ is\ about\ to\ loose}}
+\DoxyCodeLine{00433\ \textcolor{comment}{\ \ \ \ \ its\ this\ pointer\ and\ must\ be\ converted\ to\ a\ normal\ function.\ \ */}}
+\DoxyCodeLine{00434\ }
+\DoxyCodeLine{00435\ \ \ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{classipa__param__body__adjustments_a63c9a436f79de9559801b53eb8ac3643}{m\_method2func}};}
+\DoxyCodeLine{00436\ }
+\DoxyCodeLine{00437\ \ \ \textcolor{comment}{/*\ True\ if\ m\_replacements\ have\ ben\ sorted\ since\ the\ last\ insertion.\ \ */}}
+\DoxyCodeLine{00438\ }
+\DoxyCodeLine{00439\ \ \ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{classipa__param__body__adjustments_a8e3d2f77a52ed7482f391f5a5765a55e}{m\_sorted\_replacements\_p}};}
+\DoxyCodeLine{00440\ \};}
+\DoxyCodeLine{00441\ }
+\DoxyCodeLine{00442\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{ipa-param-manipulation_8h_a71710af46fc994f2cc0c5adafc3f357b}{push\_function\_arg\_decls}}\ (\doxymbox{\hyperlink{structvec}{vec<tree>}}\ *args,\ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ fndecl);}
+\DoxyCodeLine{00443\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{ipa-param-manipulation_8h_a60dcf81dbc76205d72b0c4db31c5836e}{push\_function\_arg\_types}}\ (\doxymbox{\hyperlink{structvec}{vec<tree>}}\ *types,\ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ fntype);}
+\DoxyCodeLine{00444\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{ipa-param-manipulation_8h_a286bd4476fc50322fcfd693547097739}{ipa\_verify\_edge\_has\_no\_modifications}}\ (cgraph\_edge\ *cs);}
+\DoxyCodeLine{00445\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{ipa-param-manipulation_8h_a958245bbfe1414c1199425956730f736}{ipa\_edge\_modifications\_finalize}}\ ();}
+\DoxyCodeLine{00446\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{ipa-param-manipulation_8h_ab8058b81acedf05d43a1ddc6fb596530}{ipa\_release\_ssas\_in\_hash}}\ (hash\_set\ <tree>\ *killed\_ssas);}
+\DoxyCodeLine{00447\ }
+\DoxyCodeLine{00448\ \textcolor{preprocessor}{\#endif\ \ }\textcolor{comment}{/*\ IPA\_PARAM\_MANIPULATION\_H\ */}\textcolor{preprocessor}{}}
+
+\end{DoxyCode}

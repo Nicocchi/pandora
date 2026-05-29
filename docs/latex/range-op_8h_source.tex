@@ -1,0 +1,325 @@
+\doxysection{range-\/op.h}
+\hypertarget{range-op_8h_source}{}\label{range-op_8h_source}\index{toolchain/x86\_64-\/elf/lib/gcc/x86\_64-\/elf/14.2.0/plugin/include/range-\/op.h@{toolchain/x86\_64-\/elf/lib/gcc/x86\_64-\/elf/14.2.0/plugin/include/range-\/op.h}}
+\doxymbox{\hyperlink{range-op_8h}{Go to the documentation of this file.}}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001\ \textcolor{comment}{/*\ Header\ file\ for\ range\ operator\ class.}}
+\DoxyCodeLine{00002\ \textcolor{comment}{\ \ \ Copyright\ (C)\ 2017-\/2024\ Free\ Software\ Foundation,\ Inc.}}
+\DoxyCodeLine{00003\ \textcolor{comment}{\ \ \ Contributed\ by\ Andrew\ MacLeod\ <amacleod@redhat.com>}}
+\DoxyCodeLine{00004\ \textcolor{comment}{\ \ \ and\ Aldy\ Hernandez\ <aldyh@redhat.com>.}}
+\DoxyCodeLine{00005\ \textcolor{comment}{}}
+\DoxyCodeLine{00006\ \textcolor{comment}{This\ file\ is\ part\ of\ GCC.}}
+\DoxyCodeLine{00007\ \textcolor{comment}{}}
+\DoxyCodeLine{00008\ \textcolor{comment}{GCC\ is\ free\ software;\ you\ can\ redistribute\ it\ and/or\ modify\ it\ under}}
+\DoxyCodeLine{00009\ \textcolor{comment}{the\ terms\ of\ the\ GNU\ General\ Public\ License\ as\ published\ by\ the\ Free}}
+\DoxyCodeLine{00010\ \textcolor{comment}{Software\ Foundation;\ either\ version\ 3,\ or\ (at\ your\ option)\ any\ later}}
+\DoxyCodeLine{00011\ \textcolor{comment}{version.}}
+\DoxyCodeLine{00012\ \textcolor{comment}{}}
+\DoxyCodeLine{00013\ \textcolor{comment}{GCC\ is\ distributed\ in\ the\ hope\ that\ it\ will\ be\ useful,\ but\ WITHOUT\ ANY}}
+\DoxyCodeLine{00014\ \textcolor{comment}{WARRANTY;\ without\ even\ the\ implied\ warranty\ of\ MERCHANTABILITY\ or}}
+\DoxyCodeLine{00015\ \textcolor{comment}{FITNESS\ FOR\ A\ PARTICULAR\ PURPOSE.\ \ See\ the\ GNU\ General\ Public\ License}}
+\DoxyCodeLine{00016\ \textcolor{comment}{\ for\ more\ details.}}
+\DoxyCodeLine{00017\ \textcolor{comment}{}}
+\DoxyCodeLine{00018\ \textcolor{comment}{You\ should\ have\ received\ a\ copy\ of\ the\ GNU\ General\ Public\ License}}
+\DoxyCodeLine{00019\ \textcolor{comment}{along\ with\ GCC;\ see\ the\ file\ COPYING3.\ \ If\ not\ see}}
+\DoxyCodeLine{00020\ \textcolor{comment}{<http://www.gnu.org/licenses/>.\ \ */}}
+\DoxyCodeLine{00021\ }
+\DoxyCodeLine{00022\ \textcolor{preprocessor}{\#ifndef\ GCC\_RANGE\_OP\_H}}
+\DoxyCodeLine{00023\ \textcolor{preprocessor}{\#define\ GCC\_RANGE\_OP\_H}}
+\DoxyCodeLine{00024\ }
+\DoxyCodeLine{00025\ \textcolor{comment}{//\ This\ class\ is\ implemented\ for\ each\ kind\ of\ operator\ supported\ by}}
+\DoxyCodeLine{00026\ \textcolor{comment}{//\ the\ range\ generator.\ \ It\ serves\ various\ purposes.}}
+\DoxyCodeLine{00027\ \textcolor{comment}{//}}
+\DoxyCodeLine{00028\ \textcolor{comment}{//\ 1\ -\/\ Generates\ range\ information\ for\ the\ specific\ operation\ between}}
+\DoxyCodeLine{00029\ \textcolor{comment}{//\ \ \ \ \ two\ ranges.\ \ This\ provides\ the\ ability\ to\ fold\ ranges\ for\ an}}
+\DoxyCodeLine{00030\ \textcolor{comment}{//\ \ \ \ \ expression.}}
+\DoxyCodeLine{00031\ \textcolor{comment}{//}}
+\DoxyCodeLine{00032\ \textcolor{comment}{//\ 2\ -\/\ Performs\ range\ algebra\ on\ the\ expression\ such\ that\ a\ range\ can\ be}}
+\DoxyCodeLine{00033\ \textcolor{comment}{//\ \ \ \ \ adjusted\ in\ terms\ of\ one\ of\ the\ operands:}}
+\DoxyCodeLine{00034\ \textcolor{comment}{//}}
+\DoxyCodeLine{00035\ \textcolor{comment}{//\ \ \ \ \ \ \ def\ =\ op1\ +\ op2}}
+\DoxyCodeLine{00036\ \textcolor{comment}{//}}
+\DoxyCodeLine{00037\ \textcolor{comment}{//\ \ \ \ \ Given\ a\ range\ for\ def,\ we\ can\ adjust\ the\ range\ so\ that\ it\ is\ in}}
+\DoxyCodeLine{00038\ \textcolor{comment}{//\ \ \ \ \ terms\ of\ either\ operand.}}
+\DoxyCodeLine{00039\ \textcolor{comment}{//}}
+\DoxyCodeLine{00040\ \textcolor{comment}{//\ \ \ \ \ op1\_range\ (def\_range,\ op2)\ will\ adjust\ the\ range\ in\ place\ so\ it}}
+\DoxyCodeLine{00041\ \textcolor{comment}{//\ \ \ \ \ is\ in\ terms\ of\ op1.\ \ Since\ op1\ =\ def\ -\/\ op2,\ it\ will\ subtract}}
+\DoxyCodeLine{00042\ \textcolor{comment}{//\ \ \ \ \ op2\ from\ each\ element\ of\ the\ range.}}
+\DoxyCodeLine{00043\ \textcolor{comment}{//}}
+\DoxyCodeLine{00044\ \textcolor{comment}{//\ 3\ -\/\ Creates\ a\ range\ for\ an\ operand\ based\ on\ whether\ the\ result\ is\ 0\ or}}
+\DoxyCodeLine{00045\ \textcolor{comment}{//\ \ \ \ \ non-\/zero.\ \ This\ is\ mostly\ for\ logical\ true\ false,\ but\ can\ serve\ other}}
+\DoxyCodeLine{00046\ \textcolor{comment}{//\ \ \ \ \ purposes.}}
+\DoxyCodeLine{00047\ \textcolor{comment}{//\ \ \ \ \ \ \ ie\ \ \ 0\ =\ op1\ -\/\ op2\ implies\ op2\ has\ the\ same\ range\ as\ op1.}}
+\DoxyCodeLine{00048\ \textcolor{comment}{//}}
+\DoxyCodeLine{00049\ \textcolor{comment}{//\ 4\ -\/\ All\ supported\ range\ combinations\ are\ explicitly\ specified.}}
+\DoxyCodeLine{00050\ \textcolor{comment}{//\ \ \ \ \ Any\ desired\ combinations\ should\ be\ implemented\ for\ each\ operator.}}
+\DoxyCodeLine{00051\ \textcolor{comment}{//\ \ \ \ \ When\ new\ range\ classes\ are\ added,\ new\ matching\ prototypes\ should\ be}}
+\DoxyCodeLine{00052\ \textcolor{comment}{//\ \ \ \ \ added.}}
+\DoxyCodeLine{00053\ }
+\DoxyCodeLine{00054\ \textcolor{keyword}{class\ }\doxymbox{\hyperlink{classrange__operator}{range\_operator}}}
+\DoxyCodeLine{00055\ \{}
+\DoxyCodeLine{00056\ \ \ \textcolor{keyword}{friend}\ \textcolor{keyword}{class\ }\doxymbox{\hyperlink{classrange__operator_a402ce49360c2d1b633e32ecda9c09b9c}{range\_op\_table}};}
+\DoxyCodeLine{00057\ \textcolor{keyword}{public}:}
+\DoxyCodeLine{00058\ \ \ \textcolor{comment}{//\ Perform\ an\ operation\ between\ 2\ ranges\ and\ return\ it.}}
+\DoxyCodeLine{00059\ \ \ \textcolor{keyword}{virtual}\ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{classrange__operator_a9a2898fb5c14b804e6541daae49ab284}{fold\_range}}\ (irange\ \&\doxymbox{\hyperlink{poly-int_8h_a3ecac2571dcdc8050989339124f1bd26}{r}},\ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ \doxymbox{\hyperlink{structtype}{type}},}
+\DoxyCodeLine{00060\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ irange\ \&lh,}
+\DoxyCodeLine{00061\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ irange\ \&rh,}
+\DoxyCodeLine{00062\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{classrelation__trio}{relation\_trio}}\ =\ \doxymbox{\hyperlink{value-relation_8h_ae27e92e5714beb145725fd5a9f26e4fa}{TRIO\_VARYING}})\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00063\ \ \ \textcolor{keyword}{virtual}\ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{classrange__operator_ada1686320f2309363acf3e0b4f6b0b35}{fold\_range}}\ (frange\ \&\doxymbox{\hyperlink{poly-int_8h_a3ecac2571dcdc8050989339124f1bd26}{r}},\ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ \doxymbox{\hyperlink{structtype}{type}},}
+\DoxyCodeLine{00064\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ frange\ \&lh,}
+\DoxyCodeLine{00065\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ frange\ \&rh,}
+\DoxyCodeLine{00066\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{classrelation__trio}{relation\_trio}}\ =\ \doxymbox{\hyperlink{value-relation_8h_ae27e92e5714beb145725fd5a9f26e4fa}{TRIO\_VARYING}})\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00067\ \ \ \textcolor{keyword}{virtual}\ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{classrange__operator_ae72a3bd6ac8b1c02cf0e2a713b7ad645}{fold\_range}}\ (irange\ \&\doxymbox{\hyperlink{poly-int_8h_a3ecac2571dcdc8050989339124f1bd26}{r}},\ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ \doxymbox{\hyperlink{structtype}{type}},}
+\DoxyCodeLine{00068\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ frange\ \&lh,}
+\DoxyCodeLine{00069\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ irange\ \&rh,}
+\DoxyCodeLine{00070\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{classrelation__trio}{relation\_trio}}\ =\ \doxymbox{\hyperlink{value-relation_8h_ae27e92e5714beb145725fd5a9f26e4fa}{TRIO\_VARYING}})\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00071\ \ \ \textcolor{keyword}{virtual}\ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{classrange__operator_a9e688f6192f2ec6e3463fb2aa074dab2}{fold\_range}}\ (irange\ \&\doxymbox{\hyperlink{poly-int_8h_a3ecac2571dcdc8050989339124f1bd26}{r}},\ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ \doxymbox{\hyperlink{structtype}{type}},}
+\DoxyCodeLine{00072\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ frange\ \&lh,}
+\DoxyCodeLine{00073\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ frange\ \&rh,}
+\DoxyCodeLine{00074\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{classrelation__trio}{relation\_trio}}\ =\ \doxymbox{\hyperlink{value-relation_8h_ae27e92e5714beb145725fd5a9f26e4fa}{TRIO\_VARYING}})\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00075\ \ \ \textcolor{keyword}{virtual}\ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{classrange__operator_a1479097abd14eab88eb8fb2a5641811f}{fold\_range}}\ (frange\ \&\doxymbox{\hyperlink{poly-int_8h_a3ecac2571dcdc8050989339124f1bd26}{r}},\ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ \doxymbox{\hyperlink{structtype}{type}},}
+\DoxyCodeLine{00076\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ irange\ \&lh,}
+\DoxyCodeLine{00077\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ irange\ \&rh,}
+\DoxyCodeLine{00078\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{classrelation__trio}{relation\_trio}}\ =\ \doxymbox{\hyperlink{value-relation_8h_ae27e92e5714beb145725fd5a9f26e4fa}{TRIO\_VARYING}})\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00079\ }
+\DoxyCodeLine{00080\ \ \ \textcolor{comment}{//\ Return\ the\ range\ for\ op[12]\ in\ the\ general\ case.\ \ LHS\ is\ the\ range\ for}}
+\DoxyCodeLine{00081\ \ \ \textcolor{comment}{//\ the\ LHS\ of\ the\ expression,\ OP[12]is\ the\ range\ for\ the\ other}}
+\DoxyCodeLine{00082\ \ \ \textcolor{comment}{//}}
+\DoxyCodeLine{00083\ \ \ \textcolor{comment}{//\ The\ operand\ and\ the\ result\ is\ returned\ in\ R.}}
+\DoxyCodeLine{00084\ \ \ \textcolor{comment}{//}}
+\DoxyCodeLine{00085\ \ \ \textcolor{comment}{//\ TYPE\ is\ the\ expected\ type\ of\ the\ range.}}
+\DoxyCodeLine{00086\ \ \ \textcolor{comment}{//}}
+\DoxyCodeLine{00087\ \ \ \textcolor{comment}{//\ Return\ TRUE\ if\ the\ operation\ is\ performed\ and\ a\ valid\ range\ is\ available.}}
+\DoxyCodeLine{00088\ \ \ \textcolor{comment}{//}}
+\DoxyCodeLine{00089\ \ \ \textcolor{comment}{//\ i.e.\ \ [LHS]\ =\ ???\ +\ OP2}}
+\DoxyCodeLine{00090\ \ \ \textcolor{comment}{//\ is\ re-\/formed\ as\ R\ =\ [LHS]\ -\/\ OP2.}}
+\DoxyCodeLine{00091\ \ \ \textcolor{keyword}{virtual}\ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{classrange__operator_ac05120889b29ab7ccdb9a481732ca440}{op1\_range}}\ (irange\ \&\doxymbox{\hyperlink{poly-int_8h_a3ecac2571dcdc8050989339124f1bd26}{r}},\ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ \doxymbox{\hyperlink{structtype}{type}},}
+\DoxyCodeLine{00092\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ irange\ \&lhs,}
+\DoxyCodeLine{00093\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ irange\ \&op2,}
+\DoxyCodeLine{00094\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{classrelation__trio}{relation\_trio}}\ =\ \doxymbox{\hyperlink{value-relation_8h_ae27e92e5714beb145725fd5a9f26e4fa}{TRIO\_VARYING}})\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00095\ \ \ \textcolor{keyword}{virtual}\ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{classrange__operator_a63ea81965054aba8ce13aeb1f520ff4c}{op1\_range}}\ (frange\ \&\doxymbox{\hyperlink{poly-int_8h_a3ecac2571dcdc8050989339124f1bd26}{r}},\ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ \doxymbox{\hyperlink{structtype}{type}},}
+\DoxyCodeLine{00096\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ frange\ \&lhs,}
+\DoxyCodeLine{00097\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ frange\ \&op2,}
+\DoxyCodeLine{00098\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{classrelation__trio}{relation\_trio}}\ =\ \doxymbox{\hyperlink{value-relation_8h_ae27e92e5714beb145725fd5a9f26e4fa}{TRIO\_VARYING}})\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00099\ \ \ \textcolor{keyword}{virtual}\ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{classrange__operator_a462646d921fb7f723a91966c0d815160}{op1\_range}}\ (frange\ \&\doxymbox{\hyperlink{poly-int_8h_a3ecac2571dcdc8050989339124f1bd26}{r}},\ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ \doxymbox{\hyperlink{structtype}{type}},}
+\DoxyCodeLine{00100\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ irange\ \&lhs,}
+\DoxyCodeLine{00101\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ frange\ \&op2,}
+\DoxyCodeLine{00102\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{classrelation__trio}{relation\_trio}}\ =\ \doxymbox{\hyperlink{value-relation_8h_ae27e92e5714beb145725fd5a9f26e4fa}{TRIO\_VARYING}})\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00103\ }
+\DoxyCodeLine{00104\ }
+\DoxyCodeLine{00105\ \ \ \textcolor{keyword}{virtual}\ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{classrange__operator_ae6b27641728d412bb5e6e28a56e7338b}{op2\_range}}\ (irange\ \&\doxymbox{\hyperlink{poly-int_8h_a3ecac2571dcdc8050989339124f1bd26}{r}},\ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ \doxymbox{\hyperlink{structtype}{type}},}
+\DoxyCodeLine{00106\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ irange\ \&lhs,}
+\DoxyCodeLine{00107\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ irange\ \&op1,}
+\DoxyCodeLine{00108\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{classrelation__trio}{relation\_trio}}\ =\ \doxymbox{\hyperlink{value-relation_8h_ae27e92e5714beb145725fd5a9f26e4fa}{TRIO\_VARYING}})\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00109\ \ \ \textcolor{keyword}{virtual}\ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{classrange__operator_a806c67e04d8e93ddc6dd09c30acc3559}{op2\_range}}\ (frange\ \&\doxymbox{\hyperlink{poly-int_8h_a3ecac2571dcdc8050989339124f1bd26}{r}},\ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ \doxymbox{\hyperlink{structtype}{type}},}
+\DoxyCodeLine{00110\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ frange\ \&lhs,}
+\DoxyCodeLine{00111\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ frange\ \&op1,}
+\DoxyCodeLine{00112\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{classrelation__trio}{relation\_trio}}\ =\ \doxymbox{\hyperlink{value-relation_8h_ae27e92e5714beb145725fd5a9f26e4fa}{TRIO\_VARYING}})\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00113\ \ \ \textcolor{keyword}{virtual}\ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{classrange__operator_af135624d49b1592b68fb96b4ba056e34}{op2\_range}}\ (frange\ \&\doxymbox{\hyperlink{poly-int_8h_a3ecac2571dcdc8050989339124f1bd26}{r}},\ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ \doxymbox{\hyperlink{structtype}{type}},}
+\DoxyCodeLine{00114\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ irange\ \&lhs,}
+\DoxyCodeLine{00115\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ frange\ \&op1,}
+\DoxyCodeLine{00116\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{classrelation__trio}{relation\_trio}}\ =\ \doxymbox{\hyperlink{value-relation_8h_ae27e92e5714beb145725fd5a9f26e4fa}{TRIO\_VARYING}})\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00117\ }
+\DoxyCodeLine{00118\ \ \ \textcolor{comment}{//\ The\ following\ routines\ are\ used\ to\ represent\ relations\ between\ the}}
+\DoxyCodeLine{00119\ \ \ \textcolor{comment}{//\ various\ operations.\ \ If\ the\ caller\ knows\ where\ the\ symbolics\ are,}}
+\DoxyCodeLine{00120\ \ \ \textcolor{comment}{//\ it\ can\ query\ for\ relationships\ between\ them\ given\ known\ ranges.}}
+\DoxyCodeLine{00121\ \ \ \textcolor{comment}{//\ the\ optional\ relation\ passed\ in\ is\ the\ relation\ between\ op1\ and\ op2.}}
+\DoxyCodeLine{00122\ \ \ \textcolor{keyword}{virtual}\ \doxymbox{\hyperlink{value-relation_8h_a4f35e5231fd244f9b7ff43da0f046ac6}{relation\_kind}}\ \doxymbox{\hyperlink{classrange__operator_a2c667945f953c2da07f762987316a32c}{lhs\_op1\_relation}}\ (\textcolor{keyword}{const}\ irange\ \&lhs,}
+\DoxyCodeLine{00123\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ irange\ \&op1,}
+\DoxyCodeLine{00124\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ irange\ \&op2,}
+\DoxyCodeLine{00125\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{value-relation_8h_a4f35e5231fd244f9b7ff43da0f046ac6}{relation\_kind}}\ =\ \doxymbox{\hyperlink{value-relation_8h_a9534665c4b2c9bb990bc5bb52defe531aa7dce2dd51415d4c04a7500810c8e46e}{VREL\_VARYING}})\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00126\ \ \ \textcolor{keyword}{virtual}\ \doxymbox{\hyperlink{value-relation_8h_a4f35e5231fd244f9b7ff43da0f046ac6}{relation\_kind}}\ \doxymbox{\hyperlink{classrange__operator_a6f008612f4badbd8f70fb2d9d0292af3}{lhs\_op1\_relation}}\ (\textcolor{keyword}{const}\ frange\ \&lhs,}
+\DoxyCodeLine{00127\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ frange\ \&op1,}
+\DoxyCodeLine{00128\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ frange\ \&op2,}
+\DoxyCodeLine{00129\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{value-relation_8h_a4f35e5231fd244f9b7ff43da0f046ac6}{relation\_kind}}\ =\ \doxymbox{\hyperlink{value-relation_8h_a9534665c4b2c9bb990bc5bb52defe531aa7dce2dd51415d4c04a7500810c8e46e}{VREL\_VARYING}})\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00130\ \ \ \textcolor{keyword}{virtual}\ \doxymbox{\hyperlink{value-relation_8h_a4f35e5231fd244f9b7ff43da0f046ac6}{relation\_kind}}\ \doxymbox{\hyperlink{classrange__operator_ac44459cb83244f343f6734a48d25195a}{lhs\_op1\_relation}}\ (\textcolor{keyword}{const}\ irange\ \&lhs,}
+\DoxyCodeLine{00131\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ frange\ \&op1,}
+\DoxyCodeLine{00132\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ frange\ \&op2,}
+\DoxyCodeLine{00133\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{value-relation_8h_a4f35e5231fd244f9b7ff43da0f046ac6}{relation\_kind}}\ =\ \doxymbox{\hyperlink{value-relation_8h_a9534665c4b2c9bb990bc5bb52defe531aa7dce2dd51415d4c04a7500810c8e46e}{VREL\_VARYING}})\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00134\ }
+\DoxyCodeLine{00135\ \ \ \textcolor{keyword}{virtual}\ \doxymbox{\hyperlink{value-relation_8h_a4f35e5231fd244f9b7ff43da0f046ac6}{relation\_kind}}\ \doxymbox{\hyperlink{classrange__operator_af9fb34dd2c314480128ed276d5774113}{lhs\_op2\_relation}}\ (\textcolor{keyword}{const}\ irange\ \&lhs,}
+\DoxyCodeLine{00136\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ irange\ \&op1,}
+\DoxyCodeLine{00137\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ irange\ \&op2,}
+\DoxyCodeLine{00138\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{value-relation_8h_a4f35e5231fd244f9b7ff43da0f046ac6}{relation\_kind}}\ =\ \doxymbox{\hyperlink{value-relation_8h_a9534665c4b2c9bb990bc5bb52defe531aa7dce2dd51415d4c04a7500810c8e46e}{VREL\_VARYING}})\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00139\ \ \ \textcolor{keyword}{virtual}\ \doxymbox{\hyperlink{value-relation_8h_a4f35e5231fd244f9b7ff43da0f046ac6}{relation\_kind}}\ \doxymbox{\hyperlink{classrange__operator_a6af0d6f9e116dce69dc67f0ff621d265}{lhs\_op2\_relation}}\ (\textcolor{keyword}{const}\ frange\ \&lhs,}
+\DoxyCodeLine{00140\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ frange\ \&op1,}
+\DoxyCodeLine{00141\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ frange\ \&op2,}
+\DoxyCodeLine{00142\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{value-relation_8h_a4f35e5231fd244f9b7ff43da0f046ac6}{relation\_kind}}\ =\ \doxymbox{\hyperlink{value-relation_8h_a9534665c4b2c9bb990bc5bb52defe531aa7dce2dd51415d4c04a7500810c8e46e}{VREL\_VARYING}})\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00143\ \ \ \textcolor{keyword}{virtual}\ \doxymbox{\hyperlink{value-relation_8h_a4f35e5231fd244f9b7ff43da0f046ac6}{relation\_kind}}\ \doxymbox{\hyperlink{classrange__operator_a6a292a2c6e3c644d5157414c39409411}{lhs\_op2\_relation}}\ (\textcolor{keyword}{const}\ irange\ \&lhs,}
+\DoxyCodeLine{00144\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ frange\ \&op1,}
+\DoxyCodeLine{00145\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ frange\ \&op2,}
+\DoxyCodeLine{00146\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{value-relation_8h_a4f35e5231fd244f9b7ff43da0f046ac6}{relation\_kind}}\ =\ \doxymbox{\hyperlink{value-relation_8h_a9534665c4b2c9bb990bc5bb52defe531aa7dce2dd51415d4c04a7500810c8e46e}{VREL\_VARYING}})\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00147\ }
+\DoxyCodeLine{00148\ \ \ \textcolor{keyword}{virtual}\ \doxymbox{\hyperlink{value-relation_8h_a4f35e5231fd244f9b7ff43da0f046ac6}{relation\_kind}}\ \doxymbox{\hyperlink{classrange__operator_a6d742d5d149f41802d01db409ad84fbe}{op1\_op2\_relation}}\ (\textcolor{keyword}{const}\ irange\ \&lhs,}
+\DoxyCodeLine{00149\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ irange\ \&op1,}
+\DoxyCodeLine{00150\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ irange\ \&op2)\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00151\ \ \ \textcolor{keyword}{virtual}\ \doxymbox{\hyperlink{value-relation_8h_a4f35e5231fd244f9b7ff43da0f046ac6}{relation\_kind}}\ \doxymbox{\hyperlink{classrange__operator_a1b599fa70390c9ca2993bfddc705f862}{op1\_op2\_relation}}\ (\textcolor{keyword}{const}\ irange\ \&lhs,}
+\DoxyCodeLine{00152\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ frange\ \&op1,}
+\DoxyCodeLine{00153\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ frange\ \&op2)\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00154\ \ \ \textcolor{keyword}{virtual}\ \doxymbox{\hyperlink{value-relation_8h_a4f35e5231fd244f9b7ff43da0f046ac6}{relation\_kind}}\ \doxymbox{\hyperlink{classrange__operator_ad6d8132252d098c861b3786e4b39da88}{op1\_op2\_relation}}\ (\textcolor{keyword}{const}\ frange\ \&lhs,}
+\DoxyCodeLine{00155\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ frange\ \&op1,}
+\DoxyCodeLine{00156\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ frange\ \&op2)\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00157\ }
+\DoxyCodeLine{00158\ \ \ \textcolor{keyword}{virtual}\ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{classrange__operator_afc77fd01a0c9f712dc862fce056d8c00}{overflow\_free\_p}}\ (\textcolor{keyword}{const}\ irange\ \&lh,\ \textcolor{keyword}{const}\ irange\ \&rh,}
+\DoxyCodeLine{00159\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{classrelation__trio}{relation\_trio}}\ =\ \doxymbox{\hyperlink{value-relation_8h_ae27e92e5714beb145725fd5a9f26e4fa}{TRIO\_VARYING}})\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00160\ }
+\DoxyCodeLine{00161\ \ \ \textcolor{comment}{//\ Compatability\ check\ for\ operands.}}
+\DoxyCodeLine{00162\ \ \ \textcolor{keyword}{virtual}\ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{classrange__operator_afe3b4d548c343c3d5a79cea66c08421c}{operand\_check\_p}}\ (\doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}},\ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}},\ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}})\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00163\ }
+\DoxyCodeLine{00164\ \textcolor{keyword}{protected}:}
+\DoxyCodeLine{00165\ \ \ \textcolor{comment}{//\ Perform\ an\ integral\ operation\ between\ 2\ sub-\/ranges\ and\ return\ it.}}
+\DoxyCodeLine{00166\ \ \ \textcolor{keyword}{virtual}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classrange__operator_a20fa2e65cd3446253da396ac58c11f5f}{wi\_fold}}\ (irange\ \&\doxymbox{\hyperlink{poly-int_8h_a3ecac2571dcdc8050989339124f1bd26}{r}},\ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ \doxymbox{\hyperlink{structtype}{type}},}
+\DoxyCodeLine{00167\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{wide-int_8h_a9a29e47e2c40ae9adaf47df15970eced}{wide\_int}}\ \&lh\_lb,}
+\DoxyCodeLine{00168\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{wide-int_8h_a9a29e47e2c40ae9adaf47df15970eced}{wide\_int}}\ \&lh\_ub,}
+\DoxyCodeLine{00169\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{wide-int_8h_a9a29e47e2c40ae9adaf47df15970eced}{wide\_int}}\ \&rh\_lb,}
+\DoxyCodeLine{00170\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{wide-int_8h_a9a29e47e2c40ae9adaf47df15970eced}{wide\_int}}\ \&rh\_ub)\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00171\ \ \ \textcolor{comment}{//\ Effect\ of\ relation\ for\ generic\ fold\_range\ clients.}}
+\DoxyCodeLine{00172\ \ \ \textcolor{keyword}{virtual}\ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{classrange__operator_a6771f2f5f3d924ddd30a7b0e34a60591}{op1\_op2\_relation\_effect}}\ (irange\ \&lhs\_range,\ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ \doxymbox{\hyperlink{structtype}{type}},}
+\DoxyCodeLine{00173\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ irange\ \&\doxymbox{\hyperlink{classrange__operator_ac05120889b29ab7ccdb9a481732ca440}{op1\_range}},}
+\DoxyCodeLine{00174\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ irange\ \&\doxymbox{\hyperlink{classrange__operator_ae6b27641728d412bb5e6e28a56e7338b}{op2\_range}},}
+\DoxyCodeLine{00175\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{value-relation_8h_a4f35e5231fd244f9b7ff43da0f046ac6}{relation\_kind}}\ rel)\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00176\ \ \ \textcolor{comment}{//\ Called\ by\ fold\ range\ to\ split\ small\ subranges\ into\ parts.}}
+\DoxyCodeLine{00177\ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classrange__operator_a9bfe3d682bba2d9a702d74ed66804d1a}{wi\_fold\_in\_parts}}\ (irange\ \&\doxymbox{\hyperlink{poly-int_8h_a3ecac2571dcdc8050989339124f1bd26}{r}},\ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ \doxymbox{\hyperlink{structtype}{type}},}
+\DoxyCodeLine{00178\ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{wide-int_8h_a9a29e47e2c40ae9adaf47df15970eced}{wide\_int}}\ \&lh\_lb,}
+\DoxyCodeLine{00179\ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{wide-int_8h_a9a29e47e2c40ae9adaf47df15970eced}{wide\_int}}\ \&lh\_ub,}
+\DoxyCodeLine{00180\ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{wide-int_8h_a9a29e47e2c40ae9adaf47df15970eced}{wide\_int}}\ \&rh\_lb,}
+\DoxyCodeLine{00181\ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{wide-int_8h_a9a29e47e2c40ae9adaf47df15970eced}{wide\_int}}\ \&rh\_ub)\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00182\ }
+\DoxyCodeLine{00183\ \ \ \textcolor{comment}{//\ Called\ by\ fold\ range\ to\ split\ small\ subranges\ into\ parts\ when\ op1\ ==\ op2}}
+\DoxyCodeLine{00184\ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classrange__operator_a32ca5f3848965d292b511c9bca46b64d}{wi\_fold\_in\_parts\_equiv}}\ (irange\ \&\doxymbox{\hyperlink{poly-int_8h_a3ecac2571dcdc8050989339124f1bd26}{r}},\ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ \doxymbox{\hyperlink{structtype}{type}},}
+\DoxyCodeLine{00185\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{wide-int_8h_a9a29e47e2c40ae9adaf47df15970eced}{wide\_int}}\ \&lb,}
+\DoxyCodeLine{00186\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{wide-int_8h_a9a29e47e2c40ae9adaf47df15970eced}{wide\_int}}\ \&ub,}
+\DoxyCodeLine{00187\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{unsigned}\ limit)\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00188\ \ \ \textcolor{comment}{//\ Apply\ any\ bitmasks\ implied\ by\ these\ ranges.}}
+\DoxyCodeLine{00189\ \ \ \textcolor{keyword}{virtual}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classrange__operator_ae45ed3520ca51201c04b3d9f74ca5c4f}{update\_bitmask}}\ (irange\ \&,\ \textcolor{keyword}{const}\ irange\ \&,\ \textcolor{keyword}{const}\ irange\ \&)\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00190\ }
+\DoxyCodeLine{00191\ \ \ \textcolor{comment}{//\ Perform\ an\ float\ operation\ between\ 2\ ranges\ and\ return\ it.}}
+\DoxyCodeLine{00192\ \ \ \textcolor{keyword}{virtual}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classrange__operator_a9cba19a8bf1760260e2e43921d90ff00}{rv\_fold}}\ (frange\ \&\doxymbox{\hyperlink{poly-int_8h_a3ecac2571dcdc8050989339124f1bd26}{r}},\ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ \doxymbox{\hyperlink{structtype}{type}},}
+\DoxyCodeLine{00193\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{real_8h_aa7fc74aaf7cd891719830958b18d9a82}{REAL\_VALUE\_TYPE}}\ \&lh\_lb,}
+\DoxyCodeLine{00194\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{real_8h_aa7fc74aaf7cd891719830958b18d9a82}{REAL\_VALUE\_TYPE}}\ \&lh\_ub,}
+\DoxyCodeLine{00195\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{real_8h_aa7fc74aaf7cd891719830958b18d9a82}{REAL\_VALUE\_TYPE}}\ \&rh\_lb,}
+\DoxyCodeLine{00196\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{real_8h_aa7fc74aaf7cd891719830958b18d9a82}{REAL\_VALUE\_TYPE}}\ \&rh\_ub,}
+\DoxyCodeLine{00197\ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{value-relation_8h_a4f35e5231fd244f9b7ff43da0f046ac6}{relation\_kind}})\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00198\ \};}
+\DoxyCodeLine{00199\ }
+\DoxyCodeLine{00200\ \textcolor{keyword}{class\ }\doxymbox{\hyperlink{classrange__op__handler_a960cfa3a49a73a289e706c5d7946c5dd}{range\_op\_handler}}}
+\DoxyCodeLine{00201\ \{}
+\DoxyCodeLine{00202\ \textcolor{keyword}{public}:}
+\DoxyCodeLine{00203\ \ \ \doxymbox{\hyperlink{classrange__op__handler_a960cfa3a49a73a289e706c5d7946c5dd}{range\_op\_handler}}\ ();}
+\DoxyCodeLine{00204\ \ \ \doxymbox{\hyperlink{classrange__op__handler_abefd7b02b961dc5d2cc9ae636fa4b4e0}{range\_op\_handler}}\ (\textcolor{keywordtype}{unsigned});}
+\DoxyCodeLine{00205\ \ \ \textcolor{keyword}{operator}\ \doxymbox{\hyperlink{stdbool_8h_abb452686968e48b67397da5f97445f5b}{bool}}\ ()\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00206\ \ \ \doxymbox{\hyperlink{classrange__operator}{range\_operator}}\ *\doxymbox{\hyperlink{classrange__op__handler_ad425f139a0fa409ac06924a28ad54e32}{range\_op}}\ ()\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00207\ }
+\DoxyCodeLine{00208\ \ \ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{classrange__op__handler_aadd1d6a582088dc8b41a39b7e9eff2d3}{fold\_range}}\ (vrange\ \&\doxymbox{\hyperlink{poly-int_8h_a3ecac2571dcdc8050989339124f1bd26}{r}},\ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ \doxymbox{\hyperlink{structtype}{type}},}
+\DoxyCodeLine{00209\ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ vrange\ \&lh,}
+\DoxyCodeLine{00210\ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ vrange\ \&rh,}
+\DoxyCodeLine{00211\ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{classrelation__trio}{relation\_trio}}\ =\ \doxymbox{\hyperlink{value-relation_8h_ae27e92e5714beb145725fd5a9f26e4fa}{TRIO\_VARYING}})\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00212\ \ \ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{classrange__op__handler_ae85fc86bb1e7a382f0145d6725008399}{op1\_range}}\ (vrange\ \&\doxymbox{\hyperlink{poly-int_8h_a3ecac2571dcdc8050989339124f1bd26}{r}},\ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ \doxymbox{\hyperlink{structtype}{type}},}
+\DoxyCodeLine{00213\ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ vrange\ \&lhs,}
+\DoxyCodeLine{00214\ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ vrange\ \&op2,}
+\DoxyCodeLine{00215\ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{classrelation__trio}{relation\_trio}}\ =\ \doxymbox{\hyperlink{value-relation_8h_ae27e92e5714beb145725fd5a9f26e4fa}{TRIO\_VARYING}})\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00216\ \ \ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{classrange__op__handler_a05489bb57fdb3863e8062ac3ee307cbc}{op2\_range}}\ (vrange\ \&\doxymbox{\hyperlink{poly-int_8h_a3ecac2571dcdc8050989339124f1bd26}{r}},\ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ \doxymbox{\hyperlink{structtype}{type}},}
+\DoxyCodeLine{00217\ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ vrange\ \&lhs,}
+\DoxyCodeLine{00218\ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ vrange\ \&op1,}
+\DoxyCodeLine{00219\ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{classrelation__trio}{relation\_trio}}\ =\ \doxymbox{\hyperlink{value-relation_8h_ae27e92e5714beb145725fd5a9f26e4fa}{TRIO\_VARYING}})\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00220\ \ \ \doxymbox{\hyperlink{value-relation_8h_a4f35e5231fd244f9b7ff43da0f046ac6}{relation\_kind}}\ \doxymbox{\hyperlink{classrange__op__handler_a0255752195848cd6dab1c9be9e7135f3}{lhs\_op1\_relation}}\ (\textcolor{keyword}{const}\ vrange\ \&lhs,}
+\DoxyCodeLine{00221\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ vrange\ \&op1,}
+\DoxyCodeLine{00222\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ vrange\ \&op2,}
+\DoxyCodeLine{00223\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{value-relation_8h_a4f35e5231fd244f9b7ff43da0f046ac6}{relation\_kind}}\ =\ \doxymbox{\hyperlink{value-relation_8h_a9534665c4b2c9bb990bc5bb52defe531aa7dce2dd51415d4c04a7500810c8e46e}{VREL\_VARYING}})\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00224\ \ \ \doxymbox{\hyperlink{value-relation_8h_a4f35e5231fd244f9b7ff43da0f046ac6}{relation\_kind}}\ \doxymbox{\hyperlink{classrange__op__handler_ac07f45d702285d39ba6dfadc61371465}{lhs\_op2\_relation}}\ (\textcolor{keyword}{const}\ vrange\ \&lhs,}
+\DoxyCodeLine{00225\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ vrange\ \&op1,}
+\DoxyCodeLine{00226\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ vrange\ \&op2,}
+\DoxyCodeLine{00227\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{value-relation_8h_a4f35e5231fd244f9b7ff43da0f046ac6}{relation\_kind}}\ =\ \doxymbox{\hyperlink{value-relation_8h_a9534665c4b2c9bb990bc5bb52defe531aa7dce2dd51415d4c04a7500810c8e46e}{VREL\_VARYING}})\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00228\ \ \ \doxymbox{\hyperlink{value-relation_8h_a4f35e5231fd244f9b7ff43da0f046ac6}{relation\_kind}}\ \doxymbox{\hyperlink{classrange__op__handler_ae7212155f7de3036949293b571b9e2a9}{op1\_op2\_relation}}\ (\textcolor{keyword}{const}\ vrange\ \&lhs,}
+\DoxyCodeLine{00229\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ vrange\ \&op1,}
+\DoxyCodeLine{00230\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ vrange\ \&op2)\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00231\ \ \ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{classrange__op__handler_aa1563017f638fedf6f935f1afdfbb848}{overflow\_free\_p}}\ (\textcolor{keyword}{const}\ vrange\ \&lh,\ \textcolor{keyword}{const}\ vrange\ \&rh,}
+\DoxyCodeLine{00232\ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{classrelation__trio}{relation\_trio}}\ =\ \doxymbox{\hyperlink{value-relation_8h_ae27e92e5714beb145725fd5a9f26e4fa}{TRIO\_VARYING}})\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00233\ \ \ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{classrange__op__handler_a4e5a9d846d0c95d521cc62301ea3947f}{operand\_check\_p}}\ (\doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}},\ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}},\ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}})\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00234\ \textcolor{keyword}{protected}:}
+\DoxyCodeLine{00235\ \ \ \textcolor{keywordtype}{unsigned}\ \doxymbox{\hyperlink{classrange__op__handler_a6be3bb6749683b64ffb70b6531c8101b}{dispatch\_kind}}\ (\textcolor{keyword}{const}\ vrange\ \&lhs,\ \textcolor{keyword}{const}\ vrange\ \&op1,}
+\DoxyCodeLine{00236\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ vrange\&\ op2)\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00237\ \ \ \doxymbox{\hyperlink{classrange__operator}{range\_operator}}\ *\doxymbox{\hyperlink{classrange__op__handler_a26454cbee0bf2738a43107bdb576bb5c}{m\_operator}};}
+\DoxyCodeLine{00238\ \};}
+\DoxyCodeLine{00239\ }
+\DoxyCodeLine{00240\ \textcolor{comment}{//\ Cast\ the\ range\ in\ R\ to\ TYPE\ if\ R\ supports\ TYPE.}}
+\DoxyCodeLine{00241\ }
+\DoxyCodeLine{00242\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{bool}}
+\DoxyCodeLine{00243\ \doxymbox{\hyperlink{range-op_8h_ac1aa0abf8e8fd49710fdf8a29abf3f23}{range\_cast}}\ (vrange\ \&\doxymbox{\hyperlink{poly-int_8h_a3ecac2571dcdc8050989339124f1bd26}{r}},\ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ \doxymbox{\hyperlink{structtype}{type}})}
+\DoxyCodeLine{00244\ \{}
+\DoxyCodeLine{00245\ \ \ \doxymbox{\hyperlink{system_8h_aff447899dc74d54931b2bc2d47de9423}{gcc\_checking\_assert}}\ (\doxymbox{\hyperlink{poly-int_8h_a3ecac2571dcdc8050989339124f1bd26}{r}}.supports\_type\_p\ (\doxymbox{\hyperlink{structtype}{type}}));}
+\DoxyCodeLine{00246\ \ \ \doxymbox{\hyperlink{classValue__Range}{Value\_Range}}\ tmp\ (\doxymbox{\hyperlink{poly-int_8h_a3ecac2571dcdc8050989339124f1bd26}{r}});}
+\DoxyCodeLine{00247\ \ \ \doxymbox{\hyperlink{classValue__Range}{Value\_Range}}\ varying\ (\doxymbox{\hyperlink{structtype}{type}});}
+\DoxyCodeLine{00248\ \ \ varying.\doxymbox{\hyperlink{classValue__Range_a9a00c1373ec0695348cde53ea221b2cf}{set\_varying}}\ (\doxymbox{\hyperlink{structtype}{type}});}
+\DoxyCodeLine{00249\ \ \ \textcolor{comment}{//\ Call\ op\_convert,\ if\ it\ fails,\ the\ result\ is\ varying.}}
+\DoxyCodeLine{00250\ \ \ \textcolor{keywordflow}{if}\ (!\doxymbox{\hyperlink{classrange__op__handler}{range\_op\_handler}}\ (CONVERT\_EXPR).\doxymbox{\hyperlink{gimple-range-fold_8h_aa7215a961206a521f39e944170082917}{fold\_range}}\ (\doxymbox{\hyperlink{poly-int_8h_a3ecac2571dcdc8050989339124f1bd26}{r}},\ \doxymbox{\hyperlink{structtype}{type}},\ tmp,\ varying))}
+\DoxyCodeLine{00251\ \ \ \ \ \{}
+\DoxyCodeLine{00252\ \ \ \ \ \ \ \doxymbox{\hyperlink{poly-int_8h_a3ecac2571dcdc8050989339124f1bd26}{r}}.set\_varying\ (\doxymbox{\hyperlink{structtype}{type}});}
+\DoxyCodeLine{00253\ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ \textcolor{keyword}{false};}
+\DoxyCodeLine{00254\ \ \ \ \ \}}
+\DoxyCodeLine{00255\ \ \ \textcolor{keywordflow}{return}\ \textcolor{keyword}{true};}
+\DoxyCodeLine{00256\ \}}
+\DoxyCodeLine{00257\ }
+\DoxyCodeLine{00258\ \textcolor{comment}{//\ Range\ cast\ which\ is\ capable\ of\ switching\ range\ kinds.}}
+\DoxyCodeLine{00259\ \textcolor{comment}{//\ ie\ for\ float\ to\ int.}}
+\DoxyCodeLine{00260\ }
+\DoxyCodeLine{00261\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{bool}}
+\DoxyCodeLine{00262\ \doxymbox{\hyperlink{range-op_8h_ac1aa0abf8e8fd49710fdf8a29abf3f23}{range\_cast}}\ (\doxymbox{\hyperlink{classValue__Range}{Value\_Range}}\ \&\doxymbox{\hyperlink{poly-int_8h_a3ecac2571dcdc8050989339124f1bd26}{r}},\ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ \doxymbox{\hyperlink{structtype}{type}})}
+\DoxyCodeLine{00263\ \{}
+\DoxyCodeLine{00264\ \ \ \doxymbox{\hyperlink{classValue__Range}{Value\_Range}}\ tmp\ (\doxymbox{\hyperlink{poly-int_8h_a3ecac2571dcdc8050989339124f1bd26}{r}});}
+\DoxyCodeLine{00265\ \ \ \doxymbox{\hyperlink{classValue__Range}{Value\_Range}}\ varying\ (\doxymbox{\hyperlink{structtype}{type}});}
+\DoxyCodeLine{00266\ \ \ varying.\doxymbox{\hyperlink{classValue__Range_a9a00c1373ec0695348cde53ea221b2cf}{set\_varying}}\ (\doxymbox{\hyperlink{structtype}{type}});}
+\DoxyCodeLine{00267\ }
+\DoxyCodeLine{00268\ \ \ \textcolor{comment}{//\ Ensure\ we\ are\ in\ the\ correct\ mode\ for\ the\ call\ to\ fold.}}
+\DoxyCodeLine{00269\ \ \ \doxymbox{\hyperlink{poly-int_8h_a3ecac2571dcdc8050989339124f1bd26}{r}}.set\_type\ (\doxymbox{\hyperlink{structtype}{type}});}
+\DoxyCodeLine{00270\ }
+\DoxyCodeLine{00271\ \ \ \textcolor{comment}{//\ Call\ op\_convert,\ if\ it\ fails,\ the\ result\ is\ varying.}}
+\DoxyCodeLine{00272\ \ \ \textcolor{keywordflow}{if}\ (!\doxymbox{\hyperlink{classrange__op__handler}{range\_op\_handler}}\ (CONVERT\_EXPR).\doxymbox{\hyperlink{gimple-range-fold_8h_aa7215a961206a521f39e944170082917}{fold\_range}}\ (\doxymbox{\hyperlink{poly-int_8h_a3ecac2571dcdc8050989339124f1bd26}{r}},\ \doxymbox{\hyperlink{structtype}{type}},\ tmp,\ varying))}
+\DoxyCodeLine{00273\ \ \ \ \ \{}
+\DoxyCodeLine{00274\ \ \ \ \ \ \ \doxymbox{\hyperlink{poly-int_8h_a3ecac2571dcdc8050989339124f1bd26}{r}}.set\_varying\ (\doxymbox{\hyperlink{structtype}{type}});}
+\DoxyCodeLine{00275\ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ \textcolor{keyword}{false};}
+\DoxyCodeLine{00276\ \ \ \ \ \}}
+\DoxyCodeLine{00277\ \ \ \textcolor{keywordflow}{return}\ \textcolor{keyword}{true};}
+\DoxyCodeLine{00278\ \}}
+\DoxyCodeLine{00279\ }
+\DoxyCodeLine{00280\ }
+\DoxyCodeLine{00281\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{range-op_8h_a447dfb9e20aa17014cf4e8fd7744b891}{wi\_set\_zero\_nonzero\_bits}}\ (\doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ \doxymbox{\hyperlink{structtype}{type}},}
+\DoxyCodeLine{00282\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{wide-int_8h_a9a29e47e2c40ae9adaf47df15970eced}{wide\_int}}\ \&,\ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{wide-int_8h_a9a29e47e2c40ae9adaf47df15970eced}{wide\_int}}\ \&,}
+\DoxyCodeLine{00283\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{wide-int_8h_a9a29e47e2c40ae9adaf47df15970eced}{wide\_int}}\ \&maybe\_nonzero,}
+\DoxyCodeLine{00284\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{wide-int_8h_a9a29e47e2c40ae9adaf47df15970eced}{wide\_int}}\ \&mustbe\_nonzero);}
+\DoxyCodeLine{00285\ }
+\DoxyCodeLine{00286\ \textcolor{comment}{//\ These\ are\ extra\ operators\ that\ do\ not\ fit\ in\ the\ normal\ scheme\ of\ things.}}
+\DoxyCodeLine{00287\ \textcolor{comment}{//\ Add\ them\ to\ the\ end\ of\ the\ tree-\/code\ vector,\ and\ provide\ a\ name\ for}}
+\DoxyCodeLine{00288\ \textcolor{comment}{//\ each\ allowing\ for\ easy\ access\ when\ required.}}
+\DoxyCodeLine{00289\ }
+\DoxyCodeLine{00290\ \textcolor{preprocessor}{\#define\ OP\_WIDEN\_MULT\_SIGNED\ \ \ \ ((unsigned)\ MAX\_TREE\_CODES)}}
+\DoxyCodeLine{00291\ \textcolor{preprocessor}{\#define\ OP\_WIDEN\_MULT\_UNSIGNED\ \ ((unsigned)\ MAX\_TREE\_CODES\ +\ 1)}}
+\DoxyCodeLine{00292\ \textcolor{preprocessor}{\#define\ OP\_WIDEN\_PLUS\_SIGNED\ \ \ \ ((unsigned)\ MAX\_TREE\_CODES\ +\ 2)}}
+\DoxyCodeLine{00293\ \textcolor{preprocessor}{\#define\ OP\_WIDEN\_PLUS\_UNSIGNED\ \ ((unsigned)\ MAX\_TREE\_CODES\ +\ 3)}}
+\DoxyCodeLine{00294\ \textcolor{preprocessor}{\#define\ RANGE\_OP\_TABLE\_SIZE\ ((unsigned)\ MAX\_TREE\_CODES\ +\ 4)}}
+\DoxyCodeLine{00295\ }
+\DoxyCodeLine{00296\ \textcolor{comment}{//\ This\ implements\ the\ range\ operator\ tables\ as\ local\ objects.}}
+\DoxyCodeLine{00297\ }
+\DoxyCodeLine{00298\ \textcolor{keyword}{class\ }\doxymbox{\hyperlink{classrange__op__table_afa1554c299349ab54d7929694667b64b}{range\_op\_table}}}
+\DoxyCodeLine{00299\ \{}
+\DoxyCodeLine{00300\ \textcolor{keyword}{public}:}
+\DoxyCodeLine{00301\ \ \ \doxymbox{\hyperlink{classrange__op__table_afa1554c299349ab54d7929694667b64b}{range\_op\_table}}\ ();}
+\DoxyCodeLine{00302\ \ \ \textcolor{keyword}{inline}\ \doxymbox{\hyperlink{classrange__operator}{range\_operator}}\ *\doxymbox{\hyperlink{classrange__op__table_a4667ab2138bcc7d2a2a795a74e4011ce}{operator[]\ }}(\textcolor{keywordtype}{unsigned}\ code)}
+\DoxyCodeLine{00303\ \ \ \ \ \{}
+\DoxyCodeLine{00304\ \ \ \ \ \ \ \doxymbox{\hyperlink{system_8h_aff447899dc74d54931b2bc2d47de9423}{gcc\_checking\_assert}}\ (code\ <\ \doxymbox{\hyperlink{range-op_8h_abb840fb7f00af000d119b14ab773bbca}{RANGE\_OP\_TABLE\_SIZE}});}
+\DoxyCodeLine{00305\ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{classrange__op__table_a7fe21fc4c55f2d4fda1ec4856d92f582}{m\_range\_tree}}[code];}
+\DoxyCodeLine{00306\ \ \ \ \ \}}
+\DoxyCodeLine{00307\ \textcolor{keyword}{protected}:}
+\DoxyCodeLine{00308\ \ \ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classrange__op__table_a6d711290cc227f96c76628bbf5a1d989}{set}}\ (\textcolor{keywordtype}{unsigned}\ code,\ \doxymbox{\hyperlink{classrange__operator}{range\_operator}}\ \&op)}
+\DoxyCodeLine{00309\ \ \ \ \ \{}
+\DoxyCodeLine{00310\ \ \ \ \ \ \ \doxymbox{\hyperlink{system_8h_aff447899dc74d54931b2bc2d47de9423}{gcc\_checking\_assert}}\ (code\ <\ \doxymbox{\hyperlink{range-op_8h_abb840fb7f00af000d119b14ab773bbca}{RANGE\_OP\_TABLE\_SIZE}});}
+\DoxyCodeLine{00311\ \ \ \ \ \ \ \doxymbox{\hyperlink{system_8h_aff447899dc74d54931b2bc2d47de9423}{gcc\_checking\_assert}}\ (\doxymbox{\hyperlink{classrange__op__table_a7fe21fc4c55f2d4fda1ec4856d92f582}{m\_range\_tree}}[code]\ ==\ \doxymbox{\hyperlink{stddef_8h_a070d2ce7b6bb7e5c05602aa8c308d0c4}{NULL}});}
+\DoxyCodeLine{00312\ \ \ \ \ \ \ \doxymbox{\hyperlink{classrange__op__table_a7fe21fc4c55f2d4fda1ec4856d92f582}{m\_range\_tree}}[code]\ =\ \&op;}
+\DoxyCodeLine{00313\ \ \ \ \ \}}
+\DoxyCodeLine{00314\ \ \ \doxymbox{\hyperlink{classrange__operator}{range\_operator}}\ *\doxymbox{\hyperlink{classrange__op__table_a7fe21fc4c55f2d4fda1ec4856d92f582}{m\_range\_tree}}[\doxymbox{\hyperlink{range-op_8h_abb840fb7f00af000d119b14ab773bbca}{RANGE\_OP\_TABLE\_SIZE}}];}
+\DoxyCodeLine{00315\ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classrange__op__table_abebc4506ab257bc6399b49e9fb62b242}{initialize\_integral\_ops}}\ ();}
+\DoxyCodeLine{00316\ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classrange__op__table_a2eca665249a7a062e032deb39694e5b3}{initialize\_pointer\_ops}}\ ();}
+\DoxyCodeLine{00317\ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classrange__op__table_a856404c15869e2690b938ce31f087625}{initialize\_float\_ops}}\ ();}
+\DoxyCodeLine{00318\ \};}
+\DoxyCodeLine{00319\ \textcolor{preprocessor}{\#endif\ }\textcolor{comment}{//\ GCC\_RANGE\_OP\_H}}
+
+\end{DoxyCode}

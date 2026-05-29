@@ -1,0 +1,113 @@
+\doxysection{gimple-\/range-\/phi.h}
+\hypertarget{gimple-range-phi_8h_source}{}\label{gimple-range-phi_8h_source}\index{toolchain/x86\_64-\/elf/lib/gcc/x86\_64-\/elf/14.2.0/plugin/include/gimple-\/range-\/phi.h@{toolchain/x86\_64-\/elf/lib/gcc/x86\_64-\/elf/14.2.0/plugin/include/gimple-\/range-\/phi.h}}
+\doxymbox{\hyperlink{gimple-range-phi_8h}{Go to the documentation of this file.}}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001\ \textcolor{comment}{/*\ Header\ file\ for\ gimple\ range\ phi\ analysis.}}
+\DoxyCodeLine{00002\ \textcolor{comment}{\ \ \ Copyright\ (C)\ 2023-\/2024\ Free\ Software\ Foundation,\ Inc.}}
+\DoxyCodeLine{00003\ \textcolor{comment}{\ \ \ Contributed\ by\ Andrew\ MacLeod\ <amacleod@redhat.com>.}}
+\DoxyCodeLine{00004\ \textcolor{comment}{}}
+\DoxyCodeLine{00005\ \textcolor{comment}{This\ file\ is\ part\ of\ GCC.}}
+\DoxyCodeLine{00006\ \textcolor{comment}{}}
+\DoxyCodeLine{00007\ \textcolor{comment}{GCC\ is\ free\ software;\ you\ can\ redistribute\ it\ and/or\ modify\ it\ under}}
+\DoxyCodeLine{00008\ \textcolor{comment}{the\ terms\ of\ the\ GNU\ General\ Public\ License\ as\ published\ by\ the\ Free}}
+\DoxyCodeLine{00009\ \textcolor{comment}{Software\ Foundation;\ either\ version\ 3,\ or\ (at\ your\ option)\ any\ later}}
+\DoxyCodeLine{00010\ \textcolor{comment}{version.}}
+\DoxyCodeLine{00011\ \textcolor{comment}{}}
+\DoxyCodeLine{00012\ \textcolor{comment}{GCC\ is\ distributed\ in\ the\ hope\ that\ it\ will\ be\ useful,\ but\ WITHOUT\ ANY}}
+\DoxyCodeLine{00013\ \textcolor{comment}{WARRANTY;\ without\ even\ the\ implied\ warranty\ of\ MERCHANTABILITY\ or}}
+\DoxyCodeLine{00014\ \textcolor{comment}{FITNESS\ FOR\ A\ PARTICULAR\ PURPOSE.\ \ See\ the\ GNU\ General\ Public\ License}}
+\DoxyCodeLine{00015\ \textcolor{comment}{\ for\ more\ details.}}
+\DoxyCodeLine{00016\ \textcolor{comment}{}}
+\DoxyCodeLine{00017\ \textcolor{comment}{You\ should\ have\ received\ a\ copy\ of\ the\ GNU\ General\ Public\ License}}
+\DoxyCodeLine{00018\ \textcolor{comment}{along\ with\ GCC;\ see\ the\ file\ COPYING3.\ \ If\ not\ see}}
+\DoxyCodeLine{00019\ \textcolor{comment}{<http://www.gnu.org/licenses/>.\ \ */}}
+\DoxyCodeLine{00020\ }
+\DoxyCodeLine{00021\ \textcolor{preprocessor}{\#ifndef\ GCC\_SSA\_RANGE\_PHI\_H}}
+\DoxyCodeLine{00022\ \textcolor{preprocessor}{\#define\ GCC\_SSA\_RANGE\_PHI\_H}}
+\DoxyCodeLine{00023\ }
+\DoxyCodeLine{00024\ \textcolor{comment}{//\ -\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{00025\ }
+\DoxyCodeLine{00026\ \textcolor{comment}{//\ A\ PHI\_GROUP\ consists\ of\ a\ set\ of\ SSA\_NAMES\ which\ are\ all\ PHI\_DEFS,\ and}}
+\DoxyCodeLine{00027\ \textcolor{comment}{//\ their\ arguemnts\ contain\ nothing\ but\ other\ PHI\ defintions,\ with\ at\ most}}
+\DoxyCodeLine{00028\ \textcolor{comment}{//\ 2\ exceptions:}}
+\DoxyCodeLine{00029\ \textcolor{comment}{//\ \ 1\ -\/\ An\ initial\ value.\ \ This\ is\ either\ a\ constant,\ or\ another\ non-\/phi\ name}}
+\DoxyCodeLine{00030\ \textcolor{comment}{//\ \ \ \ \ \ with\ a\ single\ incoming\ edge\ to\ the\ cycle\ group}}
+\DoxyCodeLine{00031\ \textcolor{comment}{//\ \ 2\ -\/\ A\ modifier\ statement\ which\ adjusts\ the\ value.\ \ ie,\ name2\ =\ phi\_name\ +\ 1}}
+\DoxyCodeLine{00032\ \textcolor{comment}{//\ \ The\ initial\ range\ is\ used\ to\ create\ one\ bound\ and\ the\ modifier\ is\ examined}}
+\DoxyCodeLine{00033\ \textcolor{comment}{//\ \ to\ determine\ the\ other\ bound.}}
+\DoxyCodeLine{00034\ \textcolor{comment}{//\ \ All\ members\ of\ the\ PHI\ cycle\ will\ be\ given\ the\ same\ range.}}
+\DoxyCodeLine{00035\ \textcolor{comment}{//}}
+\DoxyCodeLine{00036\ \textcolor{comment}{//\ For\ example,\ given\ the\ follwoing\ sequences:}}
+\DoxyCodeLine{00037\ \textcolor{comment}{//\ qa\_20\ =\ qa\_10\ +\ 1;}}
+\DoxyCodeLine{00038\ \textcolor{comment}{//\ qa\_9\ =\ PHI\ <qa\_10(3),\ qa\_20(4)>}}
+\DoxyCodeLine{00039\ \textcolor{comment}{//\ qa\_10\ =\ PHI\ <0(2),\ qa\_9(5)>}}
+\DoxyCodeLine{00040\ \textcolor{comment}{//}}
+\DoxyCodeLine{00041\ \textcolor{comment}{//\ We\ can\ determine\ the\ following\ group:}}
+\DoxyCodeLine{00042\ \textcolor{comment}{//}}
+\DoxyCodeLine{00043\ \textcolor{comment}{//\ PHI\ cycle\ members\ qa\_9,\ qa\_10}}
+\DoxyCodeLine{00044\ \textcolor{comment}{//\ Initial\ value\ :\ 0}}
+\DoxyCodeLine{00045\ \textcolor{comment}{//\ modifier\ stmt:\ qa\_20\ =\ qa\_10\ +\ 1;}}
+\DoxyCodeLine{00046\ \textcolor{comment}{//\ }}
+\DoxyCodeLine{00047\ \textcolor{comment}{//\ Based\ on\ just\ this\ analysis,\ We\ can\ project\ that\ qa\_9\ and\ qa\_10\ will\ have}}
+\DoxyCodeLine{00048\ \textcolor{comment}{//\ a\ range\ of\ [0,\ +INF].}}
+\DoxyCodeLine{00049\ }
+\DoxyCodeLine{00050\ \textcolor{keyword}{class\ }\doxymbox{\hyperlink{classphi__group_a10c620c83f7ce5c99e91ba4a5e039730}{phi\_group}}}
+\DoxyCodeLine{00051\ \{}
+\DoxyCodeLine{00052\ \textcolor{keyword}{public}:}
+\DoxyCodeLine{00053\ \ \ \doxymbox{\hyperlink{classphi__group_a10c620c83f7ce5c99e91ba4a5e039730}{phi\_group}}\ (\doxymbox{\hyperlink{coretypes_8h_ae7ea3a04cabf8964dc6e8e95a9cde1b8}{bitmap}}\ bm,\ irange\ \&init\_range,\ gimple\ *mod,\ \doxymbox{\hyperlink{classrange__query}{range\_query}}\ *q);}
+\DoxyCodeLine{00054\ \ \ \doxymbox{\hyperlink{classphi__group_a0e2527bf4e5f0cd5a94efe7a108e3f99}{phi\_group}}\ (\textcolor{keyword}{const}\ \doxymbox{\hyperlink{classphi__group_a10c620c83f7ce5c99e91ba4a5e039730}{phi\_group}}\ \&\doxymbox{\hyperlink{context_8h_a912f5d68d342a85b17dbde0c74effe27}{g}});}
+\DoxyCodeLine{00055\ \ \ \doxymbox{\hyperlink{coretypes_8h_ac1b200ce036f141b63e8c4e2855c9d40}{const\_bitmap}}\ \doxymbox{\hyperlink{classphi__group_a4e1aa39e921ae8630231ec096444bf67}{group}}\ ()\textcolor{keyword}{\ const\ }\{\ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{classphi__group_a56a93f4ac8149e779d02f8d71be06e11}{m\_group}};\ \}}
+\DoxyCodeLine{00056\ \ \ \textcolor{keyword}{const}\ vrange\ \&\doxymbox{\hyperlink{classphi__group_aa11caea16e54c3e446f2165fc88e4860}{range}}\ ()\textcolor{keyword}{\ const\ }\{\ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{classphi__group_a8b06d3b8ef6dcd48c7a8aad56bec6a47}{m\_vr}};\ \}}
+\DoxyCodeLine{00057\ \ \ gimple\ *\doxymbox{\hyperlink{classphi__group_a8a5147031c986b8e926bd0f4200b4ee7}{modifier\_stmt}}\ ()\textcolor{keyword}{\ const\ }\{\ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{classphi__group_a3ebed3d4a4d13851b0ed9b44529e9e13}{m\_modifier}};\ \}}
+\DoxyCodeLine{00058\ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classphi__group_a862cf4b418904523f9282a2ceea731f9}{dump}}\ (FILE\ *);}
+\DoxyCodeLine{00059\ \textcolor{keyword}{protected}:}
+\DoxyCodeLine{00060\ \ \ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{classphi__group_a232eb11c984974f2775e4024e9cb0539}{calculate\_using\_modifier}}\ (\doxymbox{\hyperlink{classrange__query}{range\_query}}\ *q);}
+\DoxyCodeLine{00061\ \ \ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{classphi__group_a91cc5e37a7a592a1db076d9c7535c9eb}{refine\_using\_relation}}\ (\doxymbox{\hyperlink{value-relation_8h_a4f35e5231fd244f9b7ff43da0f046ac6}{relation\_kind}}\ k);}
+\DoxyCodeLine{00062\ \ \ \textcolor{keyword}{static}\ \textcolor{keywordtype}{unsigned}\ \doxymbox{\hyperlink{classphi__group_a4ab02041d2ace1c55fd6a94d0db2840f}{is\_modifier\_p}}\ (gimple\ *s,\ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{coretypes_8h_ae7ea3a04cabf8964dc6e8e95a9cde1b8}{bitmap}}\ bm);}
+\DoxyCodeLine{00063\ \ \ \doxymbox{\hyperlink{coretypes_8h_ae7ea3a04cabf8964dc6e8e95a9cde1b8}{bitmap}}\ \doxymbox{\hyperlink{classphi__group_a56a93f4ac8149e779d02f8d71be06e11}{m\_group}};}
+\DoxyCodeLine{00064\ \ \ gimple\ *\doxymbox{\hyperlink{classphi__group_a3ebed3d4a4d13851b0ed9b44529e9e13}{m\_modifier}};\ \ \ \ \ \textcolor{comment}{//\ Single\ stmt\ which\ modifies\ phi\ group.}}
+\DoxyCodeLine{00065\ \ \ \textcolor{keywordtype}{unsigned}\ \doxymbox{\hyperlink{classphi__group_a7685412b2e721eacb3a1d0348b0c3d81}{m\_modifier\_op}};\ \textcolor{comment}{//\ Operand\ of\ group\ member\ in\ modifier\ stmt.}}
+\DoxyCodeLine{00066\ \ \ \doxymbox{\hyperlink{value-range_8h_a8353f75a459f005e702e43c460db607a}{int\_range\_max}}\ \doxymbox{\hyperlink{classphi__group_a8b06d3b8ef6dcd48c7a8aad56bec6a47}{m\_vr}};}
+\DoxyCodeLine{00067\ \ \ \textcolor{keyword}{friend}\ \textcolor{keyword}{class\ }\doxymbox{\hyperlink{classphi__group_a074829666d23dffbb1c559ce2c3c222f}{phi\_analyzer}};}
+\DoxyCodeLine{00068\ \};}
+\DoxyCodeLine{00069\ }
+\DoxyCodeLine{00070\ \textcolor{comment}{//\ The\ phi\ anlyzer\ will\ return\ the\ group\ that\ name\ belongs\ to.}}
+\DoxyCodeLine{00071\ \textcolor{comment}{//\ If\ inforamtion\ is\ not\ known\ about\ a\ name\ yet,\ analysis\ is\ conducted\ by}}
+\DoxyCodeLine{00072\ \textcolor{comment}{//\ looking\ at\ the\ arguments\ to\ PHIS\ and\ following\ them\ to\ their\ defs\ to}}
+\DoxyCodeLine{00073\ \textcolor{comment}{//\ determine\ whether\ the\ conditions\ are\ met\ to\ form\ a\ new\ group.}}
+\DoxyCodeLine{00074\ }
+\DoxyCodeLine{00075\ \textcolor{keyword}{class\ }\doxymbox{\hyperlink{classphi__analyzer_a63217329d57ea2e7746583521e66a5d5}{phi\_analyzer}}}
+\DoxyCodeLine{00076\ \{}
+\DoxyCodeLine{00077\ \textcolor{keyword}{public}:}
+\DoxyCodeLine{00078\ \ \ \doxymbox{\hyperlink{classphi__analyzer_a63217329d57ea2e7746583521e66a5d5}{phi\_analyzer}}\ (\doxymbox{\hyperlink{classrange__query}{range\_query}}\ \&);}
+\DoxyCodeLine{00079\ \ \ \doxymbox{\hyperlink{classphi__analyzer_ad67271e76f94f9ac834568874b2cdf2f}{\string~phi\_analyzer}}\ ();}
+\DoxyCodeLine{00080\ \ \ \doxymbox{\hyperlink{classphi__group}{phi\_group}}\ *\doxymbox{\hyperlink{classphi__analyzer_ad612ddfa57591765d2d2b86a0d3ba6a8}{operator[]\ }}(\doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ \doxymbox{\hyperlink{configargs_8h_a8f8f80d37794cde9472343e4487ba3eb}{name}});}
+\DoxyCodeLine{00081\ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classphi__analyzer_ac416674bcd60e14c29fe9e7413586182}{dump}}\ (FILE\ *f);}
+\DoxyCodeLine{00082\ \textcolor{keyword}{protected}:}
+\DoxyCodeLine{00083\ \ \ \doxymbox{\hyperlink{classphi__group}{phi\_group}}\ *\doxymbox{\hyperlink{classphi__analyzer_a01435c8f3b076df227cff493d296b914}{group}}\ (\doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ \doxymbox{\hyperlink{configargs_8h_a8f8f80d37794cde9472343e4487ba3eb}{name}})\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00084\ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classphi__analyzer_ac08089636474a514f55b109e39061f04}{process\_phi}}\ (gphi\ *phi);}
+\DoxyCodeLine{00085\ \ \ \doxymbox{\hyperlink{classrange__query}{range\_query}}\ \&\doxymbox{\hyperlink{classphi__analyzer_afa58699e320ae3ad882f43d7d78de48b}{m\_global}};}
+\DoxyCodeLine{00086\ \ \ \doxymbox{\hyperlink{structvec}{vec<tree>}}\ \doxymbox{\hyperlink{classphi__analyzer_afca229304e3da923209d1303ee7f2cb3}{m\_work}};}
+\DoxyCodeLine{00087\ }
+\DoxyCodeLine{00088\ \ \ \doxymbox{\hyperlink{coretypes_8h_ae7ea3a04cabf8964dc6e8e95a9cde1b8}{bitmap}}\ \doxymbox{\hyperlink{classphi__analyzer_a74edc113b52bffdba714fcdef3da7681}{m\_simple}};\ \ \ \ \ \ \ \textcolor{comment}{//\ Processed,\ not\ part\ of\ a\ group.}}
+\DoxyCodeLine{00089\ \ \ \doxymbox{\hyperlink{coretypes_8h_ae7ea3a04cabf8964dc6e8e95a9cde1b8}{bitmap}}\ \doxymbox{\hyperlink{classphi__analyzer_a98d8ee5896e460a7a370cc6d1958a529}{m\_current}};\ \ \textcolor{comment}{//\ Potential\ group\ currently\ being\ analyzed.}}
+\DoxyCodeLine{00090\ \ \ \doxymbox{\hyperlink{structvec}{vec<phi\_group\ *>}}\ \doxymbox{\hyperlink{classphi__analyzer_a39529dea13f6c2e095f4cf8d47cbd93e}{m\_phi\_groups}};}
+\DoxyCodeLine{00091\ \ \ \doxymbox{\hyperlink{structvec}{vec<phi\_group\ *>}}\ \doxymbox{\hyperlink{classphi__analyzer_a0015b5037e6a6e1b527ec089628448d4}{m\_tab}};}
+\DoxyCodeLine{00092\ \ \ \doxymbox{\hyperlink{structbitmap__obstack}{bitmap\_obstack}}\ \doxymbox{\hyperlink{classphi__analyzer_a842d1f42e46198eaec3c5b63e974f30c}{m\_bitmaps}};}
+\DoxyCodeLine{00093\ \};}
+\DoxyCodeLine{00094\ }
+\DoxyCodeLine{00095\ \textcolor{comment}{//\ These\ are\ the\ APIs\ to\ start\ and\ stop\ a\ phi\ analyzerin\ a\ SCEV\ like\ manner.}}
+\DoxyCodeLine{00096\ \textcolor{comment}{//\ There\ can\ only\ be\ one\ operating\ at\ any\ given\ time.}}
+\DoxyCodeLine{00097\ \textcolor{comment}{//\ When\ initialized,\ a\ range-\/query\ if\ provided\ to\ do\ lookups\ of\ values\ for}}
+\DoxyCodeLine{00098\ \textcolor{comment}{//\ PHIs\ and\ to\ evaluate\ modifier\ and\ initial\ value\ statements.}}
+\DoxyCodeLine{00099\ \textcolor{comment}{//\ To\ avoid\ problems,\ this\ should\ be\ some\ form\ of\ constant\ query,\ like}}
+\DoxyCodeLine{00100\ \textcolor{comment}{//\ global\_range\_query\ or\ better\ yet\ a\ const\_query\ from\ a\ functioning\ ranger.}}
+\DoxyCodeLine{00101\ }
+\DoxyCodeLine{00102\ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{gimple-range-phi_8h_a6cde7f59c9a021e7c4ceec00360d2c0c}{phi\_analysis\_available\_p}}\ ();}
+\DoxyCodeLine{00103\ \doxymbox{\hyperlink{classphi__analyzer}{phi\_analyzer}}\ \&\doxymbox{\hyperlink{gimple-range-phi_8h_af1505ea3263cd056e1a1d61919b7c686}{phi\_analysis}}\ ();}
+\DoxyCodeLine{00104\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{gimple-range-phi_8h_a39f5e6d2d07f4da98b44a4ebbcac44f0}{phi\_analysis\_initialize}}\ (\doxymbox{\hyperlink{classrange__query}{range\_query}}\ \&);}
+\DoxyCodeLine{00105\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{gimple-range-phi_8h_a775ccc6476d0beb2a97b6993ba01266e}{phi\_analysis\_finalize}}\ ();}
+\DoxyCodeLine{00106\ }
+\DoxyCodeLine{00107\ \textcolor{preprocessor}{\#endif\ }\textcolor{comment}{//\ GCC\_SSA\_RANGE\_PHI\_H}}
+
+\end{DoxyCode}

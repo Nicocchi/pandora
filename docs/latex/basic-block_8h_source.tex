@@ -1,0 +1,648 @@
+\doxysection{basic-\/block.h}
+\hypertarget{basic-block_8h_source}{}\label{basic-block_8h_source}\index{toolchain/x86\_64-\/elf/lib/gcc/x86\_64-\/elf/14.2.0/plugin/include/basic-\/block.h@{toolchain/x86\_64-\/elf/lib/gcc/x86\_64-\/elf/14.2.0/plugin/include/basic-\/block.h}}
+\doxymbox{\hyperlink{basic-block_8h}{Go to the documentation of this file.}}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001\ \textcolor{comment}{/*\ Define\ control\ flow\ data\ structures\ for\ the\ CFG.}}
+\DoxyCodeLine{00002\ \textcolor{comment}{\ \ \ Copyright\ (C)\ 1987-\/2024\ Free\ Software\ Foundation,\ Inc.}}
+\DoxyCodeLine{00003\ \textcolor{comment}{}}
+\DoxyCodeLine{00004\ \textcolor{comment}{This\ file\ is\ part\ of\ GCC.}}
+\DoxyCodeLine{00005\ \textcolor{comment}{}}
+\DoxyCodeLine{00006\ \textcolor{comment}{GCC\ is\ free\ software;\ you\ can\ redistribute\ it\ and/or\ modify\ it\ under}}
+\DoxyCodeLine{00007\ \textcolor{comment}{the\ terms\ of\ the\ GNU\ General\ Public\ License\ as\ published\ by\ the\ Free}}
+\DoxyCodeLine{00008\ \textcolor{comment}{Software\ Foundation;\ either\ version\ 3,\ or\ (at\ your\ option)\ any\ later}}
+\DoxyCodeLine{00009\ \textcolor{comment}{version.}}
+\DoxyCodeLine{00010\ \textcolor{comment}{}}
+\DoxyCodeLine{00011\ \textcolor{comment}{GCC\ is\ distributed\ in\ the\ hope\ that\ it\ will\ be\ useful,\ but\ WITHOUT\ ANY}}
+\DoxyCodeLine{00012\ \textcolor{comment}{WARRANTY;\ without\ even\ the\ implied\ warranty\ of\ MERCHANTABILITY\ or}}
+\DoxyCodeLine{00013\ \textcolor{comment}{FITNESS\ FOR\ A\ PARTICULAR\ PURPOSE.\ \ See\ the\ GNU\ General\ Public\ License}}
+\DoxyCodeLine{00014\ \textcolor{comment}{for\ more\ details.}}
+\DoxyCodeLine{00015\ \textcolor{comment}{}}
+\DoxyCodeLine{00016\ \textcolor{comment}{You\ should\ have\ received\ a\ copy\ of\ the\ GNU\ General\ Public\ License}}
+\DoxyCodeLine{00017\ \textcolor{comment}{along\ with\ GCC;\ see\ the\ file\ COPYING3.\ \ If\ not\ see}}
+\DoxyCodeLine{00018\ \textcolor{comment}{<http://www.gnu.org/licenses/>.\ \ */}}
+\DoxyCodeLine{00019\ }
+\DoxyCodeLine{00020\ \textcolor{preprocessor}{\#ifndef\ GCC\_BASIC\_BLOCK\_H}}
+\DoxyCodeLine{00021\ \textcolor{preprocessor}{\#define\ GCC\_BASIC\_BLOCK\_H}}
+\DoxyCodeLine{00022\ }
+\DoxyCodeLine{00023\ \textcolor{preprocessor}{\#include\ <\doxymbox{\hyperlink{profile-count_8h}{profile-\/count.h}}>}}
+\DoxyCodeLine{00024\ }
+\DoxyCodeLine{00025\ \textcolor{comment}{/*\ Control\ flow\ edge\ information.\ \ */}}
+\DoxyCodeLine{00026\ \textcolor{keyword}{class\ }\doxymbox{\hyperlink{coretypes_8h_ae5708c4d4b300570eebe0bc0c78facbc}{GTY}}((user))\ edge\_def\ \{}
+\DoxyCodeLine{00027\ \textcolor{keyword}{public}:}
+\DoxyCodeLine{00028\ \ \ \textcolor{comment}{/*\ The\ two\ blocks\ at\ the\ ends\ of\ the\ edge.\ \ */}}
+\DoxyCodeLine{00029\ \ \ \doxymbox{\hyperlink{coretypes_8h_a0469df20b471a4cd7c81fbdce5027487}{basic\_block}}\ src;}
+\DoxyCodeLine{00030\ \ \ \doxymbox{\hyperlink{coretypes_8h_a0469df20b471a4cd7c81fbdce5027487}{basic\_block}}\ dest;}
+\DoxyCodeLine{00031\ }
+\DoxyCodeLine{00032\ \ \ \textcolor{comment}{/*\ Instructions\ queued\ on\ the\ edge.\ \ */}}
+\DoxyCodeLine{00033\ \ \ \textcolor{keyword}{union\ }edge\_def\_insns\ \{}
+\DoxyCodeLine{00034\ \ \ \ \ \doxymbox{\hyperlink{coretypes_8h_a4b4e58d1e0dada604ccfc7965bb9a3df}{gimple\_seq}}\ \doxymbox{\hyperlink{context_8h_a912f5d68d342a85b17dbde0c74effe27}{g}};}
+\DoxyCodeLine{00035\ \ \ \ \ rtx\_insn\ *\doxymbox{\hyperlink{poly-int_8h_a3ecac2571dcdc8050989339124f1bd26}{r}};}
+\DoxyCodeLine{00036\ \ \ \}\ insns;}
+\DoxyCodeLine{00037\ }
+\DoxyCodeLine{00038\ \ \ \textcolor{comment}{/*\ Auxiliary\ info\ specific\ to\ a\ pass.\ \ */}}
+\DoxyCodeLine{00039\ \ \ \textcolor{keywordtype}{void}\ *aux;}
+\DoxyCodeLine{00040\ }
+\DoxyCodeLine{00041\ \ \ \textcolor{comment}{/*\ Location\ of\ any\ goto\ implicit\ in\ the\ edge.\ \ */}}
+\DoxyCodeLine{00042\ \ \ \doxymbox{\hyperlink{line-map_8h_aedf25620511d64e43327f1a229906a96}{location\_t}}\ goto\_locus;}
+\DoxyCodeLine{00043\ }
+\DoxyCodeLine{00044\ \ \ \textcolor{comment}{/*\ The\ index\ number\ corresponding\ to\ this\ edge\ in\ the\ edge\ vector}}
+\DoxyCodeLine{00045\ \textcolor{comment}{\ \ \ \ \ dest-\/>preds.\ \ */}}
+\DoxyCodeLine{00046\ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ dest\_idx;}
+\DoxyCodeLine{00047\ }
+\DoxyCodeLine{00048\ \ \ \textcolor{keywordtype}{int}\ flags;\ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{/*\ see\ cfg-\/flags.def\ */}}
+\DoxyCodeLine{00049\ \ \ profile\_probability\ probability;}
+\DoxyCodeLine{00050\ }
+\DoxyCodeLine{00051\ \ \ \textcolor{comment}{/*\ Return\ count\ of\ edge\ E.\ \ */}}
+\DoxyCodeLine{00052\ \ \ \textcolor{keyword}{inline}\ profile\_count\ count\ ()\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00053\ \};}
+\DoxyCodeLine{00054\ }
+\DoxyCodeLine{00055\ \textcolor{comment}{/*\ Masks\ for\ edge.flags.\ \ */}}
+\DoxyCodeLine{00056\ \textcolor{preprocessor}{\#define\ DEF\_EDGE\_FLAG(NAME,IDX)\ EDGE\_\#\#NAME\ =\ 1\ <<\ IDX\ ,}}
+\DoxyCodeLine{00057\ \textcolor{keyword}{enum}\ \doxymbox{\hyperlink{basic-block_8h_a9036ef622567f68c9795e1be7dda3c6d}{cfg\_edge\_flags}}\ \{}
+\DoxyCodeLine{00058\ \textcolor{preprocessor}{\#include\ "{}cfg-\/flags.def"{}}}
+\DoxyCodeLine{00059\ \ \ \doxymbox{\hyperlink{basic-block_8h_a9036ef622567f68c9795e1be7dda3c6da18bdeb1a72147e5c2a01b4ec96c092ca}{LAST\_CFG\_EDGE\_FLAG}}\ \ \ \ \ \ \ \ \textcolor{comment}{/*\ this\ is\ only\ used\ for\ EDGE\_ALL\_FLAGS\ */}}
+\DoxyCodeLine{00060\ \};}
+\DoxyCodeLine{00061\ \textcolor{preprocessor}{\#undef\ DEF\_EDGE\_FLAG}}
+\DoxyCodeLine{00062\ }
+\DoxyCodeLine{00063\ \textcolor{comment}{/*\ Bit\ mask\ for\ all\ edge\ flags.\ \ */}}
+\DoxyCodeLine{00064\ \textcolor{preprocessor}{\#define\ EDGE\_ALL\_FLAGS\ \ \ \ \ \ ((LAST\_CFG\_EDGE\_FLAG\ -\/\ 1)\ *\ 2\ -\/\ 1)}}
+\DoxyCodeLine{00065\ }
+\DoxyCodeLine{00066\ \textcolor{comment}{/*\ The\ following\ four\ flags\ all\ indicate\ something\ special\ about\ an\ edge.}}
+\DoxyCodeLine{00067\ \textcolor{comment}{\ \ \ Test\ the\ edge\ flags\ on\ EDGE\_COMPLEX\ to\ detect\ all\ forms\ of\ "{}strange"{}}}
+\DoxyCodeLine{00068\ \textcolor{comment}{\ \ \ control\ flow\ transfers.\ \ */}}
+\DoxyCodeLine{00069\ \textcolor{preprocessor}{\#define\ EDGE\_COMPLEX\ \(\backslash\)}}
+\DoxyCodeLine{00070\ \textcolor{preprocessor}{\ \ (EDGE\_ABNORMAL\ |\ EDGE\_ABNORMAL\_CALL\ |\ EDGE\_EH\ |\ EDGE\_PRESERVE)}}
+\DoxyCodeLine{00071\ }
+\DoxyCodeLine{00072\ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{coretypes_8h_ae5708c4d4b300570eebe0bc0c78facbc}{GTY}}(())\ rtl\_bb\_info\ \{}
+\DoxyCodeLine{00073\ \ \ \textcolor{comment}{/*\ The\ first\ insn\ of\ the\ block\ is\ embedded\ into\ bb-\/>il.x.\ \ */}}
+\DoxyCodeLine{00074\ \ \ \textcolor{comment}{/*\ The\ last\ insn\ of\ the\ block.\ \ */}}
+\DoxyCodeLine{00075\ \ \ rtx\_insn\ *end\_;}
+\DoxyCodeLine{00076\ }
+\DoxyCodeLine{00077\ \ \ \textcolor{comment}{/*\ In\ CFGlayout\ mode\ points\ to\ insn\ notes/jumptables\ to\ be\ placed\ just\ before}}
+\DoxyCodeLine{00078\ \textcolor{comment}{\ \ \ \ \ and\ after\ the\ block.\ \ \ */}}
+\DoxyCodeLine{00079\ \ \ rtx\_insn\ *header\_;}
+\DoxyCodeLine{00080\ \ \ rtx\_insn\ *footer\_;}
+\DoxyCodeLine{00081\ \};}
+\DoxyCodeLine{00082\ }
+\DoxyCodeLine{00083\ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{coretypes_8h_ae5708c4d4b300570eebe0bc0c78facbc}{GTY}}(())\ gimple\_bb\_info\ \{}
+\DoxyCodeLine{00084\ \ \ \textcolor{comment}{/*\ Sequence\ of\ statements\ in\ this\ block.\ \ */}}
+\DoxyCodeLine{00085\ \ \ \doxymbox{\hyperlink{coretypes_8h_a4b4e58d1e0dada604ccfc7965bb9a3df}{gimple\_seq}}\ seq;}
+\DoxyCodeLine{00086\ }
+\DoxyCodeLine{00087\ \ \ \textcolor{comment}{/*\ PHI\ nodes\ for\ this\ block.\ \ */}}
+\DoxyCodeLine{00088\ \ \ \doxymbox{\hyperlink{coretypes_8h_a4b4e58d1e0dada604ccfc7965bb9a3df}{gimple\_seq}}\ \doxymbox{\hyperlink{gimple_8h_a39478f904547633e8186c33c7305be8e}{phi\_nodes}};}
+\DoxyCodeLine{00089\ \};}
+\DoxyCodeLine{00090\ }
+\DoxyCodeLine{00091\ \textcolor{comment}{/*\ A\ basic\ block\ is\ a\ sequence\ of\ instructions\ with\ only\ one\ entry\ and}}
+\DoxyCodeLine{00092\ \textcolor{comment}{\ \ \ only\ one\ exit.\ \ If\ any\ one\ of\ the\ instructions\ are\ executed,\ they}}
+\DoxyCodeLine{00093\ \textcolor{comment}{\ \ \ will\ all\ be\ executed,\ and\ in\ sequence\ from\ first\ to\ last.}}
+\DoxyCodeLine{00094\ \textcolor{comment}{}}
+\DoxyCodeLine{00095\ \textcolor{comment}{\ \ \ There\ may\ be\ COND\_EXEC\ instructions\ in\ the\ basic\ block.\ \ The}}
+\DoxyCodeLine{00096\ \textcolor{comment}{\ \ \ COND\_EXEC\ *instructions*\ will\ be\ executed\ -\/-\/\ but\ if\ the\ condition}}
+\DoxyCodeLine{00097\ \textcolor{comment}{\ \ \ is\ false\ the\ conditionally\ executed\ *expressions*\ will\ of\ course}}
+\DoxyCodeLine{00098\ \textcolor{comment}{\ \ \ not\ be\ executed.\ \ We\ don't\ consider\ the\ conditionally\ executed}}
+\DoxyCodeLine{00099\ \textcolor{comment}{\ \ \ expression\ (which\ might\ have\ side-\/effects)\ to\ be\ in\ a\ separate}}
+\DoxyCodeLine{00100\ \textcolor{comment}{\ \ \ basic\ block\ because\ the\ program\ counter\ will\ always\ be\ at\ the\ same}}
+\DoxyCodeLine{00101\ \textcolor{comment}{\ \ \ location\ after\ the\ COND\_EXEC\ instruction,\ regardless\ of\ whether\ the}}
+\DoxyCodeLine{00102\ \textcolor{comment}{\ \ \ condition\ is\ true\ or\ not.}}
+\DoxyCodeLine{00103\ \textcolor{comment}{}}
+\DoxyCodeLine{00104\ \textcolor{comment}{\ \ \ Basic\ blocks\ need\ not\ start\ with\ a\ label\ nor\ end\ with\ a\ jump\ insn.}}
+\DoxyCodeLine{00105\ \textcolor{comment}{\ \ \ For\ example,\ a\ previous\ basic\ block\ may\ just\ "{}conditionally\ fall"{}}}
+\DoxyCodeLine{00106\ \textcolor{comment}{\ \ \ into\ the\ succeeding\ basic\ block,\ and\ the\ last\ basic\ block\ need\ not}}
+\DoxyCodeLine{00107\ \textcolor{comment}{\ \ \ end\ with\ a\ jump\ insn.\ \ Block\ 0\ is\ a\ descendant\ of\ the\ entry\ block.}}
+\DoxyCodeLine{00108\ \textcolor{comment}{}}
+\DoxyCodeLine{00109\ \textcolor{comment}{\ \ \ A\ basic\ block\ beginning\ with\ two\ labels\ cannot\ have\ notes\ between}}
+\DoxyCodeLine{00110\ \textcolor{comment}{\ \ \ the\ labels.}}
+\DoxyCodeLine{00111\ \textcolor{comment}{}}
+\DoxyCodeLine{00112\ \textcolor{comment}{\ \ \ Data\ for\ jump\ tables\ are\ stored\ in\ jump\_insns\ that\ occur\ in\ no}}
+\DoxyCodeLine{00113\ \textcolor{comment}{\ \ \ basic\ block\ even\ though\ these\ insns\ can\ follow\ or\ precede\ insns\ in}}
+\DoxyCodeLine{00114\ \textcolor{comment}{\ \ \ basic\ blocks.\ \ */}}
+\DoxyCodeLine{00115\ }
+\DoxyCodeLine{00116\ \textcolor{comment}{/*\ Basic\ block\ information\ indexed\ by\ block\ number.\ \ */}}
+\DoxyCodeLine{00117\ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{coretypes_8h_ae5708c4d4b300570eebe0bc0c78facbc}{GTY}}((chain\_next\ (\textcolor{stringliteral}{"{}\%h.next\_bb"{}}),\ chain\_prev\ (\textcolor{stringliteral}{"{}\%h.prev\_bb"{}})))\ basic\_block\_def\ \{}
+\DoxyCodeLine{00118\ \ \ \textcolor{comment}{/*\ The\ edges\ into\ and\ out\ of\ the\ block.\ \ */}}
+\DoxyCodeLine{00119\ \ \ vec<edge,\ va\_gc>\ *preds;}
+\DoxyCodeLine{00120\ \ \ vec<edge,\ va\_gc>\ *succs;}
+\DoxyCodeLine{00121\ }
+\DoxyCodeLine{00122\ \ \ \textcolor{comment}{/*\ Auxiliary\ info\ specific\ to\ a\ pass.\ \ */}}
+\DoxyCodeLine{00123\ \ \ \textcolor{keywordtype}{void}\ *\doxymbox{\hyperlink{coretypes_8h_ae5708c4d4b300570eebe0bc0c78facbc}{GTY}}\ ((skip\ (\textcolor{stringliteral}{"{}"{}})))\ aux;}
+\DoxyCodeLine{00124\ }
+\DoxyCodeLine{00125\ \ \ \textcolor{comment}{/*\ Innermost\ loop\ containing\ the\ block.\ \ */}}
+\DoxyCodeLine{00126\ \ \ class\ loop\ *loop\_father;}
+\DoxyCodeLine{00127\ }
+\DoxyCodeLine{00128\ \ \ \textcolor{comment}{/*\ The\ dominance\ and\ postdominance\ information\ node.\ \ */}}
+\DoxyCodeLine{00129\ \ \ struct\ et\_node\ *\ \doxymbox{\hyperlink{coretypes_8h_ae5708c4d4b300570eebe0bc0c78facbc}{GTY}}\ ((skip\ (\textcolor{stringliteral}{"{}"{}})))\ dom[2];}
+\DoxyCodeLine{00130\ }
+\DoxyCodeLine{00131\ \ \ \textcolor{comment}{/*\ Previous\ and\ next\ blocks\ in\ the\ chain.\ \ */}}
+\DoxyCodeLine{00132\ \ \ \doxymbox{\hyperlink{coretypes_8h_a0469df20b471a4cd7c81fbdce5027487}{basic\_block}}\ prev\_bb;}
+\DoxyCodeLine{00133\ \ \ \doxymbox{\hyperlink{coretypes_8h_a0469df20b471a4cd7c81fbdce5027487}{basic\_block}}\ next\_bb;}
+\DoxyCodeLine{00134\ }
+\DoxyCodeLine{00135\ \ \ union\ basic\_block\_il\_dependent\ \{}
+\DoxyCodeLine{00136\ \ \ \ \ \ \ \textcolor{keyword}{struct\ }gimple\_bb\_info\ \doxymbox{\hyperlink{coretypes_8h_ae5708c4d4b300570eebe0bc0c78facbc}{GTY}}\ ((tag\ (\textcolor{stringliteral}{"{}0"{}})))\ gimple;}
+\DoxyCodeLine{00137\ \ \ \ \ \ \ \textcolor{keyword}{struct\ }\{}
+\DoxyCodeLine{00138\ \ \ \ \ \ \ \ \ rtx\_insn\ *head\_;}
+\DoxyCodeLine{00139\ \ \ \ \ \ \ \ \ \textcolor{keyword}{struct\ }rtl\_bb\_info\ *\ rtl;}
+\DoxyCodeLine{00140\ \ \ \ \ \ \ \}\ \doxymbox{\hyperlink{coretypes_8h_ae5708c4d4b300570eebe0bc0c78facbc}{GTY}}\ ((tag\ (\textcolor{stringliteral}{"{}1"{}})))\ x;}
+\DoxyCodeLine{00141\ \ \ \ \ \}\ \doxymbox{\hyperlink{coretypes_8h_ae5708c4d4b300570eebe0bc0c78facbc}{GTY}}\ ((desc\ (\textcolor{stringliteral}{"{}((\%1.flags\ \&\ BB\_RTL)\ !=\ 0)"{}})))\ il;}
+\DoxyCodeLine{00142\ }
+\DoxyCodeLine{00143\ \ \ \textcolor{comment}{/*\ Various\ flags.\ \ See\ cfg-\/flags.def.\ \ */}}
+\DoxyCodeLine{00144\ \ \ \textcolor{keywordtype}{int}\ flags;}
+\DoxyCodeLine{00145\ }
+\DoxyCodeLine{00146\ \ \ \textcolor{comment}{/*\ The\ index\ of\ this\ block.\ \ */}}
+\DoxyCodeLine{00147\ \ \ \textcolor{keywordtype}{int}\ index;}
+\DoxyCodeLine{00148\ }
+\DoxyCodeLine{00149\ \ \ \textcolor{comment}{/*\ Expected\ number\ of\ executions:\ calculated\ in\ profile.cc.\ \ */}}
+\DoxyCodeLine{00150\ \ \ profile\_count\ count;}
+\DoxyCodeLine{00151\ \};}
+\DoxyCodeLine{00152\ }
+\DoxyCodeLine{00153\ \textcolor{comment}{/*\ This\ ensures\ that\ struct\ gimple\_bb\_info\ is\ smaller\ than}}
+\DoxyCodeLine{00154\ \textcolor{comment}{\ \ \ struct\ rtl\_bb\_info,\ so\ that\ inlining\ the\ former\ into\ basic\_block\_def}}
+\DoxyCodeLine{00155\ \textcolor{comment}{\ \ \ is\ the\ better\ choice.\ \ */}}
+\DoxyCodeLine{00156\ \doxymbox{\hyperlink{system_8h_ad43df400ec5a5f05d7099854a1829264}{STATIC\_ASSERT}}\ (sizeof\ (rtl\_bb\_info)\ >=\ sizeof\ (gimple\_bb\_info));}
+\DoxyCodeLine{00157\ }
+\DoxyCodeLine{00158\ \textcolor{preprocessor}{\#define\ BB\_FREQ\_MAX\ 10000}}
+\DoxyCodeLine{00159\ }
+\DoxyCodeLine{00160\ \textcolor{comment}{/*\ Masks\ for\ basic\_block.flags.\ \ */}}
+\DoxyCodeLine{00161\ \textcolor{preprocessor}{\#define\ DEF\_BASIC\_BLOCK\_FLAG(NAME,IDX)\ BB\_\#\#NAME\ =\ 1\ <<\ IDX\ ,}}
+\DoxyCodeLine{00162\ \textcolor{keyword}{enum}\ \doxymbox{\hyperlink{basic-block_8h_a20fdc777968a37b2076e4b3e847258fc}{cfg\_bb\_flags}}}
+\DoxyCodeLine{00163\ \{}
+\DoxyCodeLine{00164\ \textcolor{preprocessor}{\#include\ "{}cfg-\/flags.def"{}}}
+\DoxyCodeLine{00165\ \ \ \doxymbox{\hyperlink{basic-block_8h_a20fdc777968a37b2076e4b3e847258fca18095339478875c292fbf17b1298f362}{LAST\_CFG\_BB\_FLAG}}\ \ \ \ \ \ \textcolor{comment}{/*\ this\ is\ only\ used\ for\ BB\_ALL\_FLAGS\ */}}
+\DoxyCodeLine{00166\ \};}
+\DoxyCodeLine{00167\ \textcolor{preprocessor}{\#undef\ DEF\_BASIC\_BLOCK\_FLAG}}
+\DoxyCodeLine{00168\ }
+\DoxyCodeLine{00169\ \textcolor{comment}{/*\ Bit\ mask\ for\ all\ basic\ block\ flags.\ \ */}}
+\DoxyCodeLine{00170\ \textcolor{preprocessor}{\#define\ BB\_ALL\_FLAGS\ \ \ \ \ \ \ \ ((LAST\_CFG\_BB\_FLAG\ -\/\ 1)\ *\ 2\ -\/\ 1)}}
+\DoxyCodeLine{00171\ }
+\DoxyCodeLine{00172\ \textcolor{comment}{/*\ Bit\ mask\ for\ all\ basic\ block\ flags\ that\ must\ be\ preserved.\ \ These\ are}}
+\DoxyCodeLine{00173\ \textcolor{comment}{\ \ \ the\ bit\ masks\ that\ are\ *not*\ cleared\ by\ clear\_bb\_flags.\ \ */}}
+\DoxyCodeLine{00174\ \textcolor{preprocessor}{\#define\ BB\_FLAGS\_TO\_PRESERVE\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00175\ \textcolor{preprocessor}{\ \ (BB\_DISABLE\_SCHEDULE\ |\ BB\_RTL\ |\ BB\_NON\_LOCAL\_GOTO\_TARGET\ \ \(\backslash\)}}
+\DoxyCodeLine{00176\ \textcolor{preprocessor}{\ \ \ |\ BB\_HOT\_PARTITION\ |\ BB\_COLD\_PARTITION)}}
+\DoxyCodeLine{00177\ }
+\DoxyCodeLine{00178\ \textcolor{comment}{/*\ Dummy\ bitmask\ for\ convenience\ in\ the\ hot/cold\ partitioning\ code.\ \ */}}
+\DoxyCodeLine{00179\ \textcolor{preprocessor}{\#define\ BB\_UNPARTITIONED\ \ \ \ 0}}
+\DoxyCodeLine{00180\ }
+\DoxyCodeLine{00181\ \textcolor{comment}{/*\ Partitions,\ to\ be\ used\ when\ partitioning\ hot\ and\ cold\ basic\ blocks\ into}}
+\DoxyCodeLine{00182\ \textcolor{comment}{\ \ \ separate\ sections.\ \ */}}
+\DoxyCodeLine{00183\ \textcolor{preprocessor}{\#define\ BB\_PARTITION(bb)\ ((bb)-\/>flags\ \&\ (BB\_HOT\_PARTITION|BB\_COLD\_PARTITION))}}
+\DoxyCodeLine{00184\ \textcolor{preprocessor}{\#define\ BB\_SET\_PARTITION(bb,\ part)\ do\ \{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00185\ \textcolor{preprocessor}{\ \ basic\_block\ bb\_\ =\ (bb);\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00186\ \textcolor{preprocessor}{\ \ bb\_-\/>flags\ =\ ((bb\_-\/>flags\ \&\ \string~(BB\_HOT\_PARTITION|BB\_COLD\_PARTITION))\ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00187\ \textcolor{preprocessor}{\ \ \ \ \ \ \ \ |\ (part));\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00188\ \textcolor{preprocessor}{\}\ while\ (0)}}
+\DoxyCodeLine{00189\ }
+\DoxyCodeLine{00190\ \textcolor{preprocessor}{\#define\ BB\_COPY\_PARTITION(dstbb,\ srcbb)\ \(\backslash\)}}
+\DoxyCodeLine{00191\ \textcolor{preprocessor}{\ \ BB\_SET\_PARTITION\ (dstbb,\ BB\_PARTITION\ (srcbb))}}
+\DoxyCodeLine{00192\ }
+\DoxyCodeLine{00193\ \textcolor{comment}{/*\ Defines\ for\ accessing\ the\ fields\ of\ the\ CFG\ structure\ for\ function\ FN.\ \ */}}
+\DoxyCodeLine{00194\ \textcolor{preprocessor}{\#define\ ENTRY\_BLOCK\_PTR\_FOR\_FN(FN)\ \ \ \ \ \ \ ((FN)-\/>cfg-\/>x\_entry\_block\_ptr)}}
+\DoxyCodeLine{00195\ \textcolor{preprocessor}{\#define\ EXIT\_BLOCK\_PTR\_FOR\_FN(FN)\ \ \ \ \ \ \ \ ((FN)-\/>cfg-\/>x\_exit\_block\_ptr)}}
+\DoxyCodeLine{00196\ \textcolor{preprocessor}{\#define\ basic\_block\_info\_for\_fn(FN)\ \ \ \ \ \ ((FN)-\/>cfg-\/>x\_basic\_block\_info)}}
+\DoxyCodeLine{00197\ \textcolor{preprocessor}{\#define\ n\_basic\_blocks\_for\_fn(FN)\ \ \ \ \ \ \ \ ((FN)-\/>cfg-\/>x\_n\_basic\_blocks)}}
+\DoxyCodeLine{00198\ \textcolor{preprocessor}{\#define\ n\_edges\_for\_fn(FN)\ \ \ \ \ \ \ \ \ \ \ ((FN)-\/>cfg-\/>x\_n\_edges)}}
+\DoxyCodeLine{00199\ \textcolor{preprocessor}{\#define\ last\_basic\_block\_for\_fn(FN)\ \ \ \ \ \ ((FN)-\/>cfg-\/>x\_last\_basic\_block)}}
+\DoxyCodeLine{00200\ \textcolor{preprocessor}{\#define\ label\_to\_block\_map\_for\_fn(FN)\ \ \ \ \ \ \ \ ((FN)-\/>cfg-\/>x\_label\_to\_block\_map)}}
+\DoxyCodeLine{00201\ \textcolor{preprocessor}{\#define\ profile\_status\_for\_fn(FN)\ \ \ \ \ \ \ \ ((FN)-\/>cfg-\/>x\_profile\_status)}}
+\DoxyCodeLine{00202\ }
+\DoxyCodeLine{00203\ \textcolor{preprocessor}{\#define\ BASIC\_BLOCK\_FOR\_FN(FN,N)\ \(\backslash\)}}
+\DoxyCodeLine{00204\ \textcolor{preprocessor}{\ \ ((*basic\_block\_info\_for\_fn\ (FN))[(N)])}}
+\DoxyCodeLine{00205\ \textcolor{preprocessor}{\#define\ SET\_BASIC\_BLOCK\_FOR\_FN(FN,N,BB)\ \(\backslash\)}}
+\DoxyCodeLine{00206\ \textcolor{preprocessor}{\ \ ((*basic\_block\_info\_for\_fn\ (FN))[(N)]\ =\ (BB))}}
+\DoxyCodeLine{00207\ }
+\DoxyCodeLine{00208\ \textcolor{comment}{/*\ For\ iterating\ over\ basic\ blocks.\ \ */}}
+\DoxyCodeLine{00209\ \textcolor{preprocessor}{\#define\ FOR\_BB\_BETWEEN(BB,\ FROM,\ TO,\ DIR)\ \(\backslash\)}}
+\DoxyCodeLine{00210\ \textcolor{preprocessor}{\ \ for\ (BB\ =\ FROM;\ BB\ !=\ TO;\ BB\ =\ BB-\/>DIR)}}
+\DoxyCodeLine{00211\ }
+\DoxyCodeLine{00212\ \textcolor{preprocessor}{\#define\ FOR\_EACH\_BB\_FN(BB,\ FN)\ \(\backslash\)}}
+\DoxyCodeLine{00213\ \textcolor{preprocessor}{\ \ FOR\_BB\_BETWEEN\ (BB,\ (FN)-\/>cfg-\/>x\_entry\_block\_ptr-\/>next\_bb,\ (FN)-\/>cfg-\/>x\_exit\_block\_ptr,\ next\_bb)}}
+\DoxyCodeLine{00214\ }
+\DoxyCodeLine{00215\ \textcolor{preprocessor}{\#define\ FOR\_EACH\_BB\_REVERSE\_FN(BB,\ FN)\ \(\backslash\)}}
+\DoxyCodeLine{00216\ \textcolor{preprocessor}{\ \ FOR\_BB\_BETWEEN\ (BB,\ (FN)-\/>cfg-\/>x\_exit\_block\_ptr-\/>prev\_bb,\ (FN)-\/>cfg-\/>x\_entry\_block\_ptr,\ prev\_bb)}}
+\DoxyCodeLine{00217\ }
+\DoxyCodeLine{00218\ \textcolor{comment}{/*\ For\ iterating\ over\ insns\ in\ basic\ block.\ \ */}}
+\DoxyCodeLine{00219\ \textcolor{preprocessor}{\#define\ FOR\_BB\_INSNS(BB,\ INSN)\ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00220\ \textcolor{preprocessor}{\ \ for\ ((INSN)\ =\ BB\_HEAD\ (BB);\ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00221\ \textcolor{preprocessor}{\ \ \ \ \ \ \ (INSN)\ \&\&\ (INSN)\ !=\ NEXT\_INSN\ (BB\_END\ (BB));\ \(\backslash\)}}
+\DoxyCodeLine{00222\ \textcolor{preprocessor}{\ \ \ \ \ \ \ (INSN)\ =\ NEXT\_INSN\ (INSN))}}
+\DoxyCodeLine{00223\ }
+\DoxyCodeLine{00224\ \textcolor{comment}{/*\ For\ iterating\ over\ insns\ in\ basic\ block\ when\ we\ might\ remove\ the}}
+\DoxyCodeLine{00225\ \textcolor{comment}{\ \ \ current\ insn.\ \ */}}
+\DoxyCodeLine{00226\ \textcolor{preprocessor}{\#define\ FOR\_BB\_INSNS\_SAFE(BB,\ INSN,\ CURR)\ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00227\ \textcolor{preprocessor}{\ \ for\ ((INSN)\ =\ BB\_HEAD\ (BB),\ (CURR)\ =\ (INSN)\ ?\ NEXT\_INSN\ ((INSN)):\ NULL;\ \ \ \(\backslash\)}}
+\DoxyCodeLine{00228\ \textcolor{preprocessor}{\ \ \ \ \ \ \ (INSN)\ \&\&\ (INSN)\ !=\ NEXT\_INSN\ (BB\_END\ (BB));\ \(\backslash\)}}
+\DoxyCodeLine{00229\ \textcolor{preprocessor}{\ \ \ \ \ \ \ (INSN)\ =\ (CURR),\ (CURR)\ =\ (INSN)\ ?\ NEXT\_INSN\ ((INSN))\ :\ NULL)}}
+\DoxyCodeLine{00230\ }
+\DoxyCodeLine{00231\ \textcolor{preprocessor}{\#define\ FOR\_BB\_INSNS\_REVERSE(BB,\ INSN)\ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00232\ \textcolor{preprocessor}{\ \ for\ ((INSN)\ =\ BB\_END\ (BB);\ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00233\ \textcolor{preprocessor}{\ \ \ \ \ \ \ (INSN)\ \&\&\ (INSN)\ !=\ PREV\_INSN\ (BB\_HEAD\ (BB));\ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00234\ \textcolor{preprocessor}{\ \ \ \ \ \ \ (INSN)\ =\ PREV\_INSN\ (INSN))}}
+\DoxyCodeLine{00235\ }
+\DoxyCodeLine{00236\ \textcolor{preprocessor}{\#define\ FOR\_BB\_INSNS\_REVERSE\_SAFE(BB,\ INSN,\ CURR)\ \ \ \(\backslash\)}}
+\DoxyCodeLine{00237\ \textcolor{preprocessor}{\ \ for\ ((INSN)\ =\ BB\_END\ (BB),(CURR)\ =\ (INSN)\ ?\ PREV\_INSN\ ((INSN))\ :\ NULL;\ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00238\ \textcolor{preprocessor}{\ \ \ \ \ \ \ (INSN)\ \&\&\ (INSN)\ !=\ PREV\_INSN\ (BB\_HEAD\ (BB));\ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00239\ \textcolor{preprocessor}{\ \ \ \ \ \ \ (INSN)\ =\ (CURR),\ (CURR)\ =\ (INSN)\ ?\ PREV\_INSN\ ((INSN))\ :\ NULL)}}
+\DoxyCodeLine{00240\ }
+\DoxyCodeLine{00241\ \textcolor{comment}{/*\ Cycles\ through\ \_all\_\ basic\ blocks,\ even\ the\ fake\ ones\ (entry\ and}}
+\DoxyCodeLine{00242\ \textcolor{comment}{\ \ \ exit\ block).\ \ */}}
+\DoxyCodeLine{00243\ }
+\DoxyCodeLine{00244\ \textcolor{preprocessor}{\#define\ FOR\_ALL\_BB\_FN(BB,\ FN)\ \(\backslash\)}}
+\DoxyCodeLine{00245\ \textcolor{preprocessor}{\ \ for\ (BB\ =\ ENTRY\_BLOCK\_PTR\_FOR\_FN\ (FN);\ BB;\ BB\ =\ BB-\/>next\_bb)}}
+\DoxyCodeLine{00246\ }
+\DoxyCodeLine{00247\ }
+\DoxyCodeLine{00248\ \textcolor{comment}{/*\ Stuff\ for\ recording\ basic\ block\ info.\ \ */}}
+\DoxyCodeLine{00249\ }
+\DoxyCodeLine{00250\ \textcolor{comment}{/*\ For\ now,\ these\ will\ be\ functions\ (so\ that\ they\ can\ include\ checked\ casts}}
+\DoxyCodeLine{00251\ \textcolor{comment}{\ \ \ to\ rtx\_insn.\ \ \ Once\ the\ underlying\ fields\ are\ converted\ from\ rtx}}
+\DoxyCodeLine{00252\ \textcolor{comment}{\ \ \ to\ rtx\_insn,\ these\ can\ be\ converted\ back\ to\ macros.\ \ */}}
+\DoxyCodeLine{00253\ }
+\DoxyCodeLine{00254\ \textcolor{preprocessor}{\#define\ BB\_HEAD(B)\ \ \ \ \ \ (B)-\/>il.x.head\_}}
+\DoxyCodeLine{00255\ \textcolor{preprocessor}{\#define\ BB\_END(B)\ \ \ \ \ \ \ (B)-\/>il.x.rtl-\/>end\_}}
+\DoxyCodeLine{00256\ \textcolor{preprocessor}{\#define\ BB\_HEADER(B)\ \ \ \ (B)-\/>il.x.rtl-\/>header\_}}
+\DoxyCodeLine{00257\ \textcolor{preprocessor}{\#define\ BB\_FOOTER(B)\ \ \ \ (B)-\/>il.x.rtl-\/>footer\_}}
+\DoxyCodeLine{00258\ }
+\DoxyCodeLine{00259\ \textcolor{comment}{/*\ Special\ block\ numbers\ [markers]\ for\ entry\ and\ exit.}}
+\DoxyCodeLine{00260\ \textcolor{comment}{\ \ \ Neither\ of\ them\ is\ supposed\ to\ hold\ actual\ statements.\ \ */}}
+\DoxyCodeLine{00261\ \textcolor{preprocessor}{\#define\ ENTRY\_BLOCK\ (0)}}
+\DoxyCodeLine{00262\ \textcolor{preprocessor}{\#define\ EXIT\_BLOCK\ (1)}}
+\DoxyCodeLine{00263\ }
+\DoxyCodeLine{00264\ \textcolor{comment}{/*\ The\ two\ blocks\ that\ are\ always\ in\ the\ cfg.\ \ */}}
+\DoxyCodeLine{00265\ \textcolor{preprocessor}{\#define\ NUM\_FIXED\_BLOCKS\ (2)}}
+\DoxyCodeLine{00266\ }
+\DoxyCodeLine{00267\ \textcolor{comment}{/*\ This\ is\ the\ value\ which\ indicates\ no\ edge\ is\ present.\ \ */}}
+\DoxyCodeLine{00268\ \textcolor{preprocessor}{\#define\ EDGE\_INDEX\_NO\_EDGE\ \ -\/1}}
+\DoxyCodeLine{00269\ }
+\DoxyCodeLine{00270\ \textcolor{comment}{/*\ EDGE\_INDEX\ returns\ an\ integer\ index\ for\ an\ edge,\ or\ EDGE\_INDEX\_NO\_EDGE}}
+\DoxyCodeLine{00271\ \textcolor{comment}{\ \ \ if\ there\ is\ no\ edge\ between\ the\ 2\ basic\ blocks.\ \ */}}
+\DoxyCodeLine{00272\ \textcolor{preprocessor}{\#define\ EDGE\_INDEX(el,\ pred,\ succ)\ (find\_edge\_index\ ((el),\ (pred),\ (succ)))}}
+\DoxyCodeLine{00273\ }
+\DoxyCodeLine{00274\ \textcolor{comment}{/*\ INDEX\_EDGE\_PRED\_BB\ and\ INDEX\_EDGE\_SUCC\_BB\ return\ a\ pointer\ to\ the\ basic}}
+\DoxyCodeLine{00275\ \textcolor{comment}{\ \ \ block\ which\ is\ either\ the\ pred\ or\ succ\ end\ of\ the\ indexed\ edge.\ \ */}}
+\DoxyCodeLine{00276\ \textcolor{preprocessor}{\#define\ INDEX\_EDGE\_PRED\_BB(el,\ index)\ \ \ ((el)-\/>index\_to\_edge[(index)]-\/>src)}}
+\DoxyCodeLine{00277\ \textcolor{preprocessor}{\#define\ INDEX\_EDGE\_SUCC\_BB(el,\ index)\ \ \ ((el)-\/>index\_to\_edge[(index)]-\/>dest)}}
+\DoxyCodeLine{00278\ }
+\DoxyCodeLine{00279\ \textcolor{comment}{/*\ INDEX\_EDGE\ returns\ a\ pointer\ to\ the\ edge.\ \ */}}
+\DoxyCodeLine{00280\ \textcolor{preprocessor}{\#define\ INDEX\_EDGE(el,\ index)\ \ \ \ \ \ \ \ \ \ \ ((el)-\/>index\_to\_edge[(index)])}}
+\DoxyCodeLine{00281\ }
+\DoxyCodeLine{00282\ \textcolor{comment}{/*\ Number\ of\ edges\ in\ the\ compressed\ edge\ list.\ \ */}}
+\DoxyCodeLine{00283\ \textcolor{preprocessor}{\#define\ NUM\_EDGES(el)\ \ \ \ \ \ \ \ \ \ \ ((el)-\/>num\_edges)}}
+\DoxyCodeLine{00284\ }
+\DoxyCodeLine{00285\ \textcolor{comment}{/*\ BB\ is\ assumed\ to\ contain\ conditional\ jump.\ \ Return\ the\ fallthru\ edge.\ \ */}}
+\DoxyCodeLine{00286\ \textcolor{preprocessor}{\#define\ FALLTHRU\_EDGE(bb)\ \ \ \ \ \ \ (EDGE\_SUCC\ ((bb),\ 0)-\/>flags\ \&\ EDGE\_FALLTHRU\ \(\backslash\)}}
+\DoxyCodeLine{00287\ \textcolor{preprocessor}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ ?\ EDGE\_SUCC\ ((bb),\ 0)\ :\ EDGE\_SUCC\ ((bb),\ 1))}}
+\DoxyCodeLine{00288\ }
+\DoxyCodeLine{00289\ \textcolor{comment}{/*\ BB\ is\ assumed\ to\ contain\ conditional\ jump.\ \ Return\ the\ branch\ edge.\ \ */}}
+\DoxyCodeLine{00290\ \textcolor{preprocessor}{\#define\ BRANCH\_EDGE(bb)\ \ \ \ \ \ \ \ \ (EDGE\_SUCC\ ((bb),\ 0)-\/>flags\ \&\ EDGE\_FALLTHRU\ \(\backslash\)}}
+\DoxyCodeLine{00291\ \textcolor{preprocessor}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ ?\ EDGE\_SUCC\ ((bb),\ 1)\ :\ EDGE\_SUCC\ ((bb),\ 0))}}
+\DoxyCodeLine{00292\ }
+\DoxyCodeLine{00293\ \textcolor{comment}{/*\ Return\ expected\ execution\ frequency\ of\ the\ edge\ E.\ \ */}}
+\DoxyCodeLine{00294\ \textcolor{preprocessor}{\#define\ EDGE\_FREQUENCY(e)\ \ \ \ \ \ \ e-\/>count\ ().to\_frequency\ (cfun)}}
+\DoxyCodeLine{00295\ }
+\DoxyCodeLine{00296\ \textcolor{comment}{/*\ Compute\ a\ scale\ factor\ (or\ probability)\ suitable\ for\ scaling\ of}}
+\DoxyCodeLine{00297\ \textcolor{comment}{\ \ \ gcov\_type\ values\ via\ apply\_probability()\ and\ apply\_scale().\ \ */}}
+\DoxyCodeLine{00298\ \textcolor{preprocessor}{\#define\ GCOV\_COMPUTE\_SCALE(num,den)\ \(\backslash\)}}
+\DoxyCodeLine{00299\ \textcolor{preprocessor}{\ \ ((den)\ ?\ RDIV\ ((num)\ *\ REG\_BR\_PROB\_BASE,\ (den))\ :\ REG\_BR\_PROB\_BASE)}}
+\DoxyCodeLine{00300\ }
+\DoxyCodeLine{00301\ \textcolor{comment}{/*\ Return\ nonzero\ if\ edge\ is\ critical.\ \ */}}
+\DoxyCodeLine{00302\ \textcolor{preprocessor}{\#define\ EDGE\_CRITICAL\_P(e)\ \ \ \ \ \ (EDGE\_COUNT\ ((e)-\/>src-\/>succs)\ >=\ 2\ \(\backslash\)}}
+\DoxyCodeLine{00303\ \textcolor{preprocessor}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&\&\ EDGE\_COUNT\ ((e)-\/>dest-\/>preds)\ >=\ 2)}}
+\DoxyCodeLine{00304\ }
+\DoxyCodeLine{00305\ \textcolor{preprocessor}{\#define\ EDGE\_COUNT(ev)\ \ \ \ \ \ \ \ \ \ vec\_safe\_length\ (ev)}}
+\DoxyCodeLine{00306\ \textcolor{preprocessor}{\#define\ EDGE\_I(ev,i)\ \ \ \ \ \ \ \ \ \ \ \ (*ev)[(i)]}}
+\DoxyCodeLine{00307\ \textcolor{preprocessor}{\#define\ EDGE\_PRED(bb,i)\ \ \ \ \ \ \ \ \ (*(bb)-\/>preds)[(i)]}}
+\DoxyCodeLine{00308\ \textcolor{preprocessor}{\#define\ EDGE\_SUCC(bb,i)\ \ \ \ \ \ \ \ \ (*(bb)-\/>succs)[(i)]}}
+\DoxyCodeLine{00309\ }
+\DoxyCodeLine{00310\ \textcolor{comment}{/*\ Returns\ true\ if\ BB\ has\ precisely\ one\ successor.\ \ */}}
+\DoxyCodeLine{00311\ }
+\DoxyCodeLine{00312\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{bool}}
+\DoxyCodeLine{00313\ \doxymbox{\hyperlink{basic-block_8h_a8e2e90ad1d21669f9a62eeff9c86e7db}{single\_succ\_p}}\ (\doxymbox{\hyperlink{coretypes_8h_ad2eb53ef6dbf4de6a2be968b15699dbc}{const\_basic\_block}}\ bb)}
+\DoxyCodeLine{00314\ \{}
+\DoxyCodeLine{00315\ \ \ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{basic-block_8h_a15054bafa32c67170a1a2b15941e6556}{EDGE\_COUNT}}\ (bb-\/>succs)\ ==\ 1;}
+\DoxyCodeLine{00316\ \}}
+\DoxyCodeLine{00317\ }
+\DoxyCodeLine{00318\ \textcolor{comment}{/*\ Returns\ true\ if\ BB\ has\ precisely\ one\ predecessor.\ \ */}}
+\DoxyCodeLine{00319\ }
+\DoxyCodeLine{00320\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{bool}}
+\DoxyCodeLine{00321\ \doxymbox{\hyperlink{basic-block_8h_a8161d1258aabdb9e5b8c487920c9ce18}{single\_pred\_p}}\ (\doxymbox{\hyperlink{coretypes_8h_ad2eb53ef6dbf4de6a2be968b15699dbc}{const\_basic\_block}}\ bb)}
+\DoxyCodeLine{00322\ \{}
+\DoxyCodeLine{00323\ \ \ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{basic-block_8h_a15054bafa32c67170a1a2b15941e6556}{EDGE\_COUNT}}\ (bb-\/>preds)\ ==\ 1;}
+\DoxyCodeLine{00324\ \}}
+\DoxyCodeLine{00325\ }
+\DoxyCodeLine{00326\ \textcolor{comment}{/*\ Returns\ the\ single\ successor\ edge\ of\ basic\ block\ BB.\ \ Aborts\ if}}
+\DoxyCodeLine{00327\ \textcolor{comment}{\ \ \ BB\ does\ not\ have\ exactly\ one\ successor.\ \ */}}
+\DoxyCodeLine{00328\ }
+\DoxyCodeLine{00329\ \textcolor{keyword}{inline}\ \doxymbox{\hyperlink{coretypes_8h_a44ae11f0c90646aa6208ad4bf486490b}{edge}}}
+\DoxyCodeLine{00330\ \doxymbox{\hyperlink{basic-block_8h_a704a08de19446cee1c30b6684306e7ce}{single\_succ\_edge}}\ (\doxymbox{\hyperlink{coretypes_8h_ad2eb53ef6dbf4de6a2be968b15699dbc}{const\_basic\_block}}\ bb)}
+\DoxyCodeLine{00331\ \{}
+\DoxyCodeLine{00332\ \ \ \doxymbox{\hyperlink{system_8h_aff447899dc74d54931b2bc2d47de9423}{gcc\_checking\_assert}}\ (\doxymbox{\hyperlink{basic-block_8h_a8e2e90ad1d21669f9a62eeff9c86e7db}{single\_succ\_p}}\ (bb));}
+\DoxyCodeLine{00333\ \ \ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{basic-block_8h_a6f616dbf5c7c4625c691e01a1799d1c3}{EDGE\_SUCC}}\ (bb,\ 0);}
+\DoxyCodeLine{00334\ \}}
+\DoxyCodeLine{00335\ }
+\DoxyCodeLine{00336\ \textcolor{comment}{/*\ Returns\ the\ single\ predecessor\ edge\ of\ basic\ block\ BB.\ \ Aborts}}
+\DoxyCodeLine{00337\ \textcolor{comment}{\ \ \ if\ BB\ does\ not\ have\ exactly\ one\ predecessor.\ \ */}}
+\DoxyCodeLine{00338\ }
+\DoxyCodeLine{00339\ \textcolor{keyword}{inline}\ \doxymbox{\hyperlink{coretypes_8h_a44ae11f0c90646aa6208ad4bf486490b}{edge}}}
+\DoxyCodeLine{00340\ \doxymbox{\hyperlink{basic-block_8h_a39577bc126451391bf1cb1d7e11c7844}{single\_pred\_edge}}\ (\doxymbox{\hyperlink{coretypes_8h_ad2eb53ef6dbf4de6a2be968b15699dbc}{const\_basic\_block}}\ bb)}
+\DoxyCodeLine{00341\ \{}
+\DoxyCodeLine{00342\ \ \ \doxymbox{\hyperlink{system_8h_aff447899dc74d54931b2bc2d47de9423}{gcc\_checking\_assert}}\ (\doxymbox{\hyperlink{basic-block_8h_a8161d1258aabdb9e5b8c487920c9ce18}{single\_pred\_p}}\ (bb));}
+\DoxyCodeLine{00343\ \ \ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{basic-block_8h_ad8f281c47d246473b8b008af65b27dee}{EDGE\_PRED}}\ (bb,\ 0);}
+\DoxyCodeLine{00344\ \}}
+\DoxyCodeLine{00345\ }
+\DoxyCodeLine{00346\ \textcolor{comment}{/*\ Returns\ the\ single\ successor\ block\ of\ basic\ block\ BB.\ \ Aborts}}
+\DoxyCodeLine{00347\ \textcolor{comment}{\ \ \ if\ BB\ does\ not\ have\ exactly\ one\ successor.\ \ */}}
+\DoxyCodeLine{00348\ }
+\DoxyCodeLine{00349\ \textcolor{keyword}{inline}\ \doxymbox{\hyperlink{coretypes_8h_a0469df20b471a4cd7c81fbdce5027487}{basic\_block}}}
+\DoxyCodeLine{00350\ \doxymbox{\hyperlink{basic-block_8h_a67704690a38e2f71541e4bc29b5ff4d9}{single\_succ}}\ (\doxymbox{\hyperlink{coretypes_8h_ad2eb53ef6dbf4de6a2be968b15699dbc}{const\_basic\_block}}\ bb)}
+\DoxyCodeLine{00351\ \{}
+\DoxyCodeLine{00352\ \ \ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{basic-block_8h_a704a08de19446cee1c30b6684306e7ce}{single\_succ\_edge}}\ (bb)-\/>dest;}
+\DoxyCodeLine{00353\ \}}
+\DoxyCodeLine{00354\ }
+\DoxyCodeLine{00355\ \textcolor{comment}{/*\ Returns\ the\ single\ predecessor\ block\ of\ basic\ block\ BB.\ \ Aborts}}
+\DoxyCodeLine{00356\ \textcolor{comment}{\ \ \ if\ BB\ does\ not\ have\ exactly\ one\ predecessor.*/}}
+\DoxyCodeLine{00357\ }
+\DoxyCodeLine{00358\ \textcolor{keyword}{inline}\ \doxymbox{\hyperlink{coretypes_8h_a0469df20b471a4cd7c81fbdce5027487}{basic\_block}}}
+\DoxyCodeLine{00359\ \doxymbox{\hyperlink{basic-block_8h_adad4cf5944918947ba8a05988a3fd3e6}{single\_pred}}\ (\doxymbox{\hyperlink{coretypes_8h_ad2eb53ef6dbf4de6a2be968b15699dbc}{const\_basic\_block}}\ bb)}
+\DoxyCodeLine{00360\ \{}
+\DoxyCodeLine{00361\ \ \ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{basic-block_8h_a39577bc126451391bf1cb1d7e11c7844}{single\_pred\_edge}}\ (bb)-\/>src;}
+\DoxyCodeLine{00362\ \}}
+\DoxyCodeLine{00363\ }
+\DoxyCodeLine{00364\ \textcolor{comment}{/*\ Iterator\ object\ for\ edges.\ \ */}}
+\DoxyCodeLine{00365\ }
+\DoxyCodeLine{00366\ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{structedge__iterator}{edge\_iterator}}\ \{}
+\DoxyCodeLine{00367\ \ \ \textcolor{keywordtype}{unsigned}\ \doxymbox{\hyperlink{structedge__iterator_a6d7928daf05f0261d2fcbc6dd18f5dc5}{index}};}
+\DoxyCodeLine{00368\ \ \ \doxymbox{\hyperlink{structvec}{vec<edge,\ va\_gc>}}\ **\doxymbox{\hyperlink{structedge__iterator_ac7efdc3f05aa81934c1c42c172f78951}{container}};}
+\DoxyCodeLine{00369\ \};}
+\DoxyCodeLine{00370\ }
+\DoxyCodeLine{00371\ \textcolor{keyword}{inline}\ \doxymbox{\hyperlink{structvec}{vec<edge,\ va\_gc>}}\ *}
+\DoxyCodeLine{00372\ \doxymbox{\hyperlink{basic-block_8h_a7bc31c82759dbfd0d636106ec89ac2f8}{ei\_container}}\ (\doxymbox{\hyperlink{structedge__iterator}{edge\_iterator}}\ \doxymbox{\hyperlink{poly-int_8h_a7e98b8a17c0aad30ba64d47b74e2a6c1}{i}})}
+\DoxyCodeLine{00373\ \{}
+\DoxyCodeLine{00374\ \ \ \doxymbox{\hyperlink{system_8h_aff447899dc74d54931b2bc2d47de9423}{gcc\_checking\_assert}}\ (\doxymbox{\hyperlink{poly-int_8h_a7e98b8a17c0aad30ba64d47b74e2a6c1}{i}}.container);}
+\DoxyCodeLine{00375\ \ \ \textcolor{keywordflow}{return}\ *\doxymbox{\hyperlink{poly-int_8h_a7e98b8a17c0aad30ba64d47b74e2a6c1}{i}}.container;}
+\DoxyCodeLine{00376\ \}}
+\DoxyCodeLine{00377\ }
+\DoxyCodeLine{00378\ \textcolor{preprocessor}{\#define\ ei\_start(iter)\ ei\_start\_1\ (\&(iter))}}
+\DoxyCodeLine{00379\ \textcolor{preprocessor}{\#define\ ei\_last(iter)\ ei\_last\_1\ (\&(iter))}}
+\DoxyCodeLine{00380\ }
+\DoxyCodeLine{00381\ \textcolor{comment}{/*\ Return\ an\ iterator\ pointing\ to\ the\ start\ of\ an\ edge\ vector.\ \ */}}
+\DoxyCodeLine{00382\ \textcolor{keyword}{inline}\ \doxymbox{\hyperlink{structedge__iterator}{edge\_iterator}}}
+\DoxyCodeLine{00383\ \doxymbox{\hyperlink{basic-block_8h_a47ef8d4e72468ec0e0790b9dbe747a39}{ei\_start\_1}}\ (\doxymbox{\hyperlink{structvec}{vec<edge,\ va\_gc>}}\ **ev)}
+\DoxyCodeLine{00384\ \{}
+\DoxyCodeLine{00385\ \ \ \doxymbox{\hyperlink{structedge__iterator}{edge\_iterator}}\ \doxymbox{\hyperlink{poly-int_8h_a7e98b8a17c0aad30ba64d47b74e2a6c1}{i}};}
+\DoxyCodeLine{00386\ }
+\DoxyCodeLine{00387\ \ \ \doxymbox{\hyperlink{poly-int_8h_a7e98b8a17c0aad30ba64d47b74e2a6c1}{i}}.index\ =\ 0;}
+\DoxyCodeLine{00388\ \ \ \doxymbox{\hyperlink{poly-int_8h_a7e98b8a17c0aad30ba64d47b74e2a6c1}{i}}.container\ =\ ev;}
+\DoxyCodeLine{00389\ }
+\DoxyCodeLine{00390\ \ \ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{poly-int_8h_a7e98b8a17c0aad30ba64d47b74e2a6c1}{i}};}
+\DoxyCodeLine{00391\ \}}
+\DoxyCodeLine{00392\ }
+\DoxyCodeLine{00393\ \textcolor{comment}{/*\ Return\ an\ iterator\ pointing\ to\ the\ last\ element\ of\ an\ edge}}
+\DoxyCodeLine{00394\ \textcolor{comment}{\ \ \ vector.\ \ */}}
+\DoxyCodeLine{00395\ \textcolor{keyword}{inline}\ edge\_iterator}
+\DoxyCodeLine{00396\ \doxymbox{\hyperlink{basic-block_8h_a9ae2c2dc64ffcc0c6e34fea871b9d4fc}{ei\_last\_1}}\ (\doxymbox{\hyperlink{structvec}{vec<edge,\ va\_gc>}}\ **ev)}
+\DoxyCodeLine{00397\ \{}
+\DoxyCodeLine{00398\ \ \ \doxymbox{\hyperlink{structedge__iterator}{edge\_iterator}}\ \doxymbox{\hyperlink{poly-int_8h_a7e98b8a17c0aad30ba64d47b74e2a6c1}{i}};}
+\DoxyCodeLine{00399\ }
+\DoxyCodeLine{00400\ \ \ \doxymbox{\hyperlink{poly-int_8h_a7e98b8a17c0aad30ba64d47b74e2a6c1}{i}}.index\ =\ \doxymbox{\hyperlink{basic-block_8h_a15054bafa32c67170a1a2b15941e6556}{EDGE\_COUNT}}\ (*ev)\ -\/\ 1;}
+\DoxyCodeLine{00401\ \ \ \doxymbox{\hyperlink{poly-int_8h_a7e98b8a17c0aad30ba64d47b74e2a6c1}{i}}.container\ =\ ev;}
+\DoxyCodeLine{00402\ }
+\DoxyCodeLine{00403\ \ \ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{poly-int_8h_a7e98b8a17c0aad30ba64d47b74e2a6c1}{i}};}
+\DoxyCodeLine{00404\ \}}
+\DoxyCodeLine{00405\ }
+\DoxyCodeLine{00406\ \textcolor{comment}{/*\ Is\ the\ iterator\ \`{}i'\ at\ the\ end\ of\ the\ sequence?\ \ */}}
+\DoxyCodeLine{00407\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{bool}}
+\DoxyCodeLine{00408\ \doxymbox{\hyperlink{basic-block_8h_a830c5ae52bf487d3051d726b8a25fde3}{ei\_end\_p}}\ (\doxymbox{\hyperlink{structedge__iterator}{edge\_iterator}}\ \doxymbox{\hyperlink{poly-int_8h_a7e98b8a17c0aad30ba64d47b74e2a6c1}{i}})}
+\DoxyCodeLine{00409\ \{}
+\DoxyCodeLine{00410\ \ \ \textcolor{keywordflow}{return}\ (\doxymbox{\hyperlink{poly-int_8h_a7e98b8a17c0aad30ba64d47b74e2a6c1}{i}}.index\ ==\ \doxymbox{\hyperlink{basic-block_8h_a15054bafa32c67170a1a2b15941e6556}{EDGE\_COUNT}}\ (\doxymbox{\hyperlink{basic-block_8h_a7bc31c82759dbfd0d636106ec89ac2f8}{ei\_container}}\ (\doxymbox{\hyperlink{poly-int_8h_a7e98b8a17c0aad30ba64d47b74e2a6c1}{i}})));}
+\DoxyCodeLine{00411\ \}}
+\DoxyCodeLine{00412\ }
+\DoxyCodeLine{00413\ \textcolor{comment}{/*\ Is\ the\ iterator\ \`{}i'\ at\ one\ position\ before\ the\ end\ of\ the}}
+\DoxyCodeLine{00414\ \textcolor{comment}{\ \ \ sequence?\ \ */}}
+\DoxyCodeLine{00415\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{bool}}
+\DoxyCodeLine{00416\ \doxymbox{\hyperlink{basic-block_8h_a9276896a96340a319015550a6a29cffa}{ei\_one\_before\_end\_p}}\ (\doxymbox{\hyperlink{structedge__iterator}{edge\_iterator}}\ \doxymbox{\hyperlink{poly-int_8h_a7e98b8a17c0aad30ba64d47b74e2a6c1}{i}})}
+\DoxyCodeLine{00417\ \{}
+\DoxyCodeLine{00418\ \ \ \textcolor{keywordflow}{return}\ (\doxymbox{\hyperlink{poly-int_8h_a7e98b8a17c0aad30ba64d47b74e2a6c1}{i}}.index\ +\ 1\ ==\ \doxymbox{\hyperlink{basic-block_8h_a15054bafa32c67170a1a2b15941e6556}{EDGE\_COUNT}}\ (\doxymbox{\hyperlink{basic-block_8h_a7bc31c82759dbfd0d636106ec89ac2f8}{ei\_container}}\ (\doxymbox{\hyperlink{poly-int_8h_a7e98b8a17c0aad30ba64d47b74e2a6c1}{i}})));}
+\DoxyCodeLine{00419\ \}}
+\DoxyCodeLine{00420\ }
+\DoxyCodeLine{00421\ \textcolor{comment}{/*\ Advance\ the\ iterator\ to\ the\ next\ element.\ \ */}}
+\DoxyCodeLine{00422\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{void}}
+\DoxyCodeLine{00423\ \doxymbox{\hyperlink{basic-block_8h_ad1c75aa21937ccba8bbc245018237430}{ei\_next}}\ (\doxymbox{\hyperlink{structedge__iterator}{edge\_iterator}}\ *\doxymbox{\hyperlink{poly-int_8h_a7e98b8a17c0aad30ba64d47b74e2a6c1}{i}})}
+\DoxyCodeLine{00424\ \{}
+\DoxyCodeLine{00425\ \ \ \doxymbox{\hyperlink{system_8h_aff447899dc74d54931b2bc2d47de9423}{gcc\_checking\_assert}}\ (\doxymbox{\hyperlink{poly-int_8h_a7e98b8a17c0aad30ba64d47b74e2a6c1}{i}}-\/>index\ <\ \doxymbox{\hyperlink{basic-block_8h_a15054bafa32c67170a1a2b15941e6556}{EDGE\_COUNT}}\ (\doxymbox{\hyperlink{basic-block_8h_a7bc31c82759dbfd0d636106ec89ac2f8}{ei\_container}}\ (*\doxymbox{\hyperlink{poly-int_8h_a7e98b8a17c0aad30ba64d47b74e2a6c1}{i}})));}
+\DoxyCodeLine{00426\ \ \ \doxymbox{\hyperlink{poly-int_8h_a7e98b8a17c0aad30ba64d47b74e2a6c1}{i}}-\/>index++;}
+\DoxyCodeLine{00427\ \}}
+\DoxyCodeLine{00428\ }
+\DoxyCodeLine{00429\ \textcolor{comment}{/*\ Move\ the\ iterator\ to\ the\ previous\ element.\ \ */}}
+\DoxyCodeLine{00430\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{void}}
+\DoxyCodeLine{00431\ \doxymbox{\hyperlink{basic-block_8h_ae92464225f8a7238b797743f0f0797e0}{ei\_prev}}\ (\doxymbox{\hyperlink{structedge__iterator}{edge\_iterator}}\ *\doxymbox{\hyperlink{poly-int_8h_a7e98b8a17c0aad30ba64d47b74e2a6c1}{i}})}
+\DoxyCodeLine{00432\ \{}
+\DoxyCodeLine{00433\ \ \ \doxymbox{\hyperlink{system_8h_aff447899dc74d54931b2bc2d47de9423}{gcc\_checking\_assert}}\ (\doxymbox{\hyperlink{poly-int_8h_a7e98b8a17c0aad30ba64d47b74e2a6c1}{i}}-\/>index\ >\ 0);}
+\DoxyCodeLine{00434\ \ \ \doxymbox{\hyperlink{poly-int_8h_a7e98b8a17c0aad30ba64d47b74e2a6c1}{i}}-\/>index-\/-\/;}
+\DoxyCodeLine{00435\ \}}
+\DoxyCodeLine{00436\ }
+\DoxyCodeLine{00437\ \textcolor{comment}{/*\ Return\ the\ edge\ pointed\ to\ by\ the\ iterator\ \`{}i'.\ \ */}}
+\DoxyCodeLine{00438\ \textcolor{keyword}{inline}\ \doxymbox{\hyperlink{coretypes_8h_a44ae11f0c90646aa6208ad4bf486490b}{edge}}}
+\DoxyCodeLine{00439\ \doxymbox{\hyperlink{basic-block_8h_ae36a083b7fe9b108924a2fb676c17774}{ei\_edge}}\ (\doxymbox{\hyperlink{structedge__iterator}{edge\_iterator}}\ \doxymbox{\hyperlink{poly-int_8h_a7e98b8a17c0aad30ba64d47b74e2a6c1}{i}})}
+\DoxyCodeLine{00440\ \{}
+\DoxyCodeLine{00441\ \ \ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{basic-block_8h_a0685ecf86f5b69e56cce22b42e2657b4}{EDGE\_I}}\ (\doxymbox{\hyperlink{basic-block_8h_a7bc31c82759dbfd0d636106ec89ac2f8}{ei\_container}}\ (\doxymbox{\hyperlink{poly-int_8h_a7e98b8a17c0aad30ba64d47b74e2a6c1}{i}}),\ \doxymbox{\hyperlink{poly-int_8h_a7e98b8a17c0aad30ba64d47b74e2a6c1}{i}}.index);}
+\DoxyCodeLine{00442\ \}}
+\DoxyCodeLine{00443\ }
+\DoxyCodeLine{00444\ \textcolor{comment}{/*\ Return\ an\ edge\ pointed\ to\ by\ the\ iterator.\ \ Do\ it\ safely\ so\ that}}
+\DoxyCodeLine{00445\ \textcolor{comment}{\ \ \ NULL\ is\ returned\ when\ the\ iterator\ is\ pointing\ at\ the\ end\ of\ the}}
+\DoxyCodeLine{00446\ \textcolor{comment}{\ \ \ sequence.\ \ */}}
+\DoxyCodeLine{00447\ \textcolor{keyword}{inline}\ \doxymbox{\hyperlink{coretypes_8h_a44ae11f0c90646aa6208ad4bf486490b}{edge}}}
+\DoxyCodeLine{00448\ \doxymbox{\hyperlink{basic-block_8h_aa614a6ca4c56f13ccc94178975f0145c}{ei\_safe\_edge}}\ (\doxymbox{\hyperlink{structedge__iterator}{edge\_iterator}}\ \doxymbox{\hyperlink{poly-int_8h_a7e98b8a17c0aad30ba64d47b74e2a6c1}{i}})}
+\DoxyCodeLine{00449\ \{}
+\DoxyCodeLine{00450\ \ \ \textcolor{keywordflow}{return}\ !\doxymbox{\hyperlink{basic-block_8h_a830c5ae52bf487d3051d726b8a25fde3}{ei\_end\_p}}\ (\doxymbox{\hyperlink{poly-int_8h_a7e98b8a17c0aad30ba64d47b74e2a6c1}{i}})\ ?\ \doxymbox{\hyperlink{basic-block_8h_ae36a083b7fe9b108924a2fb676c17774}{ei\_edge}}\ (\doxymbox{\hyperlink{poly-int_8h_a7e98b8a17c0aad30ba64d47b74e2a6c1}{i}})\ :\ \doxymbox{\hyperlink{stddef_8h_a070d2ce7b6bb7e5c05602aa8c308d0c4}{NULL}};}
+\DoxyCodeLine{00451\ \}}
+\DoxyCodeLine{00452\ }
+\DoxyCodeLine{00453\ \textcolor{comment}{/*\ Return\ 1\ if\ we\ should\ continue\ to\ iterate.\ \ Return\ 0\ otherwise.}}
+\DoxyCodeLine{00454\ \textcolor{comment}{\ \ \ *Edge\ P\ is\ set\ to\ the\ next\ edge\ if\ we\ are\ to\ continue\ to\ iterate}}
+\DoxyCodeLine{00455\ \textcolor{comment}{\ \ \ and\ NULL\ otherwise.\ \ */}}
+\DoxyCodeLine{00456\ }
+\DoxyCodeLine{00457\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{bool}}
+\DoxyCodeLine{00458\ \doxymbox{\hyperlink{basic-block_8h_a8864cda630d9e15045f3a88102ce9e77}{ei\_cond}}\ (\doxymbox{\hyperlink{structedge__iterator}{edge\_iterator}}\ ei,\ \doxymbox{\hyperlink{coretypes_8h_a44ae11f0c90646aa6208ad4bf486490b}{edge}}\ *p)}
+\DoxyCodeLine{00459\ \{}
+\DoxyCodeLine{00460\ \ \ \textcolor{keywordflow}{if}\ (!\doxymbox{\hyperlink{basic-block_8h_a830c5ae52bf487d3051d726b8a25fde3}{ei\_end\_p}}\ (ei))}
+\DoxyCodeLine{00461\ \ \ \ \ \{}
+\DoxyCodeLine{00462\ \ \ \ \ \ \ *p\ =\ \doxymbox{\hyperlink{basic-block_8h_ae36a083b7fe9b108924a2fb676c17774}{ei\_edge}}\ (ei);}
+\DoxyCodeLine{00463\ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ 1;}
+\DoxyCodeLine{00464\ \ \ \ \ \}}
+\DoxyCodeLine{00465\ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00466\ \ \ \ \ \{}
+\DoxyCodeLine{00467\ \ \ \ \ \ \ *p\ =\ \doxymbox{\hyperlink{stddef_8h_a070d2ce7b6bb7e5c05602aa8c308d0c4}{NULL}};}
+\DoxyCodeLine{00468\ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ 0;}
+\DoxyCodeLine{00469\ \ \ \ \ \}}
+\DoxyCodeLine{00470\ \}}
+\DoxyCodeLine{00471\ }
+\DoxyCodeLine{00472\ \textcolor{comment}{/*\ This\ macro\ serves\ as\ a\ convenient\ way\ to\ iterate\ each\ edge\ in\ a}}
+\DoxyCodeLine{00473\ \textcolor{comment}{\ \ \ vector\ of\ predecessor\ or\ successor\ edges.\ \ It\ must\ not\ be\ used\ when}}
+\DoxyCodeLine{00474\ \textcolor{comment}{\ \ \ an\ element\ might\ be\ removed\ during\ the\ traversal,\ otherwise}}
+\DoxyCodeLine{00475\ \textcolor{comment}{\ \ \ elements\ will\ be\ missed.\ \ Instead,\ use\ a\ for-\/loop\ like\ that\ shown}}
+\DoxyCodeLine{00476\ \textcolor{comment}{\ \ \ in\ the\ following\ pseudo-\/code:}}
+\DoxyCodeLine{00477\ \textcolor{comment}{}}
+\DoxyCodeLine{00478\ \textcolor{comment}{\ \ \ FOR\ (ei\ =\ ei\_start\ (bb-\/>succs);\ (e\ =\ ei\_safe\_edge\ (ei));\ )}}
+\DoxyCodeLine{00479\ \textcolor{comment}{\ \ \ \ \ \{}}
+\DoxyCodeLine{00480\ \textcolor{comment}{\ \ \ \ IF\ (e\ !=\ taken\_edge)}}
+\DoxyCodeLine{00481\ \textcolor{comment}{\ \ \ \ \ \ remove\_edge\ (e);}}
+\DoxyCodeLine{00482\ \textcolor{comment}{\ \ \ \ ELSE}}
+\DoxyCodeLine{00483\ \textcolor{comment}{\ \ \ \ \ \ ei\_next\ (\&ei);}}
+\DoxyCodeLine{00484\ \textcolor{comment}{\ \ \ \ \ \}}}
+\DoxyCodeLine{00485\ \textcolor{comment}{*/}}
+\DoxyCodeLine{00486\ }
+\DoxyCodeLine{00487\ \textcolor{preprocessor}{\#define\ FOR\_EACH\_EDGE(EDGE,ITER,EDGE\_VEC)\ \ \ \(\backslash\)}}
+\DoxyCodeLine{00488\ \textcolor{preprocessor}{\ \ for\ ((ITER)\ =\ ei\_start\ ((EDGE\_VEC));\ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00489\ \textcolor{preprocessor}{\ \ \ \ \ \ \ ei\_cond\ ((ITER),\ \&(EDGE));\ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00490\ \textcolor{preprocessor}{\ \ \ \ \ \ \ ei\_next\ (\&(ITER)))}}
+\DoxyCodeLine{00491\ }
+\DoxyCodeLine{00492\ \textcolor{preprocessor}{\#define\ CLEANUP\_EXPENSIVE\ \ \ 1\ \ \ }\textcolor{comment}{/*\ Do\ relatively\ expensive\ optimizations}}
+\DoxyCodeLine{00493\ \textcolor{comment}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ except\ for\ edge\ forwarding\ */}\textcolor{preprocessor}{}}
+\DoxyCodeLine{00494\ \textcolor{preprocessor}{\#define\ CLEANUP\_CROSSJUMP\ \ \ 2\ \ \ }\textcolor{comment}{/*\ Do\ crossjumping.\ \ */}\textcolor{preprocessor}{}}
+\DoxyCodeLine{00495\ \textcolor{preprocessor}{\#define\ CLEANUP\_POST\_REGSTACK\ \ \ 4\ \ \ }\textcolor{comment}{/*\ We\ run\ after\ reg-\/stack\ and\ need}}
+\DoxyCodeLine{00496\ \textcolor{comment}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ to\ care\ REG\_DEAD\ notes.\ \ */}\textcolor{preprocessor}{}}
+\DoxyCodeLine{00497\ \textcolor{preprocessor}{\#define\ CLEANUP\_THREADING\ \ \ 8\ \ \ }\textcolor{comment}{/*\ Do\ jump\ threading.\ \ */}\textcolor{preprocessor}{}}
+\DoxyCodeLine{00498\ \textcolor{preprocessor}{\#define\ CLEANUP\_NO\_INSN\_DEL\ 16\ \ }\textcolor{comment}{/*\ Do\ not\ try\ to\ delete\ trivially\ dead}}
+\DoxyCodeLine{00499\ \textcolor{comment}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ insns.\ \ */}\textcolor{preprocessor}{}}
+\DoxyCodeLine{00500\ \textcolor{preprocessor}{\#define\ CLEANUP\_CFGLAYOUT\ \ \ 32\ \ }\textcolor{comment}{/*\ Do\ cleanup\ in\ cfglayout\ mode.\ \ */}\textcolor{preprocessor}{}}
+\DoxyCodeLine{00501\ \textcolor{preprocessor}{\#define\ CLEANUP\_CFG\_CHANGED\ 64\ \ \ \ \ \ }\textcolor{comment}{/*\ The\ caller\ changed\ the\ CFG.\ \ */}\textcolor{preprocessor}{}}
+\DoxyCodeLine{00502\ \textcolor{preprocessor}{\#define\ CLEANUP\_NO\_PARTITIONING\ 128\ \ \ \ \ }\textcolor{comment}{/*\ Do\ not\ try\ to\ fix\ partitions.\ \ */}\textcolor{preprocessor}{}}
+\DoxyCodeLine{00503\ \textcolor{preprocessor}{\#define\ CLEANUP\_FORCE\_FAST\_DCE\ \ 0x100\ \ \ }\textcolor{comment}{/*\ Force\ run\_fast\_dce\ to\ be\ called}}
+\DoxyCodeLine{00504\ \textcolor{comment}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ at\ least\ once.\ \ */}\textcolor{preprocessor}{}}
+\DoxyCodeLine{00505\ }
+\DoxyCodeLine{00506\ \textcolor{comment}{/*\ Return\ true\ if\ BB\ is\ in\ a\ transaction.\ \ */}}
+\DoxyCodeLine{00507\ }
+\DoxyCodeLine{00508\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{bool}}
+\DoxyCodeLine{00509\ \doxymbox{\hyperlink{basic-block_8h_a92006fbe47593d31d71dc73ac759d84b}{bb\_in\_transaction}}\ (\doxymbox{\hyperlink{coretypes_8h_a0469df20b471a4cd7c81fbdce5027487}{basic\_block}}\ bb)}
+\DoxyCodeLine{00510\ \{}
+\DoxyCodeLine{00511\ \ \ \textcolor{keywordflow}{return}\ bb-\/>flags\ \&\ BB\_IN\_TRANSACTION;}
+\DoxyCodeLine{00512\ \}}
+\DoxyCodeLine{00513\ }
+\DoxyCodeLine{00514\ \textcolor{comment}{/*\ Return\ true\ when\ one\ of\ the\ predecessor\ edges\ of\ BB\ is\ marked\ with\ EDGE\_EH.\ \ */}}
+\DoxyCodeLine{00515\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{bool}}
+\DoxyCodeLine{00516\ \doxymbox{\hyperlink{basic-block_8h_a4a4048d93bd04775db2606165a67408d}{bb\_has\_eh\_pred}}\ (\doxymbox{\hyperlink{coretypes_8h_a0469df20b471a4cd7c81fbdce5027487}{basic\_block}}\ bb)}
+\DoxyCodeLine{00517\ \{}
+\DoxyCodeLine{00518\ \ \ \doxymbox{\hyperlink{coretypes_8h_a44ae11f0c90646aa6208ad4bf486490b}{edge}}\ e;}
+\DoxyCodeLine{00519\ \ \ edge\_iterator\ ei;}
+\DoxyCodeLine{00520\ }
+\DoxyCodeLine{00521\ \ \ \doxymbox{\hyperlink{basic-block_8h_ad9116aef500c6bad6c2ed3d9d0295b61}{FOR\_EACH\_EDGE}}\ (e,\ ei,\ bb-\/>preds)}
+\DoxyCodeLine{00522\ \ \ \ \ \{}
+\DoxyCodeLine{00523\ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (e-\/>flags\ \&\ EDGE\_EH)}
+\DoxyCodeLine{00524\ \ \ \ \ \textcolor{keywordflow}{return}\ \textcolor{keyword}{true};}
+\DoxyCodeLine{00525\ \ \ \ \ \}}
+\DoxyCodeLine{00526\ \ \ \textcolor{keywordflow}{return}\ \textcolor{keyword}{false};}
+\DoxyCodeLine{00527\ \}}
+\DoxyCodeLine{00528\ }
+\DoxyCodeLine{00529\ \textcolor{comment}{/*\ Return\ true\ when\ one\ of\ the\ predecessor\ edges\ of\ BB\ is\ marked\ with\ EDGE\_ABNORMAL.\ \ */}}
+\DoxyCodeLine{00530\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{bool}}
+\DoxyCodeLine{00531\ \doxymbox{\hyperlink{basic-block_8h_a26a79fd5190d02396a006c95dbc1b23f}{bb\_has\_abnormal\_pred}}\ (\doxymbox{\hyperlink{coretypes_8h_a0469df20b471a4cd7c81fbdce5027487}{basic\_block}}\ bb)}
+\DoxyCodeLine{00532\ \{}
+\DoxyCodeLine{00533\ \ \ \doxymbox{\hyperlink{coretypes_8h_a44ae11f0c90646aa6208ad4bf486490b}{edge}}\ e;}
+\DoxyCodeLine{00534\ \ \ edge\_iterator\ ei;}
+\DoxyCodeLine{00535\ }
+\DoxyCodeLine{00536\ \ \ \doxymbox{\hyperlink{basic-block_8h_ad9116aef500c6bad6c2ed3d9d0295b61}{FOR\_EACH\_EDGE}}\ (e,\ ei,\ bb-\/>preds)}
+\DoxyCodeLine{00537\ \ \ \ \ \{}
+\DoxyCodeLine{00538\ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (e-\/>flags\ \&\ EDGE\_ABNORMAL)}
+\DoxyCodeLine{00539\ \ \ \ \ \textcolor{keywordflow}{return}\ \textcolor{keyword}{true};}
+\DoxyCodeLine{00540\ \ \ \ \ \}}
+\DoxyCodeLine{00541\ \ \ \textcolor{keywordflow}{return}\ \textcolor{keyword}{false};}
+\DoxyCodeLine{00542\ \}}
+\DoxyCodeLine{00543\ }
+\DoxyCodeLine{00544\ \textcolor{comment}{/*\ Return\ the\ fallthru\ edge\ in\ EDGES\ if\ it\ exists,\ NULL\ otherwise.\ \ */}}
+\DoxyCodeLine{00545\ \textcolor{keyword}{inline}\ \doxymbox{\hyperlink{coretypes_8h_a44ae11f0c90646aa6208ad4bf486490b}{edge}}}
+\DoxyCodeLine{00546\ \doxymbox{\hyperlink{basic-block_8h_ac51da2d23b2e1aaf5d20e395f1baf27b}{find\_fallthru\_edge}}\ (vec<edge,\ va\_gc>\ *edges)}
+\DoxyCodeLine{00547\ \{}
+\DoxyCodeLine{00548\ \ \ \doxymbox{\hyperlink{coretypes_8h_a44ae11f0c90646aa6208ad4bf486490b}{edge}}\ e;}
+\DoxyCodeLine{00549\ \ \ edge\_iterator\ ei;}
+\DoxyCodeLine{00550\ }
+\DoxyCodeLine{00551\ \ \ \doxymbox{\hyperlink{basic-block_8h_ad9116aef500c6bad6c2ed3d9d0295b61}{FOR\_EACH\_EDGE}}\ (e,\ ei,\ edges)}
+\DoxyCodeLine{00552\ \ \ \ \ \textcolor{keywordflow}{if}\ (e-\/>flags\ \&\ EDGE\_FALLTHRU)}
+\DoxyCodeLine{00553\ \ \ \ \ \ \ \textcolor{keywordflow}{break};}
+\DoxyCodeLine{00554\ }
+\DoxyCodeLine{00555\ \ \ \textcolor{keywordflow}{return}\ e;}
+\DoxyCodeLine{00556\ \}}
+\DoxyCodeLine{00557\ }
+\DoxyCodeLine{00558\ \textcolor{comment}{/*\ Check\ tha\ probability\ is\ sane.\ \ */}}
+\DoxyCodeLine{00559\ }
+\DoxyCodeLine{00560\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{void}}
+\DoxyCodeLine{00561\ \doxymbox{\hyperlink{basic-block_8h_a2b199a3b78ab5e57a16cec1caea074fe}{check\_probability}}\ (\textcolor{keywordtype}{int}\ prob)}
+\DoxyCodeLine{00562\ \{}
+\DoxyCodeLine{00563\ \ \ \doxymbox{\hyperlink{system_8h_aff447899dc74d54931b2bc2d47de9423}{gcc\_checking\_assert}}\ (prob\ >=\ 0\ \&\&\ prob\ <=\ \doxymbox{\hyperlink{profile-count_8h_a3c5bb681f2416299ceb4465de0a215c3}{REG\_BR\_PROB\_BASE}});}
+\DoxyCodeLine{00564\ \}}
+\DoxyCodeLine{00565\ }
+\DoxyCodeLine{00566\ \textcolor{comment}{/*\ Given\ PROB1\ and\ PROB2,\ return\ PROB1*PROB2/REG\_BR\_PROB\_BASE.\ }}
+\DoxyCodeLine{00567\ \textcolor{comment}{\ \ \ Used\ to\ combine\ BB\ probabilities.\ \ */}}
+\DoxyCodeLine{00568\ }
+\DoxyCodeLine{00569\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{int}}
+\DoxyCodeLine{00570\ \doxymbox{\hyperlink{basic-block_8h_a999d8152b690dd553a0d49b8a35dd1fe}{combine\_probabilities}}\ (\textcolor{keywordtype}{int}\ prob1,\ \textcolor{keywordtype}{int}\ prob2)}
+\DoxyCodeLine{00571\ \{}
+\DoxyCodeLine{00572\ \ \ \doxymbox{\hyperlink{basic-block_8h_a2b199a3b78ab5e57a16cec1caea074fe}{check\_probability}}\ (prob1);}
+\DoxyCodeLine{00573\ \ \ \doxymbox{\hyperlink{basic-block_8h_a2b199a3b78ab5e57a16cec1caea074fe}{check\_probability}}\ (prob2);}
+\DoxyCodeLine{00574\ \ \ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{profile-count_8h_a202bd9b10241c405f250450bd30569f2}{RDIV}}\ (prob1\ *\ prob2,\ \doxymbox{\hyperlink{profile-count_8h_a3c5bb681f2416299ceb4465de0a215c3}{REG\_BR\_PROB\_BASE}});}
+\DoxyCodeLine{00575\ \}}
+\DoxyCodeLine{00576\ }
+\DoxyCodeLine{00577\ \textcolor{comment}{/*\ Apply\ scale\ factor\ SCALE\ on\ frequency\ or\ count\ FREQ.\ Use\ this}}
+\DoxyCodeLine{00578\ \textcolor{comment}{\ \ \ interface\ when\ potentially\ scaling\ up,\ so\ that\ SCALE\ is\ not}}
+\DoxyCodeLine{00579\ \textcolor{comment}{\ \ \ constrained\ to\ be\ <\ REG\_BR\_PROB\_BASE.\ \ */}}
+\DoxyCodeLine{00580\ }
+\DoxyCodeLine{00581\ \textcolor{keyword}{inline}\ \doxymbox{\hyperlink{coretypes_8h_ae8c03cc266a69e9635893ee0772d12e8}{gcov\_type}}}
+\DoxyCodeLine{00582\ \doxymbox{\hyperlink{basic-block_8h_a5830eccca0fe8ba8a7e01432ea402d7c}{apply\_scale}}\ (\doxymbox{\hyperlink{coretypes_8h_ae8c03cc266a69e9635893ee0772d12e8}{gcov\_type}}\ freq,\ \doxymbox{\hyperlink{coretypes_8h_ae8c03cc266a69e9635893ee0772d12e8}{gcov\_type}}\ scale)}
+\DoxyCodeLine{00583\ \{}
+\DoxyCodeLine{00584\ \ \ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{profile-count_8h_a202bd9b10241c405f250450bd30569f2}{RDIV}}\ (freq\ *\ scale,\ \doxymbox{\hyperlink{profile-count_8h_a3c5bb681f2416299ceb4465de0a215c3}{REG\_BR\_PROB\_BASE}});}
+\DoxyCodeLine{00585\ \}}
+\DoxyCodeLine{00586\ }
+\DoxyCodeLine{00587\ \textcolor{comment}{/*\ Apply\ probability\ PROB\ on\ frequency\ or\ count\ FREQ.\ \ */}}
+\DoxyCodeLine{00588\ }
+\DoxyCodeLine{00589\ \textcolor{keyword}{inline}\ \doxymbox{\hyperlink{coretypes_8h_ae8c03cc266a69e9635893ee0772d12e8}{gcov\_type}}}
+\DoxyCodeLine{00590\ \doxymbox{\hyperlink{basic-block_8h_a132b1636f6c445c209dced5efbada945}{apply\_probability}}\ (\doxymbox{\hyperlink{coretypes_8h_ae8c03cc266a69e9635893ee0772d12e8}{gcov\_type}}\ freq,\ \textcolor{keywordtype}{int}\ prob)}
+\DoxyCodeLine{00591\ \{}
+\DoxyCodeLine{00592\ \ \ \doxymbox{\hyperlink{basic-block_8h_a2b199a3b78ab5e57a16cec1caea074fe}{check\_probability}}\ (prob);}
+\DoxyCodeLine{00593\ \ \ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{basic-block_8h_a5830eccca0fe8ba8a7e01432ea402d7c}{apply\_scale}}\ (freq,\ prob);}
+\DoxyCodeLine{00594\ \}}
+\DoxyCodeLine{00595\ }
+\DoxyCodeLine{00596\ \textcolor{comment}{/*\ Return\ inverse\ probability\ for\ PROB.\ \ */}}
+\DoxyCodeLine{00597\ }
+\DoxyCodeLine{00598\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{int}}
+\DoxyCodeLine{00599\ \doxymbox{\hyperlink{basic-block_8h_aaf6694c79200be63766b3eb7a3b87799}{inverse\_probability}}\ (\textcolor{keywordtype}{int}\ prob1)}
+\DoxyCodeLine{00600\ \{}
+\DoxyCodeLine{00601\ \ \ \doxymbox{\hyperlink{basic-block_8h_a2b199a3b78ab5e57a16cec1caea074fe}{check\_probability}}\ (prob1);}
+\DoxyCodeLine{00602\ \ \ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{profile-count_8h_a3c5bb681f2416299ceb4465de0a215c3}{REG\_BR\_PROB\_BASE}}\ -\/\ prob1;}
+\DoxyCodeLine{00603\ \}}
+\DoxyCodeLine{00604\ }
+\DoxyCodeLine{00605\ \textcolor{comment}{/*\ Return\ true\ if\ BB\ has\ at\ least\ one\ abnormal\ outgoing\ edge.\ \ */}}
+\DoxyCodeLine{00606\ }
+\DoxyCodeLine{00607\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{bool}}
+\DoxyCodeLine{00608\ \doxymbox{\hyperlink{basic-block_8h_a972e2e21b3c43288aa64d21fce9b34f2}{has\_abnormal\_or\_eh\_outgoing\_edge\_p}}\ (\doxymbox{\hyperlink{coretypes_8h_a0469df20b471a4cd7c81fbdce5027487}{basic\_block}}\ bb)}
+\DoxyCodeLine{00609\ \{}
+\DoxyCodeLine{00610\ \ \ \doxymbox{\hyperlink{coretypes_8h_a44ae11f0c90646aa6208ad4bf486490b}{edge}}\ e;}
+\DoxyCodeLine{00611\ \ \ \doxymbox{\hyperlink{structedge__iterator}{edge\_iterator}}\ ei;}
+\DoxyCodeLine{00612\ }
+\DoxyCodeLine{00613\ \ \ \doxymbox{\hyperlink{basic-block_8h_ad9116aef500c6bad6c2ed3d9d0295b61}{FOR\_EACH\_EDGE}}\ (e,\ ei,\ bb-\/>succs)}
+\DoxyCodeLine{00614\ \ \ \ \ \textcolor{keywordflow}{if}\ (e-\/>flags\ \&\ (EDGE\_ABNORMAL\ |\ EDGE\_EH))}
+\DoxyCodeLine{00615\ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ \textcolor{keyword}{true};}
+\DoxyCodeLine{00616\ }
+\DoxyCodeLine{00617\ \ \ \textcolor{keywordflow}{return}\ \textcolor{keyword}{false};}
+\DoxyCodeLine{00618\ \}}
+\DoxyCodeLine{00619\ }
+\DoxyCodeLine{00620\ \textcolor{comment}{/*\ Return\ true\ when\ one\ of\ the\ predecessor\ edges\ of\ BB\ is\ marked\ with}}
+\DoxyCodeLine{00621\ \textcolor{comment}{\ \ \ EDGE\_ABNORMAL\_CALL\ or\ EDGE\_EH.\ \ */}}
+\DoxyCodeLine{00622\ }
+\DoxyCodeLine{00623\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{bool}}
+\DoxyCodeLine{00624\ \doxymbox{\hyperlink{basic-block_8h_a008b5f17313c1bb888d864e1566e5176}{has\_abnormal\_call\_or\_eh\_pred\_edge\_p}}\ (\doxymbox{\hyperlink{coretypes_8h_a0469df20b471a4cd7c81fbdce5027487}{basic\_block}}\ bb)}
+\DoxyCodeLine{00625\ \{}
+\DoxyCodeLine{00626\ \ \ \doxymbox{\hyperlink{coretypes_8h_a44ae11f0c90646aa6208ad4bf486490b}{edge}}\ e;}
+\DoxyCodeLine{00627\ \ \ \doxymbox{\hyperlink{structedge__iterator}{edge\_iterator}}\ ei;}
+\DoxyCodeLine{00628\ }
+\DoxyCodeLine{00629\ \ \ \doxymbox{\hyperlink{basic-block_8h_ad9116aef500c6bad6c2ed3d9d0295b61}{FOR\_EACH\_EDGE}}\ (e,\ ei,\ bb-\/>preds)}
+\DoxyCodeLine{00630\ \ \ \ \ \textcolor{keywordflow}{if}\ (e-\/>flags\ \&\ (EDGE\_ABNORMAL\_CALL\ |\ EDGE\_EH))}
+\DoxyCodeLine{00631\ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ \textcolor{keyword}{true};}
+\DoxyCodeLine{00632\ }
+\DoxyCodeLine{00633\ \ \ \textcolor{keywordflow}{return}\ \textcolor{keyword}{false};}
+\DoxyCodeLine{00634\ \}}
+\DoxyCodeLine{00635\ }
+\DoxyCodeLine{00636\ \textcolor{comment}{/*\ Return\ count\ of\ edge\ E.\ \ */}}
+\DoxyCodeLine{00637\ \textcolor{keyword}{inline}\ profile\_count\ edge\_def::count\ ()\textcolor{keyword}{\ const}}
+\DoxyCodeLine{00638\ \textcolor{keyword}{}\{}
+\DoxyCodeLine{00639\ \ \ \textcolor{keywordflow}{return}\ src-\/>count.apply\_probability\ (probability);}
+\DoxyCodeLine{00640\ \}}
+\DoxyCodeLine{00641\ }
+\DoxyCodeLine{00642\ \textcolor{preprocessor}{\#endif\ }\textcolor{comment}{/*\ GCC\_BASIC\_BLOCK\_H\ */}\textcolor{preprocessor}{}}
+
+\end{DoxyCode}

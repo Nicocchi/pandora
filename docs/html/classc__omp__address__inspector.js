@@ -1,0 +1,25 @@
+var classc__omp__address__inspector =
+[
+    [ "c_omp_address_inspector", "classc__omp__address__inspector.html#abd4b595128393eb3ceb78c2d493aafee", null ],
+    [ "~c_omp_address_inspector", "classc__omp__address__inspector.html#a68769cb06c31b09cf6ea69876ccbba92", null ],
+    [ "build_array_ref", "classc__omp__address__inspector.html#abe68b7afbbbb3d7f472c2f3a27d0005b", null ],
+    [ "check_clause", "classc__omp__address__inspector.html#af7fdbfb565c9e6fb091a3d60963c1adb", null ],
+    [ "component_access_p", "classc__omp__address__inspector.html#aa031daa9d7c85993c5f534cc273ba220", null ],
+    [ "convert_from_reference", "classc__omp__address__inspector.html#a149a1c6802f0c3153b0c582166763b3a", null ],
+    [ "emit_unmappable_type_notes", "classc__omp__address__inspector.html#ac9e9a359e9cc70a619c1a793583330fa", null ],
+    [ "expand_array_base", "classc__omp__address__inspector.html#a5d6e8733f09eb6d58c1d444d60a639e4", null ],
+    [ "expand_component_selector", "classc__omp__address__inspector.html#ae45f09da7afea4ac0b79180915c43cbc", null ],
+    [ "expand_map_clause", "classc__omp__address__inspector.html#ad5986ef7f98fa103bbb946f5c897b530", null ],
+    [ "get_origin", "classc__omp__address__inspector.html#add56ef3f0c6df06bcbb0f65bb475146d", null ],
+    [ "get_root_term", "classc__omp__address__inspector.html#a7a985a3a720cb474b713028c6d7c6b24", null ],
+    [ "map_supported_p", "classc__omp__address__inspector.html#a0c3caf65346e04702939159c52c5665d", null ],
+    [ "maybe_unconvert_ref", "classc__omp__address__inspector.html#ab486e2c40e08a174ab74ec60cedad869", null ],
+    [ "maybe_zero_length_array_section", "classc__omp__address__inspector.html#a8f28e7acb4adcbf151b9818b68cf9ac0", null ],
+    [ "processing_template_decl_p", "classc__omp__address__inspector.html#a35f502ef3144160d6b1720ae2823366c", null ],
+    [ "unconverted_ref_origin", "classc__omp__address__inspector.html#a3763b206279532e7ce91c2495f03826d", null ],
+    [ "indirections", "classc__omp__address__inspector.html#acc1e103b774a2170223a0462eba1f885", null ],
+    [ "loc", "classc__omp__address__inspector.html#a17231ba2c87635d73cd21129702081ff", null ],
+    [ "map_supported", "classc__omp__address__inspector.html#a8eba6947dc1a01acf0f3f16d0df76778", null ],
+    [ "orig", "classc__omp__address__inspector.html#a10427d9a951ef6c1e68a0385f585650b", null ],
+    [ "root_term", "classc__omp__address__inspector.html#aa52b5ca1eb0cfd166790e6b6565f9318", null ]
+];

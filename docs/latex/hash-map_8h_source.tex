@@ -1,0 +1,394 @@
+\doxysection{hash-\/map.h}
+\hypertarget{hash-map_8h_source}{}\label{hash-map_8h_source}\index{toolchain/x86\_64-\/elf/lib/gcc/x86\_64-\/elf/14.2.0/plugin/include/hash-\/map.h@{toolchain/x86\_64-\/elf/lib/gcc/x86\_64-\/elf/14.2.0/plugin/include/hash-\/map.h}}
+\doxymbox{\hyperlink{hash-map_8h}{Go to the documentation of this file.}}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001\ \textcolor{comment}{/*\ A\ type-\/safe\ hash\ map.}}
+\DoxyCodeLine{00002\ \textcolor{comment}{\ \ \ Copyright\ (C)\ 2014-\/2024\ Free\ Software\ Foundation,\ Inc.}}
+\DoxyCodeLine{00003\ \textcolor{comment}{}}
+\DoxyCodeLine{00004\ \textcolor{comment}{This\ file\ is\ part\ of\ GCC.}}
+\DoxyCodeLine{00005\ \textcolor{comment}{}}
+\DoxyCodeLine{00006\ \textcolor{comment}{GCC\ is\ free\ software;\ you\ can\ redistribute\ it\ and/or\ modify\ it\ under}}
+\DoxyCodeLine{00007\ \textcolor{comment}{the\ terms\ of\ the\ GNU\ General\ Public\ License\ as\ published\ by\ the\ Free}}
+\DoxyCodeLine{00008\ \textcolor{comment}{Software\ Foundation;\ either\ version\ 3,\ or\ (at\ your\ option)\ any\ later}}
+\DoxyCodeLine{00009\ \textcolor{comment}{version.}}
+\DoxyCodeLine{00010\ \textcolor{comment}{}}
+\DoxyCodeLine{00011\ \textcolor{comment}{GCC\ is\ distributed\ in\ the\ hope\ that\ it\ will\ be\ useful,\ but\ WITHOUT\ ANY}}
+\DoxyCodeLine{00012\ \textcolor{comment}{WARRANTY;\ without\ even\ the\ implied\ warranty\ of\ MERCHANTABILITY\ or}}
+\DoxyCodeLine{00013\ \textcolor{comment}{FITNESS\ FOR\ A\ PARTICULAR\ PURPOSE.\ \ See\ the\ GNU\ General\ Public\ License}}
+\DoxyCodeLine{00014\ \textcolor{comment}{for\ more\ details.}}
+\DoxyCodeLine{00015\ \textcolor{comment}{}}
+\DoxyCodeLine{00016\ \textcolor{comment}{You\ should\ have\ received\ a\ copy\ of\ the\ GNU\ General\ Public\ License}}
+\DoxyCodeLine{00017\ \textcolor{comment}{along\ with\ GCC;\ see\ the\ file\ COPYING3.\ \ If\ not\ see}}
+\DoxyCodeLine{00018\ \textcolor{comment}{<http://www.gnu.org/licenses/>.\ \ */}}
+\DoxyCodeLine{00019\ }
+\DoxyCodeLine{00020\ }
+\DoxyCodeLine{00021\ \textcolor{preprocessor}{\#ifndef\ hash\_map\_h}}
+\DoxyCodeLine{00022\ \textcolor{preprocessor}{\#define\ hash\_map\_h}}
+\DoxyCodeLine{00023\ }
+\DoxyCodeLine{00024\ \textcolor{comment}{/*\ Class\ hash\_map\ is\ a\ hash-\/value\ based\ container\ mapping\ objects\ of}}
+\DoxyCodeLine{00025\ \textcolor{comment}{\ \ \ KeyId\ type\ to\ those\ of\ the\ Value\ type.}}
+\DoxyCodeLine{00026\ \textcolor{comment}{\ \ \ Both\ KeyId\ and\ Value\ may\ be\ non-\/trivial\ (non-\/POD)\ types\ provided}}
+\DoxyCodeLine{00027\ \textcolor{comment}{\ \ \ a\ suitabe\ Traits\ class.\ \ A\ few\ default\ Traits\ specializations\ are}}
+\DoxyCodeLine{00028\ \textcolor{comment}{\ \ \ provided\ for\ basic\ types\ such\ as\ integers,\ pointers,\ and\ std::pair.}}
+\DoxyCodeLine{00029\ \textcolor{comment}{\ \ \ Inserted\ elements\ are\ value-\/initialized\ either\ to\ zero\ for\ POD\ types}}
+\DoxyCodeLine{00030\ \textcolor{comment}{\ \ \ or\ by\ invoking\ their\ default\ ctor.\ \ Removed\ elements\ are\ destroyed}}
+\DoxyCodeLine{00031\ \textcolor{comment}{\ \ \ by\ invoking\ their\ dtor.\ \ \ On\ hash\_map\ destruction\ all\ elements\ are}}
+\DoxyCodeLine{00032\ \textcolor{comment}{\ \ \ removed.\ \ Objects\ of\ hash\_map\ type\ are\ copy-\/constructible\ but\ not}}
+\DoxyCodeLine{00033\ \textcolor{comment}{\ \ \ assignable.\ \ */}}
+\DoxyCodeLine{00034\ }
+\DoxyCodeLine{00035\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{size\_t}\ \doxymbox{\hyperlink{hash-map_8h_a56a5badd8d064515749392fc93658da0}{default\_hash\_map\_size}}\ =\ 13;}
+\DoxyCodeLine{00036\ \textcolor{keyword}{template}<\textcolor{keyword}{typename}\ KeyId,\ \textcolor{keyword}{typename}\ Value,}
+\DoxyCodeLine{00037\ \ \ \ \ \ \textcolor{keyword}{typename}\ Traits\ \textcolor{comment}{/*\ =\ simple\_hashmap\_traits<default\_hash\_traits<Key>,}}
+\DoxyCodeLine{00038\ \textcolor{comment}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ Value>\ */}>}
+\DoxyCodeLine{00039\ \textcolor{keyword}{class\ }\doxymbox{\hyperlink{coretypes_8h_ae5708c4d4b300570eebe0bc0c78facbc}{GTY}}((user))\ \doxymbox{\hyperlink{classhash__map}{hash\_map}}}
+\DoxyCodeLine{00040\ \{}
+\DoxyCodeLine{00041\ \ \ \textcolor{keyword}{typedef}\ \textcolor{keyword}{typename}\ Traits::key\_type\ Key;}
+\DoxyCodeLine{00042\ \ \ \textcolor{keyword}{struct\ }hash\_entry}
+\DoxyCodeLine{00043\ \ \ \{}
+\DoxyCodeLine{00044\ \ \ \ \ Key\ m\_key;}
+\DoxyCodeLine{00045\ \ \ \ \ Value\ m\_value;}
+\DoxyCodeLine{00046\ }
+\DoxyCodeLine{00047\ \ \ \ \ \textcolor{keyword}{typedef}\ hash\_entry\ value\_type;}
+\DoxyCodeLine{00048\ \ \ \ \ \textcolor{keyword}{typedef}\ Key\ compare\_type;}
+\DoxyCodeLine{00049\ }
+\DoxyCodeLine{00050\ \ \ \ \ \textcolor{keyword}{static}\ \doxymbox{\hyperlink{hashtab_8h_a2d05e5049721cf3117dd6b34e20d4f65}{hashval\_t}}\ hash\ (\textcolor{keyword}{const}\ hash\_entry\ \&e)}
+\DoxyCodeLine{00051\ \ \ \ \ \ \ \{}
+\DoxyCodeLine{00052\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ Traits::hash\ (e.m\_key);}
+\DoxyCodeLine{00053\ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00054\ }
+\DoxyCodeLine{00055\ \ \ \ \ \textcolor{keyword}{static}\ \textcolor{keywordtype}{bool}\ equal\ (\textcolor{keyword}{const}\ hash\_entry\ \&\doxymbox{\hyperlink{poly-int_8h_af77c881600a14567e276ee17dfb8764f}{a}},\ \textcolor{keyword}{const}\ Key\ \&\doxymbox{\hyperlink{poly-int_8h_af3bb9d9df219585072cf9e4e95572f70}{b}})}
+\DoxyCodeLine{00056\ \ \ \ \ \ \ \ \ \{}
+\DoxyCodeLine{00057\ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ Traits::equal\_keys\ (\doxymbox{\hyperlink{poly-int_8h_af77c881600a14567e276ee17dfb8764f}{a}}.m\_key,\ \doxymbox{\hyperlink{poly-int_8h_af3bb9d9df219585072cf9e4e95572f70}{b}});}
+\DoxyCodeLine{00058\ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00059\ }
+\DoxyCodeLine{00060\ \ \ \ \ \textcolor{keyword}{static}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{symbol-summary_8h_aeee6c19b32ef7a2c7f1e31cf44773159}{remove}}\ (hash\_entry\ \&e)\ \{\ Traits::remove\ (e);\ \}}
+\DoxyCodeLine{00061\ }
+\DoxyCodeLine{00062\ \ \ \ \ \textcolor{keyword}{static}\ \textcolor{keywordtype}{void}\ mark\_deleted\ (hash\_entry\ \&e)\ \{\ Traits::mark\_deleted\ (e);\ \}}
+\DoxyCodeLine{00063\ }
+\DoxyCodeLine{00064\ \ \ \ \ \textcolor{keyword}{static}\ \textcolor{keywordtype}{bool}\ is\_deleted\ (\textcolor{keyword}{const}\ hash\_entry\ \&e)}
+\DoxyCodeLine{00065\ \ \ \ \ \ \ \{}
+\DoxyCodeLine{00066\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ Traits::is\_deleted\ (e);}
+\DoxyCodeLine{00067\ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00068\ }
+\DoxyCodeLine{00069\ \ \ \ \ \textcolor{keyword}{static}\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{bool}\ empty\_zero\_p\ =\ Traits::empty\_zero\_p;}
+\DoxyCodeLine{00070\ \ \ \ \ \textcolor{keyword}{static}\ \textcolor{keywordtype}{void}\ mark\_empty\ (hash\_entry\ \&e)\ \{\ Traits::mark\_empty\ (e);\ \}}
+\DoxyCodeLine{00071\ \ \ \ \ \textcolor{keyword}{static}\ \textcolor{keywordtype}{bool}\ is\_empty\ (\textcolor{keyword}{const}\ hash\_entry\ \&e)\ \{\ \textcolor{keywordflow}{return}\ Traits::is\_empty\ (e);\ \}}
+\DoxyCodeLine{00072\ }
+\DoxyCodeLine{00073\ \ \ \ \ \textcolor{keyword}{static}\ \textcolor{keywordtype}{void}\ ggc\_mx\ (hash\_entry\ \&e)}
+\DoxyCodeLine{00074\ \ \ \ \ \ \ \{}
+\DoxyCodeLine{00075\ \ \ \ \ \doxymbox{\hyperlink{ggc_8h_a77eb324884a7b0f347f16dd362d150d3}{gt\_ggc\_mx}}\ (e.m\_key);}
+\DoxyCodeLine{00076\ \ \ \ \ \doxymbox{\hyperlink{ggc_8h_a77eb324884a7b0f347f16dd362d150d3}{gt\_ggc\_mx}}\ (e.m\_value);}
+\DoxyCodeLine{00077\ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00078\ }
+\DoxyCodeLine{00079\ \ \ \ \ \textcolor{keyword}{static}\ \textcolor{keywordtype}{void}\ ggc\_maybe\_mx\ (hash\_entry\ \&e)}
+\DoxyCodeLine{00080\ \ \ \ \ \ \ \{}
+\DoxyCodeLine{00081\ \ \ \ \ \textcolor{keywordflow}{if}\ (Traits::maybe\_mx)}
+\DoxyCodeLine{00082\ \ \ \ \ \ \ ggc\_mx\ (e);}
+\DoxyCodeLine{00083\ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00084\ }
+\DoxyCodeLine{00085\ \ \ \ \ \textcolor{keyword}{static}\ \textcolor{keywordtype}{void}\ pch\_nx\ (hash\_entry\ \&e)}
+\DoxyCodeLine{00086\ \ \ \ \ \ \ \{}
+\DoxyCodeLine{00087\ \ \ \ \ \doxymbox{\hyperlink{ggc_8h_a3b26c28b1089a35761fee54cdbbd2171}{gt\_pch\_nx}}\ (e.m\_key);}
+\DoxyCodeLine{00088\ \ \ \ \ \doxymbox{\hyperlink{ggc_8h_a3b26c28b1089a35761fee54cdbbd2171}{gt\_pch\_nx}}\ (e.m\_value);}
+\DoxyCodeLine{00089\ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00090\ }
+\DoxyCodeLine{00091\ \ \ \ \ \textcolor{keyword}{static}\ \textcolor{keywordtype}{void}\ pch\_nx\ (hash\_entry\ \&e,\ \doxymbox{\hyperlink{coretypes_8h_ae5ca95fa9feb025fb3b39d2ed62f2a56}{gt\_pointer\_operator}}\ op,\ \textcolor{keywordtype}{void}\ *c)}
+\DoxyCodeLine{00092\ \ \ \ \ \ \ \{}
+\DoxyCodeLine{00093\ \ \ \ \ pch\_nx\_helper\ (e.m\_key,\ op,\ c);}
+\DoxyCodeLine{00094\ \ \ \ \ pch\_nx\_helper\ (e.m\_value,\ op,\ c);}
+\DoxyCodeLine{00095\ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00096\ }
+\DoxyCodeLine{00097\ \ \ \ \ \textcolor{keyword}{static}\ \textcolor{keywordtype}{int}\ keep\_cache\_entry\ (hash\_entry\ \&e)}
+\DoxyCodeLine{00098\ \ \ \ \ \ \ \{}
+\DoxyCodeLine{00099\ \ \ \ \ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{ggc_8h_af4dfa8fd38b05862d05c50ab78b110ae}{ggc\_marked\_p}}\ (e.m\_key);}
+\DoxyCodeLine{00100\ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00101\ }
+\DoxyCodeLine{00102\ \ \ \textcolor{keyword}{private}:}
+\DoxyCodeLine{00103\ \ \ \ \ \textcolor{keyword}{template}<\textcolor{keyword}{typename}\ T>}
+\DoxyCodeLine{00104\ \ \ \ \ \textcolor{keyword}{static}\ \textcolor{keywordtype}{void}}
+\DoxyCodeLine{00105\ \ \ \ \ \ \ pch\_nx\_helper\ (T\ \&x,\ \doxymbox{\hyperlink{coretypes_8h_ae5ca95fa9feb025fb3b39d2ed62f2a56}{gt\_pointer\_operator}}\ op,\ \textcolor{keywordtype}{void}\ *cookie)}
+\DoxyCodeLine{00106\ \ \ \ \ \{}
+\DoxyCodeLine{00107\ \ \ \ \ \ \ \doxymbox{\hyperlink{ggc_8h_a3b26c28b1089a35761fee54cdbbd2171}{gt\_pch\_nx}}\ (\&x,\ op,\ cookie);}
+\DoxyCodeLine{00108\ \ \ \ \ \}}
+\DoxyCodeLine{00109\ }
+\DoxyCodeLine{00110\ \ \ \ \ \textcolor{keyword}{template}<\textcolor{keyword}{typename}\ T>}
+\DoxyCodeLine{00111\ \ \ \ \ \ \ \textcolor{keyword}{static}\ \textcolor{keywordtype}{void}}
+\DoxyCodeLine{00112\ \ \ \ \ \ \ pch\_nx\_helper\ (T\ *\&x,\ \doxymbox{\hyperlink{coretypes_8h_ae5ca95fa9feb025fb3b39d2ed62f2a56}{gt\_pointer\_operator}}\ op,\ \textcolor{keywordtype}{void}\ *cookie)}
+\DoxyCodeLine{00113\ \ \ \ \ \{}
+\DoxyCodeLine{00114\ \ \ \ \ \ \ op\ (\&x,\ \doxymbox{\hyperlink{stddef_8h_a070d2ce7b6bb7e5c05602aa8c308d0c4}{NULL}},\ cookie);}
+\DoxyCodeLine{00115\ \ \ \ \ \}}
+\DoxyCodeLine{00116\ }
+\DoxyCodeLine{00117\ \ \ \ \ \textcolor{comment}{/*\ The\ overloads\ below\ should\ match\ those\ in\ ggc.h.\ \ */}}
+\DoxyCodeLine{00118\ \textcolor{preprocessor}{\#define\ DEFINE\_PCH\_HELPER(T)\ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00119\ \textcolor{preprocessor}{\ \ \ \ static\ void\ pch\_nx\_helper\ (T,\ gt\_pointer\_operator,\ void\ *)\ \{\ \}}}
+\DoxyCodeLine{00120\ }
+\DoxyCodeLine{00121\ \ \ \ \ \doxymbox{\hyperlink{hash-map_8h_a09a37b4d76146ee7a55a80abb68bdf4b}{DEFINE\_PCH\_HELPER}}\ (\textcolor{keywordtype}{bool});}
+\DoxyCodeLine{00122\ \ \ \ \ \doxymbox{\hyperlink{hash-map_8h_a09a37b4d76146ee7a55a80abb68bdf4b}{DEFINE\_PCH\_HELPER}}\ (\textcolor{keywordtype}{char});}
+\DoxyCodeLine{00123\ \ \ \ \ \doxymbox{\hyperlink{hash-map_8h_a09a37b4d76146ee7a55a80abb68bdf4b}{DEFINE\_PCH\_HELPER}}\ (\textcolor{keywordtype}{signed}\ \textcolor{keywordtype}{char});}
+\DoxyCodeLine{00124\ \ \ \ \ \doxymbox{\hyperlink{hash-map_8h_a09a37b4d76146ee7a55a80abb68bdf4b}{DEFINE\_PCH\_HELPER}}\ (\textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{char});}
+\DoxyCodeLine{00125\ \ \ \ \ \doxymbox{\hyperlink{hash-map_8h_a09a37b4d76146ee7a55a80abb68bdf4b}{DEFINE\_PCH\_HELPER}}\ (\textcolor{keywordtype}{short});}
+\DoxyCodeLine{00126\ \ \ \ \ \doxymbox{\hyperlink{hash-map_8h_a09a37b4d76146ee7a55a80abb68bdf4b}{DEFINE\_PCH\_HELPER}}\ (\textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{short});}
+\DoxyCodeLine{00127\ \ \ \ \ \doxymbox{\hyperlink{hash-map_8h_a09a37b4d76146ee7a55a80abb68bdf4b}{DEFINE\_PCH\_HELPER}}\ (\textcolor{keywordtype}{int});}
+\DoxyCodeLine{00128\ \ \ \ \ \doxymbox{\hyperlink{hash-map_8h_a09a37b4d76146ee7a55a80abb68bdf4b}{DEFINE\_PCH\_HELPER}}\ (\textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int});}
+\DoxyCodeLine{00129\ \ \ \ \ \doxymbox{\hyperlink{hash-map_8h_a09a37b4d76146ee7a55a80abb68bdf4b}{DEFINE\_PCH\_HELPER}}\ (\textcolor{keywordtype}{long});}
+\DoxyCodeLine{00130\ \ \ \ \ \doxymbox{\hyperlink{hash-map_8h_a09a37b4d76146ee7a55a80abb68bdf4b}{DEFINE\_PCH\_HELPER}}\ (\textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{long});}
+\DoxyCodeLine{00131\ \ \ \ \ \doxymbox{\hyperlink{hash-map_8h_a09a37b4d76146ee7a55a80abb68bdf4b}{DEFINE\_PCH\_HELPER}}\ (\textcolor{keywordtype}{long}\ \textcolor{keywordtype}{long});}
+\DoxyCodeLine{00132\ \ \ \ \ \doxymbox{\hyperlink{hash-map_8h_a09a37b4d76146ee7a55a80abb68bdf4b}{DEFINE\_PCH\_HELPER}}\ (\textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{long}\ \textcolor{keywordtype}{long});}
+\DoxyCodeLine{00133\ }
+\DoxyCodeLine{00134\ \textcolor{preprocessor}{\#undef\ DEFINE\_PCH\_HELPER}}
+\DoxyCodeLine{00135\ \ \ \};}
+\DoxyCodeLine{00136\ }
+\DoxyCodeLine{00137\ \textcolor{keyword}{public}:}
+\DoxyCodeLine{00138\ \ \ \textcolor{keyword}{explicit}\ \doxymbox{\hyperlink{classhash__map}{hash\_map}}\ (\textcolor{keywordtype}{size\_t}\ n\ =\ \doxymbox{\hyperlink{hash-map_8h_a56a5badd8d064515749392fc93658da0}{default\_hash\_map\_size}},\ \textcolor{keywordtype}{bool}\ ggc\ =\ \textcolor{keyword}{false},}
+\DoxyCodeLine{00139\ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{bool}\ sanitize\_eq\_and\_hash\ =\ \textcolor{keyword}{true},}
+\DoxyCodeLine{00140\ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{bool}\ gather\_mem\_stats\ =\ \doxymbox{\hyperlink{auto-host_8h_afc5398d240462e7748efa4deb0fcc65d}{GATHER\_STATISTICS}}}
+\DoxyCodeLine{00141\ \ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{statistics_8h_ad9b89af963cc7e535c9697fd40241a6f}{CXX\_MEM\_STAT\_INFO}})}
+\DoxyCodeLine{00142\ \ \ \ \ :\ m\_table\ (n,\ ggc,\ sanitize\_eq\_and\_hash,\ gather\_mem\_stats,}
+\DoxyCodeLine{00143\ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{mem-stats-traits_8h_a0d4f79870c794434cebd6c6513313d1aaff26c7d7184969de1ec8ae37b0dd0cab}{HASH\_MAP\_ORIGIN}}\ \doxymbox{\hyperlink{statistics_8h_a75b4a65a7a5d197f17362673db5ece22}{PASS\_MEM\_STAT}})}
+\DoxyCodeLine{00144\ \ \ \{}
+\DoxyCodeLine{00145\ \ \ \}}
+\DoxyCodeLine{00146\ }
+\DoxyCodeLine{00147\ \ \ \textcolor{keyword}{explicit}\ \doxymbox{\hyperlink{classhash__map}{hash\_map}}\ (\textcolor{keyword}{const}\ \doxymbox{\hyperlink{classhash__map}{hash\_map}}\ \&h,\ \textcolor{keywordtype}{bool}\ ggc\ =\ \textcolor{keyword}{false},}
+\DoxyCodeLine{00148\ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{bool}\ sanitize\_eq\_and\_hash\ =\ \textcolor{keyword}{true},}
+\DoxyCodeLine{00149\ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{bool}\ gather\_mem\_stats\ =\ \doxymbox{\hyperlink{auto-host_8h_afc5398d240462e7748efa4deb0fcc65d}{GATHER\_STATISTICS}}}
+\DoxyCodeLine{00150\ \ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{statistics_8h_ad9b89af963cc7e535c9697fd40241a6f}{CXX\_MEM\_STAT\_INFO}})}
+\DoxyCodeLine{00151\ \ \ \ \ :\ m\_table\ (h.m\_table,\ ggc,\ sanitize\_eq\_and\_hash,\ gather\_mem\_stats,}
+\DoxyCodeLine{00152\ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{mem-stats-traits_8h_a0d4f79870c794434cebd6c6513313d1aaff26c7d7184969de1ec8ae37b0dd0cab}{HASH\_MAP\_ORIGIN}}\ \doxymbox{\hyperlink{statistics_8h_a75b4a65a7a5d197f17362673db5ece22}{PASS\_MEM\_STAT}})\ \{\}}
+\DoxyCodeLine{00153\ }
+\DoxyCodeLine{00154\ \ \ \textcolor{comment}{/*\ Create\ a\ hash\_map\ in\ ggc\ memory.\ \ */}}
+\DoxyCodeLine{00155\ \ \ \textcolor{keyword}{static}\ \doxymbox{\hyperlink{classhash__map}{hash\_map}}\ *create\_ggc\ (\textcolor{keywordtype}{size\_t}\ size\ =\ \doxymbox{\hyperlink{hash-map_8h_a56a5badd8d064515749392fc93658da0}{default\_hash\_map\_size}},}
+\DoxyCodeLine{00156\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{bool}\ gather\_mem\_stats\ =\ \doxymbox{\hyperlink{auto-host_8h_afc5398d240462e7748efa4deb0fcc65d}{GATHER\_STATISTICS}}}
+\DoxyCodeLine{00157\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{statistics_8h_ad9b89af963cc7e535c9697fd40241a6f}{CXX\_MEM\_STAT\_INFO}})}
+\DoxyCodeLine{00158\ \ \ \ \ \{}
+\DoxyCodeLine{00159\ \ \ \ \ \ \ \doxymbox{\hyperlink{classhash__map}{hash\_map}}\ *map\ =\ \doxymbox{\hyperlink{ggc_8h_a440b92abfc6b119e45f2b634bf9eed0d}{ggc\_alloc<hash\_map>}}\ ();}
+\DoxyCodeLine{00160\ \ \ \ \ \ \ \textcolor{keyword}{new}\ (map)\ \doxymbox{\hyperlink{classhash__map}{hash\_map}}\ (size,\ \textcolor{keyword}{true},\ \textcolor{keyword}{true},\ gather\_mem\_stats\ \doxymbox{\hyperlink{statistics_8h_a75b4a65a7a5d197f17362673db5ece22}{PASS\_MEM\_STAT}});}
+\DoxyCodeLine{00161\ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ map;}
+\DoxyCodeLine{00162\ \ \ \ \ \}}
+\DoxyCodeLine{00163\ }
+\DoxyCodeLine{00164\ \ \ \textcolor{comment}{/*\ If\ key\ k\ isn't\ already\ in\ the\ map\ add\ key\ k\ with\ value\ v\ to\ the\ map,\ and}}
+\DoxyCodeLine{00165\ \textcolor{comment}{\ \ \ \ \ return\ false.\ \ Otherwise\ set\ the\ value\ of\ the\ entry\ for\ key\ k\ to\ be\ v\ and}}
+\DoxyCodeLine{00166\ \textcolor{comment}{\ \ \ \ \ return\ true.\ \ */}}
+\DoxyCodeLine{00167\ }
+\DoxyCodeLine{00168\ \ \ \textcolor{keywordtype}{bool}\ put\ (\textcolor{keyword}{const}\ Key\ \&k,\ \textcolor{keyword}{const}\ Value\ \&v)}
+\DoxyCodeLine{00169\ \ \ \ \ \{}
+\DoxyCodeLine{00170\ \ \ \ \ \ \ hash\_entry\ *e\ =\ m\_table.find\_slot\_with\_hash\ (k,\ Traits::hash\ (k),}
+\DoxyCodeLine{00171\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{hashtab_8h_a701f25efbbc26447d63fde40272dbf4caa15c451953b2d2a93403afe786930d0f}{INSERT}});}
+\DoxyCodeLine{00172\ \ \ \ \ \ \ \textcolor{keywordtype}{bool}\ ins\ =\ Traits::is\_empty\ (*e);}
+\DoxyCodeLine{00173\ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (ins)}
+\DoxyCodeLine{00174\ \ \ \ \ \{}
+\DoxyCodeLine{00175\ \ \ \ \ \ \ e-\/>m\_key\ =\ k;}
+\DoxyCodeLine{00176\ \ \ \ \ \ \ \textcolor{keyword}{new}\ ((\textcolor{keywordtype}{void}\ *)\&e-\/>m\_value)\ Value\ (v);}
+\DoxyCodeLine{00177\ \ \ \ \ \ \ \doxymbox{\hyperlink{system_8h_aff447899dc74d54931b2bc2d47de9423}{gcc\_checking\_assert}}\ (!Traits::is\_empty\ (*e)}
+\DoxyCodeLine{00178\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&\&\ !Traits::is\_deleted\ (*e));}
+\DoxyCodeLine{00179\ \ \ \ \ \}}
+\DoxyCodeLine{00180\ \ \ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00181\ \ \ \ \ e-\/>m\_value\ =\ v;}
+\DoxyCodeLine{00182\ }
+\DoxyCodeLine{00183\ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ !ins;}
+\DoxyCodeLine{00184\ \ \ \ \ \}}
+\DoxyCodeLine{00185\ }
+\DoxyCodeLine{00186\ \ \ \textcolor{comment}{/*\ If\ the\ passed\ in\ key\ is\ in\ the\ map\ return\ pointer\ to\ its\ value}}
+\DoxyCodeLine{00187\ \textcolor{comment}{\ \ \ \ \ otherwise\ NULL.\ \ */}}
+\DoxyCodeLine{00188\ }
+\DoxyCodeLine{00189\ \ \ Value\ *\doxymbox{\hyperlink{symbol-summary_8h_a47c1a2b92a5e66dbd23c840399c4488e}{get}}\ (\textcolor{keyword}{const}\ Key\ \&k)}
+\DoxyCodeLine{00190\ \ \ \ \ \{}
+\DoxyCodeLine{00191\ \ \ \ \ \ \ hash\_entry\ \&e\ =\ m\_table.find\_with\_hash\ (k,\ Traits::hash\ (k));}
+\DoxyCodeLine{00192\ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ Traits::is\_empty\ (e)\ ?\ \doxymbox{\hyperlink{stddef_8h_a070d2ce7b6bb7e5c05602aa8c308d0c4}{NULL}}\ :\ \&e.m\_value;}
+\DoxyCodeLine{00193\ \ \ \ \ \}}
+\DoxyCodeLine{00194\ }
+\DoxyCodeLine{00195\ \ \ \textcolor{comment}{/*\ Return\ a\ reference\ to\ the\ value\ for\ the\ passed\ in\ key,\ creating\ the\ entry}}
+\DoxyCodeLine{00196\ \textcolor{comment}{\ \ \ \ \ if\ it\ doesn't\ already\ exist.\ \ If\ existed\ is\ not\ NULL\ then\ it\ is\ set\ to}}
+\DoxyCodeLine{00197\ \textcolor{comment}{\ \ \ \ \ false\ if\ the\ key\ was\ not\ previously\ in\ the\ map,\ and\ true\ otherwise.\ \ */}}
+\DoxyCodeLine{00198\ }
+\DoxyCodeLine{00199\ \ \ Value\ \&get\_or\_insert\ (\textcolor{keyword}{const}\ Key\ \&k,\ \textcolor{keywordtype}{bool}\ *existed\ =\ \doxymbox{\hyperlink{stddef_8h_a070d2ce7b6bb7e5c05602aa8c308d0c4}{NULL}})}
+\DoxyCodeLine{00200\ \ \ \ \ \{}
+\DoxyCodeLine{00201\ \ \ \ \ \ \ hash\_entry\ *e\ =\ m\_table.find\_slot\_with\_hash\ (k,\ Traits::hash\ (k),}
+\DoxyCodeLine{00202\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{hashtab_8h_a701f25efbbc26447d63fde40272dbf4caa15c451953b2d2a93403afe786930d0f}{INSERT}});}
+\DoxyCodeLine{00203\ \ \ \ \ \ \ \textcolor{keywordtype}{bool}\ ins\ =\ Traits::is\_empty\ (*e);}
+\DoxyCodeLine{00204\ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (ins)}
+\DoxyCodeLine{00205\ \ \ \ \ \{}
+\DoxyCodeLine{00206\ \ \ \ \ \ \ e-\/>m\_key\ =\ k;}
+\DoxyCodeLine{00207\ \ \ \ \ \ \ \textcolor{keyword}{new}\ ((\textcolor{keywordtype}{void}\ *)\&e-\/>m\_value)\ Value\ ();}
+\DoxyCodeLine{00208\ \ \ \ \ \ \ \doxymbox{\hyperlink{system_8h_aff447899dc74d54931b2bc2d47de9423}{gcc\_checking\_assert}}\ (!Traits::is\_empty\ (*e)}
+\DoxyCodeLine{00209\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&\&\ !Traits::is\_deleted\ (*e));}
+\DoxyCodeLine{00210\ \ \ \ \ \}}
+\DoxyCodeLine{00211\ }
+\DoxyCodeLine{00212\ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (existed\ !=\ \doxymbox{\hyperlink{stddef_8h_a070d2ce7b6bb7e5c05602aa8c308d0c4}{NULL}})}
+\DoxyCodeLine{00213\ \ \ \ \ *existed\ =\ !ins;}
+\DoxyCodeLine{00214\ }
+\DoxyCodeLine{00215\ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ e-\/>m\_value;}
+\DoxyCodeLine{00216\ \ \ \ \ \}}
+\DoxyCodeLine{00217\ }
+\DoxyCodeLine{00218\ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{symbol-summary_8h_aeee6c19b32ef7a2c7f1e31cf44773159}{remove}}\ (\textcolor{keyword}{const}\ Key\ \&k)}
+\DoxyCodeLine{00219\ \ \ \ \ \{}
+\DoxyCodeLine{00220\ \ \ \ \ \ \ m\_table.remove\_elt\_with\_hash\ (k,\ Traits::hash\ (k));}
+\DoxyCodeLine{00221\ \ \ \ \ \}}
+\DoxyCodeLine{00222\ }
+\DoxyCodeLine{00223\ \ \ \textcolor{comment}{/*\ Call\ the\ call\ back\ on\ each\ pair\ of\ key\ and\ value\ with\ the\ passed\ in}}
+\DoxyCodeLine{00224\ \textcolor{comment}{\ \ \ \ \ arg\ until\ either\ the\ call\ back\ returns\ false\ or\ all\ pairs\ have\ been\ seen.}}
+\DoxyCodeLine{00225\ \textcolor{comment}{\ \ \ \ \ The\ traversal\ is\ unordered.\ \ */}}
+\DoxyCodeLine{00226\ }
+\DoxyCodeLine{00227\ \ \ \textcolor{keyword}{template}<\textcolor{keyword}{typename}\ Arg,\ \doxymbox{\hyperlink{stdbool_8h_abb452686968e48b67397da5f97445f5b}{bool}}\ (*f)(\textcolor{keyword}{const}\ \textcolor{keyword}{typename}\ Traits::key\_type\ \&,}
+\DoxyCodeLine{00228\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ Value\ \&,\ Arg)>}
+\DoxyCodeLine{00229\ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{symbol-summary_8h_af6ab8a7be4717984f1b17668364eadda}{traverse}}\ (Arg\ \doxymbox{\hyperlink{poly-int_8h_af77c881600a14567e276ee17dfb8764f}{a}})\ \textcolor{keyword}{const}}
+\DoxyCodeLine{00230\ \ \ \ \ \{}
+\DoxyCodeLine{00231\ \ \ \ \ \ \ \textcolor{keywordflow}{for}\ (\textcolor{keyword}{typename}\ \doxymbox{\hyperlink{classhash__table_1_1iterator}{hash\_table<hash\_entry>::iterator}}\ iter\ =\ m\_table.begin\ ();}
+\DoxyCodeLine{00232\ \ \ \ \ \ \ \ iter\ !=\ m\_table.end\ ();\ ++iter)}
+\DoxyCodeLine{00233\ \ \ \ \ \textcolor{keywordflow}{if}\ (!f\ ((*iter).m\_key,\ (*iter).m\_value,\ \doxymbox{\hyperlink{poly-int_8h_af77c881600a14567e276ee17dfb8764f}{a}}))}
+\DoxyCodeLine{00234\ \ \ \ \ \ \ \textcolor{keywordflow}{break};}
+\DoxyCodeLine{00235\ \ \ \ \ \}}
+\DoxyCodeLine{00236\ }
+\DoxyCodeLine{00237\ \ \ \textcolor{keyword}{template}<\textcolor{keyword}{typename}\ Arg,\ \doxymbox{\hyperlink{stdbool_8h_abb452686968e48b67397da5f97445f5b}{bool}}\ (*f)(\textcolor{keyword}{const}\ \textcolor{keyword}{typename}\ Traits::key\_type\ \&,}
+\DoxyCodeLine{00238\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ Value\ *,\ Arg)>}
+\DoxyCodeLine{00239\ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{symbol-summary_8h_af6ab8a7be4717984f1b17668364eadda}{traverse}}\ (Arg\ \doxymbox{\hyperlink{poly-int_8h_af77c881600a14567e276ee17dfb8764f}{a}})\ \textcolor{keyword}{const}}
+\DoxyCodeLine{00240\ \ \ \ \ \{}
+\DoxyCodeLine{00241\ \ \ \ \ \ \ \textcolor{keywordflow}{for}\ (\textcolor{keyword}{typename}\ \doxymbox{\hyperlink{classhash__table_1_1iterator}{hash\_table<hash\_entry>::iterator}}\ iter\ =\ m\_table.begin\ ();}
+\DoxyCodeLine{00242\ \ \ \ \ \ \ \ iter\ !=\ m\_table.end\ ();\ ++iter)}
+\DoxyCodeLine{00243\ \ \ \ \ \textcolor{keywordflow}{if}\ (!f\ ((*iter).m\_key,\ \&(*iter).m\_value,\ \doxymbox{\hyperlink{poly-int_8h_af77c881600a14567e276ee17dfb8764f}{a}}))}
+\DoxyCodeLine{00244\ \ \ \ \ \ \ \textcolor{keywordflow}{break};}
+\DoxyCodeLine{00245\ \ \ \ \ \}}
+\DoxyCodeLine{00246\ }
+\DoxyCodeLine{00247\ \ \ \textcolor{keywordtype}{size\_t}\ elements\ ()\textcolor{keyword}{\ const\ }\{\ \textcolor{keywordflow}{return}\ m\_table.elements\ ();\ \}}
+\DoxyCodeLine{00248\ }
+\DoxyCodeLine{00249\ \ \ \textcolor{keywordtype}{void}\ empty\ ()\ \{\ m\_table.empty();\ \}}
+\DoxyCodeLine{00250\ }
+\DoxyCodeLine{00251\ \ \ \textcolor{comment}{/*\ Return\ true\ when\ there\ are\ no\ elements\ in\ this\ hash\ map.\ \ */}}
+\DoxyCodeLine{00252\ \ \ \textcolor{keywordtype}{bool}\ is\_empty\ ()\textcolor{keyword}{\ const\ }\{\ \textcolor{keywordflow}{return}\ m\_table.is\_empty\ ();\ \}}
+\DoxyCodeLine{00253\ }
+\DoxyCodeLine{00254\ \ \ \textcolor{keyword}{class\ }\doxymbox{\hyperlink{classhash__set}{iterator}}}
+\DoxyCodeLine{00255\ \ \ \{}
+\DoxyCodeLine{00256\ \ \ \textcolor{keyword}{public}:}
+\DoxyCodeLine{00257\ \ \ \ \ \textcolor{keyword}{explicit}\ \doxymbox{\hyperlink{classhash__set}{iterator}}\ (\textcolor{keyword}{const}\ \textcolor{keyword}{typename}\ \doxymbox{\hyperlink{classhash__table_1_1iterator}{hash\_table<hash\_entry>::iterator}}\ \&iter)\ :}
+\DoxyCodeLine{00258\ \ \ \ \ \ \ m\_iter\ (iter)\ \{\}}
+\DoxyCodeLine{00259\ }
+\DoxyCodeLine{00260\ \ \ \ \ \doxymbox{\hyperlink{classhash__set}{iterator}}\ \&operator++\ ()}
+\DoxyCodeLine{00261\ \ \ \ \ \{}
+\DoxyCodeLine{00262\ \ \ \ \ \ \ ++m\_iter;}
+\DoxyCodeLine{00263\ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ *\textcolor{keyword}{this};}
+\DoxyCodeLine{00264\ \ \ \ \ \}}
+\DoxyCodeLine{00265\ }
+\DoxyCodeLine{00266\ \ \ \ \ \textcolor{comment}{/*\ Can't\ use\ std::pair\ here,\ because\ GCC\ before\ 4.3\ don't\ handle}}
+\DoxyCodeLine{00267\ \textcolor{comment}{\ \ \ \ \ \ \ std::pair\ where\ template\ parameters\ are\ references\ well.}}
+\DoxyCodeLine{00268\ \textcolor{comment}{\ \ \ \ \ \ \ See\ PR86739.\ \ */}}
+\DoxyCodeLine{00269\ \ \ \ \ \textcolor{keyword}{class\ }reference\_pair\ \{}
+\DoxyCodeLine{00270\ \ \ \ \ \textcolor{keyword}{public}:}
+\DoxyCodeLine{00271\ \ \ \ \ \ \ \textcolor{keyword}{const}\ Key\ \&first;}
+\DoxyCodeLine{00272\ \ \ \ \ \ \ Value\ \&second;}
+\DoxyCodeLine{00273\ }
+\DoxyCodeLine{00274\ \ \ \ \ \ \ reference\_pair\ (\textcolor{keyword}{const}\ Key\ \&key,\ Value\ \&\doxymbox{\hyperlink{configargs_8h_a92d544bd66c050551f3d87fa55eb3f5d}{value}})\ :\ first\ (key),\ second\ (\doxymbox{\hyperlink{configargs_8h_a92d544bd66c050551f3d87fa55eb3f5d}{value}})\ \{\}}
+\DoxyCodeLine{00275\ }
+\DoxyCodeLine{00276\ \ \ \ \ \ \ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ K,\ \textcolor{keyword}{typename}\ V>}
+\DoxyCodeLine{00277\ \ \ \ \ \ \ \textcolor{keyword}{operator}\ std::pair<K,\ V>\ ()\textcolor{keyword}{\ const\ }\{\ \textcolor{keywordflow}{return}\ std::pair<K,\ V>\ (first,\ second);\ \}}
+\DoxyCodeLine{00278\ \ \ \ \ \};}
+\DoxyCodeLine{00279\ }
+\DoxyCodeLine{00280\ \ \ \ \ reference\_pair\ operator*\ ()}
+\DoxyCodeLine{00281\ \ \ \ \ \{}
+\DoxyCodeLine{00282\ \ \ \ \ \ \ hash\_entry\ \&e\ =\ *m\_iter;}
+\DoxyCodeLine{00283\ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ reference\_pair\ (e.m\_key,\ e.m\_value);}
+\DoxyCodeLine{00284\ \ \ \ \ \}}
+\DoxyCodeLine{00285\ }
+\DoxyCodeLine{00286\ \ \ \ \ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{cp-tree_8h_a4b9bd7e4e073a2a98d043c78719de59b}{operator==\ }}(\textcolor{keyword}{const}\ \doxymbox{\hyperlink{classhash__set}{iterator}}\ \&other)\textcolor{keyword}{\ const}}
+\DoxyCodeLine{00287\ \textcolor{keyword}{\ \ \ \ }\{}
+\DoxyCodeLine{00288\ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ m\_iter\ ==\ other.m\_iter;}
+\DoxyCodeLine{00289\ \ \ \ \ \}}
+\DoxyCodeLine{00290\ }
+\DoxyCodeLine{00291\ \ \ \ \ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{diagnostic-spec_8h_a6b5ad3fba66b4c54ae8afbdf1bbebfb7}{operator\ !=\ }}(\textcolor{keyword}{const}\ \doxymbox{\hyperlink{classhash__set}{iterator}}\ \&other)\textcolor{keyword}{\ const}}
+\DoxyCodeLine{00292\ \textcolor{keyword}{\ \ \ \ }\{}
+\DoxyCodeLine{00293\ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ m\_iter\ !=\ other.m\_iter;}
+\DoxyCodeLine{00294\ \ \ \ \ \}}
+\DoxyCodeLine{00295\ }
+\DoxyCodeLine{00296\ \ \ \textcolor{keyword}{private}:}
+\DoxyCodeLine{00297\ \ \ \ \ \textcolor{keyword}{typename}\ \doxymbox{\hyperlink{classhash__table_1_1iterator}{hash\_table<hash\_entry>::iterator}}\ m\_iter;}
+\DoxyCodeLine{00298\ \ \ \};}
+\DoxyCodeLine{00299\ }
+\DoxyCodeLine{00300\ \ \ \textcolor{comment}{/*\ Standard\ iterator\ retrieval\ methods.\ \ */}}
+\DoxyCodeLine{00301\ }
+\DoxyCodeLine{00302\ \ \ \doxymbox{\hyperlink{classhash__set}{iterator}}\ \ \doxymbox{\hyperlink{vec_8h_a210a807fc9c305c39b6856904d5383ed}{begin}}\ ()\textcolor{keyword}{\ const\ }\{\ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{classhash__set}{iterator}}\ (m\_table.begin\ ());\ \}}
+\DoxyCodeLine{00303\ \ \ \doxymbox{\hyperlink{classhash__set}{iterator}}\ \doxymbox{\hyperlink{vec_8h_a17e1ff659cc80fc1b1a1c325dfe1a3aa}{end}}\ ()\textcolor{keyword}{\ const\ }\{\ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{classhash__set}{iterator}}\ (m\_table.end\ ());\ \}}
+\DoxyCodeLine{00304\ }
+\DoxyCodeLine{00305\ \textcolor{keyword}{private}:}
+\DoxyCodeLine{00306\ }
+\DoxyCodeLine{00307\ \ \ \textcolor{keyword}{template}<\textcolor{keyword}{typename}\ T,\ \textcolor{keyword}{typename}\ U,\ \textcolor{keyword}{typename}\ V>\ \textcolor{keyword}{friend}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{ggc_8h_a77eb324884a7b0f347f16dd362d150d3}{gt\_ggc\_mx}}\ (\doxymbox{\hyperlink{classhash__map}{hash\_map<T,\ U,\ V>}}\ *);}
+\DoxyCodeLine{00308\ \ \ \textcolor{keyword}{template}<\textcolor{keyword}{typename}\ T,\ \textcolor{keyword}{typename}\ U,\ \textcolor{keyword}{typename}\ V>\ \textcolor{keyword}{friend}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{ggc_8h_a3b26c28b1089a35761fee54cdbbd2171}{gt\_pch\_nx}}\ (\doxymbox{\hyperlink{classhash__map}{hash\_map<T,\ U,\ V>}}\ *);}
+\DoxyCodeLine{00309\ \ \ \textcolor{keyword}{template}<\textcolor{keyword}{typename}\ T,\ \textcolor{keyword}{typename}\ U,\ \textcolor{keyword}{typename}\ V>\ \textcolor{keyword}{friend}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{ggc_8h_a3b26c28b1089a35761fee54cdbbd2171}{gt\_pch\_nx}}\ (\doxymbox{\hyperlink{classhash__map}{hash\_map<T,\ U,\ V>}}\ *,\ \doxymbox{\hyperlink{coretypes_8h_ae5ca95fa9feb025fb3b39d2ed62f2a56}{gt\_pointer\_operator}},\ \textcolor{keywordtype}{void}\ *);}
+\DoxyCodeLine{00310\ \ \ \textcolor{keyword}{template}<\textcolor{keyword}{typename}\ T,\ \textcolor{keyword}{typename}\ U,\ \textcolor{keyword}{typename}\ V>\ \textcolor{keyword}{friend}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{hash-map_8h_a21f0a3dbc5cd1b1bf30e38b81f9041dc}{gt\_cleare\_cache}}\ (\doxymbox{\hyperlink{classhash__map}{hash\_map<T,\ U,\ V>}}\ *);}
+\DoxyCodeLine{00311\ }
+\DoxyCodeLine{00312\ \ \ \doxymbox{\hyperlink{classhash__table}{hash\_table<hash\_entry>}}\ m\_table;}
+\DoxyCodeLine{00313\ \};}
+\DoxyCodeLine{00314\ }
+\DoxyCodeLine{00315\ \textcolor{comment}{/*\ ggc\ marking\ routines.\ \ */}}
+\DoxyCodeLine{00316\ }
+\DoxyCodeLine{00317\ \textcolor{keyword}{template}<\textcolor{keyword}{typename}\ K,\ \textcolor{keyword}{typename}\ V,\ \textcolor{keyword}{typename}\ H>}
+\DoxyCodeLine{00318\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{void}}
+\DoxyCodeLine{00319\ \doxymbox{\hyperlink{hash-map_8h_afb7e5d5928cf487750c357de7dca993b}{gt\_ggc\_mx}}\ (\doxymbox{\hyperlink{classhash__map}{hash\_map<K,\ V,\ H>}}\ *h)}
+\DoxyCodeLine{00320\ \{}
+\DoxyCodeLine{00321\ \ \ \doxymbox{\hyperlink{hash-map_8h_afb7e5d5928cf487750c357de7dca993b}{gt\_ggc\_mx}}\ (\&h-\/>m\_table);}
+\DoxyCodeLine{00322\ \}}
+\DoxyCodeLine{00323\ }
+\DoxyCodeLine{00324\ \textcolor{keyword}{template}<\textcolor{keyword}{typename}\ K,\ \textcolor{keyword}{typename}\ V,\ \textcolor{keyword}{typename}\ H>}
+\DoxyCodeLine{00325\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{void}}
+\DoxyCodeLine{00326\ \doxymbox{\hyperlink{hash-map_8h_a5094720307a907b4d2c4e70add4eeb21}{gt\_pch\_nx}}\ (\doxymbox{\hyperlink{classhash__map}{hash\_map<K,\ V,\ H>}}\ *h)}
+\DoxyCodeLine{00327\ \{}
+\DoxyCodeLine{00328\ \ \ \doxymbox{\hyperlink{hash-map_8h_a5094720307a907b4d2c4e70add4eeb21}{gt\_pch\_nx}}\ (\&h-\/>m\_table);}
+\DoxyCodeLine{00329\ \}}
+\DoxyCodeLine{00330\ }
+\DoxyCodeLine{00331\ \textcolor{keyword}{template}<\textcolor{keyword}{typename}\ K,\ \textcolor{keyword}{typename}\ V,\ \textcolor{keyword}{typename}\ H>}
+\DoxyCodeLine{00332\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{void}}
+\DoxyCodeLine{00333\ \doxymbox{\hyperlink{hash-map_8h_a21f0a3dbc5cd1b1bf30e38b81f9041dc}{gt\_cleare\_cache}}\ (\doxymbox{\hyperlink{classhash__map}{hash\_map<K,\ V,\ H>}}\ *h)}
+\DoxyCodeLine{00334\ \{}
+\DoxyCodeLine{00335\ \ \ \textcolor{keywordflow}{if}\ (h)}
+\DoxyCodeLine{00336\ \ \ \ \ \doxymbox{\hyperlink{hash-map_8h_a21f0a3dbc5cd1b1bf30e38b81f9041dc}{gt\_cleare\_cache}}\ (\&h-\/>m\_table);}
+\DoxyCodeLine{00337\ \}}
+\DoxyCodeLine{00338\ }
+\DoxyCodeLine{00339\ \textcolor{keyword}{template}<\textcolor{keyword}{typename}\ K,\ \textcolor{keyword}{typename}\ V,\ \textcolor{keyword}{typename}\ H>}
+\DoxyCodeLine{00340\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{void}}
+\DoxyCodeLine{00341\ \doxymbox{\hyperlink{hash-map_8h_a5094720307a907b4d2c4e70add4eeb21}{gt\_pch\_nx}}\ (\doxymbox{\hyperlink{classhash__map}{hash\_map<K,\ V,\ H>}}\ *h,\ \doxymbox{\hyperlink{coretypes_8h_ae5ca95fa9feb025fb3b39d2ed62f2a56}{gt\_pointer\_operator}}\ op,\ \textcolor{keywordtype}{void}\ *cookie)}
+\DoxyCodeLine{00342\ \{}
+\DoxyCodeLine{00343\ \ \ op\ (\&h-\/>m\_table.m\_entries,\ \doxymbox{\hyperlink{stddef_8h_a070d2ce7b6bb7e5c05602aa8c308d0c4}{NULL}},\ cookie);}
+\DoxyCodeLine{00344\ \}}
+\DoxyCodeLine{00345\ }
+\DoxyCodeLine{00346\ \textcolor{keyword}{enum}\ \doxymbox{\hyperlink{hash-map_8h_aba80c536a87f4f3601f3df508c4f601d}{hm\_alloc}}\ \{\ \doxymbox{\hyperlink{hash-map_8h_aba80c536a87f4f3601f3df508c4f601da32bbfff70da46da0b1a1065d1b4fa571}{hm\_heap}}\ =\ \textcolor{keyword}{false},\ \doxymbox{\hyperlink{hash-map_8h_aba80c536a87f4f3601f3df508c4f601da77517fd85a3071384275098a16c056b4}{hm\_ggc}}\ =\ \textcolor{keyword}{true}\ \};}
+\DoxyCodeLine{00347\ \textcolor{keyword}{template}<\textcolor{keywordtype}{bool}\ ggc,\ \textcolor{keyword}{typename}\ K,\ \textcolor{keyword}{typename}\ V,\ \textcolor{keyword}{typename}\ H>}
+\DoxyCodeLine{00348\ \textcolor{keyword}{inline}\ \doxymbox{\hyperlink{classhash__map}{hash\_map<K,V,H>}}\ *}
+\DoxyCodeLine{00349\ \doxymbox{\hyperlink{hash-map_8h_ae2a735bea1768193fbc52fe4830c7f5a}{hash\_map\_maybe\_create}}\ (\doxymbox{\hyperlink{classhash__map}{hash\_map<K,V,H>}}\ *\&h,}
+\DoxyCodeLine{00350\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{size\_t}\ size\ =\ \doxymbox{\hyperlink{hash-map_8h_a56a5badd8d064515749392fc93658da0}{default\_hash\_map\_size}})}
+\DoxyCodeLine{00351\ \{}
+\DoxyCodeLine{00352\ \ \ \textcolor{keywordflow}{if}\ (!h)}
+\DoxyCodeLine{00353\ \ \ \ \ \{}
+\DoxyCodeLine{00354\ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (ggc)}
+\DoxyCodeLine{00355\ \ \ \ \ h\ =\ \doxymbox{\hyperlink{classhash__map}{hash\_map<K,V,H>::create\_ggc}}\ (size);}
+\DoxyCodeLine{00356\ \ \ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00357\ \ \ \ \ h\ =\ \textcolor{keyword}{new}\ \doxymbox{\hyperlink{classhash__map}{hash\_map<K,V,H>}}\ (size);}
+\DoxyCodeLine{00358\ \ \ \ \ \}}
+\DoxyCodeLine{00359\ \ \ \textcolor{keywordflow}{return}\ h;}
+\DoxyCodeLine{00360\ \}}
+\DoxyCodeLine{00361\ }
+\DoxyCodeLine{00362\ \textcolor{comment}{/*\ Like\ h-\/>get,\ but\ handles\ null\ h.\ \ */}}
+\DoxyCodeLine{00363\ \textcolor{keyword}{template}<\textcolor{keyword}{typename}\ K,\ \textcolor{keyword}{typename}\ V,\ \textcolor{keyword}{typename}\ H>}
+\DoxyCodeLine{00364\ \textcolor{keyword}{inline}\ V*}
+\DoxyCodeLine{00365\ \doxymbox{\hyperlink{hash-map_8h_a713f7721a111dee10a14fbd75b4c43f2}{hash\_map\_safe\_get}}\ (\doxymbox{\hyperlink{classhash__map}{hash\_map<K,V,H>}}\ *h,\ \textcolor{keyword}{const}\ K\&\ k)}
+\DoxyCodeLine{00366\ \{}
+\DoxyCodeLine{00367\ \ \ \textcolor{keywordflow}{return}\ h\ ?\ h-\/>get\ (k)\ :\ \doxymbox{\hyperlink{stddef_8h_a070d2ce7b6bb7e5c05602aa8c308d0c4}{NULL}};}
+\DoxyCodeLine{00368\ \}}
+\DoxyCodeLine{00369\ }
+\DoxyCodeLine{00370\ \textcolor{comment}{/*\ Like\ h-\/>get,\ but\ handles\ null\ h.\ \ */}}
+\DoxyCodeLine{00371\ \textcolor{keyword}{template}<\textcolor{keywordtype}{bool}\ ggc,\ \textcolor{keyword}{typename}\ K,\ \textcolor{keyword}{typename}\ V,\ \textcolor{keyword}{typename}\ H>}
+\DoxyCodeLine{00372\ \textcolor{keyword}{inline}\ V\&}
+\DoxyCodeLine{00373\ \doxymbox{\hyperlink{hash-map_8h_a1699a8c9dd1df7e92debed38bfd92f48}{hash\_map\_safe\_get\_or\_insert}}\ (\doxymbox{\hyperlink{classhash__map}{hash\_map<K,V,H>}}\ *\&h,\ \textcolor{keyword}{const}\ K\&\ k,\ \textcolor{keywordtype}{bool}\ *e\ =\ \doxymbox{\hyperlink{stddef_8h_a070d2ce7b6bb7e5c05602aa8c308d0c4}{NULL}},}
+\DoxyCodeLine{00374\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{size\_t}\ size\ =\ \doxymbox{\hyperlink{hash-map_8h_a56a5badd8d064515749392fc93658da0}{default\_hash\_map\_size}})}
+\DoxyCodeLine{00375\ \{}
+\DoxyCodeLine{00376\ \ \ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{hash-map_8h_ae2a735bea1768193fbc52fe4830c7f5a}{hash\_map\_maybe\_create<ggc>}}\ (h,\ size)-\/>get\_or\_insert\ (k,\ e);}
+\DoxyCodeLine{00377\ \}}
+\DoxyCodeLine{00378\ }
+\DoxyCodeLine{00379\ \textcolor{comment}{/*\ Like\ h-\/>put,\ but\ handles\ null\ h.\ \ */}}
+\DoxyCodeLine{00380\ \textcolor{keyword}{template}<\textcolor{keywordtype}{bool}\ ggc,\ \textcolor{keyword}{typename}\ K,\ \textcolor{keyword}{typename}\ V,\ \textcolor{keyword}{typename}\ H>}
+\DoxyCodeLine{00381\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{bool}}
+\DoxyCodeLine{00382\ \doxymbox{\hyperlink{hash-map_8h_a3f121df109f46943bd60dbe8ca12e743}{hash\_map\_safe\_put}}\ (\doxymbox{\hyperlink{classhash__map}{hash\_map<K,V,H>}}\ *\&h,\ \textcolor{keyword}{const}\ K\&\ k,\ \textcolor{keyword}{const}\ V\&\ v,}
+\DoxyCodeLine{00383\ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{size\_t}\ size\ =\ \doxymbox{\hyperlink{hash-map_8h_a56a5badd8d064515749392fc93658da0}{default\_hash\_map\_size}})}
+\DoxyCodeLine{00384\ \{}
+\DoxyCodeLine{00385\ \ \ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{hash-map_8h_ae2a735bea1768193fbc52fe4830c7f5a}{hash\_map\_maybe\_create<ggc>}}\ (h,\ size)-\/>put\ (k,\ v);}
+\DoxyCodeLine{00386\ \}}
+\DoxyCodeLine{00387\ }
+\DoxyCodeLine{00388\ \textcolor{preprocessor}{\#endif}}
+
+\end{DoxyCode}

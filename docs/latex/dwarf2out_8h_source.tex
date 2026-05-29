@@ -1,0 +1,506 @@
+\doxysection{dwarf2out.\+h}
+\hypertarget{dwarf2out_8h_source}{}\label{dwarf2out_8h_source}\index{toolchain/x86\_64-\/elf/lib/gcc/x86\_64-\/elf/14.2.0/plugin/include/dwarf2out.h@{toolchain/x86\_64-\/elf/lib/gcc/x86\_64-\/elf/14.2.0/plugin/include/dwarf2out.h}}
+\doxymbox{\hyperlink{dwarf2out_8h}{Go to the documentation of this file.}}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001\ \textcolor{comment}{/*\ dwarf2out.h\ -\/\ Various\ declarations\ for\ functions\ found\ in\ dwarf2out.cc}}
+\DoxyCodeLine{00002\ \textcolor{comment}{\ \ \ Copyright\ (C)\ 1998-\/2024\ Free\ Software\ Foundation,\ Inc.}}
+\DoxyCodeLine{00003\ \textcolor{comment}{}}
+\DoxyCodeLine{00004\ \textcolor{comment}{This\ file\ is\ part\ of\ GCC.}}
+\DoxyCodeLine{00005\ \textcolor{comment}{}}
+\DoxyCodeLine{00006\ \textcolor{comment}{GCC\ is\ free\ software;\ you\ can\ redistribute\ it\ and/or\ modify\ it\ under}}
+\DoxyCodeLine{00007\ \textcolor{comment}{the\ terms\ of\ the\ GNU\ General\ Public\ License\ as\ published\ by\ the\ Free}}
+\DoxyCodeLine{00008\ \textcolor{comment}{Software\ Foundation;\ either\ version\ 3,\ or\ (at\ your\ option)\ any\ later}}
+\DoxyCodeLine{00009\ \textcolor{comment}{version.}}
+\DoxyCodeLine{00010\ \textcolor{comment}{}}
+\DoxyCodeLine{00011\ \textcolor{comment}{GCC\ is\ distributed\ in\ the\ hope\ that\ it\ will\ be\ useful,\ but\ WITHOUT\ ANY}}
+\DoxyCodeLine{00012\ \textcolor{comment}{WARRANTY;\ without\ even\ the\ implied\ warranty\ of\ MERCHANTABILITY\ or}}
+\DoxyCodeLine{00013\ \textcolor{comment}{FITNESS\ FOR\ A\ PARTICULAR\ PURPOSE.\ \ See\ the\ GNU\ General\ Public\ License}}
+\DoxyCodeLine{00014\ \textcolor{comment}{for\ more\ details.}}
+\DoxyCodeLine{00015\ \textcolor{comment}{}}
+\DoxyCodeLine{00016\ \textcolor{comment}{You\ should\ have\ received\ a\ copy\ of\ the\ GNU\ General\ Public\ License}}
+\DoxyCodeLine{00017\ \textcolor{comment}{along\ with\ GCC;\ see\ the\ file\ COPYING3.\ \ If\ not\ see}}
+\DoxyCodeLine{00018\ \textcolor{comment}{<http://www.gnu.org/licenses/>.\ \ */}}
+\DoxyCodeLine{00019\ }
+\DoxyCodeLine{00020\ \textcolor{preprocessor}{\#ifndef\ GCC\_DWARF2OUT\_H}}
+\DoxyCodeLine{00021\ \textcolor{preprocessor}{\#define\ GCC\_DWARF2OUT\_H\ 1}}
+\DoxyCodeLine{00022\ }
+\DoxyCodeLine{00023\ \textcolor{preprocessor}{\#include\ "{}dwarf2.h"{}}\ \textcolor{comment}{/*\ ???\ Remove\ this\ once\ only\ used\ by\ dwarf2foo.c.\ \ */}}
+\DoxyCodeLine{00024\ }
+\DoxyCodeLine{00025\ \textcolor{keyword}{typedef}\ \textcolor{keyword}{struct\ }die\_struct\ *\doxymbox{\hyperlink{dwarf2out_8h_a02706545bb70e7fd255dc3f5b48ce75f}{dw\_die\_ref}};}
+\DoxyCodeLine{00026\ \textcolor{keyword}{typedef}\ \textcolor{keyword}{const}\ \textcolor{keyword}{struct\ }die\_struct\ *\doxymbox{\hyperlink{dwarf2out_8h_ac46b7fc0384ee949bf50efc5bc1ae908}{const\_dw\_die\_ref}};}
+\DoxyCodeLine{00027\ }
+\DoxyCodeLine{00028\ \textcolor{keyword}{typedef}\ \textcolor{keyword}{struct\ }dw\_val\_node\ *\doxymbox{\hyperlink{dwarf2out_8h_a4a68def34ea98780c43d0440bd89f6a2}{dw\_val\_ref}};}
+\DoxyCodeLine{00029\ \textcolor{keyword}{typedef}\ \textcolor{keyword}{struct\ }dw\_cfi\_node\ *\doxymbox{\hyperlink{dwarf2out_8h_a34ca65c02bbc2d44efe506ef0a4c0656}{dw\_cfi\_ref}};}
+\DoxyCodeLine{00030\ \textcolor{keyword}{typedef}\ \textcolor{keyword}{struct\ }dw\_loc\_descr\_node\ *\doxymbox{\hyperlink{dwarf2out_8h_aa9b4c4e5943a1a5eeb750b6cdb18dbc0}{dw\_loc\_descr\_ref}};}
+\DoxyCodeLine{00031\ \textcolor{keyword}{typedef}\ \textcolor{keyword}{struct\ }dw\_loc\_list\_struct\ *\doxymbox{\hyperlink{dwarf2out_8h_afab40369583d167de2b855b34b9e4c69}{dw\_loc\_list\_ref}};}
+\DoxyCodeLine{00032\ \textcolor{keyword}{typedef}\ \textcolor{keyword}{struct\ }dw\_discr\_list\_node\ *\doxymbox{\hyperlink{dwarf2out_8h_a2c5212239ef85cb858bae6f80252f516}{dw\_discr\_list\_ref}};}
+\DoxyCodeLine{00033\ \textcolor{keyword}{typedef}\ \textcolor{keyword}{struct\ }dw\_wide\_int\ *\doxymbox{\hyperlink{dwarf2out_8h_a2d5f16d8ce695ce82b44f0b6dd13760d}{dw\_wide\_int\_ptr}};}
+\DoxyCodeLine{00034\ }
+\DoxyCodeLine{00035\ }
+\DoxyCodeLine{00036\ \textcolor{comment}{/*\ Call\ frames\ are\ described\ using\ a\ sequence\ of\ Call\ Frame}}
+\DoxyCodeLine{00037\ \textcolor{comment}{\ \ \ Information\ instructions.\ \ The\ register\ number,\ offset}}
+\DoxyCodeLine{00038\ \textcolor{comment}{\ \ \ and\ address\ fields\ are\ provided\ as\ possible\ operands;}}
+\DoxyCodeLine{00039\ \textcolor{comment}{\ \ \ their\ use\ is\ selected\ by\ the\ opcode\ field.\ \ */}}
+\DoxyCodeLine{00040\ }
+\DoxyCodeLine{00041\ \textcolor{keyword}{enum}\ \doxymbox{\hyperlink{dwarf2out_8h_a8c6db156e827b508b095b35862d493e8}{dw\_cfi\_oprnd\_type}}\ \{}
+\DoxyCodeLine{00042\ \ \ \doxymbox{\hyperlink{dwarf2out_8h_a8c6db156e827b508b095b35862d493e8afe414fb98829fff48195c930acd3b4fa}{dw\_cfi\_oprnd\_unused}},}
+\DoxyCodeLine{00043\ \ \ \doxymbox{\hyperlink{dwarf2out_8h_a8c6db156e827b508b095b35862d493e8ab30e2f8c501d242f00abe9eb50dee3fa}{dw\_cfi\_oprnd\_reg\_num}},}
+\DoxyCodeLine{00044\ \ \ \doxymbox{\hyperlink{dwarf2out_8h_a8c6db156e827b508b095b35862d493e8abe95d69e0216ff03b6c42cb6ad0d8b4b}{dw\_cfi\_oprnd\_offset}},}
+\DoxyCodeLine{00045\ \ \ \doxymbox{\hyperlink{dwarf2out_8h_a8c6db156e827b508b095b35862d493e8a29da41de63eee4cd285b9b053c2f55e7}{dw\_cfi\_oprnd\_addr}},}
+\DoxyCodeLine{00046\ \ \ \doxymbox{\hyperlink{dwarf2out_8h_a8c6db156e827b508b095b35862d493e8a0e166d47595b076f5a3600535b427155}{dw\_cfi\_oprnd\_loc}},}
+\DoxyCodeLine{00047\ \ \ \doxymbox{\hyperlink{dwarf2out_8h_a8c6db156e827b508b095b35862d493e8a3088e541091965dc227291889a76cfa1}{dw\_cfi\_oprnd\_cfa\_loc}}}
+\DoxyCodeLine{00048\ \};}
+\DoxyCodeLine{00049\ }
+\DoxyCodeLine{00050\ \textcolor{keyword}{typedef}\ \textcolor{keyword}{union\ }\doxymbox{\hyperlink{coretypes_8h_ae5708c4d4b300570eebe0bc0c78facbc}{GTY}}(())\ \{}
+\DoxyCodeLine{00051\ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{coretypes_8h_ae5708c4d4b300570eebe0bc0c78facbc}{GTY}}\ ((tag\ (\textcolor{stringliteral}{"{}dw\_cfi\_oprnd\_reg\_num"{}})))\ dw\_cfi\_reg\_num;}
+\DoxyCodeLine{00052\ \ \ HOST\_WIDE\_INT\ \doxymbox{\hyperlink{coretypes_8h_ae5708c4d4b300570eebe0bc0c78facbc}{GTY}}\ ((tag\ (\textcolor{stringliteral}{"{}dw\_cfi\_oprnd\_offset"{}})))\ dw\_cfi\_offset;}
+\DoxyCodeLine{00053\ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *\ \doxymbox{\hyperlink{coretypes_8h_ae5708c4d4b300570eebe0bc0c78facbc}{GTY}}\ ((tag\ (\textcolor{stringliteral}{"{}dw\_cfi\_oprnd\_addr"{}})))\ dw\_cfi\_addr;}
+\DoxyCodeLine{00054\ \ \ \textcolor{keyword}{struct\ }dw\_loc\_descr\_node\ *\ \doxymbox{\hyperlink{coretypes_8h_ae5708c4d4b300570eebe0bc0c78facbc}{GTY}}\ ((tag\ (\textcolor{stringliteral}{"{}dw\_cfi\_oprnd\_loc"{}})))\ dw\_cfi\_loc;}
+\DoxyCodeLine{00055\ \ \ \textcolor{keyword}{struct\ }dw\_cfa\_location\ *\ \doxymbox{\hyperlink{coretypes_8h_ae5708c4d4b300570eebe0bc0c78facbc}{GTY}}\ ((tag\ (\textcolor{stringliteral}{"{}dw\_cfi\_oprnd\_cfa\_loc"{}})))}
+\DoxyCodeLine{00056\ \ \ \ \ dw\_cfi\_cfa\_loc;}
+\DoxyCodeLine{00057\ \}\ \doxymbox{\hyperlink{dwarf2out_8h_a69e0fa1b86097e5ee9307c1e38bdee9f}{dw\_cfi\_oprnd}};}
+\DoxyCodeLine{00058\ }
+\DoxyCodeLine{00059\ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{coretypes_8h_ae5708c4d4b300570eebe0bc0c78facbc}{GTY}}(())\ dw\_cfi\_node\ \{}
+\DoxyCodeLine{00060\ \ \ \textcolor{keyword}{enum}\ dwarf\_call\_frame\_info\ dw\_cfi\_opc;}
+\DoxyCodeLine{00061\ \ \ \doxymbox{\hyperlink{dwarf2out_8h_a69e0fa1b86097e5ee9307c1e38bdee9f}{dw\_cfi\_oprnd}}\ \doxymbox{\hyperlink{coretypes_8h_ae5708c4d4b300570eebe0bc0c78facbc}{GTY}}\ ((desc\ (\textcolor{stringliteral}{"{}dw\_cfi\_oprnd1\_desc\ (\%1.dw\_cfi\_opc)"{}})))}
+\DoxyCodeLine{00062\ \ \ \ \ dw\_cfi\_oprnd1;}
+\DoxyCodeLine{00063\ \ \ \doxymbox{\hyperlink{dwarf2out_8h_a69e0fa1b86097e5ee9307c1e38bdee9f}{dw\_cfi\_oprnd}}\ \doxymbox{\hyperlink{coretypes_8h_ae5708c4d4b300570eebe0bc0c78facbc}{GTY}}\ ((desc\ (\textcolor{stringliteral}{"{}dw\_cfi\_oprnd2\_desc\ (\%1.dw\_cfi\_opc)"{}})))}
+\DoxyCodeLine{00064\ \ \ \ \ dw\_cfi\_oprnd2;}
+\DoxyCodeLine{00065\ \};}
+\DoxyCodeLine{00066\ }
+\DoxyCodeLine{00067\ }
+\DoxyCodeLine{00068\ \textcolor{keyword}{typedef}\ \doxymbox{\hyperlink{structvec}{vec<dw\_cfi\_ref,\ va\_gc>}}\ *\doxymbox{\hyperlink{dwarf2out_8h_a16c77999f296b90d64f75c039442da5b}{cfi\_vec}};}
+\DoxyCodeLine{00069\ }
+\DoxyCodeLine{00070\ \textcolor{keyword}{typedef}\ \textcolor{keyword}{struct\ }dw\_fde\_node\ *\doxymbox{\hyperlink{dwarf2out_8h_ae05aef759a701d2318caed5b449b8900}{dw\_fde\_ref}};}
+\DoxyCodeLine{00071\ }
+\DoxyCodeLine{00072\ \textcolor{comment}{/*\ All\ call\ frame\ descriptions\ (FDE's)\ in\ the\ GCC\ generated\ DWARF}}
+\DoxyCodeLine{00073\ \textcolor{comment}{\ \ \ refer\ to\ a\ single\ Common\ Information\ Entry\ (CIE),\ defined\ at}}
+\DoxyCodeLine{00074\ \textcolor{comment}{\ \ \ the\ beginning\ of\ the\ .debug\_frame\ section.\ \ This\ use\ of\ a\ single}}
+\DoxyCodeLine{00075\ \textcolor{comment}{\ \ \ CIE\ obviates\ the\ need\ to\ keep\ track\ of\ multiple\ CIE's}}
+\DoxyCodeLine{00076\ \textcolor{comment}{\ \ \ in\ the\ DWARF\ generation\ routines\ below.\ \ */}}
+\DoxyCodeLine{00077\ }
+\DoxyCodeLine{00078\ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{coretypes_8h_ae5708c4d4b300570eebe0bc0c78facbc}{GTY}}(())\ dw\_fde\_node\ \{}
+\DoxyCodeLine{00079\ \ \ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ decl;}
+\DoxyCodeLine{00080\ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *dw\_fde\_begin;}
+\DoxyCodeLine{00081\ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *dw\_fde\_current\_label;}
+\DoxyCodeLine{00082\ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *dw\_fde\_end;}
+\DoxyCodeLine{00083\ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *dw\_fde\_vms\_end\_prologue;}
+\DoxyCodeLine{00084\ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *dw\_fde\_vms\_begin\_epilogue;}
+\DoxyCodeLine{00085\ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *dw\_fde\_second\_begin;}
+\DoxyCodeLine{00086\ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *dw\_fde\_second\_end;}
+\DoxyCodeLine{00087\ \ \ \doxymbox{\hyperlink{dwarf2out_8h_a16c77999f296b90d64f75c039442da5b}{cfi\_vec}}\ dw\_fde\_cfi;}
+\DoxyCodeLine{00088\ \ \ \textcolor{keywordtype}{int}\ dw\_fde\_switch\_cfi\_index;\ \textcolor{comment}{/*\ Last\ CFI\ before\ switching\ sections.\ \ */}}
+\DoxyCodeLine{00089\ \ \ HOST\_WIDE\_INT\ stack\_realignment;}
+\DoxyCodeLine{00090\ }
+\DoxyCodeLine{00091\ \ \ \textcolor{keywordtype}{unsigned}\ funcdef\_number;}
+\DoxyCodeLine{00092\ \ \ \textcolor{keywordtype}{unsigned}\ fde\_index;}
+\DoxyCodeLine{00093\ }
+\DoxyCodeLine{00094\ \ \ \textcolor{comment}{/*\ Dynamic\ realign\ argument\ pointer\ register.\ \ */}}
+\DoxyCodeLine{00095\ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ drap\_reg;}
+\DoxyCodeLine{00096\ \ \ \textcolor{comment}{/*\ Virtual\ dynamic\ realign\ argument\ pointer\ register.\ \ */}}
+\DoxyCodeLine{00097\ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ vdrap\_reg;}
+\DoxyCodeLine{00098\ \ \ \textcolor{comment}{/*\ These\ 3\ flags\ are\ copied\ from\ rtl\_data\ in\ function.h.\ \ */}}
+\DoxyCodeLine{00099\ \ \ \textcolor{keywordtype}{unsigned}\ all\_throwers\_are\_sibcalls\ :\ 1;}
+\DoxyCodeLine{00100\ \ \ \textcolor{keywordtype}{unsigned}\ uses\_eh\_lsda\ :\ 1;}
+\DoxyCodeLine{00101\ \ \ \textcolor{keywordtype}{unsigned}\ nothrow\ :\ 1;}
+\DoxyCodeLine{00102\ \ \ \textcolor{comment}{/*\ Whether\ we\ did\ stack\ realign\ in\ this\ call\ frame.\ \ */}}
+\DoxyCodeLine{00103\ \ \ \textcolor{keywordtype}{unsigned}\ stack\_realign\ :\ 1;}
+\DoxyCodeLine{00104\ \ \ \textcolor{comment}{/*\ Whether\ dynamic\ realign\ argument\ pointer\ register\ has\ been\ saved.\ \ */}}
+\DoxyCodeLine{00105\ \ \ \textcolor{keywordtype}{unsigned}\ drap\_reg\_saved:\ 1;}
+\DoxyCodeLine{00106\ \ \ \textcolor{comment}{/*\ True\ iff\ dw\_fde\_begin\ label\ is\ in\ text\_section\ or\ cold\_text\_section.\ \ */}}
+\DoxyCodeLine{00107\ \ \ \textcolor{keywordtype}{unsigned}\ in\_std\_section\ :\ 1;}
+\DoxyCodeLine{00108\ \ \ \textcolor{comment}{/*\ True\ iff\ dw\_fde\_second\_begin\ label\ is\ in\ text\_section\ or}}
+\DoxyCodeLine{00109\ \textcolor{comment}{\ \ \ \ \ cold\_text\_section.\ \ */}}
+\DoxyCodeLine{00110\ \ \ \textcolor{keywordtype}{unsigned}\ second\_in\_std\_section\ :\ 1;}
+\DoxyCodeLine{00111\ \ \ \textcolor{comment}{/*\ True\ if\ Rule\ 18\ described\ in\ dwarf2cfi.cc\ is\ in\ action,\ i.e.\ for\ dynamic}}
+\DoxyCodeLine{00112\ \textcolor{comment}{\ \ \ \ \ stack\ realignment\ in\ between\ pushing\ of\ hard\ frame\ pointer\ to\ stack}}
+\DoxyCodeLine{00113\ \textcolor{comment}{\ \ \ \ \ and\ setting\ hard\ frame\ pointer\ to\ stack\ pointer.\ \ The\ register\ save\ for}}
+\DoxyCodeLine{00114\ \textcolor{comment}{\ \ \ \ \ hard\ frame\ pointer\ register\ should\ be\ emitted\ only\ on\ the\ latter}}
+\DoxyCodeLine{00115\ \textcolor{comment}{\ \ \ \ \ instruction.\ \ */}}
+\DoxyCodeLine{00116\ \ \ \textcolor{keywordtype}{unsigned}\ rule18\ :\ 1;}
+\DoxyCodeLine{00117\ \ \ \textcolor{comment}{/*\ True\ if\ this\ function\ is\ to\ be\ ignored\ by\ debugger.\ \ */}}
+\DoxyCodeLine{00118\ \ \ \textcolor{keywordtype}{unsigned}\ ignored\_debug\ :\ 1;}
+\DoxyCodeLine{00119\ \};}
+\DoxyCodeLine{00120\ }
+\DoxyCodeLine{00121\ }
+\DoxyCodeLine{00122\ \textcolor{comment}{/*\ This\ represents\ a\ register,\ in\ DWARF\_FRAME\_REGNUM\ space,\ for\ use\ in\ CFA}}
+\DoxyCodeLine{00123\ \textcolor{comment}{\ \ \ definitions\ and\ expressions.}}
+\DoxyCodeLine{00124\ \textcolor{comment}{\ \ \ Most\ architectures\ only\ need\ a\ single\ register\ number,\ but\ some\ (amdgcn)}}
+\DoxyCodeLine{00125\ \textcolor{comment}{\ \ \ have\ pointers\ that\ span\ multiple\ registers.\ \ DWARF\ permits\ arbitrary}}
+\DoxyCodeLine{00126\ \textcolor{comment}{\ \ \ register\ sets\ but\ existing\ use-\/cases\ only\ require\ contiguous\ register}}
+\DoxyCodeLine{00127\ \textcolor{comment}{\ \ \ sets,\ as\ represented\ here.\ \ */}}
+\DoxyCodeLine{00128\ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{coretypes_8h_ae5708c4d4b300570eebe0bc0c78facbc}{GTY}}(())\ cfa\_reg\ \{}
+\DoxyCodeLine{00129\ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ reg;}
+\DoxyCodeLine{00130\ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{short}\ span;}
+\DoxyCodeLine{00131\ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{short}\ span\_width;\ \ \textcolor{comment}{/*\ A.K.A.\ register\ mode\ size.\ \ */}}
+\DoxyCodeLine{00132\ }
+\DoxyCodeLine{00133\ \ \ cfa\_reg\&\ set\_by\_dwreg\ (\textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{poly-int_8h_a3ecac2571dcdc8050989339124f1bd26}{r}})}
+\DoxyCodeLine{00134\ \ \ \ \ \{}
+\DoxyCodeLine{00135\ \ \ \ \ \ \ reg\ =\ \doxymbox{\hyperlink{poly-int_8h_a3ecac2571dcdc8050989339124f1bd26}{r}};}
+\DoxyCodeLine{00136\ \ \ \ \ \ \ span\ =\ 1;}
+\DoxyCodeLine{00137\ \ \ \ \ \ \ span\_width\ =\ 0;\ \ \textcolor{comment}{/*\ Unknown\ size\ (permitted\ when\ span\ ==\ 1).\ \ */}}
+\DoxyCodeLine{00138\ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ *\textcolor{keyword}{this};}
+\DoxyCodeLine{00139\ \ \ \ \ \}}
+\DoxyCodeLine{00140\ }
+\DoxyCodeLine{00141\ \ \ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{cp-tree_8h_a4b9bd7e4e073a2a98d043c78719de59b}{operator==\ }}(\textcolor{keyword}{const}\ cfa\_reg\ \&other)\textcolor{keyword}{\ const}}
+\DoxyCodeLine{00142\ \textcolor{keyword}{\ \ \ \ }\{}
+\DoxyCodeLine{00143\ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ (reg\ ==\ other.reg\ \&\&\ span\ ==\ other.span}
+\DoxyCodeLine{00144\ \ \ \ \ \ \ \ \ \ \ \&\&\ (span\_width\ ==\ other.span\_width}
+\DoxyCodeLine{00145\ \ \ \ \ \ \ \ \ \ \ ||\ (span\ ==\ 1}
+\DoxyCodeLine{00146\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&\&\ (span\_width\ ==\ 0\ ||\ other.span\_width\ ==\ 0))));}
+\DoxyCodeLine{00147\ \ \ \ \ \}}
+\DoxyCodeLine{00148\ }
+\DoxyCodeLine{00149\ \ \ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{diagnostic-spec_8h_a6b5ad3fba66b4c54ae8afbdf1bbebfb7}{operator!=\ }}(\textcolor{keyword}{const}\ cfa\_reg\ \&other)\textcolor{keyword}{\ const}}
+\DoxyCodeLine{00150\ \textcolor{keyword}{\ \ \ \ }\{}
+\DoxyCodeLine{00151\ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ !(*\textcolor{keyword}{this}\ ==\ other);}
+\DoxyCodeLine{00152\ \ \ \ \ \}}
+\DoxyCodeLine{00153\ \};}
+\DoxyCodeLine{00154\ }
+\DoxyCodeLine{00155\ \textcolor{comment}{/*\ This\ is\ how\ we\ define\ the\ location\ of\ the\ CFA.\ We\ use\ to\ handle\ it}}
+\DoxyCodeLine{00156\ \textcolor{comment}{\ \ \ as\ REG\ +\ OFFSET\ all\ the\ time,\ \ but\ now\ it\ can\ be\ more\ complex.}}
+\DoxyCodeLine{00157\ \textcolor{comment}{\ \ \ It\ can\ now\ be\ either\ REG\ +\ CFA\_OFFSET\ or\ *(REG\ +\ BASE\_OFFSET)\ +\ CFA\_OFFSET.}}
+\DoxyCodeLine{00158\ \textcolor{comment}{\ \ \ Instead\ of\ passing\ around\ REG\ and\ OFFSET,\ we\ pass\ a\ copy}}
+\DoxyCodeLine{00159\ \textcolor{comment}{\ \ \ of\ this\ structure.\ \ */}}
+\DoxyCodeLine{00160\ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{coretypes_8h_ae5708c4d4b300570eebe0bc0c78facbc}{GTY}}(())\ dw\_cfa\_location\ \{}
+\DoxyCodeLine{00161\ \ \ \doxymbox{\hyperlink{poly-int-types_8h_af5255601feb5e9a21f3193d378a55845}{poly\_int64}}\ offset;}
+\DoxyCodeLine{00162\ \ \ \doxymbox{\hyperlink{poly-int-types_8h_af5255601feb5e9a21f3193d378a55845}{poly\_int64}}\ base\_offset;}
+\DoxyCodeLine{00163\ \ \ \textcolor{comment}{/*\ REG\ is\ in\ DWARF\_FRAME\_REGNUM\ space,\ *not*\ normal\ REGNO\ space.\ \ */}}
+\DoxyCodeLine{00164\ \ \ \textcolor{keyword}{struct\ }cfa\_reg\ reg;}
+\DoxyCodeLine{00165\ \ \ \doxymbox{\hyperlink{system_8h_a4e2bfb0cb3835aa91a62a553a53e9763}{BOOL\_BITFIELD}}\ indirect\ :\ 1;\ \ \textcolor{comment}{/*\ 1\ if\ CFA\ is\ accessed\ via\ a\ dereference.\ \ */}}
+\DoxyCodeLine{00166\ \ \ \doxymbox{\hyperlink{system_8h_a4e2bfb0cb3835aa91a62a553a53e9763}{BOOL\_BITFIELD}}\ in\_use\ :\ 1;\ \ \ \ \textcolor{comment}{/*\ 1\ if\ a\ saved\ cfa\ is\ stored\ here.\ \ */}}
+\DoxyCodeLine{00167\ \};}
+\DoxyCodeLine{00168\ }
+\DoxyCodeLine{00169\ }
+\DoxyCodeLine{00170\ \textcolor{comment}{/*\ Each\ DIE\ may\ have\ a\ series\ of\ attribute/value\ pairs.\ \ Values}}
+\DoxyCodeLine{00171\ \textcolor{comment}{\ \ \ can\ take\ on\ several\ forms.\ \ The\ forms\ that\ are\ used\ in\ this}}
+\DoxyCodeLine{00172\ \textcolor{comment}{\ \ \ implementation\ are\ listed\ below.\ \ */}}
+\DoxyCodeLine{00173\ }
+\DoxyCodeLine{00174\ \textcolor{keyword}{enum}\ \doxymbox{\hyperlink{dwarf2out_8h_a81709d7c056223e586a17c3e947c39ca}{dw\_val\_class}}}
+\DoxyCodeLine{00175\ \{}
+\DoxyCodeLine{00176\ \ \ \doxymbox{\hyperlink{dwarf2out_8h_a81709d7c056223e586a17c3e947c39caae15b7b692148067057bbe8297189b52b}{dw\_val\_class\_none}},}
+\DoxyCodeLine{00177\ \ \ \doxymbox{\hyperlink{dwarf2out_8h_a81709d7c056223e586a17c3e947c39caad700bedca59eac12ece11333e69c69bf}{dw\_val\_class\_addr}},}
+\DoxyCodeLine{00178\ \ \ \doxymbox{\hyperlink{dwarf2out_8h_a81709d7c056223e586a17c3e947c39caa49178f149d35786c515c1c4c4d712e50}{dw\_val\_class\_offset}},}
+\DoxyCodeLine{00179\ \ \ \doxymbox{\hyperlink{dwarf2out_8h_a81709d7c056223e586a17c3e947c39caaae330ab5f1b59e361ed1f7e2db5ffbb6}{dw\_val\_class\_loc}},}
+\DoxyCodeLine{00180\ \ \ \doxymbox{\hyperlink{dwarf2out_8h_a81709d7c056223e586a17c3e947c39caa3363620b41e365fcf78d44e3a9df8749}{dw\_val\_class\_loc\_list}},}
+\DoxyCodeLine{00181\ \ \ \doxymbox{\hyperlink{dwarf2out_8h_a81709d7c056223e586a17c3e947c39caac00eaf7819edb2df430d457ab2843292}{dw\_val\_class\_range\_list}},}
+\DoxyCodeLine{00182\ \ \ \doxymbox{\hyperlink{dwarf2out_8h_a81709d7c056223e586a17c3e947c39caada717a3f44840c23431479d2c184b658}{dw\_val\_class\_const}},}
+\DoxyCodeLine{00183\ \ \ \doxymbox{\hyperlink{dwarf2out_8h_a81709d7c056223e586a17c3e947c39caa88122f805c50ca242a94964cb273cf75}{dw\_val\_class\_unsigned\_const}},}
+\DoxyCodeLine{00184\ \ \ \doxymbox{\hyperlink{dwarf2out_8h_a81709d7c056223e586a17c3e947c39caa3d5817cc06a95ffbb03b2cf1f04501c1}{dw\_val\_class\_const\_double}},}
+\DoxyCodeLine{00185\ \ \ \doxymbox{\hyperlink{dwarf2out_8h_a81709d7c056223e586a17c3e947c39caa656c598178089f4f6e41a2527b48c73f}{dw\_val\_class\_wide\_int}},}
+\DoxyCodeLine{00186\ \ \ \doxymbox{\hyperlink{dwarf2out_8h_a81709d7c056223e586a17c3e947c39caa33218b44608f3997c1db2721cea78802}{dw\_val\_class\_vec}},}
+\DoxyCodeLine{00187\ \ \ \doxymbox{\hyperlink{dwarf2out_8h_a81709d7c056223e586a17c3e947c39caad58f3026c05722b079f058583509986d}{dw\_val\_class\_flag}},}
+\DoxyCodeLine{00188\ \ \ \doxymbox{\hyperlink{dwarf2out_8h_a81709d7c056223e586a17c3e947c39caaa9e55a20875e251680b5c5b4ba748126}{dw\_val\_class\_die\_ref}},}
+\DoxyCodeLine{00189\ \ \ \doxymbox{\hyperlink{dwarf2out_8h_a81709d7c056223e586a17c3e947c39caa15728ecfb627b55aa105e4f15427848d}{dw\_val\_class\_fde\_ref}},}
+\DoxyCodeLine{00190\ \ \ \doxymbox{\hyperlink{dwarf2out_8h_a81709d7c056223e586a17c3e947c39caa40002842a3d8d45df51e9dc5c771a7c0}{dw\_val\_class\_lbl\_id}},}
+\DoxyCodeLine{00191\ \ \ \doxymbox{\hyperlink{dwarf2out_8h_a81709d7c056223e586a17c3e947c39caa6c94f9d18b8015e1fcad624d9d1af956}{dw\_val\_class\_lineptr}},}
+\DoxyCodeLine{00192\ \ \ \doxymbox{\hyperlink{dwarf2out_8h_a81709d7c056223e586a17c3e947c39caa1528b9c57f2e55c2c67aed9bd31818f9}{dw\_val\_class\_str}},}
+\DoxyCodeLine{00193\ \ \ \doxymbox{\hyperlink{dwarf2out_8h_a81709d7c056223e586a17c3e947c39caa8db6776bd3b4e52846d3e8096fa6848a}{dw\_val\_class\_macptr}},}
+\DoxyCodeLine{00194\ \ \ \doxymbox{\hyperlink{dwarf2out_8h_a81709d7c056223e586a17c3e947c39caa5be23440e93bf28b499abff6f56dc831}{dw\_val\_class\_loclistsptr}},}
+\DoxyCodeLine{00195\ \ \ \doxymbox{\hyperlink{dwarf2out_8h_a81709d7c056223e586a17c3e947c39caada6214d0595efeddd790caf0bd8e8737}{dw\_val\_class\_file}},}
+\DoxyCodeLine{00196\ \ \ \doxymbox{\hyperlink{dwarf2out_8h_a81709d7c056223e586a17c3e947c39caa66f52b19be86d040cbc7b801d13c0809}{dw\_val\_class\_data8}},}
+\DoxyCodeLine{00197\ \ \ \doxymbox{\hyperlink{dwarf2out_8h_a81709d7c056223e586a17c3e947c39caa0a6bd53f4a12d5a919ee765487745f7b}{dw\_val\_class\_decl\_ref}},}
+\DoxyCodeLine{00198\ \ \ \doxymbox{\hyperlink{dwarf2out_8h_a81709d7c056223e586a17c3e947c39caa20882cbfd98698381d16da576c59d5ba}{dw\_val\_class\_vms\_delta}},}
+\DoxyCodeLine{00199\ \ \ \doxymbox{\hyperlink{dwarf2out_8h_a81709d7c056223e586a17c3e947c39caa82ae6861146b18a2ac817ca7a019a809}{dw\_val\_class\_high\_pc}},}
+\DoxyCodeLine{00200\ \ \ \doxymbox{\hyperlink{dwarf2out_8h_a81709d7c056223e586a17c3e947c39caa7a1783929ed2c2451b142c453b43c620}{dw\_val\_class\_discr\_value}},}
+\DoxyCodeLine{00201\ \ \ \doxymbox{\hyperlink{dwarf2out_8h_a81709d7c056223e586a17c3e947c39caa563254c1c099cbea8cadc09fc743965d}{dw\_val\_class\_discr\_list}},}
+\DoxyCodeLine{00202\ \ \ \doxymbox{\hyperlink{dwarf2out_8h_a81709d7c056223e586a17c3e947c39caadccb5fbe1367c0469612d1165db78707}{dw\_val\_class\_const\_implicit}},}
+\DoxyCodeLine{00203\ \ \ \doxymbox{\hyperlink{dwarf2out_8h_a81709d7c056223e586a17c3e947c39caa73d853e5d1af9529f3b119d98a1341c3}{dw\_val\_class\_unsigned\_const\_implicit}},}
+\DoxyCodeLine{00204\ \ \ \doxymbox{\hyperlink{dwarf2out_8h_a81709d7c056223e586a17c3e947c39caaaaee9db3d765d1dbef85df1edec57632}{dw\_val\_class\_file\_implicit}},}
+\DoxyCodeLine{00205\ \ \ \doxymbox{\hyperlink{dwarf2out_8h_a81709d7c056223e586a17c3e947c39caa421276efa24ec68fcb4b6d073907bdc0}{dw\_val\_class\_view\_list}},}
+\DoxyCodeLine{00206\ \ \ \doxymbox{\hyperlink{dwarf2out_8h_a81709d7c056223e586a17c3e947c39caa044c097559472c1bb6f700bd82b7f864}{dw\_val\_class\_symview}}}
+\DoxyCodeLine{00207\ \};}
+\DoxyCodeLine{00208\ }
+\DoxyCodeLine{00209\ \textcolor{comment}{/*\ Describe\ a\ floating\ point\ constant\ value,\ or\ a\ vector\ constant\ value.\ \ */}}
+\DoxyCodeLine{00210\ }
+\DoxyCodeLine{00211\ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{coretypes_8h_ae5708c4d4b300570eebe0bc0c78facbc}{GTY}}(())\ dw\_vec\_const\ \{}
+\DoxyCodeLine{00212\ \ \ \textcolor{keywordtype}{void}\ *\ \doxymbox{\hyperlink{coretypes_8h_ae5708c4d4b300570eebe0bc0c78facbc}{GTY}}((atomic))\ array;}
+\DoxyCodeLine{00213\ \ \ \textcolor{keywordtype}{unsigned}\ length;}
+\DoxyCodeLine{00214\ \ \ \textcolor{keywordtype}{unsigned}\ elt\_size;}
+\DoxyCodeLine{00215\ \};}
+\DoxyCodeLine{00216\ }
+\DoxyCodeLine{00217\ \textcolor{comment}{/*\ Describe\ a\ single\ value\ that\ a\ discriminant\ can\ match.}}
+\DoxyCodeLine{00218\ \textcolor{comment}{}}
+\DoxyCodeLine{00219\ \textcolor{comment}{\ \ \ Discriminants\ (in\ the\ "{}record\ variant\ part"{}\ meaning)\ are\ scalars.}}
+\DoxyCodeLine{00220\ \textcolor{comment}{\ \ \ dw\_discr\_list\_ref\ and\ dw\_discr\_value\ are\ a\ mean\ to\ describe\ a\ set\ of}}
+\DoxyCodeLine{00221\ \textcolor{comment}{\ \ \ discriminant\ values\ that\ are\ matched\ by\ a\ particular\ variant.}}
+\DoxyCodeLine{00222\ \textcolor{comment}{}}
+\DoxyCodeLine{00223\ \textcolor{comment}{\ \ \ Discriminants\ can\ be\ signed\ or\ unsigned\ scalars,\ and\ can\ be\ discriminants}}
+\DoxyCodeLine{00224\ \textcolor{comment}{\ \ \ values.\ \ Both\ have\ to\ be\ consistent,\ though.\ \ */}}
+\DoxyCodeLine{00225\ }
+\DoxyCodeLine{00226\ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{coretypes_8h_ae5708c4d4b300570eebe0bc0c78facbc}{GTY}}(())\ dw\_discr\_value\ \{}
+\DoxyCodeLine{00227\ \ \ \textcolor{keywordtype}{int}\ pos;\ \textcolor{comment}{/*\ Whether\ the\ discriminant\ value\ is\ positive\ (unsigned).\ \ */}}
+\DoxyCodeLine{00228\ \ \ \textcolor{keyword}{union}}
+\DoxyCodeLine{00229\ \ \ \ \ \{}
+\DoxyCodeLine{00230\ \ \ \ \ \ \ HOST\_WIDE\_INT\ \doxymbox{\hyperlink{coretypes_8h_ae5708c4d4b300570eebe0bc0c78facbc}{GTY}}\ ((tag\ (\textcolor{stringliteral}{"{}0"{}})))\ sval;}
+\DoxyCodeLine{00231\ \ \ \ \ \ \ \textcolor{keywordtype}{unsigned}\ HOST\_WIDE\_INT\ \doxymbox{\hyperlink{coretypes_8h_ae5708c4d4b300570eebe0bc0c78facbc}{GTY}}\ ((tag\ (\textcolor{stringliteral}{"{}1"{}})))\ uval;}
+\DoxyCodeLine{00232\ \ \ \ \ \}}
+\DoxyCodeLine{00233\ \ \ \doxymbox{\hyperlink{coretypes_8h_ae5708c4d4b300570eebe0bc0c78facbc}{GTY}}\ ((desc\ (\textcolor{stringliteral}{"{}\%1.pos"{}})))\ v;}
+\DoxyCodeLine{00234\ \};}
+\DoxyCodeLine{00235\ }
+\DoxyCodeLine{00236\ struct\ addr\_table\_entry;}
+\DoxyCodeLine{00237\ }
+\DoxyCodeLine{00238\ \textcolor{comment}{/*\ The\ dw\_val\_node\ describes\ an\ attribute's\ value,\ as\ it\ is}}
+\DoxyCodeLine{00239\ \textcolor{comment}{\ \ \ represented\ internally.\ \ */}}
+\DoxyCodeLine{00240\ }
+\DoxyCodeLine{00241\ struct\ \doxymbox{\hyperlink{coretypes_8h_ae5708c4d4b300570eebe0bc0c78facbc}{GTY}}(())\ dw\_val\_node\ \{}
+\DoxyCodeLine{00242\ \ \ \textcolor{keyword}{enum}\ \doxymbox{\hyperlink{dwarf2out_8h_a81709d7c056223e586a17c3e947c39ca}{dw\_val\_class}}\ val\_class;}
+\DoxyCodeLine{00243\ \ \ \textcolor{keyword}{struct\ }addr\_table\_entry\ *\ \doxymbox{\hyperlink{coretypes_8h_ae5708c4d4b300570eebe0bc0c78facbc}{GTY}}(())\ val\_entry;}
+\DoxyCodeLine{00244\ \ \ union\ dw\_val\_struct\_union}
+\DoxyCodeLine{00245\ \ \ \ \ \{}
+\DoxyCodeLine{00246\ \ \ \ \ \ \ \doxymbox{\hyperlink{coretypes_8h_a20e671ce9e7827268658cff844f4281c}{rtx}}\ \doxymbox{\hyperlink{coretypes_8h_ae5708c4d4b300570eebe0bc0c78facbc}{GTY}}\ ((tag\ (\textcolor{stringliteral}{"{}dw\_val\_class\_addr"{}})))\ val\_addr;}
+\DoxyCodeLine{00247\ \ \ \ \ \ \ \textcolor{keywordtype}{unsigned}\ HOST\_WIDE\_INT\ \doxymbox{\hyperlink{coretypes_8h_ae5708c4d4b300570eebe0bc0c78facbc}{GTY}}\ ((tag\ (\textcolor{stringliteral}{"{}dw\_val\_class\_offset"{}})))\ val\_offset;}
+\DoxyCodeLine{00248\ \ \ \ \ \ \ \doxymbox{\hyperlink{dwarf2out_8h_afab40369583d167de2b855b34b9e4c69}{dw\_loc\_list\_ref}}\ \doxymbox{\hyperlink{coretypes_8h_ae5708c4d4b300570eebe0bc0c78facbc}{GTY}}\ ((tag\ (\textcolor{stringliteral}{"{}dw\_val\_class\_loc\_list"{}})))\ val\_loc\_list;}
+\DoxyCodeLine{00249\ \ \ \ \ \ \ \doxymbox{\hyperlink{dwarf2out_8h_a02706545bb70e7fd255dc3f5b48ce75f}{dw\_die\_ref}}\ \doxymbox{\hyperlink{coretypes_8h_ae5708c4d4b300570eebe0bc0c78facbc}{GTY}}\ ((tag\ (\textcolor{stringliteral}{"{}dw\_val\_class\_view\_list"{}})))\ val\_view\_list;}
+\DoxyCodeLine{00250\ \ \ \ \ \ \ \doxymbox{\hyperlink{dwarf2out_8h_aa9b4c4e5943a1a5eeb750b6cdb18dbc0}{dw\_loc\_descr\_ref}}\ \doxymbox{\hyperlink{coretypes_8h_ae5708c4d4b300570eebe0bc0c78facbc}{GTY}}\ ((tag\ (\textcolor{stringliteral}{"{}dw\_val\_class\_loc"{}})))\ val\_loc;}
+\DoxyCodeLine{00251\ \ \ \ \ \ \ HOST\_WIDE\_INT\ \doxymbox{\hyperlink{coretypes_8h_ae5708c4d4b300570eebe0bc0c78facbc}{GTY}}\ ((default))\ val\_int;}
+\DoxyCodeLine{00252\ \ \ \ \ \ \ \textcolor{keywordtype}{unsigned}\ HOST\_WIDE\_INT}
+\DoxyCodeLine{00253\ \ \ \ \ \doxymbox{\hyperlink{coretypes_8h_ae5708c4d4b300570eebe0bc0c78facbc}{GTY}}\ ((tag\ (\textcolor{stringliteral}{"{}dw\_val\_class\_unsigned\_const"{}})))\ val\_unsigned;}
+\DoxyCodeLine{00254\ \ \ \ \ \ \ double\_int\ \doxymbox{\hyperlink{coretypes_8h_ae5708c4d4b300570eebe0bc0c78facbc}{GTY}}\ ((tag\ (\textcolor{stringliteral}{"{}dw\_val\_class\_const\_double"{}})))\ val\_double;}
+\DoxyCodeLine{00255\ \ \ \ \ \ \ \doxymbox{\hyperlink{dwarf2out_8h_a2d5f16d8ce695ce82b44f0b6dd13760d}{dw\_wide\_int\_ptr}}\ \doxymbox{\hyperlink{coretypes_8h_ae5708c4d4b300570eebe0bc0c78facbc}{GTY}}\ ((tag\ (\textcolor{stringliteral}{"{}dw\_val\_class\_wide\_int"{}})))\ val\_wide;}
+\DoxyCodeLine{00256\ \ \ \ \ \ \ dw\_vec\_const\ \doxymbox{\hyperlink{coretypes_8h_ae5708c4d4b300570eebe0bc0c78facbc}{GTY}}\ ((tag\ (\textcolor{stringliteral}{"{}dw\_val\_class\_vec"{}})))\ val\_vec;}
+\DoxyCodeLine{00257\ \ \ \ \ \ \ struct\ dw\_val\_die\_union}
+\DoxyCodeLine{00258\ \ \ \ \ \{}
+\DoxyCodeLine{00259\ \ \ \ \ \ \ \doxymbox{\hyperlink{dwarf2out_8h_a02706545bb70e7fd255dc3f5b48ce75f}{dw\_die\_ref}}\ die;}
+\DoxyCodeLine{00260\ \ \ \ \ \ \ \textcolor{keywordtype}{int}\ external;}
+\DoxyCodeLine{00261\ \ \ \ \ \}\ \doxymbox{\hyperlink{coretypes_8h_ae5708c4d4b300570eebe0bc0c78facbc}{GTY}}\ ((tag\ (\textcolor{stringliteral}{"{}dw\_val\_class\_die\_ref"{}})))\ val\_die\_ref;}
+\DoxyCodeLine{00262\ \ \ \ \ \ \ \textcolor{keywordtype}{unsigned}\ \doxymbox{\hyperlink{coretypes_8h_ae5708c4d4b300570eebe0bc0c78facbc}{GTY}}\ ((tag\ (\textcolor{stringliteral}{"{}dw\_val\_class\_fde\_ref"{}})))\ val\_fde\_index;}
+\DoxyCodeLine{00263\ \ \ \ \ \ \ struct\ indirect\_string\_node\ *\ \doxymbox{\hyperlink{coretypes_8h_ae5708c4d4b300570eebe0bc0c78facbc}{GTY}}\ ((tag\ (\textcolor{stringliteral}{"{}dw\_val\_class\_str"{}})))\ val\_str;}
+\DoxyCodeLine{00264\ \ \ \ \ \ \ \textcolor{keywordtype}{char}\ *\ \doxymbox{\hyperlink{coretypes_8h_ae5708c4d4b300570eebe0bc0c78facbc}{GTY}}\ ((tag\ (\textcolor{stringliteral}{"{}dw\_val\_class\_lbl\_id"{}})))\ val\_lbl\_id;}
+\DoxyCodeLine{00265\ \ \ \ \ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{char}\ \doxymbox{\hyperlink{coretypes_8h_ae5708c4d4b300570eebe0bc0c78facbc}{GTY}}\ ((tag\ (\textcolor{stringliteral}{"{}dw\_val\_class\_flag"{}})))\ val\_flag;}
+\DoxyCodeLine{00266\ \ \ \ \ \ \ struct\ dwarf\_file\_data\ *\ \doxymbox{\hyperlink{coretypes_8h_ae5708c4d4b300570eebe0bc0c78facbc}{GTY}}\ ((tag\ (\textcolor{stringliteral}{"{}dw\_val\_class\_file"{}})))\ val\_file;}
+\DoxyCodeLine{00267\ \ \ \ \ \ \ struct\ dwarf\_file\_data\ *}
+\DoxyCodeLine{00268\ \ \ \ \ \doxymbox{\hyperlink{coretypes_8h_ae5708c4d4b300570eebe0bc0c78facbc}{GTY}}\ ((tag\ (\textcolor{stringliteral}{"{}dw\_val\_class\_file\_implicit"{}})))\ val\_file\_implicit;}
+\DoxyCodeLine{00269\ \ \ \ \ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{char}\ \doxymbox{\hyperlink{coretypes_8h_ae5708c4d4b300570eebe0bc0c78facbc}{GTY}}\ ((tag\ (\textcolor{stringliteral}{"{}dw\_val\_class\_data8"{}})))\ val\_data8[8];}
+\DoxyCodeLine{00270\ \ \ \ \ \ \ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ \doxymbox{\hyperlink{coretypes_8h_ae5708c4d4b300570eebe0bc0c78facbc}{GTY}}\ ((tag\ (\textcolor{stringliteral}{"{}dw\_val\_class\_decl\_ref"{}})))\ val\_decl\_ref;}
+\DoxyCodeLine{00271\ \ \ \ \ \ \ struct\ dw\_val\_vms\_delta\_union}
+\DoxyCodeLine{00272\ \ \ \ \ \{}
+\DoxyCodeLine{00273\ \ \ \ \ \ \ \textcolor{keywordtype}{char}\ *\ lbl1;}
+\DoxyCodeLine{00274\ \ \ \ \ \ \ \textcolor{keywordtype}{char}\ *\ lbl2;}
+\DoxyCodeLine{00275\ \ \ \ \ \}\ \doxymbox{\hyperlink{coretypes_8h_ae5708c4d4b300570eebe0bc0c78facbc}{GTY}}\ ((tag\ (\textcolor{stringliteral}{"{}dw\_val\_class\_vms\_delta"{}})))\ val\_vms\_delta;}
+\DoxyCodeLine{00276\ \ \ \ \ \ \ dw\_discr\_value\ \doxymbox{\hyperlink{coretypes_8h_ae5708c4d4b300570eebe0bc0c78facbc}{GTY}}\ ((tag\ (\textcolor{stringliteral}{"{}dw\_val\_class\_discr\_value"{}})))\ val\_discr\_value;}
+\DoxyCodeLine{00277\ \ \ \ \ \ \ \doxymbox{\hyperlink{dwarf2out_8h_a2c5212239ef85cb858bae6f80252f516}{dw\_discr\_list\_ref}}\ \doxymbox{\hyperlink{coretypes_8h_ae5708c4d4b300570eebe0bc0c78facbc}{GTY}}\ ((tag\ (\textcolor{stringliteral}{"{}dw\_val\_class\_discr\_list"{}})))\ val\_discr\_list;}
+\DoxyCodeLine{00278\ \ \ \ \ \ \ \textcolor{keywordtype}{char}\ *\ \doxymbox{\hyperlink{coretypes_8h_ae5708c4d4b300570eebe0bc0c78facbc}{GTY}}\ ((tag\ (\textcolor{stringliteral}{"{}dw\_val\_class\_symview"{}})))\ val\_symbolic\_view;}
+\DoxyCodeLine{00279\ \ \ \ \ \}}
+\DoxyCodeLine{00280\ \ \ \doxymbox{\hyperlink{coretypes_8h_ae5708c4d4b300570eebe0bc0c78facbc}{GTY}}\ ((desc\ (\textcolor{stringliteral}{"{}\%1.val\_class"{}})))\ v;}
+\DoxyCodeLine{00281\ \};}
+\DoxyCodeLine{00282\ }
+\DoxyCodeLine{00283\ \textcolor{comment}{/*\ Locations\ in\ memory\ are\ described\ using\ a\ sequence\ of\ stack\ machine}}
+\DoxyCodeLine{00284\ \textcolor{comment}{\ \ \ operations.\ \ */}}
+\DoxyCodeLine{00285\ }
+\DoxyCodeLine{00286\ struct\ \doxymbox{\hyperlink{coretypes_8h_ae5708c4d4b300570eebe0bc0c78facbc}{GTY}}((chain\_next\ (\textcolor{stringliteral}{"{}\%h.dw\_loc\_next"{}})))\ dw\_loc\_descr\_node\ \{}
+\DoxyCodeLine{00287\ \ \ \doxymbox{\hyperlink{dwarf2out_8h_aa9b4c4e5943a1a5eeb750b6cdb18dbc0}{dw\_loc\_descr\_ref}}\ dw\_loc\_next;}
+\DoxyCodeLine{00288\ \ \ \doxymbox{\hyperlink{ansidecl_8h_a2934559f672ebd88a0459d0fe40faff2}{ENUM\_BITFIELD}}\ (dwarf\_location\_atom)\ dw\_loc\_opc\ :\ 8;}
+\DoxyCodeLine{00289\ \ \ \textcolor{comment}{/*\ Used\ to\ distinguish\ DW\_OP\_addr\ with\ a\ direct\ symbol\ relocation}}
+\DoxyCodeLine{00290\ \textcolor{comment}{\ \ \ \ \ from\ DW\_OP\_addr\ with\ a\ dtp-\/relative\ symbol\ relocation.\ \ */}}
+\DoxyCodeLine{00291\ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ dtprel\ :\ 1;}
+\DoxyCodeLine{00292\ \ \ \textcolor{comment}{/*\ For\ DW\_OP\_pick,\ DW\_OP\_dup\ and\ DW\_OP\_over\ operations:\ true\ iff.}}
+\DoxyCodeLine{00293\ \textcolor{comment}{\ \ \ \ \ it\ targets\ a\ DWARF\ prodecure\ argument.\ \ In\ this\ case,\ it\ needs\ to\ be}}
+\DoxyCodeLine{00294\ \textcolor{comment}{\ \ \ \ \ relocated\ according\ to\ the\ current\ frame\ offset.\ \ */}}
+\DoxyCodeLine{00295\ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ frame\_offset\_rel\ :\ 1;}
+\DoxyCodeLine{00296\ \ \ \textcolor{keywordtype}{int}\ dw\_loc\_addr;}
+\DoxyCodeLine{00297\ \ \ dw\_val\_node\ dw\_loc\_oprnd1;}
+\DoxyCodeLine{00298\ \ \ dw\_val\_node\ dw\_loc\_oprnd2;}
+\DoxyCodeLine{00299\ \};}
+\DoxyCodeLine{00300\ }
+\DoxyCodeLine{00301\ \textcolor{comment}{/*\ A\ variant\ (inside\ a\ record\ variant\ part)\ is\ selected\ when\ the\ corresponding}}
+\DoxyCodeLine{00302\ \textcolor{comment}{\ \ \ discriminant\ matches\ its\ set\ of\ values\ (see\ the\ comment\ for\ dw\_discr\_value).}}
+\DoxyCodeLine{00303\ \textcolor{comment}{\ \ \ The\ following\ datastructure\ holds\ such\ matching\ information.\ \ */}}
+\DoxyCodeLine{00304\ }
+\DoxyCodeLine{00305\ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{coretypes_8h_ae5708c4d4b300570eebe0bc0c78facbc}{GTY}}(())\ dw\_discr\_list\_node\ \{}
+\DoxyCodeLine{00306\ \ \ \doxymbox{\hyperlink{dwarf2out_8h_a2c5212239ef85cb858bae6f80252f516}{dw\_discr\_list\_ref}}\ dw\_discr\_next;}
+\DoxyCodeLine{00307\ }
+\DoxyCodeLine{00308\ \ \ dw\_discr\_value\ dw\_discr\_lower\_bound;}
+\DoxyCodeLine{00309\ \ \ dw\_discr\_value\ dw\_discr\_upper\_bound;}
+\DoxyCodeLine{00310\ \ \ \textcolor{comment}{/*\ This\ node\ represents\ only\ the\ value\ in\ dw\_discr\_lower\_bound\ when\ it's}}
+\DoxyCodeLine{00311\ \textcolor{comment}{\ \ \ \ \ zero.\ \ It\ represents\ the\ range\ between\ the\ two\ fields\ (bounds\ included)}}
+\DoxyCodeLine{00312\ \textcolor{comment}{\ \ \ \ \ otherwise.\ \ */}}
+\DoxyCodeLine{00313\ \ \ \textcolor{keywordtype}{int}\ dw\_discr\_range;}
+\DoxyCodeLine{00314\ \};}
+\DoxyCodeLine{00315\ }
+\DoxyCodeLine{00316\ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{coretypes_8h_ae5708c4d4b300570eebe0bc0c78facbc}{GTY}}((\doxymbox{\hyperlink{stor-layout_8h_ae495b31b9fcf5a82856dad1995391660}{variable\_size}}))\ dw\_wide\_int\ \{}
+\DoxyCodeLine{00317\ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{namespacewi_a938ce8e6c5ae6be2baf66573f74c342d}{precision}};}
+\DoxyCodeLine{00318\ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ len;}
+\DoxyCodeLine{00319\ \ \ HOST\_WIDE\_INT\ val[1];}
+\DoxyCodeLine{00320\ }
+\DoxyCodeLine{00321\ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{namespacewi_a7b6fed285d47bc562c42d80140d29be5}{get\_precision}}\ ()\textcolor{keyword}{\ const\ }\{\ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{namespacewi_a938ce8e6c5ae6be2baf66573f74c342d}{precision}};\ \}}
+\DoxyCodeLine{00322\ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ get\_len\ ()\textcolor{keyword}{\ const\ }\{\ \textcolor{keywordflow}{return}\ len;\ \}}
+\DoxyCodeLine{00323\ \ \ \textcolor{keyword}{const}\ HOST\_WIDE\_INT\ *get\_val\ ()\textcolor{keyword}{\ const\ }\{\ \textcolor{keywordflow}{return}\ val;\ \}}
+\DoxyCodeLine{00324\ \ \ \textcolor{keyword}{inline}\ HOST\_WIDE\_INT\ elt\ (\textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int})\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00325\ \ \ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{cp-tree_8h_a4b9bd7e4e073a2a98d043c78719de59b}{operator\ ==\ }}(\textcolor{keyword}{const}\ dw\_wide\_int\ \&)\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00326\ \};}
+\DoxyCodeLine{00327\ }
+\DoxyCodeLine{00328\ \textcolor{keyword}{inline}\ HOST\_WIDE\_INT}
+\DoxyCodeLine{00329\ dw\_wide\_int::elt\ (\textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{poly-int_8h_a7e98b8a17c0aad30ba64d47b74e2a6c1}{i}})\textcolor{keyword}{\ const}}
+\DoxyCodeLine{00330\ \textcolor{keyword}{}\{}
+\DoxyCodeLine{00331\ \ \ \textcolor{keywordflow}{if}\ (\doxymbox{\hyperlink{poly-int_8h_a7e98b8a17c0aad30ba64d47b74e2a6c1}{i}}\ <\ len)}
+\DoxyCodeLine{00332\ \ \ \ \ \textcolor{keywordflow}{return}\ val[\doxymbox{\hyperlink{poly-int_8h_a7e98b8a17c0aad30ba64d47b74e2a6c1}{i}}];}
+\DoxyCodeLine{00333\ \ \ \doxymbox{\hyperlink{wide-int_8h_a2a9b9c797a652e8ac4ac28570b102f8c}{wide\_int\_ref}}\ ref\ =\ wi::storage\_ref\ (val,\ len,\ precision);}
+\DoxyCodeLine{00334\ \ \ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{namespacewi_a3c85b7cf3bed592bc520701bc7f90091}{wi::sign\_mask}}\ (ref);}
+\DoxyCodeLine{00335\ \}}
+\DoxyCodeLine{00336\ }
+\DoxyCodeLine{00337\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{bool}}
+\DoxyCodeLine{00338\ dw\_wide\_int::operator\ ==\ (\textcolor{keyword}{const}\ dw\_wide\_int\ \&o)\textcolor{keyword}{\ const}}
+\DoxyCodeLine{00339\ \textcolor{keyword}{}\{}
+\DoxyCodeLine{00340\ \ \ \doxymbox{\hyperlink{wide-int_8h_a2a9b9c797a652e8ac4ac28570b102f8c}{wide\_int\_ref}}\ ref1\ =\ wi::storage\_ref\ (val,\ len,\ precision);}
+\DoxyCodeLine{00341\ \ \ \doxymbox{\hyperlink{wide-int_8h_a2a9b9c797a652e8ac4ac28570b102f8c}{wide\_int\_ref}}\ ref2\ =\ wi::storage\_ref\ (o.val,\ o.len,\ o.precision);}
+\DoxyCodeLine{00342\ \ \ \textcolor{keywordflow}{return}\ ref1\ ==\ ref2;}
+\DoxyCodeLine{00343\ \}}
+\DoxyCodeLine{00344\ }
+\DoxyCodeLine{00345\ \textcolor{comment}{/*\ Interface\ from\ dwarf2out.cc\ to\ dwarf2cfi.cc.\ \ */}}
+\DoxyCodeLine{00346\ \textcolor{keyword}{extern}\ \textcolor{keyword}{struct\ }dw\_loc\_descr\_node\ *\doxymbox{\hyperlink{dwarf2out_8h_afa07c3fab6e1ec8605da0675e04b0c15}{build\_cfa\_loc}}}
+\DoxyCodeLine{00347\ \ \ (dw\_cfa\_location\ *,\ \doxymbox{\hyperlink{poly-int-types_8h_af5255601feb5e9a21f3193d378a55845}{poly\_int64}});}
+\DoxyCodeLine{00348\ \textcolor{keyword}{extern}\ \textcolor{keyword}{struct\ }dw\_loc\_descr\_node\ *\doxymbox{\hyperlink{dwarf2out_8h_a346c4796b0d5abaf3ed5ca39bf232c80}{build\_cfa\_aligned\_loc}}}
+\DoxyCodeLine{00349\ \ \ (dw\_cfa\_location\ *,\ \doxymbox{\hyperlink{poly-int-types_8h_af5255601feb5e9a21f3193d378a55845}{poly\_int64}},\ HOST\_WIDE\_INT);}
+\DoxyCodeLine{00350\ \textcolor{keyword}{extern}\ \textcolor{keyword}{struct\ }dw\_loc\_descr\_node\ *\doxymbox{\hyperlink{dwarf2out_8h_a2406f00c122a497a0e26ed7c383dd7ee}{build\_span\_loc}}\ (\textcolor{keyword}{struct}\ cfa\_reg);}
+\DoxyCodeLine{00351\ \textcolor{keyword}{extern}\ \textcolor{keyword}{struct\ }dw\_loc\_descr\_node\ *\doxymbox{\hyperlink{dwarf2out_8h_a0c943cd287a83ffed8c627efee3ecbd7}{mem\_loc\_descriptor}}}
+\DoxyCodeLine{00352\ \ \ (\doxymbox{\hyperlink{coretypes_8h_a20e671ce9e7827268658cff844f4281c}{rtx}},\ \doxymbox{\hyperlink{insn-modes_8h_a3c592bc51c57098d62602b12c9468e92}{machine\_mode}}\ mode,\ \doxymbox{\hyperlink{insn-modes_8h_a3c592bc51c57098d62602b12c9468e92}{machine\_mode}}\ mem\_mode,}
+\DoxyCodeLine{00353\ \ \ \ \textcolor{keyword}{enum}\ \doxymbox{\hyperlink{coretypes_8h_a3d640827628fb18c4c22c058f80739e7}{var\_init\_status}});}
+\DoxyCodeLine{00354\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{dwarf2out_8h_abd6e29d5980240e265689e1a3eb9c5ac}{loc\_descr\_equal\_p}}\ (\doxymbox{\hyperlink{dwarf2out_8h_aa9b4c4e5943a1a5eeb750b6cdb18dbc0}{dw\_loc\_descr\_ref}},\ \doxymbox{\hyperlink{dwarf2out_8h_aa9b4c4e5943a1a5eeb750b6cdb18dbc0}{dw\_loc\_descr\_ref}});}
+\DoxyCodeLine{00355\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{dwarf2out_8h_ae05aef759a701d2318caed5b449b8900}{dw\_fde\_ref}}\ \doxymbox{\hyperlink{dwarf2out_8h_a5795ba7382ed61f39b44f417bc7c1aaf}{dwarf2out\_alloc\_current\_fde}}\ (\textcolor{keywordtype}{void});}
+\DoxyCodeLine{00356\ }
+\DoxyCodeLine{00357\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{long}\ \doxymbox{\hyperlink{dwarf2out_8h_af15c9b28e8f24647089e1b3f9853517a}{size\_of\_locs}}\ (\doxymbox{\hyperlink{dwarf2out_8h_aa9b4c4e5943a1a5eeb750b6cdb18dbc0}{dw\_loc\_descr\_ref}});}
+\DoxyCodeLine{00358\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{dwarf2out_8h_a6a4c23e8fa649ade3ef95343913a7b4d}{output\_loc\_sequence}}\ (\doxymbox{\hyperlink{dwarf2out_8h_aa9b4c4e5943a1a5eeb750b6cdb18dbc0}{dw\_loc\_descr\_ref}},\ \textcolor{keywordtype}{int});}
+\DoxyCodeLine{00359\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{dwarf2out_8h_aea2ae1c91ae5f00a8a2f573984bd6dbd}{output\_loc\_sequence\_raw}}\ (\doxymbox{\hyperlink{dwarf2out_8h_aa9b4c4e5943a1a5eeb750b6cdb18dbc0}{dw\_loc\_descr\_ref}});}
+\DoxyCodeLine{00360\ }
+\DoxyCodeLine{00361\ \textcolor{comment}{/*\ Interface\ from\ dwarf2cfi.cc\ to\ dwarf2out.cc.\ \ */}}
+\DoxyCodeLine{00362\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{dwarf2out_8h_a6ff3c95c3f97200355cf1f47fc499d79}{lookup\_cfa\_1}}\ (\doxymbox{\hyperlink{dwarf2out_8h_a34ca65c02bbc2d44efe506ef0a4c0656}{dw\_cfi\_ref}}\ cfi,\ dw\_cfa\_location\ *loc,}
+\DoxyCodeLine{00363\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ dw\_cfa\_location\ *remember);}
+\DoxyCodeLine{00364\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{dwarf2out_8h_ab0de3fb2058d1c0c680acf472b04993e}{cfa\_equal\_p}}\ (\textcolor{keyword}{const}\ dw\_cfa\_location\ *,\ \textcolor{keyword}{const}\ dw\_cfa\_location\ *);}
+\DoxyCodeLine{00365\ }
+\DoxyCodeLine{00366\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{dwarf2out_8h_aad877660ba7e86787c20441e9c7345b7}{output\_cfi}}\ (\doxymbox{\hyperlink{dwarf2out_8h_a34ca65c02bbc2d44efe506ef0a4c0656}{dw\_cfi\_ref}},\ \doxymbox{\hyperlink{dwarf2out_8h_ae05aef759a701d2318caed5b449b8900}{dw\_fde\_ref}},\ \textcolor{keywordtype}{int});}
+\DoxyCodeLine{00367\ }
+\DoxyCodeLine{00368\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{coretypes_8h_ae5708c4d4b300570eebe0bc0c78facbc}{GTY}}(())\ \doxymbox{\hyperlink{dwarf2out_8h_a16c77999f296b90d64f75c039442da5b}{cfi\_vec}}\ cie\_cfi\_vec;}
+\DoxyCodeLine{00369\ }
+\DoxyCodeLine{00370\ \textcolor{comment}{/*\ Interface\ from\ dwarf2*.c\ to\ the\ rest\ of\ the\ compiler.\ \ */}}
+\DoxyCodeLine{00371\ extern\ enum\ \doxymbox{\hyperlink{dwarf2out_8h_a8c6db156e827b508b095b35862d493e8}{dw\_cfi\_oprnd\_type}}\ \doxymbox{\hyperlink{dwarf2out_8h_afc34ac0af25cacaae1aa595039991d0b}{dw\_cfi\_oprnd1\_desc}}}
+\DoxyCodeLine{00372\ \ \ (enum\ dwarf\_call\_frame\_info\ cfi);}
+\DoxyCodeLine{00373\ extern\ enum\ \doxymbox{\hyperlink{dwarf2out_8h_a8c6db156e827b508b095b35862d493e8}{dw\_cfi\_oprnd\_type}}\ \doxymbox{\hyperlink{dwarf2out_8h_a720afa5aa51b1718f380d525c61338f5}{dw\_cfi\_oprnd2\_desc}}}
+\DoxyCodeLine{00374\ \ \ (enum\ dwarf\_call\_frame\_info\ cfi);}
+\DoxyCodeLine{00375\ }
+\DoxyCodeLine{00376\ extern\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{dwarf2out_8h_ac676f272fd53a16b5ff8759c69b6f6c7}{output\_cfi\_directive}}\ (FILE\ *f,\ struct\ dw\_cfi\_node\ *cfi);}
+\DoxyCodeLine{00377\ }
+\DoxyCodeLine{00378\ extern\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{dwarf2out_8h_a16ae1d5049e02f593afca7421b183104}{dwarf2out\_emit\_cfi}}\ (\doxymbox{\hyperlink{dwarf2out_8h_a34ca65c02bbc2d44efe506ef0a4c0656}{dw\_cfi\_ref}}\ cfi);}
+\DoxyCodeLine{00379\ }
+\DoxyCodeLine{00380\ extern\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{dwarf2out_8h_a78760ceb1123394ddae3977f93f535e0}{debug\_dwarf}}\ (\textcolor{keywordtype}{void});}
+\DoxyCodeLine{00381\ struct\ die\_struct;}
+\DoxyCodeLine{00382\ extern\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{dwarf2out_8h_a74ec34b00cc4c5b4b26a16f2b4217b42}{debug\_dwarf\_die}}\ (struct\ die\_struct\ *);}
+\DoxyCodeLine{00383\ extern\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{dwarf2out_8h_aafda2ceba55a25de95eec88b36a3fbc9}{debug\_dwarf\_loc\_descr}}\ (\doxymbox{\hyperlink{dwarf2out_8h_aa9b4c4e5943a1a5eeb750b6cdb18dbc0}{dw\_loc\_descr\_ref}});}
+\DoxyCodeLine{00384\ extern\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{collect-utils_8h_a398527b3e9e358c345c5047b16871957}{debug}}\ (die\_struct\ \&ref);}
+\DoxyCodeLine{00385\ extern\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{collect-utils_8h_a398527b3e9e358c345c5047b16871957}{debug}}\ (die\_struct\ *ptr);}
+\DoxyCodeLine{00386\ extern\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{dwarf2out_8h_a27abeee59e1a7a5b3d7d5ae51b723806}{dwarf2out\_set\_demangle\_name\_func}}\ (const\ \textcolor{keywordtype}{char}\ *(*)\ (const\ \textcolor{keywordtype}{char}\ *));}
+\DoxyCodeLine{00387\ \textcolor{preprocessor}{\#ifdef\ VMS\_DEBUGGING\_INFO}}
+\DoxyCodeLine{00388\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ dwarf2out\_vms\_debug\_main\_pointer\ (\textcolor{keywordtype}{void});}
+\DoxyCodeLine{00389\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00390\ }
+\DoxyCodeLine{00391\ \textcolor{keyword}{enum}\ \doxymbox{\hyperlink{dwarf2out_8h_a4333605b66d1d32b8a57f81c40d0de3f}{array\_descr\_ordering}}}
+\DoxyCodeLine{00392\ \{}
+\DoxyCodeLine{00393\ \ \ \doxymbox{\hyperlink{dwarf2out_8h_a4333605b66d1d32b8a57f81c40d0de3fa9ccd284b0512140cee3d49f46401bf6c}{array\_descr\_ordering\_default}},}
+\DoxyCodeLine{00394\ \ \ \doxymbox{\hyperlink{dwarf2out_8h_a4333605b66d1d32b8a57f81c40d0de3fa6ca39752c332f9ce465c34f2e250806a}{array\_descr\_ordering\_row\_major}},}
+\DoxyCodeLine{00395\ \ \ \doxymbox{\hyperlink{dwarf2out_8h_a4333605b66d1d32b8a57f81c40d0de3fa2e1f4804dbedf4b7cb69e087e62a0584}{array\_descr\_ordering\_column\_major}}}
+\DoxyCodeLine{00396\ \};}
+\DoxyCodeLine{00397\ }
+\DoxyCodeLine{00398\ \textcolor{preprocessor}{\#define\ DWARF2OUT\_ARRAY\_DESCR\_INFO\_MAX\_DIMEN\ 16}}
+\DoxyCodeLine{00399\ }
+\DoxyCodeLine{00400\ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{structarray__descr__info}{array\_descr\_info}}}
+\DoxyCodeLine{00401\ \{}
+\DoxyCodeLine{00402\ \ \ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{structarray__descr__info_a34fcb676859cf8cb3748d4277c74c744}{ndimensions}};}
+\DoxyCodeLine{00403\ \ \ \textcolor{keyword}{enum}\ \doxymbox{\hyperlink{dwarf2out_8h_a4333605b66d1d32b8a57f81c40d0de3f}{array\_descr\_ordering}}\ \doxymbox{\hyperlink{structarray__descr__info_a14b1e9b0ec1cdf1889f4c580732ab99a}{ordering}};}
+\DoxyCodeLine{00404\ \ \ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ \doxymbox{\hyperlink{structarray__descr__info_a953e590c7a6bdd43c5a5ab99a00e9a61}{element\_type}};}
+\DoxyCodeLine{00405\ \ \ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ \doxymbox{\hyperlink{structarray__descr__info_adc928fc9fe47e670c3703c2e7689bdd3}{base\_decl}};}
+\DoxyCodeLine{00406\ \ \ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ \doxymbox{\hyperlink{structarray__descr__info_ae865e37c9008b26f84f78b3811081467}{data\_location}};}
+\DoxyCodeLine{00407\ \ \ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ \doxymbox{\hyperlink{structarray__descr__info_afa69d42a1602cd0822a04f67a280ed40}{allocated}};}
+\DoxyCodeLine{00408\ \ \ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ \doxymbox{\hyperlink{structarray__descr__info_ad6634ae04a786a26651606bdca71551e}{associated}};}
+\DoxyCodeLine{00409\ \ \ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ \doxymbox{\hyperlink{structarray__descr__info_ab5d5e4c8179bf6d680ec23d31f29b154}{stride}};}
+\DoxyCodeLine{00410\ \ \ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ \doxymbox{\hyperlink{structarray__descr__info_a94fae0f3ca4b0993c38504cf6c9bcfd8}{rank}};}
+\DoxyCodeLine{00411\ \ \ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{structarray__descr__info_aac4b79c9a8e1a3b8db28960b66da8d38}{stride\_in\_bits}};}
+\DoxyCodeLine{00412\ \ \ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{structarray__descr__info_1_1array__descr__dimen}{array\_descr\_dimen}}}
+\DoxyCodeLine{00413\ \ \ \ \ \{}
+\DoxyCodeLine{00414\ \ \ \ \ \ \ \textcolor{comment}{/*\ GCC\ uses\ sizetype\ for\ array\ indices,\ so\ lower\_bound\ and\ upper\_bound}}
+\DoxyCodeLine{00415\ \textcolor{comment}{\ \ \ \ \ will\ likely\ be\ "{}sizetype"{}\ values.\ However,\ bounds\ may\ have\ another}}
+\DoxyCodeLine{00416\ \textcolor{comment}{\ \ \ \ \ type\ in\ the\ original\ source\ code.\ \ */}}
+\DoxyCodeLine{00417\ \ \ \ \ \ \ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ \doxymbox{\hyperlink{structarray__descr__info_1_1array__descr__dimen_a013ebd455a258a05488ac2ce2ecfe9cd}{bounds\_type}};}
+\DoxyCodeLine{00418\ \ \ \ \ \ \ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ \doxymbox{\hyperlink{structarray__descr__info_1_1array__descr__dimen_a726005aca59ae83bc31df2cd9a91b839}{lower\_bound}};}
+\DoxyCodeLine{00419\ \ \ \ \ \ \ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ \doxymbox{\hyperlink{structarray__descr__info_1_1array__descr__dimen_a89fd1e42efea250db9eea1ea78c237ef}{upper\_bound}};}
+\DoxyCodeLine{00420\ }
+\DoxyCodeLine{00421\ \ \ \ \ \ \ \textcolor{comment}{/*\ Only\ Fortran\ uses\ more\ than\ one\ dimension\ for\ array\ types.\ \ For\ other}}
+\DoxyCodeLine{00422\ \textcolor{comment}{\ \ \ \ \ languages,\ the\ stride\ can\ be\ rather\ specified\ for\ the\ whole\ array.\ \ */}}
+\DoxyCodeLine{00423\ \ \ \ \ \ \ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ \doxymbox{\hyperlink{structarray__descr__info_1_1array__descr__dimen_a78f0f9ba0de0abdb4788e8ae345d28f1}{stride}};}
+\DoxyCodeLine{00424\ \ \ \ \ \}\ dimen[\doxymbox{\hyperlink{dwarf2out_8h_a9d8990cca075d4da6f391de905318c0b}{DWARF2OUT\_ARRAY\_DESCR\_INFO\_MAX\_DIMEN}}];}
+\DoxyCodeLine{00425\ \};}
+\DoxyCodeLine{00426\ }
+\DoxyCodeLine{00427\ \textcolor{keyword}{enum}\ \doxymbox{\hyperlink{dwarf2out_8h_a75775e78e243a125c672b9621f7b7c39}{fixed\_point\_scale\_factor}}}
+\DoxyCodeLine{00428\ \{}
+\DoxyCodeLine{00429\ \ \ \doxymbox{\hyperlink{dwarf2out_8h_a75775e78e243a125c672b9621f7b7c39aa06be7eb7257219b486035626879efd9}{fixed\_point\_scale\_factor\_binary}},}
+\DoxyCodeLine{00430\ \ \ \doxymbox{\hyperlink{dwarf2out_8h_a75775e78e243a125c672b9621f7b7c39a92a2a58b9a5b4803946915395eb70ccd}{fixed\_point\_scale\_factor\_decimal}},}
+\DoxyCodeLine{00431\ \ \ \doxymbox{\hyperlink{dwarf2out_8h_a75775e78e243a125c672b9621f7b7c39ad2d0a45f2412f8d753fdef5195be5c41}{fixed\_point\_scale\_factor\_arbitrary}}}
+\DoxyCodeLine{00432\ \};}
+\DoxyCodeLine{00433\ }
+\DoxyCodeLine{00434\ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{structfixed__point__type__info}{fixed\_point\_type\_info}}}
+\DoxyCodeLine{00435\ \{}
+\DoxyCodeLine{00436\ \ \ \textcolor{comment}{/*\ The\ scale\ factor\ is\ the\ value\ one\ has\ to\ multiply\ the\ actual\ data\ with}}
+\DoxyCodeLine{00437\ \textcolor{comment}{\ \ \ \ \ to\ get\ the\ fixed\ point\ value.\ \ We\ support\ three\ ways\ to\ encode\ it.\ \ */}}
+\DoxyCodeLine{00438\ \ \ \textcolor{keyword}{enum}\ \doxymbox{\hyperlink{dwarf2out_8h_a75775e78e243a125c672b9621f7b7c39}{fixed\_point\_scale\_factor}}\ \doxymbox{\hyperlink{structfixed__point__type__info_a8233bc1f21310eb1180e4c94356096e8}{scale\_factor\_kind}};}
+\DoxyCodeLine{00439\ \ \ \textcolor{keyword}{union}}
+\DoxyCodeLine{00440\ \ \ \ \ \{}
+\DoxyCodeLine{00441\ \ \ \ \ \ \ \textcolor{comment}{/*\ For\ a\ binary\ scale\ factor,\ the\ scale\ factor\ is\ 2\ **\ binary.\ \ */}}
+\DoxyCodeLine{00442\ \ \ \ \ \ \ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{structfixed__point__type__info_a7c9975da635fcf27f916c40da88361e9}{binary}};}
+\DoxyCodeLine{00443\ \ \ \ \ \ \ \textcolor{comment}{/*\ For\ a\ decimal\ scale\ factor,\ the\ scale\ factor\ is\ 10\ **\ decimal.\ \ */}}
+\DoxyCodeLine{00444\ \ \ \ \ \ \ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{structfixed__point__type__info_a92dcfcfd5648c8b93df86174340719ef}{decimal}};}
+\DoxyCodeLine{00445\ \ \ \ \ \ \ \textcolor{comment}{/*\ For\ an\ arbitrary\ scale\ factor,\ the\ scale\ factor\ is\ the\ ratio}}
+\DoxyCodeLine{00446\ \textcolor{comment}{\ \ \ \ \ numerator\ /\ denominator.\ \ */}}
+\DoxyCodeLine{00447\ \ \ \ \ \ \ \textcolor{keyword}{struct\ }\{\ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ \doxymbox{\hyperlink{structfixed__point__type__info_ab5de4392cd161ed071fbf71b5f377241}{numerator}};\ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ \doxymbox{\hyperlink{structfixed__point__type__info_af26018807565c62ce2fd9af4a90fa9c9}{denominator}};\ \}\ arbitrary;}
+\DoxyCodeLine{00448\ \ \ \ \ \}\ scale\_factor;}
+\DoxyCodeLine{00449\ \};}
+\DoxyCodeLine{00450\ }
+\DoxyCodeLine{00451\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{dwarf2out_8h_a5593ba6c4d05168371634460bfea7e46}{dwarf2cfi\_cc\_finalize}}\ (\textcolor{keywordtype}{void});}
+\DoxyCodeLine{00452\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{dwarf2out_8h_a2e68cb87e0502091c6b50379b103f636}{dwarf2out\_cc\_finalize}}\ (\textcolor{keywordtype}{void});}
+\DoxyCodeLine{00453\ }
+\DoxyCodeLine{00454\ \textcolor{comment}{/*\ Some\ DWARF\ internals\ are\ exposed\ for\ the\ needs\ of\ DWARF-\/based\ debug}}
+\DoxyCodeLine{00455\ \textcolor{comment}{\ \ \ formats.\ \ */}}
+\DoxyCodeLine{00456\ }
+\DoxyCodeLine{00457\ \textcolor{comment}{/*\ Each\ DIE\ attribute\ has\ a\ field\ specifying\ the\ attribute\ kind,}}
+\DoxyCodeLine{00458\ \textcolor{comment}{\ \ \ a\ link\ to\ the\ next\ attribute\ in\ the\ chain,\ and\ an\ attribute\ value.}}
+\DoxyCodeLine{00459\ \textcolor{comment}{\ \ \ Attributes\ are\ typically\ linked\ below\ the\ DIE\ they\ modify.\ \ */}}
+\DoxyCodeLine{00460\ }
+\DoxyCodeLine{00461\ \textcolor{keyword}{typedef}\ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{coretypes_8h_ae5708c4d4b300570eebe0bc0c78facbc}{GTY}}(())\ dw\_attr\_struct\ \{}
+\DoxyCodeLine{00462\ \ \ \textcolor{keyword}{enum}\ dwarf\_attribute\ dw\_attr;}
+\DoxyCodeLine{00463\ \ \ dw\_val\_node\ dw\_attr\_val;}
+\DoxyCodeLine{00464\ \}}
+\DoxyCodeLine{00465\ \doxymbox{\hyperlink{dwarf2out_8h_a1aca86184aa8719b3db00da1719843b1}{dw\_attr\_node}};}
+\DoxyCodeLine{00466\ }
+\DoxyCodeLine{00467\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{dwarf2out_8h_a1aca86184aa8719b3db00da1719843b1}{dw\_attr\_node}}\ *\doxymbox{\hyperlink{dwarf2out_8h_aba2f1e8dd9fd79237b3a0ef27e6a48be}{get\_AT}}\ (\doxymbox{\hyperlink{dwarf2out_8h_a02706545bb70e7fd255dc3f5b48ce75f}{dw\_die\_ref}},\ \textcolor{keyword}{enum}\ dwarf\_attribute);}
+\DoxyCodeLine{00468\ \textcolor{keyword}{extern}\ HOST\_WIDE\_INT\ \doxymbox{\hyperlink{dwarf2out_8h_a335e8d33ae0a89d384e684e4edc66a3d}{AT\_int}}\ (\doxymbox{\hyperlink{dwarf2out_8h_a1aca86184aa8719b3db00da1719843b1}{dw\_attr\_node}}\ *);}
+\DoxyCodeLine{00469\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{unsigned}\ HOST\_WIDE\_INT\ \doxymbox{\hyperlink{dwarf2out_8h_ac7a0b5af54ec825205633108a545a7c1}{AT\_unsigned}}\ (\doxymbox{\hyperlink{dwarf2out_8h_a1aca86184aa8719b3db00da1719843b1}{dw\_attr\_node}}\ *\doxymbox{\hyperlink{poly-int_8h_af77c881600a14567e276ee17dfb8764f}{a}});}
+\DoxyCodeLine{00470\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{dwarf2out_8h_aa9b4c4e5943a1a5eeb750b6cdb18dbc0}{dw\_loc\_descr\_ref}}\ \doxymbox{\hyperlink{dwarf2out_8h_ab7b48be7e475432cf55fcae9d31507ba}{AT\_loc}}\ (\doxymbox{\hyperlink{dwarf2out_8h_a1aca86184aa8719b3db00da1719843b1}{dw\_attr\_node}}\ *);}
+\DoxyCodeLine{00471\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{dwarf2out_8h_a02706545bb70e7fd255dc3f5b48ce75f}{dw\_die\_ref}}\ \doxymbox{\hyperlink{dwarf2out_8h_a556373b5df4c17237e8bb7298de191a8}{get\_AT\_ref}}\ (\doxymbox{\hyperlink{dwarf2out_8h_a02706545bb70e7fd255dc3f5b48ce75f}{dw\_die\_ref}},\ \textcolor{keyword}{enum}\ dwarf\_attribute);}
+\DoxyCodeLine{00472\ \textcolor{keyword}{extern}\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *\doxymbox{\hyperlink{dwarf2out_8h_a5e85e2d5600ecea0e88a4ff0d95116dd}{get\_AT\_string}}\ (\doxymbox{\hyperlink{dwarf2out_8h_a02706545bb70e7fd255dc3f5b48ce75f}{dw\_die\_ref}},\ \textcolor{keyword}{enum}\ dwarf\_attribute);}
+\DoxyCodeLine{00473\ \textcolor{keyword}{extern}\ \textcolor{keyword}{enum}\ \doxymbox{\hyperlink{dwarf2out_8h_a81709d7c056223e586a17c3e947c39ca}{dw\_val\_class}}\ \doxymbox{\hyperlink{dwarf2out_8h_a61fbfe071df7e7c470d8e8ecd58412a9}{AT\_class}}\ (\doxymbox{\hyperlink{dwarf2out_8h_a1aca86184aa8719b3db00da1719843b1}{dw\_attr\_node}}\ *);}
+\DoxyCodeLine{00474\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{unsigned}\ HOST\_WIDE\_INT\ \doxymbox{\hyperlink{dwarf2out_8h_ac7a0b5af54ec825205633108a545a7c1}{AT\_unsigned}}\ (\doxymbox{\hyperlink{dwarf2out_8h_a1aca86184aa8719b3db00da1719843b1}{dw\_attr\_node}}\ *);}
+\DoxyCodeLine{00475\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{unsigned}\ \doxymbox{\hyperlink{dwarf2out_8h_a021397236b703580a821b0d916e919f8}{get\_AT\_unsigned}}\ (\doxymbox{\hyperlink{dwarf2out_8h_a02706545bb70e7fd255dc3f5b48ce75f}{dw\_die\_ref}},\ \textcolor{keyword}{enum}\ dwarf\_attribute);}
+\DoxyCodeLine{00476\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{dwarf2out_8h_ad03e03d970001bb5d12bf77d5ff0ad04}{get\_AT\_flag}}\ (\doxymbox{\hyperlink{dwarf2out_8h_a02706545bb70e7fd255dc3f5b48ce75f}{dw\_die\_ref}},\ \textcolor{keyword}{enum}\ dwarf\_attribute);}
+\DoxyCodeLine{00477\ }
+\DoxyCodeLine{00478\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{dwarf2out_8h_ac7b2f79afc94be79cf26dd4c1e990b5d}{add\_name\_attribute}}\ (\doxymbox{\hyperlink{dwarf2out_8h_a02706545bb70e7fd255dc3f5b48ce75f}{dw\_die\_ref}},\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *);}
+\DoxyCodeLine{00479\ }
+\DoxyCodeLine{00480\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{dwarf2out_8h_a02706545bb70e7fd255dc3f5b48ce75f}{dw\_die\_ref}}\ \doxymbox{\hyperlink{dwarf2out_8h_a43767f96344a300d816fcda53b0ca2d4}{new\_die\_raw}}\ (\textcolor{keyword}{enum}\ dwarf\_tag);}
+\DoxyCodeLine{00481\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{dwarf2out_8h_a02706545bb70e7fd255dc3f5b48ce75f}{dw\_die\_ref}}\ \doxymbox{\hyperlink{dwarf2out_8h_a9bf7a80b66779818f5a4238b5abbd04d}{base\_type\_die}}\ (\doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}},\ \textcolor{keywordtype}{bool});}
+\DoxyCodeLine{00482\ }
+\DoxyCodeLine{00483\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{dwarf2out_8h_a02706545bb70e7fd255dc3f5b48ce75f}{dw\_die\_ref}}\ \doxymbox{\hyperlink{dwarf2out_8h_ab783ea889dcf86a25ab55cc84a8a3f09}{lookup\_decl\_die}}\ (\doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}});}
+\DoxyCodeLine{00484\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{dwarf2out_8h_a02706545bb70e7fd255dc3f5b48ce75f}{dw\_die\_ref}}\ \doxymbox{\hyperlink{dwarf2out_8h_a27ac3c011c3727641ac70de6d9b87bcb}{lookup\_type\_die}}\ (\doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}});}
+\DoxyCodeLine{00485\ }
+\DoxyCodeLine{00486\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{dwarf2out_8h_a02706545bb70e7fd255dc3f5b48ce75f}{dw\_die\_ref}}\ \doxymbox{\hyperlink{dwarf2out_8h_a972965a30c6e110b13e4904e86bf4089}{dw\_get\_die\_child}}\ (\doxymbox{\hyperlink{dwarf2out_8h_a02706545bb70e7fd255dc3f5b48ce75f}{dw\_die\_ref}});}
+\DoxyCodeLine{00487\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{dwarf2out_8h_a02706545bb70e7fd255dc3f5b48ce75f}{dw\_die\_ref}}\ \doxymbox{\hyperlink{dwarf2out_8h_adb891285f66e869b1e92be70aa76b7bd}{dw\_get\_die\_sib}}\ (\doxymbox{\hyperlink{dwarf2out_8h_a02706545bb70e7fd255dc3f5b48ce75f}{dw\_die\_ref}});}
+\DoxyCodeLine{00488\ \textcolor{keyword}{extern}\ \textcolor{keyword}{enum}\ dwarf\_tag\ \doxymbox{\hyperlink{dwarf2out_8h_aa4c045700cd135a08038a35f5443210c}{dw\_get\_die\_tag}}\ (\doxymbox{\hyperlink{dwarf2out_8h_a02706545bb70e7fd255dc3f5b48ce75f}{dw\_die\_ref}});}
+\DoxyCodeLine{00489\ }
+\DoxyCodeLine{00490\ \textcolor{comment}{/*\ Data\ about\ a\ single\ source\ file.\ \ */}}
+\DoxyCodeLine{00491\ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{coretypes_8h_ae5708c4d4b300570eebe0bc0c78facbc}{GTY}}((for\_user))\ dwarf\_file\_data\ \{}
+\DoxyCodeLine{00492\ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *\ key;}
+\DoxyCodeLine{00493\ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *\ filename;}
+\DoxyCodeLine{00494\ \ \ \textcolor{keywordtype}{int}\ emitted\_number;}
+\DoxyCodeLine{00495\ \};}
+\DoxyCodeLine{00496\ }
+\DoxyCodeLine{00497\ \textcolor{keyword}{extern}\ \textcolor{keyword}{struct\ }dwarf\_file\_data\ *\doxymbox{\hyperlink{dwarf2out_8h_acd23ad8957e5a0d39a70cf48d72990fa}{get\_AT\_file}}\ (\doxymbox{\hyperlink{dwarf2out_8h_a02706545bb70e7fd255dc3f5b48ce75f}{dw\_die\_ref}},}
+\DoxyCodeLine{00498\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{enum}\ dwarf\_attribute);}
+\DoxyCodeLine{00499\ }
+\DoxyCodeLine{00500\ \textcolor{preprocessor}{\#endif\ }\textcolor{comment}{/*\ GCC\_DWARF2OUT\_H\ */}\textcolor{preprocessor}{}}
+
+\end{DoxyCode}

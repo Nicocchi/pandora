@@ -1,0 +1,133 @@
+\doxysection{substring-\/locations.h}
+\hypertarget{substring-locations_8h_source}{}\label{substring-locations_8h_source}\index{toolchain/x86\_64-\/elf/lib/gcc/x86\_64-\/elf/14.2.0/plugin/include/substring-\/locations.h@{toolchain/x86\_64-\/elf/lib/gcc/x86\_64-\/elf/14.2.0/plugin/include/substring-\/locations.h}}
+\doxymbox{\hyperlink{substring-locations_8h}{Go to the documentation of this file.}}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001\ \textcolor{comment}{/*\ Source\ locations\ within\ string\ literals.}}
+\DoxyCodeLine{00002\ \textcolor{comment}{\ \ \ Copyright\ (C)\ 2016-\/2024\ Free\ Software\ Foundation,\ Inc.}}
+\DoxyCodeLine{00003\ \textcolor{comment}{}}
+\DoxyCodeLine{00004\ \textcolor{comment}{This\ file\ is\ part\ of\ GCC.}}
+\DoxyCodeLine{00005\ \textcolor{comment}{}}
+\DoxyCodeLine{00006\ \textcolor{comment}{GCC\ is\ free\ software;\ you\ can\ redistribute\ it\ and/or\ modify\ it\ under}}
+\DoxyCodeLine{00007\ \textcolor{comment}{the\ terms\ of\ the\ GNU\ General\ Public\ License\ as\ published\ by\ the\ Free}}
+\DoxyCodeLine{00008\ \textcolor{comment}{Software\ Foundation;\ either\ version\ 3,\ or\ (at\ your\ option)\ any\ later}}
+\DoxyCodeLine{00009\ \textcolor{comment}{version.}}
+\DoxyCodeLine{00010\ \textcolor{comment}{}}
+\DoxyCodeLine{00011\ \textcolor{comment}{GCC\ is\ distributed\ in\ the\ hope\ that\ it\ will\ be\ useful,\ but\ WITHOUT\ ANY}}
+\DoxyCodeLine{00012\ \textcolor{comment}{WARRANTY;\ without\ even\ the\ implied\ warranty\ of\ MERCHANTABILITY\ or}}
+\DoxyCodeLine{00013\ \textcolor{comment}{FITNESS\ FOR\ A\ PARTICULAR\ PURPOSE.\ \ See\ the\ GNU\ General\ Public\ License}}
+\DoxyCodeLine{00014\ \textcolor{comment}{for\ more\ details.}}
+\DoxyCodeLine{00015\ \textcolor{comment}{}}
+\DoxyCodeLine{00016\ \textcolor{comment}{You\ should\ have\ received\ a\ copy\ of\ the\ GNU\ General\ Public\ License}}
+\DoxyCodeLine{00017\ \textcolor{comment}{along\ with\ GCC;\ see\ the\ file\ COPYING3.\ \ If\ not\ see}}
+\DoxyCodeLine{00018\ \textcolor{comment}{<http://www.gnu.org/licenses/>.\ \ */}}
+\DoxyCodeLine{00019\ }
+\DoxyCodeLine{00020\ \textcolor{preprocessor}{\#ifndef\ GCC\_SUBSTRING\_LOCATIONS\_H}}
+\DoxyCodeLine{00021\ \textcolor{preprocessor}{\#define\ GCC\_SUBSTRING\_LOCATIONS\_H}}
+\DoxyCodeLine{00022\ }
+\DoxyCodeLine{00023\ \textcolor{comment}{/*\ The\ substring\_loc\ class\ encapsulates\ information\ on\ the\ source\ location}}
+\DoxyCodeLine{00024\ \textcolor{comment}{\ \ \ of\ a\ range\ of\ characters\ within\ a\ STRING\_CST.}}
+\DoxyCodeLine{00025\ \textcolor{comment}{}}
+\DoxyCodeLine{00026\ \textcolor{comment}{\ \ \ If\ needed\ by\ a\ diagnostic,\ the\ actual\ location\_t\ of\ the\ substring\_loc}}
+\DoxyCodeLine{00027\ \textcolor{comment}{\ \ \ can\ be\ calculated\ by\ calling\ its\ get\_location\ method.\ \ This\ calls\ a}}
+\DoxyCodeLine{00028\ \textcolor{comment}{\ \ \ langhook,\ since\ this\ is\ inherently\ frontend-\/specific.\ \ For\ the\ C\ family}}
+\DoxyCodeLine{00029\ \textcolor{comment}{\ \ \ of\ frontends,\ it\ calls\ back\ into\ libcpp\ to\ reparse\ the\ strings.\ \ This}}
+\DoxyCodeLine{00030\ \textcolor{comment}{\ \ \ gets\ the\ location\ information\ "{}on\ demand"{},\ rather\ than\ storing\ the}}
+\DoxyCodeLine{00031\ \textcolor{comment}{\ \ \ location\ information\ in\ the\ initial\ lex\ for\ every\ string.\ \ Thus\ the}}
+\DoxyCodeLine{00032\ \textcolor{comment}{\ \ \ substring\_loc\ can\ also\ be\ thought\ of\ as\ a\ deferred\ call\ into\ libcpp,}}
+\DoxyCodeLine{00033\ \textcolor{comment}{\ \ \ to\ allow\ the\ non-\/trivial\ work\ of\ reparsing\ the\ string\ to\ be\ delayed}}
+\DoxyCodeLine{00034\ \textcolor{comment}{\ \ \ until\ we\ actually\ need\ it\ (to\ emit\ a\ diagnostic\ for\ a\ particular\ range}}
+\DoxyCodeLine{00035\ \textcolor{comment}{\ \ \ of\ characters).}}
+\DoxyCodeLine{00036\ \textcolor{comment}{}}
+\DoxyCodeLine{00037\ \textcolor{comment}{\ \ \ substring\_loc::get\_location\ returns\ NULL\ if\ it\ succeeds,\ or\ an}}
+\DoxyCodeLine{00038\ \textcolor{comment}{\ \ \ error\ message\ if\ it\ fails.\ \ Error\ messages\ are\ intended\ for\ GCC}}
+\DoxyCodeLine{00039\ \textcolor{comment}{\ \ \ developers\ (to\ help\ debugging)\ rather\ than\ for\ end-\/users.}}
+\DoxyCodeLine{00040\ \textcolor{comment}{}}
+\DoxyCodeLine{00041\ \textcolor{comment}{\ \ \ The\ easiest\ way\ to\ use\ a\ substring\_loc\ is\ via\ the\ format\_warning\_*\ APIs,}}
+\DoxyCodeLine{00042\ \textcolor{comment}{\ \ \ which\ gracefully\ handle\ failure\ of\ substring\_loc::get\_location\ by\ using}}
+\DoxyCodeLine{00043\ \textcolor{comment}{\ \ \ the\ location\ of\ the\ string\ as\ a\ whole\ if\ substring-\/information\ is}}
+\DoxyCodeLine{00044\ \textcolor{comment}{\ \ \ unavailable.\ \ */}}
+\DoxyCodeLine{00045\ }
+\DoxyCodeLine{00046\ \textcolor{keyword}{class\ }\doxymbox{\hyperlink{classsubstring__loc_a8b5f5c25570bfaff09a594795077cd10}{substring\_loc}}}
+\DoxyCodeLine{00047\ \{}
+\DoxyCodeLine{00048\ \ \textcolor{keyword}{public}:}
+\DoxyCodeLine{00049\ \ \ \textcolor{comment}{/*\ Constructor.\ \ FMT\_STRING\_LOC\ is\ the\ location\ of\ the\ string\ as}}
+\DoxyCodeLine{00050\ \textcolor{comment}{\ \ \ \ \ a\ whole.\ \ STRING\_TYPE\ is\ the\ type\ of\ the\ string.\ \ It\ should\ be\ an}}
+\DoxyCodeLine{00051\ \textcolor{comment}{\ \ \ \ \ ARRAY\_TYPE\ of\ INTEGER\_TYPE,\ or\ a\ POINTER\_TYPE\ to\ such\ an\ ARRAY\_TYPE.}}
+\DoxyCodeLine{00052\ \textcolor{comment}{\ \ \ \ \ CARET\_IDX,\ START\_IDX,\ and\ END\_IDX\ are\ offsets\ from\ the\ start}}
+\DoxyCodeLine{00053\ \textcolor{comment}{\ \ \ \ \ of\ the\ string\ data.\ \ */}}
+\DoxyCodeLine{00054\ \ \ \doxymbox{\hyperlink{classsubstring__loc_a8b5f5c25570bfaff09a594795077cd10}{substring\_loc}}\ (\doxymbox{\hyperlink{line-map_8h_aedf25620511d64e43327f1a229906a96}{location\_t}}\ fmt\_string\_loc,\ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ \doxymbox{\hyperlink{gengtype_8h_ae0810acb0a514b6d1bdf3266e5c9e53c}{string\_type}},}
+\DoxyCodeLine{00055\ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{int}\ caret\_idx,\ \textcolor{keywordtype}{int}\ start\_idx,\ \textcolor{keywordtype}{int}\ end\_idx)}
+\DoxyCodeLine{00056\ \ \ :\ \doxymbox{\hyperlink{classsubstring__loc_af7126b0cfc19e1df760fc00132f921c4}{m\_fmt\_string\_loc}}\ (fmt\_string\_loc),\ \doxymbox{\hyperlink{classsubstring__loc_a1b308c251a6cdeda5e515e529f9da811}{m\_string\_type}}\ (\doxymbox{\hyperlink{gengtype_8h_ae0810acb0a514b6d1bdf3266e5c9e53c}{string\_type}}),}
+\DoxyCodeLine{00057\ \ \ \ \ \doxymbox{\hyperlink{classsubstring__loc_ae27882a8d75c7c6a2c20afcafab76e99}{m\_caret\_idx}}\ (caret\_idx),\ \doxymbox{\hyperlink{classsubstring__loc_a32d19969b4a8e59a8f6b68f6ffe40e52}{m\_start\_idx}}\ (start\_idx),\ \doxymbox{\hyperlink{classsubstring__loc_ab4259f3bec5f3079112c107a92badf6d}{m\_end\_idx}}\ (end\_idx)\ \{\}}
+\DoxyCodeLine{00058\ }
+\DoxyCodeLine{00059\ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classsubstring__loc_a2cf7ccc4abeb4fac62ec8b415484e8f7}{set\_caret\_index}}\ (\textcolor{keywordtype}{int}\ caret\_idx)\ \{\ \doxymbox{\hyperlink{classsubstring__loc_ae27882a8d75c7c6a2c20afcafab76e99}{m\_caret\_idx}}\ =\ caret\_idx;\ \}}
+\DoxyCodeLine{00060\ }
+\DoxyCodeLine{00061\ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *\doxymbox{\hyperlink{classsubstring__loc_afc827a763358c1e82da3475498d6ce88}{get\_location}}\ (\doxymbox{\hyperlink{line-map_8h_aedf25620511d64e43327f1a229906a96}{location\_t}}\ *out\_loc)\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00062\ }
+\DoxyCodeLine{00063\ \ \ \doxymbox{\hyperlink{line-map_8h_aedf25620511d64e43327f1a229906a96}{location\_t}}\ \doxymbox{\hyperlink{classsubstring__loc_a53040216637ec282ced05e9e5d59ad64}{get\_fmt\_string\_loc}}\ ()\textcolor{keyword}{\ const\ }\{\ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{classsubstring__loc_af7126b0cfc19e1df760fc00132f921c4}{m\_fmt\_string\_loc}};\ \}}
+\DoxyCodeLine{00064\ \ \ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ \doxymbox{\hyperlink{classsubstring__loc_ae5b580469c65aeac4ffd3f5b30a8630c}{get\_string\_type}}\ ()\textcolor{keyword}{\ const\ }\{\ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{classsubstring__loc_a1b308c251a6cdeda5e515e529f9da811}{m\_string\_type}};\ \}}
+\DoxyCodeLine{00065\ \ \ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{classsubstring__loc_a4686166ab93b53edca4e9d41be7e4f3e}{get\_caret\_idx}}\ ()\textcolor{keyword}{\ const\ }\{\ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{classsubstring__loc_ae27882a8d75c7c6a2c20afcafab76e99}{m\_caret\_idx}};\ \}}
+\DoxyCodeLine{00066\ \ \ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{classsubstring__loc_a725aadeaef9f0a356ed239947c55eacb}{get\_start\_idx}}\ ()\textcolor{keyword}{\ const\ }\{\ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{classsubstring__loc_a32d19969b4a8e59a8f6b68f6ffe40e52}{m\_start\_idx}};\ \}}
+\DoxyCodeLine{00067\ \ \ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{classsubstring__loc_ac337068d51285450f00455d8494d6f0a}{get\_end\_idx}}\ ()\textcolor{keyword}{\ const\ }\{\ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{classsubstring__loc_ab4259f3bec5f3079112c107a92badf6d}{m\_end\_idx}};\ \}}
+\DoxyCodeLine{00068\ }
+\DoxyCodeLine{00069\ \ \textcolor{keyword}{private}:}
+\DoxyCodeLine{00070\ \ \ \doxymbox{\hyperlink{line-map_8h_aedf25620511d64e43327f1a229906a96}{location\_t}}\ \doxymbox{\hyperlink{classsubstring__loc_af7126b0cfc19e1df760fc00132f921c4}{m\_fmt\_string\_loc}};}
+\DoxyCodeLine{00071\ \ \ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ \doxymbox{\hyperlink{classsubstring__loc_a1b308c251a6cdeda5e515e529f9da811}{m\_string\_type}};}
+\DoxyCodeLine{00072\ \ \ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{classsubstring__loc_ae27882a8d75c7c6a2c20afcafab76e99}{m\_caret\_idx}};}
+\DoxyCodeLine{00073\ \ \ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{classsubstring__loc_a32d19969b4a8e59a8f6b68f6ffe40e52}{m\_start\_idx}};}
+\DoxyCodeLine{00074\ \ \ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{classsubstring__loc_ab4259f3bec5f3079112c107a92badf6d}{m\_end\_idx}};}
+\DoxyCodeLine{00075\ \};}
+\DoxyCodeLine{00076\ }
+\DoxyCodeLine{00077\ \textcolor{comment}{/*\ A\ bundle\ of\ state\ for\ emitting\ a\ diagnostic\ relating\ to\ a\ format\ string.\ \ */}}
+\DoxyCodeLine{00078\ }
+\DoxyCodeLine{00079\ \textcolor{keyword}{class\ }\doxymbox{\hyperlink{classformat__string__diagnostic__t_a709eabcd633e71ac874859995e23402a}{format\_string\_diagnostic\_t}}}
+\DoxyCodeLine{00080\ \{}
+\DoxyCodeLine{00081\ \ \textcolor{keyword}{public}:}
+\DoxyCodeLine{00082\ \ \ \doxymbox{\hyperlink{classformat__string__diagnostic__t_a709eabcd633e71ac874859995e23402a}{format\_string\_diagnostic\_t}}\ (\textcolor{keyword}{const}\ \doxymbox{\hyperlink{classsubstring__loc}{substring\_loc}}\ \&fmt\_loc,}
+\DoxyCodeLine{00083\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classrange__label}{range\_label}}\ *fmt\_label,}
+\DoxyCodeLine{00084\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{line-map_8h_aedf25620511d64e43327f1a229906a96}{location\_t}}\ param\_loc,}
+\DoxyCodeLine{00085\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classrange__label}{range\_label}}\ *param\_label,}
+\DoxyCodeLine{00086\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *corrected\_substring);}
+\DoxyCodeLine{00087\ }
+\DoxyCodeLine{00088\ \ \ \textcolor{comment}{/*\ Functions\ for\ emitting\ a\ warning\ about\ a\ format\ string.\ \ */}}
+\DoxyCodeLine{00089\ }
+\DoxyCodeLine{00090\ \ \ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{classformat__string__diagnostic__t_a729e39c803722dae66f786b018028015}{emit\_warning\_va}}\ (\textcolor{keywordtype}{int}\ opt,\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *gmsgid,\ \doxymbox{\hyperlink{stdarg_8h_a8c1b94dabde2c11f430bb83e37bdb0a1}{va\_list}}\ *ap)\ \textcolor{keyword}{const}}
+\DoxyCodeLine{00091\ \ \ \ \ \doxymbox{\hyperlink{diagnostic-core_8h_aefe7c26feedfec1c17ec07749bd3cbe2}{ATTRIBUTE\_GCC\_DIAG}}\ (3,\ 0);}
+\DoxyCodeLine{00092\ }
+\DoxyCodeLine{00093\ \ \ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{classformat__string__diagnostic__t_a9eec0695f7383350aaf37235aa80978e}{emit\_warning\_n\_va}}\ (\textcolor{keywordtype}{int}\ opt,\ \textcolor{keywordtype}{unsigned}\ HOST\_WIDE\_INT\ n,}
+\DoxyCodeLine{00094\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *singular\_gmsgid,}
+\DoxyCodeLine{00095\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *plural\_gmsgid,\ \doxymbox{\hyperlink{stdarg_8h_a8c1b94dabde2c11f430bb83e37bdb0a1}{va\_list}}\ *ap)\ \textcolor{keyword}{const}}
+\DoxyCodeLine{00096\ \ \ \doxymbox{\hyperlink{classformat__string__diagnostic__t_a9ed1cdc200a4d61fc8180c8db811bfe7}{ATTRIBUTE\_GCC\_DIAG}}\ (4,\ 0)\ \doxymbox{\hyperlink{classformat__string__diagnostic__t_a9ed1cdc200a4d61fc8180c8db811bfe7}{ATTRIBUTE\_GCC\_DIAG}}\ (5,\ 0);}
+\DoxyCodeLine{00097\ }
+\DoxyCodeLine{00098\ \ \ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{classformat__string__diagnostic__t_a570e21a7fe5a8f27a71ac64e46647f80}{emit\_warning}}\ (\textcolor{keywordtype}{int}\ opt,\ const\ \textcolor{keywordtype}{char}\ *gmsgid,\ ...)\ const}
+\DoxyCodeLine{00099\ \ \ \ \ \doxymbox{\hyperlink{classformat__string__diagnostic__t_a9ed1cdc200a4d61fc8180c8db811bfe7}{ATTRIBUTE\_GCC\_DIAG}}\ (3,\ 4);}
+\DoxyCodeLine{00100\ }
+\DoxyCodeLine{00101\ \ \ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{classformat__string__diagnostic__t_a2b297be41730aed8da229dff9f013d21}{emit\_warning\_n}}\ (\textcolor{keywordtype}{int}\ opt,\ \textcolor{keywordtype}{unsigned}\ HOST\_WIDE\_INT\ n,}
+\DoxyCodeLine{00102\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ const\ \textcolor{keywordtype}{char}\ *singular\_gmsgid,}
+\DoxyCodeLine{00103\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ const\ \textcolor{keywordtype}{char}\ *plural\_gmsgid,\ ...)\ const}
+\DoxyCodeLine{00104\ \ \ \doxymbox{\hyperlink{classformat__string__diagnostic__t_a9ed1cdc200a4d61fc8180c8db811bfe7}{ATTRIBUTE\_GCC\_DIAG}}\ (4,\ 6)\ \doxymbox{\hyperlink{classformat__string__diagnostic__t_a9ed1cdc200a4d61fc8180c8db811bfe7}{ATTRIBUTE\_GCC\_DIAG}}\ (5,\ 6);}
+\DoxyCodeLine{00105\ }
+\DoxyCodeLine{00106\ \ private:}
+\DoxyCodeLine{00107\ \ \ const\ \doxymbox{\hyperlink{classsubstring__loc}{substring\_loc}}\ \&\doxymbox{\hyperlink{classformat__string__diagnostic__t_aa70e2f81181730580a5fbe9692a7df50}{m\_fmt\_loc}};}
+\DoxyCodeLine{00108\ \ \ const\ \doxymbox{\hyperlink{classrange__label}{range\_label}}\ *\doxymbox{\hyperlink{classformat__string__diagnostic__t_aa32a1b8a74fb7798df2547facf514c61}{m\_fmt\_label}};}
+\DoxyCodeLine{00109\ \ \ \doxymbox{\hyperlink{line-map_8h_aedf25620511d64e43327f1a229906a96}{location\_t}}\ \doxymbox{\hyperlink{classformat__string__diagnostic__t_a55bd10da70a473ea8c970f14c38ef753}{m\_param\_loc}};}
+\DoxyCodeLine{00110\ \ \ const\ \doxymbox{\hyperlink{classrange__label}{range\_label}}\ *\doxymbox{\hyperlink{classformat__string__diagnostic__t_afbd7baa6bec894862e1e8605981f8c04}{m\_param\_label}};}
+\DoxyCodeLine{00111\ \ \ const\ \textcolor{keywordtype}{char}\ *\doxymbox{\hyperlink{classformat__string__diagnostic__t_a30a84991fdf011172af16e2f288d21ec}{m\_corrected\_substring}};}
+\DoxyCodeLine{00112\ \};}
+\DoxyCodeLine{00113\ }
+\DoxyCodeLine{00114\ }
+\DoxyCodeLine{00115\ \textcolor{comment}{/*\ Implementation\ detail,\ for\ use\ when\ implementing}}
+\DoxyCodeLine{00116\ \textcolor{comment}{\ \ \ LANG\_HOOKS\_GET\_SUBSTRING\_LOCATION.\ \ */}}
+\DoxyCodeLine{00117\ }
+\DoxyCodeLine{00118\ extern\ const\ \textcolor{keywordtype}{char}\ *\doxymbox{\hyperlink{substring-locations_8h_ae123c87f3aef561c0dda40a4ea70f972}{get\_location\_within\_string}}\ (\doxymbox{\hyperlink{cpplib_8h_a0b20c26f76e93eaf2ca0e9e6f5216331}{cpp\_reader}}\ *pfile,}
+\DoxyCodeLine{00119\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{classfile__cache}{file\_cache}}\ \&fc,}
+\DoxyCodeLine{00120\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ string\_concat\_db\ *concats,}
+\DoxyCodeLine{00121\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{line-map_8h_aedf25620511d64e43327f1a229906a96}{location\_t}}\ strloc,}
+\DoxyCodeLine{00122\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ enum\ \doxymbox{\hyperlink{cpplib_8h_aa5f3caf898948acd0c335d10610044c8}{cpp\_ttype}}\ \doxymbox{\hyperlink{structtype}{type}},}
+\DoxyCodeLine{00123\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{int}\ caret\_idx,}
+\DoxyCodeLine{00124\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{int}\ start\_idx,\ \textcolor{keywordtype}{int}\ end\_idx,}
+\DoxyCodeLine{00125\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{line-map_8h_aedf25620511d64e43327f1a229906a96}{location\_t}}\ *out\_loc);}
+\DoxyCodeLine{00126\ }
+\DoxyCodeLine{00127\ \textcolor{preprocessor}{\#endif\ }\textcolor{comment}{/*\ !\ GCC\_SUBSTRING\_LOCATIONS\_H\ */}\textcolor{preprocessor}{}}
+
+\end{DoxyCode}

@@ -1,0 +1,115 @@
+\doxysection{domwalk.\+h}
+\hypertarget{domwalk_8h_source}{}\label{domwalk_8h_source}\index{toolchain/x86\_64-\/elf/lib/gcc/x86\_64-\/elf/14.2.0/plugin/include/domwalk.h@{toolchain/x86\_64-\/elf/lib/gcc/x86\_64-\/elf/14.2.0/plugin/include/domwalk.h}}
+\doxymbox{\hyperlink{domwalk_8h}{Go to the documentation of this file.}}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001\ \textcolor{comment}{/*\ Generic\ dominator\ tree\ walker}}
+\DoxyCodeLine{00002\ \textcolor{comment}{\ \ \ Copyright\ (C)\ 2003-\/2024\ Free\ Software\ Foundation,\ Inc.}}
+\DoxyCodeLine{00003\ \textcolor{comment}{\ \ \ Contributed\ by\ Diego\ Novillo\ <dnovillo@redhat.com>}}
+\DoxyCodeLine{00004\ \textcolor{comment}{}}
+\DoxyCodeLine{00005\ \textcolor{comment}{This\ file\ is\ part\ of\ GCC.}}
+\DoxyCodeLine{00006\ \textcolor{comment}{}}
+\DoxyCodeLine{00007\ \textcolor{comment}{GCC\ is\ free\ software;\ you\ can\ redistribute\ it\ and/or\ modify}}
+\DoxyCodeLine{00008\ \textcolor{comment}{it\ under\ the\ terms\ of\ the\ GNU\ General\ Public\ License\ as\ published\ by}}
+\DoxyCodeLine{00009\ \textcolor{comment}{the\ Free\ Software\ Foundation;\ either\ version\ 3,\ or\ (at\ your\ option)}}
+\DoxyCodeLine{00010\ \textcolor{comment}{any\ later\ version.}}
+\DoxyCodeLine{00011\ \textcolor{comment}{}}
+\DoxyCodeLine{00012\ \textcolor{comment}{GCC\ is\ distributed\ in\ the\ hope\ that\ it\ will\ be\ useful,}}
+\DoxyCodeLine{00013\ \textcolor{comment}{but\ WITHOUT\ ANY\ WARRANTY;\ without\ even\ the\ implied\ warranty\ of}}
+\DoxyCodeLine{00014\ \textcolor{comment}{MERCHANTABILITY\ or\ FITNESS\ FOR\ A\ PARTICULAR\ PURPOSE.\ \ See\ the}}
+\DoxyCodeLine{00015\ \textcolor{comment}{GNU\ General\ Public\ License\ for\ more\ details.}}
+\DoxyCodeLine{00016\ \textcolor{comment}{}}
+\DoxyCodeLine{00017\ \textcolor{comment}{You\ should\ have\ received\ a\ copy\ of\ the\ GNU\ General\ Public\ License}}
+\DoxyCodeLine{00018\ \textcolor{comment}{along\ with\ GCC;\ see\ the\ file\ COPYING3.\ \ If\ not\ see}}
+\DoxyCodeLine{00019\ \textcolor{comment}{<http://www.gnu.org/licenses/>.\ \ */}}
+\DoxyCodeLine{00020\ }
+\DoxyCodeLine{00021\ \textcolor{preprocessor}{\#ifndef\ GCC\_DOM\_WALK\_H}}
+\DoxyCodeLine{00022\ \textcolor{preprocessor}{\#define\ GCC\_DOM\_WALK\_H}}
+\DoxyCodeLine{00023\ }
+\DoxyCodeLine{00030\ \textcolor{keyword}{class\ }\doxymbox{\hyperlink{classdom__walker_a0210f09da4dda64e0eab28620a32ce5c}{dom\_walker}}}
+\DoxyCodeLine{00031\ \{}
+\DoxyCodeLine{00032\ \textcolor{keyword}{public}:}
+\DoxyCodeLine{00033\ \ \ \textcolor{keyword}{static}\ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{coretypes_8h_a44ae11f0c90646aa6208ad4bf486490b}{edge}}\ \doxymbox{\hyperlink{classdom__walker_a72d7be5c5e8a9122f634359ca738204d}{STOP}};}
+\DoxyCodeLine{00034\ }
+\DoxyCodeLine{00035\ \ \ \textcolor{comment}{/*\ An\ enum\ for\ determining\ whether\ the\ dom\ walk\ should\ be\ constrained\ to}}
+\DoxyCodeLine{00036\ \textcolor{comment}{\ \ \ \ \ blocks\ reachable\ by\ executable\ edges.\ \ */}}
+\DoxyCodeLine{00037\ }
+\DoxyCodeLine{00038\ \ \ \textcolor{keyword}{enum}\ \doxymbox{\hyperlink{classdom__walker_af9ac8a08f3687c717419cb06d2c6a6d3}{reachability}}}
+\DoxyCodeLine{00039\ \ \ \{}
+\DoxyCodeLine{00040\ \ \ \ \ \textcolor{comment}{/*\ Walk\ all\ blocks\ within\ the\ CFG.\ \ */}}
+\DoxyCodeLine{00041\ \ \ \ \ \doxymbox{\hyperlink{classdom__walker_af9ac8a08f3687c717419cb06d2c6a6d3a28611e90084f9ff2f31b2193a594a16c}{ALL\_BLOCKS}},}
+\DoxyCodeLine{00042\ }
+\DoxyCodeLine{00043\ \ \ \ \ \textcolor{comment}{/*\ Use\ REACHABLE\_BLOCKS\ when\ your\ subclass\ can\ discover\ that\ some\ edges}}
+\DoxyCodeLine{00044\ \textcolor{comment}{\ \ \ \ \ \ \ are\ not\ executable.}}
+\DoxyCodeLine{00045\ \textcolor{comment}{}}
+\DoxyCodeLine{00046\ \textcolor{comment}{\ \ \ \ \ \ \ If\ a\ subclass\ can\ discover\ that\ a\ COND,\ SWITCH\ or\ GOTO\ has\ a\ static}}
+\DoxyCodeLine{00047\ \textcolor{comment}{\ \ \ \ \ \ \ target\ in\ the\ before\_dom\_children\ callback,\ the\ taken\ edge\ should}}
+\DoxyCodeLine{00048\ \textcolor{comment}{\ \ \ \ \ \ \ be\ returned.\ \ The\ generic\ walker\ will\ clear\ EDGE\_EXECUTABLE\ on\ all}}
+\DoxyCodeLine{00049\ \textcolor{comment}{\ \ \ \ \ \ \ edges\ it\ can\ determine\ are\ not\ executable.}}
+\DoxyCodeLine{00050\ \textcolor{comment}{}}
+\DoxyCodeLine{00051\ \textcolor{comment}{\ \ \ \ \ \ \ With\ REACHABLE\_BLOCKS,\ EDGE\_EXECUTABLE\ will\ be\ set\ on\ every\ edge\ in}}
+\DoxyCodeLine{00052\ \textcolor{comment}{\ \ \ \ \ \ \ the\ dom\_walker\ ctor;\ the\ flag\ will\ then\ be\ cleared\ on\ edges\ that\ are}}
+\DoxyCodeLine{00053\ \textcolor{comment}{\ \ \ \ \ \ \ determined\ to\ be\ not\ executable.\ \ */}}
+\DoxyCodeLine{00054\ \ \ \ \ \doxymbox{\hyperlink{classdom__walker_af9ac8a08f3687c717419cb06d2c6a6d3ae0dc1fa6818cbbe4cac7685c8249a5ac}{REACHABLE\_BLOCKS}},}
+\DoxyCodeLine{00055\ }
+\DoxyCodeLine{00056\ \ \ \ \ \textcolor{comment}{/*\ Identical\ to\ REACHABLE\_BLOCKS,\ but\ the\ initial\ state\ of\ EDGE\_EXECUTABLE}}
+\DoxyCodeLine{00057\ \textcolor{comment}{\ \ \ \ \ \ \ will\ instead\ be\ preserved\ in\ the\ ctor,\ allowing\ for\ information\ about}}
+\DoxyCodeLine{00058\ \textcolor{comment}{\ \ \ \ \ \ \ non-\/executable\ edges\ to\ be\ merged\ in\ from\ an\ earlier\ analysis\ (and}}
+\DoxyCodeLine{00059\ \textcolor{comment}{\ \ \ \ \ \ \ potentially\ for\ additional\ edges\ to\ be\ marked\ as\ non-\/executable).\ \ */}}
+\DoxyCodeLine{00060\ \ \ \ \ \doxymbox{\hyperlink{classdom__walker_af9ac8a08f3687c717419cb06d2c6a6d3a914c4b6c7dd735be62989c049527d37d}{REACHABLE\_BLOCKS\_PRESERVING\_FLAGS}}}
+\DoxyCodeLine{00061\ \ \ \};}
+\DoxyCodeLine{00062\ }
+\DoxyCodeLine{00063\ \ \ \textcolor{comment}{/*\ You\ can\ provide\ a\ mapping\ of\ basic-\/block\ index\ to\ RPO\ if\ you}}
+\DoxyCodeLine{00064\ \textcolor{comment}{\ \ \ \ \ have\ that\ readily\ available\ or\ you\ do\ multiple\ walks.\ \ If\ you}}
+\DoxyCodeLine{00065\ \textcolor{comment}{\ \ \ \ \ specify\ NULL\ as\ BB\_INDEX\_TO\_RPO\ this\ mapping\ will\ be\ computed}}
+\DoxyCodeLine{00066\ \textcolor{comment}{\ \ \ \ \ lazily\ at\ walk\ time.\ \ If\ you\ specify\ -\/1\ dominator\ children\ will}}
+\DoxyCodeLine{00067\ \textcolor{comment}{\ \ \ \ \ not\ be\ walked\ in\ RPO\ order.\ \ */}}
+\DoxyCodeLine{00068\ \ \ \doxymbox{\hyperlink{classdom__walker_a0210f09da4dda64e0eab28620a32ce5c}{dom\_walker}}\ (\doxymbox{\hyperlink{dominance_8h_aa15c3c1f912c28f604d21f21da5126f8}{cdi\_direction}}\ direction,\ \textcolor{keyword}{enum}\ \doxymbox{\hyperlink{classdom__walker_af9ac8a08f3687c717419cb06d2c6a6d3}{reachability}}\ =\ \doxymbox{\hyperlink{classdom__walker_af9ac8a08f3687c717419cb06d2c6a6d3a28611e90084f9ff2f31b2193a594a16c}{ALL\_BLOCKS}},}
+\DoxyCodeLine{00069\ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{int}\ *bb\_index\_to\_rpo\ =\ \doxymbox{\hyperlink{stddef_8h_a070d2ce7b6bb7e5c05602aa8c308d0c4}{NULL}});}
+\DoxyCodeLine{00070\ }
+\DoxyCodeLine{00071\ \ \ \doxymbox{\hyperlink{classdom__walker_a7ef0e8d53aa2970dcc60161b59bc1391}{\string~dom\_walker}}\ ();}
+\DoxyCodeLine{00072\ }
+\DoxyCodeLine{00073\ \ \ \textcolor{comment}{/*\ Walk\ the\ dominator\ tree.\ \ */}}
+\DoxyCodeLine{00074\ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classdom__walker_a8ee3b9c43ac1eb983af1838227eea23a}{walk}}\ (\doxymbox{\hyperlink{coretypes_8h_a0469df20b471a4cd7c81fbdce5027487}{basic\_block}});}
+\DoxyCodeLine{00075\ }
+\DoxyCodeLine{00076\ \ \ \textcolor{comment}{/*\ Function\ to\ call\ before\ the\ recursive\ walk\ of\ the\ dominator\ children.}}
+\DoxyCodeLine{00077\ \textcolor{comment}{}}
+\DoxyCodeLine{00078\ \textcolor{comment}{\ \ \ \ \ Return\ value\ is\ the\ always\ taken\ edge\ if\ the\ block\ has\ multiple\ outgoing}}
+\DoxyCodeLine{00079\ \textcolor{comment}{\ \ \ \ \ edges,\ NULL\ otherwise.\ \ When\ skipping\ unreachable\ blocks,\ the\ walker}}
+\DoxyCodeLine{00080\ \textcolor{comment}{\ \ \ \ \ uses\ the\ taken\ edge\ information\ to\ clear\ EDGE\_EXECUTABLE\ on\ the\ other}}
+\DoxyCodeLine{00081\ \textcolor{comment}{\ \ \ \ \ edges,\ exposing\ unreachable\ blocks.\ \ A\ NULL\ return\ value\ means\ all}}
+\DoxyCodeLine{00082\ \textcolor{comment}{\ \ \ \ \ outgoing\ edges\ should\ still\ be\ considered\ executable.\ \ A\ return\ value}}
+\DoxyCodeLine{00083\ \textcolor{comment}{\ \ \ \ \ of\ STOP\ means\ to\ stop\ the\ domwalk\ from\ processing\ dominated\ blocks\ from}}
+\DoxyCodeLine{00084\ \textcolor{comment}{\ \ \ \ \ here.\ \ This\ can\ be\ used\ to\ process\ a\ SEME\ region\ only\ (note\ domwalk}}
+\DoxyCodeLine{00085\ \textcolor{comment}{\ \ \ \ \ will\ still\ do\ work\ linear\ in\ function\ size).\ \ */}}
+\DoxyCodeLine{00086\ \ \ \textcolor{keyword}{virtual}\ \doxymbox{\hyperlink{coretypes_8h_a44ae11f0c90646aa6208ad4bf486490b}{edge}}\ \doxymbox{\hyperlink{classdom__walker_a6a1841b46b1918cdea741c915478016c}{before\_dom\_children}}\ (\doxymbox{\hyperlink{coretypes_8h_a0469df20b471a4cd7c81fbdce5027487}{basic\_block}})\ \{\ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{stddef_8h_a070d2ce7b6bb7e5c05602aa8c308d0c4}{NULL}};\ \}}
+\DoxyCodeLine{00087\ }
+\DoxyCodeLine{00088\ \ \ \textcolor{comment}{/*\ Function\ to\ call\ after\ the\ recursive\ walk\ of\ the\ dominator\ children.\ \ */}}
+\DoxyCodeLine{00089\ \ \ \textcolor{keyword}{virtual}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classdom__walker_a5dc279988130e72f4e51fa49f0d9b56e}{after\_dom\_children}}\ (\doxymbox{\hyperlink{coretypes_8h_a0469df20b471a4cd7c81fbdce5027487}{basic\_block}})\ \{\}}
+\DoxyCodeLine{00090\ }
+\DoxyCodeLine{00091\ \textcolor{keyword}{private}:}
+\DoxyCodeLine{00092\ \ \ \textcolor{comment}{/*\ This\ is\ the\ direction\ of\ the\ dominator\ tree\ we\ want\ to\ walk.\ \ i.e.,}}
+\DoxyCodeLine{00093\ \textcolor{comment}{\ \ \ \ \ if\ it\ is\ set\ to\ CDI\_DOMINATORS,\ then\ we\ walk\ the\ dominator\ tree,}}
+\DoxyCodeLine{00094\ \textcolor{comment}{\ \ \ \ \ if\ it\ is\ set\ to\ CDI\_POST\_DOMINATORS,\ then\ we\ walk\ the\ post}}
+\DoxyCodeLine{00095\ \textcolor{comment}{\ \ \ \ \ dominator\ tree.\ \ */}}
+\DoxyCodeLine{00096\ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{ansidecl_8h_a2934559f672ebd88a0459d0fe40faff2}{ENUM\_BITFIELD}}\ (\doxymbox{\hyperlink{dominance_8h_aa15c3c1f912c28f604d21f21da5126f8}{cdi\_direction}})\ m\_dom\_direction\ :\ 2;}
+\DoxyCodeLine{00097\ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{ansidecl_8h_a2934559f672ebd88a0459d0fe40faff2}{ENUM\_BITFIELD}}\ (\doxymbox{\hyperlink{classdom__walker_af9ac8a08f3687c717419cb06d2c6a6d3}{reachability}})\ m\_reachability\ :\ 2;}
+\DoxyCodeLine{00098\ \ \ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{classdom__walker_aa3ef102b67ea2d9595ac993688ec0b7f}{m\_user\_bb\_to\_rpo}};}
+\DoxyCodeLine{00099\ \ \ \doxymbox{\hyperlink{coretypes_8h_a0469df20b471a4cd7c81fbdce5027487}{basic\_block}}\ \doxymbox{\hyperlink{classdom__walker_a5fd2f4b4394f16b2f2bcd92124c71bd4}{m\_unreachable\_dom}};}
+\DoxyCodeLine{00100\ \ \ \textcolor{keywordtype}{int}\ *\doxymbox{\hyperlink{classdom__walker_a8ef24e7270c1fb4789541199511c432f}{m\_bb\_to\_rpo}};}
+\DoxyCodeLine{00101\ }
+\DoxyCodeLine{00102\ \ \ \textcolor{comment}{/*\ Query\ whether\ or\ not\ the\ given\ block\ is\ reachable\ or\ not.\ \ */}}
+\DoxyCodeLine{00103\ \ \ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{classdom__walker_a0ff3a15947587c707c17c2e59a4ffef9}{bb\_reachable}}\ (\textcolor{keyword}{struct}\ function\ *,\ \doxymbox{\hyperlink{coretypes_8h_a0469df20b471a4cd7c81fbdce5027487}{basic\_block}});}
+\DoxyCodeLine{00104\ }
+\DoxyCodeLine{00105\ \ \ \textcolor{comment}{/*\ Given\ an\ unreachable\ block,\ propagate\ that\ property\ to\ outgoing}}
+\DoxyCodeLine{00106\ \textcolor{comment}{\ \ \ \ \ and\ possibly\ incoming\ edges\ for\ the\ block.\ \ Typically\ called\ after}}
+\DoxyCodeLine{00107\ \textcolor{comment}{\ \ \ \ \ determining\ a\ block\ is\ unreachable\ in\ the\ before\_dom\_children}}
+\DoxyCodeLine{00108\ \textcolor{comment}{\ \ \ \ \ callback.\ \ */}}
+\DoxyCodeLine{00109\ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classdom__walker_a5e76e38e008421f3b34858b03f6d193d}{propagate\_unreachable\_to\_edges}}\ (\doxymbox{\hyperlink{coretypes_8h_a0469df20b471a4cd7c81fbdce5027487}{basic\_block}},\ FILE\ *,\ \doxymbox{\hyperlink{dumpfile_8h_ae3aeb1ff52915e32d52ac788388fbeef}{dump\_flags\_t}});}
+\DoxyCodeLine{00110\ }
+\DoxyCodeLine{00111\ \};}
+\DoxyCodeLine{00112\ }
+\DoxyCodeLine{00113\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{domwalk_8h_a424451f3c99ee3dfcae7e7c15c149ea4}{set\_all\_edges\_as\_executable}}\ (function\ *fn);}
+\DoxyCodeLine{00114\ }
+\DoxyCodeLine{00115\ \textcolor{preprocessor}{\#endif}}
+
+\end{DoxyCode}

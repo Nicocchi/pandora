@@ -1,0 +1,131 @@
+\doxysection{src/\+gdt.cpp File Reference}
+\hypertarget{gdt_8cpp}{}\label{gdt_8cpp}\index{src/gdt.cpp@{src/gdt.cpp}}
+
+
+Global Descriptor Table (GDT) and Task State Segment (TSS) initialization routines.  
+
+
+{\ttfamily \+\#include "{}gdt.\+h"{}}\newline
+{\ttfamily \+\#include "{}common.\+h"{}}\newline
+\doxysubsubsection*{Functions}
+\begin{DoxyCompactItemize}
+\item 
+void \doxymbox{\hyperlink{gdt_8cpp_aa6cd40714ebfaeee842114dd0c4b8eda}{gdt\+\_\+flush}} (struct \doxymbox{\hyperlink{structGDTDescriptor}{GDTDescriptor}} \texorpdfstring{$\ast$}{*}\doxymbox{\hyperlink{gdt_8cpp_a95050a9596fe3d61160f658d4be1957e}{gdtr}})
+\item 
+void \doxymbox{\hyperlink{group__CPU__SEGMENTATION_gac5010ffc8865bbe4f0a3d4284a6dfeae}{Init\+GDT}} ()
+\begin{DoxyCompactList}\small\item\em Initializes the Global Descriptor Table and Task State Segment. \end{DoxyCompactList}\item 
+void \doxymbox{\hyperlink{group__CPU__SEGMENTATION_gacdff8480eac089719fa81ea30634e697}{Set\+GDTEntry}} (int index, uint32\+\_\+t base, uint32\+\_\+t limit, uint8\+\_\+t access, uint8\+\_\+t flags)
+\begin{DoxyCompactList}\small\item\em Creates a standard 64-\/bit GDT segment descriptor. \end{DoxyCompactList}\item 
+void \doxymbox{\hyperlink{gdt_8cpp_a01b6312c9386ac6c52c7b5c5d91e81cf}{tss\+\_\+flush}} ()
+\item 
+void \doxymbox{\hyperlink{gdt_8cpp_a87a38e7e8e68ded083db52ac23aeb775}{Write\+TSS}} (int index, \doxymbox{\hyperlink{structTSSEntry}{TSSEntry}} \texorpdfstring{$\ast$}{*}\doxymbox{\hyperlink{gdt_8cpp_a594f88532241dc310816a489607655a0}{tss}})
+\end{DoxyCompactItemize}
+\doxysubsubsection*{Variables}
+\begin{DoxyCompactItemize}
+\item 
+static uint64\+\_\+t \doxymbox{\hyperlink{gdt_8cpp_a74f86f5471a31c4c8e2ab64d719be3fc}{gdt}} \+[7]\+
+\item 
+static struct \doxymbox{\hyperlink{structGDTDescriptor}{GDTDescriptor}} \doxymbox{\hyperlink{gdt_8cpp_a95050a9596fe3d61160f658d4be1957e}{gdtr}}
+\item 
+static \doxymbox{\hyperlink{structTSSEntry}{TSSEntry}} \doxymbox{\hyperlink{gdt_8cpp_a594f88532241dc310816a489607655a0}{tss}}
+\end{DoxyCompactItemize}
+
+
+\doxysubsection{Detailed Description}
+Global Descriptor Table (GDT) and Task State Segment (TSS) initialization routines. 
+
+\begin{DoxyCopyright}{Copyright}
+Copyright (c) 2026, Nicocchi @license Licensed under the GPL2 License
+\end{DoxyCopyright}
+\begin{DoxyAuthor}{Author}
+Nicocchi 
+\end{DoxyAuthor}
+\begin{DoxyDate}{Date}
+May 27, 2026
+\end{DoxyDate}
+Implements construction and installation of the kernel\textquotesingle{}s x86\+\_\+64 descriptor table infrastructure.
+
+This module is responsible for:\+
+\begin{DoxyItemize}
+\item Building the Global Descriptor Table (GDT)
+\item Creating kernel and user segment descriptors
+\item Constructing the 64-\/bit Task State Segment (TSS) descriptor
+\item Initializing the Task State Segment structure
+\item Loading the GDTR register using {\ttfamily lgdt}
+\item Loading the Task Register (TR) using {\ttfamily ltr}
+\item Reloading CPU segment registers
+\end{DoxyItemize}
+
+The initialized GDT establishes a flat-\/memory segmentation model suitable for modern x86\+\_\+64 long mode kernels.
+
+Although segmentation is mostly disabled in long mode, descriptor tables remain required for:\+
+\begin{DoxyItemize}
+\item Privilege level separation
+\item System segment management
+\item Ring transitions
+\item Interrupt stack switching
+\item Task State Segment support
+\end{DoxyItemize}
+
+The TSS is configured to provide:\+
+\begin{DoxyItemize}
+\item Ring 0 kernel stack switching
+\item Interrupt Stack Table (IST) infrastructure
+\item Future userspace transition support
+\end{DoxyItemize}
+
+References:\+
+\begin{DoxyItemize}
+\item Intel SDM Volume 3A:\+
+\begin{DoxyItemize}
+\item Chapter 3:\+ Protected-\/\+Mode Memory Management
+\item Chapter 7:\+ Task Management
+\end{DoxyItemize}
+\item \href{https://wiki.osdev.org/GDT_Tutorial}{\texttt{https:\+/\+/\+wiki.\+osdev.\+org/\+\+GDT\+\_\+\+Tutorial}}
+\item \href{https://wiki.osdev.org/Task_State_Segment}{\texttt{https:\+/\+/\+wiki.\+osdev.\+org/\+\+Task\+\_\+\+State\+\_\+\+Segment}} 
+\end{DoxyItemize}
+
+\label{doc-func-members}
+\Hypertarget{gdt_8cpp_doc-func-members}
+\doxysubsection{Function Documentation}
+\Hypertarget{gdt_8cpp_aa6cd40714ebfaeee842114dd0c4b8eda}\index{gdt.cpp@{gdt.cpp}!gdt\_flush@{gdt\_flush}}
+\index{gdt\_flush@{gdt\_flush}!gdt.cpp@{gdt.cpp}}
+\doxysubsubsection{\texorpdfstring{gdt\_flush()}{gdt\_flush()}}
+{\footnotesize\ttfamily \label{gdt_8cpp_aa6cd40714ebfaeee842114dd0c4b8eda} 
+void gdt\+\_\+flush (\begin{DoxyParamCaption}\item[{struct \doxymbox{\hyperlink{structGDTDescriptor}{GDTDescriptor}} \texorpdfstring{$\ast$}{*}}]{gdtr}{}\end{DoxyParamCaption})}
+
+\Hypertarget{gdt_8cpp_a01b6312c9386ac6c52c7b5c5d91e81cf}\index{gdt.cpp@{gdt.cpp}!tss\_flush@{tss\_flush}}
+\index{tss\_flush@{tss\_flush}!gdt.cpp@{gdt.cpp}}
+\doxysubsubsection{\texorpdfstring{tss\_flush()}{tss\_flush()}}
+{\footnotesize\ttfamily \label{gdt_8cpp_a01b6312c9386ac6c52c7b5c5d91e81cf} 
+void tss\+\_\+flush (\begin{DoxyParamCaption}{}{}\end{DoxyParamCaption})}
+
+\Hypertarget{gdt_8cpp_a87a38e7e8e68ded083db52ac23aeb775}\index{gdt.cpp@{gdt.cpp}!WriteTSS@{WriteTSS}}
+\index{WriteTSS@{WriteTSS}!gdt.cpp@{gdt.cpp}}
+\doxysubsubsection{\texorpdfstring{WriteTSS()}{WriteTSS()}}
+{\footnotesize\ttfamily \label{gdt_8cpp_a87a38e7e8e68ded083db52ac23aeb775} 
+void Write\+TSS (\begin{DoxyParamCaption}\item[{int}]{index}{, }\item[{\doxymbox{\hyperlink{structTSSEntry}{TSSEntry}} \texorpdfstring{$\ast$}{*}}]{tss}{}\end{DoxyParamCaption})}
+
+
+
+\label{doc-var-members}
+\Hypertarget{gdt_8cpp_doc-var-members}
+\doxysubsection{Variable Documentation}
+\Hypertarget{gdt_8cpp_a74f86f5471a31c4c8e2ab64d719be3fc}\index{gdt.cpp@{gdt.cpp}!gdt@{gdt}}
+\index{gdt@{gdt}!gdt.cpp@{gdt.cpp}}
+\doxysubsubsection{\texorpdfstring{gdt}{gdt}}
+{\footnotesize\ttfamily \label{gdt_8cpp_a74f86f5471a31c4c8e2ab64d719be3fc} 
+uint64\+\_\+t gdt\+[7]\+\hspace{0.3cm}{\ttfamily [static]}}
+
+\Hypertarget{gdt_8cpp_a95050a9596fe3d61160f658d4be1957e}\index{gdt.cpp@{gdt.cpp}!gdtr@{gdtr}}
+\index{gdtr@{gdtr}!gdt.cpp@{gdt.cpp}}
+\doxysubsubsection{\texorpdfstring{gdtr}{gdtr}}
+{\footnotesize\ttfamily \label{gdt_8cpp_a95050a9596fe3d61160f658d4be1957e} 
+struct \doxymbox{\hyperlink{structGDTDescriptor}{GDTDescriptor}} gdtr\hspace{0.3cm}{\ttfamily [static]}}
+
+\Hypertarget{gdt_8cpp_a594f88532241dc310816a489607655a0}\index{gdt.cpp@{gdt.cpp}!tss@{tss}}
+\index{tss@{tss}!gdt.cpp@{gdt.cpp}}
+\doxysubsubsection{\texorpdfstring{tss}{tss}}
+{\footnotesize\ttfamily \label{gdt_8cpp_a594f88532241dc310816a489607655a0} 
+\doxymbox{\hyperlink{structTSSEntry}{TSSEntry}} tss\hspace{0.3cm}{\ttfamily [static]}}
+

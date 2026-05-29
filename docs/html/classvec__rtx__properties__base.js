@@ -1,0 +1,25 @@
+var classvec__rtx__properties__base =
+[
+    [ "vec_rtx_properties_base", "classvec__rtx__properties__base.html#a23ae40282540bdcdc81c73106c780f5d", null ],
+    [ "~vec_rtx_properties_base", "classvec__rtx__properties__base.html#a9e480561467433ab58f03851ed711140", null ],
+    [ "grow", "classvec__rtx__properties__base.html#ad54d451671fb900b4dc0dabae25b3f2f", null ],
+    [ "has_side_effects", "classvec__rtx__properties__base.html#a1d3ec8f7ab5fff442cc0e5a420fab000", null ],
+    [ "num_refs", "classvec__rtx__properties__base.html#a0e01bb467871afb1c07b22d19d73b78a", null ],
+    [ "refs", "classvec__rtx__properties__base.html#a5aa1b750fdce3b6fc18afc8b7f71c4ab", null ],
+    [ "try_to_add_dest", "classvec__rtx__properties__base.html#afa033657cfa35e973c72e5c72f399b96", null ],
+    [ "try_to_add_insn", "classvec__rtx__properties__base.html#ab0b2752f1b4344408b02476c3def2d4e", null ],
+    [ "try_to_add_note", "classvec__rtx__properties__base.html#a34c603fdf336e5e40881c1643079fe74", null ],
+    [ "try_to_add_pattern", "classvec__rtx__properties__base.html#a34568c0c6ea6d011911c3bb468bea189", null ],
+    [ "try_to_add_reg", "classvec__rtx__properties__base.html#ad802901920c5f31b8163ee25860d9134", null ],
+    [ "try_to_add_src", "classvec__rtx__properties__base.html#aeafa9db963afa7f972fd3be8391f6f64", null ],
+    [ "has_asm", "classvec__rtx__properties__base.html#ae24f13c69f3f9b50491c0372cdac972f", null ],
+    [ "has_call", "classvec__rtx__properties__base.html#aa587520fb086c1d6c94b215c313c906d", null ],
+    [ "has_pre_post_modify", "classvec__rtx__properties__base.html#a92a6e91800bd289be92157da99fa2e7f", null ],
+    [ "has_volatile_refs", "classvec__rtx__properties__base.html#a8f02457147ebea91e1ccc94ca239a8c0", null ],
+    [ "m_storage", "classvec__rtx__properties__base.html#ae76f1597ae110e41f1c248e9541ec6e1", null ],
+    [ "ref_begin", "classvec__rtx__properties__base.html#a35174239585cee7499c798b923ff6a0f", null ],
+    [ "ref_end", "classvec__rtx__properties__base.html#a1b803d0533a5f92bf41456f9ce63cb3f", null ],
+    [ "ref_iter", "classvec__rtx__properties__base.html#ac23041f5050c81956c55da06d4735d3d", null ],
+    [ "SIZE", "classvec__rtx__properties__base.html#a882f2954b4a715108ef3a090e161e303", null ],
+    [ "spare", "classvec__rtx__properties__base.html#a92f356161756322691d685d5d27b3e27", null ]
+];

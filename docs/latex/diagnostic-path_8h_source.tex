@@ -1,0 +1,298 @@
+\doxysection{diagnostic-\/path.h}
+\hypertarget{diagnostic-path_8h_source}{}\label{diagnostic-path_8h_source}\index{toolchain/x86\_64-\/elf/lib/gcc/x86\_64-\/elf/14.2.0/plugin/include/diagnostic-\/path.h@{toolchain/x86\_64-\/elf/lib/gcc/x86\_64-\/elf/14.2.0/plugin/include/diagnostic-\/path.h}}
+\doxymbox{\hyperlink{diagnostic-path_8h}{Go to the documentation of this file.}}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001\ \textcolor{comment}{/*\ Paths\ through\ the\ code\ associated\ with\ a\ diagnostic.}}
+\DoxyCodeLine{00002\ \textcolor{comment}{\ \ \ Copyright\ (C)\ 2019-\/2024\ Free\ Software\ Foundation,\ Inc.}}
+\DoxyCodeLine{00003\ \textcolor{comment}{\ \ \ Contributed\ by\ David\ Malcolm\ <dmalcolm@redhat.com>}}
+\DoxyCodeLine{00004\ \textcolor{comment}{}}
+\DoxyCodeLine{00005\ \textcolor{comment}{This\ file\ is\ part\ of\ GCC.}}
+\DoxyCodeLine{00006\ \textcolor{comment}{}}
+\DoxyCodeLine{00007\ \textcolor{comment}{GCC\ is\ free\ software;\ you\ can\ redistribute\ it\ and/or\ modify\ it\ under}}
+\DoxyCodeLine{00008\ \textcolor{comment}{the\ terms\ of\ the\ GNU\ General\ Public\ License\ as\ published\ by\ the\ Free}}
+\DoxyCodeLine{00009\ \textcolor{comment}{Software\ Foundation;\ either\ version\ 3,\ or\ (at\ your\ option)\ any\ later}}
+\DoxyCodeLine{00010\ \textcolor{comment}{version.}}
+\DoxyCodeLine{00011\ \textcolor{comment}{}}
+\DoxyCodeLine{00012\ \textcolor{comment}{GCC\ is\ distributed\ in\ the\ hope\ that\ it\ will\ be\ useful,\ but\ WITHOUT\ ANY}}
+\DoxyCodeLine{00013\ \textcolor{comment}{WARRANTY;\ without\ even\ the\ implied\ warranty\ of\ MERCHANTABILITY\ or}}
+\DoxyCodeLine{00014\ \textcolor{comment}{FITNESS\ FOR\ A\ PARTICULAR\ PURPOSE.\ \ See\ the\ GNU\ General\ Public\ License}}
+\DoxyCodeLine{00015\ \textcolor{comment}{for\ more\ details.}}
+\DoxyCodeLine{00016\ \textcolor{comment}{}}
+\DoxyCodeLine{00017\ \textcolor{comment}{You\ should\ have\ received\ a\ copy\ of\ the\ GNU\ General\ Public\ License}}
+\DoxyCodeLine{00018\ \textcolor{comment}{along\ with\ GCC;\ see\ the\ file\ COPYING3.\ \ If\ not\ see}}
+\DoxyCodeLine{00019\ \textcolor{comment}{<http://www.gnu.org/licenses/>.\ \ */}}
+\DoxyCodeLine{00020\ }
+\DoxyCodeLine{00021\ \textcolor{preprocessor}{\#ifndef\ GCC\_DIAGNOSTIC\_PATH\_H}}
+\DoxyCodeLine{00022\ \textcolor{preprocessor}{\#define\ GCC\_DIAGNOSTIC\_PATH\_H}}
+\DoxyCodeLine{00023\ }
+\DoxyCodeLine{00024\ \textcolor{preprocessor}{\#include\ "{}\doxymbox{\hyperlink{diagnostic_8h}{diagnostic.h}}"{}}\ \textcolor{comment}{/*\ for\ ATTRIBUTE\_GCC\_DIAG.\ \ */}}
+\DoxyCodeLine{00025\ \textcolor{preprocessor}{\#include\ "{}\doxymbox{\hyperlink{diagnostic-event-id_8h}{diagnostic-\/event-\/id.h}}"{}}}
+\DoxyCodeLine{00026\ }
+\DoxyCodeLine{00027\ \textcolor{keyword}{class\ }\doxymbox{\hyperlink{classsarif__object}{sarif\_object}};}
+\DoxyCodeLine{00028\ }
+\DoxyCodeLine{00029\ \textcolor{comment}{/*\ A\ diagnostic\_path\ is\ an\ optional\ additional\ piece\ of\ metadata\ associated}}
+\DoxyCodeLine{00030\ \textcolor{comment}{\ \ \ with\ a\ diagnostic\ (via\ its\ rich\_location).}}
+\DoxyCodeLine{00031\ \textcolor{comment}{}}
+\DoxyCodeLine{00032\ \textcolor{comment}{\ \ \ It\ describes\ a\ sequence\ of\ events\ predicted\ by\ the\ compiler\ that}}
+\DoxyCodeLine{00033\ \textcolor{comment}{\ \ \ lead\ to\ the\ problem\ occurring,\ with\ their\ locations\ in\ the\ user's\ source,}}
+\DoxyCodeLine{00034\ \textcolor{comment}{\ \ \ and\ text\ descriptions.}}
+\DoxyCodeLine{00035\ \textcolor{comment}{}}
+\DoxyCodeLine{00036\ \textcolor{comment}{\ \ \ For\ example,\ the\ following\ error\ has\ a\ 3-\/event\ path:}}
+\DoxyCodeLine{00037\ \textcolor{comment}{}}
+\DoxyCodeLine{00038\ \textcolor{comment}{\ \ \ \ \ test.c:\ In\ function\ 'demo':}}
+\DoxyCodeLine{00039\ \textcolor{comment}{\ \ \ \ \ test.c:29:5:\ error:\ passing\ NULL\ as\ argument\ 1\ to\ 'PyList\_Append'\ which}}
+\DoxyCodeLine{00040\ \textcolor{comment}{\ \ \ \ \ \ \ requires\ a\ non-\/NULL\ parameter}}
+\DoxyCodeLine{00041\ \textcolor{comment}{\ \ \ \ \ \ \ \ 29\ |\ \ \ \ \ PyList\_Append(list,\ item);}}
+\DoxyCodeLine{00042\ \textcolor{comment}{\ \ \ \ \ \ \ \ \ \ \ |\ \ \ \ \ \string^\string~\string~\string~\string~\string~\string~\string~\string~\string~\string~\string~\string~\string~\string~\string~\string~\string~\string~\string~\string~\string~\string~\string~\string~}}
+\DoxyCodeLine{00043\ \textcolor{comment}{\ \ \ \ \ \ \ 'demo':\ events\ 1-\/3}}
+\DoxyCodeLine{00044\ \textcolor{comment}{\ \ \ \ \ \ \ \ \ \ |}}
+\DoxyCodeLine{00045\ \textcolor{comment}{\ \ \ \ \ \ \ \ \ \ |\ \ \ 25\ |\ \ \ list\ =\ PyList\_New(0);}}
+\DoxyCodeLine{00046\ \textcolor{comment}{\ \ \ \ \ \ \ \ \ \ |\ \ \ \ \ \ |\ \ \ \ \ \ \ \ \ \ \string^\string~\string~\string~\string~\string~\string~\string~\string~\string~\string~\string~\string~}}
+\DoxyCodeLine{00047\ \textcolor{comment}{\ \ \ \ \ \ \ \ \ \ |\ \ \ \ \ \ |\ \ \ \ \ \ \ \ \ \ |}}
+\DoxyCodeLine{00048\ \textcolor{comment}{\ \ \ \ \ \ \ \ \ \ |\ \ \ \ \ \ |\ \ \ \ \ \ \ \ \ \ (1)\ when\ 'PyList\_New'\ fails,\ returning\ NULL}}
+\DoxyCodeLine{00049\ \textcolor{comment}{\ \ \ \ \ \ \ \ \ \ |\ \ \ 26\ |}}
+\DoxyCodeLine{00050\ \textcolor{comment}{\ \ \ \ \ \ \ \ \ \ |\ \ \ 27\ |\ \ \ for\ (i\ =\ 0;\ i\ <\ count;\ i++)\ \{}}
+\DoxyCodeLine{00051\ \textcolor{comment}{\ \ \ \ \ \ \ \ \ \ |\ \ \ \ \ \ |\ \ \ \string~\string~\string~}}
+\DoxyCodeLine{00052\ \textcolor{comment}{\ \ \ \ \ \ \ \ \ \ |\ \ \ \ \ \ |\ \ \ |}}
+\DoxyCodeLine{00053\ \textcolor{comment}{\ \ \ \ \ \ \ \ \ \ |\ \ \ \ \ \ |\ \ \ (2)\ when\ 'i\ <\ count'}}
+\DoxyCodeLine{00054\ \textcolor{comment}{\ \ \ \ \ \ \ \ \ \ |\ \ \ 28\ |\ \ \ \ \ item\ =\ PyLong\_FromLong(random());}}
+\DoxyCodeLine{00055\ \textcolor{comment}{\ \ \ \ \ \ \ \ \ \ |\ \ \ 29\ |\ \ \ \ \ PyList\_Append(list,\ item);}}
+\DoxyCodeLine{00056\ \textcolor{comment}{\ \ \ \ \ \ \ \ \ \ |\ \ \ \ \ \ |\ \ \ \ \ \string~\string~\string~\string~\string~\string~\string~\string~\string~\string~\string~\string~\string~\string~\string~\string~\string~\string~\string~\string~\string~\string~\string~\string~\string~}}
+\DoxyCodeLine{00057\ \textcolor{comment}{\ \ \ \ \ \ \ \ \ \ |\ \ \ \ \ \ |\ \ \ \ \ |}}
+\DoxyCodeLine{00058\ \textcolor{comment}{\ \ \ \ \ \ \ \ \ \ |\ \ \ \ \ \ |\ \ \ \ \ (3)\ when\ calling\ 'PyList\_Append',\ passing\ NULL\ from\ (1)\ as\ argument\ 1}}
+\DoxyCodeLine{00059\ \textcolor{comment}{\ \ \ \ \ \ \ \ \ \ |}}
+\DoxyCodeLine{00060\ \textcolor{comment}{}}
+\DoxyCodeLine{00061\ \textcolor{comment}{\ \ \ \ The\ diagnostic-\/printing\ code\ has\ consolidated\ the\ path\ into\ a\ single}}
+\DoxyCodeLine{00062\ \textcolor{comment}{\ \ \ \ run\ of\ events,\ since\ all\ the\ events\ are\ near\ each\ other\ and\ within\ the\ same}}
+\DoxyCodeLine{00063\ \textcolor{comment}{\ \ \ \ function;\ more\ complicated\ examples\ (such\ as\ interprocedural\ paths)}}
+\DoxyCodeLine{00064\ \textcolor{comment}{\ \ \ \ might\ be\ printed\ as\ multiple\ runs\ of\ events.\ \ */}}
+\DoxyCodeLine{00065\ }
+\DoxyCodeLine{00066\ \textcolor{comment}{/*\ Abstract\ base\ classes,\ describing\ events\ within\ a\ path,\ and\ the\ paths}}
+\DoxyCodeLine{00067\ \textcolor{comment}{\ \ \ themselves.\ \ */}}
+\DoxyCodeLine{00068\ }
+\DoxyCodeLine{00069\ \textcolor{comment}{/*\ One\ event\ within\ a\ diagnostic\_path.\ \ */}}
+\DoxyCodeLine{00070\ }
+\DoxyCodeLine{00071\ \textcolor{keyword}{class\ }\doxymbox{\hyperlink{classdiagnostic__event}{diagnostic\_event}}}
+\DoxyCodeLine{00072\ \{}
+\DoxyCodeLine{00073\ \ \textcolor{keyword}{public}:}
+\DoxyCodeLine{00074\ \ \ \textcolor{comment}{/*\ Enums\ for\ giving\ a\ sense\ of\ what\ this\ event\ means.}}
+\DoxyCodeLine{00075\ \textcolor{comment}{\ \ \ \ \ Roughly\ corresponds\ to\ SARIF\ v2.1.0\ section\ 3.38.8.\ \ */}}
+\DoxyCodeLine{00076\ \ \ \textcolor{keyword}{enum}\ \doxymbox{\hyperlink{classdiagnostic__event_a3c1d0852aefee8e76674973fc8158afc}{verb}}}
+\DoxyCodeLine{00077\ \ \ \{}
+\DoxyCodeLine{00078\ \ \ \ \ \doxymbox{\hyperlink{classdiagnostic__event_a3c1d0852aefee8e76674973fc8158afcabb7035464a342ae491a80164972e4183}{VERB\_unknown}},}
+\DoxyCodeLine{00079\ }
+\DoxyCodeLine{00080\ \ \ \ \ \doxymbox{\hyperlink{classdiagnostic__event_a3c1d0852aefee8e76674973fc8158afca58024380f8391b1ad7558b29aea750f7}{VERB\_acquire}},}
+\DoxyCodeLine{00081\ \ \ \ \ \doxymbox{\hyperlink{classdiagnostic__event_a3c1d0852aefee8e76674973fc8158afcaa2c72a8e694926c2491664fd72ffc61b}{VERB\_release}},}
+\DoxyCodeLine{00082\ \ \ \ \ \doxymbox{\hyperlink{classdiagnostic__event_a3c1d0852aefee8e76674973fc8158afca6c3398d37a65bea29905cd81f58bf072}{VERB\_enter}},}
+\DoxyCodeLine{00083\ \ \ \ \ \doxymbox{\hyperlink{classdiagnostic__event_a3c1d0852aefee8e76674973fc8158afcad66dd4d55f7bc342ecd2ca1ace25721e}{VERB\_exit}},}
+\DoxyCodeLine{00084\ \ \ \ \ \doxymbox{\hyperlink{classdiagnostic__event_a3c1d0852aefee8e76674973fc8158afca5ef64d6c88be6e216704bfc1bf9a87f8}{VERB\_call}},}
+\DoxyCodeLine{00085\ \ \ \ \ \doxymbox{\hyperlink{classdiagnostic__event_a3c1d0852aefee8e76674973fc8158afca1c8f88b50466873c1e20fb9f0ed450d1}{VERB\_return}},}
+\DoxyCodeLine{00086\ \ \ \ \ \doxymbox{\hyperlink{classdiagnostic__event_a3c1d0852aefee8e76674973fc8158afca2791c26eb082683dd975cdd43841e86d}{VERB\_branch}},}
+\DoxyCodeLine{00087\ }
+\DoxyCodeLine{00088\ \ \ \ \ \doxymbox{\hyperlink{classdiagnostic__event_a3c1d0852aefee8e76674973fc8158afca02cc648d495fb7909c136ff402a2f654}{VERB\_danger}}}
+\DoxyCodeLine{00089\ \ \ \};}
+\DoxyCodeLine{00090\ \ \ \textcolor{keyword}{enum}\ \doxymbox{\hyperlink{classdiagnostic__event_a009e068c72878771936376cbc5cb0222}{noun}}}
+\DoxyCodeLine{00091\ \ \ \{}
+\DoxyCodeLine{00092\ \ \ \ \ \doxymbox{\hyperlink{classdiagnostic__event_a009e068c72878771936376cbc5cb0222ac32f5d297963e4c925356672bce0a893}{NOUN\_unknown}},}
+\DoxyCodeLine{00093\ }
+\DoxyCodeLine{00094\ \ \ \ \ \doxymbox{\hyperlink{classdiagnostic__event_a009e068c72878771936376cbc5cb0222a5153ce36a5abe9d74a44a9e393fec973}{NOUN\_taint}},}
+\DoxyCodeLine{00095\ \ \ \ \ \doxymbox{\hyperlink{classdiagnostic__event_a009e068c72878771936376cbc5cb0222aea1a1a8dc68dae1ba6bc0266af6c6b56}{NOUN\_sensitive}},\ \textcolor{comment}{//\ this\ one\ isn't\ in\ SARIF\ v2.1.0;\ filed\ as\ https://github.com/oasis-\/tcs/sarif-\/spec/issues/530}}
+\DoxyCodeLine{00096\ \ \ \ \ \doxymbox{\hyperlink{classdiagnostic__event_a009e068c72878771936376cbc5cb0222aa0d633835d83277f28dd0032c37b4325}{NOUN\_function}},}
+\DoxyCodeLine{00097\ \ \ \ \ \doxymbox{\hyperlink{classdiagnostic__event_a009e068c72878771936376cbc5cb0222aaf14f3d5a850214462e5a430b6d5b8b9}{NOUN\_lock}},}
+\DoxyCodeLine{00098\ \ \ \ \ \doxymbox{\hyperlink{classdiagnostic__event_a009e068c72878771936376cbc5cb0222ae86e9f507f95553df180b68a94f57269}{NOUN\_memory}},}
+\DoxyCodeLine{00099\ \ \ \ \ \doxymbox{\hyperlink{classdiagnostic__event_a009e068c72878771936376cbc5cb0222a3fbbaf8d84e0e7842d50e8ef3fe7dc5e}{NOUN\_resource}}}
+\DoxyCodeLine{00100\ \ \ \};}
+\DoxyCodeLine{00101\ \ \ \textcolor{keyword}{enum}\ \textcolor{keyword}{property}}
+\DoxyCodeLine{00102\ \ \ \{}
+\DoxyCodeLine{00103\ \ \ \ \ \doxymbox{\hyperlink{classdiagnostic__event_aedbd6933213c5269040979ff0551bd0ba312a4049e5dd43b612cce8bc40ab10c9}{PROPERTY\_unknown}},}
+\DoxyCodeLine{00104\ }
+\DoxyCodeLine{00105\ \ \ \ \ \doxymbox{\hyperlink{classdiagnostic__event_aedbd6933213c5269040979ff0551bd0bacef207fb71eaecafe2d1b4fd7b738ab7}{PROPERTY\_true}},}
+\DoxyCodeLine{00106\ \ \ \ \ \doxymbox{\hyperlink{classdiagnostic__event_aedbd6933213c5269040979ff0551bd0ba79246c420af460f55e801607e2a4dbfd}{PROPERTY\_false}}}
+\DoxyCodeLine{00107\ \ \ \};}
+\DoxyCodeLine{00108\ \ \ \textcolor{comment}{/*\ A\ bundle\ of\ such\ enums,\ allowing\ for\ descriptions\ of\ the\ meaning\ of}}
+\DoxyCodeLine{00109\ \textcolor{comment}{\ \ \ \ \ an\ event,\ such\ as}}
+\DoxyCodeLine{00110\ \textcolor{comment}{\ \ \ \ \ -\/\ "{}acquire\ memory"{}:\ meaning\ (VERB\_acquire,\ NOUN\_memory)}}
+\DoxyCodeLine{00111\ \textcolor{comment}{\ \ \ \ \ -\/\ "{}take\ true\ branch"{}"{}:\ meaning\ (VERB\_branch,\ PROPERTY\_true)}}
+\DoxyCodeLine{00112\ \textcolor{comment}{\ \ \ \ \ -\/\ "{}return\ from\ function"{}:\ meaning\ (VERB\_return,\ NOUN\_function)}}
+\DoxyCodeLine{00113\ \textcolor{comment}{\ \ \ \ \ etc,\ as\ per\ SARIF's\ threadFlowLocation\ "{}kinds"{}\ property}}
+\DoxyCodeLine{00114\ \textcolor{comment}{\ \ \ \ \ (SARIF\ v2.1.0\ section\ 3.38.8).\ \ */}}
+\DoxyCodeLine{00115\ \ \ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{structdiagnostic__event_1_1meaning_a7982fffbf72ee48397c47d9bbe64a4ac}{meaning}}}
+\DoxyCodeLine{00116\ \ \ \{}
+\DoxyCodeLine{00117\ \ \ \ \ \doxymbox{\hyperlink{structdiagnostic__event_1_1meaning_a7982fffbf72ee48397c47d9bbe64a4ac}{meaning}}\ ()}
+\DoxyCodeLine{00118\ \ \ \ \ :\ \doxymbox{\hyperlink{structdiagnostic__event_1_1meaning_ab1892f07b6f2440efe587f369ac2e6b2}{m\_verb}}\ (\doxymbox{\hyperlink{classdiagnostic__event_a3c1d0852aefee8e76674973fc8158afcabb7035464a342ae491a80164972e4183}{VERB\_unknown}}),}
+\DoxyCodeLine{00119\ \ \ \ \ \ \ \doxymbox{\hyperlink{structdiagnostic__event_1_1meaning_ad6269ad0e644122563934027f72687bd}{m\_noun}}\ (\doxymbox{\hyperlink{classdiagnostic__event_a009e068c72878771936376cbc5cb0222ac32f5d297963e4c925356672bce0a893}{NOUN\_unknown}}),}
+\DoxyCodeLine{00120\ \ \ \ \ \ \ \doxymbox{\hyperlink{structdiagnostic__event_1_1meaning_ac605a2f83fb293c2d5f2191a3c8e8abd}{m\_property}}\ (\doxymbox{\hyperlink{classdiagnostic__event_aedbd6933213c5269040979ff0551bd0ba312a4049e5dd43b612cce8bc40ab10c9}{PROPERTY\_unknown}})}
+\DoxyCodeLine{00121\ \ \ \ \ \{}
+\DoxyCodeLine{00122\ \ \ \ \ \}}
+\DoxyCodeLine{00123\ \ \ \ \ \doxymbox{\hyperlink{structdiagnostic__event_1_1meaning_af764ea019025aa8ab8145d8daa8043ba}{meaning}}\ (\textcolor{keyword}{enum}\ \doxymbox{\hyperlink{classdiagnostic__event_a3c1d0852aefee8e76674973fc8158afc}{verb}}\ \doxymbox{\hyperlink{classdiagnostic__event_a3c1d0852aefee8e76674973fc8158afc}{verb}},\ \textcolor{keyword}{enum}\ \doxymbox{\hyperlink{classdiagnostic__event_a009e068c72878771936376cbc5cb0222}{noun}}\ \doxymbox{\hyperlink{classdiagnostic__event_a009e068c72878771936376cbc5cb0222}{noun}})}
+\DoxyCodeLine{00124\ \ \ \ \ :\ \doxymbox{\hyperlink{structdiagnostic__event_1_1meaning_ab1892f07b6f2440efe587f369ac2e6b2}{m\_verb}}\ (\doxymbox{\hyperlink{classdiagnostic__event_a3c1d0852aefee8e76674973fc8158afc}{verb}}),\ \doxymbox{\hyperlink{structdiagnostic__event_1_1meaning_ad6269ad0e644122563934027f72687bd}{m\_noun}}\ (\doxymbox{\hyperlink{classdiagnostic__event_a009e068c72878771936376cbc5cb0222}{noun}}),\ \doxymbox{\hyperlink{structdiagnostic__event_1_1meaning_ac605a2f83fb293c2d5f2191a3c8e8abd}{m\_property}}\ (\doxymbox{\hyperlink{classdiagnostic__event_aedbd6933213c5269040979ff0551bd0ba312a4049e5dd43b612cce8bc40ab10c9}{PROPERTY\_unknown}})}
+\DoxyCodeLine{00125\ \ \ \ \ \{}
+\DoxyCodeLine{00126\ \ \ \ \ \}}
+\DoxyCodeLine{00127\ \ \ \ \ \doxymbox{\hyperlink{structdiagnostic__event_1_1meaning_a9dcadcd07733eaddc1c35a5e69a4b7cc}{meaning}}\ (\textcolor{keyword}{enum}\ \doxymbox{\hyperlink{classdiagnostic__event_a3c1d0852aefee8e76674973fc8158afc}{verb}}\ \doxymbox{\hyperlink{classdiagnostic__event_a3c1d0852aefee8e76674973fc8158afc}{verb}},\ \textcolor{keyword}{enum}\ \doxymbox{\hyperlink{classdiagnostic__event_aedbd6933213c5269040979ff0551bd0b}{property}}\ \doxymbox{\hyperlink{classdiagnostic__event_aedbd6933213c5269040979ff0551bd0b}{property}})}
+\DoxyCodeLine{00128\ \ \ \ \ :\ \doxymbox{\hyperlink{structdiagnostic__event_1_1meaning_ab1892f07b6f2440efe587f369ac2e6b2}{m\_verb}}\ (\doxymbox{\hyperlink{classdiagnostic__event_a3c1d0852aefee8e76674973fc8158afc}{verb}}),\ \doxymbox{\hyperlink{structdiagnostic__event_1_1meaning_ad6269ad0e644122563934027f72687bd}{m\_noun}}\ (\doxymbox{\hyperlink{classdiagnostic__event_a009e068c72878771936376cbc5cb0222ac32f5d297963e4c925356672bce0a893}{NOUN\_unknown}}),\ \doxymbox{\hyperlink{structdiagnostic__event_1_1meaning_ac605a2f83fb293c2d5f2191a3c8e8abd}{m\_property}}\ (\doxymbox{\hyperlink{classdiagnostic__event_aedbd6933213c5269040979ff0551bd0b}{property}})}
+\DoxyCodeLine{00129\ \ \ \ \ \{}
+\DoxyCodeLine{00130\ \ \ \ \ \}}
+\DoxyCodeLine{00131\ }
+\DoxyCodeLine{00132\ \ \ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{structdiagnostic__event_1_1meaning_ab76be17f99515911923c24ab3a9c130f}{dump\_to\_pp}}\ (\doxymbox{\hyperlink{classpretty__printer}{pretty\_printer}}\ *pp)\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00133\ }
+\DoxyCodeLine{00134\ \ \ \ \ \textcolor{keyword}{static}\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *\doxymbox{\hyperlink{structdiagnostic__event_1_1meaning_a9eea63ebd86db3328f8ab8cf0b3f3a34}{maybe\_get\_verb\_str}}\ (\textcolor{keyword}{enum}\ \doxymbox{\hyperlink{classdiagnostic__event_a3c1d0852aefee8e76674973fc8158afc}{verb}});}
+\DoxyCodeLine{00135\ \ \ \ \ \textcolor{keyword}{static}\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *\doxymbox{\hyperlink{structdiagnostic__event_1_1meaning_a6b133187e398d2dfdcd3975d8f9cd41c}{maybe\_get\_noun\_str}}\ (\textcolor{keyword}{enum}\ \doxymbox{\hyperlink{classdiagnostic__event_a009e068c72878771936376cbc5cb0222}{noun}});}
+\DoxyCodeLine{00136\ \ \ \ \ \textcolor{keyword}{static}\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *\doxymbox{\hyperlink{structdiagnostic__event_1_1meaning_ae3d06daf3ec58a8a68e93c7b3694a711}{maybe\_get\_property\_str}}\ (\textcolor{keyword}{enum}\ \doxymbox{\hyperlink{classdiagnostic__event_aedbd6933213c5269040979ff0551bd0b}{property}});}
+\DoxyCodeLine{00137\ }
+\DoxyCodeLine{00138\ \ \ \ \ \textcolor{keyword}{enum}\ \doxymbox{\hyperlink{classdiagnostic__event_a3c1d0852aefee8e76674973fc8158afc}{verb}}\ \doxymbox{\hyperlink{structdiagnostic__event_1_1meaning_ab1892f07b6f2440efe587f369ac2e6b2}{m\_verb}};}
+\DoxyCodeLine{00139\ \ \ \ \ \textcolor{keyword}{enum}\ \doxymbox{\hyperlink{classdiagnostic__event_a009e068c72878771936376cbc5cb0222}{noun}}\ \doxymbox{\hyperlink{structdiagnostic__event_1_1meaning_ad6269ad0e644122563934027f72687bd}{m\_noun}};}
+\DoxyCodeLine{00140\ \ \ \ \ \textcolor{keyword}{enum}\ \textcolor{keyword}{property}\ \doxymbox{\hyperlink{structdiagnostic__event_1_1meaning_ac605a2f83fb293c2d5f2191a3c8e8abd}{m\_property}};}
+\DoxyCodeLine{00141\ \ \ \};}
+\DoxyCodeLine{00142\ }
+\DoxyCodeLine{00143\ \ \ \textcolor{keyword}{virtual}\ \doxymbox{\hyperlink{classdiagnostic__event_a1e68c62135c2cb04d4b5eecd6d710abb}{\string~diagnostic\_event}}\ ()\ \{\}}
+\DoxyCodeLine{00144\ }
+\DoxyCodeLine{00145\ \ \ \textcolor{keyword}{virtual}\ \doxymbox{\hyperlink{line-map_8h_aedf25620511d64e43327f1a229906a96}{location\_t}}\ \doxymbox{\hyperlink{classdiagnostic__event_a791d2d84455ba2dee2045b2b9e3c913e}{get\_location}}\ ()\ \textcolor{keyword}{const}\ =\ 0;}
+\DoxyCodeLine{00146\ }
+\DoxyCodeLine{00147\ \ \ \textcolor{keyword}{virtual}\ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ \doxymbox{\hyperlink{classdiagnostic__event_a265b2adb8b4eba130dc6b8382305b3b9}{get\_fndecl}}\ ()\ \textcolor{keyword}{const}\ =\ 0;}
+\DoxyCodeLine{00148\ }
+\DoxyCodeLine{00149\ \ \ \textcolor{comment}{/*\ Stack\ depth,\ so\ that\ consumers\ can\ visualizes\ the\ interprocedural}}
+\DoxyCodeLine{00150\ \textcolor{comment}{\ \ \ \ \ calls,\ returns,\ and\ frame\ nesting.\ \ */}}
+\DoxyCodeLine{00151\ \ \ \textcolor{keyword}{virtual}\ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{classdiagnostic__event_a6b9d048020bbe3925acf6c53c8f5cda3}{get\_stack\_depth}}\ ()\ \textcolor{keyword}{const}\ =\ 0;}
+\DoxyCodeLine{00152\ }
+\DoxyCodeLine{00153\ \ \ \textcolor{comment}{/*\ Get\ a\ localized\ (and\ possibly\ colorized)\ description\ of\ this\ event.\ \ */}}
+\DoxyCodeLine{00154\ \ \ \textcolor{keyword}{virtual}\ \doxymbox{\hyperlink{classlabel__text}{label\_text}}\ \doxymbox{\hyperlink{classdiagnostic__event_abfd6754743909904198f6c6ba7c2438d}{get\_desc}}\ (\textcolor{keywordtype}{bool}\ can\_colorize)\ \textcolor{keyword}{const}\ =\ 0;}
+\DoxyCodeLine{00155\ }
+\DoxyCodeLine{00156\ \ \ \textcolor{comment}{/*\ Get\ a\ logical\_location\ for\ this\ event,\ or\ NULL.\ \ */}}
+\DoxyCodeLine{00157\ \ \ \textcolor{keyword}{virtual}\ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classlogical__location}{logical\_location}}\ *\doxymbox{\hyperlink{classdiagnostic__event_a62a979d8312ccebf4134721d0bdf3c44}{get\_logical\_location}}\ ()\ \textcolor{keyword}{const}\ =\ 0;}
+\DoxyCodeLine{00158\ }
+\DoxyCodeLine{00159\ \ \ \textcolor{keyword}{virtual}\ \doxymbox{\hyperlink{structdiagnostic__event_1_1meaning}{meaning}}\ \doxymbox{\hyperlink{classdiagnostic__event_ab354bfdd621be9084713fed710e822fb}{get\_meaning}}\ ()\ \textcolor{keyword}{const}\ =\ 0;}
+\DoxyCodeLine{00160\ }
+\DoxyCodeLine{00161\ \ \ \textcolor{keyword}{virtual}\ \doxymbox{\hyperlink{diagnostic-event-id_8h_a65420b170d8053fd4f462528e329f1a0}{diagnostic\_thread\_id\_t}}\ \doxymbox{\hyperlink{classdiagnostic__event_ab9176da7364f178ae5ab6af0ec03fe18}{get\_thread\_id}}\ ()\ \textcolor{keyword}{const}\ =\ 0;}
+\DoxyCodeLine{00162\ }
+\DoxyCodeLine{00163\ \ \ \textcolor{comment}{/*\ Hook\ for\ SARIF\ output\ to\ allow\ for\ adding\ diagnostic-\/specific}}
+\DoxyCodeLine{00164\ \textcolor{comment}{\ \ \ \ \ properties\ to\ the\ threadFlowLocation\ object's\ property\ bag.\ \ */}}
+\DoxyCodeLine{00165\ \ \ \textcolor{keyword}{virtual}\ \textcolor{keywordtype}{void}}
+\DoxyCodeLine{00166\ \ \ \doxymbox{\hyperlink{classdiagnostic__event_a22caad627c48c95ddeb76b152a080925}{maybe\_add\_sarif\_properties}}\ (\doxymbox{\hyperlink{classsarif__object}{sarif\_object}}\ \&\textcolor{comment}{/*thread\_flow\_loc\_obj*/})\textcolor{keyword}{\ const}}
+\DoxyCodeLine{00167\ \textcolor{keyword}{\ \ }\{}
+\DoxyCodeLine{00168\ \ \ \}}
+\DoxyCodeLine{00169\ \};}
+\DoxyCodeLine{00170\ }
+\DoxyCodeLine{00171\ \textcolor{comment}{/*\ Abstract\ base\ class\ representing\ a\ thread\ of\ execution\ within}}
+\DoxyCodeLine{00172\ \textcolor{comment}{\ \ \ a\ diagnostic\_path.}}
+\DoxyCodeLine{00173\ \textcolor{comment}{\ \ \ Each\ diagnostic\_event\ is\ associated\ with\ one\ thread.}}
+\DoxyCodeLine{00174\ \textcolor{comment}{\ \ \ Typically\ there\ is\ just\ one\ thread\ per\ diagnostic\_path.\ */}}
+\DoxyCodeLine{00175\ }
+\DoxyCodeLine{00176\ \textcolor{keyword}{class\ }\doxymbox{\hyperlink{classdiagnostic__thread}{diagnostic\_thread}}}
+\DoxyCodeLine{00177\ \{}
+\DoxyCodeLine{00178\ \textcolor{keyword}{public}:}
+\DoxyCodeLine{00179\ \ \ \textcolor{keyword}{virtual}\ \doxymbox{\hyperlink{classdiagnostic__thread_a5a2106cb2f4eecc4ad39f33ae86a40ad}{\string~diagnostic\_thread}}\ ()\ \{\}}
+\DoxyCodeLine{00180\ \ \ \textcolor{keyword}{virtual}\ \doxymbox{\hyperlink{classlabel__text}{label\_text}}\ \doxymbox{\hyperlink{classdiagnostic__thread_a83475ffa6ba3289370063c95211c6d84}{get\_name}}\ (\textcolor{keywordtype}{bool}\ can\_colorize)\ \textcolor{keyword}{const}\ =\ 0;}
+\DoxyCodeLine{00181\ \};}
+\DoxyCodeLine{00182\ }
+\DoxyCodeLine{00183\ \textcolor{comment}{/*\ Abstract\ base\ class\ for\ getting\ at\ a\ sequence\ of\ events.\ \ */}}
+\DoxyCodeLine{00184\ }
+\DoxyCodeLine{00185\ \textcolor{keyword}{class\ }\doxymbox{\hyperlink{classdiagnostic__path}{diagnostic\_path}}}
+\DoxyCodeLine{00186\ \{}
+\DoxyCodeLine{00187\ \ \textcolor{keyword}{public}:}
+\DoxyCodeLine{00188\ \ \ \textcolor{keyword}{virtual}\ \doxymbox{\hyperlink{classdiagnostic__path_a5773811d626ff7aeb0de7c97fca601b5}{\string~diagnostic\_path}}\ ()\ \{\}}
+\DoxyCodeLine{00189\ \ \ \textcolor{keyword}{virtual}\ \textcolor{keywordtype}{unsigned}\ \doxymbox{\hyperlink{classdiagnostic__path_a4d0f6bd6dcdc9751c63832e413dcdbf2}{num\_events}}\ ()\ \textcolor{keyword}{const}\ =\ 0;}
+\DoxyCodeLine{00190\ \ \ \textcolor{keyword}{virtual}\ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classdiagnostic__event}{diagnostic\_event}}\ \&\ \doxymbox{\hyperlink{classdiagnostic__path_a2d8e7a5bb5435290c17978f56732c928}{get\_event}}\ (\textcolor{keywordtype}{int}\ idx)\ \textcolor{keyword}{const}\ =\ 0;}
+\DoxyCodeLine{00191\ \ \ \textcolor{keyword}{virtual}\ \textcolor{keywordtype}{unsigned}\ \doxymbox{\hyperlink{classdiagnostic__path_a52f82d40fbc5a08df0c9e96a7c0fbc65}{num\_threads}}\ ()\ \textcolor{keyword}{const}\ =\ 0;}
+\DoxyCodeLine{00192\ \ \ \textcolor{keyword}{virtual}\ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classdiagnostic__thread}{diagnostic\_thread}}\ \&}
+\DoxyCodeLine{00193\ \ \ \doxymbox{\hyperlink{classdiagnostic__path_aae51d75c2eb5c3bc2f043dd690922f4c}{get\_thread}}\ (\doxymbox{\hyperlink{diagnostic-event-id_8h_a65420b170d8053fd4f462528e329f1a0}{diagnostic\_thread\_id\_t}})\ \textcolor{keyword}{const}\ =\ 0;}
+\DoxyCodeLine{00194\ }
+\DoxyCodeLine{00195\ \ \ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{classdiagnostic__path_aaa79d3c547313f948a13d1191ea150ec}{interprocedural\_p}}\ ()\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00196\ \ \ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{classdiagnostic__path_a3a84836dfdc98e8e318eb4241e420af4}{multithreaded\_p}}\ ()\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00197\ }
+\DoxyCodeLine{00198\ \textcolor{keyword}{private}:}
+\DoxyCodeLine{00199\ \ \ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{classdiagnostic__path_ac6824f41bea0be6f7f75cd89ba313350}{get\_first\_event\_in\_a\_function}}\ (\textcolor{keywordtype}{unsigned}\ *out\_idx)\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00200\ \};}
+\DoxyCodeLine{00201\ }
+\DoxyCodeLine{00202\ \textcolor{comment}{/*\ Concrete\ subclasses.\ \ */}}
+\DoxyCodeLine{00203\ }
+\DoxyCodeLine{00204\ \textcolor{comment}{/*\ A\ simple\ implementation\ of\ diagnostic\_event.\ \ */}}
+\DoxyCodeLine{00205\ }
+\DoxyCodeLine{00206\ \textcolor{keyword}{class\ }\doxymbox{\hyperlink{classsimple__diagnostic__event_aaaf0e9a9a3538ffec874395c13ef7214}{simple\_diagnostic\_event}}\ :\ \textcolor{keyword}{public}\ \doxymbox{\hyperlink{classdiagnostic__event}{diagnostic\_event}}}
+\DoxyCodeLine{00207\ \{}
+\DoxyCodeLine{00208\ \ \textcolor{keyword}{public}:}
+\DoxyCodeLine{00209\ \ \ \doxymbox{\hyperlink{classsimple__diagnostic__event_aaaf0e9a9a3538ffec874395c13ef7214}{simple\_diagnostic\_event}}\ (\doxymbox{\hyperlink{line-map_8h_aedf25620511d64e43327f1a229906a96}{location\_t}}\ loc,\ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ fndecl,\ \textcolor{keywordtype}{int}\ depth,}
+\DoxyCodeLine{00210\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *desc,}
+\DoxyCodeLine{00211\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{diagnostic-event-id_8h_a65420b170d8053fd4f462528e329f1a0}{diagnostic\_thread\_id\_t}}\ thread\_id\ =\ 0);}
+\DoxyCodeLine{00212\ \ \ \doxymbox{\hyperlink{classsimple__diagnostic__event_a7c5c4b641440207275d787619d98332d}{\string~simple\_diagnostic\_event}}\ ();}
+\DoxyCodeLine{00213\ }
+\DoxyCodeLine{00214\ \ \ \doxymbox{\hyperlink{line-map_8h_aedf25620511d64e43327f1a229906a96}{location\_t}}\ \doxymbox{\hyperlink{classsimple__diagnostic__event_a69b4266a22e3b3d0dc0e595a7578e112}{get\_location}}\ ()\ const\ \doxymbox{\hyperlink{output_8h_ab52ea22aac29575278d6a9e723d1d234}{final}}\textcolor{keyword}{\ override\ }\{\ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{classsimple__diagnostic__event_aab9c4d31c7370e33ff0513c67e9510d1}{m\_loc}};\ \}}
+\DoxyCodeLine{00215\ \ \ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ \doxymbox{\hyperlink{classsimple__diagnostic__event_a5c95b9941c23fa23d987df72fb7cd713}{get\_fndecl}}\ ()\ const\ \doxymbox{\hyperlink{output_8h_ab52ea22aac29575278d6a9e723d1d234}{final}}\textcolor{keyword}{\ override\ }\{\ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{classsimple__diagnostic__event_aa9edb1a9f2bb5ed320ed8943fbbb30de}{m\_fndecl}};\ \}}
+\DoxyCodeLine{00216\ \ \ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{classsimple__diagnostic__event_ae7fe85d63b42408710dcd884991eb255}{get\_stack\_depth}}\ ()\ const\ \doxymbox{\hyperlink{output_8h_ab52ea22aac29575278d6a9e723d1d234}{final}}\textcolor{keyword}{\ override\ }\{\ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{classsimple__diagnostic__event_a9f98bc79e6cc41df9b581725b9514337}{m\_depth}};\ \}}
+\DoxyCodeLine{00217\ \ \ \doxymbox{\hyperlink{classlabel__text}{label\_text}}\ \doxymbox{\hyperlink{classsimple__diagnostic__event_ad588f491e0ebe9337bab83ac4340d764}{get\_desc}}\ (\textcolor{keywordtype}{bool})\ \textcolor{keyword}{const}\ \textcolor{keyword}{final}\ \textcolor{keyword}{override}}
+\DoxyCodeLine{00218\ \ \ \{}
+\DoxyCodeLine{00219\ \ \ \ \ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{classlabel__text_ac7d0bbcef549005c9b8c032d86018506}{label\_text::borrow}}\ (\doxymbox{\hyperlink{classsimple__diagnostic__event_ac745f34bf666b8490d065a11a180a4dd}{m\_desc}});}
+\DoxyCodeLine{00220\ \ \ \}}
+\DoxyCodeLine{00221\ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classlogical__location}{logical\_location}}\ *\doxymbox{\hyperlink{classsimple__diagnostic__event_a28befc75df2cbbeef2b13b1a7b09204b}{get\_logical\_location}}\ ()\ const\ \doxymbox{\hyperlink{output_8h_ab52ea22aac29575278d6a9e723d1d234}{final}}\textcolor{keyword}{\ override}}
+\DoxyCodeLine{00222\ \textcolor{keyword}{\ \ }\{}
+\DoxyCodeLine{00223\ \ \ \ \ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{stddef_8h_a070d2ce7b6bb7e5c05602aa8c308d0c4}{NULL}};}
+\DoxyCodeLine{00224\ \ \ \}}
+\DoxyCodeLine{00225\ \ \ \doxymbox{\hyperlink{structdiagnostic__event_1_1meaning}{meaning}}\ \doxymbox{\hyperlink{classsimple__diagnostic__event_a5a178f59d593b0342dfbfa5310db8daa}{get\_meaning}}\ ()\ const\ \doxymbox{\hyperlink{output_8h_ab52ea22aac29575278d6a9e723d1d234}{final}}\textcolor{keyword}{\ override}}
+\DoxyCodeLine{00226\ \textcolor{keyword}{\ \ }\{}
+\DoxyCodeLine{00227\ \ \ \ \ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{structdiagnostic__event_1_1meaning}{meaning}}\ ();}
+\DoxyCodeLine{00228\ \ \ \}}
+\DoxyCodeLine{00229\ \ \ \doxymbox{\hyperlink{diagnostic-event-id_8h_a65420b170d8053fd4f462528e329f1a0}{diagnostic\_thread\_id\_t}}\ \doxymbox{\hyperlink{classsimple__diagnostic__event_ac0d7c7c8cec83ef7ae1373afe8573ba1}{get\_thread\_id}}\ ()\ const\ \doxymbox{\hyperlink{output_8h_ab52ea22aac29575278d6a9e723d1d234}{final}}\textcolor{keyword}{\ override}}
+\DoxyCodeLine{00230\ \textcolor{keyword}{\ \ }\{}
+\DoxyCodeLine{00231\ \ \ \ \ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{classsimple__diagnostic__event_ad6787d8e2556efacb68f7801cc17e681}{m\_thread\_id}};}
+\DoxyCodeLine{00232\ \ \ \}}
+\DoxyCodeLine{00233\ }
+\DoxyCodeLine{00234\ \ \textcolor{keyword}{private}:}
+\DoxyCodeLine{00235\ \ \ \doxymbox{\hyperlink{line-map_8h_aedf25620511d64e43327f1a229906a96}{location\_t}}\ \doxymbox{\hyperlink{classsimple__diagnostic__event_aab9c4d31c7370e33ff0513c67e9510d1}{m\_loc}};}
+\DoxyCodeLine{00236\ \ \ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ \doxymbox{\hyperlink{classsimple__diagnostic__event_aa9edb1a9f2bb5ed320ed8943fbbb30de}{m\_fndecl}};}
+\DoxyCodeLine{00237\ \ \ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{classsimple__diagnostic__event_a9f98bc79e6cc41df9b581725b9514337}{m\_depth}};}
+\DoxyCodeLine{00238\ \ \ \textcolor{keywordtype}{char}\ *\doxymbox{\hyperlink{classsimple__diagnostic__event_ac745f34bf666b8490d065a11a180a4dd}{m\_desc}};\ \textcolor{comment}{//\ has\ been\ i18n-\/ed\ and\ formatted}}
+\DoxyCodeLine{00239\ \ \ \doxymbox{\hyperlink{diagnostic-event-id_8h_a65420b170d8053fd4f462528e329f1a0}{diagnostic\_thread\_id\_t}}\ \doxymbox{\hyperlink{classsimple__diagnostic__event_ad6787d8e2556efacb68f7801cc17e681}{m\_thread\_id}};}
+\DoxyCodeLine{00240\ \};}
+\DoxyCodeLine{00241\ }
+\DoxyCodeLine{00242\ \textcolor{comment}{/*\ A\ simple\ implementation\ of\ diagnostic\_thread.\ \ */}}
+\DoxyCodeLine{00243\ }
+\DoxyCodeLine{00244\ \textcolor{keyword}{class\ }\doxymbox{\hyperlink{classsimple__diagnostic__thread_a15deac8cf6a599787190d72fc9924d91}{simple\_diagnostic\_thread}}\ :\ \textcolor{keyword}{public}\ \doxymbox{\hyperlink{classdiagnostic__thread}{diagnostic\_thread}}}
+\DoxyCodeLine{00245\ \{}
+\DoxyCodeLine{00246\ \textcolor{keyword}{public}:}
+\DoxyCodeLine{00247\ \ \ \doxymbox{\hyperlink{classsimple__diagnostic__thread_a15deac8cf6a599787190d72fc9924d91}{simple\_diagnostic\_thread}}\ (\textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *\doxymbox{\hyperlink{configargs_8h_a8f8f80d37794cde9472343e4487ba3eb}{name}})\ :\ \doxymbox{\hyperlink{classsimple__diagnostic__thread_a0725d583e5fb6f8d2fbc7c00ccc19cff}{m\_name}}\ (\doxymbox{\hyperlink{configargs_8h_a8f8f80d37794cde9472343e4487ba3eb}{name}})\ \{\}}
+\DoxyCodeLine{00248\ \ \ \doxymbox{\hyperlink{classlabel__text}{label\_text}}\ \doxymbox{\hyperlink{classsimple__diagnostic__thread_a1aabee9123c077dbd316e6fe999871ac}{get\_name}}\ (\textcolor{keywordtype}{bool})\ \textcolor{keyword}{const}\ \textcolor{keyword}{final}\ \textcolor{keyword}{override}}
+\DoxyCodeLine{00249\ \ \ \{}
+\DoxyCodeLine{00250\ \ \ \ \ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{classlabel__text_ac7d0bbcef549005c9b8c032d86018506}{label\_text::borrow}}\ (\doxymbox{\hyperlink{classsimple__diagnostic__thread_a0725d583e5fb6f8d2fbc7c00ccc19cff}{m\_name}});}
+\DoxyCodeLine{00251\ \ \ \}}
+\DoxyCodeLine{00252\ }
+\DoxyCodeLine{00253\ \textcolor{keyword}{private}:}
+\DoxyCodeLine{00254\ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *\doxymbox{\hyperlink{classsimple__diagnostic__thread_a0725d583e5fb6f8d2fbc7c00ccc19cff}{m\_name}};\ \textcolor{comment}{//\ has\ been\ i18n-\/ed\ and\ formatted}}
+\DoxyCodeLine{00255\ \};}
+\DoxyCodeLine{00256\ }
+\DoxyCodeLine{00257\ \textcolor{comment}{/*\ A\ simple\ implementation\ of\ diagnostic\_path,\ as\ a\ vector\ of}}
+\DoxyCodeLine{00258\ \textcolor{comment}{\ \ \ simple\_diagnostic\_event\ instances.\ \ */}}
+\DoxyCodeLine{00259\ }
+\DoxyCodeLine{00260\ \textcolor{keyword}{class\ }\doxymbox{\hyperlink{classsimple__diagnostic__path_acb87dea2fe1d2915a1925b86538c61cd}{simple\_diagnostic\_path}}\ :\ \textcolor{keyword}{public}\ \doxymbox{\hyperlink{classdiagnostic__path}{diagnostic\_path}}}
+\DoxyCodeLine{00261\ \{}
+\DoxyCodeLine{00262\ \ \textcolor{keyword}{public}:}
+\DoxyCodeLine{00263\ \ \ \doxymbox{\hyperlink{classsimple__diagnostic__path_acb87dea2fe1d2915a1925b86538c61cd}{simple\_diagnostic\_path}}\ (\doxymbox{\hyperlink{classpretty__printer}{pretty\_printer}}\ *event\_pp);}
+\DoxyCodeLine{00264\ }
+\DoxyCodeLine{00265\ \ \ \textcolor{keywordtype}{unsigned}\ \doxymbox{\hyperlink{classsimple__diagnostic__path_a6652ca69d7e5cfb1c8f3ff5b04bc743a}{num\_events}}\ ()\ const\ \doxymbox{\hyperlink{output_8h_ab52ea22aac29575278d6a9e723d1d234}{final}}\ override;}
+\DoxyCodeLine{00266\ \ \ const\ \doxymbox{\hyperlink{classdiagnostic__event}{diagnostic\_event}}\ \&\ \doxymbox{\hyperlink{classsimple__diagnostic__path_a22c75ee79abfa909065de6becbe21b5f}{get\_event}}\ (\textcolor{keywordtype}{int}\ idx)\ const\ \doxymbox{\hyperlink{output_8h_ab52ea22aac29575278d6a9e723d1d234}{final}}\ override;}
+\DoxyCodeLine{00267\ \ \ \textcolor{keywordtype}{unsigned}\ \doxymbox{\hyperlink{classsimple__diagnostic__path_ae5d558d98913f7a935ab709f77cb57a1}{num\_threads}}\ ()\ const\ \doxymbox{\hyperlink{output_8h_ab52ea22aac29575278d6a9e723d1d234}{final}}\ override;}
+\DoxyCodeLine{00268\ \ \ const\ \doxymbox{\hyperlink{classdiagnostic__thread}{diagnostic\_thread}}\ \&}
+\DoxyCodeLine{00269\ \ \ \doxymbox{\hyperlink{classsimple__diagnostic__path_ae3a2fb91c2f09e47aa2fe6d90dca2074}{get\_thread}}\ (\doxymbox{\hyperlink{diagnostic-event-id_8h_a65420b170d8053fd4f462528e329f1a0}{diagnostic\_thread\_id\_t}})\ const\ \doxymbox{\hyperlink{output_8h_ab52ea22aac29575278d6a9e723d1d234}{final}}\ override;}
+\DoxyCodeLine{00270\ }
+\DoxyCodeLine{00271\ \ \ \doxymbox{\hyperlink{diagnostic-event-id_8h_a65420b170d8053fd4f462528e329f1a0}{diagnostic\_thread\_id\_t}}\ \doxymbox{\hyperlink{classsimple__diagnostic__path_ab2fa9479d6198a08b6165cf2d8a9858e}{add\_thread}}\ (const\ \textcolor{keywordtype}{char}\ *\doxymbox{\hyperlink{configargs_8h_a8f8f80d37794cde9472343e4487ba3eb}{name}});}
+\DoxyCodeLine{00272\ }
+\DoxyCodeLine{00273\ \ \ \doxymbox{\hyperlink{classdiagnostic__event__id__t}{diagnostic\_event\_id\_t}}\ \doxymbox{\hyperlink{classsimple__diagnostic__path_a25356f31980566304141bab936539b31}{add\_event}}\ (\doxymbox{\hyperlink{line-map_8h_aedf25620511d64e43327f1a229906a96}{location\_t}}\ loc,\ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ fndecl,\ \textcolor{keywordtype}{int}\ depth,}
+\DoxyCodeLine{00274\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ const\ \textcolor{keywordtype}{char}\ *fmt,\ ...)}
+\DoxyCodeLine{00275\ \ \ \ \ \doxymbox{\hyperlink{diagnostic-core_8h_aefe7c26feedfec1c17ec07749bd3cbe2}{ATTRIBUTE\_GCC\_DIAG}}(5,6);}
+\DoxyCodeLine{00276\ \ \ \doxymbox{\hyperlink{classdiagnostic__event__id__t}{diagnostic\_event\_id\_t}}}
+\DoxyCodeLine{00277\ \ \ \doxymbox{\hyperlink{classsimple__diagnostic__path_a1d4ca2ffad64f67b25980cefd95fa690}{add\_thread\_event}}\ (\doxymbox{\hyperlink{diagnostic-event-id_8h_a65420b170d8053fd4f462528e329f1a0}{diagnostic\_thread\_id\_t}}\ thread\_id,}
+\DoxyCodeLine{00278\ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{line-map_8h_aedf25620511d64e43327f1a229906a96}{location\_t}}\ loc,\ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ fndecl,\ \textcolor{keywordtype}{int}\ depth,}
+\DoxyCodeLine{00279\ \ \ \ \ \ \ \ \ \ \ \ \ const\ \textcolor{keywordtype}{char}\ *fmt,\ ...)}
+\DoxyCodeLine{00280\ \ \ \ \ \doxymbox{\hyperlink{diagnostic-core_8h_aefe7c26feedfec1c17ec07749bd3cbe2}{ATTRIBUTE\_GCC\_DIAG}}(6,7);}
+\DoxyCodeLine{00281\ }
+\DoxyCodeLine{00282\ \ private:}
+\DoxyCodeLine{00283\ \ \ \doxymbox{\hyperlink{classauto__delete__vec}{auto\_delete\_vec}}<\doxymbox{\hyperlink{classsimple__diagnostic__thread}{simple\_diagnostic\_thread}}>\ \doxymbox{\hyperlink{classsimple__diagnostic__path_a9c05f6e7da2404bbf5eabc993b0702dc}{m\_threads}};}
+\DoxyCodeLine{00284\ \ \ \doxymbox{\hyperlink{classauto__delete__vec}{auto\_delete\_vec}}<\doxymbox{\hyperlink{classsimple__diagnostic__event}{simple\_diagnostic\_event}}>\ \doxymbox{\hyperlink{classsimple__diagnostic__path_a501bcae6be922e1192b065197a583d58}{m\_events}};}
+\DoxyCodeLine{00285\ }
+\DoxyCodeLine{00286\ \ \ \textcolor{comment}{/*\ (for\ use\ by\ add\_event).\ \ */}}
+\DoxyCodeLine{00287\ \ \ \doxymbox{\hyperlink{classpretty__printer}{pretty\_printer}}\ *\doxymbox{\hyperlink{classsimple__diagnostic__path_a13e4c94605f2b6387bc3ec9db37e6e36}{m\_event\_pp}};}
+\DoxyCodeLine{00288\ \};}
+\DoxyCodeLine{00289\ }
+\DoxyCodeLine{00290\ extern\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{collect-utils_8h_a398527b3e9e358c345c5047b16871957}{debug}}\ (\doxymbox{\hyperlink{classdiagnostic__path}{diagnostic\_path}}\ *path);}
+\DoxyCodeLine{00291\ }
+\DoxyCodeLine{00292\ \textcolor{preprocessor}{\#endif\ }\textcolor{comment}{/*\ !\ GCC\_DIAGNOSTIC\_PATH\_H\ */}\textcolor{preprocessor}{}}
+
+\end{DoxyCode}

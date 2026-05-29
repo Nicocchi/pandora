@@ -1,0 +1,559 @@
+\doxysection{lra-\/int.h}
+\hypertarget{lra-int_8h_source}{}\label{lra-int_8h_source}\index{toolchain/x86\_64-\/elf/lib/gcc/x86\_64-\/elf/14.2.0/plugin/include/lra-\/int.h@{toolchain/x86\_64-\/elf/lib/gcc/x86\_64-\/elf/14.2.0/plugin/include/lra-\/int.h}}
+\doxymbox{\hyperlink{lra-int_8h}{Go to the documentation of this file.}}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001\ \textcolor{comment}{/*\ Local\ Register\ Allocator\ (LRA)\ intercommunication\ header\ file.}}
+\DoxyCodeLine{00002\ \textcolor{comment}{\ \ \ Copyright\ (C)\ 2010-\/2024\ Free\ Software\ Foundation,\ Inc.}}
+\DoxyCodeLine{00003\ \textcolor{comment}{\ \ \ Contributed\ by\ Vladimir\ Makarov\ <vmakarov@redhat.com>.}}
+\DoxyCodeLine{00004\ \textcolor{comment}{}}
+\DoxyCodeLine{00005\ \textcolor{comment}{This\ file\ is\ part\ of\ GCC.}}
+\DoxyCodeLine{00006\ \textcolor{comment}{}}
+\DoxyCodeLine{00007\ \textcolor{comment}{GCC\ is\ free\ software;\ you\ can\ redistribute\ it\ and/or\ modify\ it\ under}}
+\DoxyCodeLine{00008\ \textcolor{comment}{the\ terms\ of\ the\ GNU\ General\ Public\ License\ as\ published\ by\ the\ Free}}
+\DoxyCodeLine{00009\ \textcolor{comment}{Software\ Foundation;\ either\ version\ 3,\ or\ (at\ your\ option)\ any\ later}}
+\DoxyCodeLine{00010\ \textcolor{comment}{version.}}
+\DoxyCodeLine{00011\ \textcolor{comment}{}}
+\DoxyCodeLine{00012\ \textcolor{comment}{GCC\ is\ distributed\ in\ the\ hope\ that\ it\ will\ be\ useful,\ but\ WITHOUT\ ANY}}
+\DoxyCodeLine{00013\ \textcolor{comment}{WARRANTY;\ without\ even\ the\ implied\ warranty\ of\ MERCHANTABILITY\ or}}
+\DoxyCodeLine{00014\ \textcolor{comment}{FITNESS\ FOR\ A\ PARTICULAR\ PURPOSE.\ \ See\ the\ GNU\ General\ Public\ License}}
+\DoxyCodeLine{00015\ \textcolor{comment}{for\ more\ details.}}
+\DoxyCodeLine{00016\ \textcolor{comment}{}}
+\DoxyCodeLine{00017\ \textcolor{comment}{You\ should\ have\ received\ a\ copy\ of\ the\ GNU\ General\ Public\ License}}
+\DoxyCodeLine{00018\ \textcolor{comment}{along\ with\ GCC;\ see\ the\ file\ COPYING3.\ \ If\ not\ see}}
+\DoxyCodeLine{00019\ \textcolor{comment}{<http://www.gnu.org/licenses/>.\ \ */}}
+\DoxyCodeLine{00020\ }
+\DoxyCodeLine{00021\ \textcolor{preprocessor}{\#ifndef\ GCC\_LRA\_INT\_H}}
+\DoxyCodeLine{00022\ \textcolor{preprocessor}{\#define\ GCC\_LRA\_INT\_H}}
+\DoxyCodeLine{00023\ }
+\DoxyCodeLine{00024\ \textcolor{preprocessor}{\#define\ lra\_assert(c)\ gcc\_checking\_assert\ (c)}}
+\DoxyCodeLine{00025\ }
+\DoxyCodeLine{00026\ \textcolor{comment}{/*\ The\ parameter\ used\ to\ prevent\ infinite\ reloading\ for\ an\ insn.\ \ Each}}
+\DoxyCodeLine{00027\ \textcolor{comment}{\ \ \ insn\ operands\ might\ require\ a\ reload\ and,\ if\ it\ is\ a\ memory,\ its}}
+\DoxyCodeLine{00028\ \textcolor{comment}{\ \ \ base\ and\ index\ registers\ might\ require\ a\ reload\ too.\ \ */}}
+\DoxyCodeLine{00029\ \textcolor{preprocessor}{\#define\ LRA\_MAX\_INSN\_RELOADS\ (MAX\_RECOG\_OPERANDS\ *\ 3)}}
+\DoxyCodeLine{00030\ }
+\DoxyCodeLine{00031\ \textcolor{keyword}{typedef}\ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{structlra__live__range}{lra\_live\_range}}\ *\doxymbox{\hyperlink{lra-int_8h_ad67b80f8b7b817a0225b72f660ac60ed}{lra\_live\_range\_t}};}
+\DoxyCodeLine{00032\ }
+\DoxyCodeLine{00033\ \textcolor{comment}{/*\ The\ structure\ describes\ program\ points\ where\ a\ given\ pseudo\ lives.}}
+\DoxyCodeLine{00034\ \textcolor{comment}{\ \ \ The\ live\ ranges\ can\ be\ used\ to\ find\ conflicts\ with\ other\ pseudos.}}
+\DoxyCodeLine{00035\ \textcolor{comment}{\ \ \ If\ the\ live\ ranges\ of\ two\ pseudos\ are\ intersected,\ the\ pseudos\ are}}
+\DoxyCodeLine{00036\ \textcolor{comment}{\ \ \ in\ conflict.\ \ */}}
+\DoxyCodeLine{00037\ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{structlra__live__range}{lra\_live\_range}}}
+\DoxyCodeLine{00038\ \{}
+\DoxyCodeLine{00039\ \ \ \textcolor{comment}{/*\ Pseudo\ regno\ whose\ live\ range\ is\ described\ by\ given}}
+\DoxyCodeLine{00040\ \textcolor{comment}{\ \ \ \ \ structure.\ \ */}}
+\DoxyCodeLine{00041\ \ \ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{structlra__live__range_ae593a64449cabfc05d60e5cf8d7aab12}{regno}};}
+\DoxyCodeLine{00042\ \ \ \textcolor{comment}{/*\ Program\ point\ range.\ \ */}}
+\DoxyCodeLine{00043\ \ \ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{structlra__live__range_ae46b9abebc77df22d7cf4764389497b1}{start}},\ \doxymbox{\hyperlink{structlra__live__range_a5b5cf3cdc3ba35a609c9592f8a89ecb0}{finish}};}
+\DoxyCodeLine{00044\ \ \ \textcolor{comment}{/*\ Next\ structure\ describing\ program\ points\ where\ the\ pseudo}}
+\DoxyCodeLine{00045\ \textcolor{comment}{\ \ \ \ \ lives.\ \ */}}
+\DoxyCodeLine{00046\ \ \ \doxymbox{\hyperlink{lra-int_8h_ad67b80f8b7b817a0225b72f660ac60ed}{lra\_live\_range\_t}}\ \doxymbox{\hyperlink{structlra__live__range_adf2e09e7c1e13c30dab179616d78c620}{next}};}
+\DoxyCodeLine{00047\ \ \ \textcolor{comment}{/*\ Pointer\ to\ structures\ with\ the\ same\ start.\ \ */}}
+\DoxyCodeLine{00048\ \ \ \doxymbox{\hyperlink{lra-int_8h_ad67b80f8b7b817a0225b72f660ac60ed}{lra\_live\_range\_t}}\ \doxymbox{\hyperlink{structlra__live__range_a399d79b7f4194d8ff3cff1abe0720b5c}{start\_next}};}
+\DoxyCodeLine{00049\ \};}
+\DoxyCodeLine{00050\ }
+\DoxyCodeLine{00051\ \textcolor{keyword}{typedef}\ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{structlra__copy}{lra\_copy}}\ *\doxymbox{\hyperlink{lra-int_8h_a3bd21d5fa332ff4d48cdbd62ec1a30d3}{lra\_copy\_t}};}
+\DoxyCodeLine{00052\ }
+\DoxyCodeLine{00053\ \textcolor{comment}{/*\ Copy\ between\ pseudos\ which\ affects\ assigning\ hard\ registers.\ \ */}}
+\DoxyCodeLine{00054\ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{structlra__copy}{lra\_copy}}}
+\DoxyCodeLine{00055\ \{}
+\DoxyCodeLine{00056\ \ \ \textcolor{comment}{/*\ True\ if\ regno1\ is\ the\ destination\ of\ the\ copy.\ \ */}}
+\DoxyCodeLine{00057\ \ \ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{structlra__copy_a1bf8b2789c2742801a0c287992a63172}{regno1\_dest\_p}};}
+\DoxyCodeLine{00058\ \ \ \textcolor{comment}{/*\ Execution\ frequency\ of\ the\ copy.\ \ */}}
+\DoxyCodeLine{00059\ \ \ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{structlra__copy_a08e1c58c8c6a29ca359ede7ff83c40a6}{freq}};}
+\DoxyCodeLine{00060\ \ \ \textcolor{comment}{/*\ Pseudos\ connected\ by\ the\ copy.\ \ REGNO1\ <\ REGNO2.\ \ */}}
+\DoxyCodeLine{00061\ \ \ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{structlra__copy_abdf49fb35399277f87fa2104cdfd7930}{regno1}},\ \doxymbox{\hyperlink{structlra__copy_a06dcb3c78f4c854db377e42b5c7a151f}{regno2}};}
+\DoxyCodeLine{00062\ \ \ \textcolor{comment}{/*\ Next\ copy\ with\ correspondingly\ REGNO1\ and\ REGNO2.\ \ */}}
+\DoxyCodeLine{00063\ \ \ \doxymbox{\hyperlink{lra-int_8h_a3bd21d5fa332ff4d48cdbd62ec1a30d3}{lra\_copy\_t}}\ \doxymbox{\hyperlink{structlra__copy_ad4333092e4b40087f9b4d916c0489252}{regno1\_next}},\ \doxymbox{\hyperlink{structlra__copy_a70be5e44c5adff4b0db787fa54fb1839}{regno2\_next}};}
+\DoxyCodeLine{00064\ \};}
+\DoxyCodeLine{00065\ }
+\DoxyCodeLine{00066\ \textcolor{comment}{/*\ Common\ info\ about\ a\ register\ (pseudo\ or\ hard\ register).\ \ */}}
+\DoxyCodeLine{00067\ \textcolor{keyword}{class\ }\doxymbox{\hyperlink{classlra__reg}{lra\_reg}}}
+\DoxyCodeLine{00068\ \{}
+\DoxyCodeLine{00069\ \textcolor{keyword}{public}:}
+\DoxyCodeLine{00070\ \ \ \textcolor{comment}{/*\ Bitmap\ of\ UIDs\ of\ insns\ (including\ debug\ insns)\ referring\ the}}
+\DoxyCodeLine{00071\ \textcolor{comment}{\ \ \ \ \ reg.\ \ */}}
+\DoxyCodeLine{00072\ \ \ bitmap\_head\ \doxymbox{\hyperlink{classlra__reg_a6bbdf65de53459b0bfc2da9ff01ae4f9}{insn\_bitmap}};}
+\DoxyCodeLine{00073\ \ \ \textcolor{comment}{/*\ The\ following\ fields\ are\ defined\ only\ for\ pseudos.\ \ */}}
+\DoxyCodeLine{00074\ \ \ \textcolor{comment}{/*\ Hard\ registers\ with\ which\ the\ pseudo\ conflicts.\ \ */}}
+\DoxyCodeLine{00075\ \ \ \doxymbox{\hyperlink{hard-reg-set_8h_a58a1569980de76957f391607c395d443}{HARD\_REG\_SET}}\ \doxymbox{\hyperlink{classlra__reg_a91332fb2fc8dbaee12a825ea81bc43e1}{conflict\_hard\_regs}};}
+\DoxyCodeLine{00076\ \ \ \textcolor{comment}{/*\ Pseudo\ allocno\ class\ hard\ registers\ which\ cannot\ be\ a\ start\ hard\ register}}
+\DoxyCodeLine{00077\ \textcolor{comment}{\ \ \ \ \ of\ the\ pseudo.\ \ */}}
+\DoxyCodeLine{00078\ \ \ \doxymbox{\hyperlink{hard-reg-set_8h_a58a1569980de76957f391607c395d443}{HARD\_REG\_SET}}\ \doxymbox{\hyperlink{classlra__reg_a3de1d7a5c3afa86263ed0752b03dcd6b}{exclude\_start\_hard\_regs}};}
+\DoxyCodeLine{00079\ \ \ \textcolor{comment}{/*\ We\ assign\ hard\ registers\ to\ reload\ pseudos\ which\ can\ occur\ in\ few}}
+\DoxyCodeLine{00080\ \textcolor{comment}{\ \ \ \ \ places.\ \ So\ two\ hard\ register\ preferences\ are\ enough\ for\ them.}}
+\DoxyCodeLine{00081\ \textcolor{comment}{\ \ \ \ \ The\ following\ fields\ define\ the\ preferred\ hard\ registers.\ \ If}}
+\DoxyCodeLine{00082\ \textcolor{comment}{\ \ \ \ \ there\ are\ no\ such\ hard\ registers\ the\ first\ field\ value\ is}}
+\DoxyCodeLine{00083\ \textcolor{comment}{\ \ \ \ \ negative.\ \ If\ there\ is\ only\ one\ preferred\ hard\ register,\ the\ 2nd}}
+\DoxyCodeLine{00084\ \textcolor{comment}{\ \ \ \ \ field\ is\ negative.\ \ */}}
+\DoxyCodeLine{00085\ \ \ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{classlra__reg_aa6a8d201725d933ee587574951839d44}{preferred\_hard\_regno1}},\ \doxymbox{\hyperlink{classlra__reg_af22e75b3afba51d22a0a58cc1725678f}{preferred\_hard\_regno2}};}
+\DoxyCodeLine{00086\ \ \ \textcolor{comment}{/*\ Profits\ to\ use\ the\ corresponding\ preferred\ hard\ registers.\ \ If}}
+\DoxyCodeLine{00087\ \textcolor{comment}{\ \ \ \ \ the\ both\ hard\ registers\ defined,\ the\ first\ hard\ register\ has\ not}}
+\DoxyCodeLine{00088\ \textcolor{comment}{\ \ \ \ \ less\ profit\ than\ the\ second\ one.\ \ */}}
+\DoxyCodeLine{00089\ \ \ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{classlra__reg_a102002be3eb434ad061728c32b36761b}{preferred\_hard\_regno\_profit1}},\ \doxymbox{\hyperlink{classlra__reg_ad9a1ea4d13440087319c7972137de31e}{preferred\_hard\_regno\_profit2}};}
+\DoxyCodeLine{00090\ \textcolor{preprocessor}{\#ifdef\ STACK\_REGS}}
+\DoxyCodeLine{00091\ \ \ \textcolor{comment}{/*\ True\ if\ the\ pseudo\ should\ not\ be\ assigned\ to\ a\ stack\ register.\ \ */}}
+\DoxyCodeLine{00092\ \ \ \textcolor{keywordtype}{bool}\ no\_stack\_p;}
+\DoxyCodeLine{00093\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00094\ \ \ \textcolor{comment}{/*\ Number\ of\ references\ and\ execution\ frequencies\ of\ the\ register\ in}}
+\DoxyCodeLine{00095\ \textcolor{comment}{\ \ \ \ \ *non-\/debug*\ insns.\ \ */}}
+\DoxyCodeLine{00096\ \ \ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{classlra__reg_a4d0e6efdce4ac7e6791b35578e63b588}{nrefs}},\ \doxymbox{\hyperlink{classlra__reg_a2640a1e2e64cf9f2af028f695bb4a9dd}{freq}};}
+\DoxyCodeLine{00097\ \ \ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{classlra__reg_a15f934cfec6aa5431a06aa3cc4f54961}{last\_reload}};}
+\DoxyCodeLine{00098\ \ \ \textcolor{comment}{/*\ rtx\ used\ to\ undo\ the\ inheritance.\ \ It\ can\ be\ non-\/null\ only}}
+\DoxyCodeLine{00099\ \textcolor{comment}{\ \ \ \ \ between\ subsequent\ inheritance\ and\ undo\ inheritance\ passes.\ \ */}}
+\DoxyCodeLine{00100\ \ \ \doxymbox{\hyperlink{coretypes_8h_a20e671ce9e7827268658cff844f4281c}{rtx}}\ \doxymbox{\hyperlink{classlra__reg_a90344326320e47630008a4d6dcef7721}{restore\_rtx}};}
+\DoxyCodeLine{00101\ \ \ \textcolor{comment}{/*\ Value\ holding\ by\ register.\ \ If\ the\ pseudos\ have\ the\ same\ value}}
+\DoxyCodeLine{00102\ \textcolor{comment}{\ \ \ \ \ they\ do\ not\ conflict.\ \ */}}
+\DoxyCodeLine{00103\ \ \ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{classlra__reg_a1ff906784ffc3e457d02346b165486a3}{val}};}
+\DoxyCodeLine{00104\ \ \ \textcolor{comment}{/*\ Offset\ from\ relative\ eliminate\ register\ to\ pesudo\ reg.\ \ */}}
+\DoxyCodeLine{00105\ \ \ \doxymbox{\hyperlink{poly-int-types_8h_af5255601feb5e9a21f3193d378a55845}{poly\_int64}}\ \doxymbox{\hyperlink{classlra__reg_a25c7262f72db6373006950b63c51f758}{offset}};}
+\DoxyCodeLine{00106\ \ \ \textcolor{comment}{/*\ These\ members\ are\ set\ up\ in\ lra-\/lives.cc\ and\ updated\ in}}
+\DoxyCodeLine{00107\ \textcolor{comment}{\ \ \ \ \ lra-\/coalesce.cc.\ \ */}}
+\DoxyCodeLine{00108\ \ \ \textcolor{comment}{/*\ The\ biggest\ size\ mode\ in\ which\ each\ pseudo\ reg\ is\ referred\ in}}
+\DoxyCodeLine{00109\ \textcolor{comment}{\ \ \ \ \ whole\ function\ (possibly\ via\ subreg).\ \ */}}
+\DoxyCodeLine{00110\ \ \ \doxymbox{\hyperlink{insn-modes_8h_a3c592bc51c57098d62602b12c9468e92}{machine\_mode}}\ \doxymbox{\hyperlink{classlra__reg_a9ad22bdf80423beb24282d6e4adc9422}{biggest\_mode}};}
+\DoxyCodeLine{00111\ \ \ \textcolor{comment}{/*\ Live\ ranges\ of\ the\ pseudo.\ \ */}}
+\DoxyCodeLine{00112\ \ \ \doxymbox{\hyperlink{lra-int_8h_ad67b80f8b7b817a0225b72f660ac60ed}{lra\_live\_range\_t}}\ \doxymbox{\hyperlink{classlra__reg_a54cb44a5dcd4c2d7cec9a31b6fcaa0f5}{live\_ranges}};}
+\DoxyCodeLine{00113\ \ \ \textcolor{comment}{/*\ This\ member\ is\ set\ up\ in\ lra-\/lives.cc\ for\ subsequent}}
+\DoxyCodeLine{00114\ \textcolor{comment}{\ \ \ \ \ assignments.\ \ */}}
+\DoxyCodeLine{00115\ \ \ \doxymbox{\hyperlink{lra-int_8h_a3bd21d5fa332ff4d48cdbd62ec1a30d3}{lra\_copy\_t}}\ \doxymbox{\hyperlink{classlra__reg_ad52056e32c2305ef63b473aa9f44237f}{copies}};}
+\DoxyCodeLine{00116\ \};}
+\DoxyCodeLine{00117\ }
+\DoxyCodeLine{00118\ \textcolor{comment}{/*\ References\ to\ the\ common\ info\ about\ each\ register.\ \ */}}
+\DoxyCodeLine{00119\ \textcolor{keyword}{extern}\ \textcolor{keyword}{class\ }\doxymbox{\hyperlink{classlra__reg}{lra\_reg}}\ *\doxymbox{\hyperlink{lra-int_8h_addf80ef59ffe12fef23f1897c634d1be}{lra\_reg\_info}};}
+\DoxyCodeLine{00120\ }
+\DoxyCodeLine{00121\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{hard-reg-set_8h_a58a1569980de76957f391607c395d443}{HARD\_REG\_SET}}\ \doxymbox{\hyperlink{lra-int_8h_a870a31ac37ef5e5825843d7bc9404aff}{hard\_regs\_spilled\_into}};}
+\DoxyCodeLine{00122\ }
+\DoxyCodeLine{00123\ \textcolor{comment}{/*\ Static\ info\ about\ each\ insn\ operand\ (common\ for\ all\ insns\ with\ the}}
+\DoxyCodeLine{00124\ \textcolor{comment}{\ \ \ same\ ICODE).\ \ Warning:\ if\ the\ structure\ definition\ is\ changed,\ the}}
+\DoxyCodeLine{00125\ \textcolor{comment}{\ \ \ initializer\ for\ debug\_operand\_data\ in\ lra.cc\ should\ be\ changed}}
+\DoxyCodeLine{00126\ \textcolor{comment}{\ \ \ too.\ \ */}}
+\DoxyCodeLine{00127\ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{structlra__operand__data}{lra\_operand\_data}}}
+\DoxyCodeLine{00128\ \{}
+\DoxyCodeLine{00129\ \ \ \textcolor{comment}{/*\ The\ machine\ description\ constraint\ string\ of\ the\ operand.\ \ */}}
+\DoxyCodeLine{00130\ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *\doxymbox{\hyperlink{structlra__operand__data_a41be2fb98f12d9b50aa628db58436b98}{constraint}};}
+\DoxyCodeLine{00131\ \ \ \textcolor{comment}{/*\ Alternatives\ for\ which\ early\_clobber\ can\ be\ true.\ \ */}}
+\DoxyCodeLine{00132\ \ \ \doxymbox{\hyperlink{recog_8h_a9b431d4003407c228a9f827187d40c10}{alternative\_mask}}\ \doxymbox{\hyperlink{structlra__operand__data_a69158d8a4fb483c65cb36b59ed1afb46}{early\_clobber\_alts}};}
+\DoxyCodeLine{00133\ \ \ \textcolor{comment}{/*\ It\ is\ taken\ only\ from\ machine\ description\ (which\ is\ different}}
+\DoxyCodeLine{00134\ \textcolor{comment}{\ \ \ \ \ from\ recog\_data.operand\_mode)\ and\ can\ be\ of\ VOIDmode.\ \ */}}
+\DoxyCodeLine{00135\ \ \ \doxymbox{\hyperlink{ansidecl_8h_a2934559f672ebd88a0459d0fe40faff2}{ENUM\_BITFIELD}}(\doxymbox{\hyperlink{insn-modes_8h_a3c592bc51c57098d62602b12c9468e92}{machine\_mode}})\ mode\ :\ 16;}
+\DoxyCodeLine{00136\ \ \ \textcolor{comment}{/*\ The\ type\ of\ the\ operand\ (in/out/inout).\ \ */}}
+\DoxyCodeLine{00137\ \ \ \doxymbox{\hyperlink{ansidecl_8h_a2934559f672ebd88a0459d0fe40faff2}{ENUM\_BITFIELD}}\ (\doxymbox{\hyperlink{recog_8h_a290e469f41d7741ed85804133516ab50}{op\_type}})\ \doxymbox{\hyperlink{structtype}{type}}\ :\ 8;}
+\DoxyCodeLine{00138\ \ \ \textcolor{comment}{/*\ Through\ if\ accessed\ through\ STRICT\_LOW.\ \ */}}
+\DoxyCodeLine{00139\ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{structlra__operand__data_a4945abd85eb4f4457baf368d54e63a8b}{strict\_low}}\ :\ 1;}
+\DoxyCodeLine{00140\ \ \ \textcolor{comment}{/*\ True\ if\ the\ operand\ is\ an\ operator.\ \ */}}
+\DoxyCodeLine{00141\ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{structlra__operand__data_a30b0167af4a8f55213e6800a7de0fa99}{is\_operator}}\ :\ 1;}
+\DoxyCodeLine{00142\ \ \ \textcolor{comment}{/*\ True\ if\ the\ operand\ is\ an\ address.\ \ */}}
+\DoxyCodeLine{00143\ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{structlra__operand__data_a0475a6452b5567dbcdf420473ef21671}{is\_address}}\ :\ 1;}
+\DoxyCodeLine{00144\ \};}
+\DoxyCodeLine{00145\ }
+\DoxyCodeLine{00146\ \textcolor{comment}{/*\ Info\ about\ register\ occurrence\ in\ an\ insn.\ \ */}}
+\DoxyCodeLine{00147\ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{structlra__insn__reg}{lra\_insn\_reg}}}
+\DoxyCodeLine{00148\ \{}
+\DoxyCodeLine{00149\ \ \ \textcolor{comment}{/*\ Alternatives\ for\ which\ early\_clobber\ can\ be\ true.\ \ */}}
+\DoxyCodeLine{00150\ \ \ \doxymbox{\hyperlink{recog_8h_a9b431d4003407c228a9f827187d40c10}{alternative\_mask}}\ \doxymbox{\hyperlink{structlra__insn__reg_aaf2da8c753a9e75bd35537506c0b94c7}{early\_clobber\_alts}};}
+\DoxyCodeLine{00151\ \ \ \textcolor{comment}{/*\ The\ biggest\ mode\ through\ which\ the\ insn\ refers\ to\ the\ register}}
+\DoxyCodeLine{00152\ \textcolor{comment}{\ \ \ \ \ occurrence\ (remember\ the\ register\ can\ be\ accessed\ through\ a}}
+\DoxyCodeLine{00153\ \textcolor{comment}{\ \ \ \ \ subreg\ in\ the\ insn).\ \ */}}
+\DoxyCodeLine{00154\ \ \ \doxymbox{\hyperlink{ansidecl_8h_a2934559f672ebd88a0459d0fe40faff2}{ENUM\_BITFIELD}}(\doxymbox{\hyperlink{insn-modes_8h_a3c592bc51c57098d62602b12c9468e92}{machine\_mode}})\ biggest\_mode\ :\ 16;}
+\DoxyCodeLine{00155\ \ \ \textcolor{comment}{/*\ The\ type\ of\ the\ corresponding\ operand\ which\ is\ the\ register.\ \ */}}
+\DoxyCodeLine{00156\ \ \ \doxymbox{\hyperlink{ansidecl_8h_a2934559f672ebd88a0459d0fe40faff2}{ENUM\_BITFIELD}}\ (\doxymbox{\hyperlink{recog_8h_a290e469f41d7741ed85804133516ab50}{op\_type}})\ \doxymbox{\hyperlink{structtype}{type}}\ :\ 8;}
+\DoxyCodeLine{00157\ \ \ \textcolor{comment}{/*\ True\ if\ the\ reg\ is\ accessed\ through\ a\ subreg\ and\ the\ subreg\ is}}
+\DoxyCodeLine{00158\ \textcolor{comment}{\ \ \ \ \ just\ a\ part\ of\ the\ register.\ \ */}}
+\DoxyCodeLine{00159\ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{structlra__insn__reg_a33e3f96a6d4f68b3f2e1091e9f094731}{subreg\_p}}\ :\ 1;}
+\DoxyCodeLine{00160\ \ \ \textcolor{comment}{/*\ The\ corresponding\ regno\ of\ the\ register.\ \ */}}
+\DoxyCodeLine{00161\ \ \ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{structlra__insn__reg_a88d19d9fb159fae48179729307b15d9f}{regno}};}
+\DoxyCodeLine{00162\ \ \ \textcolor{comment}{/*\ Next\ reg\ info\ of\ the\ same\ insn.\ \ */}}
+\DoxyCodeLine{00163\ \ \ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{structlra__insn__reg}{lra\_insn\_reg}}\ *\doxymbox{\hyperlink{structlra__insn__reg_a09402aef54dad51e765de86b09242639}{next}};}
+\DoxyCodeLine{00164\ \};}
+\DoxyCodeLine{00165\ }
+\DoxyCodeLine{00166\ \textcolor{comment}{/*\ Static\ part\ (common\ info\ for\ insns\ with\ the\ same\ ICODE)\ of\ LRA}}
+\DoxyCodeLine{00167\ \textcolor{comment}{\ \ \ internal\ insn\ info.\ It\ exists\ in\ at\ most\ one\ exemplar\ for\ each}}
+\DoxyCodeLine{00168\ \textcolor{comment}{\ \ \ non-\/negative\ ICODE.\ There\ is\ only\ one\ exception.\ Each\ asm\ insn\ has}}
+\DoxyCodeLine{00169\ \textcolor{comment}{\ \ \ own\ structure.\ \ Warning:\ if\ the\ structure\ definition\ is\ changed,}}
+\DoxyCodeLine{00170\ \textcolor{comment}{\ \ \ the\ initializer\ for\ debug\_insn\_static\_data\ in\ lra.cc\ should\ be}}
+\DoxyCodeLine{00171\ \textcolor{comment}{\ \ \ changed\ too.\ \ */}}
+\DoxyCodeLine{00172\ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{structlra__static__insn__data}{lra\_static\_insn\_data}}}
+\DoxyCodeLine{00173\ \{}
+\DoxyCodeLine{00174\ \ \ \textcolor{comment}{/*\ Static\ info\ about\ each\ insn\ operand.\ \ */}}
+\DoxyCodeLine{00175\ \ \ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{structlra__operand__data}{lra\_operand\_data}}\ *\doxymbox{\hyperlink{structlra__static__insn__data_ade9095eaa84c4725134621789ff3a4f3}{operand}};}
+\DoxyCodeLine{00176\ \ \ \textcolor{comment}{/*\ Each\ duplication\ refers\ to\ the\ number\ of\ the\ corresponding}}
+\DoxyCodeLine{00177\ \textcolor{comment}{\ \ \ \ \ operand\ which\ is\ duplicated.\ \ */}}
+\DoxyCodeLine{00178\ \ \ \textcolor{keywordtype}{int}\ *\doxymbox{\hyperlink{structlra__static__insn__data_af5c1b5f54c6d3df7b7adb6597188aaaf}{dup\_num}};}
+\DoxyCodeLine{00179\ \ \ \textcolor{comment}{/*\ The\ number\ of\ an\ operand\ marked\ as\ commutative,\ -\/1\ otherwise.\ \ */}}
+\DoxyCodeLine{00180\ \ \ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{structlra__static__insn__data_ac2e81c95ed206a17a977123abfdf38f7}{commutative}};}
+\DoxyCodeLine{00181\ \ \ \textcolor{comment}{/*\ Number\ of\ operands,\ duplications,\ and\ alternatives\ of\ the}}
+\DoxyCodeLine{00182\ \textcolor{comment}{\ \ \ \ \ insn.\ \ */}}
+\DoxyCodeLine{00183\ \ \ \textcolor{keywordtype}{char}\ \doxymbox{\hyperlink{structlra__static__insn__data_a37ce55b627fc7d0511ef025dbc9c1089}{n\_operands}};}
+\DoxyCodeLine{00184\ \ \ \textcolor{keywordtype}{char}\ \doxymbox{\hyperlink{structlra__static__insn__data_a282d03c3decf94b8f50c0bb1c7170b25}{n\_dups}};}
+\DoxyCodeLine{00185\ \ \ \textcolor{keywordtype}{char}\ \doxymbox{\hyperlink{structlra__static__insn__data_ae4b21a4088405edfdcf986a854c978ab}{n\_alternatives}};}
+\DoxyCodeLine{00186\ \ \ \textcolor{comment}{/*\ Insns\ in\ machine\ description\ (or\ clobbers\ in\ asm)\ may\ contain}}
+\DoxyCodeLine{00187\ \textcolor{comment}{\ \ \ \ \ explicit\ hard\ regs\ which\ are\ not\ operands.\ \ The\ following\ list}}
+\DoxyCodeLine{00188\ \textcolor{comment}{\ \ \ \ \ describes\ such\ hard\ registers.\ \ */}}
+\DoxyCodeLine{00189\ \ \ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{structlra__insn__reg}{lra\_insn\_reg}}\ *\doxymbox{\hyperlink{structlra__static__insn__data_ae030280660204ddc1b0ff5304c6eb0b4}{hard\_regs}};}
+\DoxyCodeLine{00190\ \ \ \textcolor{comment}{/*\ Array\ [n\_alternatives][n\_operand]\ of\ static\ constraint\ info\ for}}
+\DoxyCodeLine{00191\ \textcolor{comment}{\ \ \ \ \ given\ operand\ in\ given\ alternative.\ \ This\ info\ can\ be\ changed\ if}}
+\DoxyCodeLine{00192\ \textcolor{comment}{\ \ \ \ \ the\ target\ reg\ info\ is\ changed.\ \ */}}
+\DoxyCodeLine{00193\ \ \ \textcolor{keyword}{const}\ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{structlra__static__insn__data_a1b47ca364e3a642765a6dcb435a9d386}{operand\_alternative}}\ *\doxymbox{\hyperlink{structlra__static__insn__data_a1b47ca364e3a642765a6dcb435a9d386}{operand\_alternative}};}
+\DoxyCodeLine{00194\ \};}
+\DoxyCodeLine{00195\ }
+\DoxyCodeLine{00196\ \textcolor{comment}{/*\ Negative\ insn\ alternative\ numbers\ used\ for\ special\ cases.\ \ */}}
+\DoxyCodeLine{00197\ \textcolor{preprocessor}{\#define\ LRA\_UNKNOWN\_ALT\ -\/1}}
+\DoxyCodeLine{00198\ \textcolor{preprocessor}{\#define\ LRA\_NON\_CLOBBERED\_ALT\ -\/2}}
+\DoxyCodeLine{00199\ }
+\DoxyCodeLine{00200\ \textcolor{comment}{/*\ LRA\ internal\ info\ about\ an\ insn\ (LRA\ internal\ insn}}
+\DoxyCodeLine{00201\ \textcolor{comment}{\ \ \ representation).\ \ */}}
+\DoxyCodeLine{00202\ \textcolor{keyword}{class\ }\doxymbox{\hyperlink{classlra__insn__recog__data}{lra\_insn\_recog\_data}}}
+\DoxyCodeLine{00203\ \{}
+\DoxyCodeLine{00204\ \textcolor{keyword}{public}:}
+\DoxyCodeLine{00205\ \ \ \textcolor{comment}{/*\ The\ insn\ code.\ \ */}}
+\DoxyCodeLine{00206\ \ \ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{classlra__insn__recog__data_afcf2dbbdb4accbf14633ee9b9b35f4e4}{icode}};}
+\DoxyCodeLine{00207\ \ \ \textcolor{comment}{/*\ The\ alternative\ should\ be\ used\ for\ the\ insn,\ LRA\_UNKNOWN\_ALT\ if}}
+\DoxyCodeLine{00208\ \textcolor{comment}{\ \ \ \ \ unknown,\ or\ we\ should\ assume\ any\ alternative,\ or\ the\ insn\ is\ a}}
+\DoxyCodeLine{00209\ \textcolor{comment}{\ \ \ \ \ debug\ insn.\ \ LRA\_NON\_CLOBBERED\_ALT\ means\ ignoring\ any\ earlier}}
+\DoxyCodeLine{00210\ \textcolor{comment}{\ \ \ \ \ clobbers\ for\ the\ insn.\ \ */}}
+\DoxyCodeLine{00211\ \ \ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{classlra__insn__recog__data_a1bdbc213048e0824fdfa960e007e0fbe}{used\_insn\_alternative}};}
+\DoxyCodeLine{00212\ \ \ \textcolor{comment}{/*\ Defined\ for\ asm\ insn\ and\ it\ is\ how\ many\ times\ we\ already\ generated\ reloads}}
+\DoxyCodeLine{00213\ \textcolor{comment}{\ \ \ \ \ for\ the\ asm\ insn.\ \ */}}
+\DoxyCodeLine{00214\ \ \ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{classlra__insn__recog__data_ab7be939ada7783d37db5d9143e8f8bb9}{asm\_reloads\_num}};}
+\DoxyCodeLine{00215\ \ \ \textcolor{comment}{/*\ SP\ offset\ before\ the\ insn\ relative\ to\ one\ at\ the\ func\ start.\ \ */}}
+\DoxyCodeLine{00216\ \ \ \doxymbox{\hyperlink{poly-int-types_8h_af5255601feb5e9a21f3193d378a55845}{poly\_int64}}\ \doxymbox{\hyperlink{classlra__insn__recog__data_a9b4222c024ceee37d1db0d757e85478f}{sp\_offset}};}
+\DoxyCodeLine{00217\ \ \ \textcolor{comment}{/*\ The\ insn\ itself.\ \ */}}
+\DoxyCodeLine{00218\ \ \ rtx\_insn\ *\doxymbox{\hyperlink{classlra__insn__recog__data_a29cf463e14c9ecb271a74e6eb47236dc}{insn}};}
+\DoxyCodeLine{00219\ \ \ \textcolor{comment}{/*\ Common\ data\ for\ insns\ with\ the\ same\ ICODE.\ \ Asm\ insns\ (their}}
+\DoxyCodeLine{00220\ \textcolor{comment}{\ \ \ \ \ ICODE\ is\ negative)\ do\ not\ share\ such\ structures.\ \ */}}
+\DoxyCodeLine{00221\ \ \ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{structlra__static__insn__data}{lra\_static\_insn\_data}}\ *\doxymbox{\hyperlink{classlra__insn__recog__data_af6c4a87e99b588f9a9f0b4811948dded}{insn\_static\_data}};}
+\DoxyCodeLine{00222\ \ \ \textcolor{comment}{/*\ Two\ arrays\ of\ size\ correspondingly\ equal\ to\ the\ operand\ and\ the}}
+\DoxyCodeLine{00223\ \textcolor{comment}{\ \ \ \ \ duplication\ numbers:\ */}}
+\DoxyCodeLine{00224\ \ \ \doxymbox{\hyperlink{coretypes_8h_a20e671ce9e7827268658cff844f4281c}{rtx}}\ **\doxymbox{\hyperlink{classlra__insn__recog__data_a046a067d479951501664afd0e940693a}{operand\_loc}};\ \textcolor{comment}{/*\ The\ operand\ locations,\ NULL\ if\ no\ operands.\ \ */}}
+\DoxyCodeLine{00225\ \ \ \doxymbox{\hyperlink{coretypes_8h_a20e671ce9e7827268658cff844f4281c}{rtx}}\ **\doxymbox{\hyperlink{classlra__insn__recog__data_a311f056d0691ab2d50bab75c4a0f284e}{dup\_loc}};\ \textcolor{comment}{/*\ The\ dup\ locations,\ NULL\ if\ no\ dups.\ \ */}}
+\DoxyCodeLine{00226\ \ \ \textcolor{comment}{/*\ Number\ of\ hard\ registers\ implicitly\ used/clobbered\ in\ given\ call}}
+\DoxyCodeLine{00227\ \textcolor{comment}{\ \ \ \ \ insn.\ \ The\ value\ can\ be\ NULL\ or\ points\ to\ array\ of\ the\ hard}}
+\DoxyCodeLine{00228\ \textcolor{comment}{\ \ \ \ \ register\ numbers\ ending\ with\ a\ negative\ value.\ \ To\ differ}}
+\DoxyCodeLine{00229\ \textcolor{comment}{\ \ \ \ \ clobbered\ and\ used\ hard\ regs,\ clobbered\ hard\ regs\ are\ incremented}}
+\DoxyCodeLine{00230\ \textcolor{comment}{\ \ \ \ \ by\ FIRST\_PSEUDO\_REGISTER.\ \ */}}
+\DoxyCodeLine{00231\ \ \ \textcolor{keywordtype}{int}\ *\doxymbox{\hyperlink{classlra__insn__recog__data_ac4286deeca960e4957fea8e36950956d}{arg\_hard\_regs}};}
+\DoxyCodeLine{00232\ \ \ \textcolor{comment}{/*\ Cached\ value\ of\ get\_preferred\_alternatives.\ \ */}}
+\DoxyCodeLine{00233\ \ \ \doxymbox{\hyperlink{recog_8h_a9b431d4003407c228a9f827187d40c10}{alternative\_mask}}\ \doxymbox{\hyperlink{classlra__insn__recog__data_a296d07e97149533f7e9e4a3e8adaf08e}{preferred\_alternatives}};}
+\DoxyCodeLine{00234\ \ \ \textcolor{comment}{/*\ The\ following\ member\ value\ is\ always\ NULL\ for\ a\ debug\ insn.\ \ */}}
+\DoxyCodeLine{00235\ \ \ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{structlra__insn__reg}{lra\_insn\_reg}}\ *\doxymbox{\hyperlink{classlra__insn__recog__data_ad8ffe06c1bd8150ef088a4487f587cea}{regs}};}
+\DoxyCodeLine{00236\ \};}
+\DoxyCodeLine{00237\ }
+\DoxyCodeLine{00238\ \textcolor{keyword}{typedef}\ \textcolor{keyword}{class\ }\doxymbox{\hyperlink{classlra__insn__recog__data}{lra\_insn\_recog\_data}}\ *\doxymbox{\hyperlink{lra-int_8h_af7ef27c504fb628ac9ffd8af2399a7c2}{lra\_insn\_recog\_data\_t}};}
+\DoxyCodeLine{00239\ }
+\DoxyCodeLine{00240\ \textcolor{comment}{/*\ Whether\ the\ clobber\ is\ used\ temporary\ in\ LRA.\ \ */}}
+\DoxyCodeLine{00241\ \textcolor{preprocessor}{\#define\ LRA\_TEMP\_CLOBBER\_P(x)\ \(\backslash\)}}
+\DoxyCodeLine{00242\ \textcolor{preprocessor}{\ \ (RTL\_FLAG\_CHECK1\ ("{}TEMP\_CLOBBER\_P"{},\ (x),\ CLOBBER)-\/>unchanging)}}
+\DoxyCodeLine{00243\ }
+\DoxyCodeLine{00244\ \textcolor{comment}{/*\ Cost\ factor\ for\ each\ additional\ reload\ and\ maximal\ cost\ reject\ for}}
+\DoxyCodeLine{00245\ \textcolor{comment}{\ \ \ insn\ reloads.\ \ One\ might\ ask\ about\ such\ strange\ numbers.\ \ Their}}
+\DoxyCodeLine{00246\ \textcolor{comment}{\ \ \ values\ occurred\ historically\ from\ former\ reload\ pass.\ \ */}}
+\DoxyCodeLine{00247\ \textcolor{preprocessor}{\#define\ LRA\_LOSER\_COST\_FACTOR\ 6}}
+\DoxyCodeLine{00248\ \textcolor{preprocessor}{\#define\ LRA\_MAX\_REJECT\ 600}}
+\DoxyCodeLine{00249\ }
+\DoxyCodeLine{00250\ \textcolor{comment}{/*\ Maximum\ allowed\ number\ of\ assignment\ pass\ iterations\ after\ the}}
+\DoxyCodeLine{00251\ \textcolor{comment}{\ \ \ latest\ spill\ pass\ when\ any\ former\ reload\ pseudo\ was\ spilled.\ \ It\ is}}
+\DoxyCodeLine{00252\ \textcolor{comment}{\ \ \ for\ preventing\ LRA\ cycling\ in\ a\ bug\ case.\ \ */}}
+\DoxyCodeLine{00253\ \textcolor{preprocessor}{\#define\ LRA\_MAX\_ASSIGNMENT\_ITERATION\_NUMBER\ 30}}
+\DoxyCodeLine{00254\ }
+\DoxyCodeLine{00255\ \textcolor{comment}{/*\ The\ maximal\ number\ of\ inheritance/split\ passes\ in\ LRA.\ \ It\ should}}
+\DoxyCodeLine{00256\ \textcolor{comment}{\ \ \ be\ more\ 1\ in\ order\ to\ perform\ caller\ saves\ transformations\ and\ much}}
+\DoxyCodeLine{00257\ \textcolor{comment}{\ \ \ less\ MAX\_CONSTRAINT\_ITERATION\_NUMBER\ to\ prevent\ LRA\ to\ do\ as\ many}}
+\DoxyCodeLine{00258\ \textcolor{comment}{\ \ \ as\ permitted\ constraint\ passes\ in\ some\ complicated\ cases.\ \ The}}
+\DoxyCodeLine{00259\ \textcolor{comment}{\ \ \ first\ inheritance/split\ pass\ has\ a\ biggest\ impact\ on\ generated\ code}}
+\DoxyCodeLine{00260\ \textcolor{comment}{\ \ \ quality.\ \ Each\ subsequent\ affects\ generated\ code\ in\ less\ degree.}}
+\DoxyCodeLine{00261\ \textcolor{comment}{\ \ \ For\ example,\ the\ 3rd\ pass\ does\ not\ change\ generated\ SPEC2000\ code}}
+\DoxyCodeLine{00262\ \textcolor{comment}{\ \ \ at\ all\ on\ x86-\/64.\ \ */}}
+\DoxyCodeLine{00263\ \textcolor{preprocessor}{\#define\ LRA\_MAX\_INHERITANCE\_PASSES\ 2}}
+\DoxyCodeLine{00264\ }
+\DoxyCodeLine{00265\ \textcolor{preprocessor}{\#if\ LRA\_MAX\_INHERITANCE\_PASSES\ <=\ 0\ \(\backslash\)}}
+\DoxyCodeLine{00266\ \textcolor{preprocessor}{\ \ \ \ ||\ LRA\_MAX\_INHERITANCE\_PASSES\ >=\ LRA\_MAX\_ASSIGNMENT\_ITERATION\_NUMBER\ -\/\ 8}}
+\DoxyCodeLine{00267\ \textcolor{preprocessor}{\#error\ wrong\ LRA\_MAX\_INHERITANCE\_PASSES\ value}}
+\DoxyCodeLine{00268\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00269\ }
+\DoxyCodeLine{00270\ \textcolor{comment}{/*\ Analogous\ macro\ to\ the\ above\ one\ but\ for\ rematerialization.\ \ */}}
+\DoxyCodeLine{00271\ \textcolor{preprocessor}{\#define\ LRA\_MAX\_REMATERIALIZATION\_PASSES\ 2}}
+\DoxyCodeLine{00272\ }
+\DoxyCodeLine{00273\ \textcolor{preprocessor}{\#if\ LRA\_MAX\_REMATERIALIZATION\_PASSES\ <=\ 0\ \(\backslash\)}}
+\DoxyCodeLine{00274\ \textcolor{preprocessor}{\ \ \ \ ||\ LRA\_MAX\_REMATERIALIZATION\_PASSES\ >=\ LRA\_MAX\_ASSIGNMENT\_ITERATION\_NUMBER\ -\/\ 8}}
+\DoxyCodeLine{00275\ \textcolor{preprocessor}{\#error\ wrong\ LRA\_MAX\_REMATERIALIZATION\_PASSES\ value}}
+\DoxyCodeLine{00276\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00277\ }
+\DoxyCodeLine{00278\ \textcolor{comment}{/*\ lra.cc:\ */}}
+\DoxyCodeLine{00279\ }
+\DoxyCodeLine{00280\ \textcolor{keyword}{extern}\ FILE\ *\doxymbox{\hyperlink{lra-int_8h_a4785fd0f0a65105892a8c646cdf3a6fb}{lra\_dump\_file}};}
+\DoxyCodeLine{00281\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{lra-int_8h_ad6eb8295359e2653bed6be3b8e91a91b}{lra\_verbose}};}
+\DoxyCodeLine{00282\ }
+\DoxyCodeLine{00283\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{lra-int_8h_a455d6e548124c0772472582f311b82cb}{lra\_hard\_reg\_split\_p}};}
+\DoxyCodeLine{00284\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{lra-int_8h_a244fb35b77276ba43b568aad08e8cd5d}{lra\_asm\_error\_p}};}
+\DoxyCodeLine{00285\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{lra-int_8h_aaaa00a60cc876904d140cb9fa32e3a02}{lra\_reg\_spill\_p}};}
+\DoxyCodeLine{00286\ }
+\DoxyCodeLine{00287\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{hard-reg-set_8h_a58a1569980de76957f391607c395d443}{HARD\_REG\_SET}}\ \doxymbox{\hyperlink{lra-int_8h_a383527c260a56b12b7b0e45a9fa0877c}{lra\_no\_alloc\_regs}};}
+\DoxyCodeLine{00288\ }
+\DoxyCodeLine{00289\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{lra-int_8h_ace2372caa9d31cc051bb5ddc54a1f166}{lra\_insn\_recog\_data\_len}};}
+\DoxyCodeLine{00290\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{lra-int_8h_af7ef27c504fb628ac9ffd8af2399a7c2}{lra\_insn\_recog\_data\_t}}\ *\doxymbox{\hyperlink{classlra__insn__recog__data}{lra\_insn\_recog\_data}};}
+\DoxyCodeLine{00291\ }
+\DoxyCodeLine{00292\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{lra-int_8h_a364906a30177cb33b889ff295266138d}{lra\_curr\_reload\_num}};}
+\DoxyCodeLine{00293\ }
+\DoxyCodeLine{00294\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{lra-int_8h_a54aced17bb0272af817e62fd31aa1e06}{lra\_dump\_bitmap\_with\_title}}\ (\textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *,\ \doxymbox{\hyperlink{coretypes_8h_ae7ea3a04cabf8964dc6e8e95a9cde1b8}{bitmap}},\ \textcolor{keywordtype}{int});}
+\DoxyCodeLine{00295\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{hashtab_8h_a2d05e5049721cf3117dd6b34e20d4f65}{hashval\_t}}\ \doxymbox{\hyperlink{lra-int_8h_a201db4771be1e3131d76334f2722c776}{lra\_rtx\_hash}}\ (\doxymbox{\hyperlink{coretypes_8h_a20e671ce9e7827268658cff844f4281c}{rtx}}\ x);}
+\DoxyCodeLine{00296\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{lra-int_8h_ab925a2c2f16d04c5ad1ea80461903662}{lra\_push\_insn}}\ (rtx\_insn\ *);}
+\DoxyCodeLine{00297\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{lra-int_8h_aaaa9aca4f3ca40f7e8373df9d3032b15}{lra\_push\_insn\_by\_uid}}\ (\textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int});}
+\DoxyCodeLine{00298\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{lra-int_8h_ad2d3306c42dd4f45c77eda0ba8529b35}{lra\_push\_insn\_and\_update\_insn\_regno\_info}}\ (rtx\_insn\ *);}
+\DoxyCodeLine{00299\ \textcolor{keyword}{extern}\ rtx\_insn\ *\doxymbox{\hyperlink{lra-int_8h_a470c694bddb9184b7f53f622f1747ed0}{lra\_pop\_insn}}\ (\textcolor{keywordtype}{void});}
+\DoxyCodeLine{00300\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{lra-int_8h_accb484a6ce1b8d18fadee80e2e67f375}{lra\_insn\_stack\_length}}\ (\textcolor{keywordtype}{void});}
+\DoxyCodeLine{00301\ }
+\DoxyCodeLine{00302\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{coretypes_8h_a20e671ce9e7827268658cff844f4281c}{rtx}}\ \doxymbox{\hyperlink{lra-int_8h_a62cd3360f42e61d0431c9b0ccdfe3838}{lra\_create\_new\_reg}}\ (\doxymbox{\hyperlink{insn-modes_8h_a3c592bc51c57098d62602b12c9468e92}{machine\_mode}},\ \doxymbox{\hyperlink{coretypes_8h_a20e671ce9e7827268658cff844f4281c}{rtx}},\ \textcolor{keyword}{enum}\ \doxymbox{\hyperlink{i386_8h_aa0e382e7f20d9b4107a67f134db3f4f2}{reg\_class}},\ \doxymbox{\hyperlink{hard-reg-set_8h_a58a1569980de76957f391607c395d443}{HARD\_REG\_SET}}\ *,}
+\DoxyCodeLine{00303\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *);}
+\DoxyCodeLine{00304\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{coretypes_8h_a20e671ce9e7827268658cff844f4281c}{rtx}}\ \doxymbox{\hyperlink{lra-int_8h_acfdabed1c53b157d0f167e5ecc40a4e3}{lra\_create\_new\_reg\_with\_unique\_value}}\ (\doxymbox{\hyperlink{insn-modes_8h_a3c592bc51c57098d62602b12c9468e92}{machine\_mode}},\ \doxymbox{\hyperlink{coretypes_8h_a20e671ce9e7827268658cff844f4281c}{rtx}},}
+\DoxyCodeLine{00305\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{enum}\ \doxymbox{\hyperlink{i386_8h_aa0e382e7f20d9b4107a67f134db3f4f2}{reg\_class}},\ \doxymbox{\hyperlink{hard-reg-set_8h_a58a1569980de76957f391607c395d443}{HARD\_REG\_SET}}\ *,}
+\DoxyCodeLine{00306\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *);}
+\DoxyCodeLine{00307\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{lra-int_8h_aa41f97189daef9aa1e7c0a9acdd8d48c}{lra\_set\_regno\_unique\_value}}\ (\textcolor{keywordtype}{int});}
+\DoxyCodeLine{00308\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{lra-int_8h_ad09105153b78e29a53a2ab5c33fa2e0d}{lra\_invalidate\_insn\_data}}\ (rtx\_insn\ *);}
+\DoxyCodeLine{00309\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{lra-int_8h_a766f2891a3dfdcc77e4762a730df5a46}{lra\_set\_insn\_deleted}}\ (rtx\_insn\ *);}
+\DoxyCodeLine{00310\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{lra-int_8h_a773526945611400287c4f22885662b85}{lra\_delete\_dead\_insn}}\ (rtx\_insn\ *);}
+\DoxyCodeLine{00311\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{lra-int_8h_a4e2ba27a694a069617a777ab2b4e398a}{lra\_emit\_add}}\ (\doxymbox{\hyperlink{coretypes_8h_a20e671ce9e7827268658cff844f4281c}{rtx}},\ \doxymbox{\hyperlink{coretypes_8h_a20e671ce9e7827268658cff844f4281c}{rtx}},\ \doxymbox{\hyperlink{coretypes_8h_a20e671ce9e7827268658cff844f4281c}{rtx}});}
+\DoxyCodeLine{00312\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{lra-int_8h_a08d62a987d27174cc17880a223f6fbfa}{lra\_emit\_move}}\ (\doxymbox{\hyperlink{coretypes_8h_a20e671ce9e7827268658cff844f4281c}{rtx}},\ \doxymbox{\hyperlink{coretypes_8h_a20e671ce9e7827268658cff844f4281c}{rtx}});}
+\DoxyCodeLine{00313\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{lra-int_8h_a5ea0b0626ad72910bbf482d79d83d1dd}{lra\_update\_dups}}\ (\doxymbox{\hyperlink{lra-int_8h_af7ef27c504fb628ac9ffd8af2399a7c2}{lra\_insn\_recog\_data\_t}},\ \textcolor{keywordtype}{signed}\ \textcolor{keywordtype}{char}\ *);}
+\DoxyCodeLine{00314\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{lra-int_8h_a385a25a354c1b2c578e9b4578f12c301}{lra\_asm\_insn\_error}}\ (rtx\_insn\ *\doxymbox{\hyperlink{classlra__insn__recog__data_a29cf463e14c9ecb271a74e6eb47236dc}{insn}});}
+\DoxyCodeLine{00315\ }
+\DoxyCodeLine{00316\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{lra-int_8h_a9b8d58b0f6f8876e3ef0a3a1a47d395a}{lra\_dump\_insns}}\ (FILE\ *f);}
+\DoxyCodeLine{00317\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{lra-int_8h_a8ae3b9fe6af47f7ed2bfc199a46b727f}{lra\_dump\_insns\_if\_possible}}\ (\textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *title);}
+\DoxyCodeLine{00318\ }
+\DoxyCodeLine{00319\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{lra-int_8h_ad30e02500e2db31f7ed7d83847d7c785}{lra\_process\_new\_insns}}\ (rtx\_insn\ *,\ rtx\_insn\ *,\ rtx\_insn\ *,}
+\DoxyCodeLine{00320\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *);}
+\DoxyCodeLine{00321\ }
+\DoxyCodeLine{00322\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{lra-int_8h_ac8f4c008430793a2ba7266fbd23d9ce9}{lra\_substitute\_pseudo}}\ (\doxymbox{\hyperlink{coretypes_8h_a20e671ce9e7827268658cff844f4281c}{rtx}}\ *,\ \textcolor{keywordtype}{int},\ \doxymbox{\hyperlink{coretypes_8h_a20e671ce9e7827268658cff844f4281c}{rtx}},\ \textcolor{keywordtype}{bool},\ \textcolor{keywordtype}{bool});}
+\DoxyCodeLine{00323\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{lra-int_8h_a3f26a970cd8377fe3ba573c72bd6449f}{lra\_substitute\_pseudo\_within\_insn}}\ (rtx\_insn\ *,\ \textcolor{keywordtype}{int},\ \doxymbox{\hyperlink{coretypes_8h_a20e671ce9e7827268658cff844f4281c}{rtx}},\ \textcolor{keywordtype}{bool});}
+\DoxyCodeLine{00324\ }
+\DoxyCodeLine{00325\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{lra-int_8h_af7ef27c504fb628ac9ffd8af2399a7c2}{lra\_insn\_recog\_data\_t}}\ \doxymbox{\hyperlink{lra-int_8h_a2fe782f3dd661f2344ecd1addad8f844}{lra\_set\_insn\_recog\_data}}\ (rtx\_insn\ *);}
+\DoxyCodeLine{00326\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{lra-int_8h_af7ef27c504fb628ac9ffd8af2399a7c2}{lra\_insn\_recog\_data\_t}}\ \doxymbox{\hyperlink{lra-int_8h_acd6682169faabdf43515abbb858ff2cd}{lra\_update\_insn\_recog\_data}}\ (rtx\_insn\ *);}
+\DoxyCodeLine{00327\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{lra-int_8h_a53808299b6607e4bad0f6a8f38a2db13}{lra\_set\_used\_insn\_alternative}}\ (rtx\_insn\ *,\ \textcolor{keywordtype}{int});}
+\DoxyCodeLine{00328\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{lra-int_8h_a4d4227fd30080bb48d18b5cd22ca2ae5}{lra\_set\_used\_insn\_alternative\_by\_uid}}\ (\textcolor{keywordtype}{int},\ \textcolor{keywordtype}{int});}
+\DoxyCodeLine{00329\ }
+\DoxyCodeLine{00330\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{lra-int_8h_ab53ac538cd363e5f7f1217c651277d0e}{lra\_invalidate\_insn\_regno\_info}}\ (rtx\_insn\ *);}
+\DoxyCodeLine{00331\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{lra-int_8h_a72ed7377bfd657637d06a6757c183bfa}{lra\_update\_insn\_regno\_info}}\ (rtx\_insn\ *);}
+\DoxyCodeLine{00332\ \textcolor{keyword}{extern}\ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{structlra__insn__reg}{lra\_insn\_reg}}\ *\doxymbox{\hyperlink{lra-int_8h_a4f71e45df36895a49b23e24918a349b5}{lra\_get\_insn\_regs}}\ (\textcolor{keywordtype}{int});}
+\DoxyCodeLine{00333\ }
+\DoxyCodeLine{00334\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{lra-int_8h_a6a1a35f397d58c5f16e99cdb46ea8775}{lra\_free\_copies}}\ (\textcolor{keywordtype}{void});}
+\DoxyCodeLine{00335\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{lra-int_8h_ab74f857ff6fd09c67cc7faade7bb423a}{lra\_create\_copy}}\ (\textcolor{keywordtype}{int},\ \textcolor{keywordtype}{int},\ \textcolor{keywordtype}{int});}
+\DoxyCodeLine{00336\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{lra-int_8h_a3bd21d5fa332ff4d48cdbd62ec1a30d3}{lra\_copy\_t}}\ \doxymbox{\hyperlink{lra-int_8h_ae5e4d9c37dd908fbb6d0c3de308f14a9}{lra\_get\_copy}}\ (\textcolor{keywordtype}{int});}
+\DoxyCodeLine{00337\ }
+\DoxyCodeLine{00338\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{lra-int_8h_a347649bc9c91d8e9085ac5107a568f64}{lra\_new\_regno\_start}};}
+\DoxyCodeLine{00339\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{lra-int_8h_ac34d4a5b0936380ba28f684dd6019690}{lra\_constraint\_new\_regno\_start}};}
+\DoxyCodeLine{00340\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{lra-int_8h_a31ccf865efb0dc93c1567cb46121d1cf}{lra\_bad\_spill\_regno\_start}};}
+\DoxyCodeLine{00341\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{coretypes_8h_a20e671ce9e7827268658cff844f4281c}{rtx}}\ \doxymbox{\hyperlink{lra-int_8h_aac06933f361c59b63637671a39435d4b}{lra\_pmode\_pseudo}};}
+\DoxyCodeLine{00342\ \textcolor{keyword}{extern}\ bitmap\_head\ \doxymbox{\hyperlink{lra-int_8h_a0fe2e12474f2d82d86fa3c5c34e2e5f7}{lra\_inheritance\_pseudos}};}
+\DoxyCodeLine{00343\ \textcolor{keyword}{extern}\ bitmap\_head\ \doxymbox{\hyperlink{lra-int_8h_a2ada037b05079c3c87d73b152c088eb3}{lra\_split\_regs}};}
+\DoxyCodeLine{00344\ \textcolor{keyword}{extern}\ bitmap\_head\ \doxymbox{\hyperlink{lra-int_8h_a95b48a68c902c5eb09798e7720d83d28}{lra\_subreg\_reload\_pseudos}};}
+\DoxyCodeLine{00345\ \textcolor{keyword}{extern}\ bitmap\_head\ \doxymbox{\hyperlink{lra-int_8h_afc619e0b40657ad47ad6f62a5896062f}{lra\_optional\_reload\_pseudos}};}
+\DoxyCodeLine{00346\ }
+\DoxyCodeLine{00347\ \textcolor{comment}{/*\ lra-\/constraints.cc:\ */}}
+\DoxyCodeLine{00348\ }
+\DoxyCodeLine{00349\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{lra-int_8h_a6563324d42d7b907de63da8d36679e21}{lra\_init\_equiv}}\ (\textcolor{keywordtype}{void});}
+\DoxyCodeLine{00350\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{lra-int_8h_aafc3192466512881285214b1ce0a021c}{lra\_constraint\_offset}}\ (\textcolor{keywordtype}{int},\ \doxymbox{\hyperlink{insn-modes_8h_a3c592bc51c57098d62602b12c9468e92}{machine\_mode}});}
+\DoxyCodeLine{00351\ }
+\DoxyCodeLine{00352\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{lra-int_8h_a7a055f8d405ea222990a7de21f158f42}{lra\_constraint\_iter}};}
+\DoxyCodeLine{00353\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{lra-int_8h_a5384b75655bac4af74704a767b776cc0}{check\_and\_force\_assignment\_correctness\_p}};}
+\DoxyCodeLine{00354\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{lra-int_8h_adc995bcaed85af7cb1080773a6547da4}{lra\_inheritance\_iter}};}
+\DoxyCodeLine{00355\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{lra-int_8h_ab077baea338d030668d54d0caffca862}{lra\_undo\_inheritance\_iter}};}
+\DoxyCodeLine{00356\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{lra-int_8h_a9cdcae5dea902b58d6e7aacb452829e5}{lra\_constrain\_insn}}\ (rtx\_insn\ *);}
+\DoxyCodeLine{00357\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{lra-int_8h_a8f6ba2d90dc4bb7d8ea84985b03513c4}{lra\_constraints}}\ (\textcolor{keywordtype}{bool});}
+\DoxyCodeLine{00358\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{lra-int_8h_a268f05150522f2f28cc68393f1c44192}{lra\_constraints\_init}}\ (\textcolor{keywordtype}{void});}
+\DoxyCodeLine{00359\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{lra-int_8h_aa8f872d7e82e6aceafdef567bbd3c17f}{lra\_constraints\_finish}}\ (\textcolor{keywordtype}{void});}
+\DoxyCodeLine{00360\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{lra-int_8h_acb286a202e4bd0fa3dd383ea8b29837e}{spill\_hard\_reg\_in\_range}}\ (\textcolor{keywordtype}{int},\ \textcolor{keyword}{enum}\ \doxymbox{\hyperlink{i386_8h_aa0e382e7f20d9b4107a67f134db3f4f2}{reg\_class}},\ rtx\_insn\ *,\ rtx\_insn\ *);}
+\DoxyCodeLine{00361\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{lra-int_8h_ae2821c7754a6a9425141a73f6eef7286}{lra\_inheritance}}\ (\textcolor{keywordtype}{void});}
+\DoxyCodeLine{00362\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{lra-int_8h_ac586794ee1656d06ea77036354c2eb1d}{lra\_undo\_inheritance}}\ (\textcolor{keywordtype}{void});}
+\DoxyCodeLine{00363\ }
+\DoxyCodeLine{00364\ \textcolor{comment}{/*\ lra-\/lives.cc:\ */}}
+\DoxyCodeLine{00365\ }
+\DoxyCodeLine{00366\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{lra-int_8h_a97c5097896b0e8671fdf2209ea5f1b15}{lra\_live\_max\_point}};}
+\DoxyCodeLine{00367\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{int}\ *\doxymbox{\hyperlink{lra-int_8h_a99ce74fc14df7683bd7aab86d2dba9ce}{lra\_point\_freq}};}
+\DoxyCodeLine{00368\ }
+\DoxyCodeLine{00369\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{lra-int_8h_a64c094cb8a1caad994e7e0d0419bb703}{lra\_hard\_reg\_usage}}[\doxymbox{\hyperlink{i386_8h_af49448c4a913325d80c30490033bda4e}{FIRST\_PSEUDO\_REGISTER}}];}
+\DoxyCodeLine{00370\ }
+\DoxyCodeLine{00371\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{lra-int_8h_a2b5edadc9da0405983ddda1e2729de32}{lra\_live\_range\_iter}};}
+\DoxyCodeLine{00372\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{lra-int_8h_a3db18157244357adf9d1e570b3b384b2}{lra\_create\_live\_ranges}}\ (\textcolor{keywordtype}{bool},\ \textcolor{keywordtype}{bool});}
+\DoxyCodeLine{00373\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{lra-int_8h_ad67b80f8b7b817a0225b72f660ac60ed}{lra\_live\_range\_t}}\ \doxymbox{\hyperlink{lra-int_8h_af0b0c89b09803129cfd439eea8302624}{lra\_copy\_live\_range\_list}}\ (\doxymbox{\hyperlink{lra-int_8h_ad67b80f8b7b817a0225b72f660ac60ed}{lra\_live\_range\_t}});}
+\DoxyCodeLine{00374\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{lra-int_8h_ad67b80f8b7b817a0225b72f660ac60ed}{lra\_live\_range\_t}}\ \doxymbox{\hyperlink{lra-int_8h_a35476d41e4f2a063ac7a40d1fb718c18}{lra\_merge\_live\_ranges}}\ (\doxymbox{\hyperlink{lra-int_8h_ad67b80f8b7b817a0225b72f660ac60ed}{lra\_live\_range\_t}},}
+\DoxyCodeLine{00375\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{lra-int_8h_ad67b80f8b7b817a0225b72f660ac60ed}{lra\_live\_range\_t}});}
+\DoxyCodeLine{00376\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{lra-int_8h_a14fb13cbfaa40c1fc416e71063071be4}{lra\_intersected\_live\_ranges\_p}}\ (\doxymbox{\hyperlink{lra-int_8h_ad67b80f8b7b817a0225b72f660ac60ed}{lra\_live\_range\_t}},}
+\DoxyCodeLine{00377\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{lra-int_8h_ad67b80f8b7b817a0225b72f660ac60ed}{lra\_live\_range\_t}});}
+\DoxyCodeLine{00378\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{lra-int_8h_a0a967541c3e4bad6316b5c822f0bec01}{lra\_print\_live\_range\_list}}\ (FILE\ *,\ \doxymbox{\hyperlink{lra-int_8h_ad67b80f8b7b817a0225b72f660ac60ed}{lra\_live\_range\_t}});}
+\DoxyCodeLine{00379\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{collect-utils_8h_a398527b3e9e358c345c5047b16871957}{debug}}\ (\doxymbox{\hyperlink{structlra__live__range}{lra\_live\_range}}\ \&ref);}
+\DoxyCodeLine{00380\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{collect-utils_8h_a398527b3e9e358c345c5047b16871957}{debug}}\ (\doxymbox{\hyperlink{structlra__live__range}{lra\_live\_range}}\ *ptr);}
+\DoxyCodeLine{00381\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{lra-int_8h_a7a0b48101b62a7c3d84488ff7258557d}{lra\_debug\_live\_range\_list}}\ (\doxymbox{\hyperlink{lra-int_8h_ad67b80f8b7b817a0225b72f660ac60ed}{lra\_live\_range\_t}});}
+\DoxyCodeLine{00382\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{lra-int_8h_af5b257902e6ce164248618d9e6002319}{lra\_debug\_pseudo\_live\_ranges}}\ (\textcolor{keywordtype}{int});}
+\DoxyCodeLine{00383\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{lra-int_8h_a2962428e315260b4cd21a0dcacd26b95}{lra\_debug\_live\_ranges}}\ (\textcolor{keywordtype}{void});}
+\DoxyCodeLine{00384\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{lra-int_8h_a813ed8e61f0d7368a7c9a2f410232a90}{lra\_clear\_live\_ranges}}\ (\textcolor{keywordtype}{void});}
+\DoxyCodeLine{00385\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{lra-int_8h_aff49404ffea4e989844244cba78eeac2}{lra\_live\_ranges\_init}}\ (\textcolor{keywordtype}{void});}
+\DoxyCodeLine{00386\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{lra-int_8h_aea001509ecbc804a06314dd73e88675a}{lra\_live\_ranges\_finish}}\ (\textcolor{keywordtype}{void});}
+\DoxyCodeLine{00387\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{lra-int_8h_ac6afe571dd4c304932f8eb8a82906b32}{lra\_setup\_reload\_pseudo\_preferenced\_hard\_reg}}\ (\textcolor{keywordtype}{int},\ \textcolor{keywordtype}{int},\ \textcolor{keywordtype}{int});}
+\DoxyCodeLine{00388\ }
+\DoxyCodeLine{00389\ \textcolor{comment}{/*\ lra-\/assigns.cc:\ */}}
+\DoxyCodeLine{00390\ }
+\DoxyCodeLine{00391\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{lra-int_8h_aed5aabb5dce570b166d272e9cf04f343}{lra\_assignment\_iter}};}
+\DoxyCodeLine{00392\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{lra-int_8h_a3111cdaf33f1f81b0b8c28f5970ebe4b}{lra\_assignment\_iter\_after\_spill}};}
+\DoxyCodeLine{00393\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{lra-int_8h_a987eac9b5296ac69574b1aa186da1d36}{lra\_setup\_reg\_renumber}}\ (\textcolor{keywordtype}{int},\ \textcolor{keywordtype}{int},\ \textcolor{keywordtype}{bool});}
+\DoxyCodeLine{00394\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{lra-int_8h_a640c281a5601224d7009e548bc45ba51}{lra\_assign}}\ (\textcolor{keywordtype}{bool}\ \&);}
+\DoxyCodeLine{00395\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{lra-int_8h_a56b76c109e049d0ccf9b34f5c383f3d9}{lra\_split\_hard\_reg\_for}}\ (\textcolor{keywordtype}{void});}
+\DoxyCodeLine{00396\ }
+\DoxyCodeLine{00397\ \textcolor{comment}{/*\ lra-\/coalesce.cc:\ */}}
+\DoxyCodeLine{00398\ }
+\DoxyCodeLine{00399\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{lra-int_8h_aac6bd3790207e994c8fea5ca3f19c3b4}{lra\_coalesce\_iter}};}
+\DoxyCodeLine{00400\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{lra-int_8h_ac00b95bc8d799af53faca5a7774c674e}{lra\_coalesce}}\ (\textcolor{keywordtype}{void});}
+\DoxyCodeLine{00401\ }
+\DoxyCodeLine{00402\ \textcolor{comment}{/*\ lra-\/spills.cc:\ \ */}}
+\DoxyCodeLine{00403\ }
+\DoxyCodeLine{00404\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{lra-int_8h_aa9f3b85f8b9ba5323fb5875e446dee7f}{lra\_need\_for\_scratch\_reg\_p}}\ (\textcolor{keywordtype}{void});}
+\DoxyCodeLine{00405\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{lra-int_8h_a4671e3a96350c0590d0af4335cbe717b}{lra\_need\_for\_spills\_p}}\ (\textcolor{keywordtype}{void});}
+\DoxyCodeLine{00406\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{lra-int_8h_a4ad77f7daba63f75c31a9ca2dc819c96}{lra\_spill}}\ (\textcolor{keywordtype}{void});}
+\DoxyCodeLine{00407\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{lra-int_8h_af44b4434ec6f9951fa86a6d403ebf6eb}{lra\_final\_code\_change}}\ (\textcolor{keywordtype}{void});}
+\DoxyCodeLine{00408\ }
+\DoxyCodeLine{00409\ \textcolor{comment}{/*\ lra-\/remat.cc:\ \ */}}
+\DoxyCodeLine{00410\ }
+\DoxyCodeLine{00411\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{lra-int_8h_a4ed90ae4bdde75b8ea74847d2cac8709}{lra\_rematerialization\_iter}};}
+\DoxyCodeLine{00412\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{lra-int_8h_a85e4726e8c14f80d5a4e026990a526a1}{lra\_remat}}\ (\textcolor{keywordtype}{void});}
+\DoxyCodeLine{00413\ }
+\DoxyCodeLine{00414\ \textcolor{comment}{/*\ lra-\/elimination.c:\ */}}
+\DoxyCodeLine{00415\ }
+\DoxyCodeLine{00416\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{lra-int_8h_a4c0f9494ca5796337d084ea1a63200f9}{lra\_debug\_elim\_table}}\ (\textcolor{keywordtype}{void});}
+\DoxyCodeLine{00417\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{lra-int_8h_a63e767d66e63327c73463ac1ffdb2218}{lra\_get\_elimination\_hard\_regno}}\ (\textcolor{keywordtype}{int});}
+\DoxyCodeLine{00418\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{coretypes_8h_a20e671ce9e7827268658cff844f4281c}{rtx}}\ \doxymbox{\hyperlink{lra-int_8h_a1a84d4fff50ceb1bacf921c15a7a57f3}{lra\_eliminate\_regs\_1}}\ (rtx\_insn\ *,\ \doxymbox{\hyperlink{coretypes_8h_a20e671ce9e7827268658cff844f4281c}{rtx}},\ \doxymbox{\hyperlink{insn-modes_8h_a3c592bc51c57098d62602b12c9468e92}{machine\_mode}},}
+\DoxyCodeLine{00419\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{bool},\ \textcolor{keywordtype}{bool},\ \doxymbox{\hyperlink{poly-int-types_8h_af5255601feb5e9a21f3193d378a55845}{poly\_int64}},\ \textcolor{keywordtype}{bool});}
+\DoxyCodeLine{00420\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{lra-int_8h_a71e1e51c5cd2b2e365217af1070676d4}{eliminate\_regs\_in\_insn}}\ (rtx\_insn\ *insn,\ \textcolor{keywordtype}{bool},\ \textcolor{keywordtype}{bool},\ \doxymbox{\hyperlink{poly-int-types_8h_af5255601feb5e9a21f3193d378a55845}{poly\_int64}});}
+\DoxyCodeLine{00421\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{lra-int_8h_a21243bbd1edeeeafc8eeef957d576878}{lra\_update\_fp2sp\_elimination}}\ (\textcolor{keywordtype}{int}\ *spilled\_pseudos);}
+\DoxyCodeLine{00422\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{lra-int_8h_ab9ae80803a3cf3ad282b539b1505219c}{lra\_eliminate}}\ (\textcolor{keywordtype}{bool},\ \textcolor{keywordtype}{bool});}
+\DoxyCodeLine{00423\ }
+\DoxyCodeLine{00424\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{poly-int-types_8h_af5255601feb5e9a21f3193d378a55845}{poly\_int64}}\ \doxymbox{\hyperlink{lra-int_8h_a5d813495cb6b5cfb78e73de7bb1bd398}{lra\_update\_sp\_offset}}\ (\doxymbox{\hyperlink{coretypes_8h_a20e671ce9e7827268658cff844f4281c}{rtx}},\ \doxymbox{\hyperlink{poly-int-types_8h_af5255601feb5e9a21f3193d378a55845}{poly\_int64}});}
+\DoxyCodeLine{00425\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{lra-int_8h_a2d0492bbdb9b4a3e2eba5788e7b3f08d}{lra\_eliminate\_reg\_if\_possible}}\ (\doxymbox{\hyperlink{coretypes_8h_a20e671ce9e7827268658cff844f4281c}{rtx}}\ *);}
+\DoxyCodeLine{00426\ }
+\DoxyCodeLine{00427\ }
+\DoxyCodeLine{00428\ }
+\DoxyCodeLine{00429\ \textcolor{comment}{/*\ Return\ the\ hard\ register\ which\ given\ pseudo\ REGNO\ assigned\ to.}}
+\DoxyCodeLine{00430\ \textcolor{comment}{\ \ \ Negative\ value\ means\ that\ the\ register\ got\ memory\ or\ we\ don't\ know}}
+\DoxyCodeLine{00431\ \textcolor{comment}{\ \ \ allocation\ yet.\ \ */}}
+\DoxyCodeLine{00432\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{int}}
+\DoxyCodeLine{00433\ \doxymbox{\hyperlink{lra-int_8h_a48976661d48ab11c94c1b1b488ea48e6}{lra\_get\_regno\_hard\_regno}}\ (\textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{structlra__insn__reg_a88d19d9fb159fae48179729307b15d9f}{regno}})}
+\DoxyCodeLine{00434\ \{}
+\DoxyCodeLine{00435\ \ \ \doxymbox{\hyperlink{rtl_8h_a529f1a8923f7cff1381026aa063e1763}{resize\_reg\_info}}\ ();}
+\DoxyCodeLine{00436\ \ \ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{regs_8h_a77ce985d0c7b034d52ede8b55c3210f7}{reg\_renumber}}[\doxymbox{\hyperlink{structlra__insn__reg_a88d19d9fb159fae48179729307b15d9f}{regno}}];}
+\DoxyCodeLine{00437\ \}}
+\DoxyCodeLine{00438\ }
+\DoxyCodeLine{00439\ \textcolor{comment}{/*\ Change\ class\ of\ pseudo\ REGNO\ to\ NEW\_CLASS.\ \ Print\ info\ about\ it}}
+\DoxyCodeLine{00440\ \textcolor{comment}{\ \ \ using\ TITLE.\ \ Output\ a\ new\ line\ if\ NL\_P.\ \ */}}
+\DoxyCodeLine{00441\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{void}}
+\DoxyCodeLine{00442\ \doxymbox{\hyperlink{lra-int_8h_a924e20024a8b52bcd3ea7fbdf884a169}{lra\_change\_class}}\ (\textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{structlra__insn__reg_a88d19d9fb159fae48179729307b15d9f}{regno}},\ \textcolor{keyword}{enum}\ \doxymbox{\hyperlink{i386_8h_aa0e382e7f20d9b4107a67f134db3f4f2}{reg\_class}}\ new\_class,}
+\DoxyCodeLine{00443\ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *title,\ \textcolor{keywordtype}{bool}\ nl\_p)}
+\DoxyCodeLine{00444\ \{}
+\DoxyCodeLine{00445\ \ \ \doxymbox{\hyperlink{lra-int_8h_a1d6a2a283466e2fa44fd85ffd297b422}{lra\_assert}}\ (\doxymbox{\hyperlink{structlra__insn__reg_a88d19d9fb159fae48179729307b15d9f}{regno}}\ >=\ \doxymbox{\hyperlink{i386_8h_af49448c4a913325d80c30490033bda4e}{FIRST\_PSEUDO\_REGISTER}});}
+\DoxyCodeLine{00446\ \ \ \textcolor{keywordflow}{if}\ (\doxymbox{\hyperlink{lra-int_8h_a4785fd0f0a65105892a8c646cdf3a6fb}{lra\_dump\_file}}\ !=\ \doxymbox{\hyperlink{stddef_8h_a070d2ce7b6bb7e5c05602aa8c308d0c4}{NULL}})}
+\DoxyCodeLine{00447\ \ \ \ \ fprintf\ (\doxymbox{\hyperlink{lra-int_8h_a4785fd0f0a65105892a8c646cdf3a6fb}{lra\_dump\_file}},\ \textcolor{stringliteral}{"{}\%s\ class\ \%s\ for\ r\%d"{}},}
+\DoxyCodeLine{00448\ \ \ \ \ \ \ \ \ \ title,\ \doxymbox{\hyperlink{hard-reg-set_8h_ad882c2a0e3dc6715f016442d7c54ef0a}{reg\_class\_names}}[new\_class],\ \doxymbox{\hyperlink{structlra__insn__reg_a88d19d9fb159fae48179729307b15d9f}{regno}});}
+\DoxyCodeLine{00449\ \ \ \doxymbox{\hyperlink{rtl_8h_a89d27949d5da58c88b3bf7bdfb99762a}{setup\_reg\_classes}}\ (\doxymbox{\hyperlink{structlra__insn__reg_a88d19d9fb159fae48179729307b15d9f}{regno}},\ new\_class,\ \doxymbox{\hyperlink{i386_8h_aa0e382e7f20d9b4107a67f134db3f4f2aec27eaff7e4ea2202c142f0332dcadda}{NO\_REGS}},\ new\_class);}
+\DoxyCodeLine{00450\ \ \ \textcolor{keywordflow}{if}\ (\doxymbox{\hyperlink{lra-int_8h_a4785fd0f0a65105892a8c646cdf3a6fb}{lra\_dump\_file}}\ !=\ \doxymbox{\hyperlink{stddef_8h_a070d2ce7b6bb7e5c05602aa8c308d0c4}{NULL}}\ \&\&\ nl\_p)}
+\DoxyCodeLine{00451\ \ \ \ \ fprintf\ (\doxymbox{\hyperlink{lra-int_8h_a4785fd0f0a65105892a8c646cdf3a6fb}{lra\_dump\_file}},\ \textcolor{stringliteral}{"{}\(\backslash\)n"{}});}
+\DoxyCodeLine{00452\ \}}
+\DoxyCodeLine{00453\ }
+\DoxyCodeLine{00454\ \textcolor{comment}{/*\ Update\ insn\ operands\ which\ are\ duplication\ of\ NOP\ operand.\ \ The}}
+\DoxyCodeLine{00455\ \textcolor{comment}{\ \ \ insn\ is\ represented\ by\ its\ LRA\ internal\ representation\ ID.\ \ */}}
+\DoxyCodeLine{00456\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{void}}
+\DoxyCodeLine{00457\ \doxymbox{\hyperlink{lra-int_8h_a06b4cbef72f1f590a033f7c53c25571d}{lra\_update\_dup}}\ (\doxymbox{\hyperlink{lra-int_8h_af7ef27c504fb628ac9ffd8af2399a7c2}{lra\_insn\_recog\_data\_t}}\ \textcolor{keywordtype}{id},\ \textcolor{keywordtype}{int}\ nop)}
+\DoxyCodeLine{00458\ \{}
+\DoxyCodeLine{00459\ \ \ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{poly-int_8h_a7e98b8a17c0aad30ba64d47b74e2a6c1}{i}};}
+\DoxyCodeLine{00460\ \ \ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{structlra__static__insn__data}{lra\_static\_insn\_data}}\ *static\_id\ =\ \textcolor{keywordtype}{id}-\/>insn\_static\_data;}
+\DoxyCodeLine{00461\ }
+\DoxyCodeLine{00462\ \ \ \textcolor{keywordflow}{for}\ (\doxymbox{\hyperlink{poly-int_8h_a7e98b8a17c0aad30ba64d47b74e2a6c1}{i}}\ =\ 0;\ \doxymbox{\hyperlink{poly-int_8h_a7e98b8a17c0aad30ba64d47b74e2a6c1}{i}}\ <\ static\_id-\/>\doxymbox{\hyperlink{structlra__static__insn__data_a282d03c3decf94b8f50c0bb1c7170b25}{n\_dups}};\ \doxymbox{\hyperlink{poly-int_8h_a7e98b8a17c0aad30ba64d47b74e2a6c1}{i}}++)}
+\DoxyCodeLine{00463\ \ \ \ \ \textcolor{keywordflow}{if}\ (static\_id-\/>\doxymbox{\hyperlink{structlra__static__insn__data_af5c1b5f54c6d3df7b7adb6597188aaaf}{dup\_num}}[\doxymbox{\hyperlink{poly-int_8h_a7e98b8a17c0aad30ba64d47b74e2a6c1}{i}}]\ ==\ nop)}
+\DoxyCodeLine{00464\ \ \ \ \ \ \ *\textcolor{keywordtype}{id}-\/>dup\_loc[\doxymbox{\hyperlink{poly-int_8h_a7e98b8a17c0aad30ba64d47b74e2a6c1}{i}}]\ =\ *\textcolor{keywordtype}{id}-\/>operand\_loc[nop];}
+\DoxyCodeLine{00465\ \}}
+\DoxyCodeLine{00466\ }
+\DoxyCodeLine{00467\ \textcolor{comment}{/*\ Process\ operator\ duplications\ in\ insn\ with\ ID.\ \ We\ do\ it\ after\ the}}
+\DoxyCodeLine{00468\ \textcolor{comment}{\ \ \ operands\ processing.\ \ Generally\ speaking,\ we\ could\ do\ this\ probably}}
+\DoxyCodeLine{00469\ \textcolor{comment}{\ \ \ simultaneously\ with\ operands\ processing\ because\ a\ common\ practice}}
+\DoxyCodeLine{00470\ \textcolor{comment}{\ \ \ is\ to\ enumerate\ the\ operators\ after\ their\ operands.\ \ */}}
+\DoxyCodeLine{00471\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{void}}
+\DoxyCodeLine{00472\ \doxymbox{\hyperlink{lra-int_8h_ad2776efbd877e885d9f67ead3650377b}{lra\_update\_operator\_dups}}\ (\doxymbox{\hyperlink{lra-int_8h_af7ef27c504fb628ac9ffd8af2399a7c2}{lra\_insn\_recog\_data\_t}}\ \textcolor{keywordtype}{id})}
+\DoxyCodeLine{00473\ \{}
+\DoxyCodeLine{00474\ \ \ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{poly-int_8h_a7e98b8a17c0aad30ba64d47b74e2a6c1}{i}};}
+\DoxyCodeLine{00475\ \ \ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{structlra__static__insn__data}{lra\_static\_insn\_data}}\ *static\_id\ =\ \textcolor{keywordtype}{id}-\/>insn\_static\_data;}
+\DoxyCodeLine{00476\ }
+\DoxyCodeLine{00477\ \ \ \textcolor{keywordflow}{for}\ (\doxymbox{\hyperlink{poly-int_8h_a7e98b8a17c0aad30ba64d47b74e2a6c1}{i}}\ =\ 0;\ \doxymbox{\hyperlink{poly-int_8h_a7e98b8a17c0aad30ba64d47b74e2a6c1}{i}}\ <\ static\_id-\/>\doxymbox{\hyperlink{structlra__static__insn__data_a282d03c3decf94b8f50c0bb1c7170b25}{n\_dups}};\ \doxymbox{\hyperlink{poly-int_8h_a7e98b8a17c0aad30ba64d47b74e2a6c1}{i}}++)}
+\DoxyCodeLine{00478\ \ \ \ \ \{}
+\DoxyCodeLine{00479\ \ \ \ \ \ \ \textcolor{keywordtype}{int}\ ndup\ =\ static\_id-\/>\doxymbox{\hyperlink{structlra__static__insn__data_af5c1b5f54c6d3df7b7adb6597188aaaf}{dup\_num}}[\doxymbox{\hyperlink{poly-int_8h_a7e98b8a17c0aad30ba64d47b74e2a6c1}{i}}];}
+\DoxyCodeLine{00480\ }
+\DoxyCodeLine{00481\ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (static\_id-\/>\doxymbox{\hyperlink{structlra__static__insn__data_ade9095eaa84c4725134621789ff3a4f3}{operand}}[ndup].\doxymbox{\hyperlink{structlra__operand__data_a30b0167af4a8f55213e6800a7de0fa99}{is\_operator}})}
+\DoxyCodeLine{00482\ \ \ \ \ *\textcolor{keywordtype}{id}-\/>dup\_loc[\doxymbox{\hyperlink{poly-int_8h_a7e98b8a17c0aad30ba64d47b74e2a6c1}{i}}]\ =\ *\textcolor{keywordtype}{id}-\/>operand\_loc[ndup];}
+\DoxyCodeLine{00483\ \ \ \ \ \}}
+\DoxyCodeLine{00484\ \}}
+\DoxyCodeLine{00485\ }
+\DoxyCodeLine{00486\ \textcolor{comment}{/*\ Return\ info\ about\ INSN.\ \ Set\ up\ the\ info\ if\ it\ is\ not\ done\ yet.\ \ */}}
+\DoxyCodeLine{00487\ \textcolor{keyword}{inline}\ \doxymbox{\hyperlink{lra-int_8h_af7ef27c504fb628ac9ffd8af2399a7c2}{lra\_insn\_recog\_data\_t}}}
+\DoxyCodeLine{00488\ \doxymbox{\hyperlink{lra-int_8h_a3fe03804f1f474fd2e68e07ce0e488e3}{lra\_get\_insn\_recog\_data}}\ (rtx\_insn\ *insn)}
+\DoxyCodeLine{00489\ \{}
+\DoxyCodeLine{00490\ \ \ \doxymbox{\hyperlink{lra-int_8h_af7ef27c504fb628ac9ffd8af2399a7c2}{lra\_insn\_recog\_data\_t}}\ data;}
+\DoxyCodeLine{00491\ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ uid\ =\ \doxymbox{\hyperlink{rtl_8h_afe262dae45ae85e882d0c5496730d716}{INSN\_UID}}\ (insn);}
+\DoxyCodeLine{00492\ }
+\DoxyCodeLine{00493\ \ \ \textcolor{keywordflow}{if}\ (\doxymbox{\hyperlink{lra-int_8h_ace2372caa9d31cc051bb5ddc54a1f166}{lra\_insn\_recog\_data\_len}}\ >\ (\textcolor{keywordtype}{int})\ uid}
+\DoxyCodeLine{00494\ \ \ \ \ \ \ \&\&\ (data\ =\ \doxymbox{\hyperlink{classlra__insn__recog__data}{lra\_insn\_recog\_data}}[uid])\ !=\ \doxymbox{\hyperlink{stddef_8h_a070d2ce7b6bb7e5c05602aa8c308d0c4}{NULL}})}
+\DoxyCodeLine{00495\ \ \ \ \ \{}
+\DoxyCodeLine{00496\ \ \ \ \ \ \ \textcolor{comment}{/*\ Check\ that\ we\ did\ not\ change\ insn\ without\ updating\ the\ insn}}
+\DoxyCodeLine{00497\ \textcolor{comment}{\ \ \ \ \ info.\ \ */}}
+\DoxyCodeLine{00498\ \ \ \ \ \ \ \doxymbox{\hyperlink{lra-int_8h_a1d6a2a283466e2fa44fd85ffd297b422}{lra\_assert}}\ (data-\/>insn\ ==\ insn}
+\DoxyCodeLine{00499\ \ \ \ \ \ \ \ \ \ \ \&\&\ (\doxymbox{\hyperlink{rtl_8h_a2b4c7e04fe06e22feab4962f112afa94}{INSN\_CODE}}\ (insn)\ <\ 0}
+\DoxyCodeLine{00500\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ ||\ data-\/>icode\ ==\ \doxymbox{\hyperlink{rtl_8h_a2b4c7e04fe06e22feab4962f112afa94}{INSN\_CODE}}\ (insn)));}
+\DoxyCodeLine{00501\ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ data;}
+\DoxyCodeLine{00502\ \ \ \ \ \}}
+\DoxyCodeLine{00503\ \ \ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{lra-int_8h_a2fe782f3dd661f2344ecd1addad8f844}{lra\_set\_insn\_recog\_data}}\ (insn);}
+\DoxyCodeLine{00504\ \}}
+\DoxyCodeLine{00505\ }
+\DoxyCodeLine{00506\ \textcolor{comment}{/*\ Update\ offset\ from\ pseudos\ with\ VAL\ by\ INCR.\ \ */}}
+\DoxyCodeLine{00507\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{void}}
+\DoxyCodeLine{00508\ \doxymbox{\hyperlink{lra-int_8h_a3934fe81293a8f55aa131a0e7c873d96}{lra\_update\_reg\_val\_offset}}\ (\textcolor{keywordtype}{int}\ val,\ \doxymbox{\hyperlink{poly-int-types_8h_af5255601feb5e9a21f3193d378a55845}{poly\_int64}}\ incr)}
+\DoxyCodeLine{00509\ \{}
+\DoxyCodeLine{00510\ \ \ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{poly-int_8h_a7e98b8a17c0aad30ba64d47b74e2a6c1}{i}};}
+\DoxyCodeLine{00511\ }
+\DoxyCodeLine{00512\ \ \ \textcolor{keywordflow}{for}\ (\doxymbox{\hyperlink{poly-int_8h_a7e98b8a17c0aad30ba64d47b74e2a6c1}{i}}\ =\ \doxymbox{\hyperlink{i386_8h_af49448c4a913325d80c30490033bda4e}{FIRST\_PSEUDO\_REGISTER}};\ \doxymbox{\hyperlink{poly-int_8h_a7e98b8a17c0aad30ba64d47b74e2a6c1}{i}}\ <\ \doxymbox{\hyperlink{rtl_8h_ac69aef8e1aba33493636f4ef89a56e42}{max\_reg\_num}}\ ();\ \doxymbox{\hyperlink{poly-int_8h_a7e98b8a17c0aad30ba64d47b74e2a6c1}{i}}++)}
+\DoxyCodeLine{00513\ \ \ \ \ \{}
+\DoxyCodeLine{00514\ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (\doxymbox{\hyperlink{lra-int_8h_addf80ef59ffe12fef23f1897c634d1be}{lra\_reg\_info}}[\doxymbox{\hyperlink{poly-int_8h_a7e98b8a17c0aad30ba64d47b74e2a6c1}{i}}].val\ ==\ val)}
+\DoxyCodeLine{00515\ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{lra-int_8h_addf80ef59ffe12fef23f1897c634d1be}{lra\_reg\_info}}[\doxymbox{\hyperlink{poly-int_8h_a7e98b8a17c0aad30ba64d47b74e2a6c1}{i}}].offset\ +=\ incr;}
+\DoxyCodeLine{00516\ \ \ \ \ \}}
+\DoxyCodeLine{00517\ \}}
+\DoxyCodeLine{00518\ }
+\DoxyCodeLine{00519\ \textcolor{comment}{/*\ Return\ true\ if\ register\ content\ is\ equal\ to\ VAL\ with\ OFFSET.\ \ */}}
+\DoxyCodeLine{00520\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{bool}}
+\DoxyCodeLine{00521\ \doxymbox{\hyperlink{lra-int_8h_ac82ecde5dba813ab6fda33f3e5fd4380}{lra\_reg\_val\_equal\_p}}\ (\textcolor{keywordtype}{int}\ regno,\ \textcolor{keywordtype}{int}\ val,\ \doxymbox{\hyperlink{poly-int-types_8h_af5255601feb5e9a21f3193d378a55845}{poly\_int64}}\ offset)}
+\DoxyCodeLine{00522\ \{}
+\DoxyCodeLine{00523\ \ \ \textcolor{keywordflow}{if}\ (\doxymbox{\hyperlink{lra-int_8h_addf80ef59ffe12fef23f1897c634d1be}{lra\_reg\_info}}[regno].val\ ==\ val}
+\DoxyCodeLine{00524\ \ \ \ \ \ \ \&\&\ \doxymbox{\hyperlink{poly-int_8h_a11da39675af1f3d7548be9b31569abd0}{known\_eq}}\ (\doxymbox{\hyperlink{lra-int_8h_addf80ef59ffe12fef23f1897c634d1be}{lra\_reg\_info}}[regno].offset,\ offset))}
+\DoxyCodeLine{00525\ \ \ \ \ \textcolor{keywordflow}{return}\ \textcolor{keyword}{true};}
+\DoxyCodeLine{00526\ }
+\DoxyCodeLine{00527\ \ \ \textcolor{keywordflow}{return}\ \textcolor{keyword}{false};}
+\DoxyCodeLine{00528\ \}}
+\DoxyCodeLine{00529\ }
+\DoxyCodeLine{00530\ \textcolor{comment}{/*\ Assign\ value\ of\ register\ FROM\ to\ TO.\ \ */}}
+\DoxyCodeLine{00531\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{void}}
+\DoxyCodeLine{00532\ \doxymbox{\hyperlink{lra-int_8h_a7afd1c6ee7b2c32aa7633f2bb0e97d0f}{lra\_assign\_reg\_val}}\ (\textcolor{keywordtype}{int}\ from,\ \textcolor{keywordtype}{int}\ to)}
+\DoxyCodeLine{00533\ \{}
+\DoxyCodeLine{00534\ \ \ \doxymbox{\hyperlink{lra-int_8h_addf80ef59ffe12fef23f1897c634d1be}{lra\_reg\_info}}[to].val\ =\ \doxymbox{\hyperlink{lra-int_8h_addf80ef59ffe12fef23f1897c634d1be}{lra\_reg\_info}}[from].val;}
+\DoxyCodeLine{00535\ \ \ \doxymbox{\hyperlink{lra-int_8h_addf80ef59ffe12fef23f1897c634d1be}{lra\_reg\_info}}[to].offset\ =\ \doxymbox{\hyperlink{lra-int_8h_addf80ef59ffe12fef23f1897c634d1be}{lra\_reg\_info}}[from].offset;}
+\DoxyCodeLine{00536\ \}}
+\DoxyCodeLine{00537\ }
+\DoxyCodeLine{00538\ \textcolor{comment}{/*\ Update\ REGNO's\ biggest\ recorded\ mode\ so\ that\ it\ includes\ a\ reference}}
+\DoxyCodeLine{00539\ \textcolor{comment}{\ \ \ in\ mode\ MODE.\ \ */}}
+\DoxyCodeLine{00540\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{void}}
+\DoxyCodeLine{00541\ \doxymbox{\hyperlink{lra-int_8h_a4ea8d548806a23c4c6c0008979bdaf95}{lra\_update\_biggest\_mode}}\ (\textcolor{keywordtype}{int}\ regno,\ \doxymbox{\hyperlink{insn-modes_8h_a3c592bc51c57098d62602b12c9468e92}{machine\_mode}}\ mode)}
+\DoxyCodeLine{00542\ \{}
+\DoxyCodeLine{00543\ \ \ \textcolor{keywordflow}{if}\ (!ordered\_p\ (\doxymbox{\hyperlink{machmode_8h_a2f8fe6d7466d4da6a888e926cdecdcbd}{GET\_MODE\_SIZE}}\ (\doxymbox{\hyperlink{lra-int_8h_addf80ef59ffe12fef23f1897c634d1be}{lra\_reg\_info}}[regno].biggest\_mode),}
+\DoxyCodeLine{00544\ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{machmode_8h_a2f8fe6d7466d4da6a888e926cdecdcbd}{GET\_MODE\_SIZE}}\ (mode)))}
+\DoxyCodeLine{00545\ \ \ \ \ \{}
+\DoxyCodeLine{00546\ \ \ \ \ \ \ \doxymbox{\hyperlink{system_8h_aff447899dc74d54931b2bc2d47de9423}{gcc\_checking\_assert}}\ (\doxymbox{\hyperlink{rtl_8h_a96d2e22c1cf50c678af7a86b9bc14507}{HARD\_REGISTER\_NUM\_P}}\ (regno));}
+\DoxyCodeLine{00547\ \ \ \ \ \ \ \doxymbox{\hyperlink{lra-int_8h_addf80ef59ffe12fef23f1897c634d1be}{lra\_reg\_info}}[regno].biggest\_mode\ =\ \doxymbox{\hyperlink{regs_8h_ad2f64e437004fa9daf43768b168d986c}{reg\_raw\_mode}}[regno];}
+\DoxyCodeLine{00548\ \ \ \ \ \}}
+\DoxyCodeLine{00549\ \ \ \textcolor{keywordflow}{else}\ \textcolor{keywordflow}{if}\ (\doxymbox{\hyperlink{rtl_8h_a47a84843138668545d3189a7c782130a}{partial\_subreg\_p}}\ (\doxymbox{\hyperlink{lra-int_8h_addf80ef59ffe12fef23f1897c634d1be}{lra\_reg\_info}}[regno].biggest\_mode,\ mode))}
+\DoxyCodeLine{00550\ \ \ \ \ \doxymbox{\hyperlink{lra-int_8h_addf80ef59ffe12fef23f1897c634d1be}{lra\_reg\_info}}[regno].biggest\_mode\ =\ mode;}
+\DoxyCodeLine{00551\ \}}
+\DoxyCodeLine{00552\ }
+\DoxyCodeLine{00553\ \textcolor{preprocessor}{\#endif\ }\textcolor{comment}{/*\ GCC\_LRA\_INT\_H\ */}\textcolor{preprocessor}{}}
+
+\end{DoxyCode}

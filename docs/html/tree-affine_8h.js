@@ -1,0 +1,28 @@
+var tree_affine_8h =
+[
+    [ "aff_comb_elt", "classaff__comb__elt.html", "classaff__comb__elt" ],
+    [ "aff_tree", "classaff__tree.html", "classaff__tree" ],
+    [ "MAX_AFF_ELTS", "tree-affine_8h.html#ab1fcf9256f88787eb181178db9b20282", null ],
+    [ "aff_comb_cannot_overlap_p", "tree-affine_8h.html#aa4a986534147ed2d461d0777e0f41722", null ],
+    [ "aff_combination_add", "tree-affine_8h.html#a3320ee5028f93617bdd5925e4dd2d158", null ],
+    [ "aff_combination_add_elt", "tree-affine_8h.html#a5a5f6c95c94ec52565ead6cfa22531ba", null ],
+    [ "aff_combination_const", "tree-affine_8h.html#aa9e1b96475f142ef29ee61d0a5bfa709", null ],
+    [ "aff_combination_const_p", "tree-affine_8h.html#a99a981d899aedae29ac36b7e3d38a3dc", null ],
+    [ "aff_combination_constant_multiple_p", "tree-affine_8h.html#a884ce7b79a01eddf4a9201a5aa116bc5", null ],
+    [ "aff_combination_convert", "tree-affine_8h.html#a42ad35a4011e17bedae58f94d58b4ce0", null ],
+    [ "aff_combination_elt", "tree-affine_8h.html#ac07f5442fd16ff7669a1510632e17512", null ],
+    [ "aff_combination_expand", "tree-affine_8h.html#a46c2dc20ff352e149932bfaa052f473d", null ],
+    [ "aff_combination_mult", "tree-affine_8h.html#a4eb808ac3a9cba7ff8fcdc09eb60af78", null ],
+    [ "aff_combination_remove_elt", "tree-affine_8h.html#ab7bd2741bf1d75a1c36c8f766d8d84ed", null ],
+    [ "aff_combination_scale", "tree-affine_8h.html#a89c5d90b3b2d0e0fce45689d762ece10", null ],
+    [ "aff_combination_singleton_var_p", "tree-affine_8h.html#af07b4f5d6eb9d37c4267ac5173addda9", null ],
+    [ "aff_combination_to_tree", "tree-affine_8h.html#adec948e6b213d78835b242ed3d5ff6b8", null ],
+    [ "aff_combination_type", "tree-affine_8h.html#aeac82b4960f469fe37350526c3be0b4e", null ],
+    [ "aff_combination_zero_p", "tree-affine_8h.html#aa839299827847217db0795993350d139", null ],
+    [ "debug_aff", "tree-affine_8h.html#a44181f4b0dee3be4be547072703da867", null ],
+    [ "free_affine_expand_cache", "tree-affine_8h.html#a109834d3fd2a156bf612b494f13c609a", null ],
+    [ "get_inner_reference_aff", "tree-affine_8h.html#ac5a6a78ce9738b037106bc4813cd4ffc", null ],
+    [ "tree_to_aff_combination", "tree-affine_8h.html#a4983754261f730015fe65913566bbeb5", null ],
+    [ "tree_to_aff_combination_expand", "tree-affine_8h.html#a1493d79b2941d6f56d63a4bf16079cbb", null ],
+    [ "unshare_aff_combination", "tree-affine_8h.html#a6a33dac61c5d2b9017308bdfc0f44988", null ]
+];

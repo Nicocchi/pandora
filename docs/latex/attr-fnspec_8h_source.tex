@@ -1,0 +1,310 @@
+\doxysection{attr-\/fnspec.h}
+\hypertarget{attr-fnspec_8h_source}{}\label{attr-fnspec_8h_source}\index{toolchain/x86\_64-\/elf/lib/gcc/x86\_64-\/elf/14.2.0/plugin/include/attr-\/fnspec.h@{toolchain/x86\_64-\/elf/lib/gcc/x86\_64-\/elf/14.2.0/plugin/include/attr-\/fnspec.h}}
+\doxymbox{\hyperlink{attr-fnspec_8h}{Go to the documentation of this file.}}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001\ \textcolor{comment}{/*\ Handling\ of\ fnspec\ attribute\ specifiers}}
+\DoxyCodeLine{00002\ \textcolor{comment}{\ \ \ Copyright\ (C)\ 2008-\/2024\ Free\ Software\ Foundation,\ Inc.}}
+\DoxyCodeLine{00003\ \textcolor{comment}{\ \ \ Contributed\ by\ Richard\ Guenther\ \ <rguenther@suse.de>}}
+\DoxyCodeLine{00004\ \textcolor{comment}{}}
+\DoxyCodeLine{00005\ \textcolor{comment}{\ \ \ This\ file\ is\ part\ of\ GCC.}}
+\DoxyCodeLine{00006\ \textcolor{comment}{}}
+\DoxyCodeLine{00007\ \textcolor{comment}{\ \ \ GCC\ is\ free\ software;\ you\ can\ redistribute\ it\ and/or\ modify}}
+\DoxyCodeLine{00008\ \textcolor{comment}{\ \ \ under\ the\ terms\ of\ the\ GNU\ General\ Public\ License\ as\ published\ by}}
+\DoxyCodeLine{00009\ \textcolor{comment}{\ \ \ the\ Free\ Software\ Foundation;\ either\ version\ 3\ of\ the\ License,\ or}}
+\DoxyCodeLine{00010\ \textcolor{comment}{\ \ \ (at\ your\ option)\ any\ later\ version.}}
+\DoxyCodeLine{00011\ \textcolor{comment}{}}
+\DoxyCodeLine{00012\ \textcolor{comment}{\ \ \ GCC\ is\ distributed\ in\ the\ hope\ that\ it\ will\ be\ useful,}}
+\DoxyCodeLine{00013\ \textcolor{comment}{\ \ \ but\ WITHOUT\ ANY\ WARRANTY;\ without\ even\ the\ implied\ warranty\ of}}
+\DoxyCodeLine{00014\ \textcolor{comment}{\ \ \ MERCHANTABILITY\ or\ FITNESS\ FOR\ A\ PARTICULAR\ PURPOSE.\ \ See\ the}}
+\DoxyCodeLine{00015\ \textcolor{comment}{\ \ \ GNU\ General\ Public\ License\ for\ more\ details.}}
+\DoxyCodeLine{00016\ \textcolor{comment}{}}
+\DoxyCodeLine{00017\ \textcolor{comment}{\ \ \ You\ should\ have\ received\ a\ copy\ of\ the\ GNU\ General\ Public\ License}}
+\DoxyCodeLine{00018\ \textcolor{comment}{\ \ \ along\ with\ GCC;\ see\ the\ file\ COPYING3.\ \ If\ not\ see}}
+\DoxyCodeLine{00019\ \textcolor{comment}{\ \ \ <http://www.gnu.org/licenses/>.\ \ */}}
+\DoxyCodeLine{00020\ }
+\DoxyCodeLine{00021\ \textcolor{comment}{/*\ Parse\ string\ of\ attribute\ "{}fn\ spec"{}.\ \ This\ is\ an\ internal\ attribute}}
+\DoxyCodeLine{00022\ \textcolor{comment}{\ \ \ describing\ side\ effects\ of\ a\ function\ as\ follows:}}
+\DoxyCodeLine{00023\ \textcolor{comment}{}}
+\DoxyCodeLine{00024\ \textcolor{comment}{\ \ \ character\ 0\ \ specifies\ properties\ of\ return\ values\ as\ follows:}}
+\DoxyCodeLine{00025\ \textcolor{comment}{\ \ \ \ \ '1'...'4'\ \ specifies\ number\ of\ argument\ function\ returns\ (as\ in\ memset)}}
+\DoxyCodeLine{00026\ \textcolor{comment}{\ \ \ \ \ 'm'\ \ \ \ specifies\ that\ returned\ value\ is\ noalias\ (as\ in\ malloc)}}
+\DoxyCodeLine{00027\ \textcolor{comment}{\ \ \ \ \ '.'\ \ \ \ specifies\ that\ nothing\ is\ known.}}
+\DoxyCodeLine{00028\ \textcolor{comment}{\ \ \ character\ 1\ \ specifies\ additional\ function\ properties}}
+\DoxyCodeLine{00029\ \textcolor{comment}{\ \ \ \ \ '\ '\ \ \ \ \ \ \ \ specifies\ that\ nothing\ is\ known}}
+\DoxyCodeLine{00030\ \textcolor{comment}{\ \ \ \ \ 'p'\ or\ 'P'\ specifies\ that\ function\ is\ pure\ except\ for\ described\ side}}
+\DoxyCodeLine{00031\ \textcolor{comment}{\ \ \ \ \ \ \ \ effects.}}
+\DoxyCodeLine{00032\ \textcolor{comment}{\ \ \ \ \ 'c'\ or\ 'C'\ specifies\ that\ function\ is\ const\ except\ for\ described\ side}}
+\DoxyCodeLine{00033\ \textcolor{comment}{\ \ \ \ \ \ \ \ effects.}}
+\DoxyCodeLine{00034\ \textcolor{comment}{\ \ \ The\ uppercase\ letter\ in\ addition\ specifies\ that\ function\ clobbers\ errno.}}
+\DoxyCodeLine{00035\ \textcolor{comment}{}}
+\DoxyCodeLine{00036\ \textcolor{comment}{\ \ \ character\ 2+2i\ specifies\ properties\ of\ argument\ number\ i\ as\ follows:}}
+\DoxyCodeLine{00037\ \textcolor{comment}{\ \ \ \ \ 'x'\ or\ 'X'\ specifies\ that\ parameter\ is\ unused.}}
+\DoxyCodeLine{00038\ \textcolor{comment}{\ \ \ \ \ 'r'\ or\ 'R'\ specifies\ that\ the\ memory\ pointed\ to\ by\ the\ parameter\ is\ only}}
+\DoxyCodeLine{00039\ \textcolor{comment}{\ \ \ \ \ \ \ \ read\ and\ does\ not\ escape}}
+\DoxyCodeLine{00040\ \textcolor{comment}{\ \ \ \ \ 'o'\ or\ 'O'\ specifies\ that\ the\ memory\ pointed\ to\ by\ the\ parameter\ is\ only}}
+\DoxyCodeLine{00041\ \textcolor{comment}{\ \ \ \ \ \ \ \ written\ and\ does\ not\ escape}}
+\DoxyCodeLine{00042\ \textcolor{comment}{\ \ \ \ \ 'w'\ or\ 'W'\ specifies\ that\ the\ memory\ pointed\ to\ by\ the\ parameter\ does\ not}}
+\DoxyCodeLine{00043\ \textcolor{comment}{\ \ \ \ \ \ \ \ escape}}
+\DoxyCodeLine{00044\ \textcolor{comment}{\ \ \ \ \ '1'....'9'\ specifies\ that\ the\ memory\ pointed\ to\ by\ the\ parameter\ is}}
+\DoxyCodeLine{00045\ \textcolor{comment}{\ \ \ \ \ \ \ \ copied\ to\ memory\ pointed\ to\ by\ different\ parameter}}
+\DoxyCodeLine{00046\ \textcolor{comment}{\ \ \ \ \ \ \ \ (as\ in\ memcpy).}}
+\DoxyCodeLine{00047\ \textcolor{comment}{\ \ \ \ \ '.'\ \ \ \ specifies\ that\ nothing\ is\ known.}}
+\DoxyCodeLine{00048\ \textcolor{comment}{\ \ \ The\ uppercase\ letter\ in\ addition\ specifies\ that\ the\ memory\ pointed\ to}}
+\DoxyCodeLine{00049\ \textcolor{comment}{\ \ \ by\ the\ parameter\ is\ not\ dereferenced.\ \ For\ 'r'\ only\ read\ applies}}
+\DoxyCodeLine{00050\ \textcolor{comment}{\ \ \ transitively\ to\ pointers\ read\ from\ the\ pointed-\/to\ memory.}}
+\DoxyCodeLine{00051\ \textcolor{comment}{}}
+\DoxyCodeLine{00052\ \textcolor{comment}{\ \ \ character\ 3+2i\ specifies\ additional\ properties\ of\ argument\ number\ i}}
+\DoxyCodeLine{00053\ \textcolor{comment}{\ \ \ as\ follows:}}
+\DoxyCodeLine{00054\ \textcolor{comment}{\ \ \ \ \ '\ '\ \ \ \ \ \ \ \ nothing\ is\ known}}
+\DoxyCodeLine{00055\ \textcolor{comment}{\ \ \ \ \ 't'\ \ \ \ the\ size\ of\ value\ written/read\ corresponds\ to\ the\ size\ of}}
+\DoxyCodeLine{00056\ \textcolor{comment}{\ \ \ \ \ \ \ \ of\ the\ pointed-\/to\ type\ of\ the\ argument\ type}}
+\DoxyCodeLine{00057\ \textcolor{comment}{\ \ \ \ \ '1'...'9'\ \ specifies\ the\ size\ of\ value\ written/read\ is\ bound\ by\ the}}
+\DoxyCodeLine{00058\ \textcolor{comment}{\ \ \ \ \ \ \ \ specified\ argument}}
+\DoxyCodeLine{00059\ \textcolor{comment}{\ */}}
+\DoxyCodeLine{00060\ }
+\DoxyCodeLine{00061\ \textcolor{preprocessor}{\#ifndef\ ATTR\_FNSPEC\_H}}
+\DoxyCodeLine{00062\ \textcolor{preprocessor}{\#define\ ATTR\_FNSPEC\_H}}
+\DoxyCodeLine{00063\ }
+\DoxyCodeLine{00064\ \textcolor{keyword}{class\ }\doxymbox{\hyperlink{classattr__fnspec_ada1b30d415a9d1483e00e59360a3f748}{attr\_fnspec}}}
+\DoxyCodeLine{00065\ \{}
+\DoxyCodeLine{00066\ \textcolor{keyword}{private}:}
+\DoxyCodeLine{00067\ \ \ \textcolor{comment}{/*\ fn\ spec\ attribute\ string.\ \ */}}
+\DoxyCodeLine{00068\ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *\doxymbox{\hyperlink{classattr__fnspec_ae6f3bae8cf0ecd3d55489e4b420a0791}{str}};}
+\DoxyCodeLine{00069\ \ \ \textcolor{comment}{/*\ length\ of\ the\ fn\ spec\ string.\ \ */}}
+\DoxyCodeLine{00070\ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{unsigned}\ \doxymbox{\hyperlink{classattr__fnspec_a583d328214e8e1db0e8c95dd9d01a361}{len}};}
+\DoxyCodeLine{00071\ \ \ \textcolor{comment}{/*\ Number\ of\ characters\ specifying\ return\ value.\ \ */}}
+\DoxyCodeLine{00072\ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{classattr__fnspec_afb3874b60b324e9fd9b1107529efba21}{return\_desc\_size}}\ =\ 2;}
+\DoxyCodeLine{00073\ \ \ \textcolor{comment}{/*\ Number\ of\ characters\ specifying\ size.\ \ */}}
+\DoxyCodeLine{00074\ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{classattr__fnspec_aa25cfade48d0257eb6441cefbd9a558c}{arg\_desc\_size}}\ =\ 2;}
+\DoxyCodeLine{00075\ }
+\DoxyCodeLine{00076\ \ \ \textcolor{comment}{/*\ Return\ start\ of\ specifier\ of\ arg\ i.\ \ */}}
+\DoxyCodeLine{00077\ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{classattr__fnspec_a6dadabcf3a1a47904f5b87268b793a99}{arg\_idx}}\ (\textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{poly-int_8h_a7e98b8a17c0aad30ba64d47b74e2a6c1}{i}})}
+\DoxyCodeLine{00078\ \ \ \{}
+\DoxyCodeLine{00079\ \ \ \ \ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{classattr__fnspec_afb3874b60b324e9fd9b1107529efba21}{return\_desc\_size}}\ +\ \doxymbox{\hyperlink{classattr__fnspec_aa25cfade48d0257eb6441cefbd9a558c}{arg\_desc\_size}}\ *\ \doxymbox{\hyperlink{poly-int_8h_a7e98b8a17c0aad30ba64d47b74e2a6c1}{i}};}
+\DoxyCodeLine{00080\ \ \ \}}
+\DoxyCodeLine{00081\ }
+\DoxyCodeLine{00082\ \textcolor{keyword}{public}:}
+\DoxyCodeLine{00083\ \ \ \doxymbox{\hyperlink{classattr__fnspec_ada1b30d415a9d1483e00e59360a3f748}{attr\_fnspec}}\ (\textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *\doxymbox{\hyperlink{classattr__fnspec_ae6f3bae8cf0ecd3d55489e4b420a0791}{str}},\ \textcolor{keywordtype}{unsigned}\ \doxymbox{\hyperlink{classattr__fnspec_a583d328214e8e1db0e8c95dd9d01a361}{len}})}
+\DoxyCodeLine{00084\ \ \ :\ \doxymbox{\hyperlink{classattr__fnspec_ae6f3bae8cf0ecd3d55489e4b420a0791}{str}}\ (\doxymbox{\hyperlink{classattr__fnspec_ae6f3bae8cf0ecd3d55489e4b420a0791}{str}}),\ \doxymbox{\hyperlink{classattr__fnspec_a583d328214e8e1db0e8c95dd9d01a361}{len}}\ (\doxymbox{\hyperlink{classattr__fnspec_a583d328214e8e1db0e8c95dd9d01a361}{len}})}
+\DoxyCodeLine{00085\ \ \ \{}
+\DoxyCodeLine{00086\ \ \ \ \ \textcolor{keywordflow}{if}\ (\doxymbox{\hyperlink{options_8h_a84596fb150478c4f5173d2c5fff82710}{flag\_checking}})}
+\DoxyCodeLine{00087\ \ \ \ \ \ \ \doxymbox{\hyperlink{classattr__fnspec_a6d924d085d3137baf09c6bfdaeacfd43}{verify}}\ ();}
+\DoxyCodeLine{00088\ \ \ \}}
+\DoxyCodeLine{00089\ \ \ \doxymbox{\hyperlink{classattr__fnspec_a183a39d78eca7c3597b99163c74fdf90}{attr\_fnspec}}\ (\textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *\doxymbox{\hyperlink{classattr__fnspec_ae6f3bae8cf0ecd3d55489e4b420a0791}{str}})}
+\DoxyCodeLine{00090\ \ \ :\ \doxymbox{\hyperlink{classattr__fnspec_ae6f3bae8cf0ecd3d55489e4b420a0791}{str}}\ (\doxymbox{\hyperlink{classattr__fnspec_ae6f3bae8cf0ecd3d55489e4b420a0791}{str}}),\ \doxymbox{\hyperlink{classattr__fnspec_a583d328214e8e1db0e8c95dd9d01a361}{len}}\ (\doxymbox{\hyperlink{string_8cpp_a688836b83c3a8edbdf3bf7f9de1236d9}{strlen}}\ (\doxymbox{\hyperlink{classattr__fnspec_ae6f3bae8cf0ecd3d55489e4b420a0791}{str}}))}
+\DoxyCodeLine{00091\ \ \ \{}
+\DoxyCodeLine{00092\ \ \ \ \ \textcolor{keywordflow}{if}\ (\doxymbox{\hyperlink{options_8h_a84596fb150478c4f5173d2c5fff82710}{flag\_checking}})}
+\DoxyCodeLine{00093\ \ \ \ \ \ \ \doxymbox{\hyperlink{classattr__fnspec_a6d924d085d3137baf09c6bfdaeacfd43}{verify}}\ ();}
+\DoxyCodeLine{00094\ \ \ \}}
+\DoxyCodeLine{00095\ \ \ \doxymbox{\hyperlink{classattr__fnspec_aa3fa755f5a26328705ef7145e3e85f28}{attr\_fnspec}}\ (\doxymbox{\hyperlink{coretypes_8h_ad41eb6a6028ff5b3fd00b1ee9f35ed46}{const\_tree}}\ identifier)}
+\DoxyCodeLine{00096\ \ \ :\ \doxymbox{\hyperlink{classattr__fnspec_ae6f3bae8cf0ecd3d55489e4b420a0791}{str}}\ (\doxymbox{\hyperlink{tree_8h_a32a7472d962c7e1b7ae77e7fa679e9a9}{TREE\_STRING\_POINTER}}\ (identifier)),}
+\DoxyCodeLine{00097\ \ \ \ \ \doxymbox{\hyperlink{classattr__fnspec_a583d328214e8e1db0e8c95dd9d01a361}{len}}\ (\doxymbox{\hyperlink{tree_8h_ad504a2f143d5d33757e50dcb2f0f6432}{TREE\_STRING\_LENGTH}}\ (identifier))}
+\DoxyCodeLine{00098\ \ \ \{}
+\DoxyCodeLine{00099\ \ \ \ \ \textcolor{keywordflow}{if}\ (\doxymbox{\hyperlink{options_8h_a84596fb150478c4f5173d2c5fff82710}{flag\_checking}})}
+\DoxyCodeLine{00100\ \ \ \ \ \ \ \doxymbox{\hyperlink{classattr__fnspec_a6d924d085d3137baf09c6bfdaeacfd43}{verify}}\ ();}
+\DoxyCodeLine{00101\ \ \ \}}
+\DoxyCodeLine{00102\ \ \ \doxymbox{\hyperlink{classattr__fnspec_a52ac75df9d0ef76168ac25ba3c6ba6ce}{attr\_fnspec}}\ ()}
+\DoxyCodeLine{00103\ \ \ :\ \doxymbox{\hyperlink{classattr__fnspec_ae6f3bae8cf0ecd3d55489e4b420a0791}{str}}\ (\doxymbox{\hyperlink{stddef_8h_a070d2ce7b6bb7e5c05602aa8c308d0c4}{NULL}}),\ \doxymbox{\hyperlink{classattr__fnspec_a583d328214e8e1db0e8c95dd9d01a361}{len}}\ (0)}
+\DoxyCodeLine{00104\ \ \ \{}
+\DoxyCodeLine{00105\ \ \ \}}
+\DoxyCodeLine{00106\ }
+\DoxyCodeLine{00107\ \ \ \textcolor{comment}{/*\ Return\ true\ if\ fn\ spec\ is\ known.\ \ */}}
+\DoxyCodeLine{00108\ \ \ \textcolor{keywordtype}{bool}}
+\DoxyCodeLine{00109\ \ \ \doxymbox{\hyperlink{classattr__fnspec_a9b350bddd7d239f2921bc10df21c86ec}{known\_p}}\ ()}
+\DoxyCodeLine{00110\ \ \ \{}
+\DoxyCodeLine{00111\ \ \ \ \ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{classattr__fnspec_a583d328214e8e1db0e8c95dd9d01a361}{len}};}
+\DoxyCodeLine{00112\ \ \ \}}
+\DoxyCodeLine{00113\ }
+\DoxyCodeLine{00114\ \ \ \textcolor{comment}{/*\ Return\ true\ if\ arg\ I\ is\ specified.\ \ */}}
+\DoxyCodeLine{00115\ \ \ \textcolor{keywordtype}{bool}}
+\DoxyCodeLine{00116\ \ \ \doxymbox{\hyperlink{classattr__fnspec_af703b714477f9ea06af59c07ae7289ca}{arg\_specified\_p}}\ (\textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{poly-int_8h_a7e98b8a17c0aad30ba64d47b74e2a6c1}{i}})}
+\DoxyCodeLine{00117\ \ \ \{}
+\DoxyCodeLine{00118\ \ \ \ \ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{classattr__fnspec_a583d328214e8e1db0e8c95dd9d01a361}{len}}\ >=\ \doxymbox{\hyperlink{classattr__fnspec_a6dadabcf3a1a47904f5b87268b793a99}{arg\_idx}}\ (\doxymbox{\hyperlink{poly-int_8h_a7e98b8a17c0aad30ba64d47b74e2a6c1}{i}}\ +\ 1);}
+\DoxyCodeLine{00119\ \ \ \}}
+\DoxyCodeLine{00120\ }
+\DoxyCodeLine{00121\ \ \ \textcolor{comment}{/*\ True\ if\ the\ argument\ is\ not\ dereferenced\ recursively,\ thus\ only}}
+\DoxyCodeLine{00122\ \textcolor{comment}{\ \ \ \ \ directly\ reachable\ memory\ is\ read\ or\ written.\ \ */}}
+\DoxyCodeLine{00123\ \ \ \textcolor{keywordtype}{bool}}
+\DoxyCodeLine{00124\ \ \ \doxymbox{\hyperlink{classattr__fnspec_a91b096bde1ed6e2734152be7731b3653}{arg\_direct\_p}}\ (\textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{poly-int_8h_a7e98b8a17c0aad30ba64d47b74e2a6c1}{i}})}
+\DoxyCodeLine{00125\ \ \ \{}
+\DoxyCodeLine{00126\ \ \ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ idx\ =\ \doxymbox{\hyperlink{classattr__fnspec_a6dadabcf3a1a47904f5b87268b793a99}{arg\_idx}}\ (\doxymbox{\hyperlink{poly-int_8h_a7e98b8a17c0aad30ba64d47b74e2a6c1}{i}});}
+\DoxyCodeLine{00127\ \ \ \ \ \doxymbox{\hyperlink{system_8h_aff447899dc74d54931b2bc2d47de9423}{gcc\_checking\_assert}}\ (\doxymbox{\hyperlink{classattr__fnspec_af703b714477f9ea06af59c07ae7289ca}{arg\_specified\_p}}\ (\doxymbox{\hyperlink{poly-int_8h_a7e98b8a17c0aad30ba64d47b74e2a6c1}{i}}));}
+\DoxyCodeLine{00128\ \ \ \ \ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{classattr__fnspec_ae6f3bae8cf0ecd3d55489e4b420a0791}{str}}[idx]\ ==\ \textcolor{charliteral}{'R'}\ ||\ \doxymbox{\hyperlink{classattr__fnspec_ae6f3bae8cf0ecd3d55489e4b420a0791}{str}}[idx]\ ==\ \textcolor{charliteral}{'O'}}
+\DoxyCodeLine{00129\ \ \ \ \ \ \ \ ||\ \doxymbox{\hyperlink{classattr__fnspec_ae6f3bae8cf0ecd3d55489e4b420a0791}{str}}[idx]\ ==\ \textcolor{charliteral}{'W'}\ ||\ (\doxymbox{\hyperlink{classattr__fnspec_ae6f3bae8cf0ecd3d55489e4b420a0791}{str}}[idx]\ >=\ \textcolor{charliteral}{'1'}\ \&\&\ \doxymbox{\hyperlink{classattr__fnspec_ae6f3bae8cf0ecd3d55489e4b420a0791}{str}}[idx]\ <=\ \textcolor{charliteral}{'9'});}
+\DoxyCodeLine{00130\ \ \ \}}
+\DoxyCodeLine{00131\ }
+\DoxyCodeLine{00132\ \ \ \textcolor{comment}{/*\ True\ if\ argument\ is\ used.\ \ */}}
+\DoxyCodeLine{00133\ \ \ \textcolor{keywordtype}{bool}}
+\DoxyCodeLine{00134\ \ \ \doxymbox{\hyperlink{classattr__fnspec_a6e8d59d08b841353bef53f4bccd5fee4}{arg\_used\_p}}\ (\textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{poly-int_8h_a7e98b8a17c0aad30ba64d47b74e2a6c1}{i}})}
+\DoxyCodeLine{00135\ \ \ \{}
+\DoxyCodeLine{00136\ \ \ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ idx\ =\ \doxymbox{\hyperlink{classattr__fnspec_a6dadabcf3a1a47904f5b87268b793a99}{arg\_idx}}\ (\doxymbox{\hyperlink{poly-int_8h_a7e98b8a17c0aad30ba64d47b74e2a6c1}{i}});}
+\DoxyCodeLine{00137\ \ \ \ \ \doxymbox{\hyperlink{system_8h_aff447899dc74d54931b2bc2d47de9423}{gcc\_checking\_assert}}\ (\doxymbox{\hyperlink{classattr__fnspec_af703b714477f9ea06af59c07ae7289ca}{arg\_specified\_p}}\ (\doxymbox{\hyperlink{poly-int_8h_a7e98b8a17c0aad30ba64d47b74e2a6c1}{i}}));}
+\DoxyCodeLine{00138\ \ \ \ \ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{classattr__fnspec_ae6f3bae8cf0ecd3d55489e4b420a0791}{str}}[idx]\ !=\ \textcolor{charliteral}{'x'}\ \&\&\ \doxymbox{\hyperlink{classattr__fnspec_ae6f3bae8cf0ecd3d55489e4b420a0791}{str}}[idx]\ !=\ \textcolor{charliteral}{'X'};}
+\DoxyCodeLine{00139\ \ \ \}}
+\DoxyCodeLine{00140\ }
+\DoxyCodeLine{00141\ \ \ \textcolor{comment}{/*\ True\ if\ memory\ reached\ by\ the\ argument\ is\ readonly\ (not\ clobbered).\ \ */}}
+\DoxyCodeLine{00142\ \ \ \textcolor{keywordtype}{bool}}
+\DoxyCodeLine{00143\ \ \ \doxymbox{\hyperlink{classattr__fnspec_accb686fce0fdcf1ddee75f11fa7fde0f}{arg\_readonly\_p}}\ (\textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{poly-int_8h_a7e98b8a17c0aad30ba64d47b74e2a6c1}{i}})}
+\DoxyCodeLine{00144\ \ \ \{}
+\DoxyCodeLine{00145\ \ \ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ idx\ =\ \doxymbox{\hyperlink{classattr__fnspec_a6dadabcf3a1a47904f5b87268b793a99}{arg\_idx}}\ (\doxymbox{\hyperlink{poly-int_8h_a7e98b8a17c0aad30ba64d47b74e2a6c1}{i}});}
+\DoxyCodeLine{00146\ \ \ \ \ \doxymbox{\hyperlink{system_8h_aff447899dc74d54931b2bc2d47de9423}{gcc\_checking\_assert}}\ (\doxymbox{\hyperlink{classattr__fnspec_af703b714477f9ea06af59c07ae7289ca}{arg\_specified\_p}}\ (\doxymbox{\hyperlink{poly-int_8h_a7e98b8a17c0aad30ba64d47b74e2a6c1}{i}}));}
+\DoxyCodeLine{00147\ \ \ \ \ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{classattr__fnspec_ae6f3bae8cf0ecd3d55489e4b420a0791}{str}}[idx]\ ==\ \textcolor{charliteral}{'r'}\ ||\ \doxymbox{\hyperlink{classattr__fnspec_ae6f3bae8cf0ecd3d55489e4b420a0791}{str}}[idx]\ ==\ \textcolor{charliteral}{'R'}\ ||\ (\doxymbox{\hyperlink{classattr__fnspec_ae6f3bae8cf0ecd3d55489e4b420a0791}{str}}[idx]\ >=\ \textcolor{charliteral}{'1'}\ \&\&\ \doxymbox{\hyperlink{classattr__fnspec_ae6f3bae8cf0ecd3d55489e4b420a0791}{str}}[idx]\ <=\ \textcolor{charliteral}{'9'});}
+\DoxyCodeLine{00148\ \ \ \}}
+\DoxyCodeLine{00149\ }
+\DoxyCodeLine{00150\ \ \ \textcolor{comment}{/*\ True\ if\ memory\ reached\ by\ the\ argument\ is\ read\ (directly\ or\ indirectly)\ \ */}}
+\DoxyCodeLine{00151\ \ \ \textcolor{keywordtype}{bool}}
+\DoxyCodeLine{00152\ \ \ \doxymbox{\hyperlink{classattr__fnspec_a06b938fbd23cf40e6a6b99f62b5db920}{arg\_maybe\_read\_p}}\ (\textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{poly-int_8h_a7e98b8a17c0aad30ba64d47b74e2a6c1}{i}})}
+\DoxyCodeLine{00153\ \ \ \{}
+\DoxyCodeLine{00154\ \ \ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ idx\ =\ \doxymbox{\hyperlink{classattr__fnspec_a6dadabcf3a1a47904f5b87268b793a99}{arg\_idx}}\ (\doxymbox{\hyperlink{poly-int_8h_a7e98b8a17c0aad30ba64d47b74e2a6c1}{i}});}
+\DoxyCodeLine{00155\ \ \ \ \ \doxymbox{\hyperlink{system_8h_aff447899dc74d54931b2bc2d47de9423}{gcc\_checking\_assert}}\ (\doxymbox{\hyperlink{classattr__fnspec_af703b714477f9ea06af59c07ae7289ca}{arg\_specified\_p}}\ (\doxymbox{\hyperlink{poly-int_8h_a7e98b8a17c0aad30ba64d47b74e2a6c1}{i}}));}
+\DoxyCodeLine{00156\ \ \ \ \ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{classattr__fnspec_ae6f3bae8cf0ecd3d55489e4b420a0791}{str}}[idx]\ !=\ \textcolor{charliteral}{'o'}\ \&\&\ \doxymbox{\hyperlink{classattr__fnspec_ae6f3bae8cf0ecd3d55489e4b420a0791}{str}}[idx]\ !=\ \textcolor{charliteral}{'O'}}
+\DoxyCodeLine{00157\ \ \ \ \ \ \ \ \&\&\ \doxymbox{\hyperlink{classattr__fnspec_ae6f3bae8cf0ecd3d55489e4b420a0791}{str}}[idx]\ !=\ \textcolor{charliteral}{'x'}\ \&\&\ \doxymbox{\hyperlink{classattr__fnspec_ae6f3bae8cf0ecd3d55489e4b420a0791}{str}}[idx]\ !=\ \textcolor{charliteral}{'X'};}
+\DoxyCodeLine{00158\ \ \ \}}
+\DoxyCodeLine{00159\ }
+\DoxyCodeLine{00160\ \ \ \textcolor{comment}{/*\ True\ if\ memory\ reached\ by\ the\ argument\ is\ written.}}
+\DoxyCodeLine{00161\ \textcolor{comment}{\ \ \ \ \ (directly\ or\ indirectly)\ \ */}}
+\DoxyCodeLine{00162\ \ \ \textcolor{keywordtype}{bool}}
+\DoxyCodeLine{00163\ \ \ \doxymbox{\hyperlink{classattr__fnspec_a2bc040ed7e765086ab86a370706a4cfd}{arg\_maybe\_written\_p}}\ (\textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{poly-int_8h_a7e98b8a17c0aad30ba64d47b74e2a6c1}{i}})}
+\DoxyCodeLine{00164\ \ \ \{}
+\DoxyCodeLine{00165\ \ \ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ idx\ =\ \doxymbox{\hyperlink{classattr__fnspec_a6dadabcf3a1a47904f5b87268b793a99}{arg\_idx}}\ (\doxymbox{\hyperlink{poly-int_8h_a7e98b8a17c0aad30ba64d47b74e2a6c1}{i}});}
+\DoxyCodeLine{00166\ \ \ \ \ \doxymbox{\hyperlink{system_8h_aff447899dc74d54931b2bc2d47de9423}{gcc\_checking\_assert}}\ (\doxymbox{\hyperlink{classattr__fnspec_af703b714477f9ea06af59c07ae7289ca}{arg\_specified\_p}}\ (\doxymbox{\hyperlink{poly-int_8h_a7e98b8a17c0aad30ba64d47b74e2a6c1}{i}}));}
+\DoxyCodeLine{00167\ \ \ \ \ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{classattr__fnspec_ae6f3bae8cf0ecd3d55489e4b420a0791}{str}}[idx]\ !=\ \textcolor{charliteral}{'r'}\ \&\&\ \doxymbox{\hyperlink{classattr__fnspec_ae6f3bae8cf0ecd3d55489e4b420a0791}{str}}[idx]\ !=\ \textcolor{charliteral}{'R'}}
+\DoxyCodeLine{00168\ \ \ \ \ \ \ \ \&\&\ (\doxymbox{\hyperlink{classattr__fnspec_ae6f3bae8cf0ecd3d55489e4b420a0791}{str}}[idx]\ <\ \textcolor{charliteral}{'1'}\ ||\ \doxymbox{\hyperlink{classattr__fnspec_ae6f3bae8cf0ecd3d55489e4b420a0791}{str}}[idx]\ >\ \textcolor{charliteral}{'9'})}
+\DoxyCodeLine{00169\ \ \ \ \ \ \ \ \&\&\ \doxymbox{\hyperlink{classattr__fnspec_ae6f3bae8cf0ecd3d55489e4b420a0791}{str}}[idx]\ !=\ \textcolor{charliteral}{'x'}\ \&\&\ \doxymbox{\hyperlink{classattr__fnspec_ae6f3bae8cf0ecd3d55489e4b420a0791}{str}}[idx]\ !=\ \textcolor{charliteral}{'X'};}
+\DoxyCodeLine{00170\ \ \ \}}
+\DoxyCodeLine{00171\ }
+\DoxyCodeLine{00172\ \ \ \textcolor{comment}{/*\ Return\ true\ if\ load\ of\ memory\ pointed\ to\ by\ argument\ I\ is\ bound}}
+\DoxyCodeLine{00173\ \textcolor{comment}{\ \ \ \ \ by\ another\ argument.\ \ In\ this\ case\ set\ ARG.\ \ */}}
+\DoxyCodeLine{00174\ \ \ \textcolor{keywordtype}{bool}}
+\DoxyCodeLine{00175\ \ \ \doxymbox{\hyperlink{classattr__fnspec_afd2854762cd287e8b72b24ac6cb6d93c}{arg\_max\_access\_size\_given\_by\_arg\_p}}\ (\textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{poly-int_8h_a7e98b8a17c0aad30ba64d47b74e2a6c1}{i}},\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ *arg)}
+\DoxyCodeLine{00176\ \ \ \{}
+\DoxyCodeLine{00177\ \ \ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ idx\ =\ \doxymbox{\hyperlink{classattr__fnspec_a6dadabcf3a1a47904f5b87268b793a99}{arg\_idx}}\ (\doxymbox{\hyperlink{poly-int_8h_a7e98b8a17c0aad30ba64d47b74e2a6c1}{i}});}
+\DoxyCodeLine{00178\ \ \ \ \ \doxymbox{\hyperlink{system_8h_aff447899dc74d54931b2bc2d47de9423}{gcc\_checking\_assert}}\ (\doxymbox{\hyperlink{classattr__fnspec_af703b714477f9ea06af59c07ae7289ca}{arg\_specified\_p}}\ (\doxymbox{\hyperlink{poly-int_8h_a7e98b8a17c0aad30ba64d47b74e2a6c1}{i}}));}
+\DoxyCodeLine{00179\ \ \ \ \ \textcolor{keywordflow}{if}\ (\doxymbox{\hyperlink{classattr__fnspec_ae6f3bae8cf0ecd3d55489e4b420a0791}{str}}[idx\ +\ 1]\ >=\ \textcolor{charliteral}{'1'}\ \&\&\ \doxymbox{\hyperlink{classattr__fnspec_ae6f3bae8cf0ecd3d55489e4b420a0791}{str}}[idx\ +\ 1]\ <=\ \textcolor{charliteral}{'9'})}
+\DoxyCodeLine{00180\ \ \ \ \ \ \ \{}
+\DoxyCodeLine{00181\ \ \ \ \ *arg\ =\ \doxymbox{\hyperlink{classattr__fnspec_ae6f3bae8cf0ecd3d55489e4b420a0791}{str}}[idx\ +\ 1]\ -\/\ \textcolor{charliteral}{'1'};}
+\DoxyCodeLine{00182\ \ \ \ \ \textcolor{keywordflow}{return}\ \textcolor{keyword}{true};}
+\DoxyCodeLine{00183\ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00184\ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00185\ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ \textcolor{keyword}{false};}
+\DoxyCodeLine{00186\ \ \ \}}
+\DoxyCodeLine{00187\ }
+\DoxyCodeLine{00188\ \ \ \textcolor{comment}{/*\ Return\ true\ if\ the\ pointed-\/to\ type\ of\ the\ argument\ correspond\ to\ the}}
+\DoxyCodeLine{00189\ \textcolor{comment}{\ \ \ \ \ size\ of\ the\ memory\ acccess.\ \ */}}
+\DoxyCodeLine{00190\ \ \ \textcolor{keywordtype}{bool}}
+\DoxyCodeLine{00191\ \ \ \doxymbox{\hyperlink{classattr__fnspec_ad62c944ea301adc1424e520d8b2ad524}{arg\_access\_size\_given\_by\_type\_p}}\ (\textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{poly-int_8h_a7e98b8a17c0aad30ba64d47b74e2a6c1}{i}})}
+\DoxyCodeLine{00192\ \ \ \{}
+\DoxyCodeLine{00193\ \ \ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ idx\ =\ \doxymbox{\hyperlink{classattr__fnspec_a6dadabcf3a1a47904f5b87268b793a99}{arg\_idx}}\ (\doxymbox{\hyperlink{poly-int_8h_a7e98b8a17c0aad30ba64d47b74e2a6c1}{i}});}
+\DoxyCodeLine{00194\ \ \ \ \ \doxymbox{\hyperlink{system_8h_aff447899dc74d54931b2bc2d47de9423}{gcc\_checking\_assert}}\ (\doxymbox{\hyperlink{classattr__fnspec_af703b714477f9ea06af59c07ae7289ca}{arg\_specified\_p}}\ (\doxymbox{\hyperlink{poly-int_8h_a7e98b8a17c0aad30ba64d47b74e2a6c1}{i}}));}
+\DoxyCodeLine{00195\ \ \ \ \ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{classattr__fnspec_ae6f3bae8cf0ecd3d55489e4b420a0791}{str}}[idx\ +\ 1]\ ==\ \textcolor{charliteral}{'t'};}
+\DoxyCodeLine{00196\ \ \ \}}
+\DoxyCodeLine{00197\ }
+\DoxyCodeLine{00198\ \ \ \textcolor{comment}{/*\ Return\ true\ if\ memory\ pointer\ to\ by\ argument\ is\ copied\ to\ a\ memory}}
+\DoxyCodeLine{00199\ \textcolor{comment}{\ \ \ \ \ pointed\ to\ by\ a\ different\ argument\ (as\ in\ memcpy).}}
+\DoxyCodeLine{00200\ \textcolor{comment}{\ \ \ \ \ In\ this\ case\ set\ ARG.\ \ */}}
+\DoxyCodeLine{00201\ \ \ \textcolor{keywordtype}{bool}}
+\DoxyCodeLine{00202\ \ \ \doxymbox{\hyperlink{classattr__fnspec_aa3caaeba5d9575473b01d2b356029a47}{arg\_copied\_to\_arg\_p}}\ (\textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{poly-int_8h_a7e98b8a17c0aad30ba64d47b74e2a6c1}{i}},\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ *arg)}
+\DoxyCodeLine{00203\ \ \ \{}
+\DoxyCodeLine{00204\ \ \ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ idx\ =\ \doxymbox{\hyperlink{classattr__fnspec_a6dadabcf3a1a47904f5b87268b793a99}{arg\_idx}}\ (\doxymbox{\hyperlink{poly-int_8h_a7e98b8a17c0aad30ba64d47b74e2a6c1}{i}});}
+\DoxyCodeLine{00205\ \ \ \ \ \doxymbox{\hyperlink{system_8h_aff447899dc74d54931b2bc2d47de9423}{gcc\_checking\_assert}}\ (\doxymbox{\hyperlink{classattr__fnspec_af703b714477f9ea06af59c07ae7289ca}{arg\_specified\_p}}\ (\doxymbox{\hyperlink{poly-int_8h_a7e98b8a17c0aad30ba64d47b74e2a6c1}{i}}));}
+\DoxyCodeLine{00206\ \ \ \ \ \textcolor{keywordflow}{if}\ (\doxymbox{\hyperlink{classattr__fnspec_ae6f3bae8cf0ecd3d55489e4b420a0791}{str}}[idx]\ <\ \textcolor{charliteral}{'1'}\ ||\ \doxymbox{\hyperlink{classattr__fnspec_ae6f3bae8cf0ecd3d55489e4b420a0791}{str}}[idx]\ >\ \textcolor{charliteral}{'9'})}
+\DoxyCodeLine{00207\ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ \textcolor{keyword}{false};}
+\DoxyCodeLine{00208\ \ \ \ \ *arg\ =\ \doxymbox{\hyperlink{classattr__fnspec_ae6f3bae8cf0ecd3d55489e4b420a0791}{str}}[idx]\ -\/\ \textcolor{charliteral}{'1'};}
+\DoxyCodeLine{00209\ \ \ \ \ \textcolor{keywordflow}{return}\ \textcolor{keyword}{true};}
+\DoxyCodeLine{00210\ \ \ \}}
+\DoxyCodeLine{00211\ }
+\DoxyCodeLine{00212\ }
+\DoxyCodeLine{00213\ \ \ \textcolor{comment}{/*\ True\ if\ the\ argument\ does\ not\ escape.\ \ */}}
+\DoxyCodeLine{00214\ \ \ \textcolor{keywordtype}{bool}}
+\DoxyCodeLine{00215\ \ \ \doxymbox{\hyperlink{classattr__fnspec_ad5949f6fb54511b417c26e1ed6983682}{arg\_noescape\_p}}\ (\textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{poly-int_8h_a7e98b8a17c0aad30ba64d47b74e2a6c1}{i}})}
+\DoxyCodeLine{00216\ \ \ \{}
+\DoxyCodeLine{00217\ \ \ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ idx\ =\ \doxymbox{\hyperlink{classattr__fnspec_a6dadabcf3a1a47904f5b87268b793a99}{arg\_idx}}\ (\doxymbox{\hyperlink{poly-int_8h_a7e98b8a17c0aad30ba64d47b74e2a6c1}{i}});}
+\DoxyCodeLine{00218\ \ \ \ \ \doxymbox{\hyperlink{system_8h_aff447899dc74d54931b2bc2d47de9423}{gcc\_checking\_assert}}\ (\doxymbox{\hyperlink{classattr__fnspec_af703b714477f9ea06af59c07ae7289ca}{arg\_specified\_p}}\ (\doxymbox{\hyperlink{poly-int_8h_a7e98b8a17c0aad30ba64d47b74e2a6c1}{i}}));}
+\DoxyCodeLine{00219\ \ \ \ \ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{classattr__fnspec_ae6f3bae8cf0ecd3d55489e4b420a0791}{str}}[idx]\ ==\ \textcolor{charliteral}{'w'}\ ||\ \doxymbox{\hyperlink{classattr__fnspec_ae6f3bae8cf0ecd3d55489e4b420a0791}{str}}[idx]\ ==\ \textcolor{charliteral}{'W'}}
+\DoxyCodeLine{00220\ \ \ \ \ \ \ \ ||\ \doxymbox{\hyperlink{classattr__fnspec_ae6f3bae8cf0ecd3d55489e4b420a0791}{str}}[idx]\ ==\ \textcolor{charliteral}{'r'}\ ||\ \doxymbox{\hyperlink{classattr__fnspec_ae6f3bae8cf0ecd3d55489e4b420a0791}{str}}[idx]\ ==\ \textcolor{charliteral}{'R'}}
+\DoxyCodeLine{00221\ \ \ \ \ \ \ \ ||\ \doxymbox{\hyperlink{classattr__fnspec_ae6f3bae8cf0ecd3d55489e4b420a0791}{str}}[idx]\ ==\ \textcolor{charliteral}{'o'}\ ||\ \doxymbox{\hyperlink{classattr__fnspec_ae6f3bae8cf0ecd3d55489e4b420a0791}{str}}[idx]\ ==\ \textcolor{charliteral}{'O'};}
+\DoxyCodeLine{00222\ \ \ \}}
+\DoxyCodeLine{00223\ }
+\DoxyCodeLine{00224\ \ \ \textcolor{comment}{/*\ Return\ true\ if\ function\ returns\ value\ of\ its\ parameter.\ \ If\ ARG\_NO\ is}}
+\DoxyCodeLine{00225\ \textcolor{comment}{\ \ \ \ \ non-\/NULL\ return\ initialize\ it\ to\ the\ argument\ returned.\ \ */}}
+\DoxyCodeLine{00226\ \ \ \textcolor{keywordtype}{bool}}
+\DoxyCodeLine{00227\ \ \ \doxymbox{\hyperlink{classattr__fnspec_ab6655db83b742c0ab26c0082d09dd9d1}{returns\_arg}}\ (\textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ *arg\_no)}
+\DoxyCodeLine{00228\ \ \ \{}
+\DoxyCodeLine{00229\ \ \ \ \ \textcolor{keywordflow}{if}\ (\doxymbox{\hyperlink{classattr__fnspec_ae6f3bae8cf0ecd3d55489e4b420a0791}{str}}[0]\ >=\ \textcolor{charliteral}{'1'}\ \&\&\ \doxymbox{\hyperlink{classattr__fnspec_ae6f3bae8cf0ecd3d55489e4b420a0791}{str}}[0]\ <=\ \textcolor{charliteral}{'4'})}
+\DoxyCodeLine{00230\ \ \ \ \ \ \ \{}
+\DoxyCodeLine{00231\ \ \ \ \ \textcolor{keywordflow}{if}\ (arg\_no)}
+\DoxyCodeLine{00232\ \ \ \ \ \ \ *arg\_no\ =\ \doxymbox{\hyperlink{classattr__fnspec_ae6f3bae8cf0ecd3d55489e4b420a0791}{str}}[0]\ -\/\ \textcolor{charliteral}{'1'};}
+\DoxyCodeLine{00233\ \ \ \ \ \textcolor{keywordflow}{return}\ \textcolor{keyword}{true};}
+\DoxyCodeLine{00234\ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00235\ \ \ \ \ \textcolor{keywordflow}{return}\ \textcolor{keyword}{false};}
+\DoxyCodeLine{00236\ \ \ \}}
+\DoxyCodeLine{00237\ }
+\DoxyCodeLine{00238\ \ \ \textcolor{comment}{/*\ Nonzero\ if\ the\ return\ value\ does\ not\ alias\ with\ anything.\ \ Functions}}
+\DoxyCodeLine{00239\ \textcolor{comment}{\ \ \ \ \ with\ the\ malloc\ attribute\ have\ this\ set\ on\ their\ return\ value.\ \ */}}
+\DoxyCodeLine{00240\ \ \ \textcolor{keywordtype}{bool}}
+\DoxyCodeLine{00241\ \ \ \doxymbox{\hyperlink{classattr__fnspec_a54e21503886f8cf98f63a5e1fdb78759}{returns\_noalias\_p}}\ ()}
+\DoxyCodeLine{00242\ \ \ \{}
+\DoxyCodeLine{00243\ \ \ \ \ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{classattr__fnspec_ae6f3bae8cf0ecd3d55489e4b420a0791}{str}}[0]\ ==\ \textcolor{charliteral}{'m'};}
+\DoxyCodeLine{00244\ \ \ \}}
+\DoxyCodeLine{00245\ }
+\DoxyCodeLine{00246\ \ \ \textcolor{comment}{/*\ Return\ true\ if\ all\ memory\ read\ by\ the\ function\ is\ specified\ by\ fnspec.\ \ */}}
+\DoxyCodeLine{00247\ \ \ \textcolor{keywordtype}{bool}}
+\DoxyCodeLine{00248\ \ \ \doxymbox{\hyperlink{classattr__fnspec_a04242d4d56ce86f1b556e7856616f2d1}{global\_memory\_read\_p}}\ ()}
+\DoxyCodeLine{00249\ \ \ \{}
+\DoxyCodeLine{00250\ \ \ \ \ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{classattr__fnspec_ae6f3bae8cf0ecd3d55489e4b420a0791}{str}}[1]\ !=\ \textcolor{charliteral}{'c'}\ \&\&\ \doxymbox{\hyperlink{classattr__fnspec_ae6f3bae8cf0ecd3d55489e4b420a0791}{str}}[1]\ !=\ \textcolor{charliteral}{'C'};}
+\DoxyCodeLine{00251\ \ \ \}}
+\DoxyCodeLine{00252\ }
+\DoxyCodeLine{00253\ \ \ \textcolor{comment}{/*\ Return\ true\ if\ all\ memory\ written\ by\ the\ function}}
+\DoxyCodeLine{00254\ \textcolor{comment}{\ \ \ \ \ is\ specified\ by\ fnspec.\ \ */}}
+\DoxyCodeLine{00255\ \ \ \textcolor{keywordtype}{bool}}
+\DoxyCodeLine{00256\ \ \ \doxymbox{\hyperlink{classattr__fnspec_a291e99162678c9a7c554ef044f9ed6a6}{global\_memory\_written\_p}}\ ()}
+\DoxyCodeLine{00257\ \ \ \{}
+\DoxyCodeLine{00258\ \ \ \ \ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{classattr__fnspec_ae6f3bae8cf0ecd3d55489e4b420a0791}{str}}[1]\ !=\ \textcolor{charliteral}{'c'}\ \&\&\ \doxymbox{\hyperlink{classattr__fnspec_ae6f3bae8cf0ecd3d55489e4b420a0791}{str}}[1]\ !=\ \textcolor{charliteral}{'C'}\ \&\&\ \doxymbox{\hyperlink{classattr__fnspec_ae6f3bae8cf0ecd3d55489e4b420a0791}{str}}[1]\ !=\ \textcolor{charliteral}{'p'}\ \&\&\ \doxymbox{\hyperlink{classattr__fnspec_ae6f3bae8cf0ecd3d55489e4b420a0791}{str}}[1]\ !=\ \textcolor{charliteral}{'P'};}
+\DoxyCodeLine{00259\ \ \ \}}
+\DoxyCodeLine{00260\ }
+\DoxyCodeLine{00261\ \ \ \textcolor{keywordtype}{bool}}
+\DoxyCodeLine{00262\ \ \ \doxymbox{\hyperlink{classattr__fnspec_a874f421165733af36c5e1743cd05e82f}{errno\_maybe\_written\_p}}\ ()}
+\DoxyCodeLine{00263\ \ \ \{}
+\DoxyCodeLine{00264\ \ \ \ \ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{classattr__fnspec_ae6f3bae8cf0ecd3d55489e4b420a0791}{str}}[1]\ ==\ \textcolor{charliteral}{'C'}\ ||\ \doxymbox{\hyperlink{classattr__fnspec_ae6f3bae8cf0ecd3d55489e4b420a0791}{str}}[1]\ ==\ \textcolor{charliteral}{'P'};}
+\DoxyCodeLine{00265\ \ \ \}}
+\DoxyCodeLine{00266\ }
+\DoxyCodeLine{00267\ \ \ \textcolor{comment}{/*\ Return\ EAF\ flags\ for\ arg\ I.\ \ */}}
+\DoxyCodeLine{00268\ \ \ \textcolor{keywordtype}{int}}
+\DoxyCodeLine{00269\ \ \ \doxymbox{\hyperlink{classattr__fnspec_a7a9bb63b29129f2c5bcf38bb024545e5}{arg\_eaf\_flags}}\ (\textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{poly-int_8h_a7e98b8a17c0aad30ba64d47b74e2a6c1}{i}})}
+\DoxyCodeLine{00270\ \ \ \{}
+\DoxyCodeLine{00271\ \ \ \ \ \textcolor{keywordtype}{int}\ flags\ =\ 0;}
+\DoxyCodeLine{00272\ }
+\DoxyCodeLine{00273\ \ \ \ \ \textcolor{keywordflow}{if}\ (!\doxymbox{\hyperlink{classattr__fnspec_af703b714477f9ea06af59c07ae7289ca}{arg\_specified\_p}}\ (\doxymbox{\hyperlink{poly-int_8h_a7e98b8a17c0aad30ba64d47b74e2a6c1}{i}}))}
+\DoxyCodeLine{00274\ \ \ \ \ \ \ ;}
+\DoxyCodeLine{00275\ \ \ \ \ \textcolor{keywordflow}{else}\ \textcolor{keywordflow}{if}\ (!\doxymbox{\hyperlink{classattr__fnspec_a6e8d59d08b841353bef53f4bccd5fee4}{arg\_used\_p}}\ (\doxymbox{\hyperlink{poly-int_8h_a7e98b8a17c0aad30ba64d47b74e2a6c1}{i}}))}
+\DoxyCodeLine{00276\ \ \ \ \ \ \ flags\ =\ \doxymbox{\hyperlink{tree-core_8h_af405ecb73de58fe9437829f8d1fb7f13}{EAF\_UNUSED}};}
+\DoxyCodeLine{00277\ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00278\ \ \ \ \ \ \ \{}
+\DoxyCodeLine{00279\ \ \ \ \ \textcolor{keywordflow}{if}\ (\doxymbox{\hyperlink{classattr__fnspec_a91b096bde1ed6e2734152be7731b3653}{arg\_direct\_p}}\ (\doxymbox{\hyperlink{poly-int_8h_a7e98b8a17c0aad30ba64d47b74e2a6c1}{i}}))}
+\DoxyCodeLine{00280\ \ \ \ \ \ \ flags\ |=\ \doxymbox{\hyperlink{tree-core_8h_a17e4592f537b38169f35a2496c12e25c}{EAF\_NO\_INDIRECT\_READ}}\ |\ \doxymbox{\hyperlink{tree-core_8h_a47330a608b0ee99cb641a9c6d4a92a2c}{EAF\_NO\_INDIRECT\_ESCAPE}}}
+\DoxyCodeLine{00281\ \ \ \ \ \ \ \ \ \ \ \ |\ \doxymbox{\hyperlink{tree-core_8h_a3da3665e74783e010d0700a360586f8b}{EAF\_NOT\_RETURNED\_INDIRECTLY}}\ |\ \doxymbox{\hyperlink{tree-core_8h_aea204fa3274b52f598dc0690f28acdf7}{EAF\_NO\_INDIRECT\_CLOBBER}};}
+\DoxyCodeLine{00282\ \ \ \ \ \textcolor{keywordflow}{if}\ (\doxymbox{\hyperlink{classattr__fnspec_ad5949f6fb54511b417c26e1ed6983682}{arg\_noescape\_p}}\ (\doxymbox{\hyperlink{poly-int_8h_a7e98b8a17c0aad30ba64d47b74e2a6c1}{i}}))}
+\DoxyCodeLine{00283\ \ \ \ \ \ \ flags\ |=\ \doxymbox{\hyperlink{tree-core_8h_ad499eb87b06c3851f2c91649a074c8b5}{EAF\_NO\_DIRECT\_ESCAPE}}\ |\ \doxymbox{\hyperlink{tree-core_8h_a47330a608b0ee99cb641a9c6d4a92a2c}{EAF\_NO\_INDIRECT\_ESCAPE}};}
+\DoxyCodeLine{00284\ \ \ \ \ \textcolor{keywordflow}{if}\ (\doxymbox{\hyperlink{classattr__fnspec_accb686fce0fdcf1ddee75f11fa7fde0f}{arg\_readonly\_p}}\ (\doxymbox{\hyperlink{poly-int_8h_a7e98b8a17c0aad30ba64d47b74e2a6c1}{i}}))}
+\DoxyCodeLine{00285\ \ \ \ \ \ \ flags\ |=\ \doxymbox{\hyperlink{tree-core_8h_a47e0cf38b94b8682a63586cb306f84eb}{EAF\_NO\_DIRECT\_CLOBBER}}\ |\ \doxymbox{\hyperlink{tree-core_8h_aea204fa3274b52f598dc0690f28acdf7}{EAF\_NO\_INDIRECT\_CLOBBER}};}
+\DoxyCodeLine{00286\ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00287\ \ \ \ \ \textcolor{keywordflow}{return}\ flags;}
+\DoxyCodeLine{00288\ \ \ \}}
+\DoxyCodeLine{00289\ }
+\DoxyCodeLine{00290\ \ \ \textcolor{comment}{/*\ Check\ validity\ of\ the\ string.\ \ */}}
+\DoxyCodeLine{00291\ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classattr__fnspec_a6d924d085d3137baf09c6bfdaeacfd43}{verify}}\ ();}
+\DoxyCodeLine{00292\ }
+\DoxyCodeLine{00293\ \ \ \textcolor{comment}{/*\ Return\ the\ fnspec\ string.\ \ */}}
+\DoxyCodeLine{00294\ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *}
+\DoxyCodeLine{00295\ \ \ \doxymbox{\hyperlink{classattr__fnspec_a6818cd10899a6361e641041cd823beff}{get\_str}}\ ()}
+\DoxyCodeLine{00296\ \ \ \{}
+\DoxyCodeLine{00297\ \ \ \ \ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{classattr__fnspec_ae6f3bae8cf0ecd3d55489e4b420a0791}{str}};}
+\DoxyCodeLine{00298\ \ \ \}}
+\DoxyCodeLine{00299\ \};}
+\DoxyCodeLine{00300\ }
+\DoxyCodeLine{00301\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{classattr__fnspec}{attr\_fnspec}}\ \doxymbox{\hyperlink{attr-fnspec_8h_ae5fe4daae229a5c1cf6f463f731176fd}{gimple\_call\_fnspec}}\ (\textcolor{keyword}{const}\ gcall\ *stmt);}
+\DoxyCodeLine{00302\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{classattr__fnspec}{attr\_fnspec}}\ \doxymbox{\hyperlink{attr-fnspec_8h_af01683028fb361ef9baa215000dde3ee}{builtin\_fnspec}}\ (\doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}});}
+\DoxyCodeLine{00303\ }
+\DoxyCodeLine{00304\ \textcolor{preprocessor}{\#endif\ }\textcolor{comment}{/*\ ATTR\_FNSPEC\_H\ \ */}\textcolor{preprocessor}{}}
+
+\end{DoxyCode}

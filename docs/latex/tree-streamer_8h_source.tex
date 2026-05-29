@@ -1,0 +1,133 @@
+\doxysection{tree-\/streamer.h}
+\hypertarget{tree-streamer_8h_source}{}\label{tree-streamer_8h_source}\index{toolchain/x86\_64-\/elf/lib/gcc/x86\_64-\/elf/14.2.0/plugin/include/tree-\/streamer.h@{toolchain/x86\_64-\/elf/lib/gcc/x86\_64-\/elf/14.2.0/plugin/include/tree-\/streamer.h}}
+\doxymbox{\hyperlink{tree-streamer_8h}{Go to the documentation of this file.}}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001\ \textcolor{comment}{/*\ Data\ structures\ and\ functions\ for\ streaming\ trees.}}
+\DoxyCodeLine{00002\ \textcolor{comment}{}}
+\DoxyCodeLine{00003\ \textcolor{comment}{\ \ \ Copyright\ (C)\ 2011-\/2024\ Free\ Software\ Foundation,\ Inc.}}
+\DoxyCodeLine{00004\ \textcolor{comment}{\ \ \ Contributed\ by\ Diego\ Novillo\ <dnovillo@google.com>}}
+\DoxyCodeLine{00005\ \textcolor{comment}{}}
+\DoxyCodeLine{00006\ \textcolor{comment}{This\ file\ is\ part\ of\ GCC.}}
+\DoxyCodeLine{00007\ \textcolor{comment}{}}
+\DoxyCodeLine{00008\ \textcolor{comment}{GCC\ is\ free\ software;\ you\ can\ redistribute\ it\ and/or\ modify\ it\ under}}
+\DoxyCodeLine{00009\ \textcolor{comment}{the\ terms\ of\ the\ GNU\ General\ Public\ License\ as\ published\ by\ the\ Free}}
+\DoxyCodeLine{00010\ \textcolor{comment}{Software\ Foundation;\ either\ version\ 3,\ or\ (at\ your\ option)\ any\ later}}
+\DoxyCodeLine{00011\ \textcolor{comment}{version.}}
+\DoxyCodeLine{00012\ \textcolor{comment}{}}
+\DoxyCodeLine{00013\ \textcolor{comment}{GCC\ is\ distributed\ in\ the\ hope\ that\ it\ will\ be\ useful,\ but\ WITHOUT\ ANY}}
+\DoxyCodeLine{00014\ \textcolor{comment}{WARRANTY;\ without\ even\ the\ implied\ warranty\ of\ MERCHANTABILITY\ or}}
+\DoxyCodeLine{00015\ \textcolor{comment}{FITNESS\ FOR\ A\ PARTICULAR\ PURPOSE.\ \ See\ the\ GNU\ General\ Public\ License}}
+\DoxyCodeLine{00016\ \textcolor{comment}{for\ more\ details.}}
+\DoxyCodeLine{00017\ \textcolor{comment}{}}
+\DoxyCodeLine{00018\ \textcolor{comment}{You\ should\ have\ received\ a\ copy\ of\ the\ GNU\ General\ Public\ License}}
+\DoxyCodeLine{00019\ \textcolor{comment}{along\ with\ GCC;\ see\ the\ file\ COPYING3.\ \ If\ not\ see}}
+\DoxyCodeLine{00020\ \textcolor{comment}{<http://www.gnu.org/licenses/>.\ \ */}}
+\DoxyCodeLine{00021\ }
+\DoxyCodeLine{00022\ \textcolor{preprocessor}{\#ifndef\ GCC\_TREE\_STREAMER\_H}}
+\DoxyCodeLine{00023\ \textcolor{preprocessor}{\#define\ GCC\_TREE\_STREAMER\_H}}
+\DoxyCodeLine{00024\ }
+\DoxyCodeLine{00025\ \textcolor{preprocessor}{\#include\ "{}\doxymbox{\hyperlink{streamer-hooks_8h}{streamer-\/hooks.h}}"{}}}
+\DoxyCodeLine{00026\ \textcolor{preprocessor}{\#include\ "{}\doxymbox{\hyperlink{data-streamer_8h}{data-\/streamer.h}}"{}}}
+\DoxyCodeLine{00027\ }
+\DoxyCodeLine{00028\ \textcolor{comment}{/*\ Cache\ of\ pickled\ nodes.\ \ Used\ to\ avoid\ writing\ the\ same\ node\ more}}
+\DoxyCodeLine{00029\ \textcolor{comment}{\ \ \ than\ once.\ \ The\ first\ time\ a\ tree\ node\ is\ streamed\ out,\ it\ is}}
+\DoxyCodeLine{00030\ \textcolor{comment}{\ \ \ entered\ in\ this\ cache.\ \ Subsequent\ references\ to\ the\ same\ node\ are}}
+\DoxyCodeLine{00031\ \textcolor{comment}{\ \ \ resolved\ by\ looking\ it\ up\ in\ this\ cache.}}
+\DoxyCodeLine{00032\ \textcolor{comment}{}}
+\DoxyCodeLine{00033\ \textcolor{comment}{\ \ \ This\ is\ used\ in\ two\ ways:}}
+\DoxyCodeLine{00034\ \textcolor{comment}{}}
+\DoxyCodeLine{00035\ \textcolor{comment}{\ \ \ -\/\ On\ the\ writing\ side,\ the\ first\ time\ T\ is\ added\ to\ STREAMER\_CACHE,}}
+\DoxyCodeLine{00036\ \textcolor{comment}{\ \ \ \ \ a\ new\ reference\ index\ is\ created\ for\ T\ and\ T\ is\ emitted\ on\ the}}
+\DoxyCodeLine{00037\ \textcolor{comment}{\ \ \ \ \ stream.\ \ If\ T\ needs\ to\ be\ emitted\ again\ to\ the\ stream,\ instead\ of}}
+\DoxyCodeLine{00038\ \textcolor{comment}{\ \ \ \ \ pickling\ it\ again,\ the\ reference\ index\ is\ emitted.}}
+\DoxyCodeLine{00039\ \textcolor{comment}{}}
+\DoxyCodeLine{00040\ \textcolor{comment}{\ \ \ -\/\ On\ the\ reading\ side,\ the\ first\ time\ T\ is\ read\ from\ the\ stream,\ it}}
+\DoxyCodeLine{00041\ \textcolor{comment}{\ \ \ \ \ is\ reconstructed\ in\ memory\ and\ a\ new\ reference\ index\ created\ for}}
+\DoxyCodeLine{00042\ \textcolor{comment}{\ \ \ \ \ T.\ \ The\ reconstructed\ T\ is\ inserted\ in\ some\ array\ so\ that\ when}}
+\DoxyCodeLine{00043\ \textcolor{comment}{\ \ \ \ \ the\ reference\ index\ for\ T\ is\ found\ in\ the\ input\ stream,\ it\ can\ be}}
+\DoxyCodeLine{00044\ \textcolor{comment}{\ \ \ \ \ used\ to\ look\ up\ into\ the\ array\ to\ get\ the\ reconstructed\ T.\ \ */}}
+\DoxyCodeLine{00045\ }
+\DoxyCodeLine{00046\ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{structstreamer__tree__cache__d}{streamer\_tree\_cache\_d}}}
+\DoxyCodeLine{00047\ \{}
+\DoxyCodeLine{00048\ \ \ \textcolor{comment}{/*\ The\ mapping\ between\ tree\ nodes\ and\ slots\ into\ the\ nodes\ array.\ \ */}}
+\DoxyCodeLine{00049\ \ \ \doxymbox{\hyperlink{classhash__map}{hash\_map<tree,\ unsigned>}}\ *\doxymbox{\hyperlink{structstreamer__tree__cache__d_a3ad866ef6db6d9aebada2b2b61442027}{node\_map}};}
+\DoxyCodeLine{00050\ }
+\DoxyCodeLine{00051\ \ \ \textcolor{comment}{/*\ The\ nodes\ pickled\ so\ far.\ \ */}}
+\DoxyCodeLine{00052\ \ \ \doxymbox{\hyperlink{structvec}{vec<tree>}}\ \doxymbox{\hyperlink{structstreamer__tree__cache__d_af45fdb8eef24cf4b79af179e23031707}{nodes}};}
+\DoxyCodeLine{00053\ \ \ \textcolor{comment}{/*\ The\ node\ hashes\ (if\ available).\ \ */}}
+\DoxyCodeLine{00054\ \ \ \doxymbox{\hyperlink{structvec}{vec<hashval\_t>}}\ \doxymbox{\hyperlink{structstreamer__tree__cache__d_ac1b277b34d687b9afd289fea7c4b3cbf}{hashes}};}
+\DoxyCodeLine{00055\ }
+\DoxyCodeLine{00056\ \ \ \textcolor{comment}{/*\ Next\ index\ to\ assign.\ \ */}}
+\DoxyCodeLine{00057\ \ \ \textcolor{keywordtype}{unsigned}\ \doxymbox{\hyperlink{structstreamer__tree__cache__d_a9bff063fe972bb322c5996916a81624c}{next\_idx}};}
+\DoxyCodeLine{00058\ \};}
+\DoxyCodeLine{00059\ }
+\DoxyCodeLine{00060\ \textcolor{comment}{/*\ In\ tree-\/streamer-\/in.cc.\ \ */}}
+\DoxyCodeLine{00061\ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ \doxymbox{\hyperlink{tree-streamer_8h_ab9e548114ceb7ecc59477da13d7c6483}{streamer\_read\_string\_cst}}\ (\textcolor{keyword}{class}\ \doxymbox{\hyperlink{classdata__in}{data\_in}}\ *,\ \textcolor{keyword}{class}\ \doxymbox{\hyperlink{classlto__input__block}{lto\_input\_block}}\ *);}
+\DoxyCodeLine{00062\ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ \doxymbox{\hyperlink{tree-streamer_8h_aa49250c42d4560d829973ee945d9fe1d}{streamer\_alloc\_tree}}\ (\textcolor{keyword}{class}\ \doxymbox{\hyperlink{classlto__input__block}{lto\_input\_block}}\ *,\ \textcolor{keyword}{class}\ \doxymbox{\hyperlink{classdata__in}{data\_in}}\ *,}
+\DoxyCodeLine{00063\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{enum}\ \doxymbox{\hyperlink{lto-streamer_8h_a4688b4d26de18a3c5e5ac2d4ebc14360}{LTO\_tags}});}
+\DoxyCodeLine{00064\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{tree-streamer_8h_a72db2465978a9e6cb6faf27f3f6aeec4}{streamer\_read\_tree\_body}}\ (\textcolor{keyword}{class}\ \doxymbox{\hyperlink{classlto__input__block}{lto\_input\_block}}\ *,\ \textcolor{keyword}{class}\ \doxymbox{\hyperlink{classdata__in}{data\_in}}\ *,\ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}});}
+\DoxyCodeLine{00065\ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ \doxymbox{\hyperlink{tree-streamer_8h_ac143c784578c06aa6262e6cd7c7b0963}{streamer\_get\_pickled\_tree}}\ (\textcolor{keyword}{class}\ \doxymbox{\hyperlink{classlto__input__block}{lto\_input\_block}}\ *,\ \textcolor{keyword}{class}\ \doxymbox{\hyperlink{classdata__in}{data\_in}}\ *);}
+\DoxyCodeLine{00066\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{tree-streamer_8h_af33d46087729a05e2f0a85790a1821d5}{streamer\_read\_tree\_bitfields}}\ (\textcolor{keyword}{class}\ \doxymbox{\hyperlink{classlto__input__block}{lto\_input\_block}}\ *,}
+\DoxyCodeLine{00067\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{class}\ \doxymbox{\hyperlink{classdata__in}{data\_in}}\ *,\ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}});}
+\DoxyCodeLine{00068\ }
+\DoxyCodeLine{00069\ \textcolor{comment}{/*\ In\ tree-\/streamer-\/out.cc.\ \ */}}
+\DoxyCodeLine{00070\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{tree-streamer_8h_ad6d86404230f04713420b047016695f2}{streamer\_write\_string\_cst}}\ (\textcolor{keyword}{struct}\ \doxymbox{\hyperlink{structoutput__block}{output\_block}}\ *,}
+\DoxyCodeLine{00071\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{struct}\ \doxymbox{\hyperlink{structlto__output__stream}{lto\_output\_stream}}\ *,\ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}});}
+\DoxyCodeLine{00072\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{tree-streamer_8h_a8038483e8ea5e2d1e61e88c1c3ad1296}{streamer\_write\_tree\_header}}\ (\textcolor{keyword}{struct}\ \doxymbox{\hyperlink{structoutput__block}{output\_block}}\ *,\ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}});}
+\DoxyCodeLine{00073\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{tree-streamer_8h_a26dfa863777bc1d8158ce216665385fc}{streamer\_write\_tree\_bitfields}}\ (\textcolor{keyword}{struct}\ \doxymbox{\hyperlink{structoutput__block}{output\_block}}\ *,\ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}});}
+\DoxyCodeLine{00074\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{tree-streamer_8h_a84f7747437c1b99be7d75fe7859215e5}{streamer\_write\_tree\_body}}\ (\textcolor{keyword}{struct}\ \doxymbox{\hyperlink{structoutput__block}{output\_block}}\ *,\ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}});}
+\DoxyCodeLine{00075\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{tree-streamer_8h_ac5895302e4caab855a3bcd5b099b5599}{streamer\_write\_integer\_cst}}\ (\textcolor{keyword}{struct}\ \doxymbox{\hyperlink{structoutput__block}{output\_block}}\ *,\ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}});}
+\DoxyCodeLine{00076\ }
+\DoxyCodeLine{00077\ \textcolor{comment}{/*\ In\ tree-\/streamer.cc.\ \ */}}
+\DoxyCodeLine{00078\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{char}\ \doxymbox{\hyperlink{tree-streamer_8h_ac35454aaacade8599d174aec7e3272bc}{streamer\_mode\_table}}[\doxymbox{\hyperlink{insn-modes_8h_a3c592bc51c57098d62602b12c9468e92a0c210ece7724e41a51f703a1def537d6}{MAX\_MACHINE\_MODE}}];}
+\DoxyCodeLine{00079\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{tree-streamer_8h_a9c431547d93237bd6d1503ad84852ffb}{streamer\_check\_handled\_ts\_structures}}\ (\textcolor{keywordtype}{void});}
+\DoxyCodeLine{00080\ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{tree-streamer_8h_a9abda720580a1961013132f6c60cd1ad}{streamer\_tree\_cache\_insert}}\ (\textcolor{keyword}{struct}\ \doxymbox{\hyperlink{structstreamer__tree__cache__d}{streamer\_tree\_cache\_d}}\ *,\ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}},}
+\DoxyCodeLine{00081\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{hashtab_8h_a2d05e5049721cf3117dd6b34e20d4f65}{hashval\_t}},\ \textcolor{keywordtype}{unsigned}\ *);}
+\DoxyCodeLine{00082\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{tree-streamer_8h_af92042c95c2ff2420fa92227ad735d4a}{streamer\_tree\_cache\_replace\_tree}}\ (\textcolor{keyword}{struct}\ \doxymbox{\hyperlink{structstreamer__tree__cache__d}{streamer\_tree\_cache\_d}}\ *,\ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}},}
+\DoxyCodeLine{00083\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{unsigned});}
+\DoxyCodeLine{00084\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{tree-streamer_8h_a058ae28bfe19d886e3f6966a332cf4ec}{streamer\_tree\_cache\_append}}\ (\textcolor{keyword}{struct}\ \doxymbox{\hyperlink{structstreamer__tree__cache__d}{streamer\_tree\_cache\_d}}\ *,\ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}},}
+\DoxyCodeLine{00085\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{hashtab_8h_a2d05e5049721cf3117dd6b34e20d4f65}{hashval\_t}});}
+\DoxyCodeLine{00086\ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{tree-streamer_8h_afa4d1c3ae202180585c70996ee999d50}{streamer\_tree\_cache\_lookup}}\ (\textcolor{keyword}{struct}\ \doxymbox{\hyperlink{structstreamer__tree__cache__d}{streamer\_tree\_cache\_d}}\ *,\ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}},}
+\DoxyCodeLine{00087\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{unsigned}\ *);}
+\DoxyCodeLine{00088\ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{structstreamer__tree__cache__d}{streamer\_tree\_cache\_d}}\ *\doxymbox{\hyperlink{tree-streamer_8h_a0ac5747913ae1a8940c14b95f24b36c0}{streamer\_tree\_cache\_create}}\ (\textcolor{keywordtype}{bool},\ \textcolor{keywordtype}{bool},\ \textcolor{keywordtype}{bool});}
+\DoxyCodeLine{00089\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{tree-streamer_8h_a0d474848e40a4caf6eb7d0243b9d3975}{streamer\_tree\_cache\_delete}}\ (\textcolor{keyword}{struct}\ \doxymbox{\hyperlink{structstreamer__tree__cache__d}{streamer\_tree\_cache\_d}}\ *);}
+\DoxyCodeLine{00090\ }
+\DoxyCodeLine{00091\ \textcolor{comment}{/*\ Return\ the\ tree\ node\ at\ slot\ IX\ in\ CACHE.\ \ */}}
+\DoxyCodeLine{00092\ }
+\DoxyCodeLine{00093\ \textcolor{keyword}{inline}\ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}}
+\DoxyCodeLine{00094\ \doxymbox{\hyperlink{tree-streamer_8h_ad37732df70565a0fa94aec5496fde7cd}{streamer\_tree\_cache\_get\_tree}}\ (\textcolor{keyword}{struct}\ \doxymbox{\hyperlink{structstreamer__tree__cache__d}{streamer\_tree\_cache\_d}}\ *cache,\ \textcolor{keywordtype}{unsigned}\ ix)}
+\DoxyCodeLine{00095\ \{}
+\DoxyCodeLine{00096\ \ \ \textcolor{keywordflow}{return}\ cache-\/>\doxymbox{\hyperlink{structstreamer__tree__cache__d_af45fdb8eef24cf4b79af179e23031707}{nodes}}[ix];}
+\DoxyCodeLine{00097\ \}}
+\DoxyCodeLine{00098\ }
+\DoxyCodeLine{00099\ \textcolor{comment}{/*\ Return\ the\ tree\ hash\ value\ at\ slot\ IX\ in\ CACHE.\ \ */}}
+\DoxyCodeLine{00100\ }
+\DoxyCodeLine{00101\ \textcolor{keyword}{inline}\ \doxymbox{\hyperlink{hashtab_8h_a2d05e5049721cf3117dd6b34e20d4f65}{hashval\_t}}}
+\DoxyCodeLine{00102\ \doxymbox{\hyperlink{tree-streamer_8h_ae8468cd9247c1139de07741611599a65}{streamer\_tree\_cache\_get\_hash}}\ (\textcolor{keyword}{struct}\ \doxymbox{\hyperlink{structstreamer__tree__cache__d}{streamer\_tree\_cache\_d}}\ *cache,\ \textcolor{keywordtype}{unsigned}\ ix)}
+\DoxyCodeLine{00103\ \{}
+\DoxyCodeLine{00104\ \ \ \textcolor{keywordflow}{return}\ cache-\/>\doxymbox{\hyperlink{structstreamer__tree__cache__d_ac1b277b34d687b9afd289fea7c4b3cbf}{hashes}}[ix];}
+\DoxyCodeLine{00105\ \}}
+\DoxyCodeLine{00106\ }
+\DoxyCodeLine{00107\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{void}}
+\DoxyCodeLine{00108\ \doxymbox{\hyperlink{tree-streamer_8h_a4e102426206616389c69e309b2a2cf6a}{bp\_pack\_machine\_mode}}\ (\textcolor{keyword}{struct}\ \doxymbox{\hyperlink{structbitpack__d}{bitpack\_d}}\ *bp,\ \doxymbox{\hyperlink{insn-modes_8h_a3c592bc51c57098d62602b12c9468e92}{machine\_mode}}\ mode)}
+\DoxyCodeLine{00109\ \{}
+\DoxyCodeLine{00110\ \ \ \doxymbox{\hyperlink{tree-streamer_8h_ac35454aaacade8599d174aec7e3272bc}{streamer\_mode\_table}}[mode]\ =\ 1;}
+\DoxyCodeLine{00111\ \ \ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{vec_8h_aae5075fc0b723bf2be806aeb89bea805}{last}}\ =\ 1\ <<\ \doxymbox{\hyperlink{hwint_8h_ae59e83e21da11d2c79fe86e29e80a37b}{ceil\_log2}}\ (\doxymbox{\hyperlink{insn-modes_8h_a3c592bc51c57098d62602b12c9468e92a0c210ece7724e41a51f703a1def537d6}{MAX\_MACHINE\_MODE}});}
+\DoxyCodeLine{00112\ \ \ \doxymbox{\hyperlink{data-streamer_8h_ad3fd7dcadc95b26737a056142dc0769d}{bp\_pack\_enum}}\ (bp,\ \doxymbox{\hyperlink{insn-modes_8h_a3c592bc51c57098d62602b12c9468e92}{machine\_mode}},\ \doxymbox{\hyperlink{vec_8h_aae5075fc0b723bf2be806aeb89bea805}{last}},\ mode);}
+\DoxyCodeLine{00113\ \}}
+\DoxyCodeLine{00114\ }
+\DoxyCodeLine{00115\ \textcolor{keyword}{inline}\ \doxymbox{\hyperlink{insn-modes_8h_a3c592bc51c57098d62602b12c9468e92}{machine\_mode}}}
+\DoxyCodeLine{00116\ \doxymbox{\hyperlink{tree-streamer_8h_a6be20cd3d3e5eea1493323f254ebe3ea}{bp\_unpack\_machine\_mode}}\ (\textcolor{keyword}{struct}\ \doxymbox{\hyperlink{structbitpack__d}{bitpack\_d}}\ *bp)}
+\DoxyCodeLine{00117\ \{}
+\DoxyCodeLine{00118\ \ \ \doxymbox{\hyperlink{classlto__input__block}{lto\_input\_block}}\ *ib\ =\ (\textcolor{keyword}{class\ }\doxymbox{\hyperlink{classlto__input__block}{lto\_input\_block}}\ *)\ bp-\/>\doxymbox{\hyperlink{structbitpack__d_a9ca045e17105c7fe7ac224d18986fff9}{stream}};}
+\DoxyCodeLine{00119\ \ \ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{vec_8h_aae5075fc0b723bf2be806aeb89bea805}{last}}\ =\ 1\ <<\ ib-\/>\doxymbox{\hyperlink{classlto__input__block_aec2d17a61278fa57e0a2a574f730b24a}{file\_data}}-\/>mode\_bits;}
+\DoxyCodeLine{00120\ \ \ \textcolor{keywordtype}{unsigned}\ ix\ =\ \doxymbox{\hyperlink{data-streamer_8h_a0bdc51ac4a5d51429a2bf33a8406c7c1}{bp\_unpack\_enum}}\ (bp,\ \doxymbox{\hyperlink{insn-modes_8h_a3c592bc51c57098d62602b12c9468e92}{machine\_mode}},\ \doxymbox{\hyperlink{vec_8h_aae5075fc0b723bf2be806aeb89bea805}{last}});}
+\DoxyCodeLine{00121\ \ \ \textcolor{keywordflow}{if}\ (ib-\/>\doxymbox{\hyperlink{classlto__input__block_aec2d17a61278fa57e0a2a574f730b24a}{file\_data}}-\/>mode\_table)}
+\DoxyCodeLine{00122\ \ \ \ \ \textcolor{keywordflow}{return}\ (\doxymbox{\hyperlink{insn-modes_8h_a3c592bc51c57098d62602b12c9468e92}{machine\_mode}})\ ib-\/>\doxymbox{\hyperlink{classlto__input__block_aec2d17a61278fa57e0a2a574f730b24a}{file\_data}}-\/>mode\_table[ix];}
+\DoxyCodeLine{00123\ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00124\ \ \ \ \ \textcolor{keywordflow}{return}\ (\doxymbox{\hyperlink{insn-modes_8h_a3c592bc51c57098d62602b12c9468e92}{machine\_mode}})\ ix;}
+\DoxyCodeLine{00125\ \}}
+\DoxyCodeLine{00126\ }
+\DoxyCodeLine{00127\ \textcolor{preprocessor}{\#endif\ \ }\textcolor{comment}{/*\ GCC\_TREE\_STREAMER\_H\ \ */}\textcolor{preprocessor}{}}
+
+\end{DoxyCode}

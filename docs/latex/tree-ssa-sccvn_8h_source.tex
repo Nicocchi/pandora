@@ -1,0 +1,326 @@
+\doxysection{tree-\/ssa-\/sccvn.h}
+\hypertarget{tree-ssa-sccvn_8h_source}{}\label{tree-ssa-sccvn_8h_source}\index{toolchain/x86\_64-\/elf/lib/gcc/x86\_64-\/elf/14.2.0/plugin/include/tree-\/ssa-\/sccvn.h@{toolchain/x86\_64-\/elf/lib/gcc/x86\_64-\/elf/14.2.0/plugin/include/tree-\/ssa-\/sccvn.h}}
+\doxymbox{\hyperlink{tree-ssa-sccvn_8h}{Go to the documentation of this file.}}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001\ \textcolor{comment}{/*\ Tree\ SCC\ value\ numbering}}
+\DoxyCodeLine{00002\ \textcolor{comment}{\ \ \ Copyright\ (C)\ 2007-\/2024\ Free\ Software\ Foundation,\ Inc.}}
+\DoxyCodeLine{00003\ \textcolor{comment}{\ \ \ Contributed\ by\ Daniel\ Berlin\ <dberlin@dberlin.org>}}
+\DoxyCodeLine{00004\ \textcolor{comment}{}}
+\DoxyCodeLine{00005\ \textcolor{comment}{\ \ \ This\ file\ is\ part\ of\ GCC.}}
+\DoxyCodeLine{00006\ \textcolor{comment}{}}
+\DoxyCodeLine{00007\ \textcolor{comment}{\ \ \ GCC\ is\ free\ software;\ you\ can\ redistribute\ it\ and/or\ modify}}
+\DoxyCodeLine{00008\ \textcolor{comment}{\ \ \ under\ the\ terms\ of\ the\ GNU\ General\ Public\ License\ as\ published\ by}}
+\DoxyCodeLine{00009\ \textcolor{comment}{\ \ \ the\ Free\ Software\ Foundation;\ either\ version\ 3\ of\ the\ License,\ or}}
+\DoxyCodeLine{00010\ \textcolor{comment}{\ \ \ (at\ your\ option)\ any\ later\ version.}}
+\DoxyCodeLine{00011\ \textcolor{comment}{}}
+\DoxyCodeLine{00012\ \textcolor{comment}{\ \ \ GCC\ is\ distributed\ in\ the\ hope\ that\ it\ will\ be\ useful,}}
+\DoxyCodeLine{00013\ \textcolor{comment}{\ \ \ but\ WITHOUT\ ANY\ WARRANTY;\ without\ even\ the\ implied\ warranty\ of}}
+\DoxyCodeLine{00014\ \textcolor{comment}{\ \ \ MERCHANTABILITY\ or\ FITNESS\ FOR\ A\ PARTICULAR\ PURPOSE.\ \ See\ the}}
+\DoxyCodeLine{00015\ \textcolor{comment}{\ \ \ GNU\ General\ Public\ License\ for\ more\ details.}}
+\DoxyCodeLine{00016\ \textcolor{comment}{}}
+\DoxyCodeLine{00017\ \textcolor{comment}{\ \ \ You\ should\ have\ received\ a\ copy\ of\ the\ GNU\ General\ Public\ License}}
+\DoxyCodeLine{00018\ \textcolor{comment}{\ \ \ along\ with\ GCC;\ see\ the\ file\ COPYING3.\ \ If\ not\ see}}
+\DoxyCodeLine{00019\ \textcolor{comment}{\ \ \ <http://www.gnu.org/licenses/>.\ \ */}}
+\DoxyCodeLine{00020\ }
+\DoxyCodeLine{00021\ \textcolor{preprocessor}{\#ifndef\ TREE\_SSA\_SCCVN\_H}}
+\DoxyCodeLine{00022\ \textcolor{preprocessor}{\#define\ TREE\_SSA\_SCCVN\_H}}
+\DoxyCodeLine{00023\ }
+\DoxyCodeLine{00024\ \textcolor{comment}{/*\ In\ tree-\/ssa-\/sccvn.cc\ \ */}}
+\DoxyCodeLine{00025\ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{tree-ssa-sccvn_8h_abc28f929f59a38055afac3a1395bc255}{expressions\_equal\_p}}\ (\doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}},\ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}},\ \textcolor{keywordtype}{bool}\ =\ \textcolor{keyword}{true});}
+\DoxyCodeLine{00026\ }
+\DoxyCodeLine{00027\ }
+\DoxyCodeLine{00028\ \textcolor{comment}{/*\ TOP\ of\ the\ VN\ lattice.\ \ */}}
+\DoxyCodeLine{00029\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ \doxymbox{\hyperlink{tree-ssa-sccvn_8h_af27e0afd0424995a86193bdf495892ea}{VN\_TOP}};}
+\DoxyCodeLine{00030\ }
+\DoxyCodeLine{00031\ \textcolor{comment}{/*\ A\ predicated\ value.\ \ */}}
+\DoxyCodeLine{00032\ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{structvn__pval}{vn\_pval}}}
+\DoxyCodeLine{00033\ \{}
+\DoxyCodeLine{00034\ \ \ \doxymbox{\hyperlink{structvn__pval}{vn\_pval}}\ *\doxymbox{\hyperlink{structvn__pval_a02d310782867858bdb3632acbea67ce1}{next}};}
+\DoxyCodeLine{00035\ \ \ \textcolor{comment}{/*\ The\ value\ of\ the\ expression\ this\ is\ attached\ to\ is\ RESULT\ in}}
+\DoxyCodeLine{00036\ \textcolor{comment}{\ \ \ \ \ case\ the\ expression\ is\ computed\ dominated\ by\ one\ of\ the\ blocks}}
+\DoxyCodeLine{00037\ \textcolor{comment}{\ \ \ \ \ in\ valid\_dominated\_by\_p.\ \ */}}
+\DoxyCodeLine{00038\ \ \ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ \doxymbox{\hyperlink{structvn__pval_a607a484188e4defcb4a30b9b25b4b039}{result}};}
+\DoxyCodeLine{00039\ \ \ \textcolor{keywordtype}{unsigned}\ \doxymbox{\hyperlink{structvn__pval_a5d68d3b1b638c7e1bbcafed8d5d02430}{n}};}
+\DoxyCodeLine{00040\ \ \ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{structvn__pval_ab0c155efd65e875fd33daba21ac065de}{valid\_dominated\_by\_p}}[1];}
+\DoxyCodeLine{00041\ \};}
+\DoxyCodeLine{00042\ }
+\DoxyCodeLine{00043\ \textcolor{comment}{/*\ N-\/ary\ operations\ in\ the\ hashtable\ consist\ of\ length\ operands,\ an}}
+\DoxyCodeLine{00044\ \textcolor{comment}{\ \ \ opcode,\ and\ a\ type.\ \ Result\ is\ the\ value\ number\ of\ the\ operation,}}
+\DoxyCodeLine{00045\ \textcolor{comment}{\ \ \ and\ hashcode\ is\ stored\ to\ avoid\ having\ to\ calculate\ it}}
+\DoxyCodeLine{00046\ \textcolor{comment}{\ \ \ repeatedly.\ \ */}}
+\DoxyCodeLine{00047\ }
+\DoxyCodeLine{00048\ \textcolor{keyword}{typedef}\ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{structvn__nary__op__s}{vn\_nary\_op\_s}}}
+\DoxyCodeLine{00049\ \{}
+\DoxyCodeLine{00050\ \ \ \doxymbox{\hyperlink{structvn__nary__op__s}{vn\_nary\_op\_s}}\ *\doxymbox{\hyperlink{structvn__nary__op__s_ad88df8f187cd06da914b288db064d05b}{next}};}
+\DoxyCodeLine{00051\ \ \ \doxymbox{\hyperlink{structvn__nary__op__s}{vn\_nary\_op\_s}}\ *\doxymbox{\hyperlink{structvn__nary__op__s_af12937c961e30456cd6fd27a2e2ba7e9}{unwind\_to}};}
+\DoxyCodeLine{00052\ \ \ \textcolor{comment}{/*\ Unique\ identify\ that\ all\ expressions\ with\ the\ same\ value\ have.\ */}}
+\DoxyCodeLine{00053\ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{structvn__nary__op__s_a367cc64ee4573da7797c8b4a6e77a95c}{value\_id}};}
+\DoxyCodeLine{00054\ \ \ \doxymbox{\hyperlink{ansidecl_8h_a2934559f672ebd88a0459d0fe40faff2}{ENUM\_BITFIELD}}(\doxymbox{\hyperlink{tree-core_8h_aee7678415f75b79d1651bfccce10c9f5}{tree\_code}})\ opcode\ :\ 16;}
+\DoxyCodeLine{00055\ \ \ \textcolor{keywordtype}{unsigned}\ \doxymbox{\hyperlink{structvn__nary__op__s_a7b4fe43faf7df5dddcad097b7fa5c8a8}{length}}\ :\ 16;}
+\DoxyCodeLine{00056\ \ \ \doxymbox{\hyperlink{hashtab_8h_a2d05e5049721cf3117dd6b34e20d4f65}{hashval\_t}}\ \doxymbox{\hyperlink{structvn__nary__op__s_a4e9623575883d58cfde5be91b434f122}{hashcode}};}
+\DoxyCodeLine{00057\ \ \ \textcolor{keywordtype}{unsigned}\ \doxymbox{\hyperlink{structvn__nary__op__s_a5a11e2ee72f2d281d8e147470c163aff}{predicated\_values}}\ :\ 1;}
+\DoxyCodeLine{00058\ \ \ \textcolor{keyword}{union\ }\{}
+\DoxyCodeLine{00059\ \ \ \ \ \ \ \textcolor{comment}{/*\ If\ !\ predicated\_values\ this\ is\ the\ value\ of\ the\ expression.\ \ */}}
+\DoxyCodeLine{00060\ \ \ \ \ \ \ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ \doxymbox{\hyperlink{structvn__nary__op__s_a8532bca20a1d34e3a8e3a3d884bf7b25}{result}};}
+\DoxyCodeLine{00061\ \ \ \ \ \ \ \textcolor{comment}{/*\ If\ predicated\_values\ this\ is\ a\ list\ of\ values\ of\ the\ expression.\ \ */}}
+\DoxyCodeLine{00062\ \ \ \ \ \ \ \doxymbox{\hyperlink{structvn__pval}{vn\_pval}}\ *\doxymbox{\hyperlink{structvn__nary__op__s_a9816389224cd8ec543eda972df5367ab}{values}};}
+\DoxyCodeLine{00063\ \ \ \}\ \doxymbox{\hyperlink{structvn__nary__op__s_a32c87648d9f2a215c19bdc6a86e2e061}{u}};}
+\DoxyCodeLine{00064\ \ \ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ \doxymbox{\hyperlink{structvn__nary__op__s_a55822acbf9b2bb5f7a19b34d551d8f89}{type}};}
+\DoxyCodeLine{00065\ \ \ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ \doxymbox{\hyperlink{structvn__nary__op__s_add753732600cc30da0981f35ff13707b}{op}}[1];}
+\DoxyCodeLine{00066\ \}\ *\doxymbox{\hyperlink{tree-ssa-sccvn_8h_a64c8dc44f8b762ffaa0b23714d279a88}{vn\_nary\_op\_t}};}
+\DoxyCodeLine{00067\ \textcolor{keyword}{typedef}\ \textcolor{keyword}{const}\ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{structvn__nary__op__s}{vn\_nary\_op\_s}}\ *\doxymbox{\hyperlink{tree-ssa-sccvn_8h_a9d1d17fbeab199e31cc72331864fd5e4}{const\_vn\_nary\_op\_t}};}
+\DoxyCodeLine{00068\ }
+\DoxyCodeLine{00069\ \textcolor{comment}{/*\ Return\ the\ size\ of\ a\ vn\_nary\_op\_t\ with\ LENGTH\ operands.\ \ */}}
+\DoxyCodeLine{00070\ }
+\DoxyCodeLine{00071\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{size\_t}}
+\DoxyCodeLine{00072\ \doxymbox{\hyperlink{tree-ssa-sccvn_8h_ae15a544f7fd80ec143a1cd8a713198f0}{sizeof\_vn\_nary\_op}}\ (\textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{structvn__nary__op__s_a7b4fe43faf7df5dddcad097b7fa5c8a8}{length}})}
+\DoxyCodeLine{00073\ \{}
+\DoxyCodeLine{00074\ \ \ \textcolor{keywordflow}{return}\ \textcolor{keyword}{sizeof}\ (\textcolor{keyword}{struct\ }\doxymbox{\hyperlink{structvn__nary__op__s}{vn\_nary\_op\_s}})\ +\ sizeof\ (\doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}})\ *\ \doxymbox{\hyperlink{structvn__nary__op__s_a7b4fe43faf7df5dddcad097b7fa5c8a8}{length}}\ -\/\ \textcolor{keyword}{sizeof}\ (\doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}});}
+\DoxyCodeLine{00075\ \}}
+\DoxyCodeLine{00076\ }
+\DoxyCodeLine{00077\ \textcolor{comment}{/*\ Phi\ nodes\ in\ the\ hashtable\ consist\ of\ their\ non-\/VN\_TOP\ phi}}
+\DoxyCodeLine{00078\ \textcolor{comment}{\ \ \ arguments,\ and\ the\ basic\ block\ the\ phi\ is\ in.\ Result\ is\ the\ value}}
+\DoxyCodeLine{00079\ \textcolor{comment}{\ \ \ number\ of\ the\ operation,\ and\ hashcode\ is\ stored\ to\ avoid\ having\ to}}
+\DoxyCodeLine{00080\ \textcolor{comment}{\ \ \ calculate\ it\ repeatedly.\ \ Phi\ nodes\ not\ in\ the\ same\ block\ are\ never}}
+\DoxyCodeLine{00081\ \textcolor{comment}{\ \ \ considered\ equivalent.\ \ */}}
+\DoxyCodeLine{00082\ }
+\DoxyCodeLine{00083\ \textcolor{keyword}{typedef}\ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{structvn__phi__s}{vn\_phi\_s}}}
+\DoxyCodeLine{00084\ \{}
+\DoxyCodeLine{00085\ \ \ \doxymbox{\hyperlink{structvn__phi__s}{vn\_phi\_s}}\ *\doxymbox{\hyperlink{structvn__phi__s_a5304dd38a0b2186407f4737d4934bc4f}{next}};}
+\DoxyCodeLine{00086\ \ \ \textcolor{comment}{/*\ Unique\ identifier\ that\ all\ expressions\ with\ the\ same\ value\ have.\ */}}
+\DoxyCodeLine{00087\ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{structvn__phi__s_afa1d7bcd519112b819058571ec839910}{value\_id}};}
+\DoxyCodeLine{00088\ \ \ \doxymbox{\hyperlink{hashtab_8h_a2d05e5049721cf3117dd6b34e20d4f65}{hashval\_t}}\ \doxymbox{\hyperlink{structvn__phi__s_aaaa46afd071e4c862e73f2acb1cad6be}{hashcode}};}
+\DoxyCodeLine{00089\ \ \ \doxymbox{\hyperlink{coretypes_8h_a0469df20b471a4cd7c81fbdce5027487}{basic\_block}}\ \doxymbox{\hyperlink{structvn__phi__s_af4c25de5f5df7f930e2d8103453bda09}{block}};}
+\DoxyCodeLine{00090\ \ \ \textcolor{comment}{/*\ Controlling\ condition\ lhs/rhs.\ \ */}}
+\DoxyCodeLine{00091\ \ \ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ \doxymbox{\hyperlink{structvn__phi__s_ab0fb8987d64bc23311564201b7a41f0d}{cclhs}};}
+\DoxyCodeLine{00092\ \ \ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ \doxymbox{\hyperlink{structvn__phi__s_ad983bb563f431ddfbe0b0618573a29d5}{ccrhs}};}
+\DoxyCodeLine{00093\ \ \ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ \doxymbox{\hyperlink{structvn__phi__s_aa0647eb0455f43d44febd4f3ce8ac07e}{type}};}
+\DoxyCodeLine{00094\ \ \ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ \doxymbox{\hyperlink{structvn__phi__s_ae900729f6e4b85df9792ac50533a9635}{result}};}
+\DoxyCodeLine{00095\ \ \ \textcolor{comment}{/*\ The\ number\ of\ args\ is\ determined\ by\ EDGE\_COUT\ (block-\/>preds).\ \ */}}
+\DoxyCodeLine{00096\ \ \ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ \doxymbox{\hyperlink{structvn__phi__s_a56fb7047ddba5cf0980aa726c7487f2d}{phiargs}}[1];}
+\DoxyCodeLine{00097\ \}\ *\doxymbox{\hyperlink{tree-ssa-sccvn_8h_a2348f618800f1c6f3908800226c258ec}{vn\_phi\_t}};}
+\DoxyCodeLine{00098\ \textcolor{keyword}{typedef}\ \textcolor{keyword}{const}\ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{structvn__phi__s}{vn\_phi\_s}}\ *\doxymbox{\hyperlink{tree-ssa-sccvn_8h_ac9ff8ddd763b80088c2a353f0fcf6604}{const\_vn\_phi\_t}};}
+\DoxyCodeLine{00099\ }
+\DoxyCodeLine{00100\ \textcolor{comment}{/*\ Reference\ operands\ only\ exist\ in\ reference\ operations\ structures.}}
+\DoxyCodeLine{00101\ \textcolor{comment}{\ \ \ They\ consist\ of\ an\ opcode,\ type,\ and\ some\ number\ of\ operands.\ \ For}}
+\DoxyCodeLine{00102\ \textcolor{comment}{\ \ \ a\ given\ opcode,\ some,\ all,\ or\ none\ of\ the\ operands\ may\ be\ used.}}
+\DoxyCodeLine{00103\ \textcolor{comment}{\ \ \ The\ operands\ are\ there\ to\ store\ the\ information\ that\ makes\ up\ the}}
+\DoxyCodeLine{00104\ \textcolor{comment}{\ \ \ portion\ of\ the\ addressing\ calculation\ that\ opcode\ performs.\ \ */}}
+\DoxyCodeLine{00105\ }
+\DoxyCodeLine{00106\ \textcolor{keyword}{typedef}\ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{structvn__reference__op__struct}{vn\_reference\_op\_struct}}}
+\DoxyCodeLine{00107\ \{}
+\DoxyCodeLine{00108\ \ \ \doxymbox{\hyperlink{ansidecl_8h_a2934559f672ebd88a0459d0fe40faff2}{ENUM\_BITFIELD}}(\doxymbox{\hyperlink{tree-core_8h_aee7678415f75b79d1651bfccce10c9f5}{tree\_code}})\ opcode\ :\ 16;}
+\DoxyCodeLine{00109\ \ \ \textcolor{comment}{/*\ Dependence\ info,\ used\ for\ [TARGET\_]MEM\_REF\ only.\ \ For\ internal}}
+\DoxyCodeLine{00110\ \textcolor{comment}{\ \ \ \ \ function\ calls\ clique\ is\ also\ used\ for\ the\ internal\ function\ code.\ \ */}}
+\DoxyCodeLine{00111\ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{short}\ \doxymbox{\hyperlink{structvn__reference__op__struct_aa3b3cd12c69f2c6e88f108786efb3775}{clique}};}
+\DoxyCodeLine{00112\ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{short}\ \doxymbox{\hyperlink{structvn__reference__op__struct_af1d50bcfe091e14d66a3223063741714}{base}};}
+\DoxyCodeLine{00113\ \ \ \textcolor{keywordtype}{unsigned}\ \doxymbox{\hyperlink{structvn__reference__op__struct_a469a867640ab1727a3d0baef98a62375}{reverse}}\ :\ 1;}
+\DoxyCodeLine{00114\ \ \ \textcolor{comment}{/*\ For\ storing\ TYPE\_ALIGN\ for\ array\ ref\ element\ size\ computation.\ \ */}}
+\DoxyCodeLine{00115\ \ \ \textcolor{keywordtype}{unsigned}\ \doxymbox{\hyperlink{structvn__reference__op__struct_af479106949ef3c50a37cd2055a164db3}{align}}\ :\ 6;}
+\DoxyCodeLine{00116\ \ \ \textcolor{comment}{/*\ Constant\ offset\ this\ op\ adds\ or\ -\/1\ if\ it\ is\ variable.\ \ */}}
+\DoxyCodeLine{00117\ \ \ \doxymbox{\hyperlink{poly-int-types_8h_af5255601feb5e9a21f3193d378a55845}{poly\_int64}}\ \doxymbox{\hyperlink{structvn__reference__op__struct_abce0a8443e37c8ad5fef4853e1c3fd7a}{off}};}
+\DoxyCodeLine{00118\ \ \ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ \doxymbox{\hyperlink{structvn__reference__op__struct_a76184557bfb0d8bf8e4357c2bea0080a}{type}};}
+\DoxyCodeLine{00119\ \ \ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ \doxymbox{\hyperlink{structvn__reference__op__struct_aa7d0c62f6af9822cdc9c061bc6be4dae}{op0}};}
+\DoxyCodeLine{00120\ \ \ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ \doxymbox{\hyperlink{structvn__reference__op__struct_a1c5e88e5f945a5f76873df0750cb4161}{op1}};}
+\DoxyCodeLine{00121\ \ \ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ \doxymbox{\hyperlink{structvn__reference__op__struct_a3cc71353b4ac0a68d2b641d0e807a0b2}{op2}};}
+\DoxyCodeLine{00122\ \}\ \doxymbox{\hyperlink{tree-ssa-sccvn_8h_abe2ff95b9a031d59b4cbb2133ff271ab}{vn\_reference\_op\_s}};}
+\DoxyCodeLine{00123\ \textcolor{keyword}{typedef}\ \doxymbox{\hyperlink{tree-ssa-sccvn_8h_abe2ff95b9a031d59b4cbb2133ff271ab}{vn\_reference\_op\_s}}\ *\doxymbox{\hyperlink{tree-ssa-sccvn_8h_a6c6d70f67024189edcc4abecc284673f}{vn\_reference\_op\_t}};}
+\DoxyCodeLine{00124\ \textcolor{keyword}{typedef}\ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{tree-ssa-sccvn_8h_abe2ff95b9a031d59b4cbb2133ff271ab}{vn\_reference\_op\_s}}\ *\doxymbox{\hyperlink{tree-ssa-sccvn_8h_aaa63be07055e6639870fe95b10cf8f46}{const\_vn\_reference\_op\_t}};}
+\DoxyCodeLine{00125\ }
+\DoxyCodeLine{00126\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{unsigned}}
+\DoxyCodeLine{00127\ \doxymbox{\hyperlink{tree-ssa-sccvn_8h_a997723beace0cce304db319e0a41c01f}{vn\_ref\_op\_align\_unit}}\ (\doxymbox{\hyperlink{tree-ssa-sccvn_8h_a6c6d70f67024189edcc4abecc284673f}{vn\_reference\_op\_t}}\ op)}
+\DoxyCodeLine{00128\ \{}
+\DoxyCodeLine{00129\ \ \ \textcolor{keywordflow}{return}\ op-\/>\doxymbox{\hyperlink{structvn__reference__op__struct_af479106949ef3c50a37cd2055a164db3}{align}}\ ?\ ((unsigned)1\ <<\ (op-\/>\doxymbox{\hyperlink{structvn__reference__op__struct_af479106949ef3c50a37cd2055a164db3}{align}}\ -\/\ 1))\ /\ \doxymbox{\hyperlink{insn-modes_8h_a19b3cdf92677eacf8f07f1f8e9495eab}{BITS\_PER\_UNIT}}\ :\ 0;}
+\DoxyCodeLine{00130\ \}}
+\DoxyCodeLine{00131\ }
+\DoxyCodeLine{00132\ \textcolor{comment}{/*\ A\ reference\ operation\ in\ the\ hashtable\ is\ representation\ as}}
+\DoxyCodeLine{00133\ \textcolor{comment}{\ \ \ the\ vuse,\ representing\ the\ memory\ state\ at\ the\ time\ of}}
+\DoxyCodeLine{00134\ \textcolor{comment}{\ \ \ the\ operation,\ and\ a\ collection\ of\ operands\ that\ make\ up\ the}}
+\DoxyCodeLine{00135\ \textcolor{comment}{\ \ \ addressing\ calculation.\ \ If\ two\ vn\_reference\_t's\ have\ the\ same\ set}}
+\DoxyCodeLine{00136\ \textcolor{comment}{\ \ \ of\ operands,\ they\ access\ the\ same\ memory\ location.\ We\ also\ store}}
+\DoxyCodeLine{00137\ \textcolor{comment}{\ \ \ the\ resulting\ value\ number,\ and\ the\ hashcode.\ \ */}}
+\DoxyCodeLine{00138\ }
+\DoxyCodeLine{00139\ \textcolor{keyword}{typedef}\ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{structvn__reference__s}{vn\_reference\_s}}}
+\DoxyCodeLine{00140\ \{}
+\DoxyCodeLine{00141\ \ \ \doxymbox{\hyperlink{structvn__reference__s}{vn\_reference\_s}}\ *\doxymbox{\hyperlink{structvn__reference__s_a40deb99b68c622e65046bb5a77b01ff6}{next}};}
+\DoxyCodeLine{00142\ \ \ \textcolor{comment}{/*\ Unique\ identifier\ that\ all\ expressions\ with\ the\ same\ value\ have.\ */}}
+\DoxyCodeLine{00143\ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{structvn__reference__s_a26e9d7b733fba0669825966352ce57d8}{value\_id}};}
+\DoxyCodeLine{00144\ \ \ \doxymbox{\hyperlink{hashtab_8h_a2d05e5049721cf3117dd6b34e20d4f65}{hashval\_t}}\ \doxymbox{\hyperlink{structvn__reference__s_aac9c67e780c1ed91079e62d1d169eedd}{hashcode}};}
+\DoxyCodeLine{00145\ \ \ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ \doxymbox{\hyperlink{structvn__reference__s_addb62097b0e539a73d7ef2fbfa0effba}{vuse}};}
+\DoxyCodeLine{00146\ \ \ \doxymbox{\hyperlink{coretypes_8h_af666fbb03cd47129d4fa40abda4818a5}{alias\_set\_type}}\ \doxymbox{\hyperlink{structvn__reference__s_a9a6879c877feb848e93ff8b7f0cb2e5f}{set}};}
+\DoxyCodeLine{00147\ \ \ \doxymbox{\hyperlink{coretypes_8h_af666fbb03cd47129d4fa40abda4818a5}{alias\_set\_type}}\ \doxymbox{\hyperlink{structvn__reference__s_a9535a474720a14a4db999bc8b10b772f}{base\_set}};}
+\DoxyCodeLine{00148\ \ \ \doxymbox{\hyperlink{poly-int-types_8h_af5255601feb5e9a21f3193d378a55845}{poly\_int64}}\ \doxymbox{\hyperlink{structvn__reference__s_aba4babee9854129e0b05bd915b4ea925}{offset}};}
+\DoxyCodeLine{00149\ \ \ \doxymbox{\hyperlink{poly-int-types_8h_af5255601feb5e9a21f3193d378a55845}{poly\_int64}}\ \doxymbox{\hyperlink{structvn__reference__s_a2ea2e5adc04e31ba6b321c7c627e1a4d}{max\_size}};}
+\DoxyCodeLine{00150\ \ \ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ \doxymbox{\hyperlink{structvn__reference__s_adf13f4dec802c0c1e4343da512e2f739}{type}};}
+\DoxyCodeLine{00151\ \ \ \textcolor{keywordtype}{unsigned}\ \doxymbox{\hyperlink{structvn__reference__s_a5d83596230064905127c1a115928bdea}{punned}}\ :\ 1;}
+\DoxyCodeLine{00152\ \ \ \doxymbox{\hyperlink{structvec}{vec<vn\_reference\_op\_s>}}\ \doxymbox{\hyperlink{structvn__reference__s_a1fb2f3c10a8f47d569d31abf35a47505}{operands}};}
+\DoxyCodeLine{00153\ \ \ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ \doxymbox{\hyperlink{structvn__reference__s_a7a4a949594309cceca818c5ce47ffb91}{result}};}
+\DoxyCodeLine{00154\ \ \ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ \doxymbox{\hyperlink{structvn__reference__s_a22b70c3fc7cf0961dc48387d010160c7}{result\_vdef}};}
+\DoxyCodeLine{00155\ \}\ *\doxymbox{\hyperlink{tree-ssa-sccvn_8h_a189399ddd0daa2dabb72172f46689963}{vn\_reference\_t}};}
+\DoxyCodeLine{00156\ \textcolor{keyword}{typedef}\ \textcolor{keyword}{const}\ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{structvn__reference__s}{vn\_reference\_s}}\ *\doxymbox{\hyperlink{tree-ssa-sccvn_8h_a533d61c7228d408490db0736a44d41e6}{const\_vn\_reference\_t}};}
+\DoxyCodeLine{00157\ }
+\DoxyCodeLine{00158\ \textcolor{keyword}{typedef}\ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{structvn__constant__s}{vn\_constant\_s}}}
+\DoxyCodeLine{00159\ \{}
+\DoxyCodeLine{00160\ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{structvn__constant__s_ac4c5a041e946f3edf53f6b707765737f}{value\_id}};}
+\DoxyCodeLine{00161\ \ \ \doxymbox{\hyperlink{hashtab_8h_a2d05e5049721cf3117dd6b34e20d4f65}{hashval\_t}}\ \doxymbox{\hyperlink{structvn__constant__s_a492e29160cc14addcc65db579b616098}{hashcode}};}
+\DoxyCodeLine{00162\ \ \ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ \doxymbox{\hyperlink{structvn__constant__s_a14f167f5ff018d6b31405d879fc49e79}{constant}};}
+\DoxyCodeLine{00163\ \}\ *\doxymbox{\hyperlink{tree-ssa-sccvn_8h_af10249cfc633e8db42788b16ee4dd2c3}{vn\_constant\_t}};}
+\DoxyCodeLine{00164\ }
+\DoxyCodeLine{00165\ \textcolor{keyword}{enum}\ \doxymbox{\hyperlink{tree-ssa-sccvn_8h_a6ab1ce5c8fb86da08eb48b671b03718b}{vn\_kind}}\ \{\ \doxymbox{\hyperlink{tree-ssa-sccvn_8h_a6ab1ce5c8fb86da08eb48b671b03718ba35d3f59deb50efe6a08916e69dfe3187}{VN\_NONE}},\ \doxymbox{\hyperlink{tree-ssa-sccvn_8h_a6ab1ce5c8fb86da08eb48b671b03718ba11a63cd823794429c23f2a37bd3de71c}{VN\_CONSTANT}},\ \doxymbox{\hyperlink{tree-ssa-sccvn_8h_a6ab1ce5c8fb86da08eb48b671b03718ba247140230850ebf8b2d86168692d8057}{VN\_NARY}},\ \doxymbox{\hyperlink{tree-ssa-sccvn_8h_a6ab1ce5c8fb86da08eb48b671b03718ba52cd9bd96269471e97b3753bb4972d1b}{VN\_REFERENCE}},\ \doxymbox{\hyperlink{tree-ssa-sccvn_8h_a6ab1ce5c8fb86da08eb48b671b03718ba329f634ac9bd04324f5daefaf6d8f59e}{VN\_PHI}}\ \};}
+\DoxyCodeLine{00166\ \textcolor{keyword}{enum}\ \doxymbox{\hyperlink{tree-ssa-sccvn_8h_a6ab1ce5c8fb86da08eb48b671b03718b}{vn\_kind}}\ \doxymbox{\hyperlink{tree-ssa-sccvn_8h_aad3cf2e9c56f92277c6f28be3919e309}{vn\_get\_stmt\_kind}}\ (gimple\ *);}
+\DoxyCodeLine{00167\ }
+\DoxyCodeLine{00168\ \textcolor{comment}{/*\ Hash\ the\ type\ TYPE\ using\ bits\ that\ distinguishes\ it\ in\ the}}
+\DoxyCodeLine{00169\ \textcolor{comment}{\ \ \ types\_compatible\_p\ sense.\ \ */}}
+\DoxyCodeLine{00170\ }
+\DoxyCodeLine{00171\ \textcolor{keyword}{inline}\ \doxymbox{\hyperlink{hashtab_8h_a2d05e5049721cf3117dd6b34e20d4f65}{hashval\_t}}}
+\DoxyCodeLine{00172\ \doxymbox{\hyperlink{tree-ssa-sccvn_8h_ab2f6145bdec667065e8d014d7e7b1796}{vn\_hash\_type}}\ (\doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ \doxymbox{\hyperlink{structtype}{type}})}
+\DoxyCodeLine{00173\ \{}
+\DoxyCodeLine{00174\ \ \ \textcolor{keywordflow}{return}\ (\doxymbox{\hyperlink{tree_8h_aad766a87515301a19e8f0d8c88604b8a}{INTEGRAL\_TYPE\_P}}\ (\doxymbox{\hyperlink{structtype}{type}})}
+\DoxyCodeLine{00175\ \ \ \ \ \ \ +\ (\doxymbox{\hyperlink{tree_8h_aad766a87515301a19e8f0d8c88604b8a}{INTEGRAL\_TYPE\_P}}\ (\doxymbox{\hyperlink{structtype}{type}})}
+\DoxyCodeLine{00176\ \ \ \ \ \ \ \ \ \ ?\ \doxymbox{\hyperlink{tree_8h_a26e86dfe4de807f822f26aa95fef67db}{TYPE\_PRECISION}}\ (\doxymbox{\hyperlink{structtype}{type}})\ +\ \doxymbox{\hyperlink{tree_8h_a63915c0a3ee5f6d30d5517fb8d487987}{TYPE\_UNSIGNED}}\ (\doxymbox{\hyperlink{structtype}{type}})\ :\ 0));}
+\DoxyCodeLine{00177\ \}}
+\DoxyCodeLine{00178\ }
+\DoxyCodeLine{00179\ \textcolor{comment}{/*\ Hash\ the\ constant\ CONSTANT\ with\ distinguishing\ type\ incompatible}}
+\DoxyCodeLine{00180\ \textcolor{comment}{\ \ \ constants\ in\ the\ types\_compatible\_p\ sense.\ \ */}}
+\DoxyCodeLine{00181\ }
+\DoxyCodeLine{00182\ \textcolor{keyword}{inline}\ \doxymbox{\hyperlink{hashtab_8h_a2d05e5049721cf3117dd6b34e20d4f65}{hashval\_t}}}
+\DoxyCodeLine{00183\ \doxymbox{\hyperlink{tree-ssa-sccvn_8h_ab49746a6f2251a614cc7604973fafab2}{vn\_hash\_constant\_with\_type}}\ (\doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ constant)}
+\DoxyCodeLine{00184\ \{}
+\DoxyCodeLine{00185\ \ \ \doxymbox{\hyperlink{classinchash_1_1hash}{inchash::hash}}\ hstate;}
+\DoxyCodeLine{00186\ \ \ \doxymbox{\hyperlink{namespaceinchash_a8e164e117ce9805f359a3ac7c04bce73}{inchash::add\_expr}}\ (constant,\ hstate);}
+\DoxyCodeLine{00187\ \ \ hstate.\doxymbox{\hyperlink{classinchash_1_1hash_a50d1ada643c0cb7cedf0de5b742b1b14}{merge\_hash}}\ (\doxymbox{\hyperlink{tree-ssa-sccvn_8h_ab2f6145bdec667065e8d014d7e7b1796}{vn\_hash\_type}}\ (\doxymbox{\hyperlink{tree_8h_aac9b9df6e10564b46659fc4a617b71aa}{TREE\_TYPE}}\ (constant)));}
+\DoxyCodeLine{00188\ \ \ \textcolor{keywordflow}{return}\ hstate.\doxymbox{\hyperlink{classinchash_1_1hash_abbb8b89688e2bc759f3f4585887bc96a}{end}}\ ();}
+\DoxyCodeLine{00189\ \}}
+\DoxyCodeLine{00190\ }
+\DoxyCodeLine{00191\ \textcolor{comment}{/*\ Compare\ the\ constants\ C1\ and\ C2\ with\ distinguishing\ type\ incompatible}}
+\DoxyCodeLine{00192\ \textcolor{comment}{\ \ \ constants\ in\ the\ types\_compatible\_p\ sense.\ \ */}}
+\DoxyCodeLine{00193\ }
+\DoxyCodeLine{00194\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{bool}}
+\DoxyCodeLine{00195\ \doxymbox{\hyperlink{tree-ssa-sccvn_8h_a235e502ec05c29e95692c7f9b63f6fd0}{vn\_constant\_eq\_with\_type}}\ (\doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ c1,\ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ c2)}
+\DoxyCodeLine{00196\ \{}
+\DoxyCodeLine{00197\ \ \ \textcolor{keywordflow}{return}\ (\doxymbox{\hyperlink{tree-ssa-sccvn_8h_abc28f929f59a38055afac3a1395bc255}{expressions\_equal\_p}}\ (c1,\ c2)}
+\DoxyCodeLine{00198\ \ \ \ \ \ \ \&\&\ \doxymbox{\hyperlink{gimple-expr_8h_a03bd0c137265ee35613d3ece318a696c}{types\_compatible\_p}}\ (\doxymbox{\hyperlink{tree_8h_aac9b9df6e10564b46659fc4a617b71aa}{TREE\_TYPE}}\ (c1),\ \doxymbox{\hyperlink{tree_8h_aac9b9df6e10564b46659fc4a617b71aa}{TREE\_TYPE}}\ (c2)));}
+\DoxyCodeLine{00199\ \}}
+\DoxyCodeLine{00200\ }
+\DoxyCodeLine{00201\ \textcolor{comment}{/*\ Instead\ of\ having\ a\ local\ availability\ lattice\ for\ each\ basic-\/block}}
+\DoxyCodeLine{00202\ \textcolor{comment}{\ \ \ and\ availability\ at\ X\ defined\ as\ union\ of\ the\ local\ availabilities}}
+\DoxyCodeLine{00203\ \textcolor{comment}{\ \ \ at\ X\ and\ its\ dominators\ we're\ turning\ this\ upside\ down\ and\ track}}
+\DoxyCodeLine{00204\ \textcolor{comment}{\ \ \ availability\ per\ value\ given\ values\ are\ usually\ made\ available\ at\ very}}
+\DoxyCodeLine{00205\ \textcolor{comment}{\ \ \ few\ points.}}
+\DoxyCodeLine{00206\ \textcolor{comment}{\ \ \ So\ we\ have\ a\ chain\ of\ LOCATION,\ LEADER\ entries\ where\ LOCATION\ is}}
+\DoxyCodeLine{00207\ \textcolor{comment}{\ \ \ specifying\ the\ basic-\/block\ LEADER\ is\ made\ available\ for\ VALUE.}}
+\DoxyCodeLine{00208\ \textcolor{comment}{\ \ \ We\ prepend\ to\ this\ chain\ in\ RPO\ order\ thus\ for\ iteration\ we\ can\ simply}}
+\DoxyCodeLine{00209\ \textcolor{comment}{\ \ \ remove\ the\ last\ entries.}}
+\DoxyCodeLine{00210\ \textcolor{comment}{\ \ \ LOCATION\ is\ the\ basic-\/block\ index\ and\ LEADER\ is\ its\ SSA\ name\ version.\ \ */}}
+\DoxyCodeLine{00211\ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{structvn__avail}{vn\_avail}}}
+\DoxyCodeLine{00212\ \{}
+\DoxyCodeLine{00213\ \ \ \doxymbox{\hyperlink{structvn__avail}{vn\_avail}}\ *\doxymbox{\hyperlink{structvn__avail_a721db4e87569e9fe2f11e20bd598849b}{next}};}
+\DoxyCodeLine{00214\ \ \ \textcolor{comment}{/*\ The\ basic-\/block\ LEADER\ is\ made\ available.\ \ */}}
+\DoxyCodeLine{00215\ \ \ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{structvn__avail_a15aa628d684d7b2152114792efb635af}{location}};}
+\DoxyCodeLine{00216\ \ \ \textcolor{comment}{/*\ The\ LEADER\ for\ the\ value\ we\ are\ chained\ on.\ \ */}}
+\DoxyCodeLine{00217\ \ \ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{structvn__avail_a224071ee18372038e72b3b1c9e6ab8bc}{leader}};}
+\DoxyCodeLine{00218\ \ \ \textcolor{comment}{/*\ The\ previous\ value\ we\ pushed\ a\ avail\ record\ to.\ \ */}}
+\DoxyCodeLine{00219\ \ \ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{structvn__ssa__aux}{vn\_ssa\_aux}}\ *\doxymbox{\hyperlink{structvn__avail_ae980e89d20dfa51ee42174c6a305787b}{next\_undo}};}
+\DoxyCodeLine{00220\ \};}
+\DoxyCodeLine{00221\ }
+\DoxyCodeLine{00222\ \textcolor{keyword}{typedef}\ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{structvn__ssa__aux}{vn\_ssa\_aux}}}
+\DoxyCodeLine{00223\ \{}
+\DoxyCodeLine{00224\ \ \ \textcolor{comment}{/*\ SSA\ name\ this\ vn\_ssa\_aux\ is\ associated\ with\ in\ the\ lattice.\ \ */}}
+\DoxyCodeLine{00225\ \ \ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ \doxymbox{\hyperlink{structvn__ssa__aux_a7b7a5a9d2d188af172b77e4f4c05e9c5}{name}};}
+\DoxyCodeLine{00226\ \ \ \textcolor{comment}{/*\ Value\ number.\ This\ may\ be\ an\ SSA\ name\ or\ a\ constant.\ \ */}}
+\DoxyCodeLine{00227\ \ \ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ \doxymbox{\hyperlink{structvn__ssa__aux_acd353925fdd20383da40ac34149d17f2}{valnum}};}
+\DoxyCodeLine{00228\ \ \ \textcolor{comment}{/*\ Statements\ to\ insert\ if\ needs\_insertion\ is\ true.\ \ */}}
+\DoxyCodeLine{00229\ \ \ \doxymbox{\hyperlink{coretypes_8h_a4b4e58d1e0dada604ccfc7965bb9a3df}{gimple\_seq}}\ \doxymbox{\hyperlink{structvn__ssa__aux_ae0a803b199cdd04830fde8f0150a060e}{expr}};}
+\DoxyCodeLine{00230\ }
+\DoxyCodeLine{00231\ \ \ \textcolor{comment}{/*\ AVAIL\ entries,\ last\ in\ RPO\ order\ is\ first.\ \ This\ is\ only\ tracked}}
+\DoxyCodeLine{00232\ \textcolor{comment}{\ \ \ \ \ for\ SSA\ names\ also\ serving\ as\ values\ (NAME\ ==\ VALNUM).\ \ */}}
+\DoxyCodeLine{00233\ \ \ \doxymbox{\hyperlink{structvn__avail}{vn\_avail}}\ *\doxymbox{\hyperlink{structvn__ssa__aux_abb4b58ca0c53e5ec7be06a72145f2dcb}{avail}};}
+\DoxyCodeLine{00234\ }
+\DoxyCodeLine{00235\ \ \ \textcolor{comment}{/*\ Unique\ identifier\ that\ all\ expressions\ with\ the\ same\ value\ have.\ */}}
+\DoxyCodeLine{00236\ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{structvn__ssa__aux_ac77eb550b5eb7d9a52596ce578796492}{value\_id}};}
+\DoxyCodeLine{00237\ }
+\DoxyCodeLine{00238\ \ \ \textcolor{comment}{/*\ Whether\ the\ SSA\_NAME\ has\ been\ processed\ at\ least\ once.\ \ */}}
+\DoxyCodeLine{00239\ \ \ \textcolor{keywordtype}{unsigned}\ \doxymbox{\hyperlink{structvn__ssa__aux_ad0fa008c1f588cac193b1dfd6acd40b0}{visited}}\ :\ 1;}
+\DoxyCodeLine{00240\ }
+\DoxyCodeLine{00241\ \ \ \textcolor{comment}{/*\ Whether\ the\ SSA\_NAME\ has\ no\ defining\ statement\ and\ thus\ an}}
+\DoxyCodeLine{00242\ \textcolor{comment}{\ \ \ \ \ insertion\ of\ such\ with\ EXPR\ as\ definition\ is\ required\ before}}
+\DoxyCodeLine{00243\ \textcolor{comment}{\ \ \ \ \ a\ use\ can\ be\ created\ of\ it.\ \ */}}
+\DoxyCodeLine{00244\ \ \ \textcolor{keywordtype}{unsigned}\ \doxymbox{\hyperlink{structvn__ssa__aux_aa2251be1c27e2ffe0a320155903ef6b4}{needs\_insertion}}\ :\ 1;}
+\DoxyCodeLine{00245\ \}\ *\doxymbox{\hyperlink{tree-ssa-sccvn_8h_a88236b8009e553a2b006a8c9297c1444}{vn\_ssa\_aux\_t}};}
+\DoxyCodeLine{00246\ }
+\DoxyCodeLine{00247\ \textcolor{keyword}{enum}\ \doxymbox{\hyperlink{tree-ssa-sccvn_8h_a68563c6b5ee3195a016d44292c88b9ce}{vn\_lookup\_kind}}\ \{\ \doxymbox{\hyperlink{tree-ssa-sccvn_8h_a68563c6b5ee3195a016d44292c88b9ceafd5d9e56d54f3363422b8e6e217e56f7}{VN\_NOWALK}},\ \doxymbox{\hyperlink{tree-ssa-sccvn_8h_a68563c6b5ee3195a016d44292c88b9cea0b69726738921f5fd6ce74260ab8a593}{VN\_WALK}},\ \doxymbox{\hyperlink{tree-ssa-sccvn_8h_a68563c6b5ee3195a016d44292c88b9cea9fc6add7713f76b28e2ef21e4ed942f0}{VN\_WALKREWRITE}}\ \};}
+\DoxyCodeLine{00248\ }
+\DoxyCodeLine{00249\ \textcolor{comment}{/*\ Return\ the\ value\ numbering\ info\ for\ an\ SSA\_NAME.\ \ */}}
+\DoxyCodeLine{00250\ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{tree-ssa-sccvn_8h_a692e19a603e389167b9498b2622ce9dd}{has\_VN\_INFO}}\ (\doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}});}
+\DoxyCodeLine{00251\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{tree-ssa-sccvn_8h_a88236b8009e553a2b006a8c9297c1444}{vn\_ssa\_aux\_t}}\ \doxymbox{\hyperlink{tree-ssa-sccvn_8h_a942ad64842082dbe822eaf8129e7aae5}{VN\_INFO}}\ (\doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}});}
+\DoxyCodeLine{00252\ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ \doxymbox{\hyperlink{tree-ssa-sccvn_8h_a573580a52fe00d36b6d43f5cd13b2317}{vn\_get\_expr\_for}}\ (\doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}});}
+\DoxyCodeLine{00253\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{tree-ssa-sccvn_8h_ac63c056a2e8f8d1ef2aab1ff8553357d}{scc\_vn\_restore\_ssa\_info}}\ (\textcolor{keywordtype}{void});}
+\DoxyCodeLine{00254\ \doxymbox{\hyperlink{tree-ssa-sccvn_8h_a64c8dc44f8b762ffaa0b23714d279a88}{vn\_nary\_op\_t}}\ \doxymbox{\hyperlink{tree-ssa-sccvn_8h_a4bd0d2c9e8e0b9120e9941588cab7e77}{alloc\_vn\_nary\_op\_noinit}}\ (\textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int},\ \textcolor{keyword}{struct}\ \doxymbox{\hyperlink{structobstack}{obstack}}\ *);}
+\DoxyCodeLine{00255\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{tree-ssa-sccvn_8h_a79ca61c9cc32d4626f09ec2a76b35025}{vn\_nary\_length\_from\_stmt}}\ (gimple\ *);}
+\DoxyCodeLine{00256\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{tree-ssa-sccvn_8h_ae7199490e8abc31757d5380bb8d28ea6}{init\_vn\_nary\_op\_from\_stmt}}\ (\doxymbox{\hyperlink{tree-ssa-sccvn_8h_a64c8dc44f8b762ffaa0b23714d279a88}{vn\_nary\_op\_t}},\ gassign\ *);}
+\DoxyCodeLine{00257\ \doxymbox{\hyperlink{hashtab_8h_a2d05e5049721cf3117dd6b34e20d4f65}{hashval\_t}}\ \doxymbox{\hyperlink{tree-ssa-sccvn_8h_a5057223c95dcc72bb9ce415afc25c97f}{vn\_nary\_op\_compute\_hash}}\ (\textcolor{keyword}{const}\ \doxymbox{\hyperlink{tree-ssa-sccvn_8h_a64c8dc44f8b762ffaa0b23714d279a88}{vn\_nary\_op\_t}});}
+\DoxyCodeLine{00258\ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ \doxymbox{\hyperlink{tree-ssa-sccvn_8h_a6dd5e90bb28fc9f13a370a8a6132ba90}{vn\_nary\_op\_lookup\_stmt}}\ (gimple\ *,\ \doxymbox{\hyperlink{tree-ssa-sccvn_8h_a64c8dc44f8b762ffaa0b23714d279a88}{vn\_nary\_op\_t}}\ *);}
+\DoxyCodeLine{00259\ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ \doxymbox{\hyperlink{tree-ssa-sccvn_8h_a27e97bf48fa70d3b566841cdef50cd4b}{vn\_nary\_op\_lookup\_pieces}}\ (\textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int},\ \textcolor{keyword}{enum}\ \doxymbox{\hyperlink{tree-core_8h_aee7678415f75b79d1651bfccce10c9f5}{tree\_code}},}
+\DoxyCodeLine{00260\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}},\ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ *,\ \doxymbox{\hyperlink{tree-ssa-sccvn_8h_a64c8dc44f8b762ffaa0b23714d279a88}{vn\_nary\_op\_t}}\ *);}
+\DoxyCodeLine{00261\ \doxymbox{\hyperlink{tree-ssa-sccvn_8h_a64c8dc44f8b762ffaa0b23714d279a88}{vn\_nary\_op\_t}}\ \doxymbox{\hyperlink{tree-ssa-sccvn_8h_a992c99b39ff752f2a0d24149c1eaef89}{vn\_nary\_op\_insert\_pieces}}\ (\textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int},\ \textcolor{keyword}{enum}\ \doxymbox{\hyperlink{tree-core_8h_aee7678415f75b79d1651bfccce10c9f5}{tree\_code}},}
+\DoxyCodeLine{00262\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}},\ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ *,\ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}},\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int});}
+\DoxyCodeLine{00263\ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{tree-ssa-sccvn_8h_ae5787cff2a13954e8f5390c61813b822}{ao\_ref\_init\_from\_vn\_reference}}\ (\doxymbox{\hyperlink{classao__ref}{ao\_ref}}\ *,\ \doxymbox{\hyperlink{coretypes_8h_af666fbb03cd47129d4fa40abda4818a5}{alias\_set\_type}},\ \doxymbox{\hyperlink{coretypes_8h_af666fbb03cd47129d4fa40abda4818a5}{alias\_set\_type}},}
+\DoxyCodeLine{00264\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}},\ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{structvec}{vec<vn\_reference\_op\_s>}}\ \&);}
+\DoxyCodeLine{00265\ \doxymbox{\hyperlink{structvec}{vec<vn\_reference\_op\_s>}}\ \doxymbox{\hyperlink{tree-ssa-sccvn_8h_a739f6471b70a59691c51f37318766420}{vn\_reference\_operands\_for\_lookup}}\ (\doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}});}
+\DoxyCodeLine{00266\ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ \doxymbox{\hyperlink{tree-ssa-sccvn_8h_a41cf7b11d1a85e1e10433bcb139db3fb}{vn\_reference\_lookup\_pieces}}\ (\doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}},\ \doxymbox{\hyperlink{coretypes_8h_af666fbb03cd47129d4fa40abda4818a5}{alias\_set\_type}},\ \doxymbox{\hyperlink{coretypes_8h_af666fbb03cd47129d4fa40abda4818a5}{alias\_set\_type}},\ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}},}
+\DoxyCodeLine{00267\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{structvec}{vec<vn\_reference\_op\_s>}}\ ,}
+\DoxyCodeLine{00268\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{tree-ssa-sccvn_8h_a189399ddd0daa2dabb72172f46689963}{vn\_reference\_t}}\ *,\ \doxymbox{\hyperlink{tree-ssa-sccvn_8h_a68563c6b5ee3195a016d44292c88b9ce}{vn\_lookup\_kind}});}
+\DoxyCodeLine{00269\ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ \doxymbox{\hyperlink{tree-ssa-sccvn_8h_aec6d4f9853797efe4ea691612ebe9146}{vn\_reference\_lookup}}\ (\doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}},\ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}},\ \doxymbox{\hyperlink{tree-ssa-sccvn_8h_a68563c6b5ee3195a016d44292c88b9ce}{vn\_lookup\_kind}},\ \doxymbox{\hyperlink{tree-ssa-sccvn_8h_a189399ddd0daa2dabb72172f46689963}{vn\_reference\_t}}\ *,\ \textcolor{keywordtype}{bool},}
+\DoxyCodeLine{00270\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ *\ =\ \doxymbox{\hyperlink{stddef_8h_a070d2ce7b6bb7e5c05602aa8c308d0c4}{NULL}},\ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ =\ \doxymbox{\hyperlink{tree_8h_aeda0ce25865d2494883f523217559d1e}{NULL\_TREE}},\ \textcolor{keywordtype}{bool}\ =\ \textcolor{keyword}{false});}
+\DoxyCodeLine{00271\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{tree-ssa-sccvn_8h_a484a50703b71126b61af7c1bbeda621c}{vn\_reference\_lookup\_call}}\ (gcall\ *,\ \doxymbox{\hyperlink{tree-ssa-sccvn_8h_a189399ddd0daa2dabb72172f46689963}{vn\_reference\_t}}\ *,\ \doxymbox{\hyperlink{tree-ssa-sccvn_8h_a189399ddd0daa2dabb72172f46689963}{vn\_reference\_t}});}
+\DoxyCodeLine{00272\ \doxymbox{\hyperlink{tree-ssa-sccvn_8h_a189399ddd0daa2dabb72172f46689963}{vn\_reference\_t}}\ \doxymbox{\hyperlink{tree-ssa-sccvn_8h_a20fd4a2685f0b4ecd59adcbbdf16e27a}{vn\_reference\_insert\_pieces}}\ (\doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}},\ \doxymbox{\hyperlink{coretypes_8h_af666fbb03cd47129d4fa40abda4818a5}{alias\_set\_type}},\ \doxymbox{\hyperlink{coretypes_8h_af666fbb03cd47129d4fa40abda4818a5}{alias\_set\_type}},}
+\DoxyCodeLine{00273\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{poly-int-types_8h_af5255601feb5e9a21f3193d378a55845}{poly\_int64}},\ \doxymbox{\hyperlink{poly-int-types_8h_af5255601feb5e9a21f3193d378a55845}{poly\_int64}},}
+\DoxyCodeLine{00274\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}},\ \doxymbox{\hyperlink{structvec}{vec<vn\_reference\_op\_s>}},}
+\DoxyCodeLine{00275\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}},\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int});}
+\DoxyCodeLine{00276\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{tree-ssa-sccvn_8h_a25b2d057ef518b49d8245d16056b85ba}{print\_vn\_reference\_ops}}\ (FILE\ *,\ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{structvec}{vec<vn\_reference\_op\_s>}});}
+\DoxyCodeLine{00277\ }
+\DoxyCodeLine{00278\ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{tree-ssa-sccvn_8h_a7ed85a2fc222b061d28b593506f37c84}{vn\_nary\_op\_eq}}\ (\doxymbox{\hyperlink{tree-ssa-sccvn_8h_a9d1d17fbeab199e31cc72331864fd5e4}{const\_vn\_nary\_op\_t}}\ \textcolor{keyword}{const}\ vno1,}
+\DoxyCodeLine{00279\ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{tree-ssa-sccvn_8h_a9d1d17fbeab199e31cc72331864fd5e4}{const\_vn\_nary\_op\_t}}\ \textcolor{keyword}{const}\ vno2);}
+\DoxyCodeLine{00280\ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{tree-ssa-sccvn_8h_a2bad11d665840b8c4e46d29ac5616a68}{vn\_nary\_may\_trap}}\ (\doxymbox{\hyperlink{tree-ssa-sccvn_8h_a64c8dc44f8b762ffaa0b23714d279a88}{vn\_nary\_op\_t}});}
+\DoxyCodeLine{00281\ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{tree-ssa-sccvn_8h_a1826beff7b398e93539e52de229b421a}{vn\_reference\_may\_trap}}\ (\doxymbox{\hyperlink{tree-ssa-sccvn_8h_a189399ddd0daa2dabb72172f46689963}{vn\_reference\_t}});}
+\DoxyCodeLine{00282\ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{tree-ssa-sccvn_8h_aedd6d478bdf71d187cced8f2195d4211}{vn\_reference\_eq}}\ (\doxymbox{\hyperlink{tree-ssa-sccvn_8h_a533d61c7228d408490db0736a44d41e6}{const\_vn\_reference\_t}}\ \textcolor{keyword}{const},\ \doxymbox{\hyperlink{tree-ssa-sccvn_8h_a533d61c7228d408490db0736a44d41e6}{const\_vn\_reference\_t}}\ \textcolor{keyword}{const});}
+\DoxyCodeLine{00283\ }
+\DoxyCodeLine{00284\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{tree-ssa-sccvn_8h_a283b07755ffce14a0ac8b9716eaf638d}{get\_max\_value\_id}}\ (\textcolor{keywordtype}{void});}
+\DoxyCodeLine{00285\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{tree-ssa-sccvn_8h_a28d982553a5b702bdb91d6f21ece7a47}{get\_max\_constant\_value\_id}}\ (\textcolor{keywordtype}{void});}
+\DoxyCodeLine{00286\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{tree-ssa-sccvn_8h_aaf374734d304fb7d6280d06e402986df}{get\_next\_value\_id}}\ (\textcolor{keywordtype}{void});}
+\DoxyCodeLine{00287\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{tree-ssa-sccvn_8h_ab17fa2d5cb50b7fce8d7a3f6162e6b55}{get\_next\_constant\_value\_id}}\ (\textcolor{keywordtype}{void});}
+\DoxyCodeLine{00288\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{tree-ssa-sccvn_8h_ae30ea9dfefd618a0cbb709105480013b}{get\_constant\_value\_id}}\ (\doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}});}
+\DoxyCodeLine{00289\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{tree-ssa-sccvn_8h_a1716f8875beaca4a57ecfbd603a0582f}{get\_or\_alloc\_constant\_value\_id}}\ (\doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}});}
+\DoxyCodeLine{00290\ }
+\DoxyCodeLine{00291\ \textcolor{comment}{/*\ Return\ true\ if\ V\ is\ a\ value\ id\ for\ a\ constant.\ \ */}}
+\DoxyCodeLine{00292\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{bool}}
+\DoxyCodeLine{00293\ \doxymbox{\hyperlink{tree-ssa-sccvn_8h_a76768bcb07682dd11dd56990053b39ac}{value\_id\_constant\_p}}\ (\textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ v)}
+\DoxyCodeLine{00294\ \{}
+\DoxyCodeLine{00295\ \ \ \textcolor{keywordflow}{return}\ (\textcolor{keywordtype}{int})v\ <\ 0;}
+\DoxyCodeLine{00296\ \}}
+\DoxyCodeLine{00297\ }
+\DoxyCodeLine{00298\ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ \doxymbox{\hyperlink{tree-ssa-sccvn_8h_adfdb70979bcfddd569d8aeb28a861bee}{fully\_constant\_vn\_reference\_p}}\ (\doxymbox{\hyperlink{tree-ssa-sccvn_8h_a189399ddd0daa2dabb72172f46689963}{vn\_reference\_t}});}
+\DoxyCodeLine{00299\ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ \doxymbox{\hyperlink{tree-ssa-sccvn_8h_a131440cb063df37de81e5799c35c7915}{vn\_nary\_simplify}}\ (\doxymbox{\hyperlink{tree-ssa-sccvn_8h_a64c8dc44f8b762ffaa0b23714d279a88}{vn\_nary\_op\_t}});}
+\DoxyCodeLine{00300\ }
+\DoxyCodeLine{00301\ \textcolor{keywordtype}{unsigned}\ \doxymbox{\hyperlink{tree-ssa-sccvn_8h_a00fa010b64fc2e726421ccd2fb7555c5}{do\_rpo\_vn}}\ (function\ *,\ \doxymbox{\hyperlink{coretypes_8h_a44ae11f0c90646aa6208ad4bf486490b}{edge}},\ \doxymbox{\hyperlink{coretypes_8h_ae7ea3a04cabf8964dc6e8e95a9cde1b8}{bitmap}},}
+\DoxyCodeLine{00302\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{/*\ iterate\ */}\ \textcolor{keywordtype}{bool}\ =\ \textcolor{keyword}{false},}
+\DoxyCodeLine{00303\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{/*\ eliminate\ */}\ \textcolor{keywordtype}{bool}\ =\ \textcolor{keyword}{true},}
+\DoxyCodeLine{00304\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{/*\ skip\_entry\_phis\ */}\ \textcolor{keywordtype}{bool}\ =\ \textcolor{keyword}{false},}
+\DoxyCodeLine{00305\ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{tree-ssa-sccvn_8h_a68563c6b5ee3195a016d44292c88b9ce}{vn\_lookup\_kind}}\ =\ \doxymbox{\hyperlink{tree-ssa-sccvn_8h_a68563c6b5ee3195a016d44292c88b9cea9fc6add7713f76b28e2ef21e4ed942f0}{VN\_WALKREWRITE}});}
+\DoxyCodeLine{00306\ }
+\DoxyCodeLine{00307\ \textcolor{comment}{/*\ Private\ interface\ for\ PRE.\ \ */}}
+\DoxyCodeLine{00308\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{tree-ssa-sccvn_8h_a1be5244fade1c90b9e0a2f18d9baafb4}{run\_rpo\_vn}}\ (\doxymbox{\hyperlink{tree-ssa-sccvn_8h_a68563c6b5ee3195a016d44292c88b9ce}{vn\_lookup\_kind}});}
+\DoxyCodeLine{00309\ \textcolor{keywordtype}{unsigned}\ \doxymbox{\hyperlink{tree-ssa-sccvn_8h_a4ca5a706b820a53e1f5e21e4b7e601a9}{eliminate\_with\_rpo\_vn}}\ (\doxymbox{\hyperlink{coretypes_8h_ae7ea3a04cabf8964dc6e8e95a9cde1b8}{bitmap}});}
+\DoxyCodeLine{00310\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{tree-ssa-sccvn_8h_ae8b6b049ff6146f4c14f6a83d73b0369}{free\_rpo\_vn}}\ (\textcolor{keywordtype}{void});}
+\DoxyCodeLine{00311\ }
+\DoxyCodeLine{00312\ \textcolor{comment}{/*\ Valueize\ NAME\ if\ it\ is\ an\ SSA\ name,\ otherwise\ just\ return\ it.\ \ This\ hook}}
+\DoxyCodeLine{00313\ \textcolor{comment}{\ \ \ is\ initialized\ by\ run\_scc\_vn.\ \ */}}
+\DoxyCodeLine{00314\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ (*\doxymbox{\hyperlink{tree-ssa-sccvn_8h_a9dbab6b8917d037a5d52644aa1af61c2}{vn\_valueize}})\ (\doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}});}
+\DoxyCodeLine{00315\ }
+\DoxyCodeLine{00316\ \textcolor{comment}{/*\ Context\ that\ valueization\ should\ operate\ on.\ \ */}}
+\DoxyCodeLine{00317\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{coretypes_8h_a0469df20b471a4cd7c81fbdce5027487}{basic\_block}}\ \doxymbox{\hyperlink{tree-ssa-sccvn_8h_a0a2881191867dfe1c04673fd081d6c11}{vn\_context\_bb}};}
+\DoxyCodeLine{00318\ }
+\DoxyCodeLine{00319\ }
+\DoxyCodeLine{00320\ \textcolor{preprocessor}{\#endif\ }\textcolor{comment}{/*\ TREE\_SSA\_SCCVN\_H\ \ */}\textcolor{preprocessor}{}}
+
+\end{DoxyCode}

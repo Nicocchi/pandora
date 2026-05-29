@@ -1,0 +1,27 @@
+var ipa_inline_8h =
+[
+    [ "edge_growth_cache_entry", "classedge__growth__cache__entry.html", "classedge__growth__cache__entry" ],
+    [ "clone_inlined_nodes", "ipa-inline_8h.html#a0b6b96883d212b674600abd8d4148e39", null ],
+    [ "do_estimate_edge_hints", "ipa-inline_8h.html#aa1922ae0eb2a94bf95d45bab5680b10e", null ],
+    [ "do_estimate_edge_size", "ipa-inline_8h.html#a382df2fc37a76c0f0f725e50d9851535", null ],
+    [ "do_estimate_edge_time", "ipa-inline_8h.html#a72262252570daf2c8ecd12aa69e48a2e", null ],
+    [ "early_inliner", "ipa-inline_8h.html#a8bd9e5c75fd525f467dd7a7ea5009a8d", null ],
+    [ "estimate_edge_growth", "ipa-inline_8h.html#a3d9b03ac07499f919945404b557e33b4", null ],
+    [ "estimate_edge_hints", "ipa-inline_8h.html#adefdc26e370a903474c99f47d94b6aae", null ],
+    [ "estimate_edge_size", "ipa-inline_8h.html#ad83400d17a9b16e4d3a9c2bd2e3685a9", null ],
+    [ "estimate_edge_time", "ipa-inline_8h.html#ad50735e100ca2afb86245ae9ae3d0987", null ],
+    [ "estimate_growth", "ipa-inline_8h.html#a8546cc238b8c0cb421df0289adb8582e", null ],
+    [ "estimate_min_edge_growth", "ipa-inline_8h.html#a09e80ba42f50f066575aab5c2034a565", null ],
+    [ "estimate_size_after_inlining", "ipa-inline_8h.html#a291d63d813692a94488b5c3dfeab84d5", null ],
+    [ "free_growth_caches", "ipa-inline_8h.html#a25932a40ba4d15fb4c148964094cd973", null ],
+    [ "growth_positive_p", "ipa-inline_8h.html#a4896f706d261455345d230a363f8f862", null ],
+    [ "initialize_growth_caches", "ipa-inline_8h.html#aa7cf8ae1d7e638abc7a3ecbc00a9c9b4", null ],
+    [ "inline_account_function_p", "ipa-inline_8h.html#af69f6bd42c72f7c0d76a40bac5718205", null ],
+    [ "inline_call", "ipa-inline_8h.html#a4b9016629a52defc9dab8bb68d5766f0", null ],
+    [ "inline_transform", "ipa-inline_8h.html#a3618acd693ea61af001ba7d0f5e1323d", null ],
+    [ "reset_node_cache", "ipa-inline_8h.html#a9284b87009d0b1bd5af908af938a0413", null ],
+    [ "edge_growth_cache", "ipa-inline_8h.html#aa7518352e08853c3168d185b001101ca", null ],
+    [ "ipa_saved_clone_sources", "ipa-inline_8h.html#a9c81cd8d402c840828277f673b032cc1", null ],
+    [ "ncalls_inlined", "ipa-inline_8h.html#a7c544e6c9bed1c20ec8a50c6d01ce78f", null ],
+    [ "nfunctions_inlined", "ipa-inline_8h.html#a0798dea114f5a3d0574de3a0ea54335c", null ]
+];

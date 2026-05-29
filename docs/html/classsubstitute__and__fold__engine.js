@@ -1,0 +1,28 @@
+var classsubstitute__and__fold__engine =
+[
+    [ "substitute_and_fold_engine", "classsubstitute__and__fold__engine.html#ab4676e63df8e9f37c468e4ec69fc5486", null ],
+    [ "~substitute_and_fold_engine", "classsubstitute__and__fold__engine.html#a38039df32a1d849883adcbdc0b995feb", null ],
+    [ "dump", "classsubstitute__and__fold__engine.html#a27d54d4c3fdd2f0dc55925f82191e586", null ],
+    [ "fold_stmt", "classsubstitute__and__fold__engine.html#aea2ae1ce8c22dcc510ab0f0e8e953ff5", null ],
+    [ "get_arith_expr_range", "classsubstitute__and__fold__engine.html#a675e77f480b080c9a8669fccdc6b723e", null ],
+    [ "get_tree_range", "classsubstitute__and__fold__engine.html#a5c4303b582d13fbf7ae8f83b0ec360f6", null ],
+    [ "oracle", "classsubstitute__and__fold__engine.html#a7363218a17454a3a0cc5f8a8c53e5571", null ],
+    [ "post_fold_bb", "classsubstitute__and__fold__engine.html#a2fdad7c7fb80b75d0325d12f7b8fe95e", null ],
+    [ "post_new_stmt", "classsubstitute__and__fold__engine.html#a750c0b15500153b99bac90b6dc95a5a2", null ],
+    [ "pre_fold_bb", "classsubstitute__and__fold__engine.html#a103eb7866f78e37b7d31a2acf86725a0", null ],
+    [ "pre_fold_stmt", "classsubstitute__and__fold__engine.html#a26cea6e521367c5dee126214ebb687b6", null ],
+    [ "propagate_into_phi_args", "classsubstitute__and__fold__engine.html#aa9237990c51e799aab488af95024aa35", null ],
+    [ "query_relation", "classsubstitute__and__fold__engine.html#a2d0402360212340763b673864d96fc30", null ],
+    [ "query_relation", "classsubstitute__and__fold__engine.html#ace02e08011c18a9496a13fe8829eb4b9", null ],
+    [ "range_of_expr", "classsubstitute__and__fold__engine.html#aa4481eee834a528b54725e0302b026ac", null ],
+    [ "range_of_stmt", "classsubstitute__and__fold__engine.html#ada24522b47606791a7d471abd5293165", null ],
+    [ "range_on_edge", "classsubstitute__and__fold__engine.html#ac5edfb439f2e8ae0aa188edf609e3dba", null ],
+    [ "replace_phi_args_in", "classsubstitute__and__fold__engine.html#a828b84aa69ac97007de883a4ca5d9b38", null ],
+    [ "replace_uses_in", "classsubstitute__and__fold__engine.html#a1bcdd09a9be04402f52cefe9bd7cd4bc", null ],
+    [ "substitute_and_fold", "classsubstitute__and__fold__engine.html#a7454777043f0de2493a36a41b76808d3", null ],
+    [ "value_of_expr", "classsubstitute__and__fold__engine.html#a350cbfb68a674a67e8bfffce50457253", null ],
+    [ "value_of_stmt", "classsubstitute__and__fold__engine.html#a75aa6e494d2994470de304b96ce9a925", null ],
+    [ "value_on_edge", "classsubstitute__and__fold__engine.html#a8739d26f9c468e36fae845a67cb10c5e", null ],
+    [ "fold_all_stmts", "classsubstitute__and__fold__engine.html#a1066ec829310e9df650efed21296357f", null ],
+    [ "m_oracle", "classsubstitute__and__fold__engine.html#ab7ed1bb2aaf296b53a67aeef3a7501be", null ]
+];

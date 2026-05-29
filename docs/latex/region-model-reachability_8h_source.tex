@@ -1,0 +1,132 @@
+\doxysection{region-\/model-\/reachability.h}
+\hypertarget{region-model-reachability_8h_source}{}\label{region-model-reachability_8h_source}\index{toolchain/x86\_64-\/elf/lib/gcc/x86\_64-\/elf/14.2.0/plugin/include/analyzer/region-\/model-\/reachability.h@{toolchain/x86\_64-\/elf/lib/gcc/x86\_64-\/elf/14.2.0/plugin/include/analyzer/region-\/model-\/reachability.h}}
+\doxymbox{\hyperlink{region-model-reachability_8h}{Go to the documentation of this file.}}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001\ \textcolor{comment}{/*\ Finding\ reachable\ regions\ and\ values.}}
+\DoxyCodeLine{00002\ \textcolor{comment}{\ \ \ Copyright\ (C)\ 2020-\/2024\ Free\ Software\ Foundation,\ Inc.}}
+\DoxyCodeLine{00003\ \textcolor{comment}{\ \ \ Contributed\ by\ David\ Malcolm\ <dmalcolm@redhat.com>.}}
+\DoxyCodeLine{00004\ \textcolor{comment}{}}
+\DoxyCodeLine{00005\ \textcolor{comment}{This\ file\ is\ part\ of\ GCC.}}
+\DoxyCodeLine{00006\ \textcolor{comment}{}}
+\DoxyCodeLine{00007\ \textcolor{comment}{GCC\ is\ free\ software;\ you\ can\ redistribute\ it\ and/or\ modify\ it}}
+\DoxyCodeLine{00008\ \textcolor{comment}{under\ the\ terms\ of\ the\ GNU\ General\ Public\ License\ as\ published\ by}}
+\DoxyCodeLine{00009\ \textcolor{comment}{the\ Free\ Software\ Foundation;\ either\ version\ 3,\ or\ (at\ your\ option)}}
+\DoxyCodeLine{00010\ \textcolor{comment}{any\ later\ version.}}
+\DoxyCodeLine{00011\ \textcolor{comment}{}}
+\DoxyCodeLine{00012\ \textcolor{comment}{GCC\ is\ distributed\ in\ the\ hope\ that\ it\ will\ be\ useful,\ but}}
+\DoxyCodeLine{00013\ \textcolor{comment}{WITHOUT\ ANY\ WARRANTY;\ without\ even\ the\ implied\ warranty\ of}}
+\DoxyCodeLine{00014\ \textcolor{comment}{MERCHANTABILITY\ or\ FITNESS\ FOR\ A\ PARTICULAR\ PURPOSE.\ \ See\ the\ GNU}}
+\DoxyCodeLine{00015\ \textcolor{comment}{General\ Public\ License\ for\ more\ details.}}
+\DoxyCodeLine{00016\ \textcolor{comment}{}}
+\DoxyCodeLine{00017\ \textcolor{comment}{You\ should\ have\ received\ a\ copy\ of\ the\ GNU\ General\ Public\ License}}
+\DoxyCodeLine{00018\ \textcolor{comment}{along\ with\ GCC;\ see\ the\ file\ COPYING3.\ \ If\ not\ see}}
+\DoxyCodeLine{00019\ \textcolor{comment}{<http://www.gnu.org/licenses/>.\ \ */}}
+\DoxyCodeLine{00020\ }
+\DoxyCodeLine{00021\ \textcolor{preprocessor}{\#ifndef\ GCC\_ANALYZER\_REGION\_MODEL\_REACHABILITY\_H}}
+\DoxyCodeLine{00022\ \textcolor{preprocessor}{\#define\ GCC\_ANALYZER\_REGION\_MODEL\_REACHABILITY\_H}}
+\DoxyCodeLine{00023\ }
+\DoxyCodeLine{00024\ \textcolor{keyword}{namespace\ }\doxymbox{\hyperlink{namespaceana}{ana}}\ \{}
+\DoxyCodeLine{00025\ }
+\DoxyCodeLine{00026\ \textcolor{comment}{/*\ A\ class\ for\ determining\ which\ regions\ and\ svalues\ are\ reachable.}}
+\DoxyCodeLine{00027\ \textcolor{comment}{}}
+\DoxyCodeLine{00028\ \textcolor{comment}{\ \ \ Used\ by\ region\_model::handle\_unrecognized\_call\ for\ keeping}}
+\DoxyCodeLine{00029\ \textcolor{comment}{\ \ \ track\ of\ all\ regions\ that\ are\ reachable,\ and,\ of\ those,\ which\ are}}
+\DoxyCodeLine{00030\ \textcolor{comment}{\ \ \ mutable.}}
+\DoxyCodeLine{00031\ \textcolor{comment}{}}
+\DoxyCodeLine{00032\ \textcolor{comment}{\ \ \ Used\ by\ program\_state::detect\_leaks}}
+\DoxyCodeLine{00033\ \textcolor{comment}{\ \ \ (via\ region\_model::get\_reachable\_svalues)\ for\ detecting\ leaks.\ \ */}}
+\DoxyCodeLine{00034\ }
+\DoxyCodeLine{00035\ \textcolor{keyword}{class\ }\doxymbox{\hyperlink{classana_1_1reachable__regions_a2d96c0e13754f38ebc3ea6c44ddc035e}{reachable\_regions}}}
+\DoxyCodeLine{00036\ \{}
+\DoxyCodeLine{00037\ \textcolor{keyword}{public}:}
+\DoxyCodeLine{00038\ \ \ \doxymbox{\hyperlink{classana_1_1reachable__regions_a2d96c0e13754f38ebc3ea6c44ddc035e}{reachable\_regions}}\ (\doxymbox{\hyperlink{classana_1_1region__model}{region\_model}}\ *model);}
+\DoxyCodeLine{00039\ }
+\DoxyCodeLine{00040\ \ \ \textcolor{comment}{/*\ Callback\ called\ for\ each\ cluster\ when\ initializing\ this\ object.\ \ */}}
+\DoxyCodeLine{00041\ \ \ \textcolor{keyword}{static}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classana_1_1reachable__regions_aec10dd4eae847dcbe83a01bf85f74a74}{init\_cluster\_cb}}\ (\textcolor{keyword}{const}\ \doxymbox{\hyperlink{classana_1_1region}{region}}\ *base\_reg,}
+\DoxyCodeLine{00042\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{classana_1_1reachable__regions_a2d96c0e13754f38ebc3ea6c44ddc035e}{reachable\_regions}}\ *this\_ptr);}
+\DoxyCodeLine{00043\ }
+\DoxyCodeLine{00044\ \ \ \textcolor{comment}{/*\ Called\ for\ each\ cluster\ when\ initializing\ this\ object.\ \ */}}
+\DoxyCodeLine{00045\ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classana_1_1reachable__regions_ac55fa542b59c59d87ea6952bcab432c7}{init\_cluster}}\ (\textcolor{keyword}{const}\ \doxymbox{\hyperlink{classana_1_1region}{region}}\ *base\_reg);}
+\DoxyCodeLine{00046\ }
+\DoxyCodeLine{00047\ \ \ \textcolor{comment}{/*\ Lazily\ mark\ the\ cluster\ containing\ REG\ as\ being\ reachable,\ recursively}}
+\DoxyCodeLine{00048\ \textcolor{comment}{\ \ \ \ \ adding\ clusters\ reachable\ from\ REG's\ cluster.\ \ */}}
+\DoxyCodeLine{00049\ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classana_1_1reachable__regions_a79d37fa594d7130a5d3523222d8b8731}{add}}\ (\textcolor{keyword}{const}\ \doxymbox{\hyperlink{classana_1_1region}{region}}\ *reg,\ \textcolor{keywordtype}{bool}\ is\_mutable);}
+\DoxyCodeLine{00050\ }
+\DoxyCodeLine{00051\ \ \ \textcolor{keyword}{static}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classana_1_1reachable__regions_a3a25d585e27b7268fc1fcf0eb5473410}{handle\_sval\_cb}}\ (\textcolor{keyword}{const}\ \doxymbox{\hyperlink{classana_1_1svalue}{svalue}}\ *sval,}
+\DoxyCodeLine{00052\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{classana_1_1reachable__regions_a2d96c0e13754f38ebc3ea6c44ddc035e}{reachable\_regions}}\ *this\_ptr);}
+\DoxyCodeLine{00053\ }
+\DoxyCodeLine{00054\ \ \ \textcolor{comment}{/*\ Add\ SVAL.\ \ If\ it\ is\ a\ pointer,\ add\ the\ pointed-\/to\ region.\ \ */}}
+\DoxyCodeLine{00055\ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classana_1_1reachable__regions_aeb4c7b541a69a98d6ff3f4d55310276c}{handle\_sval}}\ (\textcolor{keyword}{const}\ \doxymbox{\hyperlink{classana_1_1svalue}{svalue}}\ *sval);}
+\DoxyCodeLine{00056\ }
+\DoxyCodeLine{00057\ \ \ \textcolor{comment}{/*\ Add\ SVAL.\ \ If\ it\ is\ a\ pointer,\ add\ the\ pointed-\/to\ region.}}
+\DoxyCodeLine{00058\ \textcolor{comment}{\ \ \ \ \ Use\ PARAM\_TYPE\ for\ determining\ mutability.\ \ */}}
+\DoxyCodeLine{00059\ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classana_1_1reachable__regions_a42222eaee4b24186ecc36376b049d1d6}{handle\_parm}}\ (\textcolor{keyword}{const}\ \doxymbox{\hyperlink{classana_1_1svalue}{svalue}}\ *sval,\ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ param\_type);}
+\DoxyCodeLine{00060\ }
+\DoxyCodeLine{00061\ \ \ \textcolor{comment}{/*\ Update\ the\ store\ to\ mark\ the\ clusters\ that\ were\ found\ to\ be\ mutable}}
+\DoxyCodeLine{00062\ \textcolor{comment}{\ \ \ \ \ as\ having\ escaped.}}
+\DoxyCodeLine{00063\ \textcolor{comment}{\ \ \ \ \ Notify\ CTXT\ about\ escaping\ function\_decls.\ \ */}}
+\DoxyCodeLine{00064\ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classana_1_1reachable__regions_a5bcbc6c860f375a51b337527a83c2d47}{mark\_escaped\_clusters}}\ (\doxymbox{\hyperlink{classana_1_1region__model__context}{region\_model\_context}}\ *ctxt);}
+\DoxyCodeLine{00065\ }
+\DoxyCodeLine{00066\ \ \ \textcolor{comment}{/*\ Iteration\ over\ reachable\ base\ regions.\ \ */}}
+\DoxyCodeLine{00067\ \ \ \doxymbox{\hyperlink{classhash__set_1_1iterator}{hash\_set<const\ region\ *>::iterator}}\ \doxymbox{\hyperlink{classana_1_1reachable__regions_a2fe9f83e8f0e8cbbfd2124caba31777e}{begin}}\ ()}
+\DoxyCodeLine{00068\ \ \ \{}
+\DoxyCodeLine{00069\ \ \ \ \ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{classana_1_1reachable__regions_a6828bb906469f358d2ba5a7587587855}{m\_reachable\_base\_regs}}.begin\ ();}
+\DoxyCodeLine{00070\ \ \ \}}
+\DoxyCodeLine{00071\ \ \ \doxymbox{\hyperlink{classhash__set_1_1iterator}{hash\_set<const\ region\ *>::iterator}}\ \doxymbox{\hyperlink{classana_1_1reachable__regions_a0877241e6f9bcd85444f2abf8569d79f}{end}}\ ()}
+\DoxyCodeLine{00072\ \ \ \{}
+\DoxyCodeLine{00073\ \ \ \ \ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{classana_1_1reachable__regions_a6828bb906469f358d2ba5a7587587855}{m\_reachable\_base\_regs}}.end\ ();}
+\DoxyCodeLine{00074\ \ \ \}}
+\DoxyCodeLine{00075\ }
+\DoxyCodeLine{00076\ \ \ svalue\_set::iterator\ \doxymbox{\hyperlink{classana_1_1reachable__regions_ad7b4b7cdfde7c5d88bf3df5be81a69f2}{begin\_reachable\_svals}}\ ()}
+\DoxyCodeLine{00077\ \ \ \{}
+\DoxyCodeLine{00078\ \ \ \ \ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{classana_1_1reachable__regions_a0f7781ee3332a5364fa1a8b086616236}{m\_reachable\_svals}}.begin\ ();}
+\DoxyCodeLine{00079\ \ \ \}}
+\DoxyCodeLine{00080\ \ \ svalue\_set::iterator\ \doxymbox{\hyperlink{classana_1_1reachable__regions_a0fa4996ba6b82a8d1e12e0c72a11b7c3}{end\_reachable\_svals}}\ ()}
+\DoxyCodeLine{00081\ \ \ \{}
+\DoxyCodeLine{00082\ \ \ \ \ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{classana_1_1reachable__regions_a0f7781ee3332a5364fa1a8b086616236}{m\_reachable\_svals}}.end\ ();}
+\DoxyCodeLine{00083\ \ \ \}}
+\DoxyCodeLine{00084\ \ \ svalue\_set::iterator\ \doxymbox{\hyperlink{classana_1_1reachable__regions_abe806c3e6b897f358026bddf27aa6c63}{begin\_mutable\_svals}}\ ()}
+\DoxyCodeLine{00085\ \ \ \{}
+\DoxyCodeLine{00086\ \ \ \ \ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{classana_1_1reachable__regions_a324f206af88377aa79abac0c5c167b58}{m\_mutable\_svals}}.begin\ ();}
+\DoxyCodeLine{00087\ \ \ \}}
+\DoxyCodeLine{00088\ \ \ svalue\_set::iterator\ \doxymbox{\hyperlink{classana_1_1reachable__regions_a8f541c0ab2b62fb12e551660ce4656e9}{end\_mutable\_svals}}\ ()}
+\DoxyCodeLine{00089\ \ \ \{}
+\DoxyCodeLine{00090\ \ \ \ \ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{classana_1_1reachable__regions_a324f206af88377aa79abac0c5c167b58}{m\_mutable\_svals}}.end\ ();}
+\DoxyCodeLine{00091\ \ \ \}}
+\DoxyCodeLine{00092\ \ \ \doxymbox{\hyperlink{classhash__set_1_1iterator}{hash\_set<const\ region\ *>::iterator}}\ \doxymbox{\hyperlink{classana_1_1reachable__regions_aea9ca868706e0fb1ff2b370cba525978}{begin\_mutable\_base\_regs}}\ ()}
+\DoxyCodeLine{00093\ \ \ \{}
+\DoxyCodeLine{00094\ \ \ \ \ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{classana_1_1reachable__regions_ae27747efc6e0c5ab5664f030ceb80514}{m\_mutable\_base\_regs}}.begin\ ();}
+\DoxyCodeLine{00095\ \ \ \}}
+\DoxyCodeLine{00096\ \ \ \doxymbox{\hyperlink{classhash__set_1_1iterator}{hash\_set<const\ region\ *>::iterator}}\ \doxymbox{\hyperlink{classana_1_1reachable__regions_ac45042e0a878ac4933588db6d374666a}{end\_mutable\_base\_regs}}\ ()}
+\DoxyCodeLine{00097\ \ \ \{}
+\DoxyCodeLine{00098\ \ \ \ \ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{classana_1_1reachable__regions_ae27747efc6e0c5ab5664f030ceb80514}{m\_mutable\_base\_regs}}.end\ ();}
+\DoxyCodeLine{00099\ \ \ \}}
+\DoxyCodeLine{00100\ }
+\DoxyCodeLine{00101\ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classana_1_1reachable__regions_a6cf49dcb34f5f4cd8cc201fbe066797e}{dump\_to\_pp}}\ (\doxymbox{\hyperlink{classpretty__printer}{pretty\_printer}}\ *pp)\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00102\ }
+\DoxyCodeLine{00103\ \ \ \doxymbox{\hyperlink{system_8h_afb9d038ae651c7cd350e9c5d38759ebe}{DEBUG\_FUNCTION}}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classana_1_1reachable__regions_a42f393bea6fc10bec63f0accfe65a0f7}{dump}}\ ()\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00104\ }
+\DoxyCodeLine{00105\ \textcolor{keyword}{private}:}
+\DoxyCodeLine{00106\ \ \ \doxymbox{\hyperlink{classana_1_1region__model}{region\_model}}\ *\doxymbox{\hyperlink{classana_1_1reachable__regions_aea0772c9e9a9974cf6598e223044c566}{m\_model}};}
+\DoxyCodeLine{00107\ \ \ \doxymbox{\hyperlink{classana_1_1store}{store}}\ *\doxymbox{\hyperlink{classana_1_1reachable__regions_aec798f89873268e068645b8195176da8}{m\_store}};}
+\DoxyCodeLine{00108\ }
+\DoxyCodeLine{00109\ \ \ \textcolor{comment}{/*\ The\ base\ regions\ already\ seen.\ \ */}}
+\DoxyCodeLine{00110\ \ \ \doxymbox{\hyperlink{classhash__set}{hash\_set<const\ region\ *>}}\ \doxymbox{\hyperlink{classana_1_1reachable__regions_a6828bb906469f358d2ba5a7587587855}{m\_reachable\_base\_regs}};}
+\DoxyCodeLine{00111\ }
+\DoxyCodeLine{00112\ \ \ \textcolor{comment}{/*\ The\ base\ regions\ that\ can\ be\ changed\ (accessed\ via\ non-\/const\ pointers).\ \ */}}
+\DoxyCodeLine{00113\ \ \ \doxymbox{\hyperlink{classhash__set}{hash\_set<const\ region\ *>}}\ \doxymbox{\hyperlink{classana_1_1reachable__regions_ae27747efc6e0c5ab5664f030ceb80514}{m\_mutable\_base\_regs}};}
+\DoxyCodeLine{00114\ }
+\DoxyCodeLine{00115\ \ \ \textcolor{comment}{/*\ svalues\ that\ were\ passed\ as\ const\ pointers,\ so\ e.g.\ couldn't\ have}}
+\DoxyCodeLine{00116\ \textcolor{comment}{\ \ \ \ \ been\ freed\ (but\ could\ have\ e.g.\ had\ "{}close"{}\ called\ on\ them\ if\ an}}
+\DoxyCodeLine{00117\ \textcolor{comment}{\ \ \ \ \ int\ file-\/descriptor).\ \ */}}
+\DoxyCodeLine{00118\ \ \ \doxymbox{\hyperlink{namespaceana_ad3e98df056c4d8cad7e7740bc5ee21ca}{svalue\_set}}\ \doxymbox{\hyperlink{classana_1_1reachable__regions_a0f7781ee3332a5364fa1a8b086616236}{m\_reachable\_svals}};}
+\DoxyCodeLine{00119\ \ \ \textcolor{comment}{/*\ svalues\ that\ were\ passed\ as\ non-\/const\ pointers,\ so\ e.g.\ could\ have}}
+\DoxyCodeLine{00120\ \textcolor{comment}{\ \ \ \ \ been\ freed.\ \ */}}
+\DoxyCodeLine{00121\ \ \ \doxymbox{\hyperlink{namespaceana_ad3e98df056c4d8cad7e7740bc5ee21ca}{svalue\_set}}\ \doxymbox{\hyperlink{classana_1_1reachable__regions_a324f206af88377aa79abac0c5c167b58}{m\_mutable\_svals}};}
+\DoxyCodeLine{00122\ \};}
+\DoxyCodeLine{00123\ }
+\DoxyCodeLine{00124\ \}\ \textcolor{comment}{//\ namespace\ ana}}
+\DoxyCodeLine{00125\ }
+\DoxyCodeLine{00126\ \textcolor{preprocessor}{\#endif\ }\textcolor{comment}{/*\ GCC\_ANALYZER\_REGION\_MODEL\_REACHABILITY\_H\ */}\textcolor{preprocessor}{}}
+
+\end{DoxyCode}

@@ -1,0 +1,582 @@
+\doxysection{alloc-\/pool.h}
+\hypertarget{alloc-pool_8h_source}{}\label{alloc-pool_8h_source}\index{toolchain/x86\_64-\/elf/lib/gcc/x86\_64-\/elf/14.2.0/plugin/include/alloc-\/pool.h@{toolchain/x86\_64-\/elf/lib/gcc/x86\_64-\/elf/14.2.0/plugin/include/alloc-\/pool.h}}
+\doxymbox{\hyperlink{alloc-pool_8h}{Go to the documentation of this file.}}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001\ \textcolor{comment}{/*\ Functions\ to\ support\ a\ pool\ of\ allocatable\ objects}}
+\DoxyCodeLine{00002\ \textcolor{comment}{\ \ \ Copyright\ (C)\ 1997-\/2024\ Free\ Software\ Foundation,\ Inc.}}
+\DoxyCodeLine{00003\ \textcolor{comment}{\ \ \ Contributed\ by\ Daniel\ Berlin\ <dan@cgsoftware.com>}}
+\DoxyCodeLine{00004\ \textcolor{comment}{}}
+\DoxyCodeLine{00005\ \textcolor{comment}{This\ file\ is\ part\ of\ GCC.}}
+\DoxyCodeLine{00006\ \textcolor{comment}{}}
+\DoxyCodeLine{00007\ \textcolor{comment}{GCC\ is\ free\ software;\ you\ can\ redistribute\ it\ and/or\ modify}}
+\DoxyCodeLine{00008\ \textcolor{comment}{it\ under\ the\ terms\ of\ the\ GNU\ General\ Public\ License\ as\ published\ by}}
+\DoxyCodeLine{00009\ \textcolor{comment}{the\ Free\ Software\ Foundation;\ either\ version\ 3,\ or\ (at\ your\ option)}}
+\DoxyCodeLine{00010\ \textcolor{comment}{any\ later\ version.}}
+\DoxyCodeLine{00011\ \textcolor{comment}{}}
+\DoxyCodeLine{00012\ \textcolor{comment}{GCC\ is\ distributed\ in\ the\ hope\ that\ it\ will\ be\ useful,}}
+\DoxyCodeLine{00013\ \textcolor{comment}{but\ WITHOUT\ ANY\ WARRANTY;\ without\ even\ the\ implied\ warranty\ of}}
+\DoxyCodeLine{00014\ \textcolor{comment}{MERCHANTABILITY\ or\ FITNESS\ FOR\ A\ PARTICULAR\ PURPOSE.\ \ See\ the}}
+\DoxyCodeLine{00015\ \textcolor{comment}{GNU\ General\ Public\ License\ for\ more\ details.}}
+\DoxyCodeLine{00016\ \textcolor{comment}{}}
+\DoxyCodeLine{00017\ \textcolor{comment}{You\ should\ have\ received\ a\ copy\ of\ the\ GNU\ General\ Public\ License}}
+\DoxyCodeLine{00018\ \textcolor{comment}{along\ with\ GCC;\ see\ the\ file\ COPYING3.\ \ If\ not\ see}}
+\DoxyCodeLine{00019\ \textcolor{comment}{<http://www.gnu.org/licenses/>.\ \ */}}
+\DoxyCodeLine{00020\ \textcolor{preprocessor}{\#ifndef\ ALLOC\_POOL\_H}}
+\DoxyCodeLine{00021\ \textcolor{preprocessor}{\#define\ ALLOC\_POOL\_H}}
+\DoxyCodeLine{00022\ }
+\DoxyCodeLine{00023\ \textcolor{preprocessor}{\#include\ "{}\doxymbox{\hyperlink{memory-block_8h}{memory-\/block.h}}"{}}}
+\DoxyCodeLine{00024\ \textcolor{preprocessor}{\#include\ "{}\doxymbox{\hyperlink{options_8h}{options.h}}"{}}\ \ \ \ \ \ \ \ \textcolor{comment}{//\ for\ flag\_checking}}
+\DoxyCodeLine{00025\ }
+\DoxyCodeLine{00026\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{alloc-pool_8h_a7d6b129a830c3ebf638b9ba18f4aaa9e}{dump\_alloc\_pool\_statistics}}\ (\textcolor{keywordtype}{void});}
+\DoxyCodeLine{00027\ }
+\DoxyCodeLine{00028\ \textcolor{comment}{/*\ Flag\ indicates\ whether\ memory\ statistics\ are\ gathered\ any\ longer.\ \ */}}
+\DoxyCodeLine{00029\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{alloc-pool_8h_acafa58e8164ad18d6288c2b7819521cc}{after\_memory\_report}};}
+\DoxyCodeLine{00030\ }
+\DoxyCodeLine{00031\ \textcolor{keyword}{typedef}\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{long}\ \doxymbox{\hyperlink{alloc-pool_8h_ad4ab784fade231c6f7e3c4f0c7d169ad}{ALLOC\_POOL\_ID\_TYPE}};}
+\DoxyCodeLine{00032\ }
+\DoxyCodeLine{00033\ \textcolor{comment}{/*\ Last\ used\ ID.\ \ */}}
+\DoxyCodeLine{00034\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{alloc-pool_8h_ad4ab784fade231c6f7e3c4f0c7d169ad}{ALLOC\_POOL\_ID\_TYPE}}\ \doxymbox{\hyperlink{alloc-pool_8h_a23618c65efe16757dbd04940d92ff108}{last\_id}};}
+\DoxyCodeLine{00035\ }
+\DoxyCodeLine{00036\ \textcolor{comment}{/*\ Pool\ allocator\ memory\ usage.\ \ */}}
+\DoxyCodeLine{00037\ \textcolor{keyword}{class\ }\doxymbox{\hyperlink{classpool__usage_a50076ca5506537ded70c21245bf42b47}{pool\_usage}}:\ \textcolor{keyword}{public}\ \doxymbox{\hyperlink{classmem__usage_a77cc2da8b90f68d4be2b6e7d8968bbb6}{mem\_usage}}}
+\DoxyCodeLine{00038\ \{}
+\DoxyCodeLine{00039\ \textcolor{keyword}{public}:}
+\DoxyCodeLine{00040\ \ \ \textcolor{comment}{/*\ Default\ contructor.\ \ */}}
+\DoxyCodeLine{00041\ \ \ \doxymbox{\hyperlink{classpool__usage_a50076ca5506537ded70c21245bf42b47}{pool\_usage}}\ ():\ \doxymbox{\hyperlink{classpool__usage_ac6909b5c554dd6d5127d72694c932fbc}{m\_element\_size}}\ (0),\ \doxymbox{\hyperlink{classpool__usage_a277f4ad0923fdd984c010c3e7ac8fbb2}{m\_pool\_name}}\ (\textcolor{stringliteral}{"{}"{}})\ \{\}}
+\DoxyCodeLine{00042\ \ \ \textcolor{comment}{/*\ Constructor.\ \ */}}
+\DoxyCodeLine{00043\ \ \ \doxymbox{\hyperlink{classpool__usage_a8c199551682cb3bc5eac15d4a8bfad1d}{pool\_usage}}\ (\textcolor{keywordtype}{size\_t}\ allocated,\ \textcolor{keywordtype}{size\_t}\ times,\ \textcolor{keywordtype}{size\_t}\ peak,}
+\DoxyCodeLine{00044\ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{size\_t}\ instances,\ \textcolor{keywordtype}{size\_t}\ element\_size,}
+\DoxyCodeLine{00045\ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *pool\_name)}
+\DoxyCodeLine{00046\ \ \ \ \ :\ \doxymbox{\hyperlink{classmem__usage_a77cc2da8b90f68d4be2b6e7d8968bbb6}{mem\_usage}}\ (allocated,\ times,\ peak,\ instances),}
+\DoxyCodeLine{00047\ \ \ \ \ \ \ \doxymbox{\hyperlink{classpool__usage_ac6909b5c554dd6d5127d72694c932fbc}{m\_element\_size}}\ (element\_size),}
+\DoxyCodeLine{00048\ \ \ \ \ \ \ \doxymbox{\hyperlink{classpool__usage_a277f4ad0923fdd984c010c3e7ac8fbb2}{m\_pool\_name}}\ (pool\_name)\ \{\}}
+\DoxyCodeLine{00049\ }
+\DoxyCodeLine{00050\ \ \ \textcolor{comment}{/*\ Sum\ the\ usage\ with\ SECOND\ usage.\ \ */}}
+\DoxyCodeLine{00051\ \ \ \doxymbox{\hyperlink{classpool__usage}{pool\_usage}}}
+\DoxyCodeLine{00052\ \ \ \doxymbox{\hyperlink{classpool__usage_a5106fa1cac097bdcebbebdfed9ae2487}{operator+\ }}(\textcolor{keyword}{const}\ \doxymbox{\hyperlink{classpool__usage_a50076ca5506537ded70c21245bf42b47}{pool\_usage}}\ \&second)}
+\DoxyCodeLine{00053\ \ \ \{}
+\DoxyCodeLine{00054\ \ \ \ \ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{classpool__usage_a50076ca5506537ded70c21245bf42b47}{pool\_usage}}\ (\doxymbox{\hyperlink{classmem__usage_a8911fca980b190c9f0b3f73f57c9a4df}{m\_allocated}}\ +\ second.\doxymbox{\hyperlink{classmem__usage_a8911fca980b190c9f0b3f73f57c9a4df}{m\_allocated}},}
+\DoxyCodeLine{00055\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{classmem__usage_ad5b165e5c31194bea16e6d45351c8b07}{m\_times}}\ +\ second.\doxymbox{\hyperlink{classmem__usage_ad5b165e5c31194bea16e6d45351c8b07}{m\_times}},}
+\DoxyCodeLine{00056\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{classmem__usage_aa1897689923bfd5444c59962e2219430}{m\_peak}}\ +\ second.\doxymbox{\hyperlink{classmem__usage_aa1897689923bfd5444c59962e2219430}{m\_peak}},}
+\DoxyCodeLine{00057\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{classmem__usage_abdd646c68ea4db29d51702ba7409d86c}{m\_instances}}\ +\ second.\doxymbox{\hyperlink{classmem__usage_abdd646c68ea4db29d51702ba7409d86c}{m\_instances}},}
+\DoxyCodeLine{00058\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{classpool__usage_ac6909b5c554dd6d5127d72694c932fbc}{m\_element\_size}},\ \doxymbox{\hyperlink{classpool__usage_a277f4ad0923fdd984c010c3e7ac8fbb2}{m\_pool\_name}});}
+\DoxyCodeLine{00059\ \ \ \}}
+\DoxyCodeLine{00060\ }
+\DoxyCodeLine{00061\ \ \ \textcolor{comment}{/*\ Dump\ usage\ coupled\ to\ LOC\ location,\ where\ TOTAL\ is\ sum\ of\ all\ rows.\ \ */}}
+\DoxyCodeLine{00062\ \ \ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{void}}
+\DoxyCodeLine{00063\ \ \ \doxymbox{\hyperlink{classpool__usage_a5b687f87e7c7afac31d6148adbbbcd92}{dump}}\ (\doxymbox{\hyperlink{classmem__location}{mem\_location}}\ *loc,\ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classmem__usage_a77cc2da8b90f68d4be2b6e7d8968bbb6}{mem\_usage}}\ \&total)\textcolor{keyword}{\ const}}
+\DoxyCodeLine{00064\ \textcolor{keyword}{\ \ }\{}
+\DoxyCodeLine{00065\ \ \ \ \ \textcolor{keywordtype}{char}\ *location\_string\ =\ loc-\/>\doxymbox{\hyperlink{classmem__location_a1d2b7852a95f6b32a280c9d3126a56a4}{to\_string}}\ ();}
+\DoxyCodeLine{00066\ }
+\DoxyCodeLine{00067\ \ \ \ \ fprintf\ (stderr,\ \textcolor{stringliteral}{"{}\%-\/32s\%-\/48s\ "{}}\ \doxymbox{\hyperlink{system_8h_adc258baf74f7ed9d1e1ac1396c7d55a4}{PRsa}}(5)\ \doxymbox{\hyperlink{system_8h_adc258baf74f7ed9d1e1ac1396c7d55a4}{PRsa}}(9)\ \textcolor{stringliteral}{"{}:\%5.1f\%\%"{}}}
+\DoxyCodeLine{00068\ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{system_8h_adc258baf74f7ed9d1e1ac1396c7d55a4}{PRsa}}(9)\ \doxymbox{\hyperlink{system_8h_adc258baf74f7ed9d1e1ac1396c7d55a4}{PRsa}}(9)\ \textcolor{stringliteral}{"{}:\%5.1f\%\%\%12"{}}\ \doxymbox{\hyperlink{hwint_8h_ac582131d7a7c8ee57e73180d1714f9d5}{PRIu64}}\ \textcolor{stringliteral}{"{}\(\backslash\)n"{}},}
+\DoxyCodeLine{00069\ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{classpool__usage_a277f4ad0923fdd984c010c3e7ac8fbb2}{m\_pool\_name}},\ location\_string,}
+\DoxyCodeLine{00070\ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{system_8h_ace0edec0ca6c7554c112e42a6f9d9b33}{SIZE\_AMOUNT}}\ (\doxymbox{\hyperlink{classmem__usage_abdd646c68ea4db29d51702ba7409d86c}{m\_instances}}),}
+\DoxyCodeLine{00071\ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{system_8h_ace0edec0ca6c7554c112e42a6f9d9b33}{SIZE\_AMOUNT}}\ (\doxymbox{\hyperlink{classmem__usage_a8911fca980b190c9f0b3f73f57c9a4df}{m\_allocated}}),}
+\DoxyCodeLine{00072\ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{classmem__usage_afecd3b15257724f46073834d386f65e6}{get\_percent}}\ (\doxymbox{\hyperlink{classmem__usage_a8911fca980b190c9f0b3f73f57c9a4df}{m\_allocated}},\ total.\doxymbox{\hyperlink{classmem__usage_a8911fca980b190c9f0b3f73f57c9a4df}{m\_allocated}}),}
+\DoxyCodeLine{00073\ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{system_8h_ace0edec0ca6c7554c112e42a6f9d9b33}{SIZE\_AMOUNT}}\ (\doxymbox{\hyperlink{classmem__usage_aa1897689923bfd5444c59962e2219430}{m\_peak}}),}
+\DoxyCodeLine{00074\ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{system_8h_ace0edec0ca6c7554c112e42a6f9d9b33}{SIZE\_AMOUNT}}\ (\doxymbox{\hyperlink{classmem__usage_ad5b165e5c31194bea16e6d45351c8b07}{m\_times}}),}
+\DoxyCodeLine{00075\ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{classmem__usage_afecd3b15257724f46073834d386f65e6}{get\_percent}}\ (\doxymbox{\hyperlink{classmem__usage_ad5b165e5c31194bea16e6d45351c8b07}{m\_times}},\ total.\doxymbox{\hyperlink{classmem__usage_ad5b165e5c31194bea16e6d45351c8b07}{m\_times}}),}
+\DoxyCodeLine{00076\ \ \ \ \ \ \ \ \ \ (uint64\_t)\doxymbox{\hyperlink{classpool__usage_ac6909b5c554dd6d5127d72694c932fbc}{m\_element\_size}});}
+\DoxyCodeLine{00077\ }
+\DoxyCodeLine{00078\ \ \ \ \ free\ (location\_string);}
+\DoxyCodeLine{00079\ \ \ \}}
+\DoxyCodeLine{00080\ }
+\DoxyCodeLine{00081\ \ \ \textcolor{comment}{/*\ Dump\ header\ with\ NAME.\ \ */}}
+\DoxyCodeLine{00082\ \ \ \textcolor{keyword}{static}\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{void}}
+\DoxyCodeLine{00083\ \ \ \doxymbox{\hyperlink{classpool__usage_acbb53c46a2e20cf4eb28b196df85b153}{dump\_header}}\ (\textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *\doxymbox{\hyperlink{configargs_8h_a8f8f80d37794cde9472343e4487ba3eb}{name}})}
+\DoxyCodeLine{00084\ \ \ \{}
+\DoxyCodeLine{00085\ \ \ \ \ fprintf\ (stderr,\ \textcolor{stringliteral}{"{}\%-\/32s\%-\/48s\ \%6s\%11s\%16s\%17s\%12s\(\backslash\)n"{}},\ \textcolor{stringliteral}{"{}Pool\ name"{}},\ \doxymbox{\hyperlink{configargs_8h_a8f8f80d37794cde9472343e4487ba3eb}{name}},}
+\DoxyCodeLine{00086\ \ \ \ \ \ \ \ \ \ \textcolor{stringliteral}{"{}Pools"{}},\ \textcolor{stringliteral}{"{}Leak"{}},\ \textcolor{stringliteral}{"{}Peak"{}},\ \textcolor{stringliteral}{"{}Times"{}},\ \textcolor{stringliteral}{"{}Elt\ size"{}});}
+\DoxyCodeLine{00087\ \ \ \}}
+\DoxyCodeLine{00088\ }
+\DoxyCodeLine{00089\ \ \ \textcolor{comment}{/*\ Dump\ footer.\ \ */}}
+\DoxyCodeLine{00090\ \ \ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{void}}
+\DoxyCodeLine{00091\ \ \ \doxymbox{\hyperlink{classpool__usage_afafb951b0d09cd67f8ffdcae7b56af9c}{dump\_footer}}\ ()}
+\DoxyCodeLine{00092\ \ \ \{}
+\DoxyCodeLine{00093\ \ \ \ \ fprintf\ (stderr,\ \textcolor{stringliteral}{"{}\%s"{}}\ \doxymbox{\hyperlink{system_8h_adc258baf74f7ed9d1e1ac1396c7d55a4}{PRsa}}(82)\ \doxymbox{\hyperlink{system_8h_adc258baf74f7ed9d1e1ac1396c7d55a4}{PRsa}}(10)\ \textcolor{stringliteral}{"{}\(\backslash\)n"{}},\ \textcolor{stringliteral}{"{}Total"{}},}
+\DoxyCodeLine{00094\ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{system_8h_ace0edec0ca6c7554c112e42a6f9d9b33}{SIZE\_AMOUNT}}\ (\doxymbox{\hyperlink{classmem__usage_abdd646c68ea4db29d51702ba7409d86c}{m\_instances}}),\ \doxymbox{\hyperlink{system_8h_ace0edec0ca6c7554c112e42a6f9d9b33}{SIZE\_AMOUNT}}\ (\doxymbox{\hyperlink{classmem__usage_a8911fca980b190c9f0b3f73f57c9a4df}{m\_allocated}}));}
+\DoxyCodeLine{00095\ \ \ \}}
+\DoxyCodeLine{00096\ }
+\DoxyCodeLine{00097\ \ \ \textcolor{comment}{/*\ Element\ size.\ \ */}}
+\DoxyCodeLine{00098\ \ \ \textcolor{keywordtype}{size\_t}\ \doxymbox{\hyperlink{classpool__usage_ac6909b5c554dd6d5127d72694c932fbc}{m\_element\_size}};}
+\DoxyCodeLine{00099\ \ \ \textcolor{comment}{/*\ Pool\ name.\ \ */}}
+\DoxyCodeLine{00100\ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *\doxymbox{\hyperlink{classpool__usage_a277f4ad0923fdd984c010c3e7ac8fbb2}{m\_pool\_name}};}
+\DoxyCodeLine{00101\ \};}
+\DoxyCodeLine{00102\ }
+\DoxyCodeLine{00103\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{classmem__alloc__description}{mem\_alloc\_description<pool\_usage>}}\ \doxymbox{\hyperlink{alloc-pool_8h_a0660f989bddbcd645ef7cc5e48e621aa}{pool\_allocator\_usage}};}
+\DoxyCodeLine{00104\ }
+\DoxyCodeLine{00105\ \textcolor{preprocessor}{\#if\ 0}}
+\DoxyCodeLine{00106\ \textcolor{comment}{/*\ If\ a\ pool\ with\ custom\ block\ size\ is\ needed,\ one\ might\ use\ the\ following}}
+\DoxyCodeLine{00107\ \textcolor{comment}{\ \ \ template.\ \ An\ instance\ of\ this\ template\ can\ be\ used\ as\ a\ parameter\ for}}
+\DoxyCodeLine{00108\ \textcolor{comment}{\ \ \ instantiating\ base\_pool\_allocator\ template:}}
+\DoxyCodeLine{00109\ \textcolor{comment}{}}
+\DoxyCodeLine{00110\ \textcolor{comment}{\ \ \ \ typedef\ custom\_block\_allocator\ <128*1024>\ huge\_block\_allocator;}}
+\DoxyCodeLine{00111\ \textcolor{comment}{\ \ \ \ ...}}
+\DoxyCodeLine{00112\ \textcolor{comment}{\ \ \ \ static\ base\_pool\_allocator\ <huge\_block\_allocator>}}
+\DoxyCodeLine{00113\ \textcolor{comment}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ value\_pool\ ("{}value"{},\ 16384);}}
+\DoxyCodeLine{00114\ \textcolor{comment}{}}
+\DoxyCodeLine{00115\ \textcolor{comment}{\ \ \ Right\ now\ it's\ not\ used\ anywhere\ in\ the\ code,\ and\ is\ given\ here\ as\ an}}
+\DoxyCodeLine{00116\ \textcolor{comment}{\ \ \ example).\ \ */}}
+\DoxyCodeLine{00117\ }
+\DoxyCodeLine{00118\ \textcolor{keyword}{template}\ <\textcolor{keywordtype}{size\_t}\ BlockSize>}
+\DoxyCodeLine{00119\ \textcolor{keyword}{class\ }custom\_block\_allocator}
+\DoxyCodeLine{00120\ \{}
+\DoxyCodeLine{00121\ \textcolor{keyword}{public}:}
+\DoxyCodeLine{00122\ \ \ \textcolor{keyword}{static}\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{size\_t}\ block\_size\ =\ BlockSize;}
+\DoxyCodeLine{00123\ }
+\DoxyCodeLine{00124\ \ \ \textcolor{keyword}{static}\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{void}\ *}
+\DoxyCodeLine{00125\ \ \ allocate\ ()\ \doxymbox{\hyperlink{ansidecl_8h_aee2d877feb016405b87a7ac8d9fc3108}{ATTRIBUTE\_MALLOC}}}
+\DoxyCodeLine{00126\ \ \ \{}
+\DoxyCodeLine{00127\ \ \ \ \ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{libiberty_8h_a68af31d7426d8cb576b61256e77a3f33}{XNEWVEC}}\ (\textcolor{keywordtype}{char},\ BlockSize);}
+\DoxyCodeLine{00128\ \ \ \}}
+\DoxyCodeLine{00129\ }
+\DoxyCodeLine{00130\ \ \ \textcolor{keyword}{static}\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{void}}
+\DoxyCodeLine{00131\ \ \ release\ (\textcolor{keywordtype}{void}\ *block)}
+\DoxyCodeLine{00132\ \ \ \{}
+\DoxyCodeLine{00133\ \ \ \ \ \doxymbox{\hyperlink{libiberty_8h_a383edbfc2f7d01cc32edb6ed1337c600}{XDELETEVEC}}\ (block);}
+\DoxyCodeLine{00134\ \ \ \}}
+\DoxyCodeLine{00135\ \};}
+\DoxyCodeLine{00136\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00137\ }
+\DoxyCodeLine{00138\ \textcolor{comment}{/*\ Generic\ pool\ allocator.\ \ */}}
+\DoxyCodeLine{00139\ }
+\DoxyCodeLine{00140\ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ TBlockAllocator>}
+\DoxyCodeLine{00141\ \textcolor{keyword}{class\ }\doxymbox{\hyperlink{classbase__pool__allocator_aba4165e99865cfe917e2c457bc9fe62f}{base\_pool\_allocator}}}
+\DoxyCodeLine{00142\ \{}
+\DoxyCodeLine{00143\ \textcolor{keyword}{public}:}
+\DoxyCodeLine{00144\ \ \ \textcolor{comment}{/*\ Default\ constructor\ for\ pool\ allocator\ called\ NAME.\ \ */}}
+\DoxyCodeLine{00145\ \ \ \doxymbox{\hyperlink{classbase__pool__allocator_aba4165e99865cfe917e2c457bc9fe62f}{base\_pool\_allocator}}\ (\textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *\doxymbox{\hyperlink{configargs_8h_a8f8f80d37794cde9472343e4487ba3eb}{name}},\ \textcolor{keywordtype}{size\_t}\ size\ \doxymbox{\hyperlink{statistics_8h_ad9b89af963cc7e535c9697fd40241a6f}{CXX\_MEM\_STAT\_INFO}});}
+\DoxyCodeLine{00146\ \ \ \doxymbox{\hyperlink{classbase__pool__allocator_a2edcdc708f01bde9b098361905b570ea}{\string~base\_pool\_allocator}}\ ();}
+\DoxyCodeLine{00147\ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classbase__pool__allocator_aee8fb60ae89a3c6490163734bffa188e}{release}}\ ();}
+\DoxyCodeLine{00148\ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classbase__pool__allocator_a3189ad59bd6027b68e4682666f59a657}{release\_if\_empty}}\ ();}
+\DoxyCodeLine{00149\ \ \ \textcolor{keywordtype}{void}\ *\doxymbox{\hyperlink{classbase__pool__allocator_af530711b11f3f261b93af61041b3af44}{allocate}}\ ()\ \doxymbox{\hyperlink{ansidecl_8h_aee2d877feb016405b87a7ac8d9fc3108}{ATTRIBUTE\_MALLOC}};}
+\DoxyCodeLine{00150\ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classbase__pool__allocator_ad00a867682d954b1bb93dbdc871e6516}{remove}}\ (\textcolor{keywordtype}{void}\ *\textcolor{keywordtype}{object});}
+\DoxyCodeLine{00151\ \ \ \textcolor{keywordtype}{size\_t}\ \doxymbox{\hyperlink{classbase__pool__allocator_ac0a924488e60dcba3217a1577480a696}{num\_elts\_current}}\ ();}
+\DoxyCodeLine{00152\ }
+\DoxyCodeLine{00153\ private:}
+\DoxyCodeLine{00154\ \ \ struct\ \doxymbox{\hyperlink{structbase__pool__allocator_1_1allocation__pool__list}{allocation\_pool\_list}}}
+\DoxyCodeLine{00155\ \ \ \{}
+\DoxyCodeLine{00156\ \ \ \ \ \doxymbox{\hyperlink{structbase__pool__allocator_1_1allocation__pool__list}{allocation\_pool\_list}}\ *\doxymbox{\hyperlink{structbase__pool__allocator_1_1allocation__pool__list_aa05d8eb2ba7dcba9c64d0b805812b3d7}{next}};}
+\DoxyCodeLine{00157\ \ \ \};}
+\DoxyCodeLine{00158\ }
+\DoxyCodeLine{00159\ \ \ \textcolor{comment}{/*\ Initialize\ a\ pool\ allocator.\ \ */}}
+\DoxyCodeLine{00160\ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classbase__pool__allocator_a8e999ab49f858989528ff0cdf4a7161b}{initialize}}\ ();}
+\DoxyCodeLine{00161\ }
+\DoxyCodeLine{00162\ \ \ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{structbase__pool__allocator_1_1allocation__object}{allocation\_object}}}
+\DoxyCodeLine{00163\ \ \ \{}
+\DoxyCodeLine{00164\ \textcolor{preprocessor}{\#if\ CHECKING\_P}}
+\DoxyCodeLine{00165\ \ \ \ \ \textcolor{comment}{/*\ The\ ID\ of\ alloc\ pool\ which\ the\ object\ was\ allocated\ from.\ \ */}}
+\DoxyCodeLine{00166\ \ \ \ \ \doxymbox{\hyperlink{alloc-pool_8h_ad4ab784fade231c6f7e3c4f0c7d169ad}{ALLOC\_POOL\_ID\_TYPE}}\ id;}
+\DoxyCodeLine{00167\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00168\ }
+\DoxyCodeLine{00169\ \ \ \ \ \textcolor{keyword}{union}}
+\DoxyCodeLine{00170\ \ \ \ \ \ \ \{}
+\DoxyCodeLine{00171\ \ \ \ \ \textcolor{comment}{/*\ The\ data\ of\ the\ object.\ \ */}}
+\DoxyCodeLine{00172\ \ \ \ \ \textcolor{keywordtype}{char}\ \doxymbox{\hyperlink{structbase__pool__allocator_1_1allocation__object_ab6a2963e9b4d6ca5a49aa7ad0b8d080d}{data}}[1];}
+\DoxyCodeLine{00173\ }
+\DoxyCodeLine{00174\ \ \ \ \ \textcolor{comment}{/*\ Because\ we\ want\ any\ type\ of\ data\ to\ be\ well\ aligned\ after\ the\ ID,}}
+\DoxyCodeLine{00175\ \textcolor{comment}{\ \ \ \ \ \ \ the\ following\ elements\ are\ here.\ \ They\ are\ never\ accessed\ so}}
+\DoxyCodeLine{00176\ \textcolor{comment}{\ \ \ \ \ \ \ the\ allocated\ object\ may\ be\ even\ smaller\ than\ this\ structure.}}
+\DoxyCodeLine{00177\ \textcolor{comment}{\ \ \ \ \ \ \ We\ do\ not\ care\ about\ alignment\ for\ floating-\/point\ types.\ \ */}}
+\DoxyCodeLine{00178\ \ \ \ \ \textcolor{keywordtype}{char}\ *\doxymbox{\hyperlink{structbase__pool__allocator_1_1allocation__object_ae931ce5b152a1b04709d6cb1571501ed}{align\_p}};}
+\DoxyCodeLine{00179\ \ \ \ \ int64\_t\ \doxymbox{\hyperlink{structbase__pool__allocator_1_1allocation__object_a86bc13822a678dd98e72b27c28e35b3b}{align\_i}};}
+\DoxyCodeLine{00180\ \ \ \ \ \ \ \}\ \doxymbox{\hyperlink{structbase__pool__allocator_1_1allocation__object_a69e7ab4d928b435ef4262307b79add56}{u}};}
+\DoxyCodeLine{00181\ }
+\DoxyCodeLine{00182\ \textcolor{preprocessor}{\#if\ CHECKING\_P}}
+\DoxyCodeLine{00183\ \ \ \ \ \textcolor{keyword}{static}\ \textcolor{keyword}{inline}\ \doxymbox{\hyperlink{structbase__pool__allocator_1_1allocation__object}{allocation\_object}}*}
+\DoxyCodeLine{00184\ \ \ \ \ get\_instance\ (\textcolor{keywordtype}{void}\ *data\_ptr)}
+\DoxyCodeLine{00185\ \ \ \ \ \{}
+\DoxyCodeLine{00186\ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ (\doxymbox{\hyperlink{structbase__pool__allocator_1_1allocation__object}{allocation\_object}}\ *)(((\textcolor{keywordtype}{char}\ *)(data\_ptr))}
+\DoxyCodeLine{00187\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ -\/\ \doxymbox{\hyperlink{stddef_8h_a276e8a32e0bbf024aadd9420b8f2d3b3}{offsetof}}\ (\doxymbox{\hyperlink{structbase__pool__allocator_1_1allocation__object}{allocation\_object}},}
+\DoxyCodeLine{00188\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{structbase__pool__allocator_1_1allocation__object_a69e7ab4d928b435ef4262307b79add56}{u}}.\doxymbox{\hyperlink{structbase__pool__allocator_1_1allocation__object_ab6a2963e9b4d6ca5a49aa7ad0b8d080d}{data}}));}
+\DoxyCodeLine{00189\ \ \ \ \ \}}
+\DoxyCodeLine{00190\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00191\ }
+\DoxyCodeLine{00192\ \ \ \ \ \textcolor{keyword}{static}\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{void}*}
+\DoxyCodeLine{00193\ \ \ \ \ \doxymbox{\hyperlink{structbase__pool__allocator_1_1allocation__object_a112d3f6ac12e7bc3fe05823c1195202e}{get\_data}}\ (\textcolor{keywordtype}{void}\ *instance\_ptr)}
+\DoxyCodeLine{00194\ \ \ \ \ \{}
+\DoxyCodeLine{00195\ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ (\textcolor{keywordtype}{void}*)(((\doxymbox{\hyperlink{structbase__pool__allocator_1_1allocation__object}{allocation\_object}}\ *)\ instance\_ptr)-\/>\doxymbox{\hyperlink{structbase__pool__allocator_1_1allocation__object_a69e7ab4d928b435ef4262307b79add56}{u}}.data);}
+\DoxyCodeLine{00196\ \ \ \ \ \}}
+\DoxyCodeLine{00197\ \ \ \};}
+\DoxyCodeLine{00198\ }
+\DoxyCodeLine{00199\ \ \ \textcolor{comment}{/*\ Align\ X\ to\ 8.\ \ */}}
+\DoxyCodeLine{00200\ \ \ \textcolor{keyword}{static}\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{size\_t}}
+\DoxyCodeLine{00201\ \ \ \doxymbox{\hyperlink{classbase__pool__allocator_ad7610ef802c1cf21ff88e2a2be0372f7}{align\_eight}}\ (\textcolor{keywordtype}{size\_t}\ x)}
+\DoxyCodeLine{00202\ \ \ \{}
+\DoxyCodeLine{00203\ \ \ \ \ \textcolor{keywordflow}{return}\ (((x+7)\ >>\ 3)\ <<\ 3);}
+\DoxyCodeLine{00204\ \ \ \}}
+\DoxyCodeLine{00205\ }
+\DoxyCodeLine{00206\ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *\doxymbox{\hyperlink{classbase__pool__allocator_a263d802e25bcc486e87f27e9cab51a85}{m\_name}};}
+\DoxyCodeLine{00207\ \ \ \doxymbox{\hyperlink{alloc-pool_8h_ad4ab784fade231c6f7e3c4f0c7d169ad}{ALLOC\_POOL\_ID\_TYPE}}\ \doxymbox{\hyperlink{classbase__pool__allocator_a4ae271e2cfe8ccaa31d14283c050012d}{m\_id}};}
+\DoxyCodeLine{00208\ \ \ \textcolor{keywordtype}{size\_t}\ \doxymbox{\hyperlink{classbase__pool__allocator_abc75c797f55058ec6a29bcd68cf6a428}{m\_elts\_per\_block}};}
+\DoxyCodeLine{00209\ }
+\DoxyCodeLine{00210\ \ \ \textcolor{comment}{/*\ These\ are\ the\ elements\ that\ have\ been\ allocated\ at\ least\ once}}
+\DoxyCodeLine{00211\ \textcolor{comment}{\ \ \ \ \ and\ freed.\ \ */}}
+\DoxyCodeLine{00212\ \ \ allocation\_pool\_list\ *\doxymbox{\hyperlink{classbase__pool__allocator_a6fda96f6b40f0f97d4db7b3853d33b31}{m\_returned\_free\_list}};}
+\DoxyCodeLine{00213\ }
+\DoxyCodeLine{00214\ \ \ \textcolor{comment}{/*\ These\ are\ the\ elements\ that\ have\ not\ yet\ been\ allocated\ out\ of}}
+\DoxyCodeLine{00215\ \textcolor{comment}{\ \ \ \ \ the\ last\ block\ obtained\ from\ XNEWVEC.\ \ */}}
+\DoxyCodeLine{00216\ \ \ \textcolor{keywordtype}{char}*\ \doxymbox{\hyperlink{classbase__pool__allocator_a2ee59ca56f77b6356c4c950f170e5b98}{m\_virgin\_free\_list}};}
+\DoxyCodeLine{00217\ }
+\DoxyCodeLine{00218\ \ \ \textcolor{comment}{/*\ The\ number\ of\ elements\ in\ the\ virgin\_free\_list\ that\ can\ be}}
+\DoxyCodeLine{00219\ \textcolor{comment}{\ \ \ \ \ allocated\ before\ needing\ another\ block.\ \ */}}
+\DoxyCodeLine{00220\ \ \ \textcolor{keywordtype}{size\_t}\ \doxymbox{\hyperlink{classbase__pool__allocator_a41aa0af946f8c24d53d8933b4be39f68}{m\_virgin\_elts\_remaining}};}
+\DoxyCodeLine{00221\ \ \ \textcolor{comment}{/*\ The\ number\ of\ elements\ that\ are\ allocated.\ \ */}}
+\DoxyCodeLine{00222\ \ \ \textcolor{keywordtype}{size\_t}\ \doxymbox{\hyperlink{classbase__pool__allocator_ae3d23db3935abc98cad2ac95bd686b05}{m\_elts\_allocated}};}
+\DoxyCodeLine{00223\ \ \ \textcolor{comment}{/*\ The\ number\ of\ elements\ that\ are\ released.\ \ */}}
+\DoxyCodeLine{00224\ \ \ \textcolor{keywordtype}{size\_t}\ \doxymbox{\hyperlink{classbase__pool__allocator_a08a7df3bae7f8320ef2b3275cee1ae6b}{m\_elts\_free}};}
+\DoxyCodeLine{00225\ \ \ \textcolor{comment}{/*\ The\ number\ of\ allocated\ blocks.\ \ */}}
+\DoxyCodeLine{00226\ \ \ \textcolor{keywordtype}{size\_t}\ \doxymbox{\hyperlink{classbase__pool__allocator_ac66fc4bdb30d2b688458ba7270b72063}{m\_blocks\_allocated}};}
+\DoxyCodeLine{00227\ \ \ \textcolor{comment}{/*\ List\ of\ blocks\ that\ are\ used\ to\ allocate\ new\ objects.\ \ */}}
+\DoxyCodeLine{00228\ \ \ allocation\_pool\_list\ *\doxymbox{\hyperlink{classbase__pool__allocator_a5b2fc5281508b2b6884db972a05be627}{m\_block\_list}};}
+\DoxyCodeLine{00229\ \ \ \textcolor{comment}{/*\ Size\ of\ a\ pool\ elements\ in\ bytes.\ \ */}}
+\DoxyCodeLine{00230\ \ \ \textcolor{keywordtype}{size\_t}\ \doxymbox{\hyperlink{classbase__pool__allocator_addff7d5727970e08d02c159350a1e445}{m\_elt\_size}};}
+\DoxyCodeLine{00231\ \ \ \textcolor{comment}{/*\ Size\ in\ bytes\ that\ should\ be\ allocated\ for\ each\ element.\ \ */}}
+\DoxyCodeLine{00232\ \ \ \textcolor{keywordtype}{size\_t}\ \doxymbox{\hyperlink{classbase__pool__allocator_a97dbd86b8d12c066185a28032193a04d}{m\_size}};}
+\DoxyCodeLine{00233\ \ \ \textcolor{comment}{/*\ Flag\ if\ a\ pool\ allocator\ is\ initialized.\ \ */}}
+\DoxyCodeLine{00234\ \ \ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{classbase__pool__allocator_af79674222c418f284c543dce89e76030}{m\_initialized}};}
+\DoxyCodeLine{00235\ \ \ \textcolor{comment}{/*\ Memory\ allocation\ location.\ \ */}}
+\DoxyCodeLine{00236\ \ \ \doxymbox{\hyperlink{classmem__location}{mem\_location}}\ \doxymbox{\hyperlink{classbase__pool__allocator_af0d078a2d4d4b3d990b3e45d5161f180}{m\_location}};}
+\DoxyCodeLine{00237\ \};}
+\DoxyCodeLine{00238\ }
+\DoxyCodeLine{00239\ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ TBlockAllocator>}
+\DoxyCodeLine{00240\ \textcolor{keyword}{inline}}
+\DoxyCodeLine{00241\ \doxymbox{\hyperlink{classbase__pool__allocator_aba4165e99865cfe917e2c457bc9fe62f}{base\_pool\_allocator\ <TBlockAllocator>::base\_pool\_allocator}}\ (}
+\DoxyCodeLine{00242\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *\doxymbox{\hyperlink{configargs_8h_a8f8f80d37794cde9472343e4487ba3eb}{name}},\ \textcolor{keywordtype}{size\_t}\ size\ \doxymbox{\hyperlink{statistics_8h_aa2ed6ded958d0e2a06f0a313e3961695}{MEM\_STAT\_DECL}}):}
+\DoxyCodeLine{00243\ \ \ \doxymbox{\hyperlink{classbase__pool__allocator_a263d802e25bcc486e87f27e9cab51a85}{m\_name}}\ (\doxymbox{\hyperlink{configargs_8h_a8f8f80d37794cde9472343e4487ba3eb}{name}}),\ \doxymbox{\hyperlink{classbase__pool__allocator_a4ae271e2cfe8ccaa31d14283c050012d}{m\_id}}\ (0),\ \doxymbox{\hyperlink{classbase__pool__allocator_abc75c797f55058ec6a29bcd68cf6a428}{m\_elts\_per\_block}}\ (0),\ \doxymbox{\hyperlink{classbase__pool__allocator_a6fda96f6b40f0f97d4db7b3853d33b31}{m\_returned\_free\_list}}\ (\doxymbox{\hyperlink{stddef_8h_a070d2ce7b6bb7e5c05602aa8c308d0c4}{NULL}}),}
+\DoxyCodeLine{00244\ \ \ \doxymbox{\hyperlink{classbase__pool__allocator_a2ee59ca56f77b6356c4c950f170e5b98}{m\_virgin\_free\_list}}\ (\doxymbox{\hyperlink{stddef_8h_a070d2ce7b6bb7e5c05602aa8c308d0c4}{NULL}}),\ \doxymbox{\hyperlink{classbase__pool__allocator_a41aa0af946f8c24d53d8933b4be39f68}{m\_virgin\_elts\_remaining}}\ (0),\ \doxymbox{\hyperlink{classbase__pool__allocator_ae3d23db3935abc98cad2ac95bd686b05}{m\_elts\_allocated}}\ (0),}
+\DoxyCodeLine{00245\ \ \ \doxymbox{\hyperlink{classbase__pool__allocator_a08a7df3bae7f8320ef2b3275cee1ae6b}{m\_elts\_free}}\ (0),\ \doxymbox{\hyperlink{classbase__pool__allocator_ac66fc4bdb30d2b688458ba7270b72063}{m\_blocks\_allocated}}\ (0),\ \doxymbox{\hyperlink{classbase__pool__allocator_a5b2fc5281508b2b6884db972a05be627}{m\_block\_list}}\ (\doxymbox{\hyperlink{stddef_8h_a070d2ce7b6bb7e5c05602aa8c308d0c4}{NULL}}),\ \doxymbox{\hyperlink{classbase__pool__allocator_addff7d5727970e08d02c159350a1e445}{m\_elt\_size}}\ (0),}
+\DoxyCodeLine{00246\ \ \ \doxymbox{\hyperlink{classbase__pool__allocator_a97dbd86b8d12c066185a28032193a04d}{m\_size}}\ (size),\ \doxymbox{\hyperlink{classbase__pool__allocator_af79674222c418f284c543dce89e76030}{m\_initialized}}\ (\doxymbox{\hyperlink{stdbool_8h_a65e9886d74aaee76545e83dd09011727}{false}}),}
+\DoxyCodeLine{00247\ \ \ \doxymbox{\hyperlink{classbase__pool__allocator_af0d078a2d4d4b3d990b3e45d5161f180}{m\_location}}\ (\doxymbox{\hyperlink{mem-stats-traits_8h_a0d4f79870c794434cebd6c6513313d1aa184df01fde215ccd7ac9b8a750c04786}{ALLOC\_POOL\_ORIGIN}},\ \doxymbox{\hyperlink{stdbool_8h_a65e9886d74aaee76545e83dd09011727}{false}}\ \doxymbox{\hyperlink{statistics_8h_a75b4a65a7a5d197f17362673db5ece22}{PASS\_MEM\_STAT}})\ \{\}}
+\DoxyCodeLine{00248\ }
+\DoxyCodeLine{00249\ \textcolor{comment}{/*\ Initialize\ a\ pool\ allocator.\ \ */}}
+\DoxyCodeLine{00250\ }
+\DoxyCodeLine{00251\ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ TBlockAllocator>}
+\DoxyCodeLine{00252\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{void}}
+\DoxyCodeLine{00253\ \doxymbox{\hyperlink{classbase__pool__allocator_a8e999ab49f858989528ff0cdf4a7161b}{base\_pool\_allocator\ <TBlockAllocator>::initialize}}\ ()}
+\DoxyCodeLine{00254\ \{}
+\DoxyCodeLine{00255\ \ \ \doxymbox{\hyperlink{system_8h_aff447899dc74d54931b2bc2d47de9423}{gcc\_checking\_assert}}\ (!\doxymbox{\hyperlink{classbase__pool__allocator_af79674222c418f284c543dce89e76030}{m\_initialized}});}
+\DoxyCodeLine{00256\ \ \ \doxymbox{\hyperlink{classbase__pool__allocator_af79674222c418f284c543dce89e76030}{m\_initialized}}\ =\ \textcolor{keyword}{true};}
+\DoxyCodeLine{00257\ }
+\DoxyCodeLine{00258\ \ \ \textcolor{keywordtype}{size\_t}\ size\ =\ \doxymbox{\hyperlink{classbase__pool__allocator_a97dbd86b8d12c066185a28032193a04d}{m\_size}};}
+\DoxyCodeLine{00259\ }
+\DoxyCodeLine{00260\ \ \ \doxymbox{\hyperlink{system_8h_aff447899dc74d54931b2bc2d47de9423}{gcc\_checking\_assert}}\ (\doxymbox{\hyperlink{classbase__pool__allocator_a263d802e25bcc486e87f27e9cab51a85}{m\_name}});}
+\DoxyCodeLine{00261\ \ \ \doxymbox{\hyperlink{system_8h_aff447899dc74d54931b2bc2d47de9423}{gcc\_checking\_assert}}\ (\doxymbox{\hyperlink{classbase__pool__allocator_a97dbd86b8d12c066185a28032193a04d}{m\_size}});}
+\DoxyCodeLine{00262\ }
+\DoxyCodeLine{00263\ \ \ \textcolor{comment}{/*\ Make\ size\ large\ enough\ to\ store\ the\ list\ header.\ \ */}}
+\DoxyCodeLine{00264\ \ \ \textcolor{keywordflow}{if}\ (size\ <\ \textcolor{keyword}{sizeof}\ (\doxymbox{\hyperlink{structbase__pool__allocator_1_1allocation__pool__list}{allocation\_pool\_list}}*))}
+\DoxyCodeLine{00265\ \ \ \ \ size\ =\ \textcolor{keyword}{sizeof}\ (\doxymbox{\hyperlink{structbase__pool__allocator_1_1allocation__pool__list}{allocation\_pool\_list}}*);}
+\DoxyCodeLine{00266\ }
+\DoxyCodeLine{00267\ \ \ \textcolor{comment}{/*\ Now\ align\ the\ size\ to\ a\ multiple\ of\ 8.\ \ */}}
+\DoxyCodeLine{00268\ \ \ size\ =\ \doxymbox{\hyperlink{classbase__pool__allocator_ad7610ef802c1cf21ff88e2a2be0372f7}{align\_eight}}\ (size);}
+\DoxyCodeLine{00269\ }
+\DoxyCodeLine{00270\ \ \ \textcolor{comment}{/*\ Add\ the\ aligned\ size\ of\ ID.\ \ */}}
+\DoxyCodeLine{00271\ \ \ size\ +=\ \doxymbox{\hyperlink{stddef_8h_a276e8a32e0bbf024aadd9420b8f2d3b3}{offsetof}}\ (\doxymbox{\hyperlink{structbase__pool__allocator_1_1allocation__object}{allocation\_object}},\ u.\doxymbox{\hyperlink{structbase__pool__allocator_1_1allocation__object_ab6a2963e9b4d6ca5a49aa7ad0b8d080d}{data}});}
+\DoxyCodeLine{00272\ }
+\DoxyCodeLine{00273\ \ \ \doxymbox{\hyperlink{classbase__pool__allocator_addff7d5727970e08d02c159350a1e445}{m\_elt\_size}}\ =\ size;}
+\DoxyCodeLine{00274\ }
+\DoxyCodeLine{00275\ \ \ \textcolor{keywordflow}{if}\ (\doxymbox{\hyperlink{auto-host_8h_afc5398d240462e7748efa4deb0fcc65d}{GATHER\_STATISTICS}})}
+\DoxyCodeLine{00276\ \ \ \ \ \{}
+\DoxyCodeLine{00277\ \ \ \ \ \ \ \doxymbox{\hyperlink{classpool__usage}{pool\_usage}}\ *u\ =\ \doxymbox{\hyperlink{alloc-pool_8h_a0660f989bddbcd645ef7cc5e48e621aa}{pool\_allocator\_usage}}.register\_descriptor}
+\DoxyCodeLine{00278\ \ \ \ \ (\textcolor{keyword}{this},\ \textcolor{keyword}{new}\ \doxymbox{\hyperlink{classmem__location}{mem\_location}}\ (\doxymbox{\hyperlink{classbase__pool__allocator_af0d078a2d4d4b3d990b3e45d5161f180}{m\_location}}));}
+\DoxyCodeLine{00279\ }
+\DoxyCodeLine{00280\ \ \ \ \ \ \ u-\/>\doxymbox{\hyperlink{classpool__usage_ac6909b5c554dd6d5127d72694c932fbc}{m\_element\_size}}\ =\ \doxymbox{\hyperlink{classbase__pool__allocator_addff7d5727970e08d02c159350a1e445}{m\_elt\_size}};}
+\DoxyCodeLine{00281\ \ \ \ \ \ \ u-\/>\doxymbox{\hyperlink{classpool__usage_a277f4ad0923fdd984c010c3e7ac8fbb2}{m\_pool\_name}}\ =\ \doxymbox{\hyperlink{classbase__pool__allocator_a263d802e25bcc486e87f27e9cab51a85}{m\_name}};}
+\DoxyCodeLine{00282\ \ \ \ \ \}}
+\DoxyCodeLine{00283\ }
+\DoxyCodeLine{00284\ \ \ \textcolor{comment}{/*\ List\ header\ size\ should\ be\ a\ multiple\ of\ 8.\ \ */}}
+\DoxyCodeLine{00285\ \ \ \textcolor{keywordtype}{size\_t}\ header\_size\ =\ \doxymbox{\hyperlink{classbase__pool__allocator_ad7610ef802c1cf21ff88e2a2be0372f7}{align\_eight}}\ (\textcolor{keyword}{sizeof}\ (\doxymbox{\hyperlink{structbase__pool__allocator_1_1allocation__pool__list}{allocation\_pool\_list}}));}
+\DoxyCodeLine{00286\ }
+\DoxyCodeLine{00287\ \ \ \doxymbox{\hyperlink{classbase__pool__allocator_abc75c797f55058ec6a29bcd68cf6a428}{m\_elts\_per\_block}}\ =\ (TBlockAllocator::block\_size\ -\/\ header\_size)\ /\ size;}
+\DoxyCodeLine{00288\ \ \ \doxymbox{\hyperlink{system_8h_aff447899dc74d54931b2bc2d47de9423}{gcc\_checking\_assert}}\ (\doxymbox{\hyperlink{classbase__pool__allocator_abc75c797f55058ec6a29bcd68cf6a428}{m\_elts\_per\_block}}\ !=\ 0);}
+\DoxyCodeLine{00289\ }
+\DoxyCodeLine{00290\ \ \ \textcolor{comment}{/*\ Increase\ the\ last\ used\ ID\ and\ use\ it\ for\ this\ pool.}}
+\DoxyCodeLine{00291\ \textcolor{comment}{\ \ \ \ \ ID\ ==\ 0\ is\ used\ for\ free\ elements\ of\ pool\ so\ skip\ it.\ \ */}}
+\DoxyCodeLine{00292\ \ \ \doxymbox{\hyperlink{alloc-pool_8h_a23618c65efe16757dbd04940d92ff108}{last\_id}}++;}
+\DoxyCodeLine{00293\ \ \ \textcolor{keywordflow}{if}\ (\doxymbox{\hyperlink{alloc-pool_8h_a23618c65efe16757dbd04940d92ff108}{last\_id}}\ ==\ 0)}
+\DoxyCodeLine{00294\ \ \ \ \ \doxymbox{\hyperlink{alloc-pool_8h_a23618c65efe16757dbd04940d92ff108}{last\_id}}++;}
+\DoxyCodeLine{00295\ }
+\DoxyCodeLine{00296\ \ \ \doxymbox{\hyperlink{classbase__pool__allocator_a4ae271e2cfe8ccaa31d14283c050012d}{m\_id}}\ =\ \doxymbox{\hyperlink{alloc-pool_8h_a23618c65efe16757dbd04940d92ff108}{last\_id}};}
+\DoxyCodeLine{00297\ \}}
+\DoxyCodeLine{00298\ }
+\DoxyCodeLine{00299\ \textcolor{comment}{/*\ Free\ all\ memory\ allocated\ for\ the\ given\ memory\ pool.\ \ */}}
+\DoxyCodeLine{00300\ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ TBlockAllocator>}
+\DoxyCodeLine{00301\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{void}}
+\DoxyCodeLine{00302\ \doxymbox{\hyperlink{classbase__pool__allocator_aee8fb60ae89a3c6490163734bffa188e}{base\_pool\_allocator\ <TBlockAllocator>::release}}\ ()}
+\DoxyCodeLine{00303\ \{}
+\DoxyCodeLine{00304\ \ \ \textcolor{keywordflow}{if}\ (!\doxymbox{\hyperlink{classbase__pool__allocator_af79674222c418f284c543dce89e76030}{m\_initialized}})}
+\DoxyCodeLine{00305\ \ \ \ \ \textcolor{keywordflow}{return};}
+\DoxyCodeLine{00306\ }
+\DoxyCodeLine{00307\ \ \ \doxymbox{\hyperlink{structbase__pool__allocator_1_1allocation__pool__list}{allocation\_pool\_list}}\ *block,\ *next\_block;}
+\DoxyCodeLine{00308\ }
+\DoxyCodeLine{00309\ \ \ \textcolor{comment}{/*\ Free\ each\ block\ allocated\ to\ the\ pool.\ \ */}}
+\DoxyCodeLine{00310\ \ \ \textcolor{keywordflow}{for}\ (block\ =\ \doxymbox{\hyperlink{classbase__pool__allocator_a5b2fc5281508b2b6884db972a05be627}{m\_block\_list}};\ block\ !=\ \doxymbox{\hyperlink{stddef_8h_a070d2ce7b6bb7e5c05602aa8c308d0c4}{NULL}};\ block\ =\ next\_block)}
+\DoxyCodeLine{00311\ \ \ \ \ \{}
+\DoxyCodeLine{00312\ \ \ \ \ \ \ next\_block\ =\ block-\/>\doxymbox{\hyperlink{structbase__pool__allocator_1_1allocation__pool__list_aa05d8eb2ba7dcba9c64d0b805812b3d7}{next}};}
+\DoxyCodeLine{00313\ \ \ \ \ \ \ TBlockAllocator::release\ (block);}
+\DoxyCodeLine{00314\ \ \ \ \ \}}
+\DoxyCodeLine{00315\ }
+\DoxyCodeLine{00316\ \ \ \textcolor{keywordflow}{if}\ (\doxymbox{\hyperlink{auto-host_8h_afc5398d240462e7748efa4deb0fcc65d}{GATHER\_STATISTICS}}\ \&\&\ !\doxymbox{\hyperlink{alloc-pool_8h_acafa58e8164ad18d6288c2b7819521cc}{after\_memory\_report}})}
+\DoxyCodeLine{00317\ \ \ \ \ \{}
+\DoxyCodeLine{00318\ \ \ \ \ \ \ \doxymbox{\hyperlink{alloc-pool_8h_a0660f989bddbcd645ef7cc5e48e621aa}{pool\_allocator\_usage}}.release\_instance\_overhead}
+\DoxyCodeLine{00319\ \ \ \ \ (\textcolor{keyword}{this},\ (\doxymbox{\hyperlink{classbase__pool__allocator_ae3d23db3935abc98cad2ac95bd686b05}{m\_elts\_allocated}}\ -\/\ \doxymbox{\hyperlink{classbase__pool__allocator_a08a7df3bae7f8320ef2b3275cee1ae6b}{m\_elts\_free}})\ *\ \doxymbox{\hyperlink{classbase__pool__allocator_addff7d5727970e08d02c159350a1e445}{m\_elt\_size}});}
+\DoxyCodeLine{00320\ \ \ \ \ \}}
+\DoxyCodeLine{00321\ }
+\DoxyCodeLine{00322\ \ \ \doxymbox{\hyperlink{classbase__pool__allocator_a6fda96f6b40f0f97d4db7b3853d33b31}{m\_returned\_free\_list}}\ =\ \doxymbox{\hyperlink{stddef_8h_a070d2ce7b6bb7e5c05602aa8c308d0c4}{NULL}};}
+\DoxyCodeLine{00323\ \ \ \doxymbox{\hyperlink{classbase__pool__allocator_a2ee59ca56f77b6356c4c950f170e5b98}{m\_virgin\_free\_list}}\ =\ \doxymbox{\hyperlink{stddef_8h_a070d2ce7b6bb7e5c05602aa8c308d0c4}{NULL}};}
+\DoxyCodeLine{00324\ \ \ \doxymbox{\hyperlink{classbase__pool__allocator_a41aa0af946f8c24d53d8933b4be39f68}{m\_virgin\_elts\_remaining}}\ =\ 0;}
+\DoxyCodeLine{00325\ \ \ \doxymbox{\hyperlink{classbase__pool__allocator_ae3d23db3935abc98cad2ac95bd686b05}{m\_elts\_allocated}}\ =\ 0;}
+\DoxyCodeLine{00326\ \ \ \doxymbox{\hyperlink{classbase__pool__allocator_a08a7df3bae7f8320ef2b3275cee1ae6b}{m\_elts\_free}}\ =\ 0;}
+\DoxyCodeLine{00327\ \ \ \doxymbox{\hyperlink{classbase__pool__allocator_ac66fc4bdb30d2b688458ba7270b72063}{m\_blocks\_allocated}}\ =\ 0;}
+\DoxyCodeLine{00328\ \ \ \doxymbox{\hyperlink{classbase__pool__allocator_a5b2fc5281508b2b6884db972a05be627}{m\_block\_list}}\ =\ \doxymbox{\hyperlink{stddef_8h_a070d2ce7b6bb7e5c05602aa8c308d0c4}{NULL}};}
+\DoxyCodeLine{00329\ \}}
+\DoxyCodeLine{00330\ }
+\DoxyCodeLine{00331\ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ TBlockAllocator>}
+\DoxyCodeLine{00332\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{void}}
+\DoxyCodeLine{00333\ \doxymbox{\hyperlink{classbase__pool__allocator_a3189ad59bd6027b68e4682666f59a657}{base\_pool\_allocator\ <TBlockAllocator>::release\_if\_empty}}\ ()}
+\DoxyCodeLine{00334\ \{}
+\DoxyCodeLine{00335\ \ \ \textcolor{keywordflow}{if}\ (\doxymbox{\hyperlink{classbase__pool__allocator_a08a7df3bae7f8320ef2b3275cee1ae6b}{m\_elts\_free}}\ ==\ \doxymbox{\hyperlink{classbase__pool__allocator_ae3d23db3935abc98cad2ac95bd686b05}{m\_elts\_allocated}})}
+\DoxyCodeLine{00336\ \ \ \ \ \doxymbox{\hyperlink{classbase__pool__allocator_aee8fb60ae89a3c6490163734bffa188e}{release}}\ ();}
+\DoxyCodeLine{00337\ \}}
+\DoxyCodeLine{00338\ }
+\DoxyCodeLine{00339\ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ TBlockAllocator>}
+\DoxyCodeLine{00340\ \textcolor{keyword}{inline}\ base\_pool\_allocator\ <TBlockAllocator>\doxymbox{\hyperlink{classbase__pool__allocator_a2edcdc708f01bde9b098361905b570ea}{::\string~base\_pool\_allocator}}\ ()}
+\DoxyCodeLine{00341\ \{}
+\DoxyCodeLine{00342\ \ \ \doxymbox{\hyperlink{classbase__pool__allocator_aee8fb60ae89a3c6490163734bffa188e}{release}}\ ();}
+\DoxyCodeLine{00343\ \}}
+\DoxyCodeLine{00344\ }
+\DoxyCodeLine{00345\ \textcolor{comment}{/*\ Allocates\ one\ element\ from\ the\ pool\ specified.\ \ */}}
+\DoxyCodeLine{00346\ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ TBlockAllocator>}
+\DoxyCodeLine{00347\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{void}*}
+\DoxyCodeLine{00348\ \doxymbox{\hyperlink{classbase__pool__allocator_af530711b11f3f261b93af61041b3af44}{base\_pool\_allocator\ <TBlockAllocator>::allocate}}\ ()}
+\DoxyCodeLine{00349\ \{}
+\DoxyCodeLine{00350\ \ \ \textcolor{keywordflow}{if}\ (!\doxymbox{\hyperlink{classbase__pool__allocator_af79674222c418f284c543dce89e76030}{m\_initialized}})}
+\DoxyCodeLine{00351\ \ \ \ \ \doxymbox{\hyperlink{classbase__pool__allocator_a8e999ab49f858989528ff0cdf4a7161b}{initialize}}\ ();}
+\DoxyCodeLine{00352\ }
+\DoxyCodeLine{00353\ \ \ \doxymbox{\hyperlink{structbase__pool__allocator_1_1allocation__pool__list}{allocation\_pool\_list}}\ *header;}
+\DoxyCodeLine{00354\ \textcolor{preprocessor}{\#ifdef\ ENABLE\_VALGRIND\_ANNOTATIONS}}
+\DoxyCodeLine{00355\ \ \ \textcolor{keywordtype}{int}\ size;}
+\DoxyCodeLine{00356\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00357\ }
+\DoxyCodeLine{00358\ \ \ \textcolor{keywordflow}{if}\ (\doxymbox{\hyperlink{auto-host_8h_afc5398d240462e7748efa4deb0fcc65d}{GATHER\_STATISTICS}})}
+\DoxyCodeLine{00359\ \ \ \ \ \{}
+\DoxyCodeLine{00360\ \ \ \ \ \ \ \doxymbox{\hyperlink{alloc-pool_8h_a0660f989bddbcd645ef7cc5e48e621aa}{pool\_allocator\_usage}}.register\_instance\_overhead\ (\doxymbox{\hyperlink{classbase__pool__allocator_addff7d5727970e08d02c159350a1e445}{m\_elt\_size}},\ \textcolor{keyword}{this});}
+\DoxyCodeLine{00361\ \ \ \ \ \}}
+\DoxyCodeLine{00362\ }
+\DoxyCodeLine{00363\ \textcolor{preprocessor}{\#ifdef\ ENABLE\_VALGRIND\_ANNOTATIONS}}
+\DoxyCodeLine{00364\ \ \ size\ =\ \doxymbox{\hyperlink{classbase__pool__allocator_addff7d5727970e08d02c159350a1e445}{m\_elt\_size}}\ -\/\ \doxymbox{\hyperlink{stddef_8h_a276e8a32e0bbf024aadd9420b8f2d3b3}{offsetof}}\ (\doxymbox{\hyperlink{structbase__pool__allocator_1_1allocation__object}{allocation\_object}},\ u.\doxymbox{\hyperlink{structbase__pool__allocator_1_1allocation__object_ab6a2963e9b4d6ca5a49aa7ad0b8d080d}{data}});}
+\DoxyCodeLine{00365\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00366\ }
+\DoxyCodeLine{00367\ \ \ \textcolor{comment}{/*\ If\ there\ are\ no\ more\ free\ elements,\ make\ some\ more!.\ \ */}}
+\DoxyCodeLine{00368\ \ \ \textcolor{keywordflow}{if}\ (!\doxymbox{\hyperlink{classbase__pool__allocator_a6fda96f6b40f0f97d4db7b3853d33b31}{m\_returned\_free\_list}})}
+\DoxyCodeLine{00369\ \ \ \ \ \{}
+\DoxyCodeLine{00370\ \ \ \ \ \ \ \textcolor{keywordtype}{char}\ *block;}
+\DoxyCodeLine{00371\ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (!\doxymbox{\hyperlink{classbase__pool__allocator_a41aa0af946f8c24d53d8933b4be39f68}{m\_virgin\_elts\_remaining}})}
+\DoxyCodeLine{00372\ \ \ \ \ \{}
+\DoxyCodeLine{00373\ \ \ \ \ \ \ \doxymbox{\hyperlink{structbase__pool__allocator_1_1allocation__pool__list}{allocation\_pool\_list}}\ *block\_header;}
+\DoxyCodeLine{00374\ }
+\DoxyCodeLine{00375\ \ \ \ \ \ \ \textcolor{comment}{/*\ Make\ the\ block.\ \ */}}
+\DoxyCodeLine{00376\ \ \ \ \ \ \ block\ =\ \textcolor{keyword}{reinterpret\_cast<}\textcolor{keywordtype}{char}\ *\textcolor{keyword}{>}\ (TBlockAllocator::allocate\ ());}
+\DoxyCodeLine{00377\ \ \ \ \ \ \ block\_header\ =\ \textcolor{keyword}{new}\ (block)\ \doxymbox{\hyperlink{structbase__pool__allocator_1_1allocation__pool__list}{allocation\_pool\_list}};}
+\DoxyCodeLine{00378\ \ \ \ \ \ \ block\ +=\ \doxymbox{\hyperlink{classbase__pool__allocator_ad7610ef802c1cf21ff88e2a2be0372f7}{align\_eight}}\ (\textcolor{keyword}{sizeof}\ (\doxymbox{\hyperlink{structbase__pool__allocator_1_1allocation__pool__list}{allocation\_pool\_list}}));}
+\DoxyCodeLine{00379\ }
+\DoxyCodeLine{00380\ \ \ \ \ \ \ \textcolor{comment}{/*\ Throw\ it\ on\ the\ block\ list.\ \ */}}
+\DoxyCodeLine{00381\ \ \ \ \ \ \ block\_header-\/>\doxymbox{\hyperlink{structbase__pool__allocator_1_1allocation__pool__list_aa05d8eb2ba7dcba9c64d0b805812b3d7}{next}}\ =\ \doxymbox{\hyperlink{classbase__pool__allocator_a5b2fc5281508b2b6884db972a05be627}{m\_block\_list}};}
+\DoxyCodeLine{00382\ \ \ \ \ \ \ \doxymbox{\hyperlink{classbase__pool__allocator_a5b2fc5281508b2b6884db972a05be627}{m\_block\_list}}\ =\ block\_header;}
+\DoxyCodeLine{00383\ }
+\DoxyCodeLine{00384\ \ \ \ \ \ \ \textcolor{comment}{/*\ Make\ the\ block\ available\ for\ allocation.\ \ */}}
+\DoxyCodeLine{00385\ \ \ \ \ \ \ \doxymbox{\hyperlink{classbase__pool__allocator_a2ee59ca56f77b6356c4c950f170e5b98}{m\_virgin\_free\_list}}\ =\ block;}
+\DoxyCodeLine{00386\ \ \ \ \ \ \ \doxymbox{\hyperlink{classbase__pool__allocator_a41aa0af946f8c24d53d8933b4be39f68}{m\_virgin\_elts\_remaining}}\ =\ \doxymbox{\hyperlink{classbase__pool__allocator_abc75c797f55058ec6a29bcd68cf6a428}{m\_elts\_per\_block}};}
+\DoxyCodeLine{00387\ }
+\DoxyCodeLine{00388\ \ \ \ \ \ \ \textcolor{comment}{/*\ Also\ update\ the\ number\ of\ elements\ we\ have\ free/allocated,\ and}}
+\DoxyCodeLine{00389\ \textcolor{comment}{\ \ \ \ \ \ \ \ \ increment\ the\ allocated\ block\ count.\ \ */}}
+\DoxyCodeLine{00390\ \ \ \ \ \ \ \doxymbox{\hyperlink{classbase__pool__allocator_ae3d23db3935abc98cad2ac95bd686b05}{m\_elts\_allocated}}\ +=\ \doxymbox{\hyperlink{classbase__pool__allocator_abc75c797f55058ec6a29bcd68cf6a428}{m\_elts\_per\_block}};}
+\DoxyCodeLine{00391\ \ \ \ \ \ \ \doxymbox{\hyperlink{classbase__pool__allocator_a08a7df3bae7f8320ef2b3275cee1ae6b}{m\_elts\_free}}\ +=\ \doxymbox{\hyperlink{classbase__pool__allocator_abc75c797f55058ec6a29bcd68cf6a428}{m\_elts\_per\_block}};}
+\DoxyCodeLine{00392\ \ \ \ \ \ \ \doxymbox{\hyperlink{classbase__pool__allocator_ac66fc4bdb30d2b688458ba7270b72063}{m\_blocks\_allocated}}\ +=\ 1;}
+\DoxyCodeLine{00393\ \ \ \ \ \}}
+\DoxyCodeLine{00394\ }
+\DoxyCodeLine{00395\ \ \ \ \ \ \ \textcolor{comment}{/*\ We\ now\ know\ that\ we\ can\ take\ the\ first\ elt\ off\ the\ virgin\ list\ and}}
+\DoxyCodeLine{00396\ \textcolor{comment}{\ \ \ \ \ put\ it\ on\ the\ returned\ list.\ \ */}}
+\DoxyCodeLine{00397\ \ \ \ \ \ \ block\ =\ \doxymbox{\hyperlink{classbase__pool__allocator_a2ee59ca56f77b6356c4c950f170e5b98}{m\_virgin\_free\_list}};}
+\DoxyCodeLine{00398\ \ \ \ \ \ \ header\ =\ (\doxymbox{\hyperlink{structbase__pool__allocator_1_1allocation__pool__list}{allocation\_pool\_list}}*)\ \doxymbox{\hyperlink{structbase__pool__allocator_1_1allocation__object_a112d3f6ac12e7bc3fe05823c1195202e}{allocation\_object::get\_data}}\ (block);}
+\DoxyCodeLine{00399\ \ \ \ \ \ \ header-\/>\doxymbox{\hyperlink{structbase__pool__allocator_1_1allocation__pool__list_aa05d8eb2ba7dcba9c64d0b805812b3d7}{next}}\ =\ \doxymbox{\hyperlink{stddef_8h_a070d2ce7b6bb7e5c05602aa8c308d0c4}{NULL}};}
+\DoxyCodeLine{00400\ }
+\DoxyCodeLine{00401\ \ \ \ \ \ \ \textcolor{comment}{/*\ Mark\ the\ element\ to\ be\ free.\ \ */}}
+\DoxyCodeLine{00402\ \textcolor{preprocessor}{\#if\ CHECKING\_P}}
+\DoxyCodeLine{00403\ \ \ \ \ \ \ ((\doxymbox{\hyperlink{structbase__pool__allocator_1_1allocation__object}{allocation\_object}}*)\ block)-\/>id\ =\ 0;}
+\DoxyCodeLine{00404\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00405\ \ \ \ \ \ \ \doxymbox{\hyperlink{system_8h_aa13cf5b7786e9bab4a05afe52811532e}{VALGRIND\_DISCARD}}\ (VALGRIND\_MAKE\_MEM\_NOACCESS\ (header,size));}
+\DoxyCodeLine{00406\ \ \ \ \ \ \ \doxymbox{\hyperlink{classbase__pool__allocator_a6fda96f6b40f0f97d4db7b3853d33b31}{m\_returned\_free\_list}}\ =\ header;}
+\DoxyCodeLine{00407\ \ \ \ \ \ \ \doxymbox{\hyperlink{classbase__pool__allocator_a2ee59ca56f77b6356c4c950f170e5b98}{m\_virgin\_free\_list}}\ +=\ \doxymbox{\hyperlink{classbase__pool__allocator_addff7d5727970e08d02c159350a1e445}{m\_elt\_size}};}
+\DoxyCodeLine{00408\ \ \ \ \ \ \ \doxymbox{\hyperlink{classbase__pool__allocator_a41aa0af946f8c24d53d8933b4be39f68}{m\_virgin\_elts\_remaining}}-\/-\/;}
+\DoxyCodeLine{00409\ }
+\DoxyCodeLine{00410\ \ \ \ \ \}}
+\DoxyCodeLine{00411\ }
+\DoxyCodeLine{00412\ \ \ \textcolor{comment}{/*\ Pull\ the\ first\ free\ element\ from\ the\ free\ list,\ and\ return\ it.\ \ */}}
+\DoxyCodeLine{00413\ \ \ header\ =\ \doxymbox{\hyperlink{classbase__pool__allocator_a6fda96f6b40f0f97d4db7b3853d33b31}{m\_returned\_free\_list}};}
+\DoxyCodeLine{00414\ \ \ \doxymbox{\hyperlink{system_8h_aa13cf5b7786e9bab4a05afe52811532e}{VALGRIND\_DISCARD}}\ (VALGRIND\_MAKE\_MEM\_DEFINED\ (header,\ \textcolor{keyword}{sizeof}\ (*header)));}
+\DoxyCodeLine{00415\ \ \ \doxymbox{\hyperlink{classbase__pool__allocator_a6fda96f6b40f0f97d4db7b3853d33b31}{m\_returned\_free\_list}}\ =\ header-\/>\doxymbox{\hyperlink{structbase__pool__allocator_1_1allocation__pool__list_aa05d8eb2ba7dcba9c64d0b805812b3d7}{next}};}
+\DoxyCodeLine{00416\ \ \ \doxymbox{\hyperlink{classbase__pool__allocator_a08a7df3bae7f8320ef2b3275cee1ae6b}{m\_elts\_free}}-\/-\/;}
+\DoxyCodeLine{00417\ }
+\DoxyCodeLine{00418\ \ \ \textcolor{comment}{/*\ Set\ the\ ID\ for\ element.\ \ */}}
+\DoxyCodeLine{00419\ \textcolor{preprocessor}{\#if\ CHECKING\_P}}
+\DoxyCodeLine{00420\ \ \ allocation\_object::get\_instance\ (header)-\/>id\ =\ \doxymbox{\hyperlink{classbase__pool__allocator_a4ae271e2cfe8ccaa31d14283c050012d}{m\_id}};}
+\DoxyCodeLine{00421\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00422\ \ \ \doxymbox{\hyperlink{system_8h_aa13cf5b7786e9bab4a05afe52811532e}{VALGRIND\_DISCARD}}\ (VALGRIND\_MAKE\_MEM\_UNDEFINED\ (header,\ size));}
+\DoxyCodeLine{00423\ }
+\DoxyCodeLine{00424\ \ \ \textcolor{keywordflow}{return}\ (\textcolor{keywordtype}{void}\ *)(header);}
+\DoxyCodeLine{00425\ \}}
+\DoxyCodeLine{00426\ }
+\DoxyCodeLine{00427\ \textcolor{comment}{/*\ Puts\ PTR\ back\ on\ POOL's\ free\ list.\ \ */}}
+\DoxyCodeLine{00428\ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ TBlockAllocator>}
+\DoxyCodeLine{00429\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{void}}
+\DoxyCodeLine{00430\ \doxymbox{\hyperlink{classbase__pool__allocator_ad00a867682d954b1bb93dbdc871e6516}{base\_pool\_allocator\ <TBlockAllocator>::remove}}\ (\textcolor{keywordtype}{void}\ *object)}
+\DoxyCodeLine{00431\ \{}
+\DoxyCodeLine{00432\ \ \ \textcolor{keywordtype}{int}\ size\ =\ \doxymbox{\hyperlink{classbase__pool__allocator_addff7d5727970e08d02c159350a1e445}{m\_elt\_size}}\ -\/\ \doxymbox{\hyperlink{stddef_8h_a276e8a32e0bbf024aadd9420b8f2d3b3}{offsetof}}\ (\doxymbox{\hyperlink{structbase__pool__allocator_1_1allocation__object}{allocation\_object}},\ u.\doxymbox{\hyperlink{structbase__pool__allocator_1_1allocation__object_ab6a2963e9b4d6ca5a49aa7ad0b8d080d}{data}});}
+\DoxyCodeLine{00433\ }
+\DoxyCodeLine{00434\ \ \ \textcolor{keywordflow}{if}\ (\doxymbox{\hyperlink{options_8h_a84596fb150478c4f5173d2c5fff82710}{flag\_checking}})}
+\DoxyCodeLine{00435\ \ \ \ \ \{}
+\DoxyCodeLine{00436\ \ \ \ \ \ \ \doxymbox{\hyperlink{system_8h_a0deee0ddaa8ce3bbd400ab5f75de06ff}{gcc\_assert}}\ (\doxymbox{\hyperlink{classbase__pool__allocator_af79674222c418f284c543dce89e76030}{m\_initialized}});}
+\DoxyCodeLine{00437\ \ \ \ \ \ \ \doxymbox{\hyperlink{system_8h_a0deee0ddaa8ce3bbd400ab5f75de06ff}{gcc\_assert}}\ (\textcolor{keywordtype}{object}}
+\DoxyCodeLine{00438\ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{/*\ Check\ if\ we\ free\ more\ than\ we\ allocated.\ \ */}}
+\DoxyCodeLine{00439\ \ \ \ \ \ \ \ \ \ \ \&\&\ \doxymbox{\hyperlink{classbase__pool__allocator_a08a7df3bae7f8320ef2b3275cee1ae6b}{m\_elts\_free}}\ <\ \doxymbox{\hyperlink{classbase__pool__allocator_ae3d23db3935abc98cad2ac95bd686b05}{m\_elts\_allocated}});}
+\DoxyCodeLine{00440\ \textcolor{preprocessor}{\#if\ CHECKING\_P}}
+\DoxyCodeLine{00441\ \ \ \ \ \ \ \textcolor{comment}{/*\ Check\ whether\ the\ PTR\ was\ allocated\ from\ POOL.\ \ */}}
+\DoxyCodeLine{00442\ \ \ \ \ \ \ \doxymbox{\hyperlink{system_8h_a0deee0ddaa8ce3bbd400ab5f75de06ff}{gcc\_assert}}\ (\doxymbox{\hyperlink{classbase__pool__allocator_a4ae271e2cfe8ccaa31d14283c050012d}{m\_id}}\ ==\ allocation\_object::get\_instance\ (\textcolor{keywordtype}{object})-\/>\textcolor{keywordtype}{id});}
+\DoxyCodeLine{00443\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00444\ }
+\DoxyCodeLine{00445\ \ \ \ \ \ \ \doxymbox{\hyperlink{string_8cpp_a313175102214d45434bf045db18dddf0}{memset}}\ (\textcolor{keywordtype}{object},\ 0xaf,\ size);}
+\DoxyCodeLine{00446\ \ \ \ \ \}}
+\DoxyCodeLine{00447\ }
+\DoxyCodeLine{00448\ \textcolor{preprocessor}{\#if\ CHECKING\_P\ }}
+\DoxyCodeLine{00449\ \ \ \textcolor{comment}{/*\ Mark\ the\ element\ to\ be\ free.\ \ */}}
+\DoxyCodeLine{00450\ \ \ allocation\_object::get\_instance\ (\textcolor{keywordtype}{object})-\/>id\ =\ 0;}
+\DoxyCodeLine{00451\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00452\ }
+\DoxyCodeLine{00453\ \ \ \doxymbox{\hyperlink{structbase__pool__allocator_1_1allocation__pool__list}{allocation\_pool\_list}}\ *header\ =\ \textcolor{keyword}{new}\ (object)\ \doxymbox{\hyperlink{structbase__pool__allocator_1_1allocation__pool__list}{allocation\_pool\_list}};}
+\DoxyCodeLine{00454\ \ \ header-\/>\doxymbox{\hyperlink{structbase__pool__allocator_1_1allocation__pool__list_aa05d8eb2ba7dcba9c64d0b805812b3d7}{next}}\ =\ \doxymbox{\hyperlink{classbase__pool__allocator_a6fda96f6b40f0f97d4db7b3853d33b31}{m\_returned\_free\_list}};}
+\DoxyCodeLine{00455\ \ \ \doxymbox{\hyperlink{classbase__pool__allocator_a6fda96f6b40f0f97d4db7b3853d33b31}{m\_returned\_free\_list}}\ =\ header;}
+\DoxyCodeLine{00456\ \ \ \doxymbox{\hyperlink{system_8h_aa13cf5b7786e9bab4a05afe52811532e}{VALGRIND\_DISCARD}}\ (VALGRIND\_MAKE\_MEM\_NOACCESS\ (\textcolor{keywordtype}{object},\ size));}
+\DoxyCodeLine{00457\ \ \ \doxymbox{\hyperlink{classbase__pool__allocator_a08a7df3bae7f8320ef2b3275cee1ae6b}{m\_elts\_free}}++;}
+\DoxyCodeLine{00458\ }
+\DoxyCodeLine{00459\ \ \ \textcolor{keywordflow}{if}\ (\doxymbox{\hyperlink{auto-host_8h_afc5398d240462e7748efa4deb0fcc65d}{GATHER\_STATISTICS}})}
+\DoxyCodeLine{00460\ \ \ \ \ \{}
+\DoxyCodeLine{00461\ \ \ \ \ \ \ \doxymbox{\hyperlink{alloc-pool_8h_a0660f989bddbcd645ef7cc5e48e621aa}{pool\_allocator\_usage}}.release\_instance\_overhead\ (\textcolor{keyword}{this},\ \doxymbox{\hyperlink{classbase__pool__allocator_addff7d5727970e08d02c159350a1e445}{m\_elt\_size}});}
+\DoxyCodeLine{00462\ \ \ \ \ \}}
+\DoxyCodeLine{00463\ \}}
+\DoxyCodeLine{00464\ }
+\DoxyCodeLine{00465\ \textcolor{comment}{/*\ Number\ of\ elements\ currently\ active\ (not\ returned\ to\ pool).\ \ Used\ for\ cheap}}
+\DoxyCodeLine{00466\ \textcolor{comment}{\ \ \ consistency\ checks.\ \ */}}
+\DoxyCodeLine{00467\ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ TBlockAllocator>}
+\DoxyCodeLine{00468\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{size\_t}}
+\DoxyCodeLine{00469\ \doxymbox{\hyperlink{classbase__pool__allocator_ac0a924488e60dcba3217a1577480a696}{base\_pool\_allocator\ <TBlockAllocator>::num\_elts\_current}}\ ()}
+\DoxyCodeLine{00470\ \{}
+\DoxyCodeLine{00471\ \ \ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{classbase__pool__allocator_ae3d23db3935abc98cad2ac95bd686b05}{m\_elts\_allocated}}\ -\/\ \doxymbox{\hyperlink{classbase__pool__allocator_a08a7df3bae7f8320ef2b3275cee1ae6b}{m\_elts\_free}};}
+\DoxyCodeLine{00472\ \}}
+\DoxyCodeLine{00473\ }
+\DoxyCodeLine{00474\ \textcolor{comment}{/*\ Specialization\ of\ base\_pool\_allocator\ which\ should\ be\ used\ in\ most\ cases.}}
+\DoxyCodeLine{00475\ \textcolor{comment}{\ \ \ Another\ specialization\ may\ be\ needed,\ if\ object\ size\ is\ greater\ than}}
+\DoxyCodeLine{00476\ \textcolor{comment}{\ \ \ memory\_block\_pool::block\_size\ (64\ KB).\ \ */}}
+\DoxyCodeLine{00477\ \textcolor{keyword}{typedef}\ base\_pool\_allocator\ <memory\_block\_pool>\ \doxymbox{\hyperlink{alloc-pool_8h_a50a821a61c709ef6d168f11e86709113}{pool\_allocator}};}
+\DoxyCodeLine{00478\ }
+\DoxyCodeLine{00479\ \textcolor{comment}{/*\ Type\ based\ memory\ pool\ allocator.\ \ */}}
+\DoxyCodeLine{00480\ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ T>}
+\DoxyCodeLine{00481\ \textcolor{keyword}{class\ }\doxymbox{\hyperlink{classobject__allocator_a678cf8d3ee00cc579ab3dccede6ffaa9}{object\_allocator}}}
+\DoxyCodeLine{00482\ \{}
+\DoxyCodeLine{00483\ \textcolor{keyword}{public}:}
+\DoxyCodeLine{00484\ \ \ \textcolor{comment}{/*\ Default\ constructor\ for\ pool\ allocator\ called\ NAME.\ \ */}}
+\DoxyCodeLine{00485\ \ \ \doxymbox{\hyperlink{classobject__allocator_a678cf8d3ee00cc579ab3dccede6ffaa9}{object\_allocator}}\ (\textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *\doxymbox{\hyperlink{configargs_8h_a8f8f80d37794cde9472343e4487ba3eb}{name}}\ \doxymbox{\hyperlink{statistics_8h_ad9b89af963cc7e535c9697fd40241a6f}{CXX\_MEM\_STAT\_INFO}}):}
+\DoxyCodeLine{00486\ \ \ \ \ \doxymbox{\hyperlink{classobject__allocator_a4b63034494b3dd3c78c90da01ca97ee1}{m\_allocator}}\ (\doxymbox{\hyperlink{configargs_8h_a8f8f80d37794cde9472343e4487ba3eb}{name}},\ sizeof\ (T)\ \doxymbox{\hyperlink{statistics_8h_a75b4a65a7a5d197f17362673db5ece22}{PASS\_MEM\_STAT}})\ \{\}}
+\DoxyCodeLine{00487\ }
+\DoxyCodeLine{00488\ \ \ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{void}}
+\DoxyCodeLine{00489\ \ \ \doxymbox{\hyperlink{classobject__allocator_ab3c664211afe38f5e7471f98d94bc2c1}{release}}\ ()}
+\DoxyCodeLine{00490\ \ \ \{}
+\DoxyCodeLine{00491\ \ \ \ \ \doxymbox{\hyperlink{classobject__allocator_a4b63034494b3dd3c78c90da01ca97ee1}{m\_allocator}}.release\ ();}
+\DoxyCodeLine{00492\ \ \ \}}
+\DoxyCodeLine{00493\ }
+\DoxyCodeLine{00494\ \ \ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classobject__allocator_ab89f8815b1205578efe5c709545b3a67}{release\_if\_empty}}\ ()}
+\DoxyCodeLine{00495\ \ \ \{}
+\DoxyCodeLine{00496\ \ \ \ \ \doxymbox{\hyperlink{classobject__allocator_a4b63034494b3dd3c78c90da01ca97ee1}{m\_allocator}}.release\_if\_empty\ ();}
+\DoxyCodeLine{00497\ \ \ \}}
+\DoxyCodeLine{00498\ }
+\DoxyCodeLine{00499\ }
+\DoxyCodeLine{00500\ \ \ \textcolor{comment}{/*\ Allocate\ memory\ for\ instance\ of\ type\ T\ and\ call\ a\ default\ constructor.\ \ */}}
+\DoxyCodeLine{00501\ }
+\DoxyCodeLine{00502\ \ \ \textcolor{keyword}{inline}\ T\ *}
+\DoxyCodeLine{00503\ \ \ \doxymbox{\hyperlink{classobject__allocator_aed1926ff536f1e94f2287c3d870012c0}{allocate}}\ ()\ \doxymbox{\hyperlink{ansidecl_8h_aee2d877feb016405b87a7ac8d9fc3108}{ATTRIBUTE\_MALLOC}}}
+\DoxyCodeLine{00504\ \ \ \{}
+\DoxyCodeLine{00505\ \ \ \ \ return\ ::new\ (\doxymbox{\hyperlink{classobject__allocator_a4b63034494b3dd3c78c90da01ca97ee1}{m\_allocator}}.allocate\ ())\ T;}
+\DoxyCodeLine{00506\ \ \ \}}
+\DoxyCodeLine{00507\ }
+\DoxyCodeLine{00508\ \ \ \textcolor{comment}{/*\ Allocate\ memory\ for\ instance\ of\ type\ T\ and\ return\ void\ *\ that}}
+\DoxyCodeLine{00509\ \textcolor{comment}{\ \ \ \ \ could\ be\ used\ in\ situations\ where\ a\ default\ constructor\ is\ not\ provided}}
+\DoxyCodeLine{00510\ \textcolor{comment}{\ \ \ \ \ by\ the\ class\ T.\ \ */}}
+\DoxyCodeLine{00511\ }
+\DoxyCodeLine{00512\ \ \ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{void}\ *}
+\DoxyCodeLine{00513\ \ \ \doxymbox{\hyperlink{classobject__allocator_a598f78961740052c0dd491ee194123a8}{allocate\_raw}}\ ()\ \doxymbox{\hyperlink{ansidecl_8h_aee2d877feb016405b87a7ac8d9fc3108}{ATTRIBUTE\_MALLOC}}}
+\DoxyCodeLine{00514\ \ \ \{}
+\DoxyCodeLine{00515\ \ \ \ \ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{classobject__allocator_a4b63034494b3dd3c78c90da01ca97ee1}{m\_allocator}}.allocate\ ();}
+\DoxyCodeLine{00516\ \ \ \}}
+\DoxyCodeLine{00517\ }
+\DoxyCodeLine{00518\ \ \ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{void}}
+\DoxyCodeLine{00519\ \ \ \doxymbox{\hyperlink{classobject__allocator_a66066e2676871995b01d53abd53be271}{remove}}\ (T\ *\textcolor{keywordtype}{object})}
+\DoxyCodeLine{00520\ \ \ \{}
+\DoxyCodeLine{00521\ \ \ \ \ \textcolor{comment}{/*\ Call\ destructor.\ \ */}}
+\DoxyCodeLine{00522\ \ \ \ \ \textcolor{keywordtype}{object}-\/>\string~T\ ();}
+\DoxyCodeLine{00523\ }
+\DoxyCodeLine{00524\ \ \ \ \ \doxymbox{\hyperlink{classobject__allocator_a4b63034494b3dd3c78c90da01ca97ee1}{m\_allocator}}.remove\ (\textcolor{keywordtype}{object});}
+\DoxyCodeLine{00525\ \ \ \}}
+\DoxyCodeLine{00526\ }
+\DoxyCodeLine{00527\ \ \ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{void}}
+\DoxyCodeLine{00528\ \ \ \doxymbox{\hyperlink{classobject__allocator_a626171a1cf3e72ae718d09a1796fd9fb}{remove\_raw}}\ (\textcolor{keywordtype}{void}\ *\textcolor{keywordtype}{object})}
+\DoxyCodeLine{00529\ \ \ \{}
+\DoxyCodeLine{00530\ \ \ \ \ \doxymbox{\hyperlink{classobject__allocator_a4b63034494b3dd3c78c90da01ca97ee1}{m\_allocator}}.remove\ (\textcolor{keywordtype}{object});}
+\DoxyCodeLine{00531\ \ \ \}}
+\DoxyCodeLine{00532\ }
+\DoxyCodeLine{00533\ \ \ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{size\_t}}
+\DoxyCodeLine{00534\ \ \ \doxymbox{\hyperlink{classobject__allocator_acf338befc84643bbcb36e08a1e0e1418}{num\_elts\_current}}\ ()}
+\DoxyCodeLine{00535\ \ \ \{}
+\DoxyCodeLine{00536\ \ \ \ \ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{classobject__allocator_a4b63034494b3dd3c78c90da01ca97ee1}{m\_allocator}}.num\_elts\_current\ ();}
+\DoxyCodeLine{00537\ \ \ \}}
+\DoxyCodeLine{00538\ }
+\DoxyCodeLine{00539\ \textcolor{keyword}{private}:}
+\DoxyCodeLine{00540\ \ \ \doxymbox{\hyperlink{alloc-pool_8h_a50a821a61c709ef6d168f11e86709113}{pool\_allocator}}\ \doxymbox{\hyperlink{classobject__allocator_a4b63034494b3dd3c78c90da01ca97ee1}{m\_allocator}};}
+\DoxyCodeLine{00541\ \};}
+\DoxyCodeLine{00542\ }
+\DoxyCodeLine{00543\ \textcolor{comment}{/*\ Store\ information\ about\ each\ particular\ alloc\_pool.\ \ Note\ that\ this}}
+\DoxyCodeLine{00544\ \textcolor{comment}{\ \ \ will\ underestimate\ the\ amount\ the\ amount\ of\ storage\ used\ by\ a\ small\ amount:}}
+\DoxyCodeLine{00545\ \textcolor{comment}{\ \ \ 1)\ The\ overhead\ in\ a\ pool\ is\ not\ accounted\ for.}}
+\DoxyCodeLine{00546\ \textcolor{comment}{\ \ \ 2)\ The\ unallocated\ elements\ in\ a\ block\ are\ not\ accounted\ for.\ \ Note}}
+\DoxyCodeLine{00547\ \textcolor{comment}{\ \ \ that\ this\ can\ at\ worst\ case\ be\ one\ element\ smaller\ that\ the\ block}}
+\DoxyCodeLine{00548\ \textcolor{comment}{\ \ \ size\ for\ that\ pool.\ \ */}}
+\DoxyCodeLine{00549\ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{structalloc__pool__descriptor}{alloc\_pool\_descriptor}}}
+\DoxyCodeLine{00550\ \{}
+\DoxyCodeLine{00551\ \ \ \textcolor{comment}{/*\ Number\ of\ pools\ allocated.\ \ */}}
+\DoxyCodeLine{00552\ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{long}\ \doxymbox{\hyperlink{structalloc__pool__descriptor_a8a58d292167cdc030e890963dc38fdba}{created}};}
+\DoxyCodeLine{00553\ \ \ \textcolor{comment}{/*\ Gross\ allocated\ storage.\ \ */}}
+\DoxyCodeLine{00554\ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{long}\ \doxymbox{\hyperlink{structalloc__pool__descriptor_a31fe3865f51e7106ad6e0b4514b84116}{allocated}};}
+\DoxyCodeLine{00555\ \ \ \textcolor{comment}{/*\ Amount\ of\ currently\ active\ storage.\ \ */}}
+\DoxyCodeLine{00556\ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{long}\ \doxymbox{\hyperlink{structalloc__pool__descriptor_a17c8b4877ebcadbc910dda7f823f779f}{current}};}
+\DoxyCodeLine{00557\ \ \ \textcolor{comment}{/*\ Peak\ amount\ of\ storage\ used.\ \ */}}
+\DoxyCodeLine{00558\ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{long}\ \doxymbox{\hyperlink{structalloc__pool__descriptor_ace3e3dc11c988aaca4aa2bef2212e40a}{peak}};}
+\DoxyCodeLine{00559\ \ \ \textcolor{comment}{/*\ Size\ of\ element\ in\ the\ pool.\ \ */}}
+\DoxyCodeLine{00560\ \ \ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{structalloc__pool__descriptor_a4398c04670e2e7be81d1a5598608f403}{elt\_size}};}
+\DoxyCodeLine{00561\ \};}
+\DoxyCodeLine{00562\ }
+\DoxyCodeLine{00563\ \textcolor{comment}{/*\ Helper\ for\ classes\ that\ do\ not\ provide\ default\ ctor.\ \ */}}
+\DoxyCodeLine{00564\ }
+\DoxyCodeLine{00565\ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ T>}
+\DoxyCodeLine{00566\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{void}\ *}
+\DoxyCodeLine{00567\ \textcolor{keyword}{operator}\ \textcolor{keyword}{new}\ (\doxymbox{\hyperlink{stddef_8h_aa9d55e2f20e580b7445617d0d12fff6e}{size\_t}},\ \doxymbox{\hyperlink{classobject__allocator}{object\_allocator<T>}}\ \&\doxymbox{\hyperlink{poly-int_8h_af77c881600a14567e276ee17dfb8764f}{a}})}
+\DoxyCodeLine{00568\ \{}
+\DoxyCodeLine{00569\ \ \ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{poly-int_8h_af77c881600a14567e276ee17dfb8764f}{a}}.allocate\_raw\ ();}
+\DoxyCodeLine{00570\ \}}
+\DoxyCodeLine{00571\ }
+\DoxyCodeLine{00572\ \textcolor{comment}{/*\ Hashtable\ mapping\ alloc\_pool\ names\ to\ descriptors.\ \ */}}
+\DoxyCodeLine{00573\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{classhash__map}{hash\_map<const\ char\ *,\ alloc\_pool\_descriptor>}}\ *\doxymbox{\hyperlink{alloc-pool_8h_a599d2d029235f9dac85779dcb3ed3e0a}{alloc\_pool\_hash}};}
+\DoxyCodeLine{00574\ }
+\DoxyCodeLine{00575\ }
+\DoxyCodeLine{00576\ \textcolor{preprocessor}{\#endif}}
+
+\end{DoxyCode}

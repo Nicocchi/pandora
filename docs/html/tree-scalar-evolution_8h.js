@@ -1,0 +1,27 @@
+var tree_scalar_evolution_8h =
+[
+    [ "analyze_scalar_evolution", "tree-scalar-evolution_8h.html#a5720ff9e18ac4447ac98f2e4c653049f", null ],
+    [ "block_before_loop", "tree-scalar-evolution_8h.html#a1b6ced95ed057b90900c74ac32972893", null ],
+    [ "compute_overall_effect_of_inner_loop", "tree-scalar-evolution_8h.html#a690bfab77b3f3277b8339f77bd8eedd4", null ],
+    [ "expression_expensive_p", "tree-scalar-evolution_8h.html#a6bc77e3aec5db200581cad339f49a752", null ],
+    [ "final_value_replacement_loop", "tree-scalar-evolution_8h.html#a0d51e4623c3098cdd97af7d2e0840256", null ],
+    [ "gather_stats_on_scev_database", "tree-scalar-evolution_8h.html#aa86d6a83eb2dac5d1157c286a8fd70d8", null ],
+    [ "get_chrec_loop", "tree-scalar-evolution_8h.html#a19cabeeea99db69d344cc74c892d8279", null ],
+    [ "get_loop_exit_condition", "tree-scalar-evolution_8h.html#a8cb209da03dc59e9bb145943dde96051", null ],
+    [ "get_loop_exit_condition", "tree-scalar-evolution_8h.html#a4bf4cb7cec0a565f9b5d2e523aa981d4", null ],
+    [ "instantiate_parameters", "tree-scalar-evolution_8h.html#a29eec8eaeecf8fb9ee9117774fbe26f9", null ],
+    [ "instantiate_scev", "tree-scalar-evolution_8h.html#a3577d849c5100e31d3ab7dc277e4c5d3", null ],
+    [ "iv_can_overflow_p", "tree-scalar-evolution_8h.html#af6f137fd545bf3a213aae5b517138803", null ],
+    [ "nonwrapping_chrec_p", "tree-scalar-evolution_8h.html#abce7930a8e9ba7f9efb4db04405b1f5f", null ],
+    [ "number_of_latch_executions", "tree-scalar-evolution_8h.html#ac8440ac3b3493e24ec381823b0bd0002", null ],
+    [ "record_nonwrapping_chrec", "tree-scalar-evolution_8h.html#ae1d994b4e187f2666656f440d9f5098a", null ],
+    [ "resolve_mixers", "tree-scalar-evolution_8h.html#accd8b1aee4657925f5f08ef966287189", null ],
+    [ "scev_const_prop", "tree-scalar-evolution_8h.html#ae46a7c3c7262ec6b039da3ec719389f3", null ],
+    [ "scev_finalize", "tree-scalar-evolution_8h.html#a4036d8f52b84baa1d6de91d87c3c51bb", null ],
+    [ "scev_initialize", "tree-scalar-evolution_8h.html#a4f738b203b3388523745e12cb2905fa4", null ],
+    [ "scev_initialized_p", "tree-scalar-evolution_8h.html#a5fe37186cce1942244e55335e206f7bb", null ],
+    [ "scev_reset", "tree-scalar-evolution_8h.html#a879e538bfe0dd5ab3c803cd986c67500", null ],
+    [ "scev_reset_htab", "tree-scalar-evolution_8h.html#a1fdd4f59f9dd3aaa2dad2ca7d2820947", null ],
+    [ "simple_iv", "tree-scalar-evolution_8h.html#af3f212e67a957e5a11dac4c6dccd3f34", null ],
+    [ "simple_iv_with_niters", "tree-scalar-evolution_8h.html#a98dd97a21cb210302332891a55170bf5", null ]
+];

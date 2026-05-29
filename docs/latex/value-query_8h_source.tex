@@ -1,0 +1,125 @@
+\doxysection{value-\/query.h}
+\hypertarget{value-query_8h_source}{}\label{value-query_8h_source}\index{toolchain/x86\_64-\/elf/lib/gcc/x86\_64-\/elf/14.2.0/plugin/include/value-\/query.h@{toolchain/x86\_64-\/elf/lib/gcc/x86\_64-\/elf/14.2.0/plugin/include/value-\/query.h}}
+\doxymbox{\hyperlink{value-query_8h}{Go to the documentation of this file.}}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001\ \textcolor{comment}{/*\ Support\ routines\ for\ value\ queries.}}
+\DoxyCodeLine{00002\ \textcolor{comment}{\ \ \ Copyright\ (C)\ 2020-\/2024\ Free\ Software\ Foundation,\ Inc.}}
+\DoxyCodeLine{00003\ \textcolor{comment}{\ \ \ Contributed\ by\ Aldy\ Hernandez\ <aldyh@redhat.com>\ and}}
+\DoxyCodeLine{00004\ \textcolor{comment}{\ \ \ Andrew\ Macleod\ <amacleod@redhat.com>.}}
+\DoxyCodeLine{00005\ \textcolor{comment}{}}
+\DoxyCodeLine{00006\ \textcolor{comment}{This\ file\ is\ part\ of\ GCC.}}
+\DoxyCodeLine{00007\ \textcolor{comment}{}}
+\DoxyCodeLine{00008\ \textcolor{comment}{GCC\ is\ free\ software;\ you\ can\ redistribute\ it\ and/or\ modify}}
+\DoxyCodeLine{00009\ \textcolor{comment}{it\ under\ the\ terms\ of\ the\ GNU\ General\ Public\ License\ as\ published\ by}}
+\DoxyCodeLine{00010\ \textcolor{comment}{the\ Free\ Software\ Foundation;\ either\ version\ 3,\ or\ (at\ your\ option)}}
+\DoxyCodeLine{00011\ \textcolor{comment}{any\ later\ version.}}
+\DoxyCodeLine{00012\ \textcolor{comment}{}}
+\DoxyCodeLine{00013\ \textcolor{comment}{GCC\ is\ distributed\ in\ the\ hope\ that\ it\ will\ be\ useful,}}
+\DoxyCodeLine{00014\ \textcolor{comment}{but\ WITHOUT\ ANY\ WARRANTY;\ without\ even\ the\ implied\ warranty\ of}}
+\DoxyCodeLine{00015\ \textcolor{comment}{MERCHANTABILITY\ or\ FITNESS\ FOR\ A\ PARTICULAR\ PURPOSE.\ \ See\ the}}
+\DoxyCodeLine{00016\ \textcolor{comment}{GNU\ General\ Public\ License\ for\ more\ details.}}
+\DoxyCodeLine{00017\ \textcolor{comment}{}}
+\DoxyCodeLine{00018\ \textcolor{comment}{You\ should\ have\ received\ a\ copy\ of\ the\ GNU\ General\ Public\ License}}
+\DoxyCodeLine{00019\ \textcolor{comment}{along\ with\ GCC;\ see\ the\ file\ COPYING3.\ \ If\ not\ see}}
+\DoxyCodeLine{00020\ \textcolor{comment}{<http://www.gnu.org/licenses/>.\ \ */}}
+\DoxyCodeLine{00021\ }
+\DoxyCodeLine{00022\ \textcolor{preprocessor}{\#ifndef\ GCC\_QUERY\_H}}
+\DoxyCodeLine{00023\ \textcolor{preprocessor}{\#define\ GCC\_QUERY\_H}}
+\DoxyCodeLine{00024\ }
+\DoxyCodeLine{00025\ \textcolor{preprocessor}{\#include\ "{}\doxymbox{\hyperlink{value-relation_8h}{value-\/relation.h}}"{}}}
+\DoxyCodeLine{00026\ }
+\DoxyCodeLine{00027\ \textcolor{comment}{//\ The\ value\_query\ class\ is\ used\ by\ optimization\ passes\ that\ require}}
+\DoxyCodeLine{00028\ \textcolor{comment}{//\ valueizing\ SSA\ names\ in\ terms\ of\ a\ tree\ value,\ but\ have\ no\ need}}
+\DoxyCodeLine{00029\ \textcolor{comment}{//\ for\ ranges.}}
+\DoxyCodeLine{00030\ \textcolor{comment}{//}}
+\DoxyCodeLine{00031\ \textcolor{comment}{//\ value\_of\_expr\ must\ be\ provided.\ \ The\ default\ for\ value\_on\_edge\ and}}
+\DoxyCodeLine{00032\ \textcolor{comment}{//\ value\_of\_stmt\ is\ to\ call\ value\_of\_expr.}}
+\DoxyCodeLine{00033\ \textcolor{comment}{//}}
+\DoxyCodeLine{00034\ \textcolor{comment}{//\ This\ implies\ the\ valuation\ is\ global\ in\ nature.\ \ If\ a\ pass\ can\ make}}
+\DoxyCodeLine{00035\ \textcolor{comment}{//\ use\ of\ more\ specific\ information,\ it\ can\ override\ the\ other\ queries.}}
+\DoxyCodeLine{00036\ \textcolor{comment}{//}}
+\DoxyCodeLine{00037\ \textcolor{comment}{//\ Proper\ usage\ of\ the\ correct\ query\ in\ passes\ will\ enable\ other}}
+\DoxyCodeLine{00038\ \textcolor{comment}{//\ valuation\ mechanisms\ to\ produce\ more\ precise\ results.}}
+\DoxyCodeLine{00039\ }
+\DoxyCodeLine{00040\ \textcolor{comment}{//\ The\ range\_query\ class\ is\ used\ by\ optimization\ passes\ which\ are}}
+\DoxyCodeLine{00041\ \textcolor{comment}{//\ range\ aware.}}
+\DoxyCodeLine{00042\ \textcolor{comment}{//}}
+\DoxyCodeLine{00043\ \textcolor{comment}{//\ range\_of\_expr\ must\ be\ provided.\ \ The\ default\ for\ range\_on\_edge\ and}}
+\DoxyCodeLine{00044\ \textcolor{comment}{//\ range\_of\_stmt\ is\ to\ call\ range\_of\_expr.\ \ If\ a\ pass\ can\ make\ use\ of}}
+\DoxyCodeLine{00045\ \textcolor{comment}{//\ more\ specific\ information,\ then\ it\ can\ override\ the\ other\ queries.}}
+\DoxyCodeLine{00046\ \textcolor{comment}{//}}
+\DoxyCodeLine{00047\ \textcolor{comment}{//\ The\ default\ for\ the\ value\_*\ routines\ is\ to\ call\ the\ equivalent}}
+\DoxyCodeLine{00048\ \textcolor{comment}{//\ range\_*\ routines,\ check\ if\ the\ range\ is\ a\ singleton,\ and\ return\ it}}
+\DoxyCodeLine{00049\ \textcolor{comment}{//\ if\ so.}}
+\DoxyCodeLine{00050\ \textcolor{comment}{//}}
+\DoxyCodeLine{00051\ \textcolor{comment}{//\ The\ get\_value\_range\ method\ is\ currently\ provided\ for\ compatibility}}
+\DoxyCodeLine{00052\ \textcolor{comment}{//\ with\ vr-\/values.\ \ It\ will\ be\ deprecated\ when\ possible.}}
+\DoxyCodeLine{00053\ }
+\DoxyCodeLine{00054\ \textcolor{keyword}{class\ }\doxymbox{\hyperlink{classrange__query_a7838aae8d14f424c3212df2ca81bb656}{range\_query}}}
+\DoxyCodeLine{00055\ \{}
+\DoxyCodeLine{00056\ \textcolor{keyword}{public}:}
+\DoxyCodeLine{00057\ \ \ \doxymbox{\hyperlink{classrange__query_a7838aae8d14f424c3212df2ca81bb656}{range\_query}}\ ();}
+\DoxyCodeLine{00058\ \ \ \textcolor{keyword}{virtual}\ \doxymbox{\hyperlink{classrange__query_a0ac78089e1f05db3717e90527b307590}{\string~range\_query}}\ ();}
+\DoxyCodeLine{00059\ }
+\DoxyCodeLine{00060\ \ \ \textcolor{keyword}{virtual}\ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ \doxymbox{\hyperlink{classrange__query_a18f0899de28108357f37ca756183b513}{value\_of\_expr}}\ (\doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ expr,\ gimple\ *\ =\ \doxymbox{\hyperlink{stddef_8h_a070d2ce7b6bb7e5c05602aa8c308d0c4}{NULL}});}
+\DoxyCodeLine{00061\ \ \ \textcolor{keyword}{virtual}\ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ \doxymbox{\hyperlink{classrange__query_ab14d300978c48b214cfa06b46ad24790}{value\_on\_edge}}\ (\doxymbox{\hyperlink{coretypes_8h_a44ae11f0c90646aa6208ad4bf486490b}{edge}},\ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ expr);}
+\DoxyCodeLine{00062\ \ \ \textcolor{keyword}{virtual}\ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ \doxymbox{\hyperlink{classrange__query_a9127677ff891d09493cad30dd974d3c9}{value\_of\_stmt}}\ (gimple\ *,\ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ \doxymbox{\hyperlink{configargs_8h_a8f8f80d37794cde9472343e4487ba3eb}{name}}\ =\ \doxymbox{\hyperlink{stddef_8h_a070d2ce7b6bb7e5c05602aa8c308d0c4}{NULL}});}
+\DoxyCodeLine{00063\ }
+\DoxyCodeLine{00064\ \ \ \textcolor{comment}{//\ These\ are\ the\ range\ equivalents\ of\ the\ value\_*\ methods.\ \ Instead}}
+\DoxyCodeLine{00065\ \ \ \textcolor{comment}{//\ of\ returning\ a\ singleton,\ they\ calculate\ a\ range\ and\ return\ it\ in}}
+\DoxyCodeLine{00066\ \ \ \textcolor{comment}{//\ R.\ \ TRUE\ is\ returned\ on\ success\ or\ FALSE\ if\ no\ range\ was\ found.}}
+\DoxyCodeLine{00067\ \ \ \textcolor{comment}{//}}
+\DoxyCodeLine{00068\ \ \ \textcolor{comment}{//\ Note\ that\ range\_of\_expr\ must\ always\ return\ TRUE\ unless\ ranges\ are}}
+\DoxyCodeLine{00069\ \ \ \textcolor{comment}{//\ unsupported\ for\ EXPR's\ type\ (supports\_type\_p\ is\ false).}}
+\DoxyCodeLine{00070\ \ \ \textcolor{keyword}{virtual}\ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{classrange__query_a738d4899607705ac9e93348292e5b9cf}{range\_of\_expr}}\ (vrange\ \&\doxymbox{\hyperlink{poly-int_8h_a3ecac2571dcdc8050989339124f1bd26}{r}},\ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ expr,\ gimple\ *\ =\ \doxymbox{\hyperlink{stddef_8h_a070d2ce7b6bb7e5c05602aa8c308d0c4}{NULL}})\ =\ 0;}
+\DoxyCodeLine{00071\ \ \ \textcolor{keyword}{virtual}\ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{classrange__query_ac5edfb439f2e8ae0aa188edf609e3dba}{range\_on\_edge}}\ (vrange\ \&\doxymbox{\hyperlink{poly-int_8h_a3ecac2571dcdc8050989339124f1bd26}{r}},\ \doxymbox{\hyperlink{coretypes_8h_a44ae11f0c90646aa6208ad4bf486490b}{edge}},\ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ expr);}
+\DoxyCodeLine{00072\ \ \ \textcolor{keyword}{virtual}\ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{classrange__query_ada24522b47606791a7d471abd5293165}{range\_of\_stmt}}\ (vrange\ \&\doxymbox{\hyperlink{poly-int_8h_a3ecac2571dcdc8050989339124f1bd26}{r}},\ gimple\ *,\ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ \doxymbox{\hyperlink{configargs_8h_a8f8f80d37794cde9472343e4487ba3eb}{name}}\ =\ \doxymbox{\hyperlink{stddef_8h_a070d2ce7b6bb7e5c05602aa8c308d0c4}{NULL}});}
+\DoxyCodeLine{00073\ }
+\DoxyCodeLine{00074\ \ \ \textcolor{comment}{//\ Query\ if\ there\ is\ any\ relation\ between\ SSA1\ and\ SSA2.}}
+\DoxyCodeLine{00075\ \ \ \doxymbox{\hyperlink{value-relation_8h_a4f35e5231fd244f9b7ff43da0f046ac6}{relation\_kind}}\ \doxymbox{\hyperlink{classrange__query_ace02e08011c18a9496a13fe8829eb4b9}{query\_relation}}\ (gimple\ *s,\ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ ssa1,\ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ ssa2,}
+\DoxyCodeLine{00076\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{tree-ssa-strlen_8h_ab7167800de8a1103bcca552a72e67a18}{get\_range}}\ =\ \textcolor{keyword}{true});}
+\DoxyCodeLine{00077\ \ \ \doxymbox{\hyperlink{value-relation_8h_a4f35e5231fd244f9b7ff43da0f046ac6}{relation\_kind}}\ \doxymbox{\hyperlink{classrange__query_a2d0402360212340763b673864d96fc30}{query\_relation}}\ (\doxymbox{\hyperlink{coretypes_8h_a44ae11f0c90646aa6208ad4bf486490b}{edge}}\ e,\ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ ssa1,\ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ ssa2,}
+\DoxyCodeLine{00078\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{tree-ssa-strlen_8h_ab7167800de8a1103bcca552a72e67a18}{get\_range}}\ =\ \textcolor{keyword}{true});}
+\DoxyCodeLine{00079\ \ \ \textcolor{comment}{//\ If\ present,\ Access\ relation\ oracle\ for\ more\ advanced\ uses.}}
+\DoxyCodeLine{00080\ \ \ \textcolor{keyword}{inline}\ \doxymbox{\hyperlink{classrelation__oracle}{relation\_oracle}}\ *\doxymbox{\hyperlink{classrange__query_a7363218a17454a3a0cc5f8a8c53e5571}{oracle}}\ ()\textcolor{keyword}{\ const\ \ }\{\ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{classrange__query_ab7ed1bb2aaf296b53a67aeef3a7501be}{m\_oracle}};\ \}}
+\DoxyCodeLine{00081\ }
+\DoxyCodeLine{00082\ \ \ \textcolor{keyword}{virtual}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classrange__query_a27d54d4c3fdd2f0dc55925f82191e586}{dump}}\ (FILE\ *);}
+\DoxyCodeLine{00083\ }
+\DoxyCodeLine{00084\ \textcolor{keyword}{protected}:}
+\DoxyCodeLine{00085\ \ \ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{classrange__query_a5c4303b582d13fbf7ae8f83b0ec360f6}{get\_tree\_range}}\ (vrange\ \&v,\ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ expr,\ gimple\ *stmt);}
+\DoxyCodeLine{00086\ \ \ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{classrange__query_a675e77f480b080c9a8669fccdc6b723e}{get\_arith\_expr\_range}}\ (vrange\ \&\doxymbox{\hyperlink{poly-int_8h_a3ecac2571dcdc8050989339124f1bd26}{r}},\ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ expr,\ gimple\ *stmt);}
+\DoxyCodeLine{00087\ \ \ \doxymbox{\hyperlink{classrelation__oracle}{relation\_oracle}}\ *\doxymbox{\hyperlink{classrange__query_ab7ed1bb2aaf296b53a67aeef3a7501be}{m\_oracle}};}
+\DoxyCodeLine{00088\ \};}
+\DoxyCodeLine{00089\ }
+\DoxyCodeLine{00090\ \textcolor{comment}{//\ Global\ ranges\ for\ SSA\ names\ using\ SSA\_NAME\_RANGE\_INFO.}}
+\DoxyCodeLine{00091\ }
+\DoxyCodeLine{00092\ \textcolor{keyword}{class\ }\doxymbox{\hyperlink{classglobal__range__query}{global\_range\_query}}\ :\ \textcolor{keyword}{public}\ \doxymbox{\hyperlink{classrange__query_a7838aae8d14f424c3212df2ca81bb656}{range\_query}}}
+\DoxyCodeLine{00093\ \{}
+\DoxyCodeLine{00094\ \textcolor{keyword}{public}:}
+\DoxyCodeLine{00095\ \ \ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{classglobal__range__query_a9b20175be8760a5151e687a25b64e06f}{range\_of\_expr}}\ (vrange\ \&\doxymbox{\hyperlink{poly-int_8h_a3ecac2571dcdc8050989339124f1bd26}{r}},\ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ expr,\ gimple\ *\ =\ \doxymbox{\hyperlink{stddef_8h_a070d2ce7b6bb7e5c05602aa8c308d0c4}{NULL}})\ \textcolor{keyword}{override};}
+\DoxyCodeLine{00096\ \};}
+\DoxyCodeLine{00097\ }
+\DoxyCodeLine{00098\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{classglobal__range__query}{global\_range\_query}}\ \doxymbox{\hyperlink{value-query_8h_a6c6dfe8bd8fbf892ea61f05b42306a1b}{global\_ranges}};}
+\DoxyCodeLine{00099\ }
+\DoxyCodeLine{00100\ \textcolor{keyword}{inline}\ \doxymbox{\hyperlink{classrange__query}{range\_query}}\ *}
+\DoxyCodeLine{00101\ \doxymbox{\hyperlink{value-query_8h_a32f1a449b91b357da483a43d5a9df008}{get\_global\_range\_query}}\ ()}
+\DoxyCodeLine{00102\ \{}
+\DoxyCodeLine{00103\ \ \ \textcolor{keywordflow}{return}\ \&\doxymbox{\hyperlink{value-query_8h_a6c6dfe8bd8fbf892ea61f05b42306a1b}{global\_ranges}};}
+\DoxyCodeLine{00104\ \}}
+\DoxyCodeLine{00105\ }
+\DoxyCodeLine{00106\ \textcolor{comment}{/*\ Returns\ the\ currently\ active\ range\ access\ class.\ \ When\ there\ is\ no\ active}}
+\DoxyCodeLine{00107\ \textcolor{comment}{\ \ \ range\ class,\ global\ ranges\ are\ used.\ \ Never\ returns\ null.\ \ */}}
+\DoxyCodeLine{00108\ }
+\DoxyCodeLine{00109\ \doxymbox{\hyperlink{ansidecl_8h_a6895279823e7157cda6b432d750d53d9}{ATTRIBUTE\_RETURNS\_NONNULL}}\ \textcolor{keyword}{inline}\ \doxymbox{\hyperlink{classrange__query}{range\_query}}\ *}
+\DoxyCodeLine{00110\ \doxymbox{\hyperlink{value-query_8h_a68a5431ab929548aa953f3c2068a3ed7}{get\_range\_query}}\ (\textcolor{keyword}{const}\ \textcolor{keyword}{struct}\ function\ *fun)}
+\DoxyCodeLine{00111\ \{}
+\DoxyCodeLine{00112\ \ \ \textcolor{keywordflow}{return}\ (fun\ \&\&\ fun-\/>x\_range\_query)\ ?\ fun-\/>x\_range\_query\ :\ \&\doxymbox{\hyperlink{value-query_8h_a6c6dfe8bd8fbf892ea61f05b42306a1b}{global\_ranges}};}
+\DoxyCodeLine{00113\ \}}
+\DoxyCodeLine{00114\ }
+\DoxyCodeLine{00115\ \textcolor{comment}{//\ Query\ the\ global\ range\ of\ NAME\ in\ function\ F.\ \ Default\ to\ cfun.}}
+\DoxyCodeLine{00116\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{value-query_8h_a19f2a20ea6ab72f9be20ac4432455ff6}{gimple\_range\_global}}\ (vrange\ \&v,\ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ \doxymbox{\hyperlink{configargs_8h_a8f8f80d37794cde9472343e4487ba3eb}{name}},}
+\DoxyCodeLine{00117\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{struct}\ function\ *f\ =\ \doxymbox{\hyperlink{function_8h_ae364f850fb87e59780f10d5890501251}{cfun}});}
+\DoxyCodeLine{00118\ }
+\DoxyCodeLine{00119\ \textcolor{preprocessor}{\#endif\ }\textcolor{comment}{//\ GCC\_QUERY\_H}}
+
+\end{DoxyCode}

@@ -1,0 +1,217 @@
+\doxysection{tree-\/ssa-\/alias.h}
+\hypertarget{tree-ssa-alias_8h_source}{}\label{tree-ssa-alias_8h_source}\index{toolchain/x86\_64-\/elf/lib/gcc/x86\_64-\/elf/14.2.0/plugin/include/tree-\/ssa-\/alias.h@{toolchain/x86\_64-\/elf/lib/gcc/x86\_64-\/elf/14.2.0/plugin/include/tree-\/ssa-\/alias.h}}
+\doxymbox{\hyperlink{tree-ssa-alias_8h}{Go to the documentation of this file.}}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001\ \textcolor{comment}{/*\ Tree\ based\ alias\ analysis\ and\ alias\ oracle.}}
+\DoxyCodeLine{00002\ \textcolor{comment}{\ \ \ Copyright\ (C)\ 2008-\/2024\ Free\ Software\ Foundation,\ Inc.}}
+\DoxyCodeLine{00003\ \textcolor{comment}{\ \ \ Contributed\ by\ Richard\ Guenther\ \ <rguenther@suse.de>}}
+\DoxyCodeLine{00004\ \textcolor{comment}{}}
+\DoxyCodeLine{00005\ \textcolor{comment}{\ \ \ This\ file\ is\ part\ of\ GCC.}}
+\DoxyCodeLine{00006\ \textcolor{comment}{}}
+\DoxyCodeLine{00007\ \textcolor{comment}{\ \ \ GCC\ is\ free\ software;\ you\ can\ redistribute\ it\ and/or\ modify}}
+\DoxyCodeLine{00008\ \textcolor{comment}{\ \ \ under\ the\ terms\ of\ the\ GNU\ General\ Public\ License\ as\ published\ by}}
+\DoxyCodeLine{00009\ \textcolor{comment}{\ \ \ the\ Free\ Software\ Foundation;\ either\ version\ 3\ of\ the\ License,\ or}}
+\DoxyCodeLine{00010\ \textcolor{comment}{\ \ \ (at\ your\ option)\ any\ later\ version.}}
+\DoxyCodeLine{00011\ \textcolor{comment}{}}
+\DoxyCodeLine{00012\ \textcolor{comment}{\ \ \ GCC\ is\ distributed\ in\ the\ hope\ that\ it\ will\ be\ useful,}}
+\DoxyCodeLine{00013\ \textcolor{comment}{\ \ \ but\ WITHOUT\ ANY\ WARRANTY;\ without\ even\ the\ implied\ warranty\ of}}
+\DoxyCodeLine{00014\ \textcolor{comment}{\ \ \ MERCHANTABILITY\ or\ FITNESS\ FOR\ A\ PARTICULAR\ PURPOSE.\ \ See\ the}}
+\DoxyCodeLine{00015\ \textcolor{comment}{\ \ \ GNU\ General\ Public\ License\ for\ more\ details.}}
+\DoxyCodeLine{00016\ \textcolor{comment}{}}
+\DoxyCodeLine{00017\ \textcolor{comment}{\ \ \ You\ should\ have\ received\ a\ copy\ of\ the\ GNU\ General\ Public\ License}}
+\DoxyCodeLine{00018\ \textcolor{comment}{\ \ \ along\ with\ GCC;\ see\ the\ file\ COPYING3.\ \ If\ not\ see}}
+\DoxyCodeLine{00019\ \textcolor{comment}{\ \ \ <http://www.gnu.org/licenses/>.\ \ */}}
+\DoxyCodeLine{00020\ }
+\DoxyCodeLine{00021\ \textcolor{preprocessor}{\#ifndef\ TREE\_SSA\_ALIAS\_H}}
+\DoxyCodeLine{00022\ \textcolor{preprocessor}{\#define\ TREE\_SSA\_ALIAS\_H}}
+\DoxyCodeLine{00023\ }
+\DoxyCodeLine{00024\ \textcolor{comment}{/*\ The\ points-\/to\ solution.}}
+\DoxyCodeLine{00025\ \textcolor{comment}{}}
+\DoxyCodeLine{00026\ \textcolor{comment}{\ \ \ The\ points-\/to\ solution\ is\ a\ union\ of\ pt\_vars\ and\ the\ abstract}}
+\DoxyCodeLine{00027\ \textcolor{comment}{\ \ \ sets\ specified\ by\ the\ flags.\ \ */}}
+\DoxyCodeLine{00028\ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{coretypes_8h_ae5708c4d4b300570eebe0bc0c78facbc}{GTY}}(())\ pt\_solution}
+\DoxyCodeLine{00029\ \{}
+\DoxyCodeLine{00030\ \ \ \textcolor{comment}{/*\ Nonzero\ if\ points-\/to\ analysis\ couldn't\ determine\ where\ this\ pointer}}
+\DoxyCodeLine{00031\ \textcolor{comment}{\ \ \ \ \ is\ pointing\ to.\ \ */}}
+\DoxyCodeLine{00032\ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ anything\ :\ 1;}
+\DoxyCodeLine{00033\ }
+\DoxyCodeLine{00034\ \ \ \textcolor{comment}{/*\ Nonzero\ if\ the\ points-\/to\ set\ includes\ any\ global\ memory.\ \ Note\ that}}
+\DoxyCodeLine{00035\ \textcolor{comment}{\ \ \ \ \ even\ if\ this\ is\ zero\ pt\_vars\ can\ still\ include\ global\ variables.\ \ */}}
+\DoxyCodeLine{00036\ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ nonlocal\ :\ 1;}
+\DoxyCodeLine{00037\ }
+\DoxyCodeLine{00038\ \ \ \textcolor{comment}{/*\ Nonzero\ if\ the\ points-\/to\ set\ includes\ the\ local\ escaped\ solution\ by}}
+\DoxyCodeLine{00039\ \textcolor{comment}{\ \ \ \ \ reference.\ \ */}}
+\DoxyCodeLine{00040\ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ escaped\ :\ 1;}
+\DoxyCodeLine{00041\ }
+\DoxyCodeLine{00042\ \ \ \textcolor{comment}{/*\ Nonzero\ if\ the\ points-\/to\ set\ includes\ the\ IPA\ escaped\ solution\ by}}
+\DoxyCodeLine{00043\ \textcolor{comment}{\ \ \ \ \ reference.\ \ */}}
+\DoxyCodeLine{00044\ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ ipa\_escaped\ :\ 1;}
+\DoxyCodeLine{00045\ }
+\DoxyCodeLine{00046\ \ \ \textcolor{comment}{/*\ Nonzero\ if\ the\ points-\/to\ set\ includes\ 'nothing',\ the\ points-\/to\ set}}
+\DoxyCodeLine{00047\ \textcolor{comment}{\ \ \ \ \ includes\ memory\ at\ address\ NULL.\ \ */}}
+\DoxyCodeLine{00048\ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ null\ :\ 1;}
+\DoxyCodeLine{00049\ }
+\DoxyCodeLine{00050\ \ \ \textcolor{comment}{/*\ Nonzero\ if\ the\ vars\ bitmap\ includes\ a\ variable\ included\ in\ 'nonlocal'.\ \ */}}
+\DoxyCodeLine{00051\ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ vars\_contains\_nonlocal\ :\ 1;}
+\DoxyCodeLine{00052\ \ \ \textcolor{comment}{/*\ Nonzero\ if\ the\ vars\ bitmap\ includes\ a\ variable\ included\ in\ 'escaped'.\ \ */}}
+\DoxyCodeLine{00053\ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ vars\_contains\_escaped\ :\ 1;}
+\DoxyCodeLine{00054\ \ \ \textcolor{comment}{/*\ Nonzero\ if\ the\ vars\ bitmap\ includes\ a\ anonymous\ heap\ variable\ that}}
+\DoxyCodeLine{00055\ \textcolor{comment}{\ \ \ \ \ escaped\ the\ function\ and\ thus\ became\ global.\ \ */}}
+\DoxyCodeLine{00056\ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ vars\_contains\_escaped\_heap\ :\ 1;}
+\DoxyCodeLine{00057\ \ \ \textcolor{comment}{/*\ Nonzero\ if\ the\ vars\ bitmap\ includes\ a\ anonymous\ variable\ used\ to}}
+\DoxyCodeLine{00058\ \textcolor{comment}{\ \ \ \ \ represent\ storage\ pointed\ to\ by\ a\ restrict\ qualified\ pointer.\ \ */}}
+\DoxyCodeLine{00059\ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ vars\_contains\_restrict\ :\ 1;}
+\DoxyCodeLine{00060\ \ \ \textcolor{comment}{/*\ Nonzero\ if\ the\ vars\ bitmap\ includes\ an\ interposable\ variable.\ \ */}}
+\DoxyCodeLine{00061\ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ vars\_contains\_interposable\ :\ 1;}
+\DoxyCodeLine{00062\ }
+\DoxyCodeLine{00063\ \ \ \textcolor{comment}{/*\ Set\ of\ variables\ that\ this\ pointer\ may\ point\ to.\ \ */}}
+\DoxyCodeLine{00064\ \ \ \doxymbox{\hyperlink{coretypes_8h_ae7ea3a04cabf8964dc6e8e95a9cde1b8}{bitmap}}\ vars;}
+\DoxyCodeLine{00065\ \};}
+\DoxyCodeLine{00066\ }
+\DoxyCodeLine{00067\ }
+\DoxyCodeLine{00068\ \textcolor{comment}{/*\ Simplified\ and\ cached\ information\ about\ a\ memory\ reference\ tree.}}
+\DoxyCodeLine{00069\ \textcolor{comment}{\ \ \ Used\ by\ the\ alias-\/oracle\ internally\ and\ externally\ in\ alternate}}
+\DoxyCodeLine{00070\ \textcolor{comment}{\ \ \ interfaces.\ \ */}}
+\DoxyCodeLine{00071\ \textcolor{keyword}{class\ }\doxymbox{\hyperlink{classao__ref}{ao\_ref}}}
+\DoxyCodeLine{00072\ \{}
+\DoxyCodeLine{00073\ \textcolor{keyword}{public}:}
+\DoxyCodeLine{00074\ \ \ \textcolor{comment}{/*\ The\ original\ full\ memory\ reference\ tree\ or\ NULL\_TREE\ if\ that\ is}}
+\DoxyCodeLine{00075\ \textcolor{comment}{\ \ \ \ \ not\ available.\ \ */}}
+\DoxyCodeLine{00076\ \ \ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ \doxymbox{\hyperlink{classao__ref_a44fa8839e43755be0a3656190a84a385}{ref}};}
+\DoxyCodeLine{00077\ }
+\DoxyCodeLine{00078\ \ \ \textcolor{comment}{/*\ The\ following\ fields\ are\ the\ decomposed\ reference\ as\ returned}}
+\DoxyCodeLine{00079\ \textcolor{comment}{\ \ \ \ \ by\ get\_ref\_base\_and\_extent.\ \ */}}
+\DoxyCodeLine{00080\ \ \ \textcolor{comment}{/*\ The\ base\ object\ of\ the\ memory\ reference\ or\ NULL\_TREE\ if\ all\ of}}
+\DoxyCodeLine{00081\ \textcolor{comment}{\ \ \ \ \ the\ following\ fields\ are\ not\ yet\ computed.\ \ */}}
+\DoxyCodeLine{00082\ \ \ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ \doxymbox{\hyperlink{classao__ref_a33c5416ff0e6d86579961ceb2ee632f5}{base}};}
+\DoxyCodeLine{00083\ \ \ \textcolor{comment}{/*\ The\ offset\ relative\ to\ the\ base.\ \ */}}
+\DoxyCodeLine{00084\ \ \ \doxymbox{\hyperlink{poly-int-types_8h_af5255601feb5e9a21f3193d378a55845}{poly\_int64}}\ \doxymbox{\hyperlink{classao__ref_a2c171757245b5858c1d0f1451bda7f1e}{offset}};}
+\DoxyCodeLine{00085\ \ \ \textcolor{comment}{/*\ The\ size\ of\ the\ access.\ \ */}}
+\DoxyCodeLine{00086\ \ \ \doxymbox{\hyperlink{poly-int-types_8h_af5255601feb5e9a21f3193d378a55845}{poly\_int64}}\ \doxymbox{\hyperlink{classao__ref_a33da0705bfe553ada6e17326f7c9eff6}{size}};}
+\DoxyCodeLine{00087\ \ \ \textcolor{comment}{/*\ The\ maximum\ possible\ extent\ of\ the\ access\ or\ -\/1\ if\ unconstrained.\ \ */}}
+\DoxyCodeLine{00088\ \ \ \doxymbox{\hyperlink{poly-int-types_8h_af5255601feb5e9a21f3193d378a55845}{poly\_int64}}\ \doxymbox{\hyperlink{classao__ref_a8091855f3c64b9ff32a62f2674157721}{max\_size}};}
+\DoxyCodeLine{00089\ }
+\DoxyCodeLine{00090\ \ \ \textcolor{comment}{/*\ The\ alias\ set\ of\ the\ access\ or\ -\/1\ if\ not\ yet\ computed.\ \ */}}
+\DoxyCodeLine{00091\ \ \ \doxymbox{\hyperlink{coretypes_8h_af666fbb03cd47129d4fa40abda4818a5}{alias\_set\_type}}\ \doxymbox{\hyperlink{classao__ref_a56db0b36c4ef1935acadb8ab66967250}{ref\_alias\_set}};}
+\DoxyCodeLine{00092\ }
+\DoxyCodeLine{00093\ \ \ \textcolor{comment}{/*\ The\ alias\ set\ of\ the\ base\ object\ or\ -\/1\ if\ not\ yet\ computed.\ \ */}}
+\DoxyCodeLine{00094\ \ \ \doxymbox{\hyperlink{coretypes_8h_af666fbb03cd47129d4fa40abda4818a5}{alias\_set\_type}}\ \doxymbox{\hyperlink{classao__ref_a96ed4ec94f726d45ce325d7729d4a730}{base\_alias\_set}};}
+\DoxyCodeLine{00095\ }
+\DoxyCodeLine{00096\ \ \ \textcolor{comment}{/*\ Whether\ the\ memory\ is\ considered\ a\ volatile\ access.\ \ */}}
+\DoxyCodeLine{00097\ \ \ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{classao__ref_a312589a86740c5748cfec8a90fa6b2be}{volatile\_p}};}
+\DoxyCodeLine{00098\ }
+\DoxyCodeLine{00099\ \ \ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{classao__ref_abd4d7020505c398ca085af0b67822b96}{max\_size\_known\_p}}\ ()\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00100\ \};}
+\DoxyCodeLine{00101\ }
+\DoxyCodeLine{00102\ \textcolor{comment}{/*\ Return\ true\ if\ the\ maximum\ size\ is\ known,\ rather\ than\ the\ special\ -\/1}}
+\DoxyCodeLine{00103\ \textcolor{comment}{\ \ \ marker.\ \ */}}
+\DoxyCodeLine{00104\ }
+\DoxyCodeLine{00105\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{bool}}
+\DoxyCodeLine{00106\ \doxymbox{\hyperlink{classao__ref_abd4d7020505c398ca085af0b67822b96}{ao\_ref::max\_size\_known\_p}}\ ()\textcolor{keyword}{\ const}}
+\DoxyCodeLine{00107\ \textcolor{keyword}{}\{}
+\DoxyCodeLine{00108\ \ \ \textcolor{keywordflow}{return}\ known\_size\_p\ (\doxymbox{\hyperlink{classao__ref_a8091855f3c64b9ff32a62f2674157721}{max\_size}});}
+\DoxyCodeLine{00109\ \}}
+\DoxyCodeLine{00110\ }
+\DoxyCodeLine{00111\ \textcolor{comment}{/*\ In\ tree-\/ssa-\/alias.cc\ \ */}}
+\DoxyCodeLine{00112\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{tree-ssa-alias_8h_a5d77787ae0ed0b63f498d13d93978f13}{ao\_ref\_init}}\ (\doxymbox{\hyperlink{classao__ref}{ao\_ref}}\ *,\ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}});}
+\DoxyCodeLine{00113\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{tree-ssa-alias_8h_a0a4ebc6b4147c0f52ac5899f06ae8304}{ao\_ref\_init\_from\_ptr\_and\_size}}\ (\doxymbox{\hyperlink{classao__ref}{ao\_ref}}\ *,\ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}},\ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}});}
+\DoxyCodeLine{00114\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{tree-ssa-alias_8h_aebbc0131ec9c9981fa6aa017cc04aec1}{ao\_ref\_init\_from\_ptr\_and\_range}}\ (\doxymbox{\hyperlink{classao__ref}{ao\_ref}}\ *,\ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}},\ \textcolor{keywordtype}{bool},}
+\DoxyCodeLine{00115\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{poly-int-types_8h_af5255601feb5e9a21f3193d378a55845}{poly\_int64}},\ \doxymbox{\hyperlink{poly-int-types_8h_af5255601feb5e9a21f3193d378a55845}{poly\_int64}},}
+\DoxyCodeLine{00116\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{poly-int-types_8h_af5255601feb5e9a21f3193d378a55845}{poly\_int64}});}
+\DoxyCodeLine{00117\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ \doxymbox{\hyperlink{tree-ssa-alias_8h_a2589ae05482ff116057c0a165635b598}{ao\_ref\_base}}\ (\doxymbox{\hyperlink{classao__ref}{ao\_ref}}\ *);}
+\DoxyCodeLine{00118\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{coretypes_8h_af666fbb03cd47129d4fa40abda4818a5}{alias\_set\_type}}\ \doxymbox{\hyperlink{tree-ssa-alias_8h_ade16f4b91c5c89c8813b8175f0828edf}{ao\_ref\_alias\_set}}\ (\doxymbox{\hyperlink{classao__ref}{ao\_ref}}\ *);}
+\DoxyCodeLine{00119\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{coretypes_8h_af666fbb03cd47129d4fa40abda4818a5}{alias\_set\_type}}\ \doxymbox{\hyperlink{tree-ssa-alias_8h_a7c6f5bf61941e6b883989b300be4fd72}{ao\_ref\_base\_alias\_set}}\ (\doxymbox{\hyperlink{classao__ref}{ao\_ref}}\ *);}
+\DoxyCodeLine{00120\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ \doxymbox{\hyperlink{tree-ssa-alias_8h_add73ab0ede2914c8a127bd1365357c99}{ao\_ref\_alias\_ptr\_type}}\ (\doxymbox{\hyperlink{classao__ref}{ao\_ref}}\ *);}
+\DoxyCodeLine{00121\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ \doxymbox{\hyperlink{tree-ssa-alias_8h_a6543603a3045b1f91fa3c23c16caf90f}{ao\_ref\_base\_alias\_ptr\_type}}\ (\doxymbox{\hyperlink{classao__ref}{ao\_ref}}\ *);}
+\DoxyCodeLine{00122\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{tree-ssa-alias_8h_a3888a85c3a34522c81eb4683a55be9b2}{ao\_ref\_alignment}}\ (\doxymbox{\hyperlink{classao__ref}{ao\_ref}}\ *,\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ *,}
+\DoxyCodeLine{00123\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{unsigned}\ HOST\_WIDE\_INT\ *);}
+\DoxyCodeLine{00124\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{tree-ssa-alias_8h_a9bdca5840eecd8fcf5be581ca9c88065}{ptr\_deref\_may\_alias\_global\_p}}\ (\doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}},\ \textcolor{keywordtype}{bool});}
+\DoxyCodeLine{00125\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{tree-ssa-alias_8h_a6d0aab740f1868d750cbf2f1ecb47859}{ptr\_derefs\_may\_alias\_p}}\ (\doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}},\ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}});}
+\DoxyCodeLine{00126\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{tree-ssa-alias_8h_a36dc05699dd02eaa5df5f83b77e1668c}{ptrs\_compare\_unequal}}\ (\doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}},\ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}});}
+\DoxyCodeLine{00127\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{tree-ssa-alias_8h_a70f674e434c28cf14f12277c6650bf8e}{ref\_may\_alias\_global\_p}}\ (\doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}},\ \textcolor{keywordtype}{bool});}
+\DoxyCodeLine{00128\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{tree-ssa-alias_8h_a70f674e434c28cf14f12277c6650bf8e}{ref\_may\_alias\_global\_p}}\ (\doxymbox{\hyperlink{classao__ref}{ao\_ref}}\ *,\ \textcolor{keywordtype}{bool});}
+\DoxyCodeLine{00129\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{tree-ssa-alias_8h_a4b92776e051ff9f6cec673487e3bd117}{refs\_may\_alias\_p}}\ (\doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}},\ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}},\ \textcolor{keywordtype}{bool}\ =\ \textcolor{keyword}{true});}
+\DoxyCodeLine{00130\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{tree-ssa-alias_8h_aabe806918ace248115688ea30e136b63}{refs\_may\_alias\_p\_1}}\ (\doxymbox{\hyperlink{classao__ref}{ao\_ref}}\ *,\ \doxymbox{\hyperlink{classao__ref}{ao\_ref}}\ *,\ \textcolor{keywordtype}{bool});}
+\DoxyCodeLine{00131\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{tree-ssa-alias_8h_a63c56f3b2e8c182ac4bace5203b3f144}{refs\_anti\_dependent\_p}}\ (\doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}},\ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}});}
+\DoxyCodeLine{00132\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{tree-ssa-alias_8h_a20572ff69f7d7950d4be2b7c3229c13b}{refs\_output\_dependent\_p}}\ (\doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}},\ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}});}
+\DoxyCodeLine{00133\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{tree-ssa-alias_8h_aed00d91c1c24f90f028fc4f1d32baa52}{ref\_maybe\_used\_by\_stmt\_p}}\ (gimple\ *,\ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}},\ \textcolor{keywordtype}{bool}\ =\ \textcolor{keyword}{true});}
+\DoxyCodeLine{00134\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{tree-ssa-alias_8h_aed00d91c1c24f90f028fc4f1d32baa52}{ref\_maybe\_used\_by\_stmt\_p}}\ (gimple\ *,\ \doxymbox{\hyperlink{classao__ref}{ao\_ref}}\ *,\ \textcolor{keywordtype}{bool}\ =\ \textcolor{keyword}{true});}
+\DoxyCodeLine{00135\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{tree-ssa-alias_8h_a3bae3dd68aacc1b199ebba9707df0fc5}{stmt\_may\_clobber\_global\_p}}\ (gimple\ *,\ \textcolor{keywordtype}{bool});}
+\DoxyCodeLine{00136\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{tree-ssa-alias_8h_acd9c0b87807f04fc925abde0a5ce0a34}{stmt\_may\_clobber\_ref\_p}}\ (gimple\ *,\ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}},\ \textcolor{keywordtype}{bool}\ =\ \textcolor{keyword}{true});}
+\DoxyCodeLine{00137\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{tree-ssa-alias_8h_ac2712659698c1c6f4df339ecc5cbc55c}{stmt\_may\_clobber\_ref\_p\_1}}\ (gimple\ *,\ \doxymbox{\hyperlink{classao__ref}{ao\_ref}}\ *,\ \textcolor{keywordtype}{bool}\ =\ \textcolor{keyword}{true});}
+\DoxyCodeLine{00138\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{tree-ssa-alias_8h_a0e1590f6f8a9da23c7b870ec99e378b5}{call\_may\_clobber\_ref\_p}}\ (gcall\ *,\ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}},\ \textcolor{keywordtype}{bool}\ =\ \textcolor{keyword}{true});}
+\DoxyCodeLine{00139\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{tree-ssa-alias_8h_a878fe50e07b9ce95b85796e028e66f8b}{call\_may\_clobber\_ref\_p\_1}}\ (gcall\ *,\ \doxymbox{\hyperlink{classao__ref}{ao\_ref}}\ *,\ \textcolor{keywordtype}{bool}\ =\ \textcolor{keyword}{true});}
+\DoxyCodeLine{00140\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{tree-ssa-alias_8h_aefb19829e746e8a7984181d36e09c2f6}{stmt\_kills\_ref\_p}}\ (gimple\ *,\ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}});}
+\DoxyCodeLine{00141\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{tree-ssa-alias_8h_aefb19829e746e8a7984181d36e09c2f6}{stmt\_kills\_ref\_p}}\ (gimple\ *,\ \doxymbox{\hyperlink{classao__ref}{ao\_ref}}\ *);}
+\DoxyCodeLine{00142\ \textcolor{keyword}{enum}\ \doxymbox{\hyperlink{tree-ssa-alias_8h_a1eef55f705e4ba11668ff7823f2c1c37}{translate\_flags}}}
+\DoxyCodeLine{00143\ \ \ \{\ \doxymbox{\hyperlink{tree-ssa-alias_8h_a1eef55f705e4ba11668ff7823f2c1c37a5400b2d0fe42a196580b70502af2b43a}{TR\_TRANSLATE}},\ \doxymbox{\hyperlink{tree-ssa-alias_8h_a1eef55f705e4ba11668ff7823f2c1c37a1d3b8c5ca62f5bae4798f3782a15f050}{TR\_VALUEIZE\_AND\_DISAMBIGUATE}},\ \doxymbox{\hyperlink{tree-ssa-alias_8h_a1eef55f705e4ba11668ff7823f2c1c37afd8256ba990f50e681dea54bf32c1e63}{TR\_DISAMBIGUATE}}\ \};}
+\DoxyCodeLine{00144\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ \doxymbox{\hyperlink{tree-ssa-alias_8h_a5354d12a9d1385ac6bf0a837902d29ce}{get\_continuation\_for\_phi}}\ (gimple\ *,\ \doxymbox{\hyperlink{classao__ref}{ao\_ref}}\ *,\ \textcolor{keywordtype}{bool},}
+\DoxyCodeLine{00145\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ \&,\ \doxymbox{\hyperlink{coretypes_8h_ae7ea3a04cabf8964dc6e8e95a9cde1b8}{bitmap}}\ *,\ \textcolor{keywordtype}{bool},}
+\DoxyCodeLine{00146\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{void}\ *(*)(\doxymbox{\hyperlink{classao__ref}{ao\_ref}}\ *,\ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}},\ \textcolor{keywordtype}{void}\ *,}
+\DoxyCodeLine{00147\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{tree-ssa-alias_8h_a1eef55f705e4ba11668ff7823f2c1c37}{translate\_flags}}\ *),}
+\DoxyCodeLine{00148\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{void}\ *,\ \doxymbox{\hyperlink{tree-ssa-alias_8h_a1eef55f705e4ba11668ff7823f2c1c37}{translate\_flags}}}
+\DoxyCodeLine{00149\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ =\ \doxymbox{\hyperlink{tree-ssa-alias_8h_a1eef55f705e4ba11668ff7823f2c1c37a1d3b8c5ca62f5bae4798f3782a15f050}{TR\_VALUEIZE\_AND\_DISAMBIGUATE}});}
+\DoxyCodeLine{00150\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ *\doxymbox{\hyperlink{tree-ssa-alias_8h_a3d20e5de1cee6b53c24d40525c6f0345}{walk\_non\_aliased\_vuses}}\ (\doxymbox{\hyperlink{classao__ref}{ao\_ref}}\ *,\ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}},\ \textcolor{keywordtype}{bool},}
+\DoxyCodeLine{00151\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{void}\ *(*)(\doxymbox{\hyperlink{classao__ref}{ao\_ref}}\ *,\ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}},\ \textcolor{keywordtype}{void}\ *),}
+\DoxyCodeLine{00152\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{void}\ *(*)(\doxymbox{\hyperlink{classao__ref}{ao\_ref}}\ *,\ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}},\ \textcolor{keywordtype}{void}\ *,}
+\DoxyCodeLine{00153\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{tree-ssa-alias_8h_a1eef55f705e4ba11668ff7823f2c1c37}{translate\_flags}}\ *),}
+\DoxyCodeLine{00154\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ (*)(\doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}),\ \textcolor{keywordtype}{unsigned}\ \&,\ \textcolor{keywordtype}{void}\ *);}
+\DoxyCodeLine{00155\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{tree-ssa-alias_8h_a2788c92c4eb9b010e07a729f8b46ad8b}{walk\_aliased\_vdefs}}\ (\doxymbox{\hyperlink{classao__ref}{ao\_ref}}\ *,\ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}},}
+\DoxyCodeLine{00156\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{bool}\ (*)(\doxymbox{\hyperlink{classao__ref}{ao\_ref}}\ *,\ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}},\ \textcolor{keywordtype}{void}\ *),}
+\DoxyCodeLine{00157\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{void}\ *,\ \doxymbox{\hyperlink{coretypes_8h_ae7ea3a04cabf8964dc6e8e95a9cde1b8}{bitmap}}\ *,}
+\DoxyCodeLine{00158\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{bool}\ *function\_entry\_reached\ =\ \doxymbox{\hyperlink{stddef_8h_a070d2ce7b6bb7e5c05602aa8c308d0c4}{NULL}},}
+\DoxyCodeLine{00159\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ limit\ =\ 0);}
+\DoxyCodeLine{00160\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{tree-ssa-alias_8h_abfdb731190d15b101299dfdad0b9a096}{dump\_alias\_info}}\ (FILE\ *);}
+\DoxyCodeLine{00161\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{tree-ssa-alias_8h_a7e3ee233d0d7eea5db18c6638b029cc0}{debug\_alias\_info}}\ (\textcolor{keywordtype}{void});}
+\DoxyCodeLine{00162\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{tree-ssa-alias_8h_a96f3e59876e50d27589248ef483989dd}{dump\_points\_to\_solution}}\ (FILE\ *,\ \textcolor{keyword}{struct}\ pt\_solution\ *);}
+\DoxyCodeLine{00163\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{collect-utils_8h_a398527b3e9e358c345c5047b16871957}{debug}}\ (pt\_solution\ \&ref);}
+\DoxyCodeLine{00164\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{collect-utils_8h_a398527b3e9e358c345c5047b16871957}{debug}}\ (pt\_solution\ *ptr);}
+\DoxyCodeLine{00165\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{tree-ssa-alias_8h_ad1024769e98c75817f97f87452c949eb}{dump\_points\_to\_info\_for}}\ (FILE\ *,\ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}});}
+\DoxyCodeLine{00166\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{tree-ssa-alias_8h_a543b5af6c9ecbaa9fe1fb666bde59507}{debug\_points\_to\_info\_for}}\ (\doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}});}
+\DoxyCodeLine{00167\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{tree-ssa-alias_8h_adfa803ad8bbec5c56fc2fd9fb579b8af}{dump\_alias\_stats}}\ (FILE\ *);}
+\DoxyCodeLine{00168\ }
+\DoxyCodeLine{00169\ }
+\DoxyCodeLine{00170\ \textcolor{comment}{/*\ In\ tree-\/ssa-\/structalias.cc\ \ */}}
+\DoxyCodeLine{00171\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{tree-ssa-alias_8h_a339ab011e2d27adefc6f4dfc734312d8}{compute\_may\_aliases}}\ (\textcolor{keywordtype}{void});}
+\DoxyCodeLine{00172\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{tree-ssa-alias_8h_af28be8e8c32aa57d2b3c1c19d32d98f4}{pt\_solution\_empty\_p}}\ (\textcolor{keyword}{const}\ pt\_solution\ *);}
+\DoxyCodeLine{00173\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{tree-ssa-alias_8h_a39a37fbca387eadbaf30767dd29f26e5}{pt\_solution\_singleton\_or\_null\_p}}\ (\textcolor{keyword}{struct}\ pt\_solution\ *,\ \textcolor{keywordtype}{unsigned}\ *);}
+\DoxyCodeLine{00174\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{tree-ssa-alias_8h_a605beefd18fc264b8c76ffe3b2bbec52}{pt\_solution\_includes\_global}}\ (\textcolor{keyword}{struct}\ pt\_solution\ *,\ \textcolor{keywordtype}{bool});}
+\DoxyCodeLine{00175\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{tree-ssa-alias_8h_ab6f9aa0aa02c6f6331e97ba75a958a89}{pt\_solution\_includes}}\ (\textcolor{keyword}{struct}\ pt\_solution\ *,\ \doxymbox{\hyperlink{coretypes_8h_ad41eb6a6028ff5b3fd00b1ee9f35ed46}{const\_tree}});}
+\DoxyCodeLine{00176\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{tree-ssa-alias_8h_a60aa196ec27a82e530006f0138e036cc}{pt\_solutions\_intersect}}\ (\textcolor{keyword}{struct}\ pt\_solution\ *,\ \textcolor{keyword}{struct}\ pt\_solution\ *);}
+\DoxyCodeLine{00177\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{tree-ssa-alias_8h_ab7658070fbaf329d54522ab9857f75ee}{pt\_solution\_reset}}\ (\textcolor{keyword}{struct}\ pt\_solution\ *);}
+\DoxyCodeLine{00178\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{tree-ssa-alias_8h_a26f5945791d5dc174500398020f0d8fa}{pt\_solution\_set}}\ (\textcolor{keyword}{struct}\ pt\_solution\ *,\ \doxymbox{\hyperlink{coretypes_8h_ae7ea3a04cabf8964dc6e8e95a9cde1b8}{bitmap}},\ \textcolor{keywordtype}{bool});}
+\DoxyCodeLine{00179\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{tree-ssa-alias_8h_a9f441ea90493ef70a371fe78efbfbf00}{pt\_solution\_set\_var}}\ (\textcolor{keyword}{struct}\ pt\_solution\ *,\ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}});}
+\DoxyCodeLine{00180\ }
+\DoxyCodeLine{00181\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{tree-ssa-alias_8h_a453600cdb3ddcdbca4b13fa6ae60dcc1}{dump\_pta\_stats}}\ (FILE\ *);}
+\DoxyCodeLine{00182\ }
+\DoxyCodeLine{00183\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{coretypes_8h_ae5708c4d4b300570eebe0bc0c78facbc}{GTY}}(())\ struct\ pt\_solution\ ipa\_escaped\_pt;}
+\DoxyCodeLine{00184\ }
+\DoxyCodeLine{00185\ \textcolor{comment}{/*\ Return\ true,\ if\ the\ two\ ranges\ [POS1,\ SIZE1]\ and\ [POS2,\ SIZE2]}}
+\DoxyCodeLine{00186\ \textcolor{comment}{\ \ \ overlap.\ \ SIZE1\ and/or\ SIZE2\ can\ be\ (unsigned)-\/1\ in\ which\ case\ the}}
+\DoxyCodeLine{00187\ \textcolor{comment}{\ \ \ range\ is\ open-\/ended.\ \ Otherwise\ return\ false.\ \ */}}
+\DoxyCodeLine{00188\ }
+\DoxyCodeLine{00189\ \doxymbox{\hyperlink{ansidecl_8h_a00d24c7231be28dbaf71f5408f30e44c}{inline}}\ \textcolor{keywordtype}{bool}}
+\DoxyCodeLine{00190\ \doxymbox{\hyperlink{tree-ssa-alias_8h_a16e33eb7519d31c61d81a7de4f55878f}{ranges\_overlap\_p}}\ (HOST\_WIDE\_INT\ pos1,}
+\DoxyCodeLine{00191\ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{unsigned}\ HOST\_WIDE\_INT\ size1,}
+\DoxyCodeLine{00192\ \ \ \ \ \ \ \ \ \ \ HOST\_WIDE\_INT\ pos2,}
+\DoxyCodeLine{00193\ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{unsigned}\ HOST\_WIDE\_INT\ size2)}
+\DoxyCodeLine{00194\ \{}
+\DoxyCodeLine{00195\ \ \ \textcolor{keywordflow}{if}\ (size1\ ==\ 0\ ||\ size2\ ==\ 0)}
+\DoxyCodeLine{00196\ \ \ \ \ \textcolor{keywordflow}{return}\ \textcolor{keyword}{false};}
+\DoxyCodeLine{00197\ \ \ \textcolor{keywordflow}{if}\ (pos1\ >=\ pos2}
+\DoxyCodeLine{00198\ \ \ \ \ \ \ \&\&\ (size2\ ==\ (\textcolor{keywordtype}{unsigned}\ HOST\_WIDE\_INT)-\/1}
+\DoxyCodeLine{00199\ \ \ \ \ \ \ ||\ pos1\ <\ (pos2\ +\ (HOST\_WIDE\_INT)\ size2)))}
+\DoxyCodeLine{00200\ \ \ \ \ \textcolor{keywordflow}{return}\ \textcolor{keyword}{true};}
+\DoxyCodeLine{00201\ \ \ \textcolor{keywordflow}{if}\ (pos2\ >=\ pos1}
+\DoxyCodeLine{00202\ \ \ \ \ \ \ \&\&\ (size1\ ==\ (\textcolor{keywordtype}{unsigned}\ HOST\_WIDE\_INT)-\/1}
+\DoxyCodeLine{00203\ \ \ \ \ \ \ ||\ pos2\ <\ (pos1\ +\ (HOST\_WIDE\_INT)\ size1)))}
+\DoxyCodeLine{00204\ \ \ \ \ \textcolor{keywordflow}{return}\ \textcolor{keyword}{true};}
+\DoxyCodeLine{00205\ }
+\DoxyCodeLine{00206\ \ \ \textcolor{keywordflow}{return}\ \textcolor{keyword}{false};}
+\DoxyCodeLine{00207\ \}}
+\DoxyCodeLine{00208\ }
+\DoxyCodeLine{00209\ }
+\DoxyCodeLine{00210\ }
+\DoxyCodeLine{00211\ \textcolor{preprocessor}{\#endif\ }\textcolor{comment}{/*\ TREE\_SSA\_ALIAS\_H\ \ */}\textcolor{preprocessor}{}}
+
+\end{DoxyCode}

@@ -1,0 +1,1449 @@
+\doxysection{line-\/map.h}
+\hypertarget{line-map_8h_source}{}\label{line-map_8h_source}\index{toolchain/x86\_64-\/elf/lib/gcc/x86\_64-\/elf/14.2.0/plugin/include/line-\/map.h@{toolchain/x86\_64-\/elf/lib/gcc/x86\_64-\/elf/14.2.0/plugin/include/line-\/map.h}}
+\doxymbox{\hyperlink{line-map_8h}{Go to the documentation of this file.}}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001\ \textcolor{comment}{/*\ Map\ (unsigned\ int)\ keys\ to\ (source\ file,\ line,\ column)\ triples.}}
+\DoxyCodeLine{00002\ \textcolor{comment}{\ \ \ Copyright\ (C)\ 2001-\/2024\ Free\ Software\ Foundation,\ Inc.}}
+\DoxyCodeLine{00003\ \textcolor{comment}{}}
+\DoxyCodeLine{00004\ \textcolor{comment}{This\ program\ is\ free\ software;\ you\ can\ redistribute\ it\ and/or\ modify\ it}}
+\DoxyCodeLine{00005\ \textcolor{comment}{under\ the\ terms\ of\ the\ GNU\ General\ Public\ License\ as\ published\ by\ the}}
+\DoxyCodeLine{00006\ \textcolor{comment}{Free\ Software\ Foundation;\ either\ version\ 3,\ or\ (at\ your\ option)\ any}}
+\DoxyCodeLine{00007\ \textcolor{comment}{later\ version.}}
+\DoxyCodeLine{00008\ \textcolor{comment}{}}
+\DoxyCodeLine{00009\ \textcolor{comment}{This\ program\ is\ distributed\ in\ the\ hope\ that\ it\ will\ be\ useful,}}
+\DoxyCodeLine{00010\ \textcolor{comment}{but\ WITHOUT\ ANY\ WARRANTY;\ without\ even\ the\ implied\ warranty\ of}}
+\DoxyCodeLine{00011\ \textcolor{comment}{MERCHANTABILITY\ or\ FITNESS\ FOR\ A\ PARTICULAR\ PURPOSE.\ \ See\ the}}
+\DoxyCodeLine{00012\ \textcolor{comment}{GNU\ General\ Public\ License\ for\ more\ details.}}
+\DoxyCodeLine{00013\ \textcolor{comment}{}}
+\DoxyCodeLine{00014\ \textcolor{comment}{You\ should\ have\ received\ a\ copy\ of\ the\ GNU\ General\ Public\ License}}
+\DoxyCodeLine{00015\ \textcolor{comment}{along\ with\ this\ program;\ see\ the\ file\ COPYING3.\ \ If\ not\ see}}
+\DoxyCodeLine{00016\ \textcolor{comment}{<http://www.gnu.org/licenses/>.}}
+\DoxyCodeLine{00017\ \textcolor{comment}{}}
+\DoxyCodeLine{00018\ \textcolor{comment}{\ In\ other\ words,\ you\ are\ welcome\ to\ use,\ share\ and\ improve\ this\ program.}}
+\DoxyCodeLine{00019\ \textcolor{comment}{\ You\ are\ forbidden\ to\ forbid\ anyone\ else\ to\ use,\ share\ and\ improve}}
+\DoxyCodeLine{00020\ \textcolor{comment}{\ what\ you\ give\ them.\ \ \ Help\ stamp\ out\ software-\/hoarding!\ \ */}}
+\DoxyCodeLine{00021\ }
+\DoxyCodeLine{00022\ \textcolor{preprocessor}{\#ifndef\ LIBCPP\_LINE\_MAP\_H}}
+\DoxyCodeLine{00023\ \textcolor{preprocessor}{\#define\ LIBCPP\_LINE\_MAP\_H}}
+\DoxyCodeLine{00024\ }
+\DoxyCodeLine{00025\ \textcolor{preprocessor}{\#include\ <utility>}}
+\DoxyCodeLine{00026\ }
+\DoxyCodeLine{00027\ \textcolor{preprocessor}{\#ifndef\ GTY}}
+\DoxyCodeLine{00028\ \textcolor{preprocessor}{\#define\ GTY(x)\ }\textcolor{comment}{/*\ nothing\ */}\textcolor{preprocessor}{}}
+\DoxyCodeLine{00029\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00030\ }
+\DoxyCodeLine{00031\ \textcolor{comment}{/*\ Both\ gcc\ and\ emacs\ number\ source\ *lines*\ starting\ at\ 1,\ but}}
+\DoxyCodeLine{00032\ \textcolor{comment}{\ \ \ they\ have\ differing\ conventions\ for\ *columns*.}}
+\DoxyCodeLine{00033\ \textcolor{comment}{}}
+\DoxyCodeLine{00034\ \textcolor{comment}{\ \ \ GCC\ uses\ a\ 1-\/based\ convention\ for\ source\ columns,}}
+\DoxyCodeLine{00035\ \textcolor{comment}{\ \ \ whereas\ Emacs's\ M-\/x\ column-\/number-\/mode\ uses\ a\ 0-\/based\ convention.}}
+\DoxyCodeLine{00036\ \textcolor{comment}{}}
+\DoxyCodeLine{00037\ \textcolor{comment}{\ \ \ For\ example,\ an\ error\ in\ the\ initial,\ left-\/hand}}
+\DoxyCodeLine{00038\ \textcolor{comment}{\ \ \ column\ of\ source\ line\ 3\ is\ reported\ by\ GCC\ as:}}
+\DoxyCodeLine{00039\ \textcolor{comment}{}}
+\DoxyCodeLine{00040\ \textcolor{comment}{\ \ \ \ \ \ some-\/file.c:3:1:\ error:\ ...etc...}}
+\DoxyCodeLine{00041\ \textcolor{comment}{}}
+\DoxyCodeLine{00042\ \textcolor{comment}{\ \ \ On\ navigating\ to\ the\ location\ of\ that\ error\ in\ Emacs}}
+\DoxyCodeLine{00043\ \textcolor{comment}{\ \ \ (e.g.\ via\ "{}next-\/error"{}),}}
+\DoxyCodeLine{00044\ \textcolor{comment}{\ \ \ the\ locus\ is\ reported\ in\ the\ Mode\ Line}}
+\DoxyCodeLine{00045\ \textcolor{comment}{\ \ \ (assuming\ M-\/x\ column-\/number-\/mode)\ as:}}
+\DoxyCodeLine{00046\ \textcolor{comment}{}}
+\DoxyCodeLine{00047\ \textcolor{comment}{\ \ \ \ \ some-\/file.c\ \ \ 10\%\ \ \ (3,\ 0)}}
+\DoxyCodeLine{00048\ \textcolor{comment}{}}
+\DoxyCodeLine{00049\ \textcolor{comment}{\ \ \ i.e.\ "{}3:1:"{}\ in\ GCC\ corresponds\ to\ "{}(3,\ 0)"{}\ in\ Emacs.\ \ */}}
+\DoxyCodeLine{00050\ }
+\DoxyCodeLine{00051\ \textcolor{comment}{/*\ The\ type\ of\ line\ numbers.\ \ */}}
+\DoxyCodeLine{00052\ \textcolor{keyword}{typedef}\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{line-map_8h_a7ea1c467190e15e06046d86a035773a1}{linenum\_type}};}
+\DoxyCodeLine{00053\ }
+\DoxyCodeLine{00054\ \textcolor{comment}{/*\ A\ type\ for\ doing\ arithmetic\ on\ line\ numbers.\ \ */}}
+\DoxyCodeLine{00055\ \textcolor{keyword}{typedef}\ \textcolor{keywordtype}{long}\ \textcolor{keywordtype}{long}\ \doxymbox{\hyperlink{line-map_8h_a7fc09a5c134551f758b0678683ced334}{linenum\_arith\_t}};}
+\DoxyCodeLine{00056\ }
+\DoxyCodeLine{00057\ \textcolor{comment}{/*\ A\ function\ for\ for\ use\ by\ qsort\ for\ comparing\ line\ numbers.\ \ */}}
+\DoxyCodeLine{00058\ }
+\DoxyCodeLine{00059\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{line-map_8h_a19c7af7e090b7982886c5c2f0ffef65a}{compare}}\ (\doxymbox{\hyperlink{line-map_8h_a7ea1c467190e15e06046d86a035773a1}{linenum\_type}}\ lhs,\ \doxymbox{\hyperlink{line-map_8h_a7ea1c467190e15e06046d86a035773a1}{linenum\_type}}\ rhs)}
+\DoxyCodeLine{00060\ \{}
+\DoxyCodeLine{00061\ \ \ \textcolor{comment}{/*\ Avoid\ truncation\ issues\ by\ using\ linenum\_arith\_t\ for\ the\ comparison,}}
+\DoxyCodeLine{00062\ \textcolor{comment}{\ \ \ \ \ and\ only\ consider\ the\ sign\ of\ the\ result.\ \ */}}
+\DoxyCodeLine{00063\ \ \ \doxymbox{\hyperlink{line-map_8h_a7fc09a5c134551f758b0678683ced334}{linenum\_arith\_t}}\ diff\ =\ (\doxymbox{\hyperlink{line-map_8h_a7fc09a5c134551f758b0678683ced334}{linenum\_arith\_t}})lhs\ -\/\ (\doxymbox{\hyperlink{line-map_8h_a7fc09a5c134551f758b0678683ced334}{linenum\_arith\_t}})rhs;}
+\DoxyCodeLine{00064\ \ \ \textcolor{keywordflow}{if}\ (diff)}
+\DoxyCodeLine{00065\ \ \ \ \ \textcolor{keywordflow}{return}\ diff\ >\ 0\ ?\ 1\ :\ -\/1;}
+\DoxyCodeLine{00066\ \ \ \textcolor{keywordflow}{return}\ 0;}
+\DoxyCodeLine{00067\ \}}
+\DoxyCodeLine{00068\ }
+\DoxyCodeLine{00069\ \textcolor{comment}{/*\ Reason\ for\ creating\ a\ new\ line\ map\ with\ linemap\_add.\ \ */}}
+\DoxyCodeLine{00070\ \textcolor{keyword}{enum}\ \doxymbox{\hyperlink{line-map_8h_ae06e396526caa60dc88e11650e8c93d6}{lc\_reason}}}
+\DoxyCodeLine{00071\ \{}
+\DoxyCodeLine{00072\ \ \ \doxymbox{\hyperlink{line-map_8h_ae06e396526caa60dc88e11650e8c93d6aa29485c103d17b3353a084bb197e6a37}{LC\_ENTER}}\ =\ 0,\ \ \ \ \ \textcolor{comment}{/*\ Begin\ \#include.\ \ */}}
+\DoxyCodeLine{00073\ \ \ \doxymbox{\hyperlink{line-map_8h_ae06e396526caa60dc88e11650e8c93d6a3135433c2ccb1c0a637430cc5bc2a2e9}{LC\_LEAVE}},\ \ \ \ \ \textcolor{comment}{/*\ Return\ to\ including\ file.\ \ */}}
+\DoxyCodeLine{00074\ \ \ \doxymbox{\hyperlink{line-map_8h_ae06e396526caa60dc88e11650e8c93d6aa0cd725332e87fc2cc3bb04ed041264a}{LC\_RENAME}},\ \ \ \ \ \ \ \ \textcolor{comment}{/*\ Other\ reason\ for\ name\ change.\ \ */}}
+\DoxyCodeLine{00075\ \ \ \doxymbox{\hyperlink{line-map_8h_ae06e396526caa60dc88e11650e8c93d6ab195cbe9abe6bf03b81799471a999f70}{LC\_RENAME\_VERBATIM}},\ \ \ \textcolor{comment}{/*\ Likewise,\ but\ "{}"{}\ !=\ stdin.\ \ */}}
+\DoxyCodeLine{00076\ \ \ \doxymbox{\hyperlink{line-map_8h_ae06e396526caa60dc88e11650e8c93d6a94b962fe2cf1f80a28a0ed79819a7770}{LC\_ENTER\_MACRO}},\ \ \ \textcolor{comment}{/*\ Begin\ macro\ expansion.\ \ */}}
+\DoxyCodeLine{00077\ \ \ \doxymbox{\hyperlink{line-map_8h_ae06e396526caa60dc88e11650e8c93d6abf0ff555e41b0089a9049292f8e39784}{LC\_MODULE}},\ \ \ \ \ \ \ \ \textcolor{comment}{/*\ A\ (C++)\ Module.\ \ */}}
+\DoxyCodeLine{00078\ \ \ \textcolor{comment}{/*\ FIXME:\ add\ support\ for\ stringize\ and\ paste.\ \ */}}
+\DoxyCodeLine{00079\ \ \ \doxymbox{\hyperlink{line-map_8h_ae06e396526caa60dc88e11650e8c93d6a7827550a87830cbabe960a031d26ea5e}{LC\_HWM}}\ \textcolor{comment}{/*\ High\ Water\ Mark.\ \ */}}
+\DoxyCodeLine{00080\ \};}
+\DoxyCodeLine{00081\ }
+\DoxyCodeLine{00082\ \textcolor{comment}{/*\ The\ typedef\ "{}location\_t"{}\ is\ a\ key\ within\ the\ location\ database,}}
+\DoxyCodeLine{00083\ \textcolor{comment}{\ \ \ identifying\ a\ source\ location\ or\ macro\ expansion,\ along\ with\ range}}
+\DoxyCodeLine{00084\ \textcolor{comment}{\ \ \ information,\ and\ (optionally)\ a\ pointer\ for\ use\ by\ gcc.}}
+\DoxyCodeLine{00085\ \textcolor{comment}{}}
+\DoxyCodeLine{00086\ \textcolor{comment}{\ \ \ This\ key\ only\ has\ meaning\ in\ relation\ to\ a\ line\_maps\ instance.\ \ Within}}
+\DoxyCodeLine{00087\ \textcolor{comment}{\ \ \ gcc\ there\ is\ a\ single\ line\_maps\ instance:\ "{}line\_table"{},\ declared\ in}}
+\DoxyCodeLine{00088\ \textcolor{comment}{\ \ \ gcc/input.h\ and\ defined\ in\ gcc/input.cc.}}
+\DoxyCodeLine{00089\ \textcolor{comment}{}}
+\DoxyCodeLine{00090\ \textcolor{comment}{\ \ \ The\ values\ of\ the\ keys\ are\ intended\ to\ be\ internal\ to\ libcpp,}}
+\DoxyCodeLine{00091\ \textcolor{comment}{\ \ \ but\ for\ ease-\/of-\/understanding\ the\ implementation,\ they\ are\ currently}}
+\DoxyCodeLine{00092\ \textcolor{comment}{\ \ \ assigned\ as\ follows:}}
+\DoxyCodeLine{00093\ \textcolor{comment}{}}
+\DoxyCodeLine{00094\ \textcolor{comment}{\ \ Actual\ \ \ \ \ |\ Value\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ |\ Meaning}}
+\DoxyCodeLine{00095\ \textcolor{comment}{\ \ -\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/+-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/+-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{00096\ \textcolor{comment}{\ \ 0x00000000\ |\ UNKNOWN\_LOCATION\ (gcc/input.h)|\ Unknown/invalid\ location.}}
+\DoxyCodeLine{00097\ \textcolor{comment}{\ \ -\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/+-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/+-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{00098\ \textcolor{comment}{\ \ 0x00000001\ |\ BUILTINS\_LOCATION\ \ \ \ \ \ \ \ \ \ \ \ \ |\ The\ location\ for\ declarations}}
+\DoxyCodeLine{00099\ \textcolor{comment}{\ \ \ \ \ \ \ \ \ \ \ \ \ |\ \ \ (gcc/input.h)\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ |\ in\ "{}<built-\/in>"{}}}
+\DoxyCodeLine{00100\ \textcolor{comment}{\ \ -\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/+-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/+-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{00101\ \textcolor{comment}{\ \ 0x00000002\ |\ RESERVED\_LOCATION\_COUNT\ \ \ \ \ \ \ |\ The\ first\ location\ to\ be}}
+\DoxyCodeLine{00102\ \textcolor{comment}{\ \ \ \ \ \ \ \ \ \ \ \ \ |\ (also\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ |\ handed\ out,\ and\ the}}
+\DoxyCodeLine{00103\ \textcolor{comment}{\ \ \ \ \ \ \ \ \ \ \ \ \ |\ \ ordmap[0]-\/>start\_location)\ \ \ |\ first\ line\ in\ ordmap\ 0}}
+\DoxyCodeLine{00104\ \textcolor{comment}{\ \ -\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/+-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/+-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{00105\ \textcolor{comment}{\ \ \ \ \ \ \ \ \ \ \ \ \ |\ ordmap[1]-\/>start\_location\ \ \ \ \ |\ First\ line\ in\ ordmap\ 1}}
+\DoxyCodeLine{00106\ \textcolor{comment}{\ \ \ \ \ \ \ \ \ \ \ \ \ |\ ordmap[1]-\/>start\_location+32\ \ |\ First\ column\ in\ that\ line}}
+\DoxyCodeLine{00107\ \textcolor{comment}{\ \ \ \ \ \ \ \ \ \ \ \ \ |\ \ \ (assuming\ range\_bits\ ==\ 5)\ \ |}}
+\DoxyCodeLine{00108\ \textcolor{comment}{\ \ \ \ \ \ \ \ \ \ \ \ \ |\ ordmap[1]-\/>start\_location+64\ \ |\ 2nd\ column\ in\ that\ line}}
+\DoxyCodeLine{00109\ \textcolor{comment}{\ \ \ \ \ \ \ \ \ \ \ \ \ |\ ordmap[1]-\/>start\_location+4096|\ Second\ line\ in\ ordmap\ 1}}
+\DoxyCodeLine{00110\ \textcolor{comment}{\ \ \ \ \ \ \ \ \ \ \ \ \ |\ \ \ (assuming\ column\_bits\ ==\ 12)}}
+\DoxyCodeLine{00111\ \textcolor{comment}{\ \ \ \ \ \ \ \ \ \ \ \ \ |}}
+\DoxyCodeLine{00112\ \textcolor{comment}{\ \ \ \ \ \ \ \ \ \ \ \ \ |\ \ \ Subsequent\ lines\ are\ offset\ by\ (1\ <<\ column\_bits),}}
+\DoxyCodeLine{00113\ \textcolor{comment}{\ \ \ \ \ \ \ \ \ \ \ \ \ |\ \ \ e.g.\ 4096\ for\ 12\ bits,\ with\ a\ column\ value\ of\ 0\ representing}}
+\DoxyCodeLine{00114\ \textcolor{comment}{\ \ \ \ \ \ \ \ \ \ \ \ \ |\ \ \ "{}the\ whole\ line"{}.}}
+\DoxyCodeLine{00115\ \textcolor{comment}{\ \ \ \ \ \ \ \ \ \ \ \ \ |}}
+\DoxyCodeLine{00116\ \textcolor{comment}{\ \ \ \ \ \ \ \ \ \ \ \ \ |\ \ \ Within\ a\ line,\ the\ low\ "{}range\_bits"{}\ (typically\ 5)\ are\ used\ for}}
+\DoxyCodeLine{00117\ \textcolor{comment}{\ \ \ \ \ \ \ \ \ \ \ \ \ |\ \ \ storing\ short\ ranges,\ so\ that\ there's\ an\ offset\ of}}
+\DoxyCodeLine{00118\ \textcolor{comment}{\ \ \ \ \ \ \ \ \ \ \ \ \ |\ \ \ \ \ (1\ <<\ range\_bits)\ between\ individual\ columns\ within\ a\ line,}}
+\DoxyCodeLine{00119\ \textcolor{comment}{\ \ \ \ \ \ \ \ \ \ \ \ \ |\ \ \ typically\ 32.}}
+\DoxyCodeLine{00120\ \textcolor{comment}{\ \ \ \ \ \ \ \ \ \ \ \ \ |\ \ \ The\ low\ range\_bits\ store\ the\ offset\ of\ the\ end\ point\ from\ the}}
+\DoxyCodeLine{00121\ \textcolor{comment}{\ \ \ \ \ \ \ \ \ \ \ \ \ |\ \ \ start\ point,\ and\ the\ start\ point\ is\ found\ by\ masking\ away}}
+\DoxyCodeLine{00122\ \textcolor{comment}{\ \ \ \ \ \ \ \ \ \ \ \ \ |\ \ \ the\ range\ bits.}}
+\DoxyCodeLine{00123\ \textcolor{comment}{\ \ \ \ \ \ \ \ \ \ \ \ \ |}}
+\DoxyCodeLine{00124\ \textcolor{comment}{\ \ \ \ \ \ \ \ \ \ \ \ \ |\ \ \ For\ example:}}
+\DoxyCodeLine{00125\ \textcolor{comment}{\ \ \ \ \ \ \ \ \ \ \ \ \ |\ \ \ \ \ \ ordmap[1]-\/>start\_location+64\ \ \ \ "{}2nd\ column\ in\ that\ line"{}}}
+\DoxyCodeLine{00126\ \textcolor{comment}{\ \ \ \ \ \ \ \ \ \ \ \ \ |\ \ \ above\ means\ a\ caret\ at\ that\ location,\ with\ a\ range}}
+\DoxyCodeLine{00127\ \textcolor{comment}{\ \ \ \ \ \ \ \ \ \ \ \ \ |\ \ \ starting\ and\ finishing\ at\ the\ same\ place\ (the\ range\ bits}}
+\DoxyCodeLine{00128\ \textcolor{comment}{\ \ \ \ \ \ \ \ \ \ \ \ \ |\ \ \ are\ 0),\ a\ range\ of\ length\ 1.}}
+\DoxyCodeLine{00129\ \textcolor{comment}{\ \ \ \ \ \ \ \ \ \ \ \ \ |}}
+\DoxyCodeLine{00130\ \textcolor{comment}{\ \ \ \ \ \ \ \ \ \ \ \ \ |\ \ \ By\ contrast:}}
+\DoxyCodeLine{00131\ \textcolor{comment}{\ \ \ \ \ \ \ \ \ \ \ \ \ |\ \ \ \ \ \ ordmap[1]-\/>start\_location+68}}
+\DoxyCodeLine{00132\ \textcolor{comment}{\ \ \ \ \ \ \ \ \ \ \ \ \ |\ \ \ has\ range\ bits\ 0x4,\ meaning\ a\ caret\ with\ a\ range\ starting\ at}}
+\DoxyCodeLine{00133\ \textcolor{comment}{\ \ \ \ \ \ \ \ \ \ \ \ \ |\ \ \ that\ location,\ but\ with\ endpoint\ 4\ columns\ further\ on:\ a\ range}}
+\DoxyCodeLine{00134\ \textcolor{comment}{\ \ \ \ \ \ \ \ \ \ \ \ \ |\ \ \ of\ length\ 5.}}
+\DoxyCodeLine{00135\ \textcolor{comment}{\ \ \ \ \ \ \ \ \ \ \ \ \ |}}
+\DoxyCodeLine{00136\ \textcolor{comment}{\ \ \ \ \ \ \ \ \ \ \ \ \ |\ \ \ Ranges\ that\ have\ caret\ !=\ start,\ or\ have\ an\ endpoint\ too}}
+\DoxyCodeLine{00137\ \textcolor{comment}{\ \ \ \ \ \ \ \ \ \ \ \ \ |\ \ \ far\ away\ to\ fit\ in\ range\_bits\ are\ instead\ stored\ as\ ad-\/hoc}}
+\DoxyCodeLine{00138\ \textcolor{comment}{\ \ \ \ \ \ \ \ \ \ \ \ \ |\ \ \ locations.\ \ Hence\ for\ range\_bits\ ==\ 5\ we\ can\ compactly\ store}}
+\DoxyCodeLine{00139\ \textcolor{comment}{\ \ \ \ \ \ \ \ \ \ \ \ \ |\ \ \ tokens\ of\ length\ <=\ 32\ without\ needing\ to\ use\ the\ ad-\/hoc}}
+\DoxyCodeLine{00140\ \textcolor{comment}{\ \ \ \ \ \ \ \ \ \ \ \ \ |\ \ \ table.}}
+\DoxyCodeLine{00141\ \textcolor{comment}{\ \ \ \ \ \ \ \ \ \ \ \ \ |}}
+\DoxyCodeLine{00142\ \textcolor{comment}{\ \ \ \ \ \ \ \ \ \ \ \ \ |\ \ \ This\ packing\ scheme\ means\ we\ effectively\ have}}
+\DoxyCodeLine{00143\ \textcolor{comment}{\ \ \ \ \ \ \ \ \ \ \ \ \ |\ \ \ \ \ (column\_bits\ -\/\ range\_bits)}}
+\DoxyCodeLine{00144\ \textcolor{comment}{\ \ \ \ \ \ \ \ \ \ \ \ \ |\ \ \ of\ bits\ for\ the\ columns,\ typically\ (12\ -\/\ 5)\ =\ 7,\ for\ 128}}
+\DoxyCodeLine{00145\ \textcolor{comment}{\ \ \ \ \ \ \ \ \ \ \ \ \ |\ \ \ columns;\ longer\ line\ widths\ are\ accomodated\ by\ starting\ a}}
+\DoxyCodeLine{00146\ \textcolor{comment}{\ \ \ \ \ \ \ \ \ \ \ \ \ |\ \ \ new\ ordmap\ with\ a\ higher\ column\_bits.}}
+\DoxyCodeLine{00147\ \textcolor{comment}{\ \ \ \ \ \ \ \ \ \ \ \ \ |}}
+\DoxyCodeLine{00148\ \textcolor{comment}{\ \ \ \ \ \ \ \ \ \ \ \ \ |\ ordmap[2]-\/>start\_location-\/1\ \ \ |\ Final\ location\ in\ ordmap\ 1}}
+\DoxyCodeLine{00149\ \textcolor{comment}{\ \ -\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/+-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/+-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{00150\ \textcolor{comment}{\ \ \ \ \ \ \ \ \ \ \ \ \ |\ ordmap[2]-\/>start\_location\ \ \ \ \ |\ First\ line\ in\ ordmap\ 2}}
+\DoxyCodeLine{00151\ \textcolor{comment}{\ \ \ \ \ \ \ \ \ \ \ \ \ |\ ordmap[3]-\/>start\_location-\/1\ \ \ |\ Final\ location\ in\ ordmap\ 2}}
+\DoxyCodeLine{00152\ \textcolor{comment}{\ \ -\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/+-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/+-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{00153\ \textcolor{comment}{\ \ \ \ \ \ \ \ \ \ \ \ \ |\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ |\ (etc)}}
+\DoxyCodeLine{00154\ \textcolor{comment}{\ \ -\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/+-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/+-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{00155\ \textcolor{comment}{\ \ \ \ \ \ \ \ \ \ \ \ \ |\ ordmap[n-\/1]-\/>start\_location\ \ \ |\ First\ line\ in\ final\ ord\ map}}
+\DoxyCodeLine{00156\ \textcolor{comment}{\ \ \ \ \ \ \ \ \ \ \ \ \ |\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ |\ (etc)}}
+\DoxyCodeLine{00157\ \textcolor{comment}{\ \ \ \ \ \ \ \ \ \ \ \ \ |\ set-\/>highest\_location\ -\/\ 1\ \ \ \ \ |\ Final\ location\ in\ that\ ordmap}}
+\DoxyCodeLine{00158\ \textcolor{comment}{\ \ -\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/+-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/+-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{00159\ \textcolor{comment}{\ \ \ \ \ \ \ \ \ \ \ \ \ |\ set-\/>highest\_location\ \ \ \ \ \ \ \ \ |\ Location\ of\ the\ where\ the\ next}}
+\DoxyCodeLine{00160\ \textcolor{comment}{\ \ \ \ \ \ \ \ \ \ \ \ \ |\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ |\ ordinary\ linemap\ would\ start}}
+\DoxyCodeLine{00161\ \textcolor{comment}{\ \ -\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/+-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/+-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{00162\ \textcolor{comment}{\ \ \ \ \ \ \ \ \ \ \ \ \ |\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ |}}
+\DoxyCodeLine{00163\ \textcolor{comment}{\ \ \ \ \ \ \ \ \ \ \ \ \ |\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ VVVVVVVVVVVVVVVVVVVVVVVVVVV}}
+\DoxyCodeLine{00164\ \textcolor{comment}{\ \ \ \ \ \ \ \ \ \ \ \ \ |\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ Ordinary\ maps\ grow\ this\ way}}
+\DoxyCodeLine{00165\ \textcolor{comment}{\ \ \ \ \ \ \ \ \ \ \ \ \ |}}
+\DoxyCodeLine{00166\ \textcolor{comment}{\ \ \ \ \ \ \ \ \ \ \ \ \ |\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ (unallocated\ integers)}}
+\DoxyCodeLine{00167\ \textcolor{comment}{\ \ \ \ \ \ \ \ \ \ \ \ \ |}}
+\DoxyCodeLine{00168\ \textcolor{comment}{\ \ 0x60000000\ |\ LINE\_MAP\_MAX\_LOCATION\_WITH\_COLS}}
+\DoxyCodeLine{00169\ \textcolor{comment}{\ \ \ \ \ \ \ \ \ \ \ \ \ |\ \ \ Beyond\ this\ point,\ ordinary\ linemaps\ have\ 0\ bits\ per\ column:}}
+\DoxyCodeLine{00170\ \textcolor{comment}{\ \ \ \ \ \ \ \ \ \ \ \ \ |\ \ \ each\ increment\ of\ the\ value\ corresponds\ to\ a\ new\ source\ line.}}
+\DoxyCodeLine{00171\ \textcolor{comment}{\ \ \ \ \ \ \ \ \ \ \ \ \ |}}
+\DoxyCodeLine{00172\ \textcolor{comment}{\ \ 0x70000000\ |\ LINE\_MAP\_MAX\_LOCATION}}
+\DoxyCodeLine{00173\ \textcolor{comment}{\ \ \ \ \ \ \ \ \ \ \ \ \ |\ \ \ Beyond\ the\ point,\ we\ give\ up\ on\ ordinary\ maps;\ attempts\ to}}
+\DoxyCodeLine{00174\ \textcolor{comment}{\ \ \ \ \ \ \ \ \ \ \ \ \ |\ \ \ create\ locations\ in\ them\ lead\ to\ UNKNOWN\_LOCATION\ (0).}}
+\DoxyCodeLine{00175\ \textcolor{comment}{\ \ \ \ \ \ \ \ \ \ \ \ \ |}}
+\DoxyCodeLine{00176\ \textcolor{comment}{\ \ \ \ \ \ \ \ \ \ \ \ \ |\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ (unallocated\ integers)}}
+\DoxyCodeLine{00177\ \textcolor{comment}{\ \ \ \ \ \ \ \ \ \ \ \ \ |}}
+\DoxyCodeLine{00178\ \textcolor{comment}{\ \ \ \ \ \ \ \ \ \ \ \ \ |\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ Macro\ maps\ grow\ this\ way}}
+\DoxyCodeLine{00179\ \textcolor{comment}{\ \ \ \ \ \ \ \ \ \ \ \ \ |\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \string^\string^\string^\string^\string^\string^\string^\string^\string^\string^\string^\string^\string^\string^\string^\string^\string^\string^\string^\string^\string^\string^\string^\string^}}
+\DoxyCodeLine{00180\ \textcolor{comment}{\ \ \ \ \ \ \ \ \ \ \ \ \ |\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ |}}
+\DoxyCodeLine{00181\ \textcolor{comment}{\ \ -\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/+-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/+-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{00182\ \textcolor{comment}{\ \ \ \ \ \ \ \ \ \ \ \ \ |\ LINEMAPS\_MACRO\_LOWEST\_LOCATION|\ Locations\ within\ macro\ maps}}
+\DoxyCodeLine{00183\ \textcolor{comment}{\ \ \ \ \ \ \ \ \ \ \ \ \ |\ macromap[m-\/1]-\/>start\_location\ |\ Start\ of\ last\ macro\ map}}
+\DoxyCodeLine{00184\ \textcolor{comment}{\ \ \ \ \ \ \ \ \ \ \ \ \ |\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ |}}
+\DoxyCodeLine{00185\ \textcolor{comment}{\ \ -\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/+-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/+-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{00186\ \textcolor{comment}{\ \ \ \ \ \ \ \ \ \ \ \ \ |\ macromap[m-\/2]-\/>start\_location\ |\ Start\ of\ penultimate\ macro\ map}}
+\DoxyCodeLine{00187\ \textcolor{comment}{\ \ -\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/+-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/+-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{00188\ \textcolor{comment}{\ \ \ \ \ \ \ \ \ \ \ \ \ |\ macromap[1]-\/>start\_location\ \ \ |\ Start\ of\ macro\ map\ 1}}
+\DoxyCodeLine{00189\ \textcolor{comment}{\ \ -\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/+-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/+-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{00190\ \textcolor{comment}{\ \ \ \ \ \ \ \ \ \ \ \ \ |\ macromap[0]-\/>start\_location\ \ \ |\ Start\ of\ macro\ map\ 0}}
+\DoxyCodeLine{00191\ \textcolor{comment}{\ \ 0x7fffffff\ |\ MAX\_LOCATION\_T\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ |\ Also\ used\ as\ a\ mask\ for}}
+\DoxyCodeLine{00192\ \textcolor{comment}{\ \ \ \ \ \ \ \ \ \ \ \ \ |\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ |\ accessing\ the\ ad-\/hoc\ data\ table}}
+\DoxyCodeLine{00193\ \textcolor{comment}{\ \ -\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/+-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/+-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{00194\ \textcolor{comment}{\ \ 0x80000000\ |\ Start\ of\ ad-\/hoc\ values;\ the\ lower\ 31\ bits\ are\ used\ as\ an\ index}}
+\DoxyCodeLine{00195\ \textcolor{comment}{\ \ ...\ \ \ \ \ \ \ \ |\ into\ the\ line\_table-\/>location\_adhoc\_data\_map.data\ array.}}
+\DoxyCodeLine{00196\ \textcolor{comment}{\ \ 0xffffffff\ |\ UINT\_MAX\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ |}}
+\DoxyCodeLine{00197\ \textcolor{comment}{\ \ -\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/+-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/+-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{00198\ \textcolor{comment}{}}
+\DoxyCodeLine{00199\ \textcolor{comment}{\ \ \ Examples\ of\ location\ encoding.}}
+\DoxyCodeLine{00200\ \textcolor{comment}{}}
+\DoxyCodeLine{00201\ \textcolor{comment}{\ \ \ Packed\ ranges}}
+\DoxyCodeLine{00202\ \textcolor{comment}{\ \ \ =============}}
+\DoxyCodeLine{00203\ \textcolor{comment}{}}
+\DoxyCodeLine{00204\ \textcolor{comment}{\ \ \ Consider\ encoding\ the\ location\ of\ a\ token\ "{}foo"{},\ seen\ underlined\ here}}
+\DoxyCodeLine{00205\ \textcolor{comment}{\ \ \ on\ line\ 523,\ within\ an\ ordinary\ line\_map\ that\ starts\ at\ line\ 500:}}
+\DoxyCodeLine{00206\ \textcolor{comment}{}}
+\DoxyCodeLine{00207\ \textcolor{comment}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ 11111111112}}
+\DoxyCodeLine{00208\ \textcolor{comment}{\ \ \ \ \ \ \ \ 12345678901234567890}}
+\DoxyCodeLine{00209\ \textcolor{comment}{\ \ \ \ \ 522}}
+\DoxyCodeLine{00210\ \textcolor{comment}{\ \ \ \ \ 523\ \ \ return\ foo\ +\ bar;}}
+\DoxyCodeLine{00211\ \textcolor{comment}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \string^\string~\string~}}
+\DoxyCodeLine{00212\ \textcolor{comment}{\ \ \ \ \ 524}}
+\DoxyCodeLine{00213\ \textcolor{comment}{}}
+\DoxyCodeLine{00214\ \textcolor{comment}{\ \ \ The\ location's\ caret\ and\ start\ are\ both\ at\ line\ 523,\ column\ 11;\ the}}
+\DoxyCodeLine{00215\ \textcolor{comment}{\ \ \ location's\ finish\ is\ on\ the\ same\ line,\ at\ column\ 13\ (an\ offset\ of\ 2}}
+\DoxyCodeLine{00216\ \textcolor{comment}{\ \ \ columns,\ for\ length\ 3).}}
+\DoxyCodeLine{00217\ \textcolor{comment}{}}
+\DoxyCodeLine{00218\ \textcolor{comment}{\ \ \ Line\ 523\ is\ offset\ 23\ from\ the\ starting\ line\ of\ the\ ordinary\ line\_map.}}
+\DoxyCodeLine{00219\ \textcolor{comment}{}}
+\DoxyCodeLine{00220\ \textcolor{comment}{\ \ \ caret\ ==\ start,\ and\ the\ offset\ of\ the\ finish\ fits\ within\ 5\ bits,\ so}}
+\DoxyCodeLine{00221\ \textcolor{comment}{\ \ \ this\ can\ be\ stored\ as\ a\ packed\ range.}}
+\DoxyCodeLine{00222\ \textcolor{comment}{}}
+\DoxyCodeLine{00223\ \textcolor{comment}{\ \ \ This\ is\ encoded\ as:}}
+\DoxyCodeLine{00224\ \textcolor{comment}{\ \ \ \ \ \ ordmap-\/>start}}
+\DoxyCodeLine{00225\ \textcolor{comment}{\ \ \ \ \ \ \ \ \ +\ (line\_offset\ <<\ ordmap-\/>m\_column\_and\_range\_bits)}}
+\DoxyCodeLine{00226\ \textcolor{comment}{\ \ \ \ \ \ \ \ \ +\ (column\ <<\ ordmap-\/>m\_range\_bits)}}
+\DoxyCodeLine{00227\ \textcolor{comment}{\ \ \ \ \ \ \ \ \ +\ (range\_offset);}}
+\DoxyCodeLine{00228\ \textcolor{comment}{\ \ \ i.e.\ (for\ line\ offset\ 23,\ column\ 11,\ range\ offset\ 2):}}
+\DoxyCodeLine{00229\ \textcolor{comment}{\ \ \ \ \ \ ordmap-\/>start}}
+\DoxyCodeLine{00230\ \textcolor{comment}{\ \ \ \ \ \ \ \ \ +\ (23\ <<\ 12)}}
+\DoxyCodeLine{00231\ \textcolor{comment}{\ \ \ \ \ \ \ \ \ +\ (11\ <<\ 5)}}
+\DoxyCodeLine{00232\ \textcolor{comment}{\ \ \ \ \ \ \ \ \ +\ 2;}}
+\DoxyCodeLine{00233\ \textcolor{comment}{\ \ \ i.e.:}}
+\DoxyCodeLine{00234\ \textcolor{comment}{\ \ \ \ \ \ ordmap-\/>start\ +\ 0x17162}}
+\DoxyCodeLine{00235\ \textcolor{comment}{\ \ \ assuming\ that\ the\ line\_map\ uses\ the\ default\ of\ 7\ bits\ for\ columns\ and}}
+\DoxyCodeLine{00236\ \textcolor{comment}{\ \ \ 5\ bits\ for\ packed\ range\ (giving\ 12\ bits\ for\ m\_column\_and\_range\_bits).}}
+\DoxyCodeLine{00237\ \textcolor{comment}{}}
+\DoxyCodeLine{00238\ \textcolor{comment}{}}
+\DoxyCodeLine{00239\ \textcolor{comment}{\ \ \ "{}Pure"{}\ locations}}
+\DoxyCodeLine{00240\ \textcolor{comment}{\ \ \ ================}}
+\DoxyCodeLine{00241\ \textcolor{comment}{}}
+\DoxyCodeLine{00242\ \textcolor{comment}{\ \ \ These\ are\ a\ special\ case\ of\ the\ above,\ where}}
+\DoxyCodeLine{00243\ \textcolor{comment}{\ \ \ \ \ \ caret\ ==\ start\ ==\ finish}}
+\DoxyCodeLine{00244\ \textcolor{comment}{\ \ \ They\ are\ stored\ as\ packed\ ranges\ with\ offset\ ==\ 0.}}
+\DoxyCodeLine{00245\ \textcolor{comment}{\ \ \ For\ example,\ the\ location\ of\ the\ "{}f"{}\ of\ "{}foo"{}\ could\ be\ stored}}
+\DoxyCodeLine{00246\ \textcolor{comment}{\ \ \ as\ above,\ but\ with\ range\ offset\ 0,\ giving:}}
+\DoxyCodeLine{00247\ \textcolor{comment}{\ \ \ \ \ \ ordmap-\/>start}}
+\DoxyCodeLine{00248\ \textcolor{comment}{\ \ \ \ \ \ \ \ \ +\ (23\ <<\ 12)}}
+\DoxyCodeLine{00249\ \textcolor{comment}{\ \ \ \ \ \ \ \ \ +\ (11\ <<\ 5)}}
+\DoxyCodeLine{00250\ \textcolor{comment}{\ \ \ \ \ \ \ \ \ +\ 0;}}
+\DoxyCodeLine{00251\ \textcolor{comment}{\ \ \ i.e.:}}
+\DoxyCodeLine{00252\ \textcolor{comment}{\ \ \ \ \ \ ordmap-\/>start\ +\ 0x17160}}
+\DoxyCodeLine{00253\ \textcolor{comment}{}}
+\DoxyCodeLine{00254\ \textcolor{comment}{}}
+\DoxyCodeLine{00255\ \textcolor{comment}{\ \ \ Unoptimized\ ranges}}
+\DoxyCodeLine{00256\ \textcolor{comment}{\ \ \ ==================}}
+\DoxyCodeLine{00257\ \textcolor{comment}{}}
+\DoxyCodeLine{00258\ \textcolor{comment}{\ \ \ Consider\ encoding\ the\ location\ of\ the\ binary\ expression}}
+\DoxyCodeLine{00259\ \textcolor{comment}{\ \ \ below:}}
+\DoxyCodeLine{00260\ \textcolor{comment}{}}
+\DoxyCodeLine{00261\ \textcolor{comment}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ 11111111112}}
+\DoxyCodeLine{00262\ \textcolor{comment}{\ \ \ \ \ \ \ \ 12345678901234567890}}
+\DoxyCodeLine{00263\ \textcolor{comment}{\ \ \ \ \ 522}}
+\DoxyCodeLine{00264\ \textcolor{comment}{\ \ \ \ \ 523\ \ \ return\ foo\ +\ bar;}}
+\DoxyCodeLine{00265\ \textcolor{comment}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \string~\string~\string~\string~\string^\string~\string~\string~\string~}}
+\DoxyCodeLine{00266\ \textcolor{comment}{\ \ \ \ \ 524}}
+\DoxyCodeLine{00267\ \textcolor{comment}{}}
+\DoxyCodeLine{00268\ \textcolor{comment}{\ \ \ The\ location's\ caret\ is\ at\ the\ "{}+"{},\ line\ 523\ column\ 15,\ but\ starts}}
+\DoxyCodeLine{00269\ \textcolor{comment}{\ \ \ earlier,\ at\ the\ "{}f"{}\ of\ "{}foo"{}\ at\ column\ 11.\ \ The\ finish\ is\ at\ the\ "{}r"{}}}
+\DoxyCodeLine{00270\ \textcolor{comment}{\ \ \ of\ "{}bar"{}\ at\ column\ 19.}}
+\DoxyCodeLine{00271\ \textcolor{comment}{}}
+\DoxyCodeLine{00272\ \textcolor{comment}{\ \ \ This\ can't\ be\ stored\ as\ a\ packed\ range\ since\ start\ !=\ caret.}}
+\DoxyCodeLine{00273\ \textcolor{comment}{\ \ \ Hence\ it\ is\ stored\ as\ an\ ad-\/hoc\ location\ e.g.\ 0x80000003.}}
+\DoxyCodeLine{00274\ \textcolor{comment}{}}
+\DoxyCodeLine{00275\ \textcolor{comment}{\ \ \ Stripping\ off\ the\ top\ bit\ gives\ us\ an\ index\ into\ the\ ad-\/hoc}}
+\DoxyCodeLine{00276\ \textcolor{comment}{\ \ \ lookaside\ table:}}
+\DoxyCodeLine{00277\ \textcolor{comment}{}}
+\DoxyCodeLine{00278\ \textcolor{comment}{\ \ \ \ \ line\_table-\/>location\_adhoc\_data\_map.data[0x3]}}
+\DoxyCodeLine{00279\ \textcolor{comment}{}}
+\DoxyCodeLine{00280\ \textcolor{comment}{\ \ \ from\ which\ the\ caret,\ start\ and\ finish\ can\ be\ looked\ up,}}
+\DoxyCodeLine{00281\ \textcolor{comment}{\ \ \ encoded\ as\ "{}pure"{}\ locations:}}
+\DoxyCodeLine{00282\ \textcolor{comment}{}}
+\DoxyCodeLine{00283\ \textcolor{comment}{\ \ \ \ \ start\ \ ==\ ordmap-\/>start\ +\ (23\ <<\ 12)\ +\ (11\ <<\ 5)}}
+\DoxyCodeLine{00284\ \textcolor{comment}{\ \ \ \ \ \ \ \ \ \ \ \ ==\ ordmap-\/>start\ +\ 0x17160\ \ (as\ above;\ the\ "{}f"{}\ of\ "{}foo"{})}}
+\DoxyCodeLine{00285\ \textcolor{comment}{}}
+\DoxyCodeLine{00286\ \textcolor{comment}{\ \ \ \ \ caret\ \ ==\ ordmap-\/>start\ +\ (23\ <<\ 12)\ +\ (15\ <<\ 5)}}
+\DoxyCodeLine{00287\ \textcolor{comment}{\ \ \ \ \ \ \ \ \ \ \ \ ==\ ordmap-\/>start\ +\ 0x171e0}}
+\DoxyCodeLine{00288\ \textcolor{comment}{}}
+\DoxyCodeLine{00289\ \textcolor{comment}{\ \ \ \ \ finish\ ==\ ordmap-\/>start\ +\ (23\ <<\ 12)\ +\ (19\ <<\ 5)}}
+\DoxyCodeLine{00290\ \textcolor{comment}{\ \ \ \ \ \ \ \ \ \ \ \ ==\ ordmap-\/>start\ +\ 0x17260}}
+\DoxyCodeLine{00291\ \textcolor{comment}{}}
+\DoxyCodeLine{00292\ \textcolor{comment}{\ \ \ To\ further\ see\ how\ location\_t\ works\ in\ practice,\ see\ the}}
+\DoxyCodeLine{00293\ \textcolor{comment}{\ \ \ worked\ example\ in\ libcpp/location-\/example.txt.\ \ */}}
+\DoxyCodeLine{00294\ \textcolor{keyword}{typedef}\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{line-map_8h_aedf25620511d64e43327f1a229906a96}{location\_t}};}
+\DoxyCodeLine{00295\ }
+\DoxyCodeLine{00296\ \textcolor{comment}{/*\ Do\ not\ track\ column\ numbers\ higher\ than\ this\ one.\ \ As\ a\ result,\ the}}
+\DoxyCodeLine{00297\ \textcolor{comment}{\ \ \ range\ of\ column\_bits\ is\ [12,\ 18]\ (or\ 0\ if\ column\ numbers\ are}}
+\DoxyCodeLine{00298\ \textcolor{comment}{\ \ \ disabled).\ \ */}}
+\DoxyCodeLine{00299\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{line-map_8h_af25016499b53a987b196d625e9693bf2}{LINE\_MAP\_MAX\_COLUMN\_NUMBER}}\ =\ (1U\ <<\ 12);}
+\DoxyCodeLine{00300\ }
+\DoxyCodeLine{00301\ \textcolor{comment}{/*\ Do\ not\ pack\ ranges\ if\ locations\ get\ higher\ than\ this.}}
+\DoxyCodeLine{00302\ \textcolor{comment}{\ \ \ If\ you\ change\ this,\ update:}}
+\DoxyCodeLine{00303\ \textcolor{comment}{\ \ \ \ \ gcc.dg/plugin/location-\/overflow-\/test-\/*.c.\ \ */}}
+\DoxyCodeLine{00304\ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{line-map_8h_aedf25620511d64e43327f1a229906a96}{location\_t}}\ \doxymbox{\hyperlink{line-map_8h_aec801daf22c79f7e024a886b454ff40a}{LINE\_MAP\_MAX\_LOCATION\_WITH\_PACKED\_RANGES}}\ =\ 0x50000000;}
+\DoxyCodeLine{00305\ }
+\DoxyCodeLine{00306\ \textcolor{comment}{/*\ Do\ not\ track\ column\ numbers\ if\ locations\ get\ higher\ than\ this.}}
+\DoxyCodeLine{00307\ \textcolor{comment}{\ \ \ If\ you\ change\ this,\ update:}}
+\DoxyCodeLine{00308\ \textcolor{comment}{\ \ \ \ \ gcc.dg/plugin/location-\/overflow-\/test-\/*.c.\ \ */}}
+\DoxyCodeLine{00309\ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{line-map_8h_aedf25620511d64e43327f1a229906a96}{location\_t}}\ \doxymbox{\hyperlink{line-map_8h_a696faab4cd77690af021da33fdef904a}{LINE\_MAP\_MAX\_LOCATION\_WITH\_COLS}}\ =\ 0x60000000;}
+\DoxyCodeLine{00310\ }
+\DoxyCodeLine{00311\ \textcolor{comment}{/*\ Highest\ possible\ source\ location\ encoded\ within\ an\ ordinary\ map.\ \ */}}
+\DoxyCodeLine{00312\ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{line-map_8h_aedf25620511d64e43327f1a229906a96}{location\_t}}\ \doxymbox{\hyperlink{line-map_8h_af01c3f161d8020443aaeddf9ead39b6a}{LINE\_MAP\_MAX\_LOCATION}}\ =\ 0x70000000;}
+\DoxyCodeLine{00313\ }
+\DoxyCodeLine{00314\ \textcolor{comment}{/*\ A\ range\ of\ source\ locations.}}
+\DoxyCodeLine{00315\ \textcolor{comment}{}}
+\DoxyCodeLine{00316\ \textcolor{comment}{\ \ \ Ranges\ are\ closed:}}
+\DoxyCodeLine{00317\ \textcolor{comment}{\ \ \ m\_start\ is\ the\ first\ location\ within\ the\ range,}}
+\DoxyCodeLine{00318\ \textcolor{comment}{\ \ \ m\_finish\ is\ the\ last\ location\ within\ the\ range.}}
+\DoxyCodeLine{00319\ \textcolor{comment}{}}
+\DoxyCodeLine{00320\ \textcolor{comment}{\ \ \ We\ may\ need\ a\ more\ compact\ way\ to\ store\ these,\ but\ for\ now,}}
+\DoxyCodeLine{00321\ \textcolor{comment}{\ \ \ let's\ do\ it\ the\ simple\ way,\ as\ a\ pair.\ \ */}}
+\DoxyCodeLine{00322\ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{coretypes_8h_ae5708c4d4b300570eebe0bc0c78facbc}{GTY}}(())\ source\_range}
+\DoxyCodeLine{00323\ \{}
+\DoxyCodeLine{00324\ \ \ \doxymbox{\hyperlink{line-map_8h_aedf25620511d64e43327f1a229906a96}{location\_t}}\ m\_start;}
+\DoxyCodeLine{00325\ \ \ \doxymbox{\hyperlink{line-map_8h_aedf25620511d64e43327f1a229906a96}{location\_t}}\ m\_finish;}
+\DoxyCodeLine{00326\ }
+\DoxyCodeLine{00327\ \ \ \textcolor{comment}{/*\ We\ avoid\ using\ constructors,\ since\ various\ structs\ that}}
+\DoxyCodeLine{00328\ \textcolor{comment}{\ \ \ \ \ don't\ yet\ have\ constructors\ will\ embed\ instances\ of}}
+\DoxyCodeLine{00329\ \textcolor{comment}{\ \ \ \ \ source\_range.\ \ */}}
+\DoxyCodeLine{00330\ }
+\DoxyCodeLine{00331\ \ \ \textcolor{comment}{/*\ Make\ a\ source\_range\ from\ a\ location\_t.\ \ */}}
+\DoxyCodeLine{00332\ \ \ \textcolor{keyword}{static}\ source\_range\ from\_location\ (\doxymbox{\hyperlink{line-map_8h_aedf25620511d64e43327f1a229906a96}{location\_t}}\ loc)}
+\DoxyCodeLine{00333\ \ \ \{}
+\DoxyCodeLine{00334\ \ \ \ \ source\_range\ result;}
+\DoxyCodeLine{00335\ \ \ \ \ result.m\_start\ =\ loc;}
+\DoxyCodeLine{00336\ \ \ \ \ result.m\_finish\ =\ loc;}
+\DoxyCodeLine{00337\ \ \ \ \ \textcolor{keywordflow}{return}\ result;}
+\DoxyCodeLine{00338\ \ \ \}}
+\DoxyCodeLine{00339\ }
+\DoxyCodeLine{00340\ \ \ \textcolor{comment}{/*\ Make\ a\ source\_range\ from\ a\ pair\ of\ location\_t.\ \ */}}
+\DoxyCodeLine{00341\ \ \ \textcolor{keyword}{static}\ source\_range\ from\_locations\ (\doxymbox{\hyperlink{line-map_8h_aedf25620511d64e43327f1a229906a96}{location\_t}}\ start,}
+\DoxyCodeLine{00342\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{line-map_8h_aedf25620511d64e43327f1a229906a96}{location\_t}}\ finish)}
+\DoxyCodeLine{00343\ \ \ \{}
+\DoxyCodeLine{00344\ \ \ \ \ source\_range\ result;}
+\DoxyCodeLine{00345\ \ \ \ \ result.m\_start\ =\ start;}
+\DoxyCodeLine{00346\ \ \ \ \ result.m\_finish\ =\ finish;}
+\DoxyCodeLine{00347\ \ \ \ \ \textcolor{keywordflow}{return}\ result;}
+\DoxyCodeLine{00348\ \ \ \}}
+\DoxyCodeLine{00349\ \};}
+\DoxyCodeLine{00350\ }
+\DoxyCodeLine{00351\ \textcolor{comment}{/*\ Memory\ allocation\ function\ typedef.\ \ Works\ like\ xrealloc.\ \ */}}
+\DoxyCodeLine{00352\ \textcolor{keyword}{typedef}\ \textcolor{keywordtype}{void}\ *(*line\_map\_realloc)\ (\textcolor{keywordtype}{void}\ *,\ \doxymbox{\hyperlink{stddef_8h_aa9d55e2f20e580b7445617d0d12fff6e}{size\_t}});}
+\DoxyCodeLine{00353\ }
+\DoxyCodeLine{00354\ \textcolor{comment}{/*\ Memory\ allocator\ function\ that\ returns\ the\ actual\ allocated\ size,}}
+\DoxyCodeLine{00355\ \textcolor{comment}{\ \ \ for\ a\ given\ requested\ allocation.\ \ */}}
+\DoxyCodeLine{00356\ \textcolor{keyword}{typedef}\ \doxymbox{\hyperlink{stddef_8h_aa9d55e2f20e580b7445617d0d12fff6e}{size\_t}}\ (*\doxymbox{\hyperlink{line-map_8h_a71de864fbe6107117d6c99a123680a50}{line\_map\_round\_alloc\_size\_func}})\ (\doxymbox{\hyperlink{stddef_8h_aa9d55e2f20e580b7445617d0d12fff6e}{size\_t}});}
+\DoxyCodeLine{00357\ }
+\DoxyCodeLine{00358\ \textcolor{comment}{/*\ A\ line\_map\ encodes\ a\ sequence\ of\ locations.}}
+\DoxyCodeLine{00359\ \textcolor{comment}{\ \ \ There\ are\ two\ kinds\ of\ maps.\ Ordinary\ maps\ and\ macro\ expansion}}
+\DoxyCodeLine{00360\ \textcolor{comment}{\ \ \ maps,\ a.k.a\ macro\ maps.}}
+\DoxyCodeLine{00361\ \textcolor{comment}{}}
+\DoxyCodeLine{00362\ \textcolor{comment}{\ \ \ A\ macro\ map\ encodes\ source\ locations\ of\ tokens\ that\ are\ part\ of\ a}}
+\DoxyCodeLine{00363\ \textcolor{comment}{\ \ \ macro\ replacement-\/list,\ at\ a\ macro\ expansion\ point.\ E.g,\ in:}}
+\DoxyCodeLine{00364\ \textcolor{comment}{}}
+\DoxyCodeLine{00365\ \textcolor{comment}{\ \ \ \ \ \ \ \ \ \ \ \ \#define\ PLUS(A,B)\ A\ +\ B}}
+\DoxyCodeLine{00366\ \textcolor{comment}{}}
+\DoxyCodeLine{00367\ \textcolor{comment}{\ \ \ No\ macro\ map\ is\ going\ to\ be\ created\ there,\ because\ we\ are\ not\ at\ a}}
+\DoxyCodeLine{00368\ \textcolor{comment}{\ \ \ macro\ expansion\ point.\ We\ are\ at\ a\ macro\ /definition/\ point.\ So\ the}}
+\DoxyCodeLine{00369\ \textcolor{comment}{\ \ \ locations\ of\ the\ tokens\ of\ the\ macro\ replacement-\/list\ (i.e,\ A\ +\ B)}}
+\DoxyCodeLine{00370\ \textcolor{comment}{\ \ \ will\ be\ locations\ in\ an\ ordinary\ map,\ not\ a\ macro\ map.}}
+\DoxyCodeLine{00371\ \textcolor{comment}{}}
+\DoxyCodeLine{00372\ \textcolor{comment}{\ \ \ On\ the\ other\ hand,\ if\ we\ later\ do:}}
+\DoxyCodeLine{00373\ \textcolor{comment}{}}
+\DoxyCodeLine{00374\ \textcolor{comment}{\ \ \ \ \ \ \ \ int\ a\ =\ PLUS\ (1,2);}}
+\DoxyCodeLine{00375\ \textcolor{comment}{}}
+\DoxyCodeLine{00376\ \textcolor{comment}{\ \ \ The\ invocation\ of\ PLUS\ here\ is\ a\ macro\ expansion.\ So\ we\ are\ at\ a}}
+\DoxyCodeLine{00377\ \textcolor{comment}{\ \ \ macro\ expansion\ point.\ The\ preprocessor\ expands\ PLUS\ (1,2)\ and}}
+\DoxyCodeLine{00378\ \textcolor{comment}{\ \ \ replaces\ it\ with\ the\ tokens\ of\ its\ replacement-\/list:\ 1\ +\ 2.\ A\ macro}}
+\DoxyCodeLine{00379\ \textcolor{comment}{\ \ \ map\ is\ going\ to\ be\ created\ to\ hold\ (or\ rather\ to\ map,\ haha\ ...)\ the}}
+\DoxyCodeLine{00380\ \textcolor{comment}{\ \ \ locations\ of\ the\ tokens\ 1,\ +\ and\ 2.\ The\ macro\ map\ also\ records\ the}}
+\DoxyCodeLine{00381\ \textcolor{comment}{\ \ \ location\ of\ the\ expansion\ point\ of\ PLUS.\ That\ location\ is\ mapped\ in}}
+\DoxyCodeLine{00382\ \textcolor{comment}{\ \ \ the\ map\ that\ is\ active\ right\ before\ the\ location\ of\ the\ invocation}}
+\DoxyCodeLine{00383\ \textcolor{comment}{\ \ \ of\ PLUS.\ \ */}}
+\DoxyCodeLine{00384\ }
+\DoxyCodeLine{00385\ \textcolor{comment}{/*\ This\ contains\ GTY\ mark-\/up\ to\ support\ precompiled\ headers.}}
+\DoxyCodeLine{00386\ \textcolor{comment}{\ \ \ line\_map\ is\ an\ abstract\ class,\ only\ derived\ objects\ exist.\ \ */}}
+\DoxyCodeLine{00387\ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{coretypes_8h_ae5708c4d4b300570eebe0bc0c78facbc}{GTY}}((tag\ (\textcolor{stringliteral}{"{}0"{}}),\ desc\ (\textcolor{stringliteral}{"{}MAP\_ORDINARY\_P\ (\&\%h)\ ?\ 1\ :\ 2"{}})))\ line\_map\ \{}
+\DoxyCodeLine{00388\ \ \ \doxymbox{\hyperlink{line-map_8h_aedf25620511d64e43327f1a229906a96}{location\_t}}\ start\_location;}
+\DoxyCodeLine{00389\ }
+\DoxyCodeLine{00390\ \ \ \textcolor{comment}{/*\ Size\ and\ alignment\ is\ (usually)\ 4\ bytes.\ \ */}}
+\DoxyCodeLine{00391\ \};}
+\DoxyCodeLine{00392\ }
+\DoxyCodeLine{00393\ \textcolor{comment}{/*\ An\ ordinary\ line\ map\ encodes\ physical\ source\ locations.\ Those}}
+\DoxyCodeLine{00394\ \textcolor{comment}{\ \ \ physical\ source\ locations\ are\ called\ "{}spelling\ locations"{}.}}
+\DoxyCodeLine{00395\ \textcolor{comment}{\ \ \ }}
+\DoxyCodeLine{00396\ \textcolor{comment}{\ \ \ Physical\ source\ file\ TO\_FILE\ at\ line\ TO\_LINE\ at\ column\ 0\ is\ represented}}
+\DoxyCodeLine{00397\ \textcolor{comment}{\ \ \ by\ the\ logical\ START\_LOCATION.\ \ TO\_LINE+L\ at\ column\ C\ is\ represented\ by}}
+\DoxyCodeLine{00398\ \textcolor{comment}{\ \ \ START\_LOCATION+(L*(1<<m\_column\_and\_range\_bits))+(C*1<<m\_range\_bits),\ as}}
+\DoxyCodeLine{00399\ \textcolor{comment}{\ \ \ long\ as\ C<(1<<effective\ range\ bits),\ and\ the\ result\_location\ is\ less\ than}}
+\DoxyCodeLine{00400\ \textcolor{comment}{\ \ \ the\ next\ line\_map's\ start\_location.}}
+\DoxyCodeLine{00401\ \textcolor{comment}{\ \ \ (The\ top\ line\ is\ line\ 1\ and\ the\ leftmost\ column\ is\ column\ 1;\ line/column\ 0}}
+\DoxyCodeLine{00402\ \textcolor{comment}{\ \ \ means\ "{}entire\ file/line"{}\ or\ "{}unknown\ line/column"{}\ or\ "{}not\ applicable"{}.)}}
+\DoxyCodeLine{00403\ \textcolor{comment}{}}
+\DoxyCodeLine{00404\ \textcolor{comment}{\ \ \ The\ highest\ possible\ source\ location\ is\ MAX\_LOCATION\_T.\ \ */}}
+\DoxyCodeLine{00405\ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{coretypes_8h_ae5708c4d4b300570eebe0bc0c78facbc}{GTY}}((tag\ (\textcolor{stringliteral}{"{}1"{}})))\ line\_map\_ordinary\ :\ \textcolor{keyword}{public}\ line\_map\ \{}
+\DoxyCodeLine{00406\ \ \ \textcolor{comment}{/*\ Base\ class\ is\ 4\ bytes.\ \ */}}
+\DoxyCodeLine{00407\ }
+\DoxyCodeLine{00408\ \ \ \textcolor{comment}{/*\ 4\ bytes\ of\ integers,\ each\ 1\ byte\ for\ easy\ extraction/insertion.\ \ */}}
+\DoxyCodeLine{00409\ }
+\DoxyCodeLine{00410\ \ \ \textcolor{comment}{/*\ The\ reason\ for\ creation\ of\ this\ line\ map.\ \ */}}
+\DoxyCodeLine{00411\ \ \ \doxymbox{\hyperlink{ansidecl_8h_a2934559f672ebd88a0459d0fe40faff2}{ENUM\_BITFIELD}}\ (\doxymbox{\hyperlink{line-map_8h_ae06e396526caa60dc88e11650e8c93d6}{lc\_reason}})\ reason\ :\ 8;}
+\DoxyCodeLine{00412\ }
+\DoxyCodeLine{00413\ \ \ \textcolor{comment}{/*\ SYSP\ is\ one\ for\ a\ system\ header,\ two\ for\ a\ C\ system\ header\ file}}
+\DoxyCodeLine{00414\ \textcolor{comment}{\ \ \ \ \ that\ therefore\ needs\ to\ be\ extern\ "{}C"{}\ protected\ in\ C++,\ and\ zero}}
+\DoxyCodeLine{00415\ \textcolor{comment}{\ \ \ \ \ otherwise.\ \ This\ field\ isn't\ really\ needed\ now\ that\ it's\ in}}
+\DoxyCodeLine{00416\ \textcolor{comment}{\ \ \ \ \ cpp\_buffer.\ \ */}}
+\DoxyCodeLine{00417\ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{char}\ sysp;}
+\DoxyCodeLine{00418\ }
+\DoxyCodeLine{00419\ \ \ \textcolor{comment}{/*\ Number\ of\ the\ low-\/order\ location\_t\ bits\ used\ for\ column\ numbers}}
+\DoxyCodeLine{00420\ \textcolor{comment}{\ \ \ \ \ and\ ranges.\ \ */}}
+\DoxyCodeLine{00421\ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ m\_column\_and\_range\_bits\ :\ 8;}
+\DoxyCodeLine{00422\ }
+\DoxyCodeLine{00423\ \ \ \textcolor{comment}{/*\ Number\ of\ the\ low-\/order\ "{}column"{}\ bits\ used\ for\ storing\ short\ ranges}}
+\DoxyCodeLine{00424\ \textcolor{comment}{\ \ \ \ \ inline,\ rather\ than\ in\ the\ ad-\/hoc\ table.}}
+\DoxyCodeLine{00425\ \textcolor{comment}{\ \ \ \ \ MSB\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ LSB}}
+\DoxyCodeLine{00426\ \textcolor{comment}{\ \ \ \ \ 31\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ 0}}
+\DoxyCodeLine{00427\ \textcolor{comment}{\ \ \ \ \ +-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/+-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/+}}
+\DoxyCodeLine{00428\ \textcolor{comment}{\ \ \ \ \ |\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ |<-\/-\/-\/map-\/>column\_and\_range\_bits\ (e.g.\ 12)-\/-\/>|}}
+\DoxyCodeLine{00429\ \textcolor{comment}{\ \ \ \ \ +-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/+-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/+-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/+}}
+\DoxyCodeLine{00430\ \textcolor{comment}{\ \ \ \ \ |\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ |\ column\_and\_range\_bits\ |\ map-\/>range\_bits\ \ \ |}}
+\DoxyCodeLine{00431\ \textcolor{comment}{\ \ \ \ \ |\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ |\ \ \ -\/\ range\_bits\ \ \ \ \ \ \ \ |\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ |}}
+\DoxyCodeLine{00432\ \textcolor{comment}{\ \ \ \ \ +-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/+-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/+-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/+}}
+\DoxyCodeLine{00433\ \textcolor{comment}{\ \ \ \ \ |\ row\ bits\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ |\ effective\ column\ bits\ |\ short\ range\ bits\ \ |}}
+\DoxyCodeLine{00434\ \textcolor{comment}{\ \ \ \ \ |\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ |\ \ \ \ (e.g.\ 7)\ \ \ \ \ \ \ \ \ \ \ |\ \ \ (e.g.\ 5)\ \ \ \ \ \ \ \ |}}
+\DoxyCodeLine{00435\ \textcolor{comment}{\ \ \ \ \ +-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/+-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/+-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/+\ */}}
+\DoxyCodeLine{00436\ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ m\_range\_bits\ :\ 8;}
+\DoxyCodeLine{00437\ }
+\DoxyCodeLine{00438\ \ \ \textcolor{comment}{/*\ Pointer\ alignment\ boundary\ on\ both\ 32\ and\ 64-\/bit\ systems.\ \ */}}
+\DoxyCodeLine{00439\ }
+\DoxyCodeLine{00440\ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *to\_file;}
+\DoxyCodeLine{00441\ \ \ \doxymbox{\hyperlink{line-map_8h_a7ea1c467190e15e06046d86a035773a1}{linenum\_type}}\ to\_line;}
+\DoxyCodeLine{00442\ }
+\DoxyCodeLine{00443\ \ \ \textcolor{comment}{/*\ Location\ from\ whence\ this\ line\ map\ was\ included.\ \ For\ regular}}
+\DoxyCodeLine{00444\ \textcolor{comment}{\ \ \ \ \ \#includes,\ this\ location\ will\ be\ the\ last\ location\ of\ a\ map.\ \ For}}
+\DoxyCodeLine{00445\ \textcolor{comment}{\ \ \ \ \ outermost\ file,\ this\ is\ 0.\ \ For\ modules\ it\ could\ be\ anywhere}}
+\DoxyCodeLine{00446\ \textcolor{comment}{\ \ \ \ \ within\ a\ map.\ \ */}}
+\DoxyCodeLine{00447\ \ \ \doxymbox{\hyperlink{line-map_8h_aedf25620511d64e43327f1a229906a96}{location\_t}}\ included\_from;}
+\DoxyCodeLine{00448\ }
+\DoxyCodeLine{00449\ \ \ \textcolor{comment}{/*\ Size\ is\ 20\ or\ 24\ bytes,\ no\ padding\ \ */}}
+\DoxyCodeLine{00450\ \};}
+\DoxyCodeLine{00451\ }
+\DoxyCodeLine{00452\ \textcolor{comment}{/*\ This\ is\ the\ highest\ possible\ source\ location\ encoded\ within\ an}}
+\DoxyCodeLine{00453\ \textcolor{comment}{\ \ \ ordinary\ or\ macro\ map.\ \ */}}
+\DoxyCodeLine{00454\ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{line-map_8h_aedf25620511d64e43327f1a229906a96}{location\_t}}\ \doxymbox{\hyperlink{line-map_8h_abca71e1ddf803eb36a907642b8e19033}{MAX\_LOCATION\_T}}\ =\ 0x7FFFFFFF;}
+\DoxyCodeLine{00455\ }
+\DoxyCodeLine{00456\ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{cpplib_8h_af165f6ae2aa7df621bf25e95e9a47845}{cpp\_hashnode}};}
+\DoxyCodeLine{00457\ }
+\DoxyCodeLine{00458\ \textcolor{comment}{/*\ A\ macro\ line\ map\ encodes\ location\ of\ tokens\ coming\ from\ a\ macro}}
+\DoxyCodeLine{00459\ \textcolor{comment}{\ \ \ expansion.}}
+\DoxyCodeLine{00460\ \textcolor{comment}{\ \ \ }}
+\DoxyCodeLine{00461\ \textcolor{comment}{\ \ \ The\ offset\ from\ START\_LOCATION\ is\ used\ to\ index\ into}}
+\DoxyCodeLine{00462\ \textcolor{comment}{\ \ \ MACRO\_LOCATIONS;\ this\ holds\ the\ original\ location\ of\ the\ token.\ \ */}}
+\DoxyCodeLine{00463\ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{coretypes_8h_ae5708c4d4b300570eebe0bc0c78facbc}{GTY}}((tag\ (\textcolor{stringliteral}{"{}2"{}})))\ line\_map\_macro\ :\ \textcolor{keyword}{public}\ line\_map\ \{}
+\DoxyCodeLine{00464\ }
+\DoxyCodeLine{00465\ \ \ \textcolor{comment}{/*\ Get\ the\ location\ of\ the\ expansion\ point\ of\ this\ macro\ map.\ \ */}}
+\DoxyCodeLine{00466\ }
+\DoxyCodeLine{00467\ \ \ \doxymbox{\hyperlink{line-map_8h_aedf25620511d64e43327f1a229906a96}{location\_t}}}
+\DoxyCodeLine{00468\ \ \ get\_expansion\_point\_location\ ()\textcolor{keyword}{\ const}}
+\DoxyCodeLine{00469\ \textcolor{keyword}{\ \ }\{}
+\DoxyCodeLine{00470\ \ \ \ \ \textcolor{keywordflow}{return}\ m\_expansion;}
+\DoxyCodeLine{00471\ \ \ \}}
+\DoxyCodeLine{00472\ }
+\DoxyCodeLine{00473\ \ \ \textcolor{comment}{/*\ Base\ is\ 4\ bytes.\ \ */}}
+\DoxyCodeLine{00474\ }
+\DoxyCodeLine{00475\ \ \ \textcolor{comment}{/*\ The\ number\ of\ tokens\ inside\ the\ replacement-\/list\ of\ MACRO.\ \ */}}
+\DoxyCodeLine{00476\ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ n\_tokens;}
+\DoxyCodeLine{00477\ }
+\DoxyCodeLine{00478\ \ \ \textcolor{comment}{/*\ Pointer\ alignment\ boundary.\ \ */}}
+\DoxyCodeLine{00479\ }
+\DoxyCodeLine{00480\ \ \ \textcolor{comment}{/*\ The\ cpp\ macro\ whose\ expansion\ gave\ birth\ to\ this\ macro\ map.\ \ */}}
+\DoxyCodeLine{00481\ \ \ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{cpplib_8h_af165f6ae2aa7df621bf25e95e9a47845}{cpp\_hashnode}}\ *}
+\DoxyCodeLine{00482\ \ \ \ \ \doxymbox{\hyperlink{coretypes_8h_ae5708c4d4b300570eebe0bc0c78facbc}{GTY}}\ ((nested\_ptr\ (\textcolor{keyword}{union}\ tree\_node,}
+\DoxyCodeLine{00483\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{stringliteral}{"{}\%h\ ?\ CPP\_HASHNODE\ (GCC\_IDENT\_TO\_HT\_IDENT\ (\%h))\ :\ NULL"{}},}
+\DoxyCodeLine{00484\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{stringliteral}{"{}\%h\ ?\ HT\_IDENT\_TO\_GCC\_IDENT\ (HT\_NODE\ (\%h))\ :\ NULL"{}})))}
+\DoxyCodeLine{00485\ \ \ \ \ macro;}
+\DoxyCodeLine{00486\ }
+\DoxyCodeLine{00487\ \ \ \textcolor{comment}{/*\ This\ array\ of\ location\ is\ actually\ an\ array\ of\ pairs\ of}}
+\DoxyCodeLine{00488\ \textcolor{comment}{\ \ \ \ \ locations.\ The\ elements\ inside\ it\ thus\ look\ like:}}
+\DoxyCodeLine{00489\ \textcolor{comment}{}}
+\DoxyCodeLine{00490\ \textcolor{comment}{\ \ \ \ \ \ \ \ \ \ \ x0,y0,\ x1,y1,\ x2,y2,\ ....,\ xn,yn.}}
+\DoxyCodeLine{00491\ \textcolor{comment}{}}
+\DoxyCodeLine{00492\ \textcolor{comment}{\ \ \ \ \ where\ n\ ==\ n\_tokens;}}
+\DoxyCodeLine{00493\ \textcolor{comment}{}}
+\DoxyCodeLine{00494\ \textcolor{comment}{\ \ \ \ \ Remember\ that\ these\ xI,yI\ are\ collected\ when\ libcpp\ is\ about\ to}}
+\DoxyCodeLine{00495\ \textcolor{comment}{\ \ \ \ \ expand\ a\ given\ macro.}}
+\DoxyCodeLine{00496\ \textcolor{comment}{}}
+\DoxyCodeLine{00497\ \textcolor{comment}{\ \ \ \ \ yI\ is\ the\ location\ in\ the\ macro\ definition,\ either\ of\ the\ token}}
+\DoxyCodeLine{00498\ \textcolor{comment}{\ \ \ \ \ itself\ or\ of\ a\ macro\ parameter\ that\ it\ replaces.}}
+\DoxyCodeLine{00499\ \textcolor{comment}{}}
+\DoxyCodeLine{00500\ \textcolor{comment}{\ \ \ \ \ Imagine\ this:}}
+\DoxyCodeLine{00501\ \textcolor{comment}{}}
+\DoxyCodeLine{00502\ \textcolor{comment}{\ \ \ \ \#define\ PLUS(A,\ B)\ A\ +\ B\ \ <-\/-\/-\/\ \#1}}
+\DoxyCodeLine{00503\ \textcolor{comment}{}}
+\DoxyCodeLine{00504\ \textcolor{comment}{\ \ \ \ int\ a\ =\ PLUS\ (1,2);\ <-\/-\/-\/\ \#2}}
+\DoxyCodeLine{00505\ \textcolor{comment}{}}
+\DoxyCodeLine{00506\ \textcolor{comment}{\ \ \ \ \ There\ is\ a\ macro\ map\ for\ the\ expansion\ of\ PLUS\ in\ \#2.\ \ PLUS\ is}}
+\DoxyCodeLine{00507\ \textcolor{comment}{\ \ \ \ \ expanded\ into\ its\ expansion-\/list.\ \ The\ expansion-\/list\ is\ the}}
+\DoxyCodeLine{00508\ \textcolor{comment}{\ \ \ \ \ replacement-\/list\ of\ PLUS\ where\ the\ macro\ parameters\ are\ replaced}}
+\DoxyCodeLine{00509\ \textcolor{comment}{\ \ \ \ \ with\ their\ arguments.\ \ So\ the\ replacement-\/list\ of\ PLUS\ is\ made\ of}}
+\DoxyCodeLine{00510\ \textcolor{comment}{\ \ \ \ \ the\ tokens:}}
+\DoxyCodeLine{00511\ \textcolor{comment}{}}
+\DoxyCodeLine{00512\ \textcolor{comment}{\ \ \ \ \ \ \ \ A,\ +,\ B}}
+\DoxyCodeLine{00513\ \textcolor{comment}{}}
+\DoxyCodeLine{00514\ \textcolor{comment}{\ \ \ \ \ and\ the\ expansion-\/list\ is\ made\ of\ the\ tokens:}}
+\DoxyCodeLine{00515\ \textcolor{comment}{}}
+\DoxyCodeLine{00516\ \textcolor{comment}{\ \ \ \ \ \ \ \ 1,\ +,\ 2}}
+\DoxyCodeLine{00517\ \textcolor{comment}{}}
+\DoxyCodeLine{00518\ \textcolor{comment}{\ \ \ \ \ Let's\ consider\ the\ case\ of\ token\ "{}+"{}.\ \ Its\ y1\ [yI\ for\ I\ ==\ 1]\ is}}
+\DoxyCodeLine{00519\ \textcolor{comment}{\ \ \ \ \ its\ spelling\ location\ in\ \#1.}}
+\DoxyCodeLine{00520\ \textcolor{comment}{}}
+\DoxyCodeLine{00521\ \textcolor{comment}{\ \ \ \ \ y0\ (thus\ for\ token\ "{}1"{})\ is\ the\ spelling\ location\ of\ A\ in\ \#1.}}
+\DoxyCodeLine{00522\ \textcolor{comment}{}}
+\DoxyCodeLine{00523\ \textcolor{comment}{\ \ \ \ \ And\ y2\ (of\ token\ "{}2"{})\ is\ the\ spelling\ location\ of\ B\ in\ \#1.}}
+\DoxyCodeLine{00524\ \textcolor{comment}{}}
+\DoxyCodeLine{00525\ \textcolor{comment}{\ \ \ \ \ When\ the\ token\ is\ /not/\ an\ argument\ for\ a\ macro,\ xI\ is\ the\ same}}
+\DoxyCodeLine{00526\ \textcolor{comment}{\ \ \ \ \ location\ as\ yI.\ \ Otherwise,\ xI\ is\ the\ location\ of\ the\ token}}
+\DoxyCodeLine{00527\ \textcolor{comment}{\ \ \ \ \ outside\ this\ macro\ expansion.\ \ If\ this\ macro\ was\ expanded\ from}}
+\DoxyCodeLine{00528\ \textcolor{comment}{\ \ \ \ \ another\ macro\ expansion,\ xI\ is\ a\ virtual\ location\ representing}}
+\DoxyCodeLine{00529\ \textcolor{comment}{\ \ \ \ \ the\ token\ in\ that\ macro\ expansion;\ otherwise,\ it\ is\ the\ spelling}}
+\DoxyCodeLine{00530\ \textcolor{comment}{\ \ \ \ \ location\ of\ the\ token.}}
+\DoxyCodeLine{00531\ \textcolor{comment}{}}
+\DoxyCodeLine{00532\ \textcolor{comment}{\ \ \ \ \ Note\ that\ a\ virtual\ location\ is\ a\ location\ returned\ by}}
+\DoxyCodeLine{00533\ \textcolor{comment}{\ \ \ \ \ linemap\_add\_macro\_token.\ \ It\ encodes\ the\ relevant\ locations\ (x,y}}
+\DoxyCodeLine{00534\ \textcolor{comment}{\ \ \ \ \ pairs)\ of\ that\ token\ across\ the\ macro\ expansions\ from\ which\ it}}
+\DoxyCodeLine{00535\ \textcolor{comment}{\ \ \ \ \ (the\ token)\ might\ come\ from.}}
+\DoxyCodeLine{00536\ \textcolor{comment}{}}
+\DoxyCodeLine{00537\ \textcolor{comment}{\ \ \ \ \ In\ the\ example\ above\ x1\ (for\ token\ "{}+"{})\ is\ going\ to\ be\ the\ same}}
+\DoxyCodeLine{00538\ \textcolor{comment}{\ \ \ \ \ as\ y1.\ \ x0\ is\ the\ spelling\ location\ for\ the\ argument\ token\ "{}1"{},}}
+\DoxyCodeLine{00539\ \textcolor{comment}{\ \ \ \ \ and\ x2\ is\ the\ spelling\ location\ for\ the\ argument\ token\ "{}2"{}.\ \ */}}
+\DoxyCodeLine{00540\ \ \ \doxymbox{\hyperlink{line-map_8h_aedf25620511d64e43327f1a229906a96}{location\_t}}\ *\ \doxymbox{\hyperlink{coretypes_8h_ae5708c4d4b300570eebe0bc0c78facbc}{GTY}}((atomic))\ macro\_locations;}
+\DoxyCodeLine{00541\ }
+\DoxyCodeLine{00542\ \ \ \textcolor{comment}{/*\ This\ is\ the\ location\ of\ the\ expansion\ point\ of\ the\ current\ macro}}
+\DoxyCodeLine{00543\ \textcolor{comment}{\ \ \ \ \ map.\ \ It's\ the\ location\ of\ the\ macro\ name.\ \ That\ location\ is\ held}}
+\DoxyCodeLine{00544\ \textcolor{comment}{\ \ \ \ \ by\ the\ map\ that\ was\ current\ right\ before\ the\ current\ one.\ It}}
+\DoxyCodeLine{00545\ \textcolor{comment}{\ \ \ \ \ could\ have\ been\ either\ a\ macro\ or\ an\ ordinary\ map,\ depending\ on}}
+\DoxyCodeLine{00546\ \textcolor{comment}{\ \ \ \ \ if\ we\ are\ in\ a\ nested\ expansion\ context\ not.\ \ */}}
+\DoxyCodeLine{00547\ \ \ \doxymbox{\hyperlink{line-map_8h_aedf25620511d64e43327f1a229906a96}{location\_t}}\ m\_expansion;}
+\DoxyCodeLine{00548\ }
+\DoxyCodeLine{00549\ \ \ \textcolor{comment}{/*\ Size\ is\ 20\ or\ 32\ (4\ bytes\ padding\ on\ 64-\/bit).\ \ */}}
+\DoxyCodeLine{00550\ \};}
+\DoxyCodeLine{00551\ }
+\DoxyCodeLine{00552\ \textcolor{preprocessor}{\#if\ CHECKING\_P\ \&\&\ (GCC\_VERSION\ >=\ 2007)}}
+\DoxyCodeLine{00553\ }
+\DoxyCodeLine{00554\ \textcolor{comment}{/*\ Assertion\ macro\ to\ be\ used\ in\ line-\/map\ code.\ \ */}}
+\DoxyCodeLine{00555\ \textcolor{preprocessor}{\#define\ linemap\_assert(EXPR)\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00556\ \textcolor{preprocessor}{\ \ do\ \{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00557\ \textcolor{preprocessor}{\ \ \ \ if\ (!\ (EXPR))\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00558\ \textcolor{preprocessor}{\ \ \ \ \ \ abort\ ();\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00559\ \textcolor{preprocessor}{\ \ \}\ while\ (0)}}
+\DoxyCodeLine{00560\ }
+\DoxyCodeLine{00561\ \textcolor{comment}{/*\ Assert\ that\ becomes\ a\ conditional\ expression\ when\ checking\ is\ disabled\ at}}
+\DoxyCodeLine{00562\ \textcolor{comment}{\ \ \ compilation\ time.\ \ Use\ this\ for\ conditions\ that\ should\ not\ happen\ but\ if}}
+\DoxyCodeLine{00563\ \textcolor{comment}{\ \ \ they\ happen,\ it\ is\ better\ to\ handle\ them\ gracefully\ rather\ than\ crash}}
+\DoxyCodeLine{00564\ \textcolor{comment}{\ \ \ randomly\ later.}}
+\DoxyCodeLine{00565\ \textcolor{comment}{\ \ \ Usage:}}
+\DoxyCodeLine{00566\ \textcolor{comment}{}}
+\DoxyCodeLine{00567\ \textcolor{comment}{\ \ \ if\ (linemap\_assert\_fails(EXPR))\ handle\_error();\ */}}
+\DoxyCodeLine{00568\ \textcolor{preprocessor}{\#define\ linemap\_assert\_fails(EXPR)\ \_\_extension\_\_\ \(\backslash\)}}
+\DoxyCodeLine{00569\ \textcolor{preprocessor}{\ \ (\{linemap\_assert\ (EXPR);\ false;\})}}
+\DoxyCodeLine{00570\ }
+\DoxyCodeLine{00571\ \textcolor{preprocessor}{\#else}}
+\DoxyCodeLine{00572\ \textcolor{comment}{/*\ Include\ EXPR,\ so\ that\ unused\ variable\ warnings\ do\ not\ occur.\ \ */}}
+\DoxyCodeLine{00573\ \textcolor{preprocessor}{\#define\ linemap\_assert(EXPR)\ ((void)(0\ \&\&\ (EXPR)))}}
+\DoxyCodeLine{00574\ \textcolor{preprocessor}{\#define\ linemap\_assert\_fails(EXPR)\ (!\ (EXPR))}}
+\DoxyCodeLine{00575\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00576\ }
+\DoxyCodeLine{00577\ \textcolor{comment}{/*\ Get\ whether\ location\ LOC\ is\ an\ ordinary\ location.\ \ */}}
+\DoxyCodeLine{00578\ }
+\DoxyCodeLine{00579\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{bool}}
+\DoxyCodeLine{00580\ \doxymbox{\hyperlink{line-map_8h_adffb7ba43127f0f76c60354cd2efae37}{IS\_ORDINARY\_LOC}}\ (\doxymbox{\hyperlink{line-map_8h_aedf25620511d64e43327f1a229906a96}{location\_t}}\ loc)}
+\DoxyCodeLine{00581\ \{}
+\DoxyCodeLine{00582\ \ \ \textcolor{keywordflow}{return}\ loc\ <\ \doxymbox{\hyperlink{line-map_8h_af01c3f161d8020443aaeddf9ead39b6a}{LINE\_MAP\_MAX\_LOCATION}};}
+\DoxyCodeLine{00583\ \}}
+\DoxyCodeLine{00584\ }
+\DoxyCodeLine{00585\ \textcolor{comment}{/*\ Get\ whether\ location\ LOC\ is\ an\ ad-\/hoc\ location.\ \ */}}
+\DoxyCodeLine{00586\ }
+\DoxyCodeLine{00587\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{bool}}
+\DoxyCodeLine{00588\ \doxymbox{\hyperlink{line-map_8h_abd98ab7fe0941141e8b01130360876a0}{IS\_ADHOC\_LOC}}\ (\doxymbox{\hyperlink{line-map_8h_aedf25620511d64e43327f1a229906a96}{location\_t}}\ loc)}
+\DoxyCodeLine{00589\ \{}
+\DoxyCodeLine{00590\ \ \ \textcolor{keywordflow}{return}\ loc\ >\ \doxymbox{\hyperlink{line-map_8h_abca71e1ddf803eb36a907642b8e19033}{MAX\_LOCATION\_T}};}
+\DoxyCodeLine{00591\ \}}
+\DoxyCodeLine{00592\ }
+\DoxyCodeLine{00593\ \textcolor{comment}{/*\ Categorize\ line\ map\ kinds.\ \ */}}
+\DoxyCodeLine{00594\ }
+\DoxyCodeLine{00595\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{bool}}
+\DoxyCodeLine{00596\ \doxymbox{\hyperlink{line-map_8h_ad7d680756e727e9238d8052ea312b51c}{MAP\_ORDINARY\_P}}\ (\textcolor{keyword}{const}\ line\_map\ *map)}
+\DoxyCodeLine{00597\ \{}
+\DoxyCodeLine{00598\ \ \ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{line-map_8h_adffb7ba43127f0f76c60354cd2efae37}{IS\_ORDINARY\_LOC}}\ (map-\/>start\_location);}
+\DoxyCodeLine{00599\ \}}
+\DoxyCodeLine{00600\ }
+\DoxyCodeLine{00601\ \textcolor{comment}{/*\ Return\ TRUE\ if\ MAP\ encodes\ locations\ coming\ from\ a\ macro}}
+\DoxyCodeLine{00602\ \textcolor{comment}{\ \ \ replacement-\/list\ at\ macro\ expansion\ point.\ \ */}}
+\DoxyCodeLine{00603\ \textcolor{keywordtype}{bool}}
+\DoxyCodeLine{00604\ \doxymbox{\hyperlink{line-map_8h_adfd08e55970a3768d493350a882c00da}{linemap\_macro\_expansion\_map\_p}}\ (\textcolor{keyword}{const}\ line\_map\ *);}
+\DoxyCodeLine{00605\ }
+\DoxyCodeLine{00606\ \textcolor{comment}{/*\ Assert\ that\ MAP\ encodes\ locations\ of\ tokens\ that\ are\ not\ part\ of}}
+\DoxyCodeLine{00607\ \textcolor{comment}{\ \ \ the\ replacement-\/list\ of\ a\ macro\ expansion,\ downcasting\ from}}
+\DoxyCodeLine{00608\ \textcolor{comment}{\ \ \ line\_map\ *\ to\ line\_map\_ordinary\ *.\ \ */}}
+\DoxyCodeLine{00609\ }
+\DoxyCodeLine{00610\ \textcolor{keyword}{inline}\ line\_map\_ordinary\ *}
+\DoxyCodeLine{00611\ \doxymbox{\hyperlink{line-map_8h_a6df546f2c61cd913d8ac9e8518e831d5}{linemap\_check\_ordinary}}\ (line\_map\ *map)}
+\DoxyCodeLine{00612\ \{}
+\DoxyCodeLine{00613\ \ \ \doxymbox{\hyperlink{line-map_8h_a83ca2aa7d18f905ed60fcf3c07287a19}{linemap\_assert}}\ (\doxymbox{\hyperlink{line-map_8h_ad7d680756e727e9238d8052ea312b51c}{MAP\_ORDINARY\_P}}\ (map));}
+\DoxyCodeLine{00614\ \ \ \textcolor{keywordflow}{return}\ (line\_map\_ordinary\ *)map;}
+\DoxyCodeLine{00615\ \}}
+\DoxyCodeLine{00616\ }
+\DoxyCodeLine{00617\ \textcolor{comment}{/*\ Assert\ that\ MAP\ encodes\ locations\ of\ tokens\ that\ are\ not\ part\ of}}
+\DoxyCodeLine{00618\ \textcolor{comment}{\ \ \ the\ replacement-\/list\ of\ a\ macro\ expansion,\ downcasting\ from}}
+\DoxyCodeLine{00619\ \textcolor{comment}{\ \ \ const\ line\_map\ *\ to\ const\ line\_map\_ordinary\ *.\ \ */}}
+\DoxyCodeLine{00620\ }
+\DoxyCodeLine{00621\ \textcolor{keyword}{inline}\ \textcolor{keyword}{const}\ line\_map\_ordinary\ *}
+\DoxyCodeLine{00622\ \doxymbox{\hyperlink{line-map_8h_a6df546f2c61cd913d8ac9e8518e831d5}{linemap\_check\_ordinary}}\ (\textcolor{keyword}{const}\ line\_map\ *map)}
+\DoxyCodeLine{00623\ \{}
+\DoxyCodeLine{00624\ \ \ \doxymbox{\hyperlink{line-map_8h_a83ca2aa7d18f905ed60fcf3c07287a19}{linemap\_assert}}\ (\doxymbox{\hyperlink{line-map_8h_ad7d680756e727e9238d8052ea312b51c}{MAP\_ORDINARY\_P}}\ (map));}
+\DoxyCodeLine{00625\ \ \ \textcolor{keywordflow}{return}\ (\textcolor{keyword}{const}\ line\_map\_ordinary\ *)map;}
+\DoxyCodeLine{00626\ \}}
+\DoxyCodeLine{00627\ }
+\DoxyCodeLine{00628\ \textcolor{comment}{/*\ Assert\ that\ MAP\ is\ a\ macro\ expansion\ and\ downcast\ to\ the\ appropriate}}
+\DoxyCodeLine{00629\ \textcolor{comment}{\ \ \ subclass.\ \ */}}
+\DoxyCodeLine{00630\ }
+\DoxyCodeLine{00631\ \textcolor{keyword}{inline}\ line\_map\_macro\ *\doxymbox{\hyperlink{line-map_8h_a23ca0ccf3dc9f80e3ed56b3c9b20b7a1}{linemap\_check\_macro}}\ (line\_map\ *map)}
+\DoxyCodeLine{00632\ \{}
+\DoxyCodeLine{00633\ \ \ \doxymbox{\hyperlink{line-map_8h_a83ca2aa7d18f905ed60fcf3c07287a19}{linemap\_assert}}\ (!\doxymbox{\hyperlink{line-map_8h_ad7d680756e727e9238d8052ea312b51c}{MAP\_ORDINARY\_P}}\ (map));}
+\DoxyCodeLine{00634\ \ \ \textcolor{keywordflow}{return}\ (line\_map\_macro\ *)map;}
+\DoxyCodeLine{00635\ \}}
+\DoxyCodeLine{00636\ }
+\DoxyCodeLine{00637\ \textcolor{comment}{/*\ Assert\ that\ MAP\ is\ a\ macro\ expansion\ and\ downcast\ to\ the\ appropriate}}
+\DoxyCodeLine{00638\ \textcolor{comment}{\ \ \ subclass.\ \ */}}
+\DoxyCodeLine{00639\ }
+\DoxyCodeLine{00640\ \textcolor{keyword}{inline}\ \textcolor{keyword}{const}\ line\_map\_macro\ *}
+\DoxyCodeLine{00641\ \doxymbox{\hyperlink{line-map_8h_a23ca0ccf3dc9f80e3ed56b3c9b20b7a1}{linemap\_check\_macro}}\ (\textcolor{keyword}{const}\ line\_map\ *map)}
+\DoxyCodeLine{00642\ \{}
+\DoxyCodeLine{00643\ \ \ \doxymbox{\hyperlink{line-map_8h_a83ca2aa7d18f905ed60fcf3c07287a19}{linemap\_assert}}\ (!\doxymbox{\hyperlink{line-map_8h_ad7d680756e727e9238d8052ea312b51c}{MAP\_ORDINARY\_P}}\ (map));}
+\DoxyCodeLine{00644\ \ \ \textcolor{keywordflow}{return}\ (\textcolor{keyword}{const}\ line\_map\_macro\ *)map;}
+\DoxyCodeLine{00645\ \}}
+\DoxyCodeLine{00646\ }
+\DoxyCodeLine{00647\ \textcolor{comment}{/*\ Read\ the\ start\ location\ of\ MAP.\ \ */}}
+\DoxyCodeLine{00648\ }
+\DoxyCodeLine{00649\ \textcolor{keyword}{inline}\ \doxymbox{\hyperlink{line-map_8h_aedf25620511d64e43327f1a229906a96}{location\_t}}}
+\DoxyCodeLine{00650\ \doxymbox{\hyperlink{line-map_8h_ae65c255eebcb82172eb1b5e4dff8e5ff}{MAP\_START\_LOCATION}}\ (\textcolor{keyword}{const}\ line\_map\ *map)}
+\DoxyCodeLine{00651\ \{}
+\DoxyCodeLine{00652\ \ \ \textcolor{keywordflow}{return}\ map-\/>start\_location;}
+\DoxyCodeLine{00653\ \}}
+\DoxyCodeLine{00654\ }
+\DoxyCodeLine{00655\ \textcolor{comment}{/*\ Get\ the\ starting\ line\ number\ of\ ordinary\ map\ MAP.\ \ */}}
+\DoxyCodeLine{00656\ }
+\DoxyCodeLine{00657\ \textcolor{keyword}{inline}\ \doxymbox{\hyperlink{line-map_8h_a7ea1c467190e15e06046d86a035773a1}{linenum\_type}}}
+\DoxyCodeLine{00658\ \doxymbox{\hyperlink{line-map_8h_ab7296ad19d6c2347585f08bbcda22912}{ORDINARY\_MAP\_STARTING\_LINE\_NUMBER}}\ (\textcolor{keyword}{const}\ line\_map\_ordinary\ *ord\_map)}
+\DoxyCodeLine{00659\ \{}
+\DoxyCodeLine{00660\ \ \ \textcolor{keywordflow}{return}\ ord\_map-\/>to\_line;}
+\DoxyCodeLine{00661\ \}}
+\DoxyCodeLine{00662\ }
+\DoxyCodeLine{00663\ \textcolor{comment}{/*\ Return\ a\ positive\ value\ if\ map\ encodes\ locations\ from\ a\ system}}
+\DoxyCodeLine{00664\ \textcolor{comment}{\ \ \ header,\ 0\ otherwise.\ Returns\ 1\ if\ ordinary\ map\ MAP\ encodes\ locations}}
+\DoxyCodeLine{00665\ \textcolor{comment}{\ \ \ in\ a\ system\ header\ and\ 2\ if\ it\ encodes\ locations\ in\ a\ C\ system\ header}}
+\DoxyCodeLine{00666\ \textcolor{comment}{\ \ \ that\ therefore\ needs\ to\ be\ extern\ "{}C"{}\ protected\ in\ C++.\ \ */}}
+\DoxyCodeLine{00667\ }
+\DoxyCodeLine{00668\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{char}}
+\DoxyCodeLine{00669\ \doxymbox{\hyperlink{line-map_8h_ae6dd32d8668f1a3a53adddbe15d00445}{ORDINARY\_MAP\_IN\_SYSTEM\_HEADER\_P}}\ (\textcolor{keyword}{const}\ line\_map\_ordinary\ *ord\_map)}
+\DoxyCodeLine{00670\ \{}
+\DoxyCodeLine{00671\ \ \ \textcolor{keywordflow}{return}\ ord\_map-\/>sysp;}
+\DoxyCodeLine{00672\ \}}
+\DoxyCodeLine{00673\ }
+\DoxyCodeLine{00674\ \textcolor{comment}{/*\ TRUE\ if\ this\ line\ map\ is\ for\ a\ module\ (not\ a\ source\ file).\ \ */}}
+\DoxyCodeLine{00675\ }
+\DoxyCodeLine{00676\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{bool}}
+\DoxyCodeLine{00677\ \doxymbox{\hyperlink{line-map_8h_a804018ec0d79cabb2fcb62eaf4920c2f}{MAP\_MODULE\_P}}\ (\textcolor{keyword}{const}\ line\_map\ *map)}
+\DoxyCodeLine{00678\ \{}
+\DoxyCodeLine{00679\ \ \ \textcolor{keywordflow}{return}\ (\doxymbox{\hyperlink{line-map_8h_ad7d680756e727e9238d8052ea312b51c}{MAP\_ORDINARY\_P}}\ (map)}
+\DoxyCodeLine{00680\ \ \ \ \ \ \ \&\&\ \doxymbox{\hyperlink{line-map_8h_a6df546f2c61cd913d8ac9e8518e831d5}{linemap\_check\_ordinary}}\ (map)-\/>reason\ ==\ \doxymbox{\hyperlink{line-map_8h_ae06e396526caa60dc88e11650e8c93d6abf0ff555e41b0089a9049292f8e39784}{LC\_MODULE}});}
+\DoxyCodeLine{00681\ \}}
+\DoxyCodeLine{00682\ }
+\DoxyCodeLine{00683\ \textcolor{comment}{/*\ Get\ the\ filename\ of\ ordinary\ map\ MAP.\ \ */}}
+\DoxyCodeLine{00684\ }
+\DoxyCodeLine{00685\ \textcolor{keyword}{inline}\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *}
+\DoxyCodeLine{00686\ \doxymbox{\hyperlink{line-map_8h_a1bc6e8fac621c79c05d5dc27daac0f47}{ORDINARY\_MAP\_FILE\_NAME}}\ (\textcolor{keyword}{const}\ line\_map\_ordinary\ *ord\_map)}
+\DoxyCodeLine{00687\ \{}
+\DoxyCodeLine{00688\ \ \ \textcolor{keywordflow}{return}\ ord\_map-\/>to\_file;}
+\DoxyCodeLine{00689\ \}}
+\DoxyCodeLine{00690\ }
+\DoxyCodeLine{00691\ \textcolor{comment}{/*\ Get\ the\ cpp\ macro\ whose\ expansion\ gave\ birth\ to\ macro\ map\ MAP.\ \ */}}
+\DoxyCodeLine{00692\ }
+\DoxyCodeLine{00693\ \textcolor{keyword}{inline}\ \doxymbox{\hyperlink{cpplib_8h_af165f6ae2aa7df621bf25e95e9a47845}{cpp\_hashnode}}\ *}
+\DoxyCodeLine{00694\ \doxymbox{\hyperlink{line-map_8h_a9bc48114b295bd1b8dabe451548f8a74}{MACRO\_MAP\_MACRO}}\ (\textcolor{keyword}{const}\ line\_map\_macro\ *macro\_map)}
+\DoxyCodeLine{00695\ \{}
+\DoxyCodeLine{00696\ \ \ \textcolor{keywordflow}{return}\ macro\_map-\/>macro;}
+\DoxyCodeLine{00697\ \}}
+\DoxyCodeLine{00698\ }
+\DoxyCodeLine{00699\ \textcolor{comment}{/*\ Get\ the\ number\ of\ tokens\ inside\ the\ replacement-\/list\ of\ the\ macro}}
+\DoxyCodeLine{00700\ \textcolor{comment}{\ \ \ that\ led\ to\ macro\ map\ MAP.\ \ */}}
+\DoxyCodeLine{00701\ }
+\DoxyCodeLine{00702\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}}
+\DoxyCodeLine{00703\ \doxymbox{\hyperlink{line-map_8h_a709cf2063436d8c6307ddc7a7d5b4536}{MACRO\_MAP\_NUM\_MACRO\_TOKENS}}\ (\textcolor{keyword}{const}\ line\_map\_macro\ *macro\_map)}
+\DoxyCodeLine{00704\ \{}
+\DoxyCodeLine{00705\ \ \ \textcolor{keywordflow}{return}\ macro\_map-\/>n\_tokens;}
+\DoxyCodeLine{00706\ \}}
+\DoxyCodeLine{00707\ }
+\DoxyCodeLine{00708\ \textcolor{comment}{/*\ Get\ the\ array\ of\ pairs\ of\ locations\ within\ macro\ map\ MAP.}}
+\DoxyCodeLine{00709\ \textcolor{comment}{\ \ \ See\ the\ declaration\ of\ line\_map\_macro\ for\ more\ information.\ \ */}}
+\DoxyCodeLine{00710\ }
+\DoxyCodeLine{00711\ \textcolor{keyword}{inline}\ \doxymbox{\hyperlink{line-map_8h_aedf25620511d64e43327f1a229906a96}{location\_t}}\ *}
+\DoxyCodeLine{00712\ \doxymbox{\hyperlink{line-map_8h_a1a62aa391352cb667bdaf515cbbe26cf}{MACRO\_MAP\_LOCATIONS}}\ (\textcolor{keyword}{const}\ line\_map\_macro\ *macro\_map)}
+\DoxyCodeLine{00713\ \{}
+\DoxyCodeLine{00714\ \ \ \textcolor{keywordflow}{return}\ macro\_map-\/>macro\_locations;}
+\DoxyCodeLine{00715\ \}}
+\DoxyCodeLine{00716\ }
+\DoxyCodeLine{00717\ \textcolor{comment}{/*\ The\ abstraction\ of\ a\ set\ of\ location\ maps.\ There\ can\ be\ several}}
+\DoxyCodeLine{00718\ \textcolor{comment}{\ \ \ types\ of\ location\ maps.\ This\ abstraction\ contains\ the\ attributes}}
+\DoxyCodeLine{00719\ \textcolor{comment}{\ \ \ that\ are\ independent\ from\ the\ type\ of\ the\ map.}}
+\DoxyCodeLine{00720\ \textcolor{comment}{}}
+\DoxyCodeLine{00721\ \textcolor{comment}{\ \ \ Essentially\ this\ is\ just\ a\ vector\ of\ T\_linemap\_subclass,}}
+\DoxyCodeLine{00722\ \textcolor{comment}{\ \ \ which\ can\ only\ ever\ grow\ in\ size.\ \ */}}
+\DoxyCodeLine{00723\ }
+\DoxyCodeLine{00724\ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{coretypes_8h_ae5708c4d4b300570eebe0bc0c78facbc}{GTY}}(())\ maps\_info\_ordinary\ \{}
+\DoxyCodeLine{00725\ \ \ \textcolor{comment}{/*\ This\ array\ contains\ the\ "{}ordinary"{}\ line\ maps,\ for\ all}}
+\DoxyCodeLine{00726\ \textcolor{comment}{\ \ \ \ \ events\ other\ than\ macro\ expansion}}
+\DoxyCodeLine{00727\ \textcolor{comment}{\ \ \ \ \ (e.g.\ when\ a\ new\ preprocessing\ unit\ starts\ or\ ends).\ \ */}}
+\DoxyCodeLine{00728\ \ \ line\_map\_ordinary\ *\ \doxymbox{\hyperlink{coretypes_8h_ae5708c4d4b300570eebe0bc0c78facbc}{GTY}}\ ((length\ (\textcolor{stringliteral}{"{}\%h.used"{}})))\ maps;}
+\DoxyCodeLine{00729\ }
+\DoxyCodeLine{00730\ \ \ \textcolor{comment}{/*\ The\ total\ number\ of\ allocated\ maps.\ \ */}}
+\DoxyCodeLine{00731\ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ allocated;}
+\DoxyCodeLine{00732\ }
+\DoxyCodeLine{00733\ \ \ \textcolor{comment}{/*\ The\ number\ of\ elements\ used\ in\ maps.\ This\ number\ is\ smaller}}
+\DoxyCodeLine{00734\ \textcolor{comment}{\ \ \ \ \ or\ equal\ to\ ALLOCATED.\ \ */}}
+\DoxyCodeLine{00735\ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ used;}
+\DoxyCodeLine{00736\ }
+\DoxyCodeLine{00737\ \ \ \textcolor{comment}{/*\ The\ index\ of\ the\ last\ ordinary\ map\ that\ was\ looked\ up\ with}}
+\DoxyCodeLine{00738\ \textcolor{comment}{\ \ \ \ \ linemap\_lookup.\ \ */}}
+\DoxyCodeLine{00739\ \ \ mutable\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ m\_cache;}
+\DoxyCodeLine{00740\ \};}
+\DoxyCodeLine{00741\ }
+\DoxyCodeLine{00742\ struct\ \doxymbox{\hyperlink{coretypes_8h_ae5708c4d4b300570eebe0bc0c78facbc}{GTY}}(())\ maps\_info\_macro\ \{}
+\DoxyCodeLine{00743\ \ \ \textcolor{comment}{/*\ This\ array\ contains\ the\ macro\ line\ maps.}}
+\DoxyCodeLine{00744\ \textcolor{comment}{\ \ \ \ \ A\ macro\ line\ map\ is\ created\ whenever\ a\ macro\ expansion\ occurs.\ \ */}}
+\DoxyCodeLine{00745\ \ \ line\_map\_macro\ *\ \doxymbox{\hyperlink{coretypes_8h_ae5708c4d4b300570eebe0bc0c78facbc}{GTY}}\ ((length\ (\textcolor{stringliteral}{"{}\%h.used"{}})))\ maps;}
+\DoxyCodeLine{00746\ }
+\DoxyCodeLine{00747\ \ \ \textcolor{comment}{/*\ The\ total\ number\ of\ allocated\ maps.\ \ */}}
+\DoxyCodeLine{00748\ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ allocated;}
+\DoxyCodeLine{00749\ }
+\DoxyCodeLine{00750\ \ \ \textcolor{comment}{/*\ The\ number\ of\ elements\ used\ in\ maps.\ This\ number\ is\ smaller}}
+\DoxyCodeLine{00751\ \textcolor{comment}{\ \ \ \ \ or\ equal\ to\ ALLOCATED.\ \ */}}
+\DoxyCodeLine{00752\ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ used;}
+\DoxyCodeLine{00753\ }
+\DoxyCodeLine{00754\ \ \ \textcolor{comment}{/*\ The\ index\ of\ the\ last\ macro\ map\ that\ was\ looked\ up\ with}}
+\DoxyCodeLine{00755\ \textcolor{comment}{\ \ \ \ \ linemap\_lookup.\ \ */}}
+\DoxyCodeLine{00756\ \ \ mutable\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ m\_cache;}
+\DoxyCodeLine{00757\ \};}
+\DoxyCodeLine{00758\ }
+\DoxyCodeLine{00759\ \textcolor{comment}{/*\ Data\ structure\ to\ associate\ a\ source\_range\ together\ with\ an\ arbitrary}}
+\DoxyCodeLine{00760\ \textcolor{comment}{\ \ \ data\ pointer\ with\ a\ source\ location.\ \ */}}
+\DoxyCodeLine{00761\ struct\ \doxymbox{\hyperlink{coretypes_8h_ae5708c4d4b300570eebe0bc0c78facbc}{GTY}}(())\ location\_adhoc\_data\ \{}
+\DoxyCodeLine{00762\ \ \ \doxymbox{\hyperlink{line-map_8h_aedf25620511d64e43327f1a229906a96}{location\_t}}\ locus;}
+\DoxyCodeLine{00763\ \ \ source\_range\ src\_range;}
+\DoxyCodeLine{00764\ \ \ \textcolor{keywordtype}{void}\ *\ \doxymbox{\hyperlink{coretypes_8h_ae5708c4d4b300570eebe0bc0c78facbc}{GTY}}((skip))\ data;}
+\DoxyCodeLine{00765\ \ \ \textcolor{keywordtype}{unsigned}\ discriminator;}
+\DoxyCodeLine{00766\ \};}
+\DoxyCodeLine{00767\ }
+\DoxyCodeLine{00768\ \textcolor{keyword}{struct\ }htab;}
+\DoxyCodeLine{00769\ }
+\DoxyCodeLine{00770\ \textcolor{comment}{/*\ The\ following\ data\ structure\ encodes\ a\ location\ with\ some\ adhoc\ data}}
+\DoxyCodeLine{00771\ \textcolor{comment}{\ \ \ and\ maps\ it\ to\ a\ new\ unsigned\ integer\ (called\ an\ adhoc\ location)}}
+\DoxyCodeLine{00772\ \textcolor{comment}{\ \ \ that\ replaces\ the\ original\ location\ to\ represent\ the\ mapping.}}
+\DoxyCodeLine{00773\ \textcolor{comment}{}}
+\DoxyCodeLine{00774\ \textcolor{comment}{\ \ \ The\ new\ adhoc\_loc\ uses\ the\ highest\ bit\ as\ the\ enabling\ bit,\ i.e.\ if\ the}}
+\DoxyCodeLine{00775\ \textcolor{comment}{\ \ \ highest\ bit\ is\ 1,\ then\ the\ number\ is\ adhoc\_loc.\ Otherwise,\ it\ serves\ as}}
+\DoxyCodeLine{00776\ \textcolor{comment}{\ \ \ the\ original\ location.\ Once\ identified\ as\ the\ adhoc\_loc,\ the\ lower\ 31}}
+\DoxyCodeLine{00777\ \textcolor{comment}{\ \ \ bits\ of\ the\ integer\ is\ used\ to\ index\ the\ location\_adhoc\_data\ array,}}
+\DoxyCodeLine{00778\ \textcolor{comment}{\ \ \ in\ which\ the\ locus\ and\ associated\ data\ is\ stored.\ \ */}}
+\DoxyCodeLine{00779\ }
+\DoxyCodeLine{00780\ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{coretypes_8h_ae5708c4d4b300570eebe0bc0c78facbc}{GTY}}(())\ location\_adhoc\_data\_map\ \{}
+\DoxyCodeLine{00781\ \ \ \textcolor{keyword}{struct\ }htab\ *\ \doxymbox{\hyperlink{coretypes_8h_ae5708c4d4b300570eebe0bc0c78facbc}{GTY}}((skip))\ htab;}
+\DoxyCodeLine{00782\ \ \ \doxymbox{\hyperlink{line-map_8h_aedf25620511d64e43327f1a229906a96}{location\_t}}\ curr\_loc;}
+\DoxyCodeLine{00783\ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ allocated;}
+\DoxyCodeLine{00784\ \ \ \textcolor{keyword}{struct\ }location\_adhoc\_data\ \doxymbox{\hyperlink{coretypes_8h_ae5708c4d4b300570eebe0bc0c78facbc}{GTY}}((length\ (\textcolor{stringliteral}{"{}\%h.allocated"{}})))\ *data;}
+\DoxyCodeLine{00785\ \};}
+\DoxyCodeLine{00786\ }
+\DoxyCodeLine{00787\ \textcolor{comment}{/*\ A\ set\ of\ chronological\ line\_map\ structures.\ \ */}}
+\DoxyCodeLine{00788\ \textcolor{keyword}{class\ }\doxymbox{\hyperlink{coretypes_8h_ae5708c4d4b300570eebe0bc0c78facbc}{GTY}}(())\ line\_maps\ \{}
+\DoxyCodeLine{00789\ \textcolor{keyword}{public}:}
+\DoxyCodeLine{00790\ }
+\DoxyCodeLine{00791\ \ \ \string~line\_maps\ ();}
+\DoxyCodeLine{00792\ }
+\DoxyCodeLine{00793\ \ \ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{line-map_8h_a836fb5f45dd7a55eb59d13956808e33a}{pure\_location\_p}}\ (\doxymbox{\hyperlink{line-map_8h_aedf25620511d64e43327f1a229906a96}{location\_t}}\ loc)\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00794\ \ \ \doxymbox{\hyperlink{line-map_8h_aedf25620511d64e43327f1a229906a96}{location\_t}}\ \doxymbox{\hyperlink{input_8h_af4f3f92b5c59e004ceb994528c53984e}{get\_pure\_location}}\ (\doxymbox{\hyperlink{line-map_8h_aedf25620511d64e43327f1a229906a96}{location\_t}}\ loc)\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00795\ }
+\DoxyCodeLine{00796\ \ \ source\_range\ \doxymbox{\hyperlink{line-map_8h_a0792842863e62402de34709ad3b5fea8}{get\_range\_from\_loc}}\ (\doxymbox{\hyperlink{line-map_8h_aedf25620511d64e43327f1a229906a96}{location\_t}}\ loc)\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00797\ \ \ \doxymbox{\hyperlink{line-map_8h_aedf25620511d64e43327f1a229906a96}{location\_t}}\ \doxymbox{\hyperlink{input_8h_a0ac0ca0ffc360653f2551e9f8ec1d19c}{get\_start}}\ (\doxymbox{\hyperlink{line-map_8h_aedf25620511d64e43327f1a229906a96}{location\_t}}\ loc)\textcolor{keyword}{\ const}}
+\DoxyCodeLine{00798\ \textcolor{keyword}{\ \ }\{}
+\DoxyCodeLine{00799\ \ \ \ \ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{line-map_8h_a0792842863e62402de34709ad3b5fea8}{get\_range\_from\_loc}}\ (loc).m\_start;}
+\DoxyCodeLine{00800\ \ \ \}}
+\DoxyCodeLine{00801\ \ \ \doxymbox{\hyperlink{line-map_8h_aedf25620511d64e43327f1a229906a96}{location\_t}}}
+\DoxyCodeLine{00802\ \ \ \doxymbox{\hyperlink{input_8h_ae79c02da0c12c588f0ed4960c77e8019}{get\_finish}}\ (\doxymbox{\hyperlink{line-map_8h_aedf25620511d64e43327f1a229906a96}{location\_t}}\ loc)\textcolor{keyword}{\ const}}
+\DoxyCodeLine{00803\ \textcolor{keyword}{\ \ }\{}
+\DoxyCodeLine{00804\ \ \ \ \ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{line-map_8h_a0792842863e62402de34709ad3b5fea8}{get\_range\_from\_loc}}\ (loc).m\_finish;}
+\DoxyCodeLine{00805\ \ \ \}}
+\DoxyCodeLine{00806\ }
+\DoxyCodeLine{00807\ \ \ \doxymbox{\hyperlink{line-map_8h_aedf25620511d64e43327f1a229906a96}{location\_t}}\ \doxymbox{\hyperlink{input_8h_a7834dc3ff9781e9234c888468e754270}{make\_location}}\ (\doxymbox{\hyperlink{line-map_8h_aedf25620511d64e43327f1a229906a96}{location\_t}}\ caret,}
+\DoxyCodeLine{00808\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{line-map_8h_aedf25620511d64e43327f1a229906a96}{location\_t}}\ start,}
+\DoxyCodeLine{00809\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{line-map_8h_aedf25620511d64e43327f1a229906a96}{location\_t}}\ finish);}
+\DoxyCodeLine{00810\ }
+\DoxyCodeLine{00811\ \ \ \doxymbox{\hyperlink{line-map_8h_aedf25620511d64e43327f1a229906a96}{location\_t}}}
+\DoxyCodeLine{00812\ \ \ get\_or\_create\_combined\_loc\ (\doxymbox{\hyperlink{line-map_8h_aedf25620511d64e43327f1a229906a96}{location\_t}}\ locus,}
+\DoxyCodeLine{00813\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ source\_range\ src\_range,}
+\DoxyCodeLine{00814\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{void}\ *data,}
+\DoxyCodeLine{00815\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{unsigned}\ discriminator);}
+\DoxyCodeLine{00816\ }
+\DoxyCodeLine{00817\ \ \textcolor{keyword}{private}:}
+\DoxyCodeLine{00818\ \ \ \textcolor{keywordtype}{bool}\ can\_be\_stored\_compactly\_p\ (\doxymbox{\hyperlink{line-map_8h_aedf25620511d64e43327f1a229906a96}{location\_t}}\ locus,}
+\DoxyCodeLine{00819\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ source\_range\ src\_range,}
+\DoxyCodeLine{00820\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{void}\ *data,}
+\DoxyCodeLine{00821\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{unsigned}\ discriminator)\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00822\ \ \ source\_range\ get\_range\_from\_adhoc\_loc\ (\doxymbox{\hyperlink{line-map_8h_aedf25620511d64e43327f1a229906a96}{location\_t}}\ loc)\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00823\ }
+\DoxyCodeLine{00824\ \ \textcolor{keyword}{public}:}
+\DoxyCodeLine{00825\ \ \ maps\_info\_ordinary\ info\_ordinary;}
+\DoxyCodeLine{00826\ }
+\DoxyCodeLine{00827\ \ \ maps\_info\_macro\ info\_macro;}
+\DoxyCodeLine{00828\ }
+\DoxyCodeLine{00829\ \ \ \textcolor{comment}{/*\ Depth\ of\ the\ include\ stack,\ including\ the\ current\ file.\ \ */}}
+\DoxyCodeLine{00830\ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ depth;}
+\DoxyCodeLine{00831\ }
+\DoxyCodeLine{00832\ \ \ \textcolor{comment}{/*\ If\ true,\ prints\ an\ include\ trace\ a\ la\ -\/H.\ \ */}}
+\DoxyCodeLine{00833\ \ \ \textcolor{keywordtype}{bool}\ trace\_includes;}
+\DoxyCodeLine{00834\ }
+\DoxyCodeLine{00835\ \ \ \textcolor{comment}{/*\ True\ if\ we've\ seen\ a\ \#line\ or\ \#\ 44\ "{}file"{}\ directive.\ \ */}}
+\DoxyCodeLine{00836\ \ \ \textcolor{keywordtype}{bool}\ seen\_line\_directive;}
+\DoxyCodeLine{00837\ }
+\DoxyCodeLine{00838\ \ \ \textcolor{comment}{/*\ Highest\ location\_t\ "{}given\ out"{}.\ \ */}}
+\DoxyCodeLine{00839\ \ \ \doxymbox{\hyperlink{line-map_8h_aedf25620511d64e43327f1a229906a96}{location\_t}}\ highest\_location;}
+\DoxyCodeLine{00840\ }
+\DoxyCodeLine{00841\ \ \ \textcolor{comment}{/*\ Start\ of\ line\ of\ highest\ location\_t\ "{}given\ out"{}.\ \ */}}
+\DoxyCodeLine{00842\ \ \ \doxymbox{\hyperlink{line-map_8h_aedf25620511d64e43327f1a229906a96}{location\_t}}\ highest\_line;}
+\DoxyCodeLine{00843\ }
+\DoxyCodeLine{00844\ \ \ \textcolor{comment}{/*\ The\ maximum\ column\ number\ we\ can\ quickly\ allocate.\ \ Higher\ numbers}}
+\DoxyCodeLine{00845\ \textcolor{comment}{\ \ \ \ \ may\ require\ allocating\ a\ new\ line\_map.\ \ */}}
+\DoxyCodeLine{00846\ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ max\_column\_hint;}
+\DoxyCodeLine{00847\ }
+\DoxyCodeLine{00848\ \ \ \textcolor{comment}{/*\ The\ allocator\ to\ use\ when\ resizing\ 'maps',\ defaults\ to\ xrealloc.\ \ */}}
+\DoxyCodeLine{00849\ \ \ \doxymbox{\hyperlink{line-map_8h_a04b105058e4ab81b942cfe565b179c98}{line\_map\_realloc}}\ \doxymbox{\hyperlink{coretypes_8h_ae5708c4d4b300570eebe0bc0c78facbc}{GTY}}((callback))\ m\_reallocator;}
+\DoxyCodeLine{00850\ }
+\DoxyCodeLine{00851\ \ \ \textcolor{comment}{/*\ The\ allocators'\ function\ used\ to\ know\ the\ actual\ size\ it}}
+\DoxyCodeLine{00852\ \textcolor{comment}{\ \ \ \ \ allocated,\ for\ a\ certain\ allocation\ size\ requested.\ \ */}}
+\DoxyCodeLine{00853\ \ \ \doxymbox{\hyperlink{line-map_8h_a71de864fbe6107117d6c99a123680a50}{line\_map\_round\_alloc\_size\_func}}\ \doxymbox{\hyperlink{coretypes_8h_ae5708c4d4b300570eebe0bc0c78facbc}{GTY}}((callback))\ m\_round\_alloc\_size;}
+\DoxyCodeLine{00854\ }
+\DoxyCodeLine{00855\ \ \ \textcolor{keyword}{struct\ }location\_adhoc\_data\_map\ m\_location\_adhoc\_data\_map;}
+\DoxyCodeLine{00856\ }
+\DoxyCodeLine{00857\ \ \ \textcolor{comment}{/*\ The\ special\ location\ value\ that\ is\ used\ as\ spelling\ location\ for}}
+\DoxyCodeLine{00858\ \textcolor{comment}{\ \ \ \ \ built-\/in\ tokens.\ \ */}}
+\DoxyCodeLine{00859\ \ \ \doxymbox{\hyperlink{line-map_8h_aedf25620511d64e43327f1a229906a96}{location\_t}}\ builtin\_location;}
+\DoxyCodeLine{00860\ }
+\DoxyCodeLine{00861\ \ \ \textcolor{comment}{/*\ The\ default\ value\ of\ range\_bits\ in\ ordinary\ line\ maps.\ \ */}}
+\DoxyCodeLine{00862\ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ default\_range\_bits;}
+\DoxyCodeLine{00863\ }
+\DoxyCodeLine{00864\ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ m\_num\_optimized\_ranges;}
+\DoxyCodeLine{00865\ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ m\_num\_unoptimized\_ranges;}
+\DoxyCodeLine{00866\ \};}
+\DoxyCodeLine{00867\ }
+\DoxyCodeLine{00868\ \textcolor{comment}{/*\ Returns\ the\ number\ of\ allocated\ maps\ so\ far.\ MAP\_KIND\ shall\ be\ TRUE}}
+\DoxyCodeLine{00869\ \textcolor{comment}{\ \ \ if\ we\ are\ interested\ in\ macro\ maps,\ FALSE\ otherwise.\ \ */}}
+\DoxyCodeLine{00870\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}}
+\DoxyCodeLine{00871\ \doxymbox{\hyperlink{line-map_8h_aa124a86b3393604551cd076a80a2704f}{LINEMAPS\_ALLOCATED}}\ (\textcolor{keyword}{const}\ line\_maps\ *set,\ \textcolor{keywordtype}{bool}\ map\_kind)}
+\DoxyCodeLine{00872\ \{}
+\DoxyCodeLine{00873\ \ \ \textcolor{keywordflow}{if}\ (map\_kind)}
+\DoxyCodeLine{00874\ \ \ \ \ \textcolor{keywordflow}{return}\ set-\/>info\_macro.allocated;}
+\DoxyCodeLine{00875\ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00876\ \ \ \ \ \textcolor{keywordflow}{return}\ set-\/>info\_ordinary.allocated;}
+\DoxyCodeLine{00877\ \}}
+\DoxyCodeLine{00878\ }
+\DoxyCodeLine{00879\ \textcolor{comment}{/*\ As\ above,\ but\ by\ reference\ (e.g.\ as\ an\ lvalue).\ \ */}}
+\DoxyCodeLine{00880\ }
+\DoxyCodeLine{00881\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ \&}
+\DoxyCodeLine{00882\ \doxymbox{\hyperlink{line-map_8h_aa124a86b3393604551cd076a80a2704f}{LINEMAPS\_ALLOCATED}}\ (line\_maps\ *set,\ \textcolor{keywordtype}{bool}\ map\_kind)}
+\DoxyCodeLine{00883\ \{}
+\DoxyCodeLine{00884\ \ \ \textcolor{keywordflow}{if}\ (map\_kind)}
+\DoxyCodeLine{00885\ \ \ \ \ \textcolor{keywordflow}{return}\ set-\/>info\_macro.allocated;}
+\DoxyCodeLine{00886\ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00887\ \ \ \ \ \textcolor{keywordflow}{return}\ set-\/>info\_ordinary.allocated;}
+\DoxyCodeLine{00888\ \}}
+\DoxyCodeLine{00889\ }
+\DoxyCodeLine{00890\ \textcolor{comment}{/*\ Returns\ the\ number\ of\ used\ maps\ so\ far.\ MAP\_KIND\ shall\ be\ TRUE\ if}}
+\DoxyCodeLine{00891\ \textcolor{comment}{\ \ \ we\ are\ interested\ in\ macro\ maps,\ FALSE\ otherwise.*/}}
+\DoxyCodeLine{00892\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}}
+\DoxyCodeLine{00893\ \doxymbox{\hyperlink{line-map_8h_adee98c8f0a917c590c020fa2a441b99a}{LINEMAPS\_USED}}\ (\textcolor{keyword}{const}\ line\_maps\ *set,\ \textcolor{keywordtype}{bool}\ map\_kind)}
+\DoxyCodeLine{00894\ \{}
+\DoxyCodeLine{00895\ \ \ \textcolor{keywordflow}{if}\ (map\_kind)}
+\DoxyCodeLine{00896\ \ \ \ \ \textcolor{keywordflow}{return}\ set-\/>info\_macro.used;}
+\DoxyCodeLine{00897\ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00898\ \ \ \ \ \textcolor{keywordflow}{return}\ set-\/>info\_ordinary.used;}
+\DoxyCodeLine{00899\ \}}
+\DoxyCodeLine{00900\ }
+\DoxyCodeLine{00901\ \textcolor{comment}{/*\ As\ above,\ but\ by\ reference\ (e.g.\ as\ an\ lvalue).\ \ */}}
+\DoxyCodeLine{00902\ }
+\DoxyCodeLine{00903\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ \&}
+\DoxyCodeLine{00904\ \doxymbox{\hyperlink{line-map_8h_adee98c8f0a917c590c020fa2a441b99a}{LINEMAPS\_USED}}\ (line\_maps\ *set,\ \textcolor{keywordtype}{bool}\ map\_kind)}
+\DoxyCodeLine{00905\ \{}
+\DoxyCodeLine{00906\ \ \ \textcolor{keywordflow}{if}\ (map\_kind)}
+\DoxyCodeLine{00907\ \ \ \ \ \textcolor{keywordflow}{return}\ set-\/>info\_macro.used;}
+\DoxyCodeLine{00908\ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00909\ \ \ \ \ \textcolor{keywordflow}{return}\ set-\/>info\_ordinary.used;}
+\DoxyCodeLine{00910\ \}}
+\DoxyCodeLine{00911\ }
+\DoxyCodeLine{00912\ \textcolor{comment}{/*\ Return\ the\ map\ at\ a\ given\ index.\ \ */}}
+\DoxyCodeLine{00913\ \textcolor{keyword}{inline}\ line\_map\ *}
+\DoxyCodeLine{00914\ \doxymbox{\hyperlink{line-map_8h_a85d5c1d051dc86e75306242c226ef59c}{LINEMAPS\_MAP\_AT}}\ (\textcolor{keyword}{const}\ line\_maps\ *set,\ \textcolor{keywordtype}{bool}\ map\_kind,\ \textcolor{keywordtype}{int}\ index)}
+\DoxyCodeLine{00915\ \{}
+\DoxyCodeLine{00916\ \ \ \textcolor{keywordflow}{if}\ (map\_kind)}
+\DoxyCodeLine{00917\ \ \ \ \ \textcolor{keywordflow}{return}\ \&set-\/>info\_macro.maps[index];}
+\DoxyCodeLine{00918\ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00919\ \ \ \ \ \textcolor{keywordflow}{return}\ \&set-\/>info\_ordinary.maps[index];}
+\DoxyCodeLine{00920\ \}}
+\DoxyCodeLine{00921\ }
+\DoxyCodeLine{00922\ \textcolor{comment}{/*\ Returns\ the\ last\ map\ used\ in\ the\ line\ table\ SET.\ MAP\_KIND}}
+\DoxyCodeLine{00923\ \textcolor{comment}{\ \ \ shall\ be\ TRUE\ if\ we\ are\ interested\ in\ macro\ maps,\ FALSE}}
+\DoxyCodeLine{00924\ \textcolor{comment}{\ \ \ otherwise.*/}}
+\DoxyCodeLine{00925\ \textcolor{keyword}{inline}\ line\_map\ *}
+\DoxyCodeLine{00926\ \doxymbox{\hyperlink{line-map_8h_a0db77acb18e30c3e2b6d87a659828e41}{LINEMAPS\_LAST\_MAP}}\ (\textcolor{keyword}{const}\ line\_maps\ *set,\ \textcolor{keywordtype}{bool}\ map\_kind)}
+\DoxyCodeLine{00927\ \{}
+\DoxyCodeLine{00928\ \ \ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{line-map_8h_a85d5c1d051dc86e75306242c226ef59c}{LINEMAPS\_MAP\_AT}}\ (set,\ map\_kind,}
+\DoxyCodeLine{00929\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{line-map_8h_adee98c8f0a917c590c020fa2a441b99a}{LINEMAPS\_USED}}\ (set,\ map\_kind)\ -\/\ 1);}
+\DoxyCodeLine{00930\ \}}
+\DoxyCodeLine{00931\ }
+\DoxyCodeLine{00932\ \textcolor{comment}{/*\ Returns\ the\ INDEXth\ ordinary\ map.\ \ */}}
+\DoxyCodeLine{00933\ \textcolor{keyword}{inline}\ line\_map\_ordinary\ *}
+\DoxyCodeLine{00934\ \doxymbox{\hyperlink{line-map_8h_a8823f28c3a89ff9201e03f69b7ea7c29}{LINEMAPS\_ORDINARY\_MAP\_AT}}\ (\textcolor{keyword}{const}\ line\_maps\ *set,\ \textcolor{keywordtype}{int}\ index)}
+\DoxyCodeLine{00935\ \{}
+\DoxyCodeLine{00936\ \ \ \doxymbox{\hyperlink{line-map_8h_a83ca2aa7d18f905ed60fcf3c07287a19}{linemap\_assert}}\ (index\ >=\ 0}
+\DoxyCodeLine{00937\ \ \ \ \ \ \ \ \ \ \ \&\&\ (\textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int})index\ <\ \doxymbox{\hyperlink{line-map_8h_adee98c8f0a917c590c020fa2a441b99a}{LINEMAPS\_USED}}\ (set,\ \textcolor{keyword}{false}));}
+\DoxyCodeLine{00938\ \ \ \textcolor{keywordflow}{return}\ (line\_map\_ordinary\ *)\doxymbox{\hyperlink{line-map_8h_a85d5c1d051dc86e75306242c226ef59c}{LINEMAPS\_MAP\_AT}}\ (set,\ \textcolor{keyword}{false},\ index);}
+\DoxyCodeLine{00939\ \}}
+\DoxyCodeLine{00940\ }
+\DoxyCodeLine{00941\ \textcolor{comment}{/*\ Return\ the\ number\ of\ ordinary\ maps\ allocated\ in\ the\ line\ table}}
+\DoxyCodeLine{00942\ \textcolor{comment}{\ \ \ SET.\ \ */}}
+\DoxyCodeLine{00943\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}}
+\DoxyCodeLine{00944\ \doxymbox{\hyperlink{line-map_8h_a026bdd9cadd864c715f404a083e3c0cf}{LINEMAPS\_ORDINARY\_ALLOCATED}}\ (\textcolor{keyword}{const}\ line\_maps\ *set)}
+\DoxyCodeLine{00945\ \{}
+\DoxyCodeLine{00946\ \ \ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{line-map_8h_aa124a86b3393604551cd076a80a2704f}{LINEMAPS\_ALLOCATED}}\ (set,\ \textcolor{keyword}{false});}
+\DoxyCodeLine{00947\ \}}
+\DoxyCodeLine{00948\ }
+\DoxyCodeLine{00949\ \textcolor{comment}{/*\ Return\ the\ number\ of\ ordinary\ maps\ used\ in\ the\ line\ table\ SET.\ \ */}}
+\DoxyCodeLine{00950\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}}
+\DoxyCodeLine{00951\ \doxymbox{\hyperlink{line-map_8h_a2213204d70073fc411ee911fa0e831d8}{LINEMAPS\_ORDINARY\_USED}}\ (\textcolor{keyword}{const}\ line\_maps\ *set)}
+\DoxyCodeLine{00952\ \{}
+\DoxyCodeLine{00953\ \ \ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{line-map_8h_adee98c8f0a917c590c020fa2a441b99a}{LINEMAPS\_USED}}\ (set,\ \textcolor{keyword}{false});}
+\DoxyCodeLine{00954\ \}}
+\DoxyCodeLine{00955\ }
+\DoxyCodeLine{00956\ \textcolor{comment}{/*\ Returns\ a\ pointer\ to\ the\ last\ ordinary\ map\ used\ in\ the\ line\ table}}
+\DoxyCodeLine{00957\ \textcolor{comment}{\ \ \ SET.\ \ */}}
+\DoxyCodeLine{00958\ \textcolor{keyword}{inline}\ line\_map\_ordinary\ *}
+\DoxyCodeLine{00959\ \doxymbox{\hyperlink{line-map_8h_a484339ac05471479c04443e0f87bbaae}{LINEMAPS\_LAST\_ORDINARY\_MAP}}\ (\textcolor{keyword}{const}\ line\_maps\ *set)}
+\DoxyCodeLine{00960\ \{}
+\DoxyCodeLine{00961\ \ \ \textcolor{keywordflow}{return}\ (line\_map\_ordinary\ *)\doxymbox{\hyperlink{line-map_8h_a0db77acb18e30c3e2b6d87a659828e41}{LINEMAPS\_LAST\_MAP}}\ (set,\ \textcolor{keyword}{false});}
+\DoxyCodeLine{00962\ \}}
+\DoxyCodeLine{00963\ }
+\DoxyCodeLine{00964\ \textcolor{comment}{/*\ Returns\ the\ INDEXth\ macro\ map.\ \ */}}
+\DoxyCodeLine{00965\ \textcolor{keyword}{inline}\ line\_map\_macro\ *}
+\DoxyCodeLine{00966\ \doxymbox{\hyperlink{line-map_8h_a96c6734b5210861df1ce134373e88bfa}{LINEMAPS\_MACRO\_MAP\_AT}}\ (\textcolor{keyword}{const}\ line\_maps\ *set,\ \textcolor{keywordtype}{int}\ index)}
+\DoxyCodeLine{00967\ \{}
+\DoxyCodeLine{00968\ \ \ \doxymbox{\hyperlink{line-map_8h_a83ca2aa7d18f905ed60fcf3c07287a19}{linemap\_assert}}\ (index\ >=\ 0}
+\DoxyCodeLine{00969\ \ \ \ \ \ \ \ \ \ \ \&\&\ (\textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int})index\ <\ \doxymbox{\hyperlink{line-map_8h_adee98c8f0a917c590c020fa2a441b99a}{LINEMAPS\_USED}}\ (set,\ \textcolor{keyword}{true}));}
+\DoxyCodeLine{00970\ \ \ \textcolor{keywordflow}{return}\ (line\_map\_macro\ *)\doxymbox{\hyperlink{line-map_8h_a85d5c1d051dc86e75306242c226ef59c}{LINEMAPS\_MAP\_AT}}\ (set,\ \textcolor{keyword}{true},\ index);}
+\DoxyCodeLine{00971\ \}}
+\DoxyCodeLine{00972\ }
+\DoxyCodeLine{00973\ \textcolor{comment}{/*\ Returns\ the\ number\ of\ macro\ maps\ that\ were\ allocated\ in\ the\ line}}
+\DoxyCodeLine{00974\ \textcolor{comment}{\ \ \ table\ SET.\ \ */}}
+\DoxyCodeLine{00975\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}}
+\DoxyCodeLine{00976\ \doxymbox{\hyperlink{line-map_8h_ac194d61ed1771ecec6d36b85e96d0d7a}{LINEMAPS\_MACRO\_ALLOCATED}}\ (\textcolor{keyword}{const}\ line\_maps\ *set)}
+\DoxyCodeLine{00977\ \{}
+\DoxyCodeLine{00978\ \ \ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{line-map_8h_aa124a86b3393604551cd076a80a2704f}{LINEMAPS\_ALLOCATED}}\ (set,\ \textcolor{keyword}{true});}
+\DoxyCodeLine{00979\ \}}
+\DoxyCodeLine{00980\ }
+\DoxyCodeLine{00981\ \textcolor{comment}{/*\ Returns\ the\ number\ of\ macro\ maps\ used\ in\ the\ line\ table\ SET.\ \ */}}
+\DoxyCodeLine{00982\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}}
+\DoxyCodeLine{00983\ \doxymbox{\hyperlink{line-map_8h_af7de1325a24c831605b5738cea0417d8}{LINEMAPS\_MACRO\_USED}}\ (\textcolor{keyword}{const}\ line\_maps\ *set)}
+\DoxyCodeLine{00984\ \{}
+\DoxyCodeLine{00985\ \ \ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{line-map_8h_adee98c8f0a917c590c020fa2a441b99a}{LINEMAPS\_USED}}\ (set,\ \textcolor{keyword}{true});}
+\DoxyCodeLine{00986\ \}}
+\DoxyCodeLine{00987\ }
+\DoxyCodeLine{00988\ \textcolor{comment}{/*\ Returns\ the\ last\ macro\ map\ used\ in\ the\ line\ table\ SET.\ \ */}}
+\DoxyCodeLine{00989\ \textcolor{keyword}{inline}\ line\_map\_macro\ *}
+\DoxyCodeLine{00990\ \doxymbox{\hyperlink{line-map_8h_a82af1a0a6775ad5e725b7c84163a9884}{LINEMAPS\_LAST\_MACRO\_MAP}}\ (\textcolor{keyword}{const}\ line\_maps\ *set)}
+\DoxyCodeLine{00991\ \{}
+\DoxyCodeLine{00992\ \ \ \textcolor{keywordflow}{return}\ (line\_map\_macro\ *)\doxymbox{\hyperlink{line-map_8h_a0db77acb18e30c3e2b6d87a659828e41}{LINEMAPS\_LAST\_MAP}}\ (set,\ \textcolor{keyword}{true});}
+\DoxyCodeLine{00993\ \}}
+\DoxyCodeLine{00994\ }
+\DoxyCodeLine{00995\ \textcolor{comment}{/*\ Returns\ the\ lowest\ location\ [of\ a\ token\ resulting\ from\ macro}}
+\DoxyCodeLine{00996\ \textcolor{comment}{\ \ \ expansion]\ encoded\ in\ this\ line\ table.\ \ */}}
+\DoxyCodeLine{00997\ \textcolor{keyword}{inline}\ \doxymbox{\hyperlink{line-map_8h_aedf25620511d64e43327f1a229906a96}{location\_t}}}
+\DoxyCodeLine{00998\ \doxymbox{\hyperlink{line-map_8h_a16ab84080b66913b575650185ae5662b}{LINEMAPS\_MACRO\_LOWEST\_LOCATION}}\ (\textcolor{keyword}{const}\ line\_maps\ *set)}
+\DoxyCodeLine{00999\ \{}
+\DoxyCodeLine{01000\ \ \ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{line-map_8h_af7de1325a24c831605b5738cea0417d8}{LINEMAPS\_MACRO\_USED}}\ (set)}
+\DoxyCodeLine{01001\ \ \ \ \ \ \ \ \ \ ?\ \doxymbox{\hyperlink{line-map_8h_ae65c255eebcb82172eb1b5e4dff8e5ff}{MAP\_START\_LOCATION}}\ (\doxymbox{\hyperlink{line-map_8h_a82af1a0a6775ad5e725b7c84163a9884}{LINEMAPS\_LAST\_MACRO\_MAP}}\ (set))}
+\DoxyCodeLine{01002\ \ \ \ \ \ \ \ \ \ :\ \doxymbox{\hyperlink{line-map_8h_abca71e1ddf803eb36a907642b8e19033}{MAX\_LOCATION\_T}}\ +\ 1;}
+\DoxyCodeLine{01003\ \}}
+\DoxyCodeLine{01004\ }
+\DoxyCodeLine{01005\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ *\doxymbox{\hyperlink{line-map_8h_a5e83e6ba51acf381014e8310dad159dc}{get\_data\_from\_adhoc\_loc}}\ (\textcolor{keyword}{const}\ line\_maps\ *,\ \doxymbox{\hyperlink{line-map_8h_aedf25620511d64e43327f1a229906a96}{location\_t}});}
+\DoxyCodeLine{01006\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{unsigned}\ \doxymbox{\hyperlink{line-map_8h_ac2a8d1280129b2ee9a577d62e640ea91}{get\_discriminator\_from\_adhoc\_loc}}\ (\textcolor{keyword}{const}\ line\_maps\ *,\ \doxymbox{\hyperlink{line-map_8h_aedf25620511d64e43327f1a229906a96}{location\_t}});}
+\DoxyCodeLine{01007\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{line-map_8h_aedf25620511d64e43327f1a229906a96}{location\_t}}\ \doxymbox{\hyperlink{line-map_8h_ade9525567f574c32fa0c6514c4042095}{get\_location\_from\_adhoc\_loc}}\ (\textcolor{keyword}{const}\ line\_maps\ *,}
+\DoxyCodeLine{01008\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{line-map_8h_aedf25620511d64e43327f1a229906a96}{location\_t}});}
+\DoxyCodeLine{01009\ }
+\DoxyCodeLine{01010\ \textcolor{keyword}{extern}\ source\_range\ \doxymbox{\hyperlink{line-map_8h_a0792842863e62402de34709ad3b5fea8}{get\_range\_from\_loc}}\ (\textcolor{keyword}{const}\ line\_maps\ *set,\ \doxymbox{\hyperlink{line-map_8h_aedf25620511d64e43327f1a229906a96}{location\_t}}\ loc);}
+\DoxyCodeLine{01011\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{unsigned}\ \doxymbox{\hyperlink{input_8h_ae1369ac65290652e59c919b0ee3c6f51}{get\_discriminator\_from\_loc}}\ (\textcolor{keyword}{const}\ line\_maps\ *set,\ \doxymbox{\hyperlink{line-map_8h_aedf25620511d64e43327f1a229906a96}{location\_t}}\ loc);}
+\DoxyCodeLine{01012\ }
+\DoxyCodeLine{01013\ \textcolor{comment}{/*\ Get\ whether\ location\ LOC\ is\ a\ "{}pure"{}\ location,\ or}}
+\DoxyCodeLine{01014\ \textcolor{comment}{\ \ \ whether\ it\ is\ an\ ad-\/hoc\ location,\ or\ embeds\ range\ information.\ \ */}}
+\DoxyCodeLine{01015\ }
+\DoxyCodeLine{01016\ \textcolor{keywordtype}{bool}}
+\DoxyCodeLine{01017\ \doxymbox{\hyperlink{line-map_8h_a836fb5f45dd7a55eb59d13956808e33a}{pure\_location\_p}}\ (\textcolor{keyword}{const}\ line\_maps\ *set,\ \doxymbox{\hyperlink{line-map_8h_aedf25620511d64e43327f1a229906a96}{location\_t}}\ loc);}
+\DoxyCodeLine{01018\ }
+\DoxyCodeLine{01019\ \textcolor{comment}{/*\ Given\ location\ LOC\ within\ SET,\ strip\ away\ any\ packed\ range\ information}}
+\DoxyCodeLine{01020\ \textcolor{comment}{\ \ \ or\ ad-\/hoc\ information.\ \ */}}
+\DoxyCodeLine{01021\ }
+\DoxyCodeLine{01022\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{line-map_8h_aedf25620511d64e43327f1a229906a96}{location\_t}}\ \doxymbox{\hyperlink{input_8h_af4f3f92b5c59e004ceb994528c53984e}{get\_pure\_location}}\ (\textcolor{keyword}{const}\ line\_maps\ *set,\ \doxymbox{\hyperlink{line-map_8h_aedf25620511d64e43327f1a229906a96}{location\_t}}\ loc);}
+\DoxyCodeLine{01023\ }
+\DoxyCodeLine{01024\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{line-map_8h_a115eedc977d2e77686e992a3695415d6}{rebuild\_location\_adhoc\_htab}}\ (\textcolor{keyword}{class}\ line\_maps\ *);}
+\DoxyCodeLine{01025\ }
+\DoxyCodeLine{01026\ \textcolor{comment}{/*\ Initialize\ a\ line\ map\ set.\ \ SET\ is\ the\ line\ map\ set\ to\ initialize}}
+\DoxyCodeLine{01027\ \textcolor{comment}{\ \ \ and\ BUILTIN\_LOCATION\ is\ the\ special\ location\ value\ to\ be\ used\ as}}
+\DoxyCodeLine{01028\ \textcolor{comment}{\ \ \ spelling\ location\ for\ built-\/in\ tokens.\ \ This\ BUILTIN\_LOCATION\ has}}
+\DoxyCodeLine{01029\ \textcolor{comment}{\ \ \ to\ be\ strictly\ less\ than\ RESERVED\_LOCATION\_COUNT.\ \ */}}
+\DoxyCodeLine{01030\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{line-map_8h_a38181559c6b2e52db7b17d52bab3290c}{linemap\_init}}\ (\textcolor{keyword}{class}\ line\_maps\ *set,}
+\DoxyCodeLine{01031\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{line-map_8h_aedf25620511d64e43327f1a229906a96}{location\_t}}\ builtin\_location);}
+\DoxyCodeLine{01032\ }
+\DoxyCodeLine{01033\ \textcolor{comment}{/*\ Check\ for\ and\ warn\ about\ line\_maps\ entered\ but\ not\ exited.\ \ */}}
+\DoxyCodeLine{01034\ }
+\DoxyCodeLine{01035\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{line-map_8h_a66abd41cdf41464baa17cbe80778134d}{linemap\_check\_files\_exited}}\ (\textcolor{keyword}{const}\ line\_maps\ *);}
+\DoxyCodeLine{01036\ }
+\DoxyCodeLine{01037\ \textcolor{comment}{/*\ Return\ a\ location\_t\ for\ the\ start\ (i.e.\ column==0)\ of}}
+\DoxyCodeLine{01038\ \textcolor{comment}{\ \ \ (physical)\ line\ TO\_LINE\ in\ the\ current\ source\ file\ (as\ in\ the}}
+\DoxyCodeLine{01039\ \textcolor{comment}{\ \ \ most\ recent\ linemap\_add).\ \ \ MAX\_COLUMN\_HINT\ is\ the\ highest\ column}}
+\DoxyCodeLine{01040\ \textcolor{comment}{\ \ \ number\ we\ expect\ to\ use\ in\ this\ line\ (but\ it\ does\ not\ change}}
+\DoxyCodeLine{01041\ \textcolor{comment}{\ \ \ the\ highest\_location).\ \ */}}
+\DoxyCodeLine{01042\ }
+\DoxyCodeLine{01043\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{line-map_8h_aedf25620511d64e43327f1a229906a96}{location\_t}}\ \doxymbox{\hyperlink{line-map_8h_a1df4c22273adb2c69554aa0cb099cba8}{linemap\_line\_start}}}
+\DoxyCodeLine{01044\ (\textcolor{keyword}{class}\ line\_maps\ *set,\ \doxymbox{\hyperlink{line-map_8h_a7ea1c467190e15e06046d86a035773a1}{linenum\_type}}\ to\_line,\ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ max\_column\_hint);}
+\DoxyCodeLine{01045\ }
+\DoxyCodeLine{01046\ \textcolor{comment}{/*\ Allocate\ a\ raw\ block\ of\ line\ maps,\ zero\ initialized.\ \ */}}
+\DoxyCodeLine{01047\ \textcolor{keyword}{extern}\ line\_map\ *\doxymbox{\hyperlink{line-map_8h_ad83b1041ee43eb17dc8b208cde744411}{line\_map\_new\_raw}}\ (line\_maps\ *,\ \textcolor{keywordtype}{bool},\ \textcolor{keywordtype}{unsigned});}
+\DoxyCodeLine{01048\ }
+\DoxyCodeLine{01049\ \textcolor{comment}{/*\ Add\ a\ mapping\ of\ logical\ source\ line\ to\ physical\ source\ file\ and}}
+\DoxyCodeLine{01050\ \textcolor{comment}{\ \ \ line\ number.\ This\ function\ creates\ an\ "{}ordinary\ map"{},\ which\ is\ a}}
+\DoxyCodeLine{01051\ \textcolor{comment}{\ \ \ map\ that\ records\ locations\ of\ tokens\ that\ are\ not\ part\ of\ macro}}
+\DoxyCodeLine{01052\ \textcolor{comment}{\ \ \ replacement-\/lists\ present\ at\ a\ macro\ expansion\ point.}}
+\DoxyCodeLine{01053\ \textcolor{comment}{}}
+\DoxyCodeLine{01054\ \textcolor{comment}{\ \ \ The\ text\ pointed\ to\ by\ TO\_FILE\ must\ have\ a\ lifetime}}
+\DoxyCodeLine{01055\ \textcolor{comment}{\ \ \ at\ least\ as\ long\ as\ the\ lifetime\ of\ SET.\ \ An\ empty}}
+\DoxyCodeLine{01056\ \textcolor{comment}{\ \ \ TO\_FILE\ means\ standard\ input.\ \ If\ reason\ is\ LC\_LEAVE,\ and}}
+\DoxyCodeLine{01057\ \textcolor{comment}{\ \ \ TO\_FILE\ is\ NULL,\ then\ TO\_FILE,\ TO\_LINE\ and\ SYSP\ are\ given\ their}}
+\DoxyCodeLine{01058\ \textcolor{comment}{\ \ \ natural\ values\ considering\ the\ file\ we\ are\ returning\ to.}}
+\DoxyCodeLine{01059\ \textcolor{comment}{}}
+\DoxyCodeLine{01060\ \textcolor{comment}{\ \ \ A\ call\ to\ this\ function\ can\ relocate\ the\ previous\ set\ of}}
+\DoxyCodeLine{01061\ \textcolor{comment}{\ \ \ maps,\ so\ any\ stored\ line\_map\ pointers\ should\ not\ be\ used.\ \ */}}
+\DoxyCodeLine{01062\ \textcolor{keyword}{extern}\ \textcolor{keyword}{const}\ line\_map\ *\doxymbox{\hyperlink{line-map_8h_a334cddb42988539ebcab54d8a87b155c}{linemap\_add}}}
+\DoxyCodeLine{01063\ \ \ (\textcolor{keyword}{class}\ line\_maps\ *,\ \textcolor{keyword}{enum}\ \doxymbox{\hyperlink{line-map_8h_ae06e396526caa60dc88e11650e8c93d6}{lc\_reason}},\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ sysp,}
+\DoxyCodeLine{01064\ \ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *to\_file,\ \doxymbox{\hyperlink{line-map_8h_a7ea1c467190e15e06046d86a035773a1}{linenum\_type}}\ to\_line);}
+\DoxyCodeLine{01065\ }
+\DoxyCodeLine{01066\ \textcolor{comment}{/*\ Create\ a\ macro\ map.\ \ A\ macro\ map\ encodes\ source\ locations\ of\ tokens}}
+\DoxyCodeLine{01067\ \textcolor{comment}{\ \ \ that\ are\ part\ of\ a\ macro\ replacement-\/list,\ at\ a\ macro\ expansion}}
+\DoxyCodeLine{01068\ \textcolor{comment}{\ \ \ point.\ See\ the\ extensive\ comments\ of\ struct\ line\_map\ and\ struct}}
+\DoxyCodeLine{01069\ \textcolor{comment}{\ \ \ line\_map\_macro,\ in\ line-\/map.h.}}
+\DoxyCodeLine{01070\ \textcolor{comment}{}}
+\DoxyCodeLine{01071\ \textcolor{comment}{\ \ \ This\ map\ shall\ be\ created\ when\ the\ macro\ is\ expanded.\ The\ map}}
+\DoxyCodeLine{01072\ \textcolor{comment}{\ \ \ encodes\ the\ source\ location\ of\ the\ expansion\ point\ of\ the\ macro\ as}}
+\DoxyCodeLine{01073\ \textcolor{comment}{\ \ \ well\ as\ the\ "{}original"{}\ source\ location\ of\ each\ token\ that\ is\ part}}
+\DoxyCodeLine{01074\ \textcolor{comment}{\ \ \ of\ the\ macro\ replacement-\/list.\ If\ a\ macro\ is\ defined\ but\ never}}
+\DoxyCodeLine{01075\ \textcolor{comment}{\ \ \ expanded,\ it\ has\ no\ macro\ map.\ \ SET\ is\ the\ set\ of\ maps\ the\ macro}}
+\DoxyCodeLine{01076\ \textcolor{comment}{\ \ \ map\ should\ be\ part\ of.\ \ MACRO\_NODE\ is\ the\ macro\ which\ the\ new\ macro}}
+\DoxyCodeLine{01077\ \textcolor{comment}{\ \ \ map\ should\ encode\ source\ locations\ for.\ \ EXPANSION\ is\ the\ location}}
+\DoxyCodeLine{01078\ \textcolor{comment}{\ \ \ of\ the\ expansion\ point\ of\ MACRO.\ For\ function-\/like\ macros}}
+\DoxyCodeLine{01079\ \textcolor{comment}{\ \ \ invocations,\ it's\ best\ to\ make\ it\ point\ to\ the\ closing\ parenthesis}}
+\DoxyCodeLine{01080\ \textcolor{comment}{\ \ \ of\ the\ macro,\ rather\ than\ the\ the\ location\ of\ the\ first\ character}}
+\DoxyCodeLine{01081\ \textcolor{comment}{\ \ \ of\ the\ macro.\ \ NUM\_TOKENS\ is\ the\ number\ of\ tokens\ that\ are\ part\ of}}
+\DoxyCodeLine{01082\ \textcolor{comment}{\ \ \ the\ replacement-\/list\ of\ MACRO.\ \ */}}
+\DoxyCodeLine{01083\ \textcolor{keyword}{const}\ line\_map\_macro\ *\doxymbox{\hyperlink{line-map_8h_ad534f248c23d345c550e3b5d7c075b7c}{linemap\_enter\_macro}}\ (line\_maps\ *,\ \doxymbox{\hyperlink{cpplib_8h_af165f6ae2aa7df621bf25e95e9a47845}{cpp\_hashnode}}\ *,}
+\DoxyCodeLine{01084\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{line-map_8h_aedf25620511d64e43327f1a229906a96}{location\_t}},\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int});}
+\DoxyCodeLine{01085\ }
+\DoxyCodeLine{01086\ \textcolor{comment}{/*\ Create\ a\ source\ location\ for\ a\ module.\ \ The\ creator\ must\ either\ do}}
+\DoxyCodeLine{01087\ \textcolor{comment}{\ \ \ this\ after\ the\ TU\ is\ tokenized,\ or\ deal\ with\ saving\ and\ restoring}}
+\DoxyCodeLine{01088\ \textcolor{comment}{\ \ \ map\ state.\ \ */}}
+\DoxyCodeLine{01089\ }
+\DoxyCodeLine{01090\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{line-map_8h_aedf25620511d64e43327f1a229906a96}{location\_t}}\ \doxymbox{\hyperlink{line-map_8h_a4776b0469a4c1bdc2f94dfd0ff21e924}{linemap\_module\_loc}}}
+\DoxyCodeLine{01091\ \ \ (line\_maps\ *,\ \doxymbox{\hyperlink{line-map_8h_aedf25620511d64e43327f1a229906a96}{location\_t}}\ from,\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *\doxymbox{\hyperlink{configargs_8h_a8f8f80d37794cde9472343e4487ba3eb}{name}});}
+\DoxyCodeLine{01092\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{line-map_8h_ada4ed5970d657a45cdd1da90e9c5f289}{linemap\_module\_reparent}}}
+\DoxyCodeLine{01093\ \ \ (line\_maps\ *,\ \doxymbox{\hyperlink{line-map_8h_aedf25620511d64e43327f1a229906a96}{location\_t}}\ loc,\ \doxymbox{\hyperlink{line-map_8h_aedf25620511d64e43327f1a229906a96}{location\_t}}\ new\_parent);}
+\DoxyCodeLine{01094\ }
+\DoxyCodeLine{01095\ \textcolor{comment}{/*\ Restore\ the\ linemap\ state\ such\ that\ the\ map\ at\ LWM-\/1\ continues.}}
+\DoxyCodeLine{01096\ \textcolor{comment}{\ \ \ Return\ start\ location\ of\ the\ new\ map.\ \ */}}
+\DoxyCodeLine{01097\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{unsigned}\ \doxymbox{\hyperlink{line-map_8h_a38b83a672a7490420bc7f876bc33a7b4}{linemap\_module\_restore}}}
+\DoxyCodeLine{01098\ \ \ (line\_maps\ *,\ \textcolor{keywordtype}{unsigned}\ lwm);}
+\DoxyCodeLine{01099\ }
+\DoxyCodeLine{01100\ \textcolor{comment}{/*\ Given\ a\ logical\ source\ location,\ returns\ the\ map\ which\ the}}
+\DoxyCodeLine{01101\ \textcolor{comment}{\ \ \ corresponding\ (source\ file,\ line,\ column)\ triplet\ can\ be\ deduced}}
+\DoxyCodeLine{01102\ \textcolor{comment}{\ \ \ from.\ Since\ the\ set\ is\ built\ chronologically,\ the\ logical\ lines\ are}}
+\DoxyCodeLine{01103\ \textcolor{comment}{\ \ \ monotonic\ increasing,\ and\ so\ the\ list\ is\ sorted\ and\ we\ can\ use\ a}}
+\DoxyCodeLine{01104\ \textcolor{comment}{\ \ \ binary\ search.\ If\ no\ line\ map\ have\ been\ allocated\ yet,\ this}}
+\DoxyCodeLine{01105\ \textcolor{comment}{\ \ \ function\ returns\ NULL.\ \ */}}
+\DoxyCodeLine{01106\ \textcolor{keyword}{extern}\ \textcolor{keyword}{const}\ line\_map\ *\doxymbox{\hyperlink{line-map_8h_a0a8498ffa1693884f9d3722e5643227b}{linemap\_lookup}}}
+\DoxyCodeLine{01107\ \ \ (\textcolor{keyword}{const}\ line\_maps\ *,\ \doxymbox{\hyperlink{line-map_8h_aedf25620511d64e43327f1a229906a96}{location\_t}});}
+\DoxyCodeLine{01108\ }
+\DoxyCodeLine{01109\ \textcolor{keywordtype}{unsigned}\ \doxymbox{\hyperlink{line-map_8h_a22886f676aaf571c8330f103b9c25933}{linemap\_lookup\_macro\_index}}\ (\textcolor{keyword}{const}\ line\_maps\ *,\ \doxymbox{\hyperlink{line-map_8h_aedf25620511d64e43327f1a229906a96}{location\_t}});}
+\DoxyCodeLine{01110\ }
+\DoxyCodeLine{01111\ \textcolor{comment}{/*\ Returns\ TRUE\ if\ the\ line\ table\ set\ tracks\ token\ locations\ across}}
+\DoxyCodeLine{01112\ \textcolor{comment}{\ \ \ macro\ expansion,\ FALSE\ otherwise.\ \ */}}
+\DoxyCodeLine{01113\ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{line-map_8h_a2feedde6cd78aaa586ec9566050c42d7}{linemap\_tracks\_macro\_expansion\_locs\_p}}\ (\textcolor{keyword}{const}\ line\_maps\ *);}
+\DoxyCodeLine{01114\ }
+\DoxyCodeLine{01115\ \textcolor{comment}{/*\ Return\ the\ name\ of\ the\ macro\ associated\ to\ MACRO\_MAP.\ \ */}}
+\DoxyCodeLine{01116\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}*\ \doxymbox{\hyperlink{line-map_8h_a2c64be0df518888f2a364392b3a1e5d1}{linemap\_map\_get\_macro\_name}}\ (\textcolor{keyword}{const}\ line\_map\_macro\ *);}
+\DoxyCodeLine{01117\ }
+\DoxyCodeLine{01118\ \textcolor{comment}{/*\ Return\ a\ positive\ value\ if\ LOCATION\ is\ the\ locus\ of\ a\ token\ that\ is}}
+\DoxyCodeLine{01119\ \textcolor{comment}{\ \ \ located\ in\ a\ system\ header,\ O\ otherwise.\ It\ returns\ 1\ if\ LOCATION}}
+\DoxyCodeLine{01120\ \textcolor{comment}{\ \ \ is\ the\ locus\ of\ a\ token\ that\ is\ located\ in\ a\ system\ header,\ and\ 2}}
+\DoxyCodeLine{01121\ \textcolor{comment}{\ \ \ if\ LOCATION\ is\ the\ locus\ of\ a\ token\ located\ in\ a\ C\ system\ header}}
+\DoxyCodeLine{01122\ \textcolor{comment}{\ \ \ that\ therefore\ needs\ to\ be\ extern\ "{}C"{}\ protected\ in\ C++.}}
+\DoxyCodeLine{01123\ \textcolor{comment}{}}
+\DoxyCodeLine{01124\ \textcolor{comment}{\ \ \ Note\ that\ this\ function\ returns\ 1\ if\ LOCATION\ belongs\ to\ a\ token}}
+\DoxyCodeLine{01125\ \textcolor{comment}{\ \ \ that\ is\ part\ of\ a\ macro\ replacement-\/list\ defined\ in\ a\ system}}
+\DoxyCodeLine{01126\ \textcolor{comment}{\ \ \ header,\ but\ expanded\ in\ a\ non-\/system\ file.\ \ */}}
+\DoxyCodeLine{01127\ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{line-map_8h_a97fcb7348df603fcbb180fa236617b99}{linemap\_location\_in\_system\_header\_p}}\ (\textcolor{keyword}{const}\ line\_maps\ *,}
+\DoxyCodeLine{01128\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{line-map_8h_aedf25620511d64e43327f1a229906a96}{location\_t}});}
+\DoxyCodeLine{01129\ }
+\DoxyCodeLine{01130\ \textcolor{comment}{/*\ Return\ TRUE\ if\ LOCATION\ is\ a\ source\ code\ location\ of\ a\ token\ that\ is\ part\ of}}
+\DoxyCodeLine{01131\ \textcolor{comment}{\ \ \ a\ macro\ expansion,\ FALSE\ otherwise.\ \ */}}
+\DoxyCodeLine{01132\ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{line-map_8h_a76d180973ffc97f0274db5a5ea7a4432}{linemap\_location\_from\_macro\_expansion\_p}}\ (\textcolor{keyword}{const}\ line\_maps\ *,}
+\DoxyCodeLine{01133\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{line-map_8h_aedf25620511d64e43327f1a229906a96}{location\_t}});}
+\DoxyCodeLine{01134\ }
+\DoxyCodeLine{01135\ \textcolor{comment}{/*\ TRUE\ if\ LOCATION\ is\ a\ source\ code\ location\ of\ a\ token\ that\ is\ part\ of\ the}}
+\DoxyCodeLine{01136\ \textcolor{comment}{\ \ \ definition\ of\ a\ macro,\ FALSE\ otherwise.\ \ */}}
+\DoxyCodeLine{01137\ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{line-map_8h_a83f45977bc1416ef5cf3c7e0977ceff9}{linemap\_location\_from\_macro\_definition\_p}}\ (\textcolor{keyword}{const}\ line\_maps\ *,}
+\DoxyCodeLine{01138\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{line-map_8h_aedf25620511d64e43327f1a229906a96}{location\_t}});}
+\DoxyCodeLine{01139\ }
+\DoxyCodeLine{01140\ \textcolor{comment}{/*\ With\ the\ precondition\ that\ LOCATION\ is\ the\ locus\ of\ a\ token\ that\ is}}
+\DoxyCodeLine{01141\ \textcolor{comment}{\ \ \ an\ argument\ of\ a\ function-\/like\ macro\ MACRO\_MAP\ and\ appears\ in\ the}}
+\DoxyCodeLine{01142\ \textcolor{comment}{\ \ \ expansion\ of\ MACRO\_MAP,\ return\ the\ locus\ of\ that\ argument\ in\ the}}
+\DoxyCodeLine{01143\ \textcolor{comment}{\ \ \ context\ of\ the\ caller\ of\ MACRO\_MAP.\ \ */}}
+\DoxyCodeLine{01144\ }
+\DoxyCodeLine{01145\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{line-map_8h_aedf25620511d64e43327f1a229906a96}{location\_t}}}
+\DoxyCodeLine{01146\ \doxymbox{\hyperlink{line-map_8h_ad864c190d01829e7aaa8f64cbed7eed4}{linemap\_macro\_map\_loc\_unwind\_toward\_spelling}}\ (\textcolor{keyword}{const}\ line\_maps\ *set,}
+\DoxyCodeLine{01147\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ line\_map\_macro\ *macro\_map,}
+\DoxyCodeLine{01148\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{line-map_8h_aedf25620511d64e43327f1a229906a96}{location\_t}}\ location);}
+\DoxyCodeLine{01149\ }
+\DoxyCodeLine{01150\ \textcolor{comment}{/*\ location\_t\ values\ from\ 0\ to\ RESERVED\_LOCATION\_COUNT-\/1\ will}}
+\DoxyCodeLine{01151\ \textcolor{comment}{\ \ \ be\ reserved\ for\ libcpp\ user\ as\ special\ values,\ no\ token\ from\ libcpp}}
+\DoxyCodeLine{01152\ \textcolor{comment}{\ \ \ will\ contain\ any\ of\ those\ locations.\ \ */}}
+\DoxyCodeLine{01153\ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{line-map_8h_aedf25620511d64e43327f1a229906a96}{location\_t}}\ \doxymbox{\hyperlink{line-map_8h_a99df4379a849478992d15c9094f05830}{RESERVED\_LOCATION\_COUNT}}\ =\ 2;}
+\DoxyCodeLine{01154\ }
+\DoxyCodeLine{01155\ \textcolor{comment}{/*\ Converts\ a\ map\ and\ a\ location\_t\ to\ source\ line.\ \ */}}
+\DoxyCodeLine{01156\ \textcolor{keyword}{inline}\ \doxymbox{\hyperlink{line-map_8h_a7ea1c467190e15e06046d86a035773a1}{linenum\_type}}}
+\DoxyCodeLine{01157\ \doxymbox{\hyperlink{line-map_8h_a561dfac877b23c4e63e50a39bc0d9f3c}{SOURCE\_LINE}}\ (\textcolor{keyword}{const}\ line\_map\_ordinary\ *ord\_map,\ \doxymbox{\hyperlink{line-map_8h_aedf25620511d64e43327f1a229906a96}{location\_t}}\ loc)}
+\DoxyCodeLine{01158\ \{}
+\DoxyCodeLine{01159\ \ \ \textcolor{keywordflow}{return}\ ((loc\ -\/\ ord\_map-\/>start\_location)}
+\DoxyCodeLine{01160\ \ \ \ \ \ \ >>\ ord\_map-\/>m\_column\_and\_range\_bits)\ +\ ord\_map-\/>to\_line;}
+\DoxyCodeLine{01161\ \}}
+\DoxyCodeLine{01162\ }
+\DoxyCodeLine{01163\ \textcolor{comment}{/*\ Convert\ a\ map\ and\ location\_t\ to\ source\ column\ number.\ \ */}}
+\DoxyCodeLine{01164\ \textcolor{keyword}{inline}\ \doxymbox{\hyperlink{line-map_8h_a7ea1c467190e15e06046d86a035773a1}{linenum\_type}}}
+\DoxyCodeLine{01165\ \doxymbox{\hyperlink{line-map_8h_abeceb4c4e2c27f738c454fc1634460e6}{SOURCE\_COLUMN}}\ (\textcolor{keyword}{const}\ line\_map\_ordinary\ *ord\_map,\ \doxymbox{\hyperlink{line-map_8h_aedf25620511d64e43327f1a229906a96}{location\_t}}\ loc)}
+\DoxyCodeLine{01166\ \{}
+\DoxyCodeLine{01167\ \ \ \textcolor{keywordflow}{return}\ ((loc\ -\/\ ord\_map-\/>start\_location)}
+\DoxyCodeLine{01168\ \ \ \ \ \ \ \&\ ((1\ <<\ ord\_map-\/>m\_column\_and\_range\_bits)\ -\/\ 1))\ >>\ ord\_map-\/>m\_range\_bits;}
+\DoxyCodeLine{01169\ \}}
+\DoxyCodeLine{01170\ }
+\DoxyCodeLine{01171\ }
+\DoxyCodeLine{01172\ \textcolor{keyword}{inline}\ \doxymbox{\hyperlink{line-map_8h_aedf25620511d64e43327f1a229906a96}{location\_t}}}
+\DoxyCodeLine{01173\ \doxymbox{\hyperlink{line-map_8h_ad70b0e2d418ad08baca17456b2462dc5}{linemap\_included\_from}}\ (\textcolor{keyword}{const}\ line\_map\_ordinary\ *ord\_map)}
+\DoxyCodeLine{01174\ \{}
+\DoxyCodeLine{01175\ \ \ \textcolor{keywordflow}{return}\ ord\_map-\/>included\_from;}
+\DoxyCodeLine{01176\ \}}
+\DoxyCodeLine{01177\ }
+\DoxyCodeLine{01178\ \textcolor{comment}{/*\ The\ linemap\ containing\ the\ included-\/from\ location\ of\ MAP.\ \ */}}
+\DoxyCodeLine{01179\ \textcolor{keyword}{const}\ line\_map\_ordinary\ *}
+\DoxyCodeLine{01180\ \doxymbox{\hyperlink{line-map_8h_a38249536c14ee5aa3863bb29a8794abe}{linemap\_included\_from\_linemap}}\ (\textcolor{keyword}{const}\ line\_maps\ *set,}
+\DoxyCodeLine{01181\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ line\_map\_ordinary\ *map);}
+\DoxyCodeLine{01182\ }
+\DoxyCodeLine{01183\ \textcolor{comment}{/*\ True\ if\ the\ map\ is\ at\ the\ bottom\ of\ the\ include\ stack.\ \ */}}
+\DoxyCodeLine{01184\ }
+\DoxyCodeLine{01185\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{bool}}
+\DoxyCodeLine{01186\ \doxymbox{\hyperlink{line-map_8h_a1ca4ca0f905d4cea9f19e74d95f82588}{MAIN\_FILE\_P}}\ (\textcolor{keyword}{const}\ line\_map\_ordinary\ *ord\_map)}
+\DoxyCodeLine{01187\ \{}
+\DoxyCodeLine{01188\ \ \ \textcolor{keywordflow}{return}\ ord\_map-\/>included\_from\ ==\ 0;}
+\DoxyCodeLine{01189\ \}}
+\DoxyCodeLine{01190\ }
+\DoxyCodeLine{01191\ \textcolor{comment}{/*\ Encode\ and\ return\ a\ location\_t\ from\ a\ column\ number.\ The}}
+\DoxyCodeLine{01192\ \textcolor{comment}{\ \ \ source\ line\ considered\ is\ the\ last\ source\ line\ used\ to\ call}}
+\DoxyCodeLine{01193\ \textcolor{comment}{\ \ \ linemap\_line\_start,\ i.e,\ the\ last\ source\ line\ which\ a\ location\ was}}
+\DoxyCodeLine{01194\ \textcolor{comment}{\ \ \ encoded\ from.\ \ */}}
+\DoxyCodeLine{01195\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{line-map_8h_aedf25620511d64e43327f1a229906a96}{location\_t}}}
+\DoxyCodeLine{01196\ \doxymbox{\hyperlink{line-map_8h_afa4748e5bc1c3db680dd0fca94e768b4}{linemap\_position\_for\_column}}\ (\textcolor{keyword}{class}\ line\_maps\ *,\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int});}
+\DoxyCodeLine{01197\ }
+\DoxyCodeLine{01198\ \textcolor{comment}{/*\ Encode\ and\ return\ a\ source\ location\ from\ a\ given\ line\ and}}
+\DoxyCodeLine{01199\ \textcolor{comment}{\ \ \ column.\ \ */}}
+\DoxyCodeLine{01200\ \doxymbox{\hyperlink{line-map_8h_aedf25620511d64e43327f1a229906a96}{location\_t}}}
+\DoxyCodeLine{01201\ \doxymbox{\hyperlink{line-map_8h_a9b74f75c45235722096928935095db60}{linemap\_position\_for\_line\_and\_column}}\ (line\_maps\ *set,}
+\DoxyCodeLine{01202\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ line\_map\_ordinary\ *,}
+\DoxyCodeLine{01203\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{line-map_8h_a7ea1c467190e15e06046d86a035773a1}{linenum\_type}},\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int});}
+\DoxyCodeLine{01204\ }
+\DoxyCodeLine{01205\ \textcolor{comment}{/*\ Encode\ and\ return\ a\ location\_t\ starting\ from\ location\ LOC\ and}}
+\DoxyCodeLine{01206\ \textcolor{comment}{\ \ \ shifting\ it\ by\ OFFSET\ columns.\ \ This\ function\ does\ not\ support}}
+\DoxyCodeLine{01207\ \textcolor{comment}{\ \ \ virtual\ locations.\ \ */}}
+\DoxyCodeLine{01208\ \doxymbox{\hyperlink{line-map_8h_aedf25620511d64e43327f1a229906a96}{location\_t}}}
+\DoxyCodeLine{01209\ \doxymbox{\hyperlink{line-map_8h_a4ed2eb6595165a042158526d8218d1ac}{linemap\_position\_for\_loc\_and\_offset}}\ (\textcolor{keyword}{class}\ line\_maps\ *set,}
+\DoxyCodeLine{01210\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{line-map_8h_aedf25620511d64e43327f1a229906a96}{location\_t}}\ loc,}
+\DoxyCodeLine{01211\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ offset);}
+\DoxyCodeLine{01212\ }
+\DoxyCodeLine{01213\ \textcolor{comment}{/*\ Return\ the\ file\ this\ map\ is\ for.\ \ */}}
+\DoxyCodeLine{01214\ \textcolor{keyword}{inline}\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *}
+\DoxyCodeLine{01215\ \doxymbox{\hyperlink{line-map_8h_a40e204c00c2ff8d1adaac77060f035c9}{LINEMAP\_FILE}}\ (\textcolor{keyword}{const}\ line\_map\_ordinary\ *ord\_map)}
+\DoxyCodeLine{01216\ \{}
+\DoxyCodeLine{01217\ \ \ \textcolor{keywordflow}{return}\ ord\_map-\/>to\_file;}
+\DoxyCodeLine{01218\ \}}
+\DoxyCodeLine{01219\ }
+\DoxyCodeLine{01220\ \textcolor{comment}{/*\ Return\ the\ line\ number\ this\ map\ started\ encoding\ location\ from.\ \ */}}
+\DoxyCodeLine{01221\ \textcolor{keyword}{inline}\ \doxymbox{\hyperlink{line-map_8h_a7ea1c467190e15e06046d86a035773a1}{linenum\_type}}}
+\DoxyCodeLine{01222\ \doxymbox{\hyperlink{line-map_8h_ab2788972d605a70ab4d9c2d5028417be}{LINEMAP\_LINE}}\ (\textcolor{keyword}{const}\ line\_map\_ordinary\ *ord\_map)}
+\DoxyCodeLine{01223\ \{}
+\DoxyCodeLine{01224\ \ \ \textcolor{keywordflow}{return}\ ord\_map-\/>to\_line;}
+\DoxyCodeLine{01225\ \}}
+\DoxyCodeLine{01226\ }
+\DoxyCodeLine{01227\ \textcolor{comment}{/*\ Return\ a\ positive\ value\ if\ map\ encodes\ locations\ from\ a\ system}}
+\DoxyCodeLine{01228\ \textcolor{comment}{\ \ \ header,\ 0\ otherwise.\ Returns\ 1\ if\ MAP\ encodes\ locations\ in\ a}}
+\DoxyCodeLine{01229\ \textcolor{comment}{\ \ \ system\ header\ and\ 2\ if\ it\ encodes\ locations\ in\ a\ C\ system\ header}}
+\DoxyCodeLine{01230\ \textcolor{comment}{\ \ \ that\ therefore\ needs\ to\ be\ extern\ "{}C"{}\ protected\ in\ C++.\ \ */}}
+\DoxyCodeLine{01231\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{char}}
+\DoxyCodeLine{01232\ \doxymbox{\hyperlink{line-map_8h_a1449e9b481d33083a75b8ccd4a81a28f}{LINEMAP\_SYSP}}\ (\textcolor{keyword}{const}\ line\_map\_ordinary\ *ord\_map)}
+\DoxyCodeLine{01233\ \{}
+\DoxyCodeLine{01234\ \ \ \textcolor{keywordflow}{return}\ ord\_map-\/>sysp;}
+\DoxyCodeLine{01235\ \}}
+\DoxyCodeLine{01236\ }
+\DoxyCodeLine{01237\ \textcolor{keyword}{const}\ \textcolor{keyword}{struct\ }line\_map\ *\doxymbox{\hyperlink{line-map_8h_a148327215c7a7704fc40dc1de33036c8}{first\_map\_in\_common}}\ (\textcolor{keyword}{const}\ line\_maps\ *set,}
+\DoxyCodeLine{01238\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{line-map_8h_aedf25620511d64e43327f1a229906a96}{location\_t}}\ loc0,}
+\DoxyCodeLine{01239\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{line-map_8h_aedf25620511d64e43327f1a229906a96}{location\_t}}\ loc1,}
+\DoxyCodeLine{01240\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{line-map_8h_aedf25620511d64e43327f1a229906a96}{location\_t}}\ *res\_loc0,}
+\DoxyCodeLine{01241\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{line-map_8h_aedf25620511d64e43327f1a229906a96}{location\_t}}\ *res\_loc1);}
+\DoxyCodeLine{01242\ }
+\DoxyCodeLine{01243\ \textcolor{comment}{/*\ Return\ a\ positive\ value\ if\ PRE\ denotes\ the\ location\ of\ a\ token\ that}}
+\DoxyCodeLine{01244\ \textcolor{comment}{\ \ \ comes\ before\ the\ token\ of\ POST,\ 0\ if\ PRE\ denotes\ the\ location\ of}}
+\DoxyCodeLine{01245\ \textcolor{comment}{\ \ \ the\ same\ token\ as\ the\ token\ for\ POST,\ and\ a\ negative\ value}}
+\DoxyCodeLine{01246\ \textcolor{comment}{\ \ \ otherwise.\ \ */}}
+\DoxyCodeLine{01247\ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{line-map_8h_aa4871ec33f7563e3db14feeecb0c8f50}{linemap\_compare\_locations}}\ (\textcolor{keyword}{const}\ line\_maps\ *set,}
+\DoxyCodeLine{01248\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{line-map_8h_aedf25620511d64e43327f1a229906a96}{location\_t}}\ \ \ pre,}
+\DoxyCodeLine{01249\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{line-map_8h_aedf25620511d64e43327f1a229906a96}{location\_t}}\ \ \ post);}
+\DoxyCodeLine{01250\ }
+\DoxyCodeLine{01251\ \textcolor{comment}{/*\ Return\ TRUE\ if\ LOC\_A\ denotes\ the\ location\ a\ token\ that\ comes}}
+\DoxyCodeLine{01252\ \textcolor{comment}{\ \ \ topogically\ before\ the\ token\ denoted\ by\ location\ LOC\_B,\ or\ if\ they}}
+\DoxyCodeLine{01253\ \textcolor{comment}{\ \ \ are\ equal.\ \ */}}
+\DoxyCodeLine{01254\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{bool}}
+\DoxyCodeLine{01255\ \doxymbox{\hyperlink{line-map_8h_a581c98806fe816e2a3b9c06e8e21d0b1}{linemap\_location\_before\_p}}\ (\textcolor{keyword}{const}\ line\_maps\ *set,}
+\DoxyCodeLine{01256\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{line-map_8h_aedf25620511d64e43327f1a229906a96}{location\_t}}\ loc\_a,}
+\DoxyCodeLine{01257\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{line-map_8h_aedf25620511d64e43327f1a229906a96}{location\_t}}\ loc\_b)}
+\DoxyCodeLine{01258\ \{}
+\DoxyCodeLine{01259\ \ \ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{line-map_8h_aa4871ec33f7563e3db14feeecb0c8f50}{linemap\_compare\_locations}}\ (set,\ loc\_a,\ loc\_b)\ >=\ 0;}
+\DoxyCodeLine{01260\ \}}
+\DoxyCodeLine{01261\ }
+\DoxyCodeLine{01262\ \textcolor{keyword}{typedef}\ \textcolor{keyword}{struct}}
+\DoxyCodeLine{01263\ \{}
+\DoxyCodeLine{01264\ \ \ \textcolor{comment}{/*\ The\ name\ of\ the\ source\ file\ involved.\ \ */}}
+\DoxyCodeLine{01265\ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *\doxymbox{\hyperlink{structexpanded__location_aba0c5c94cf166e64409a3bebdbe674e4}{file}};}
+\DoxyCodeLine{01266\ }
+\DoxyCodeLine{01267\ \ \ \textcolor{comment}{/*\ The\ line-\/location\ in\ the\ source\ file.\ \ */}}
+\DoxyCodeLine{01268\ \ \ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{structexpanded__location_a639f16fa3d93b7f7ac12aace6fdc5b18}{line}};}
+\DoxyCodeLine{01269\ }
+\DoxyCodeLine{01270\ \ \ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{structexpanded__location_a11e389e699d8dce4d4e7b3c430290d56}{column}};}
+\DoxyCodeLine{01271\ }
+\DoxyCodeLine{01272\ \ \ \textcolor{keywordtype}{void}\ *\doxymbox{\hyperlink{structexpanded__location_aba5935628a5086c0b26f15259c704c75}{data}};}
+\DoxyCodeLine{01273\ }
+\DoxyCodeLine{01274\ \ \ \textcolor{comment}{/*\ In\ a\ system\ header?.\ */}}
+\DoxyCodeLine{01275\ \ \ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{structexpanded__location_a736c3053028b5a8ab541ed7d4dd935f2}{sysp}};}
+\DoxyCodeLine{01276\ \}\ \doxymbox{\hyperlink{structexpanded__location}{expanded\_location}};}
+\DoxyCodeLine{01277\ }
+\DoxyCodeLine{01278\ \textcolor{comment}{/*\ This\ is\ enum\ is\ used\ by\ the\ function\ linemap\_resolve\_location}}
+\DoxyCodeLine{01279\ \textcolor{comment}{\ \ \ below.\ \ The\ meaning\ of\ the\ values\ is\ explained\ in\ the\ comment\ of}}
+\DoxyCodeLine{01280\ \textcolor{comment}{\ \ \ that\ function.\ \ */}}
+\DoxyCodeLine{01281\ \textcolor{keyword}{enum}\ \doxymbox{\hyperlink{line-map_8h_aec3f97b4dfb1ac6fcd2e6e73a3dcc06a}{location\_resolution\_kind}}}
+\DoxyCodeLine{01282\ \{}
+\DoxyCodeLine{01283\ \ \ \doxymbox{\hyperlink{line-map_8h_aec3f97b4dfb1ac6fcd2e6e73a3dcc06aaf7b35485bdf2ce7a76e001dabb28d87e}{LRK\_MACRO\_EXPANSION\_POINT}},}
+\DoxyCodeLine{01284\ \ \ \doxymbox{\hyperlink{line-map_8h_aec3f97b4dfb1ac6fcd2e6e73a3dcc06aa8fbba6e1ff28a2ab16542c61e2054e71}{LRK\_SPELLING\_LOCATION}},}
+\DoxyCodeLine{01285\ \ \ \doxymbox{\hyperlink{line-map_8h_aec3f97b4dfb1ac6fcd2e6e73a3dcc06aa556c83e744301495fde53fd78148952d}{LRK\_MACRO\_DEFINITION\_LOCATION}}}
+\DoxyCodeLine{01286\ \};}
+\DoxyCodeLine{01287\ }
+\DoxyCodeLine{01288\ \textcolor{comment}{/*\ Resolve\ a\ virtual\ location\ into\ either\ a\ spelling\ location,\ an}}
+\DoxyCodeLine{01289\ \textcolor{comment}{\ \ \ expansion\ point\ location\ or\ a\ token\ argument\ replacement\ point}}
+\DoxyCodeLine{01290\ \textcolor{comment}{\ \ \ location.\ \ Return\ the\ map\ that\ encodes\ the\ virtual\ location\ as\ well}}
+\DoxyCodeLine{01291\ \textcolor{comment}{\ \ \ as\ the\ resolved\ location.}}
+\DoxyCodeLine{01292\ \textcolor{comment}{}}
+\DoxyCodeLine{01293\ \textcolor{comment}{\ \ \ If\ LOC\ is\ *NOT*\ the\ location\ of\ a\ token\ resulting\ from\ the}}
+\DoxyCodeLine{01294\ \textcolor{comment}{\ \ \ expansion\ of\ a\ macro,\ then\ the\ parameter\ LRK\ (which\ stands\ for}}
+\DoxyCodeLine{01295\ \textcolor{comment}{\ \ \ Location\ Resolution\ Kind)\ is\ ignored\ and\ the\ resulting\ location}}
+\DoxyCodeLine{01296\ \textcolor{comment}{\ \ \ just\ equals\ the\ one\ given\ in\ argument.}}
+\DoxyCodeLine{01297\ \textcolor{comment}{}}
+\DoxyCodeLine{01298\ \textcolor{comment}{\ \ \ Now\ if\ LOC\ *IS*\ the\ location\ of\ a\ token\ resulting\ from\ the}}
+\DoxyCodeLine{01299\ \textcolor{comment}{\ \ \ expansion\ of\ a\ macro,\ this\ is\ what\ happens.}}
+\DoxyCodeLine{01300\ \textcolor{comment}{}}
+\DoxyCodeLine{01301\ \textcolor{comment}{\ \ \ *\ If\ LRK\ is\ set\ to\ LRK\_MACRO\_EXPANSION\_POINT}}
+\DoxyCodeLine{01302\ \textcolor{comment}{\ \ \ -\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{01303\ \textcolor{comment}{}}
+\DoxyCodeLine{01304\ \textcolor{comment}{\ \ \ The\ virtual\ location\ is\ resolved\ to\ the\ first\ macro\ expansion\ point}}
+\DoxyCodeLine{01305\ \textcolor{comment}{\ \ \ that\ led\ to\ this\ macro\ expansion.}}
+\DoxyCodeLine{01306\ \textcolor{comment}{}}
+\DoxyCodeLine{01307\ \textcolor{comment}{\ \ \ *\ If\ LRK\ is\ set\ to\ LRK\_SPELLING\_LOCATION}}
+\DoxyCodeLine{01308\ \textcolor{comment}{\ \ \ -\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{01309\ \textcolor{comment}{}}
+\DoxyCodeLine{01310\ \textcolor{comment}{\ \ \ The\ virtual\ location\ is\ resolved\ to\ the\ locus\ where\ the\ token\ has}}
+\DoxyCodeLine{01311\ \textcolor{comment}{\ \ \ been\ spelled\ in\ the\ source.\ \ \ This\ can\ follow\ through\ all\ the\ macro}}
+\DoxyCodeLine{01312\ \textcolor{comment}{\ \ \ expansions\ that\ led\ to\ the\ token.}}
+\DoxyCodeLine{01313\ \textcolor{comment}{}}
+\DoxyCodeLine{01314\ \textcolor{comment}{\ \ \ *\ If\ LRK\ is\ set\ to\ LRK\_MACRO\_DEFINITION\_LOCATION}}
+\DoxyCodeLine{01315\ \textcolor{comment}{\ \ \ -\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{01316\ \textcolor{comment}{}}
+\DoxyCodeLine{01317\ \textcolor{comment}{\ \ \ The\ virtual\ location\ is\ resolved\ to\ the\ locus\ of\ the\ token\ in\ the}}
+\DoxyCodeLine{01318\ \textcolor{comment}{\ \ \ context\ of\ the\ macro\ definition.}}
+\DoxyCodeLine{01319\ \textcolor{comment}{}}
+\DoxyCodeLine{01320\ \textcolor{comment}{\ \ \ If\ LOC\ is\ the\ locus\ of\ a\ token\ that\ is\ an\ argument\ of\ a}}
+\DoxyCodeLine{01321\ \textcolor{comment}{\ \ \ function-\/like\ macro\ [replacing\ a\ parameter\ in\ the\ replacement\ list}}
+\DoxyCodeLine{01322\ \textcolor{comment}{\ \ \ of\ the\ macro]\ the\ virtual\ location\ is\ resolved\ to\ the\ locus\ of\ the}}
+\DoxyCodeLine{01323\ \textcolor{comment}{\ \ \ parameter\ that\ is\ replaced,\ in\ the\ context\ of\ the\ definition\ of\ the}}
+\DoxyCodeLine{01324\ \textcolor{comment}{\ \ \ macro.}}
+\DoxyCodeLine{01325\ \textcolor{comment}{}}
+\DoxyCodeLine{01326\ \textcolor{comment}{\ \ \ If\ LOC\ is\ the\ locus\ of\ a\ token\ that\ is\ not\ an\ argument\ of\ a}}
+\DoxyCodeLine{01327\ \textcolor{comment}{\ \ \ function-\/like\ macro,\ then\ the\ function\ behaves\ as\ if\ LRK\ was\ set\ to}}
+\DoxyCodeLine{01328\ \textcolor{comment}{\ \ \ LRK\_SPELLING\_LOCATION.}}
+\DoxyCodeLine{01329\ \textcolor{comment}{}}
+\DoxyCodeLine{01330\ \textcolor{comment}{\ \ \ If\ LOC\_MAP\ is\ not\ NULL,\ *LOC\_MAP\ is\ set\ to\ the\ map\ encoding\ the}}
+\DoxyCodeLine{01331\ \textcolor{comment}{\ \ \ returned\ location.\ \ Note\ that\ if\ the\ returned\ location\ wasn't\ originally}}
+\DoxyCodeLine{01332\ \textcolor{comment}{\ \ \ encoded\ by\ a\ map,\ the\ *MAP\ is\ set\ to\ NULL.\ \ This\ can\ happen\ if\ LOC}}
+\DoxyCodeLine{01333\ \textcolor{comment}{\ \ \ resolves\ to\ a\ location\ reserved\ for\ the\ client\ code,\ like}}
+\DoxyCodeLine{01334\ \textcolor{comment}{\ \ \ UNKNOWN\_LOCATION\ or\ BUILTINS\_LOCATION\ in\ GCC.\ \ */}}
+\DoxyCodeLine{01335\ }
+\DoxyCodeLine{01336\ \doxymbox{\hyperlink{line-map_8h_aedf25620511d64e43327f1a229906a96}{location\_t}}\ \doxymbox{\hyperlink{line-map_8h_a0756d000d05f158cdcf53bd8e545b489}{linemap\_resolve\_location}}\ (\textcolor{keyword}{const}\ line\_maps\ *,}
+\DoxyCodeLine{01337\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{line-map_8h_aedf25620511d64e43327f1a229906a96}{location\_t}}\ loc,}
+\DoxyCodeLine{01338\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{enum}\ \doxymbox{\hyperlink{line-map_8h_aec3f97b4dfb1ac6fcd2e6e73a3dcc06a}{location\_resolution\_kind}}\ lrk,}
+\DoxyCodeLine{01339\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ line\_map\_ordinary\ **loc\_map);}
+\DoxyCodeLine{01340\ }
+\DoxyCodeLine{01341\ \textcolor{comment}{/*\ Suppose\ that\ LOC\ is\ the\ virtual\ location\ of\ a\ token\ coming\ from\ the}}
+\DoxyCodeLine{01342\ \textcolor{comment}{\ \ \ expansion\ of\ a\ macro\ M.\ \ This\ function\ then\ steps\ up\ to\ get\ the}}
+\DoxyCodeLine{01343\ \textcolor{comment}{\ \ \ location\ L\ of\ the\ point\ where\ M\ got\ expanded.\ \ If\ L\ is\ a\ spelling}}
+\DoxyCodeLine{01344\ \textcolor{comment}{\ \ \ location\ inside\ a\ macro\ expansion\ M',\ then\ this\ function\ returns}}
+\DoxyCodeLine{01345\ \textcolor{comment}{\ \ \ the\ point\ where\ M'\ was\ expanded.\ \ LOC\_MAP\ is\ an\ output\ parameter.}}
+\DoxyCodeLine{01346\ \textcolor{comment}{\ \ \ When\ non-\/NULL,\ *LOC\_MAP\ is\ set\ to\ the\ map\ of\ the\ returned}}
+\DoxyCodeLine{01347\ \textcolor{comment}{\ \ \ location.\ \ */}}
+\DoxyCodeLine{01348\ \doxymbox{\hyperlink{line-map_8h_aedf25620511d64e43327f1a229906a96}{location\_t}}\ \doxymbox{\hyperlink{line-map_8h_a850f291a9bbbaf3ee48192887f926e3d}{linemap\_unwind\_toward\_expansion}}\ (\textcolor{keyword}{const}\ line\_maps\ *,}
+\DoxyCodeLine{01349\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{line-map_8h_aedf25620511d64e43327f1a229906a96}{location\_t}}\ loc,}
+\DoxyCodeLine{01350\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ line\_map\ **loc\_map);}
+\DoxyCodeLine{01351\ }
+\DoxyCodeLine{01352\ \textcolor{comment}{/*\ If\ LOC\ is\ the\ virtual\ location\ of\ a\ token\ coming\ from\ the\ expansion}}
+\DoxyCodeLine{01353\ \textcolor{comment}{\ \ \ of\ a\ macro\ M\ and\ if\ its\ spelling\ location\ is\ reserved\ (e.g,\ a}}
+\DoxyCodeLine{01354\ \textcolor{comment}{\ \ \ location\ for\ a\ built-\/in\ token),\ then\ this\ function\ unwinds\ (using}}
+\DoxyCodeLine{01355\ \textcolor{comment}{\ \ \ linemap\_unwind\_toward\_expansion)\ the\ location\ until\ a\ location\ that}}
+\DoxyCodeLine{01356\ \textcolor{comment}{\ \ \ is\ not\ reserved\ and\ is\ not\ in\ a\ system\ header\ is\ reached.\ \ In\ other}}
+\DoxyCodeLine{01357\ \textcolor{comment}{\ \ \ words,\ this\ unwinds\ the\ reserved\ location\ until\ a\ location\ that\ is}}
+\DoxyCodeLine{01358\ \textcolor{comment}{\ \ \ in\ real\ source\ code\ is\ reached.}}
+\DoxyCodeLine{01359\ \textcolor{comment}{}}
+\DoxyCodeLine{01360\ \textcolor{comment}{\ \ \ Otherwise,\ if\ the\ spelling\ location\ for\ LOC\ is\ not\ reserved\ or\ if}}
+\DoxyCodeLine{01361\ \textcolor{comment}{\ \ \ LOC\ doesn't\ come\ from\ the\ expansion\ of\ a\ macro,\ the\ function}}
+\DoxyCodeLine{01362\ \textcolor{comment}{\ \ \ returns\ LOC\ as\ is\ and\ *MAP\ is\ not\ touched.}}
+\DoxyCodeLine{01363\ \textcolor{comment}{}}
+\DoxyCodeLine{01364\ \textcolor{comment}{\ \ \ *MAP\ is\ set\ to\ the\ map\ of\ the\ returned\ location\ if\ the\ later\ is}}
+\DoxyCodeLine{01365\ \textcolor{comment}{\ \ \ different\ from\ LOC.\ \ */}}
+\DoxyCodeLine{01366\ \doxymbox{\hyperlink{line-map_8h_aedf25620511d64e43327f1a229906a96}{location\_t}}\ \doxymbox{\hyperlink{line-map_8h_a476b7f88aca51b971a17e99be4658376}{linemap\_unwind\_to\_first\_non\_reserved\_loc}}\ (\textcolor{keyword}{const}\ line\_maps\ *,}
+\DoxyCodeLine{01367\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{line-map_8h_aedf25620511d64e43327f1a229906a96}{location\_t}}\ loc,}
+\DoxyCodeLine{01368\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ line\_map\ **map);}
+\DoxyCodeLine{01369\ }
+\DoxyCodeLine{01370\ \textcolor{comment}{/*\ Expand\ source\ code\ location\ LOC\ and\ return\ a\ user\ readable\ source}}
+\DoxyCodeLine{01371\ \textcolor{comment}{\ \ \ code\ location.\ \ LOC\ must\ be\ a\ spelling\ (non-\/virtual)\ location.\ \ If}}
+\DoxyCodeLine{01372\ \textcolor{comment}{\ \ \ it's\ a\ location\ <\ RESERVED\_LOCATION\_COUNT\ a\ zeroed\ expanded\ source}}
+\DoxyCodeLine{01373\ \textcolor{comment}{\ \ \ location\ is\ returned.\ \ */}}
+\DoxyCodeLine{01374\ \doxymbox{\hyperlink{structexpanded__location}{expanded\_location}}\ \doxymbox{\hyperlink{line-map_8h_a2b20b6e4cc9adc26757dc6593e8c2739}{linemap\_expand\_location}}\ (\textcolor{keyword}{const}\ line\_maps\ *,}
+\DoxyCodeLine{01375\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ line\_map\ *,}
+\DoxyCodeLine{01376\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{line-map_8h_aedf25620511d64e43327f1a229906a96}{location\_t}}\ loc);}
+\DoxyCodeLine{01377\ }
+\DoxyCodeLine{01378\ \textcolor{comment}{/*\ Statistics\ about\ maps\ allocation\ and\ usage\ as\ returned\ by}}
+\DoxyCodeLine{01379\ \textcolor{comment}{\ \ \ linemap\_get\_statistics.\ \ */}}
+\DoxyCodeLine{01380\ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{structlinemap__stats}{linemap\_stats}}}
+\DoxyCodeLine{01381\ \{}
+\DoxyCodeLine{01382\ \ \ \textcolor{keywordtype}{long}\ \doxymbox{\hyperlink{structlinemap__stats_a0fc58825f666ed96ce6dfe5669d47a61}{num\_ordinary\_maps\_allocated}};}
+\DoxyCodeLine{01383\ \ \ \textcolor{keywordtype}{long}\ \doxymbox{\hyperlink{structlinemap__stats_ac24b7d9817033569a8d46a0bf58e02e5}{num\_ordinary\_maps\_used}};}
+\DoxyCodeLine{01384\ \ \ \textcolor{keywordtype}{long}\ \doxymbox{\hyperlink{structlinemap__stats_a5e81a79afcc01773ad8f6bc0995cac03}{ordinary\_maps\_allocated\_size}};}
+\DoxyCodeLine{01385\ \ \ \textcolor{keywordtype}{long}\ \doxymbox{\hyperlink{structlinemap__stats_ae3a77fe35629eede5b62250aa465f1aa}{ordinary\_maps\_used\_size}};}
+\DoxyCodeLine{01386\ \ \ \textcolor{keywordtype}{long}\ \doxymbox{\hyperlink{structlinemap__stats_a2a8a2c9bee5b55a4fc7bd26d899a65aa}{num\_expanded\_macros}};}
+\DoxyCodeLine{01387\ \ \ \textcolor{keywordtype}{long}\ \doxymbox{\hyperlink{structlinemap__stats_a9c926c2734770ab6453b500bcc6ca2e9}{num\_macro\_tokens}};}
+\DoxyCodeLine{01388\ \ \ \textcolor{keywordtype}{long}\ \doxymbox{\hyperlink{structlinemap__stats_a8c9c257557c5ebf281a22b4552945fc1}{num\_macro\_maps\_used}};}
+\DoxyCodeLine{01389\ \ \ \textcolor{keywordtype}{long}\ \doxymbox{\hyperlink{structlinemap__stats_a9431100be05cd5e7b05c09cf5f8b1f81}{macro\_maps\_allocated\_size}};}
+\DoxyCodeLine{01390\ \ \ \textcolor{keywordtype}{long}\ \doxymbox{\hyperlink{structlinemap__stats_a894112ecefcd2797dae92ee0039ed003}{macro\_maps\_used\_size}};}
+\DoxyCodeLine{01391\ \ \ \textcolor{keywordtype}{long}\ \doxymbox{\hyperlink{structlinemap__stats_a35dc65af41d182f7d1beb71de3dc8573}{macro\_maps\_locations\_size}};}
+\DoxyCodeLine{01392\ \ \ \textcolor{keywordtype}{long}\ \doxymbox{\hyperlink{structlinemap__stats_adfa8300894cdca780c5b465de42e7ddd}{duplicated\_macro\_maps\_locations\_size}};}
+\DoxyCodeLine{01393\ \ \ \textcolor{keywordtype}{long}\ \doxymbox{\hyperlink{structlinemap__stats_ae1d0233b67c31b2811e3f88cd97d5fdc}{adhoc\_table\_size}};}
+\DoxyCodeLine{01394\ \ \ \textcolor{keywordtype}{long}\ \doxymbox{\hyperlink{structlinemap__stats_a5e8e65dc89a3676533746cd8856c3bb1}{adhoc\_table\_entries\_used}};}
+\DoxyCodeLine{01395\ \};}
+\DoxyCodeLine{01396\ }
+\DoxyCodeLine{01397\ \textcolor{comment}{/*\ Return\ the\ highest\ location\ emitted\ for\ a\ given\ file\ for\ which}}
+\DoxyCodeLine{01398\ \textcolor{comment}{\ \ \ there\ is\ a\ line\ map\ in\ SET.\ \ FILE\_NAME\ is\ the\ file\ name\ to}}
+\DoxyCodeLine{01399\ \textcolor{comment}{\ \ \ consider.\ \ If\ the\ function\ returns\ TRUE,\ *LOC\ is\ set\ to\ the\ highest}}
+\DoxyCodeLine{01400\ \textcolor{comment}{\ \ \ location\ emitted\ for\ that\ file.\ \ */}}
+\DoxyCodeLine{01401\ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{line-map_8h_af645fb13e14ceebf84894bf8581f14ed}{linemap\_get\_file\_highest\_location}}\ (\textcolor{keyword}{const}\ line\_maps\ *\ set,}
+\DoxyCodeLine{01402\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *file\_name,}
+\DoxyCodeLine{01403\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{line-map_8h_aedf25620511d64e43327f1a229906a96}{location\_t}}\ *loc);}
+\DoxyCodeLine{01404\ }
+\DoxyCodeLine{01405\ \textcolor{comment}{/*\ Compute\ and\ return\ statistics\ about\ the\ memory\ consumption\ of\ some}}
+\DoxyCodeLine{01406\ \textcolor{comment}{\ \ \ parts\ of\ the\ line\ table\ SET.\ \ */}}
+\DoxyCodeLine{01407\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{line-map_8h_a341586ff7c378817fe4fd251da0f17ff}{linemap\_get\_statistics}}\ (\textcolor{keyword}{const}\ line\_maps\ *,\ \textcolor{keyword}{struct}\ \doxymbox{\hyperlink{structlinemap__stats}{linemap\_stats}}\ *);}
+\DoxyCodeLine{01408\ }
+\DoxyCodeLine{01409\ \textcolor{comment}{/*\ Dump\ debugging\ information\ about\ source\ location\ LOC\ into\ the\ file}}
+\DoxyCodeLine{01410\ \textcolor{comment}{\ \ \ stream\ STREAM.\ SET\ is\ the\ line\ map\ set\ LOC\ comes\ from.\ \ */}}
+\DoxyCodeLine{01411\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{line-map_8h_aa6bcaecea5a029cb25244fb86fe13983}{linemap\_dump\_location}}\ (\textcolor{keyword}{const}\ line\_maps\ *,\ \doxymbox{\hyperlink{line-map_8h_aedf25620511d64e43327f1a229906a96}{location\_t}},\ FILE\ *);}
+\DoxyCodeLine{01412\ }
+\DoxyCodeLine{01413\ \textcolor{comment}{/*\ Dump\ line\ map\ at\ index\ IX\ in\ line\ table\ SET\ to\ STREAM.\ \ If\ STREAM}}
+\DoxyCodeLine{01414\ \textcolor{comment}{\ \ \ is\ NULL,\ use\ stderr.\ \ IS\_MACRO\ is\ true\ if\ the\ caller\ wants\ to}}
+\DoxyCodeLine{01415\ \textcolor{comment}{\ \ \ dump\ a\ macro\ map,\ false\ otherwise.\ \ */}}
+\DoxyCodeLine{01416\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{line-map_8h_a6e408d7ce846b42c082bae4aa82140ef}{linemap\_dump}}\ (FILE\ *,\ \textcolor{keyword}{const}\ line\_maps\ *,\ \textcolor{keywordtype}{unsigned},\ \textcolor{keywordtype}{bool});}
+\DoxyCodeLine{01417\ }
+\DoxyCodeLine{01418\ \textcolor{comment}{/*\ Dump\ line\ table\ SET\ to\ STREAM.\ \ If\ STREAM\ is\ NULL,\ stderr\ is\ used.}}
+\DoxyCodeLine{01419\ \textcolor{comment}{\ \ \ NUM\_ORDINARY\ specifies\ how\ many\ ordinary\ maps\ to\ dump.\ \ NUM\_MACRO}}
+\DoxyCodeLine{01420\ \textcolor{comment}{\ \ \ specifies\ how\ many\ macro\ maps\ to\ dump.\ \ */}}
+\DoxyCodeLine{01421\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{line-map_8h_ab4c8ba19fb8de299a23fd0f8999a2478}{line\_table\_dump}}\ (FILE\ *,\ \textcolor{keyword}{const}\ line\_maps\ *,\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int},\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int});}
+\DoxyCodeLine{01422\ }
+\DoxyCodeLine{01423\ \textcolor{comment}{/*\ An\ enum\ for\ distinguishing\ the\ various\ parts\ within\ a\ location\_t.\ \ */}}
+\DoxyCodeLine{01424\ }
+\DoxyCodeLine{01425\ \textcolor{keyword}{enum}\ \doxymbox{\hyperlink{line-map_8h_a364c979dfa895faa50a35ee6c3e5a81e}{location\_aspect}}}
+\DoxyCodeLine{01426\ \{}
+\DoxyCodeLine{01427\ \ \ \doxymbox{\hyperlink{line-map_8h_a364c979dfa895faa50a35ee6c3e5a81ea8f8a95ae692a6dd6e7f4b48a6fc9d047}{LOCATION\_ASPECT\_CARET}},}
+\DoxyCodeLine{01428\ \ \ \doxymbox{\hyperlink{line-map_8h_a364c979dfa895faa50a35ee6c3e5a81ea98a4a2fd5b9bf0bbb9dd5ce772d2322d}{LOCATION\_ASPECT\_START}},}
+\DoxyCodeLine{01429\ \ \ \doxymbox{\hyperlink{line-map_8h_a364c979dfa895faa50a35ee6c3e5a81ea57349bac0a9943ec33804f4ce9cbc82b}{LOCATION\_ASPECT\_FINISH}}}
+\DoxyCodeLine{01430\ \};}
+\DoxyCodeLine{01431\ }
+\DoxyCodeLine{01432\ \textcolor{comment}{/*\ The\ rich\_location\ class\ requires\ a\ way\ to\ expand\ location\_t\ instances.}}
+\DoxyCodeLine{01433\ \textcolor{comment}{\ \ \ We\ would\ directly\ use\ expand\_location\_to\_spelling\_point,\ which\ is}}
+\DoxyCodeLine{01434\ \textcolor{comment}{\ \ \ implemented\ in\ gcc/input.cc,\ but\ we\ also\ need\ to\ use\ it\ for\ rich\_location}}
+\DoxyCodeLine{01435\ \textcolor{comment}{\ \ \ within\ genmatch.cc.}}
+\DoxyCodeLine{01436\ \textcolor{comment}{\ \ \ Hence\ we\ require\ client\ code\ of\ libcpp\ to\ implement\ the\ following}}
+\DoxyCodeLine{01437\ \textcolor{comment}{\ \ \ symbol.\ \ */}}
+\DoxyCodeLine{01438\ \textcolor{keyword}{extern}\ expanded\_location}
+\DoxyCodeLine{01439\ \doxymbox{\hyperlink{line-map_8h_ab8d7ff52249160d965a4d73c16cb7ed7}{linemap\_client\_expand\_location\_to\_spelling\_point}}\ (\textcolor{keyword}{const}\ line\_maps\ *,}
+\DoxyCodeLine{01440\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{line-map_8h_aedf25620511d64e43327f1a229906a96}{location\_t}},}
+\DoxyCodeLine{01441\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{enum}\ \doxymbox{\hyperlink{line-map_8h_a364c979dfa895faa50a35ee6c3e5a81e}{location\_aspect}});}
+\DoxyCodeLine{01442\ }
+\DoxyCodeLine{01443\ \textcolor{preprocessor}{\#endif\ }\textcolor{comment}{/*\ !LIBCPP\_LINE\_MAP\_H\ \ */}\textcolor{preprocessor}{}}
+
+\end{DoxyCode}

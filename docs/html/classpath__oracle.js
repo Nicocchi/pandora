@@ -1,0 +1,28 @@
+var classpath__oracle =
+[
+    [ "path_oracle", "classpath__oracle.html#a893e7d517e76c8355b9d977a114d2338", null ],
+    [ "~path_oracle", "classpath__oracle.html#ab5b4fc49119bb1246a4708e6eadc60bf", null ],
+    [ "debug", "classpath__oracle.html#a7b31245199e05544462f891123808dd1", null ],
+    [ "dump", "classpath__oracle.html#a7a5344dc4a44367cffae17a12d9af728", null ],
+    [ "dump", "classpath__oracle.html#a3709b7cc4bc6d650db7117803cc76efc", null ],
+    [ "equiv_set", "classpath__oracle.html#abdd80516740902aed4d4fedeed17d888", null ],
+    [ "killing_def", "classpath__oracle.html#a44ffd1638657c8d7c50a6d3c489fc4a8", null ],
+    [ "partial_equiv_set", "classpath__oracle.html#a8128b9034409b4abc258c63522dcb247", null ],
+    [ "query_relation", "classpath__oracle.html#a9c81733986011441f2ecc674b2bcf503", null ],
+    [ "query_relation", "classpath__oracle.html#abbb88dbe026b54a5f42cc9b18f6fa1b6", null ],
+    [ "register_edge", "classpath__oracle.html#aa7b958f95db883facf7884ff06fcb6c7", null ],
+    [ "register_equiv", "classpath__oracle.html#ab90c48f48670b577506f8ec743b8e237", null ],
+    [ "register_relation", "classpath__oracle.html#a28e89bc78ed34a65de4952dac796da69", null ],
+    [ "register_stmt", "classpath__oracle.html#a3e3f597322bb2a00d62dc648e16798b5", null ],
+    [ "reset_path", "classpath__oracle.html#a2138a22d9752ea3c0536a6207df7c53b", null ],
+    [ "set_root_oracle", "classpath__oracle.html#aa7082b34a9fa095d1d457fd6432b5d8b", null ],
+    [ "valid_equivs", "classpath__oracle.html#a8d754b25a8be5d796bbeebc4cea551d5", null ],
+    [ "validate_relation", "classpath__oracle.html#a79613043f18076052451a944d8a56ee3", null ],
+    [ "validate_relation", "classpath__oracle.html#af29246bd601578cfbd15b3e798e1edc9", null ],
+    [ "m_bitmaps", "classpath__oracle.html#a6db4296e10c66e5f4d514d78390bf12e", null ],
+    [ "m_chain_obstack", "classpath__oracle.html#a4e4c3d54512638f7e2cfb6764f25c0f9", null ],
+    [ "m_equiv", "classpath__oracle.html#a02fcb044ee904e4ffdd4472aad7a55c2", null ],
+    [ "m_killed_defs", "classpath__oracle.html#aa41ea678f3a1c5a0f9283efadaffc3f1", null ],
+    [ "m_relations", "classpath__oracle.html#aff0e18bd23833863cc84b4f0fc623c8d", null ],
+    [ "m_root", "classpath__oracle.html#a1897a66ca2be9060f6a873ba9d8ceaef", null ]
+];

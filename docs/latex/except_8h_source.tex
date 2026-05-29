@@ -1,0 +1,340 @@
+\doxysection{except.\+h}
+\hypertarget{except_8h_source}{}\label{except_8h_source}\index{toolchain/x86\_64-\/elf/lib/gcc/x86\_64-\/elf/14.2.0/plugin/include/except.h@{toolchain/x86\_64-\/elf/lib/gcc/x86\_64-\/elf/14.2.0/plugin/include/except.h}}
+\doxymbox{\hyperlink{except_8h}{Go to the documentation of this file.}}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001\ \textcolor{comment}{/*\ Exception\ Handling\ interface\ routines.}}
+\DoxyCodeLine{00002\ \textcolor{comment}{\ \ \ Copyright\ (C)\ 1996-\/2024\ Free\ Software\ Foundation,\ Inc.}}
+\DoxyCodeLine{00003\ \textcolor{comment}{\ \ \ Contributed\ by\ Mike\ Stump\ <mrs@cygnus.com>.}}
+\DoxyCodeLine{00004\ \textcolor{comment}{}}
+\DoxyCodeLine{00005\ \textcolor{comment}{This\ file\ is\ part\ of\ GCC.}}
+\DoxyCodeLine{00006\ \textcolor{comment}{}}
+\DoxyCodeLine{00007\ \textcolor{comment}{GCC\ is\ free\ software;\ you\ can\ redistribute\ it\ and/or\ modify\ it\ under}}
+\DoxyCodeLine{00008\ \textcolor{comment}{the\ terms\ of\ the\ GNU\ General\ Public\ License\ as\ published\ by\ the\ Free}}
+\DoxyCodeLine{00009\ \textcolor{comment}{Software\ Foundation;\ either\ version\ 3,\ or\ (at\ your\ option)\ any\ later}}
+\DoxyCodeLine{00010\ \textcolor{comment}{version.}}
+\DoxyCodeLine{00011\ \textcolor{comment}{}}
+\DoxyCodeLine{00012\ \textcolor{comment}{GCC\ is\ distributed\ in\ the\ hope\ that\ it\ will\ be\ useful,\ but\ WITHOUT\ ANY}}
+\DoxyCodeLine{00013\ \textcolor{comment}{WARRANTY;\ without\ even\ the\ implied\ warranty\ of\ MERCHANTABILITY\ or}}
+\DoxyCodeLine{00014\ \textcolor{comment}{FITNESS\ FOR\ A\ PARTICULAR\ PURPOSE.\ \ See\ the\ GNU\ General\ Public\ License}}
+\DoxyCodeLine{00015\ \textcolor{comment}{for\ more\ details.}}
+\DoxyCodeLine{00016\ \textcolor{comment}{}}
+\DoxyCodeLine{00017\ \textcolor{comment}{You\ should\ have\ received\ a\ copy\ of\ the\ GNU\ General\ Public\ License}}
+\DoxyCodeLine{00018\ \textcolor{comment}{along\ with\ GCC;\ see\ the\ file\ COPYING3.\ \ If\ not\ see}}
+\DoxyCodeLine{00019\ \textcolor{comment}{<http://www.gnu.org/licenses/>.\ \ */}}
+\DoxyCodeLine{00020\ }
+\DoxyCodeLine{00021\ \textcolor{comment}{/*\ No\ include\ guards\ here,\ but\ define\ an\ include\ file\ marker\ anyway,\ so}}
+\DoxyCodeLine{00022\ \textcolor{comment}{\ \ \ that\ the\ compiler\ can\ keep\ track\ of\ where\ this\ file\ is\ included.\ \ This}}
+\DoxyCodeLine{00023\ \textcolor{comment}{\ \ \ is\ e.g.\ used\ to\ avoid\ including\ this\ file\ in\ front-\/end\ specific\ files.\ \ */}}
+\DoxyCodeLine{00024\ \textcolor{preprocessor}{\#ifndef\ GCC\_EXCEPT\_H}}
+\DoxyCodeLine{00025\ \textcolor{preprocessor}{\#define\ GCC\_EXCEPT\_H}}
+\DoxyCodeLine{00026\ }
+\DoxyCodeLine{00027\ }
+\DoxyCodeLine{00028\ \textcolor{keyword}{struct\ }function;}
+\DoxyCodeLine{00029\ \textcolor{keyword}{struct\ }eh\_region\_d;}
+\DoxyCodeLine{00030\ }
+\DoxyCodeLine{00031\ \textcolor{comment}{/*\ The\ type\ of\ an\ exception\ region.\ \ */}}
+\DoxyCodeLine{00032\ \textcolor{keyword}{enum}\ \doxymbox{\hyperlink{except_8h_aafd789b3db05e3fb2a18b432be891eb6}{eh\_region\_type}}}
+\DoxyCodeLine{00033\ \{}
+\DoxyCodeLine{00034\ \ \ \textcolor{comment}{/*\ CLEANUP\ regions\ implement\ e.g.\ destructors\ run\ when\ exiting\ a\ block.}}
+\DoxyCodeLine{00035\ \textcolor{comment}{\ \ \ \ \ They\ can\ be\ generated\ from\ both\ GIMPLE\_TRY\_FINALLY\ and\ GIMPLE\_TRY\_CATCH}}
+\DoxyCodeLine{00036\ \textcolor{comment}{\ \ \ \ \ nodes.\ \ It\ is\ expected\ by\ the\ runtime\ that\ cleanup\ regions\ will\ *not*}}
+\DoxyCodeLine{00037\ \textcolor{comment}{\ \ \ \ \ resume\ normal\ program\ flow,\ but\ will\ continue\ propagation\ of\ the}}
+\DoxyCodeLine{00038\ \textcolor{comment}{\ \ \ \ \ exception.\ \ */}}
+\DoxyCodeLine{00039\ \ \ \doxymbox{\hyperlink{except_8h_aafd789b3db05e3fb2a18b432be891eb6ac0d220940857c38576cd428562f720c3}{ERT\_CLEANUP}},}
+\DoxyCodeLine{00040\ }
+\DoxyCodeLine{00041\ \ \ \textcolor{comment}{/*\ TRY\ regions\ implement\ catching\ an\ exception.\ \ The\ list\ of\ types\ associated}}
+\DoxyCodeLine{00042\ \textcolor{comment}{\ \ \ \ \ with\ the\ attached\ catch\ handlers\ is\ examined\ in\ order\ by\ the\ runtime\ and}}
+\DoxyCodeLine{00043\ \textcolor{comment}{\ \ \ \ \ control\ is\ transferred\ to\ the\ appropriate\ handler.\ \ Note\ that\ a\ NULL\ type}}
+\DoxyCodeLine{00044\ \textcolor{comment}{\ \ \ \ \ list\ is\ a\ catch-\/all\ handler,\ and\ that\ it\ will\ catch\ *all*\ exceptions}}
+\DoxyCodeLine{00045\ \textcolor{comment}{\ \ \ \ \ including\ those\ originating\ from\ a\ different\ language.\ \ */}}
+\DoxyCodeLine{00046\ \ \ \doxymbox{\hyperlink{except_8h_aafd789b3db05e3fb2a18b432be891eb6a4f001904b2c735e78f641ef4852ec634}{ERT\_TRY}},}
+\DoxyCodeLine{00047\ }
+\DoxyCodeLine{00048\ \ \ \textcolor{comment}{/*\ ALLOWED\_EXCEPTIONS\ regions\ implement\ exception\ filtering,\ e.g.\ the}}
+\DoxyCodeLine{00049\ \textcolor{comment}{\ \ \ \ \ throw(type-\/list)\ specification\ that\ can\ be\ added\ to\ C++\ functions.}}
+\DoxyCodeLine{00050\ \textcolor{comment}{\ \ \ \ \ The\ runtime\ examines\ the\ thrown\ exception\ vs\ the\ type\ list,\ and\ if}}
+\DoxyCodeLine{00051\ \textcolor{comment}{\ \ \ \ \ the\ exception\ does\ not\ match,\ transfers\ control\ to\ the\ handler.\ \ The}}
+\DoxyCodeLine{00052\ \textcolor{comment}{\ \ \ \ \ normal\ handler\ for\ C++\ calls\ \_\_cxa\_call\_unexpected.\ \ */}}
+\DoxyCodeLine{00053\ \ \ \doxymbox{\hyperlink{except_8h_aafd789b3db05e3fb2a18b432be891eb6aa785402cd446e664e4b61c716229484a}{ERT\_ALLOWED\_EXCEPTIONS}},}
+\DoxyCodeLine{00054\ }
+\DoxyCodeLine{00055\ \ \ \textcolor{comment}{/*\ MUST\_NOT\_THROW\ regions\ prevent\ all\ exceptions\ from\ propagating.\ \ This}}
+\DoxyCodeLine{00056\ \textcolor{comment}{\ \ \ \ \ region\ type\ is\ used\ in\ C++\ to\ surround\ destructors\ being\ run\ inside\ a}}
+\DoxyCodeLine{00057\ \textcolor{comment}{\ \ \ \ \ CLEANUP\ region.\ \ This\ differs\ from\ an\ ALLOWED\_EXCEPTIONS\ region\ with}}
+\DoxyCodeLine{00058\ \textcolor{comment}{\ \ \ \ \ an\ empty\ type\ list\ in\ that\ the\ runtime\ is\ prepared\ to\ terminate\ the}}
+\DoxyCodeLine{00059\ \textcolor{comment}{\ \ \ \ \ program\ directly.\ \ We\ only\ generate\ code\ for\ MUST\_NOT\_THROW\ regions}}
+\DoxyCodeLine{00060\ \textcolor{comment}{\ \ \ \ \ along\ control\ paths\ that\ are\ already\ handling\ an\ exception\ within\ the}}
+\DoxyCodeLine{00061\ \textcolor{comment}{\ \ \ \ \ current\ function.\ \ */}}
+\DoxyCodeLine{00062\ \ \ \doxymbox{\hyperlink{except_8h_aafd789b3db05e3fb2a18b432be891eb6a1a22784d37d3ed2f7aedc04f35974506}{ERT\_MUST\_NOT\_THROW}}}
+\DoxyCodeLine{00063\ \};}
+\DoxyCodeLine{00064\ }
+\DoxyCodeLine{00065\ }
+\DoxyCodeLine{00066\ \textcolor{comment}{/*\ A\ landing\ pad\ for\ a\ given\ exception\ region.\ \ Any\ transfer\ of\ control}}
+\DoxyCodeLine{00067\ \textcolor{comment}{\ \ \ from\ the\ EH\ runtime\ to\ the\ function\ happens\ at\ a\ landing\ pad.\ \ */}}
+\DoxyCodeLine{00068\ }
+\DoxyCodeLine{00069\ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{coretypes_8h_ae5708c4d4b300570eebe0bc0c78facbc}{GTY}}((chain\_next(\textcolor{stringliteral}{"{}\%h.next\_lp"{}})))\ eh\_landing\_pad\_d}
+\DoxyCodeLine{00070\ \{}
+\DoxyCodeLine{00071\ \ \ \textcolor{comment}{/*\ The\ linked\ list\ of\ all\ landing\ pads\ associated\ with\ the\ region.\ \ */}}
+\DoxyCodeLine{00072\ \ \ \textcolor{keyword}{struct\ }eh\_landing\_pad\_d\ *next\_lp;}
+\DoxyCodeLine{00073\ }
+\DoxyCodeLine{00074\ \ \ \textcolor{comment}{/*\ The\ region\ with\ which\ this\ landing\ pad\ is\ associated.\ \ */}}
+\DoxyCodeLine{00075\ \ \ \textcolor{keyword}{struct\ }eh\_region\_d\ *region;}
+\DoxyCodeLine{00076\ }
+\DoxyCodeLine{00077\ \ \ \textcolor{comment}{/*\ At\ the\ gimple\ level,\ the\ location\ to\ which\ control\ will\ be\ transferred}}
+\DoxyCodeLine{00078\ \textcolor{comment}{\ \ \ \ \ for\ this\ landing\ pad.\ \ There\ can\ be\ both\ EH\ and\ normal\ edges\ into\ the}}
+\DoxyCodeLine{00079\ \textcolor{comment}{\ \ \ \ \ block\ containing\ the\ post-\/landing-\/pad\ label.\ \ */}}
+\DoxyCodeLine{00080\ \ \ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ post\_landing\_pad;}
+\DoxyCodeLine{00081\ }
+\DoxyCodeLine{00082\ \ \ \textcolor{comment}{/*\ At\ the\ rtl\ level,\ the\ location\ to\ which\ the\ runtime\ will\ transfer}}
+\DoxyCodeLine{00083\ \textcolor{comment}{\ \ \ \ \ control.\ \ This\ differs\ from\ the\ post-\/landing-\/pad\ in\ that\ the\ target's}}
+\DoxyCodeLine{00084\ \textcolor{comment}{\ \ \ \ \ EXCEPTION\_RECEIVER\ pattern\ will\ be\ expanded\ here,\ as\ well\ as\ other}}
+\DoxyCodeLine{00085\ \textcolor{comment}{\ \ \ \ \ bookkeeping\ specific\ to\ exceptions.\ \ There\ must\ not\ be\ normal\ edges}}
+\DoxyCodeLine{00086\ \textcolor{comment}{\ \ \ \ \ into\ the\ block\ containing\ the\ landing-\/pad\ label.\ \ */}}
+\DoxyCodeLine{00087\ \ \ rtx\_code\_label\ *landing\_pad;}
+\DoxyCodeLine{00088\ }
+\DoxyCodeLine{00089\ \ \ \textcolor{comment}{/*\ The\ index\ of\ this\ landing\ pad\ within\ fun-\/>eh-\/>lp\_array.\ \ */}}
+\DoxyCodeLine{00090\ \ \ \textcolor{keywordtype}{int}\ index;}
+\DoxyCodeLine{00091\ \};}
+\DoxyCodeLine{00092\ }
+\DoxyCodeLine{00093\ \textcolor{comment}{/*\ A\ catch\ handler\ associated\ with\ an\ ERT\_TRY\ region.\ \ */}}
+\DoxyCodeLine{00094\ }
+\DoxyCodeLine{00095\ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{coretypes_8h_ae5708c4d4b300570eebe0bc0c78facbc}{GTY}}(())\ eh\_catch\_d}
+\DoxyCodeLine{00096\ \{}
+\DoxyCodeLine{00097\ \ \ \textcolor{comment}{/*\ The\ double-\/linked\ list\ of\ all\ catch\ handlers\ for\ the\ region.\ \ */}}
+\DoxyCodeLine{00098\ \ \ \textcolor{keyword}{struct\ }eh\_catch\_d\ *next\_catch;}
+\DoxyCodeLine{00099\ \ \ \textcolor{keyword}{struct\ }eh\_catch\_d\ *prev\_catch;}
+\DoxyCodeLine{00100\ }
+\DoxyCodeLine{00101\ \ \ \textcolor{comment}{/*\ A\ TREE\_LIST\ of\ runtime\ type\ objects\ that\ this\ catch\ handler}}
+\DoxyCodeLine{00102\ \textcolor{comment}{\ \ \ \ \ will\ catch,\ or\ NULL\ if\ all\ exceptions\ are\ caught.\ \ */}}
+\DoxyCodeLine{00103\ \ \ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ type\_list;}
+\DoxyCodeLine{00104\ }
+\DoxyCodeLine{00105\ \ \ \textcolor{comment}{/*\ A\ TREE\_LIST\ of\ INTEGER\_CSTs\ that\ correspond\ to\ the\ type\_list\ entries,}}
+\DoxyCodeLine{00106\ \textcolor{comment}{\ \ \ \ \ having\ been\ mapped\ by\ assign\_filter\_values.\ \ These\ integers\ are\ to\ be}}
+\DoxyCodeLine{00107\ \textcolor{comment}{\ \ \ \ \ compared\ against\ the\ \_\_builtin\_eh\_filter\ value.\ \ */}}
+\DoxyCodeLine{00108\ \ \ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ filter\_list;}
+\DoxyCodeLine{00109\ }
+\DoxyCodeLine{00110\ \ \ \textcolor{comment}{/*\ The\ code\ that\ should\ be\ executed\ if\ this\ catch\ handler\ matches\ the}}
+\DoxyCodeLine{00111\ \textcolor{comment}{\ \ \ \ \ thrown\ exception.\ \ This\ label\ is\ only\ maintained\ until}}
+\DoxyCodeLine{00112\ \textcolor{comment}{\ \ \ \ \ pass\_lower\_eh\_dispatch,\ at\ which\ point\ it\ is\ cleared.\ \ */}}
+\DoxyCodeLine{00113\ \ \ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ label;}
+\DoxyCodeLine{00114\ \};}
+\DoxyCodeLine{00115\ }
+\DoxyCodeLine{00116\ \textcolor{comment}{/*\ Describes\ one\ exception\ region.\ \ */}}
+\DoxyCodeLine{00117\ }
+\DoxyCodeLine{00118\ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{coretypes_8h_ae5708c4d4b300570eebe0bc0c78facbc}{GTY}}(())\ eh\_region\_d}
+\DoxyCodeLine{00119\ \{}
+\DoxyCodeLine{00120\ \ \ \textcolor{comment}{/*\ The\ immediately\ surrounding\ region.\ \ */}}
+\DoxyCodeLine{00121\ \ \ \textcolor{keyword}{struct\ }eh\_region\_d\ *outer;}
+\DoxyCodeLine{00122\ }
+\DoxyCodeLine{00123\ \ \ \textcolor{comment}{/*\ The\ list\ of\ immediately\ contained\ regions.\ \ */}}
+\DoxyCodeLine{00124\ \ \ \textcolor{keyword}{struct\ }eh\_region\_d\ *inner;}
+\DoxyCodeLine{00125\ \ \ \textcolor{keyword}{struct\ }eh\_region\_d\ *next\_peer;}
+\DoxyCodeLine{00126\ }
+\DoxyCodeLine{00127\ \ \ \textcolor{comment}{/*\ The\ index\ of\ this\ region\ within\ fun-\/>eh-\/>region\_array.\ \ */}}
+\DoxyCodeLine{00128\ \ \ \textcolor{keywordtype}{int}\ index;}
+\DoxyCodeLine{00129\ }
+\DoxyCodeLine{00130\ \ \ \textcolor{comment}{/*\ Each\ region\ does\ exactly\ one\ thing.\ \ */}}
+\DoxyCodeLine{00131\ \ \ \textcolor{keyword}{enum}\ \doxymbox{\hyperlink{except_8h_aafd789b3db05e3fb2a18b432be891eb6}{eh\_region\_type}}\ type;}
+\DoxyCodeLine{00132\ }
+\DoxyCodeLine{00133\ \ \ \textcolor{comment}{/*\ Holds\ the\ action\ to\ perform\ based\ on\ the\ preceding\ type.\ \ */}}
+\DoxyCodeLine{00134\ \ \ \textcolor{keyword}{union\ }eh\_region\_u\ \{}
+\DoxyCodeLine{00135\ \ \ \ \ \textcolor{keyword}{struct\ }eh\_region\_u\_try\ \{}
+\DoxyCodeLine{00136\ \ \ \ \ \ \ \textcolor{comment}{/*\ The\ double-\/linked\ list\ of\ all\ catch\ handlers\ for\ this\ region.\ \ */}}
+\DoxyCodeLine{00137\ \ \ \ \ \ \ \textcolor{keyword}{struct\ }eh\_catch\_d\ *first\_catch;}
+\DoxyCodeLine{00138\ \ \ \ \ \ \ \textcolor{keyword}{struct\ }eh\_catch\_d\ *last\_catch;}
+\DoxyCodeLine{00139\ \ \ \ \ \}\ \doxymbox{\hyperlink{coretypes_8h_ae5708c4d4b300570eebe0bc0c78facbc}{GTY}}\ ((tag\ (\textcolor{stringliteral}{"{}ERT\_TRY"{}})))\ eh\_try;}
+\DoxyCodeLine{00140\ }
+\DoxyCodeLine{00141\ \ \ \ \ struct\ eh\_region\_u\_allowed\ \{}
+\DoxyCodeLine{00142\ \ \ \ \ \ \ \textcolor{comment}{/*\ A\ TREE\_LIST\ of\ runtime\ type\ objects\ allowed\ to\ pass.\ \ */}}
+\DoxyCodeLine{00143\ \ \ \ \ \ \ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ type\_list;}
+\DoxyCodeLine{00144\ \ \ \ \ \ \ \textcolor{comment}{/*\ The\ code\ that\ should\ be\ executed\ if\ the\ thrown\ exception\ does}}
+\DoxyCodeLine{00145\ \textcolor{comment}{\ \ \ \ \ not\ match\ the\ type\ list.\ \ This\ label\ is\ only\ maintained\ until}}
+\DoxyCodeLine{00146\ \textcolor{comment}{\ \ \ \ \ pass\_lower\_eh\_dispatch,\ at\ which\ point\ it\ is\ cleared.\ \ */}}
+\DoxyCodeLine{00147\ \ \ \ \ \ \ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ label;}
+\DoxyCodeLine{00148\ \ \ \ \ \ \ \textcolor{comment}{/*\ The\ integer\ that\ will\ be\ passed\ by\ the\ runtime\ to\ signal\ that}}
+\DoxyCodeLine{00149\ \textcolor{comment}{\ \ \ \ \ we\ should\ execute\ the\ code\ at\ LABEL.\ \ This\ integer\ is\ assigned}}
+\DoxyCodeLine{00150\ \textcolor{comment}{\ \ \ \ \ by\ assign\_filter\_values\ and\ is\ to\ be\ compared\ against\ the}}
+\DoxyCodeLine{00151\ \textcolor{comment}{\ \ \ \ \ \_\_builtin\_eh\_filter\ value.\ \ */}}
+\DoxyCodeLine{00152\ \ \ \ \ \ \ \textcolor{keywordtype}{int}\ filter;}
+\DoxyCodeLine{00153\ \ \ \ \ \}\ \doxymbox{\hyperlink{coretypes_8h_ae5708c4d4b300570eebe0bc0c78facbc}{GTY}}\ ((tag\ (\textcolor{stringliteral}{"{}ERT\_ALLOWED\_EXCEPTIONS"{}})))\ allowed;}
+\DoxyCodeLine{00154\ }
+\DoxyCodeLine{00155\ \ \ \ \ struct\ eh\_region\_u\_must\_not\_throw\ \{}
+\DoxyCodeLine{00156\ \ \ \ \ \ \ \textcolor{comment}{/*\ A\ function\ decl\ to\ be\ invoked\ if\ this\ region\ is\ actually\ reachable}}
+\DoxyCodeLine{00157\ \textcolor{comment}{\ \ \ \ \ from\ within\ the\ function,\ rather\ than\ implementable\ from\ the\ runtime.}}
+\DoxyCodeLine{00158\ \textcolor{comment}{\ \ \ \ \ The\ normal\ way\ for\ this\ to\ happen\ is\ for\ there\ to\ be\ a\ TRY\ region}}
+\DoxyCodeLine{00159\ \textcolor{comment}{\ \ \ \ \ contained\ within\ this\ MUST\_NOT\_THROW\ region.\ \ Note\ that\ if\ the}}
+\DoxyCodeLine{00160\ \textcolor{comment}{\ \ \ \ \ runtime\ handles\ the\ MUST\_NOT\_THROW\ region,\ we\ have\ no\ control\ over}}
+\DoxyCodeLine{00161\ \textcolor{comment}{\ \ \ \ \ what\ termination\ function\ is\ called;\ it\ will\ be\ decided\ by\ the}}
+\DoxyCodeLine{00162\ \textcolor{comment}{\ \ \ \ \ personality\ function\ in\ effect\ for\ this\ CIE.\ \ */}}
+\DoxyCodeLine{00163\ \ \ \ \ \ \ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ failure\_decl;}
+\DoxyCodeLine{00164\ \ \ \ \ \ \ \textcolor{comment}{/*\ The\ location\ assigned\ to\ the\ call\ of\ FAILURE\_DECL,\ if\ expanded.\ \ */}}
+\DoxyCodeLine{00165\ \ \ \ \ \ \ \doxymbox{\hyperlink{line-map_8h_aedf25620511d64e43327f1a229906a96}{location\_t}}\ failure\_loc;}
+\DoxyCodeLine{00166\ \ \ \ \ \}\ \doxymbox{\hyperlink{coretypes_8h_ae5708c4d4b300570eebe0bc0c78facbc}{GTY}}\ ((tag\ (\textcolor{stringliteral}{"{}ERT\_MUST\_NOT\_THROW"{}})))\ must\_not\_throw;}
+\DoxyCodeLine{00167\ \ \ \}\ \doxymbox{\hyperlink{coretypes_8h_ae5708c4d4b300570eebe0bc0c78facbc}{GTY}}\ ((desc\ (\textcolor{stringliteral}{"{}\%0.type"{}})))\ u;}
+\DoxyCodeLine{00168\ }
+\DoxyCodeLine{00169\ \ \ \textcolor{comment}{/*\ The\ list\ of\ landing\ pads\ associated\ with\ this\ region.\ \ */}}
+\DoxyCodeLine{00170\ \ \ struct\ eh\_landing\_pad\_d\ *landing\_pads;}
+\DoxyCodeLine{00171\ }
+\DoxyCodeLine{00172\ \ \ \textcolor{comment}{/*\ EXC\_PTR\ and\ FILTER\ values\ copied\ from\ the\ runtime\ for\ this\ region.}}
+\DoxyCodeLine{00173\ \textcolor{comment}{\ \ \ \ \ Each\ region\ gets\ its\ own\ psuedos\ so\ that\ if\ there\ are\ nested\ exceptions}}
+\DoxyCodeLine{00174\ \textcolor{comment}{\ \ \ \ \ we\ do\ not\ overwrite\ the\ values\ of\ the\ first\ exception.\ \ */}}
+\DoxyCodeLine{00175\ \ \ \doxymbox{\hyperlink{coretypes_8h_a20e671ce9e7827268658cff844f4281c}{rtx}}\ exc\_ptr\_reg,\ filter\_reg;}
+\DoxyCodeLine{00176\ }
+\DoxyCodeLine{00177\ \ \ \textcolor{comment}{/*\ True\ if\ this\ region\ should\ use\ \_\_cxa\_end\_cleanup\ instead}}
+\DoxyCodeLine{00178\ \textcolor{comment}{\ \ \ \ \ of\ \_Unwind\_Resume.\ \ */}}
+\DoxyCodeLine{00179\ \ \ \textcolor{keywordtype}{bool}\ use\_cxa\_end\_cleanup;}
+\DoxyCodeLine{00180\ \};}
+\DoxyCodeLine{00181\ }
+\DoxyCodeLine{00182\ typedef\ struct\ eh\_landing\_pad\_d\ *\doxymbox{\hyperlink{except_8h_a3d5d54c02bb0d4ed77134d170eeb2747}{eh\_landing\_pad}};}
+\DoxyCodeLine{00183\ typedef\ struct\ eh\_catch\_d\ *\doxymbox{\hyperlink{except_8h_a88275af91dc2f9c038b8246761a02886}{eh\_catch}};}
+\DoxyCodeLine{00184\ typedef\ struct\ eh\_region\_d\ *\doxymbox{\hyperlink{except_8h_acd17f2b80a4697d7722f7d16d9032e47}{eh\_region}};}
+\DoxyCodeLine{00185\ }
+\DoxyCodeLine{00186\ }
+\DoxyCodeLine{00187\ }
+\DoxyCodeLine{00188\ }
+\DoxyCodeLine{00189\ \textcolor{comment}{/*\ The\ exception\ status\ for\ each\ function.\ \ */}}
+\DoxyCodeLine{00190\ }
+\DoxyCodeLine{00191\ struct\ \doxymbox{\hyperlink{coretypes_8h_ae5708c4d4b300570eebe0bc0c78facbc}{GTY}}(())\ eh\_status}
+\DoxyCodeLine{00192\ \{}
+\DoxyCodeLine{00193\ \ \ \textcolor{comment}{/*\ The\ tree\ of\ all\ regions\ for\ this\ function.\ \ */}}
+\DoxyCodeLine{00194\ \ \ \doxymbox{\hyperlink{except_8h_acd17f2b80a4697d7722f7d16d9032e47}{eh\_region}}\ region\_tree;}
+\DoxyCodeLine{00195\ }
+\DoxyCodeLine{00196\ \ \ \textcolor{comment}{/*\ The\ same\ information\ as\ an\ indexable\ array.\ \ */}}
+\DoxyCodeLine{00197\ \ \ \doxymbox{\hyperlink{structvec}{vec<eh\_region,\ va\_gc>}}\ *region\_array;}
+\DoxyCodeLine{00198\ }
+\DoxyCodeLine{00199\ \ \ \textcolor{comment}{/*\ The\ landing\ pads\ as\ an\ indexable\ array.\ \ */}}
+\DoxyCodeLine{00200\ \ \ \doxymbox{\hyperlink{structvec}{vec<eh\_landing\_pad,\ va\_gc>}}\ *lp\_array;}
+\DoxyCodeLine{00201\ }
+\DoxyCodeLine{00202\ \ \ \textcolor{comment}{/*\ At\ the\ gimple\ level,\ a\ mapping\ from\ gimple\ statement\ to\ landing\ pad}}
+\DoxyCodeLine{00203\ \textcolor{comment}{\ \ \ \ \ or\ must-\/not-\/throw\ region.\ \ See\ record\_stmt\_eh\_region.\ \ */}}
+\DoxyCodeLine{00204\ \ \ \doxymbox{\hyperlink{classhash__map}{hash\_map<gimple\ *,\ int>}}\ *\doxymbox{\hyperlink{coretypes_8h_ae5708c4d4b300570eebe0bc0c78facbc}{GTY}}(())\ throw\_stmt\_table;}
+\DoxyCodeLine{00205\ }
+\DoxyCodeLine{00206\ \ \ \textcolor{comment}{/*\ All\ of\ the\ runtime\ type\ data\ used\ by\ the\ function.\ \ These\ objects}}
+\DoxyCodeLine{00207\ \textcolor{comment}{\ \ \ \ \ are\ emitted\ to\ the\ lang-\/specific-\/data-\/area\ for\ the\ function.\ \ */}}
+\DoxyCodeLine{00208\ \ \ \doxymbox{\hyperlink{structvec}{vec<tree,\ va\_gc>}}\ *ttype\_data;}
+\DoxyCodeLine{00209\ }
+\DoxyCodeLine{00210\ \ \ \textcolor{comment}{/*\ The\ table\ of\ all\ action\ chains.\ \ These\ encode\ the\ eh\_region\ tree\ in}}
+\DoxyCodeLine{00211\ \textcolor{comment}{\ \ \ \ \ a\ compact\ form\ for\ use\ by\ the\ runtime,\ and\ is\ also\ emitted\ to\ the}}
+\DoxyCodeLine{00212\ \textcolor{comment}{\ \ \ \ \ lang-\/specific-\/data-\/area.\ \ Note\ that\ the\ ARM\ EABI\ uses\ a\ different}}
+\DoxyCodeLine{00213\ \textcolor{comment}{\ \ \ \ \ format\ for\ the\ encoding\ than\ all\ other\ ports.\ \ */}}
+\DoxyCodeLine{00214\ \ \ \textcolor{keyword}{union\ }eh\_status\_u\ \{}
+\DoxyCodeLine{00215\ \ \ \ \ \doxymbox{\hyperlink{structvec}{vec<tree,\ va\_gc>}}\ *\doxymbox{\hyperlink{coretypes_8h_ae5708c4d4b300570eebe0bc0c78facbc}{GTY}}((tag\ (\textcolor{stringliteral}{"{}1"{}})))\ arm\_eabi;}
+\DoxyCodeLine{00216\ \ \ \ \ \doxymbox{\hyperlink{structvec}{vec<uchar,\ va\_gc>}}\ *\doxymbox{\hyperlink{coretypes_8h_ae5708c4d4b300570eebe0bc0c78facbc}{GTY}}((tag\ (\textcolor{stringliteral}{"{}0"{}})))\ other;}
+\DoxyCodeLine{00217\ \ \ \}\ \doxymbox{\hyperlink{coretypes_8h_ae5708c4d4b300570eebe0bc0c78facbc}{GTY}}\ ((desc\ (\textcolor{stringliteral}{"{}targetm.arm\_eabi\_unwinder"{}})))\ ehspec\_data;}
+\DoxyCodeLine{00218\ \};}
+\DoxyCodeLine{00219\ }
+\DoxyCodeLine{00220\ }
+\DoxyCodeLine{00221\ \textcolor{comment}{/*\ Invokes\ CALLBACK\ for\ every\ exception\ handler\ label.\ \ Only\ used\ by\ old}}
+\DoxyCodeLine{00222\ \textcolor{comment}{\ \ \ loop\ hackery;\ should\ not\ be\ used\ by\ new\ code.\ \ */}}
+\DoxyCodeLine{00223\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{except_8h_a5bd15f5accdc1514c0890efe362b7e20}{for\_each\_eh\_label}}\ (\textcolor{keywordtype}{void}\ (*)\ (\doxymbox{\hyperlink{coretypes_8h_a20e671ce9e7827268658cff844f4281c}{rtx}}));}
+\DoxyCodeLine{00224\ }
+\DoxyCodeLine{00225\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{except_8h_ab284aef22199b5ca17071c4ded5cd6c9}{init\_eh\_for\_function}}\ (\textcolor{keywordtype}{void});}
+\DoxyCodeLine{00226\ }
+\DoxyCodeLine{00227\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{except_8h_ac6267fb84fe71b260af75c9fe89f7e53}{remove\_eh\_landing\_pad}}\ (\doxymbox{\hyperlink{except_8h_a3d5d54c02bb0d4ed77134d170eeb2747}{eh\_landing\_pad}});}
+\DoxyCodeLine{00228\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{except_8h_a940744dfa2a919877353803a0e34ff83}{remove\_eh\_handler}}\ (\doxymbox{\hyperlink{except_8h_acd17f2b80a4697d7722f7d16d9032e47}{eh\_region}});}
+\DoxyCodeLine{00229\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{except_8h_aff69da854553f4b0028d59bc540a5146}{remove\_unreachable\_eh\_regions}}\ (\doxymbox{\hyperlink{coretypes_8h_a780cd5c6b7453aa0a01cdf1c5b379abd}{sbitmap}});}
+\DoxyCodeLine{00230\ }
+\DoxyCodeLine{00231\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{except_8h_a3106cc45576467f6e52d415049e181b3}{current\_function\_has\_exception\_handlers}}\ (\textcolor{keywordtype}{void});}
+\DoxyCodeLine{00232\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{except_8h_af56468b5f3540bc4017c002cef541d72}{output\_function\_exception\_table}}\ (\textcolor{keywordtype}{int});}
+\DoxyCodeLine{00233\ }
+\DoxyCodeLine{00234\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{coretypes_8h_a20e671ce9e7827268658cff844f4281c}{rtx}}\ \doxymbox{\hyperlink{except_8h_a63709a7db98129142d0eb4c6cec1935d}{expand\_builtin\_eh\_pointer}}\ (\doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}});}
+\DoxyCodeLine{00235\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{coretypes_8h_a20e671ce9e7827268658cff844f4281c}{rtx}}\ \doxymbox{\hyperlink{except_8h_a7fbf3174d19181888c9b9ae8cdc31291}{expand\_builtin\_eh\_filter}}\ (\doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}});}
+\DoxyCodeLine{00236\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{coretypes_8h_a20e671ce9e7827268658cff844f4281c}{rtx}}\ \doxymbox{\hyperlink{except_8h_af16c8c7c2ce63bd0b1ada8c436a4baee}{expand\_builtin\_eh\_copy\_values}}\ (\doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}});}
+\DoxyCodeLine{00237\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{except_8h_a9ad594dd340c1989df2e4b877bc93e5d}{expand\_builtin\_unwind\_init}}\ (\textcolor{keywordtype}{void});}
+\DoxyCodeLine{00238\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{coretypes_8h_a20e671ce9e7827268658cff844f4281c}{rtx}}\ \doxymbox{\hyperlink{except_8h_a08b46fce39570e7e8d95bf05d8ceaeb0}{expand\_builtin\_eh\_return\_data\_regno}}\ (\doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}});}
+\DoxyCodeLine{00239\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{coretypes_8h_a20e671ce9e7827268658cff844f4281c}{rtx}}\ \doxymbox{\hyperlink{except_8h_a734e945707c4e4717d846f9060d81c18}{expand\_builtin\_extract\_return\_addr}}\ (\doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}});}
+\DoxyCodeLine{00240\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{except_8h_aa97dcb11a6f2d8892311d34f5a6a1f43}{expand\_builtin\_init\_dwarf\_reg\_sizes}}\ (\doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}});}
+\DoxyCodeLine{00241\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{coretypes_8h_a20e671ce9e7827268658cff844f4281c}{rtx}}\ \doxymbox{\hyperlink{except_8h_a7aca912c78919ef815c61e3a03cbcf28}{expand\_builtin\_frob\_return\_addr}}\ (\doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}});}
+\DoxyCodeLine{00242\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{coretypes_8h_a20e671ce9e7827268658cff844f4281c}{rtx}}\ \doxymbox{\hyperlink{except_8h_a1c89730857a21a80e546d72b7b88dbd7}{expand\_builtin\_dwarf\_sp\_column}}\ (\textcolor{keywordtype}{void});}
+\DoxyCodeLine{00243\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{except_8h_a781d638b3281e87fae17f1050527d011}{expand\_builtin\_eh\_return}}\ (\doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}},\ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}});}
+\DoxyCodeLine{00244\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{except_8h_a8b25a0be66638a3e7615a31b09ab9757}{expand\_eh\_return}}\ (\textcolor{keywordtype}{void});}
+\DoxyCodeLine{00245\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{coretypes_8h_a20e671ce9e7827268658cff844f4281c}{rtx}}\ \doxymbox{\hyperlink{except_8h_a1be79cbb40e89afd52cfe8f756fb26e8}{expand\_builtin\_extend\_pointer}}\ (\doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}});}
+\DoxyCodeLine{00246\ }
+\DoxyCodeLine{00247\ \textcolor{keyword}{typedef}\ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ (*\doxymbox{\hyperlink{except_8h_a8ca6d7f83dbc720542138011a24aacc7}{duplicate\_eh\_regions\_map}})\ (\doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}},\ \textcolor{keywordtype}{void}\ *);}
+\DoxyCodeLine{00248\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{classhash__map}{hash\_map<void\ *,\ void\ *>}}\ *\doxymbox{\hyperlink{except_8h_afd8d46c705ecec55b07f892b7adf2f1d}{duplicate\_eh\_regions}}}
+\DoxyCodeLine{00249\ \ \ (\textcolor{keyword}{struct}\ function\ *,\ \doxymbox{\hyperlink{except_8h_acd17f2b80a4697d7722f7d16d9032e47}{eh\_region}},\ \textcolor{keywordtype}{int},\ \doxymbox{\hyperlink{except_8h_a8ca6d7f83dbc720542138011a24aacc7}{duplicate\_eh\_regions\_map}},\ \textcolor{keywordtype}{void}\ *);}
+\DoxyCodeLine{00250\ }
+\DoxyCodeLine{00251\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{except_8h_aacd45cc88ace10fdd2a06759151b123a}{sjlj\_emit\_function\_exit\_after}}\ (rtx\_insn\ *);}
+\DoxyCodeLine{00252\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{except_8h_af59f342a4d73968188136362e107fd92}{update\_sjlj\_context}}\ (\textcolor{keywordtype}{void});}
+\DoxyCodeLine{00253\ }
+\DoxyCodeLine{00254\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{except_8h_acd17f2b80a4697d7722f7d16d9032e47}{eh\_region}}\ \doxymbox{\hyperlink{except_8h_adb4f1db6eb6081f00396169e8af51274}{gen\_eh\_region\_cleanup}}\ (\doxymbox{\hyperlink{except_8h_acd17f2b80a4697d7722f7d16d9032e47}{eh\_region}});}
+\DoxyCodeLine{00255\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{except_8h_acd17f2b80a4697d7722f7d16d9032e47}{eh\_region}}\ \doxymbox{\hyperlink{except_8h_a49291104d4f2c106bd8c0987a6df1fd8}{gen\_eh\_region\_try}}\ (\doxymbox{\hyperlink{except_8h_acd17f2b80a4697d7722f7d16d9032e47}{eh\_region}});}
+\DoxyCodeLine{00256\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{except_8h_acd17f2b80a4697d7722f7d16d9032e47}{eh\_region}}\ \doxymbox{\hyperlink{except_8h_a91b7e36d37ece5d22303c8d75fe1f9bc}{gen\_eh\_region\_allowed}}\ (\doxymbox{\hyperlink{except_8h_acd17f2b80a4697d7722f7d16d9032e47}{eh\_region}},\ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}});}
+\DoxyCodeLine{00257\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{except_8h_acd17f2b80a4697d7722f7d16d9032e47}{eh\_region}}\ \doxymbox{\hyperlink{except_8h_af18d43785fab571d82a9b4490ac71bdc}{gen\_eh\_region\_must\_not\_throw}}\ (\doxymbox{\hyperlink{except_8h_acd17f2b80a4697d7722f7d16d9032e47}{eh\_region}});}
+\DoxyCodeLine{00258\ }
+\DoxyCodeLine{00259\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{except_8h_a88275af91dc2f9c038b8246761a02886}{eh\_catch}}\ \doxymbox{\hyperlink{except_8h_a41d8583f4688941726c22dc3e842d86b}{gen\_eh\_region\_catch}}\ (\doxymbox{\hyperlink{except_8h_acd17f2b80a4697d7722f7d16d9032e47}{eh\_region}},\ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}});}
+\DoxyCodeLine{00260\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{except_8h_a3d5d54c02bb0d4ed77134d170eeb2747}{eh\_landing\_pad}}\ \doxymbox{\hyperlink{except_8h_a1beea7c0442446a6da81ddb645f96321}{gen\_eh\_landing\_pad}}\ (\doxymbox{\hyperlink{except_8h_acd17f2b80a4697d7722f7d16d9032e47}{eh\_region}});}
+\DoxyCodeLine{00261\ }
+\DoxyCodeLine{00262\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{except_8h_acd17f2b80a4697d7722f7d16d9032e47}{eh\_region}}\ \doxymbox{\hyperlink{except_8h_a6578ba24dbef39c5b7b938c13257cdff}{get\_eh\_region\_from\_number\_fn}}\ (\textcolor{keyword}{struct}\ function\ *,\ \textcolor{keywordtype}{int});}
+\DoxyCodeLine{00263\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{except_8h_acd17f2b80a4697d7722f7d16d9032e47}{eh\_region}}\ \doxymbox{\hyperlink{except_8h_ac59ed0dd6ae1328e37c15ae469290789}{get\_eh\_region\_from\_number}}\ (\textcolor{keywordtype}{int});}
+\DoxyCodeLine{00264\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{except_8h_a3d5d54c02bb0d4ed77134d170eeb2747}{eh\_landing\_pad}}\ \doxymbox{\hyperlink{except_8h_af814aae99c42a7731da2abcb4d7713ef}{get\_eh\_landing\_pad\_from\_number\_fn}}\ (\textcolor{keyword}{struct}\ function*,\textcolor{keywordtype}{int});}
+\DoxyCodeLine{00265\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{except_8h_a3d5d54c02bb0d4ed77134d170eeb2747}{eh\_landing\_pad}}\ \doxymbox{\hyperlink{except_8h_af73140b26aab57cae3dc136f153e517b}{get\_eh\_landing\_pad\_from\_number}}\ (\textcolor{keywordtype}{int});}
+\DoxyCodeLine{00266\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{except_8h_acd17f2b80a4697d7722f7d16d9032e47}{eh\_region}}\ \doxymbox{\hyperlink{except_8h_ae350afa1e940c3953a0901d08ed02171}{get\_eh\_region\_from\_lp\_number\_fn}}\ (\textcolor{keyword}{struct}\ function\ *,\ \textcolor{keywordtype}{int});}
+\DoxyCodeLine{00267\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{except_8h_acd17f2b80a4697d7722f7d16d9032e47}{eh\_region}}\ \doxymbox{\hyperlink{except_8h_a75c6f2e1dd14c6d0f9e0410548b32767}{get\_eh\_region\_from\_lp\_number}}\ (\textcolor{keywordtype}{int});}
+\DoxyCodeLine{00268\ }
+\DoxyCodeLine{00269\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{except_8h_acd17f2b80a4697d7722f7d16d9032e47}{eh\_region}}\ \doxymbox{\hyperlink{except_8h_a57d7d0935a453f3f91fcafb2cd330c20}{eh\_region\_outermost}}\ (\textcolor{keyword}{struct}\ function\ *,\ \doxymbox{\hyperlink{except_8h_acd17f2b80a4697d7722f7d16d9032e47}{eh\_region}},\ \doxymbox{\hyperlink{except_8h_acd17f2b80a4697d7722f7d16d9032e47}{eh\_region}});}
+\DoxyCodeLine{00270\ }
+\DoxyCodeLine{00271\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{except_8h_acfa6b4256391b3d874286e621be09702}{make\_reg\_eh\_region\_note}}\ (rtx\_insn\ *insn,\ \textcolor{keywordtype}{int}\ ecf\_flags,\ \textcolor{keywordtype}{int}\ lp\_nr);}
+\DoxyCodeLine{00272\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{except_8h_a6fc22ffba37936983a5e4d7f87f60718}{make\_reg\_eh\_region\_note\_nothrow\_nononlocal}}\ (rtx\_insn\ *);}
+\DoxyCodeLine{00273\ }
+\DoxyCodeLine{00274\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{except_8h_aca508a9d5637efb844663c6b1595fc09}{verify\_eh\_tree}}\ (\textcolor{keyword}{struct}\ function\ *);}
+\DoxyCodeLine{00275\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{except_8h_afea18a97335adfe907d2b070eebf04f7}{dump\_eh\_tree}}\ (FILE\ *,\ \textcolor{keyword}{struct}\ function\ *);}
+\DoxyCodeLine{00276\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{except_8h_a8794e326fb7d548fe50d439ff7f5c42c}{debug\_eh\_tree}}\ (\textcolor{keyword}{struct}\ function\ *);}
+\DoxyCodeLine{00277\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{except_8h_a45ec92f4a42c77bddadeb10912f3b1b0}{add\_type\_for\_runtime}}\ (\doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}});}
+\DoxyCodeLine{00278\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ \doxymbox{\hyperlink{except_8h_a1c7cb8b30d259e98290abf13baae26b7}{lookup\_type\_for\_runtime}}\ (\doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}});}
+\DoxyCodeLine{00279\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{except_8h_afe5242ee006cefac049a88d0a7916caf}{assign\_filter\_values}}\ (\textcolor{keywordtype}{void});}
+\DoxyCodeLine{00280\ }
+\DoxyCodeLine{00281\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{except_8h_acd17f2b80a4697d7722f7d16d9032e47}{eh\_region}}\ \doxymbox{\hyperlink{except_8h_ae30a98c24dec423e569e848c235408b4}{get\_eh\_region\_from\_rtx}}\ (\doxymbox{\hyperlink{coretypes_8h_a666eef3d91a58b950bf402bd0489e7e0}{const\_rtx}});}
+\DoxyCodeLine{00282\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{except_8h_a3d5d54c02bb0d4ed77134d170eeb2747}{eh\_landing\_pad}}\ \doxymbox{\hyperlink{except_8h_a6e05c3ba9f37a0ab9f46e38e0a6a8294}{get\_eh\_landing\_pad\_from\_rtx}}\ (\doxymbox{\hyperlink{coretypes_8h_a666eef3d91a58b950bf402bd0489e7e0}{const\_rtx}});}
+\DoxyCodeLine{00283\ }
+\DoxyCodeLine{00284\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{except_8h_a8acce03200244e3452dd01407a393be1}{finish\_eh\_generation}}\ (\textcolor{keywordtype}{void});}
+\DoxyCodeLine{00285\ }
+\DoxyCodeLine{00286\ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{coretypes_8h_ae5708c4d4b300570eebe0bc0c78facbc}{GTY}}(())\ throw\_stmt\_node\ \{}
+\DoxyCodeLine{00287\ \ \ gimple\ *stmt;}
+\DoxyCodeLine{00288\ \ \ \textcolor{keywordtype}{int}\ lp\_nr;}
+\DoxyCodeLine{00289\ \};}
+\DoxyCodeLine{00290\ }
+\DoxyCodeLine{00291\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{classhash__map}{hash\_map<gimple\ *,\ int>}}\ *\doxymbox{\hyperlink{except_8h_ad06dbdb2097247d071c9ad0400f68dca}{get\_eh\_throw\_stmt\_table}}\ (\textcolor{keyword}{struct}\ function\ *);}
+\DoxyCodeLine{00292\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{except_8h_aa87938e8eceba80efeba996c28b8271f}{set\_eh\_throw\_stmt\_table}}\ (function\ *,\ \doxymbox{\hyperlink{classhash__map}{hash\_map<gimple\ *,\ int>}}\ *);}
+\DoxyCodeLine{00293\ }
+\DoxyCodeLine{00294\ \textcolor{keyword}{enum}\ \doxymbox{\hyperlink{except_8h_a00092c9230d3c64bdecc9e80e0cd74f6}{eh\_personality\_kind}}\ \{}
+\DoxyCodeLine{00295\ \ \ \doxymbox{\hyperlink{except_8h_a00092c9230d3c64bdecc9e80e0cd74f6ad52c01edb1f58414b8bf6419ab71c1c2}{eh\_personality\_none}},}
+\DoxyCodeLine{00296\ \ \ \doxymbox{\hyperlink{except_8h_a00092c9230d3c64bdecc9e80e0cd74f6af01b9b50692d70ba32ec575d4a5caeb1}{eh\_personality\_any}},}
+\DoxyCodeLine{00297\ \ \ \doxymbox{\hyperlink{except_8h_a00092c9230d3c64bdecc9e80e0cd74f6ad07494e6ee8564dce4482f7fe9d5779a}{eh\_personality\_lang}}}
+\DoxyCodeLine{00298\ \};}
+\DoxyCodeLine{00299\ }
+\DoxyCodeLine{00300\ \textcolor{keyword}{extern}\ \textcolor{keyword}{enum}\ \doxymbox{\hyperlink{except_8h_a00092c9230d3c64bdecc9e80e0cd74f6}{eh\_personality\_kind}}}
+\DoxyCodeLine{00301\ \doxymbox{\hyperlink{except_8h_a29e933033365530dcac5484a5829a5ec}{function\_needs\_eh\_personality}}\ (\textcolor{keyword}{struct}\ function\ *);}
+\DoxyCodeLine{00302\ }
+\DoxyCodeLine{00303\ \textcolor{comment}{/*\ Pre-\/order\ iteration\ within\ the\ eh\_region\ tree.\ \ */}}
+\DoxyCodeLine{00304\ }
+\DoxyCodeLine{00305\ \textcolor{keyword}{inline}\ \doxymbox{\hyperlink{except_8h_acd17f2b80a4697d7722f7d16d9032e47}{eh\_region}}}
+\DoxyCodeLine{00306\ \doxymbox{\hyperlink{except_8h_ab449d7761d792439610de9494abe3d22}{ehr\_next}}\ (\doxymbox{\hyperlink{except_8h_acd17f2b80a4697d7722f7d16d9032e47}{eh\_region}}\ \doxymbox{\hyperlink{poly-int_8h_a3ecac2571dcdc8050989339124f1bd26}{r}},\ \doxymbox{\hyperlink{except_8h_acd17f2b80a4697d7722f7d16d9032e47}{eh\_region}}\ start)}
+\DoxyCodeLine{00307\ \{}
+\DoxyCodeLine{00308\ \ \ \textcolor{keywordflow}{if}\ (\doxymbox{\hyperlink{poly-int_8h_a3ecac2571dcdc8050989339124f1bd26}{r}}-\/>inner)}
+\DoxyCodeLine{00309\ \ \ \ \ \doxymbox{\hyperlink{poly-int_8h_a3ecac2571dcdc8050989339124f1bd26}{r}}\ =\ \doxymbox{\hyperlink{poly-int_8h_a3ecac2571dcdc8050989339124f1bd26}{r}}-\/>inner;}
+\DoxyCodeLine{00310\ \ \ \textcolor{keywordflow}{else}\ \textcolor{keywordflow}{if}\ (\doxymbox{\hyperlink{poly-int_8h_a3ecac2571dcdc8050989339124f1bd26}{r}}-\/>next\_peer\ \&\&\ \doxymbox{\hyperlink{poly-int_8h_a3ecac2571dcdc8050989339124f1bd26}{r}}\ !=\ start)}
+\DoxyCodeLine{00311\ \ \ \ \ \doxymbox{\hyperlink{poly-int_8h_a3ecac2571dcdc8050989339124f1bd26}{r}}\ =\ \doxymbox{\hyperlink{poly-int_8h_a3ecac2571dcdc8050989339124f1bd26}{r}}-\/>next\_peer;}
+\DoxyCodeLine{00312\ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00313\ \ \ \ \ \{}
+\DoxyCodeLine{00314\ \ \ \ \ \ \ \textcolor{keywordflow}{do}}
+\DoxyCodeLine{00315\ \ \ \ \ \{}
+\DoxyCodeLine{00316\ \ \ \ \ \ \ \doxymbox{\hyperlink{poly-int_8h_a3ecac2571dcdc8050989339124f1bd26}{r}}\ =\ \doxymbox{\hyperlink{poly-int_8h_a3ecac2571dcdc8050989339124f1bd26}{r}}-\/>outer;}
+\DoxyCodeLine{00317\ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (\doxymbox{\hyperlink{poly-int_8h_a3ecac2571dcdc8050989339124f1bd26}{r}}\ ==\ start)}
+\DoxyCodeLine{00318\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{stddef_8h_a070d2ce7b6bb7e5c05602aa8c308d0c4}{NULL}};}
+\DoxyCodeLine{00319\ \ \ \ \ \}}
+\DoxyCodeLine{00320\ \ \ \ \ \ \ \textcolor{keywordflow}{while}\ (\doxymbox{\hyperlink{poly-int_8h_a3ecac2571dcdc8050989339124f1bd26}{r}}-\/>next\_peer\ ==\ \doxymbox{\hyperlink{stddef_8h_a070d2ce7b6bb7e5c05602aa8c308d0c4}{NULL}});}
+\DoxyCodeLine{00321\ \ \ \ \ \ \ \doxymbox{\hyperlink{poly-int_8h_a3ecac2571dcdc8050989339124f1bd26}{r}}\ =\ \doxymbox{\hyperlink{poly-int_8h_a3ecac2571dcdc8050989339124f1bd26}{r}}-\/>next\_peer;}
+\DoxyCodeLine{00322\ \ \ \ \ \}}
+\DoxyCodeLine{00323\ \ \ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{poly-int_8h_a3ecac2571dcdc8050989339124f1bd26}{r}};}
+\DoxyCodeLine{00324\ \}}
+\DoxyCodeLine{00325\ }
+\DoxyCodeLine{00326\ \textcolor{preprocessor}{\#define\ FOR\_ALL\_EH\_REGION\_AT(R,\ START)\ \(\backslash\)}}
+\DoxyCodeLine{00327\ \textcolor{preprocessor}{\ \ for\ ((R)\ =\ (START);\ (R)\ !=\ NULL;\ (R)\ =\ ehr\_next\ (R,\ START))}}
+\DoxyCodeLine{00328\ }
+\DoxyCodeLine{00329\ \textcolor{preprocessor}{\#define\ FOR\_ALL\_EH\_REGION\_FN(R,\ FN)\ \(\backslash\)}}
+\DoxyCodeLine{00330\ \textcolor{preprocessor}{\ \ for\ ((R)\ =\ (FN)-\/>eh-\/>region\_tree;\ (R)\ !=\ NULL;\ (R)\ =\ ehr\_next\ (R,\ NULL))}}
+\DoxyCodeLine{00331\ }
+\DoxyCodeLine{00332\ \textcolor{preprocessor}{\#define\ FOR\_ALL\_EH\_REGION(R)\ FOR\_ALL\_EH\_REGION\_FN\ (R,\ cfun)}}
+\DoxyCodeLine{00333\ }
+\DoxyCodeLine{00334\ \textcolor{preprocessor}{\#endif}}
+
+\end{DoxyCode}

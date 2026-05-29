@@ -1,0 +1,37 @@
+var class__bb__vec__info =
+[
+    [ "mode_set", "class__bb__vec__info.html#ac8af4ce8ec6450b6393e35fca819369b", null ],
+    [ "vec_kind", "class__bb__vec__info.html#a9c333b827bf8b6db0bf47d42e5437b54", [
+      [ "bb", "class__bb__vec__info.html#a9c333b827bf8b6db0bf47d42e5437b54aa76105c002ebad3ac18ea33633fafde3", null ],
+      [ "loop", "class__bb__vec__info.html#a9c333b827bf8b6db0bf47d42e5437b54a031773b78e764e40cba29897a8b5c0c3", null ]
+    ] ],
+    [ "_bb_vec_info", "class__bb__vec__info.html#a44f589d6cde9730b1e30ac45bab8d521", null ],
+    [ "~_bb_vec_info", "class__bb__vec__info.html#ab29002d855916432ec168d90c690ee5b", null ],
+    [ "add_pattern_stmt", "class__bb__vec__info.html#afbc93143504a9d8fc42c5e266b5d1c84", null ],
+    [ "add_stmt", "class__bb__vec__info.html#aabbc38a4e78a3e23c63ca31a487a5145", null ],
+    [ "free_stmt_vec_info", "class__bb__vec__info.html#adac12766444f3623734aa0313eb4efee", null ],
+    [ "free_stmt_vec_infos", "class__bb__vec__info.html#a9dfc416e69fc6b3db4f1ec8b7853cb71", null ],
+    [ "insert_on_entry", "class__bb__vec__info.html#a46eb7c3d79152b1f70901941fefc0048", null ],
+    [ "insert_seq_on_entry", "class__bb__vec__info.html#ac938d99d2f6be4000dc746ee1893e4f5", null ],
+    [ "lookup_def", "class__bb__vec__info.html#acce15c29f2a065cb150a8dd40acc9eea", null ],
+    [ "lookup_dr", "class__bb__vec__info.html#a047b3989cf8bdab8ac26855cd7507355", null ],
+    [ "lookup_single_use", "class__bb__vec__info.html#adbb33b33a5141232c84d315feba0f960", null ],
+    [ "lookup_stmt", "class__bb__vec__info.html#a1e7abdcce41efac5a13077399af3bf7a", null ],
+    [ "move_dr", "class__bb__vec__info.html#a940dc70aa3a7b4e8b4f2e6ada0bd87ee", null ],
+    [ "new_stmt_vec_info", "class__bb__vec__info.html#a7b6c40174e8e28f8b93b9c87ebadaa00", null ],
+    [ "remove_stmt", "class__bb__vec__info.html#a3d3292fe0896bc12b8a8dd164b866625", null ],
+    [ "replace_stmt", "class__bb__vec__info.html#a38328505198607f690643dac8d108abb", null ],
+    [ "set_vinfo_for_stmt", "class__bb__vec__info.html#a48143d6b8be5960d6044fe84ef243fd1", null ],
+    [ "any_known_not_updated_vssa", "class__bb__vec__info.html#a94b162bff770ab6fe7294dc4b27a5af3", null ],
+    [ "base_alignments", "class__bb__vec__info.html#a4a1255d103fe43abcf1e1b177d4932ce", null ],
+    [ "bbs", "class__bb__vec__info.html#a7181d996069e17844e7aaef3577d4c37", null ],
+    [ "grouped_stores", "class__bb__vec__info.html#a325dca6118ec495b2060e0b282f80c2b", null ],
+    [ "kind", "class__bb__vec__info.html#ab48bd0c633cfa47bd7472648b2f48db2", null ],
+    [ "roots", "class__bb__vec__info.html#a26e300375f8a703f1e9c91a35be83495", null ],
+    [ "shared", "class__bb__vec__info.html#a9ec6a2fe82b8208ce297c077d851a836", null ],
+    [ "slp_instances", "class__bb__vec__info.html#a367f6b47d40bd6589b1ebd4bb02c2929", null ],
+    [ "stmt_vec_info_ro", "class__bb__vec__info.html#aff4295a337c812e4c754fe71b1c1870f", null ],
+    [ "stmt_vec_infos", "class__bb__vec__info.html#a8339cfb7f9025fb5bbcf6ee34fc7a3f9", null ],
+    [ "used_vector_modes", "class__bb__vec__info.html#ac0644044d728107c2a5cbfccb4f80fef", null ],
+    [ "vector_mode", "class__bb__vec__info.html#a507bd87fc9f9c8b7f34b46726a67cf33", null ]
+];

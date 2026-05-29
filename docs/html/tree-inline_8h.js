@@ -1,0 +1,37 @@
+var tree_inline_8h =
+[
+    [ "copy_body_data", "structcopy__body__data.html", "structcopy__body__data" ],
+    [ "eni_weights", "structeni__weights.html", "structeni__weights" ],
+    [ "dependence_hash", "tree-inline_8h.html#a52c1a5d7772585676e38d76f37206fe7", null ],
+    [ "copy_body_cge_which", "tree-inline_8h.html#aa54af8a41b33dba96a616d6ff69de301", [
+      [ "CB_CGE_DUPLICATE", "tree-inline_8h.html#aa54af8a41b33dba96a616d6ff69de301ab84ed6e2820d64a498b9de8b24c90800", null ],
+      [ "CB_CGE_MOVE", "tree-inline_8h.html#aa54af8a41b33dba96a616d6ff69de301a39ce8a366f997fed7e510bfd76252259", null ],
+      [ "CB_CGE_MOVE_CLONES", "tree-inline_8h.html#aa54af8a41b33dba96a616d6ff69de301ac719da3a262ee93db9aa3a75da0c3d28", null ]
+    ] ],
+    [ "build_duplicate_type", "tree-inline_8h.html#a0600d9480fb0302dd5fa153f87ccc3cc", null ],
+    [ "copy_decl_for_dup_finish", "tree-inline_8h.html#afa8134e97263ca17eda998ae4120b213", null ],
+    [ "copy_decl_no_change", "tree-inline_8h.html#a7be1687789d6b2582bfaf74a8cd10e8b", null ],
+    [ "copy_decl_to_var", "tree-inline_8h.html#a174fc4565294d6fe73198ee4ec8a2df7", null ],
+    [ "copy_fn", "tree-inline_8h.html#a590ad0ac13323e2b01d836d86733f2cd", null ],
+    [ "copy_forbidden", "tree-inline_8h.html#a35a0108a22b74e6cf875ea73bb0fb26c", null ],
+    [ "copy_gimple_seq_and_replace_locals", "tree-inline_8h.html#ad027f032cacf9d53f3c7329c32f625a2", null ],
+    [ "copy_tree_body_r", "tree-inline_8h.html#aaed945510b2904816e48f000d2dee079", null ],
+    [ "copy_tree_r", "tree-inline_8h.html#ac4d8595fa70ba298b7d9dad888a89f0e", null ],
+    [ "debug_find_tree", "tree-inline_8h.html#acc566bdc4da02d9125f5dba78bc178ee", null ],
+    [ "estimate_move_cost", "tree-inline_8h.html#a3bc6423e0b4702a20ea2d0853d430ab6", null ],
+    [ "estimate_num_insns", "tree-inline_8h.html#ae5e8bf54c39bda0f3ba52c04c6b27de2", null ],
+    [ "estimate_num_insns_fn", "tree-inline_8h.html#a3ad636a4896d2bed538b8af789f201ed", null ],
+    [ "estimate_num_insns_seq", "tree-inline_8h.html#a2535291f020157a5985b132380d9b688", null ],
+    [ "force_value_to_type", "tree-inline_8h.html#a6f1a830fa14ac0378391313d4127d803", null ],
+    [ "init_inline_once", "tree-inline_8h.html#a9c5949fff467e8906242ad8a72e67660", null ],
+    [ "insert_decl_map", "tree-inline_8h.html#a9e5befe8082944f276712bf4e954b575", null ],
+    [ "maybe_inline_call_in_expr", "tree-inline_8h.html#a76a0baef1361ee080362aeb244c2dff9", null ],
+    [ "optimize_inline_calls", "tree-inline_8h.html#a0e62fd9db554d54a9fb401280343d8c5", null ],
+    [ "remap_decl", "tree-inline_8h.html#af49b019d0c592bf165846b09265da762", null ],
+    [ "remap_type", "tree-inline_8h.html#aa829519587fd38ca538cd88ccbf25cb4", null ],
+    [ "tree_inlinable_function_p", "tree-inline_8h.html#af7b4811d8a9841e144a6725737562279", null ],
+    [ "tree_versionable_function_p", "tree-inline_8h.html#a312fd773e0d1daba7f9771f178f562f3", null ],
+    [ "eni_inlining_weights", "tree-inline_8h.html#a6f23774efc08ab8097ab4ea0c99c25fb", null ],
+    [ "eni_size_weights", "tree-inline_8h.html#a93da67003b8368f24dd7bbf7279e8980", null ],
+    [ "eni_time_weights", "tree-inline_8h.html#afcb5ec898a6385971aa364136d48c380", null ]
+];

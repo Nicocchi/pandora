@@ -1,0 +1,1098 @@
+\doxysection{bitmap.\+h}
+\hypertarget{bitmap_8h_source}{}\label{bitmap_8h_source}\index{toolchain/x86\_64-\/elf/lib/gcc/x86\_64-\/elf/14.2.0/plugin/include/bitmap.h@{toolchain/x86\_64-\/elf/lib/gcc/x86\_64-\/elf/14.2.0/plugin/include/bitmap.h}}
+\doxymbox{\hyperlink{bitmap_8h}{Go to the documentation of this file.}}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001\ \textcolor{comment}{/*\ Functions\ to\ support\ general\ ended\ bitmaps.}}
+\DoxyCodeLine{00002\ \textcolor{comment}{\ \ \ Copyright\ (C)\ 1997-\/2024\ Free\ Software\ Foundation,\ Inc.}}
+\DoxyCodeLine{00003\ \textcolor{comment}{}}
+\DoxyCodeLine{00004\ \textcolor{comment}{This\ file\ is\ part\ of\ GCC.}}
+\DoxyCodeLine{00005\ \textcolor{comment}{}}
+\DoxyCodeLine{00006\ \textcolor{comment}{GCC\ is\ free\ software;\ you\ can\ redistribute\ it\ and/or\ modify\ it\ under}}
+\DoxyCodeLine{00007\ \textcolor{comment}{the\ terms\ of\ the\ GNU\ General\ Public\ License\ as\ published\ by\ the\ Free}}
+\DoxyCodeLine{00008\ \textcolor{comment}{Software\ Foundation;\ either\ version\ 3,\ or\ (at\ your\ option)\ any\ later}}
+\DoxyCodeLine{00009\ \textcolor{comment}{version.}}
+\DoxyCodeLine{00010\ \textcolor{comment}{}}
+\DoxyCodeLine{00011\ \textcolor{comment}{GCC\ is\ distributed\ in\ the\ hope\ that\ it\ will\ be\ useful,\ but\ WITHOUT\ ANY}}
+\DoxyCodeLine{00012\ \textcolor{comment}{WARRANTY;\ without\ even\ the\ implied\ warranty\ of\ MERCHANTABILITY\ or}}
+\DoxyCodeLine{00013\ \textcolor{comment}{FITNESS\ FOR\ A\ PARTICULAR\ PURPOSE.\ \ See\ the\ GNU\ General\ Public\ License}}
+\DoxyCodeLine{00014\ \textcolor{comment}{for\ more\ details.}}
+\DoxyCodeLine{00015\ \textcolor{comment}{}}
+\DoxyCodeLine{00016\ \textcolor{comment}{You\ should\ have\ received\ a\ copy\ of\ the\ GNU\ General\ Public\ License}}
+\DoxyCodeLine{00017\ \textcolor{comment}{along\ with\ GCC;\ see\ the\ file\ COPYING3.\ \ If\ not\ see}}
+\DoxyCodeLine{00018\ \textcolor{comment}{<http://www.gnu.org/licenses/>.\ \ */}}
+\DoxyCodeLine{00019\ }
+\DoxyCodeLine{00020\ \textcolor{preprocessor}{\#ifndef\ GCC\_BITMAP\_H}}
+\DoxyCodeLine{00021\ \textcolor{preprocessor}{\#define\ GCC\_BITMAP\_H}}
+\DoxyCodeLine{00022\ }
+\DoxyCodeLine{00023\ \textcolor{comment}{/*\ Implementation\ of\ sparse\ integer\ sets\ as\ a\ linked\ list\ or\ tree.}}
+\DoxyCodeLine{00024\ \textcolor{comment}{}}
+\DoxyCodeLine{00025\ \textcolor{comment}{\ \ \ This\ sparse\ set\ representation\ is\ suitable\ for\ sparse\ sets\ with\ an}}
+\DoxyCodeLine{00026\ \textcolor{comment}{\ \ \ unknown\ (a\ priori)\ universe.}}
+\DoxyCodeLine{00027\ \textcolor{comment}{}}
+\DoxyCodeLine{00028\ \textcolor{comment}{\ \ \ Sets\ are\ represented\ as\ double-\/linked\ lists\ of\ container\ nodes\ of}}
+\DoxyCodeLine{00029\ \textcolor{comment}{\ \ \ type\ "{}struct\ bitmap\_element"{}\ or\ as\ a\ binary\ trees\ of\ the\ same}}
+\DoxyCodeLine{00030\ \textcolor{comment}{\ \ \ container\ nodes.\ \ Each\ container\ node\ consists\ of\ an\ index\ for\ the}}
+\DoxyCodeLine{00031\ \textcolor{comment}{\ \ \ first\ member\ that\ could\ be\ held\ in\ the\ container,\ a\ small\ array\ of}}
+\DoxyCodeLine{00032\ \textcolor{comment}{\ \ \ integers\ that\ represent\ the\ members\ in\ the\ container,\ and\ pointers}}
+\DoxyCodeLine{00033\ \textcolor{comment}{\ \ \ to\ the\ next\ and\ previous\ element\ in\ the\ linked\ list,\ or\ left\ and}}
+\DoxyCodeLine{00034\ \textcolor{comment}{\ \ \ right\ children\ in\ the\ tree.\ \ In\ linked-\/list\ form,\ the\ container}}
+\DoxyCodeLine{00035\ \textcolor{comment}{\ \ \ nodes\ in\ the\ list\ are\ sorted\ in\ ascending\ order,\ i.e.\ the\ head\ of}}
+\DoxyCodeLine{00036\ \textcolor{comment}{\ \ \ the\ list\ holds\ the\ element\ with\ the\ smallest\ member\ of\ the\ set.}}
+\DoxyCodeLine{00037\ \textcolor{comment}{\ \ \ In\ tree\ form,\ nodes\ to\ the\ left\ have\ a\ smaller\ container\ index.}}
+\DoxyCodeLine{00038\ \textcolor{comment}{}}
+\DoxyCodeLine{00039\ \textcolor{comment}{\ \ \ For\ a\ given\ member\ I\ in\ the\ set:}}
+\DoxyCodeLine{00040\ \textcolor{comment}{\ \ \ \ \ -\/\ the\ element\ for\ I\ will\ have\ index\ is\ I\ /\ (bits\ per\ element)}}
+\DoxyCodeLine{00041\ \textcolor{comment}{\ \ \ \ \ -\/\ the\ position\ for\ I\ within\ element\ is\ I\ \%\ (bits\ per\ element)}}
+\DoxyCodeLine{00042\ \textcolor{comment}{}}
+\DoxyCodeLine{00043\ \textcolor{comment}{\ \ \ This\ representation\ is\ very\ space-\/efficient\ for\ large\ sparse\ sets,\ and}}
+\DoxyCodeLine{00044\ \textcolor{comment}{\ \ \ the\ size\ of\ the\ set\ can\ be\ changed\ dynamically\ without\ much\ overhead.}}
+\DoxyCodeLine{00045\ \textcolor{comment}{\ \ \ An\ important\ parameter\ is\ the\ number\ of\ bits\ per\ element.\ \ In\ this}}
+\DoxyCodeLine{00046\ \textcolor{comment}{\ \ \ implementation,\ there\ are\ 128\ bits\ per\ element.\ \ This\ results\ in\ a}}
+\DoxyCodeLine{00047\ \textcolor{comment}{\ \ \ high\ storage\ overhead\ *per\ element*,\ but\ a\ small\ overall\ overhead\ if}}
+\DoxyCodeLine{00048\ \textcolor{comment}{\ \ \ the\ set\ is\ very\ sparse.}}
+\DoxyCodeLine{00049\ \textcolor{comment}{}}
+\DoxyCodeLine{00050\ \textcolor{comment}{\ \ \ The\ storage\ requirements\ for\ linked-\/list\ sparse\ sets\ are\ O(E),\ with\ E-\/>N}}
+\DoxyCodeLine{00051\ \textcolor{comment}{\ \ \ in\ the\ worst\ case\ (a\ sparse\ set\ with\ large\ distances\ between\ the\ values}}
+\DoxyCodeLine{00052\ \textcolor{comment}{\ \ \ of\ the\ set\ members).}}
+\DoxyCodeLine{00053\ \textcolor{comment}{}}
+\DoxyCodeLine{00054\ \textcolor{comment}{\ \ \ This\ representation\ also\ works\ well\ for\ data\ flow\ problems\ where\ the\ size}}
+\DoxyCodeLine{00055\ \textcolor{comment}{\ \ \ of\ the\ set\ may\ grow\ dynamically,\ but\ care\ must\ be\ taken\ that\ the\ member\_p,}}
+\DoxyCodeLine{00056\ \textcolor{comment}{\ \ \ add\_member,\ and\ remove\_member\ operations\ occur\ with\ a\ suitable\ access}}
+\DoxyCodeLine{00057\ \textcolor{comment}{\ \ \ pattern.}}
+\DoxyCodeLine{00058\ \textcolor{comment}{}}
+\DoxyCodeLine{00059\ \textcolor{comment}{\ \ \ The\ linked-\/list\ set\ representation\ works\ well\ for\ problems\ involving\ very}}
+\DoxyCodeLine{00060\ \textcolor{comment}{\ \ \ sparse\ sets.\ \ The\ canonical\ example\ in\ GCC\ is,\ of\ course,\ the\ "{}set\ of}}
+\DoxyCodeLine{00061\ \textcolor{comment}{\ \ \ sets"{}\ for\ some\ CFG-\/based\ data\ flow\ problems\ (liveness\ analysis,\ dominance}}
+\DoxyCodeLine{00062\ \textcolor{comment}{\ \ \ frontiers,\ etc.).}}
+\DoxyCodeLine{00063\ \textcolor{comment}{\ \ \ }}
+\DoxyCodeLine{00064\ \textcolor{comment}{\ \ \ For\ random-\/access\ sparse\ sets\ of\ unknown\ universe,\ the\ binary\ tree}}
+\DoxyCodeLine{00065\ \textcolor{comment}{\ \ \ representation\ is\ likely\ to\ be\ a\ more\ suitable\ choice.\ \ Theoretical}}
+\DoxyCodeLine{00066\ \textcolor{comment}{\ \ \ access\ times\ for\ the\ binary\ tree\ representation\ are\ better\ than\ those}}
+\DoxyCodeLine{00067\ \textcolor{comment}{\ \ \ for\ the\ linked-\/list,\ but\ in\ practice\ this\ is\ only\ true\ for\ truely}}
+\DoxyCodeLine{00068\ \textcolor{comment}{\ \ \ random\ access.}}
+\DoxyCodeLine{00069\ \textcolor{comment}{}}
+\DoxyCodeLine{00070\ \textcolor{comment}{\ \ \ Often\ the\ most\ suitable\ representation\ during\ construction\ of\ the\ set}}
+\DoxyCodeLine{00071\ \textcolor{comment}{\ \ \ is\ not\ the\ best\ choice\ for\ the\ usage\ of\ the\ set.\ \ For\ such\ cases,\ the}}
+\DoxyCodeLine{00072\ \textcolor{comment}{\ \ \ "{}view"{}\ of\ the\ set\ can\ be\ changed\ from\ one\ representation\ to\ the\ other.}}
+\DoxyCodeLine{00073\ \textcolor{comment}{\ \ \ This\ is\ an\ O(E)\ operation:}}
+\DoxyCodeLine{00074\ \textcolor{comment}{}}
+\DoxyCodeLine{00075\ \textcolor{comment}{\ \ \ \ \ *\ from\ list\ to\ tree\ view\ \ \ :\ bitmap\_tree\_view}}
+\DoxyCodeLine{00076\ \textcolor{comment}{\ \ \ \ \ *\ from\ tree\ to\ list\ view\ \ \ :\ bitmap\_list\_view}}
+\DoxyCodeLine{00077\ \textcolor{comment}{}}
+\DoxyCodeLine{00078\ \textcolor{comment}{\ \ \ Traversing\ linked\ lists\ or\ trees\ can\ be\ cache-\/unfriendly.\ \ Performance}}
+\DoxyCodeLine{00079\ \textcolor{comment}{\ \ \ can\ be\ improved\ by\ keeping\ container\ nodes\ in\ the\ set\ grouped\ together}}
+\DoxyCodeLine{00080\ \textcolor{comment}{\ \ \ in\ \ memory,\ using\ a\ dedicated\ obstack\ for\ a\ set\ (or\ group\ of\ related}}
+\DoxyCodeLine{00081\ \textcolor{comment}{\ \ \ sets).\ \ Elements\ allocated\ on\ obstacks\ are\ released\ to\ a\ free-\/list\ and}}
+\DoxyCodeLine{00082\ \textcolor{comment}{\ \ \ taken\ off\ the\ free\ list.\ \ If\ multiple\ sets\ are\ allocated\ on\ the\ same}}
+\DoxyCodeLine{00083\ \textcolor{comment}{\ \ \ obstack,\ elements\ freed\ from\ one\ set\ may\ be\ re-\/used\ for\ one\ of\ the\ other}}
+\DoxyCodeLine{00084\ \textcolor{comment}{\ \ \ sets.\ \ This\ usually\ helps\ avoid\ cache\ misses.}}
+\DoxyCodeLine{00085\ \textcolor{comment}{}}
+\DoxyCodeLine{00086\ \textcolor{comment}{\ \ \ A\ single\ free-\/list\ is\ used\ for\ all\ sets\ allocated\ in\ GGC\ space.\ \ This\ is}}
+\DoxyCodeLine{00087\ \textcolor{comment}{\ \ \ bad\ for\ persistent\ sets,\ so\ persistent\ sets\ should\ be\ allocated\ on\ an}}
+\DoxyCodeLine{00088\ \textcolor{comment}{\ \ \ obstack\ whenever\ possible.}}
+\DoxyCodeLine{00089\ \textcolor{comment}{}}
+\DoxyCodeLine{00090\ \textcolor{comment}{\ \ \ For\ random-\/access\ sets\ with\ a\ known,\ relatively\ small\ universe\ size,\ the}}
+\DoxyCodeLine{00091\ \textcolor{comment}{\ \ \ SparseSet\ or\ simple\ bitmap\ representations\ may\ be\ more\ efficient\ than\ a}}
+\DoxyCodeLine{00092\ \textcolor{comment}{\ \ \ linked-\/list\ set.}}
+\DoxyCodeLine{00093\ \textcolor{comment}{}}
+\DoxyCodeLine{00094\ \textcolor{comment}{}}
+\DoxyCodeLine{00095\ \textcolor{comment}{\ \ \ LINKED\ LIST\ FORM}}
+\DoxyCodeLine{00096\ \textcolor{comment}{\ \ \ ================}}
+\DoxyCodeLine{00097\ \textcolor{comment}{}}
+\DoxyCodeLine{00098\ \textcolor{comment}{\ \ \ In\ linked-\/list\ form,\ in-\/order\ iterations\ of\ the\ set\ can\ be\ executed}}
+\DoxyCodeLine{00099\ \textcolor{comment}{\ \ \ efficiently.\ \ The\ downside\ is\ that\ many\ random-\/access\ operations\ are}}
+\DoxyCodeLine{00100\ \textcolor{comment}{\ \ \ relatively\ slow,\ because\ the\ linked\ list\ has\ to\ be\ traversed\ to\ test}}
+\DoxyCodeLine{00101\ \textcolor{comment}{\ \ \ membership\ (i.e.\ member\_p/\ add\_member/remove\_member).}}
+\DoxyCodeLine{00102\ \textcolor{comment}{\ \ \ }}
+\DoxyCodeLine{00103\ \textcolor{comment}{\ \ \ To\ improve\ the\ performance\ of\ this\ set\ representation,\ the\ last}}
+\DoxyCodeLine{00104\ \textcolor{comment}{\ \ \ accessed\ element\ and\ its\ index\ are\ cached.\ \ For\ membership\ tests\ on}}
+\DoxyCodeLine{00105\ \textcolor{comment}{\ \ \ members\ close\ to\ recently\ accessed\ members,\ the\ cached\ last\ element}}
+\DoxyCodeLine{00106\ \textcolor{comment}{\ \ \ improves\ membership\ test\ to\ a\ constant-\/time\ operation.}}
+\DoxyCodeLine{00107\ \textcolor{comment}{}}
+\DoxyCodeLine{00108\ \textcolor{comment}{\ \ \ The\ following\ operations\ can\ always\ be\ performed\ in\ O(1)\ time\ in}}
+\DoxyCodeLine{00109\ \textcolor{comment}{\ \ \ list\ view:}}
+\DoxyCodeLine{00110\ \textcolor{comment}{}}
+\DoxyCodeLine{00111\ \textcolor{comment}{\ \ \ \ \ *\ clear\ \ \ \ \ \ \ \ \ \ \ \ :\ bitmap\_clear}}
+\DoxyCodeLine{00112\ \textcolor{comment}{\ \ \ \ \ *\ smallest\_member\ \ \ \ \ \ :\ bitmap\_first\_set\_bit}}
+\DoxyCodeLine{00113\ \textcolor{comment}{\ \ \ \ \ *\ pop\_smallest\ \ \ \ \ :\ bitmap\_clear\_first\_set\_bit}}
+\DoxyCodeLine{00114\ \textcolor{comment}{\ \ \ \ \ *\ choose\_one\ \ \ \ \ \ \ :\ (not\ implemented,\ but\ could\ be}}
+\DoxyCodeLine{00115\ \textcolor{comment}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ in\ constant\ time)}}
+\DoxyCodeLine{00116\ \textcolor{comment}{}}
+\DoxyCodeLine{00117\ \textcolor{comment}{\ \ \ The\ following\ operations\ can\ be\ performed\ in\ O(E)\ time\ worst-\/case\ in}}
+\DoxyCodeLine{00118\ \textcolor{comment}{\ \ \ list\ view\ (with\ E\ the\ number\ of\ elements\ in\ the\ linked\ list),\ but\ in}}
+\DoxyCodeLine{00119\ \textcolor{comment}{\ \ \ O(1)\ time\ with\ a\ suitable\ access\ patterns:}}
+\DoxyCodeLine{00120\ \textcolor{comment}{}}
+\DoxyCodeLine{00121\ \textcolor{comment}{\ \ \ \ \ *\ member\_p\ \ \ \ \ \ \ \ \ :\ bitmap\_bit\_p}}
+\DoxyCodeLine{00122\ \textcolor{comment}{\ \ \ \ \ *\ add\_member\ \ \ \ \ \ \ :\ bitmap\_set\_bit\ /\ bitmap\_set\_range}}
+\DoxyCodeLine{00123\ \textcolor{comment}{\ \ \ \ \ *\ remove\_member\ \ \ \ \ \ \ \ :\ bitmap\_clear\_bit\ /\ bitmap\_clear\_range}}
+\DoxyCodeLine{00124\ \textcolor{comment}{}}
+\DoxyCodeLine{00125\ \textcolor{comment}{\ \ \ The\ following\ operations\ can\ be\ performed\ in\ O(E)\ time\ in\ list\ view:}}
+\DoxyCodeLine{00126\ \textcolor{comment}{}}
+\DoxyCodeLine{00127\ \textcolor{comment}{\ \ \ \ \ *\ cardinality\ \ \ \ \ \ :\ bitmap\_count\_bits}}
+\DoxyCodeLine{00128\ \textcolor{comment}{\ \ \ \ \ *\ largest\_member\ \ \ \ \ \ \ :\ bitmap\_last\_set\_bit\ (but\ this\ could}}
+\DoxyCodeLine{00129\ \textcolor{comment}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ in\ constant\ time\ with\ a\ pointer\ to}}
+\DoxyCodeLine{00130\ \textcolor{comment}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ the\ last\ element\ in\ the\ chain)}}
+\DoxyCodeLine{00131\ \textcolor{comment}{\ \ \ \ \ *\ set\_size\ \ \ \ \ \ \ \ \ :\ bitmap\_last\_set\_bit}}
+\DoxyCodeLine{00132\ \textcolor{comment}{}}
+\DoxyCodeLine{00133\ \textcolor{comment}{\ \ \ In\ tree\ view\ the\ following\ operations\ can\ all\ be\ performed\ in\ O(log\ E)}}
+\DoxyCodeLine{00134\ \textcolor{comment}{\ \ \ amortized\ time\ with\ O(E)\ worst-\/case\ behavior.}}
+\DoxyCodeLine{00135\ \textcolor{comment}{}}
+\DoxyCodeLine{00136\ \textcolor{comment}{\ \ \ \ \ *\ smallest\_member}}
+\DoxyCodeLine{00137\ \textcolor{comment}{\ \ \ \ \ *\ pop\_smallest}}
+\DoxyCodeLine{00138\ \textcolor{comment}{\ \ \ \ \ *\ largest\_member}}
+\DoxyCodeLine{00139\ \textcolor{comment}{\ \ \ \ \ *\ set\_size}}
+\DoxyCodeLine{00140\ \textcolor{comment}{\ \ \ \ \ *\ member\_p}}
+\DoxyCodeLine{00141\ \textcolor{comment}{\ \ \ \ \ *\ add\_member}}
+\DoxyCodeLine{00142\ \textcolor{comment}{\ \ \ \ \ *\ remove\_member}}
+\DoxyCodeLine{00143\ \textcolor{comment}{}}
+\DoxyCodeLine{00144\ \textcolor{comment}{\ \ \ Additionally,\ the\ linked-\/list\ sparse\ set\ representation\ supports}}
+\DoxyCodeLine{00145\ \textcolor{comment}{\ \ \ enumeration\ of\ the\ members\ in\ O(E)\ time:}}
+\DoxyCodeLine{00146\ \textcolor{comment}{}}
+\DoxyCodeLine{00147\ \textcolor{comment}{\ \ \ \ \ *\ forall\ \ \ \ \ \ \ \ \ \ \ :\ EXECUTE\_IF\_SET\_IN\_BITMAP}}
+\DoxyCodeLine{00148\ \textcolor{comment}{\ \ \ \ \ *\ set\_copy\ \ \ \ \ \ \ \ \ :\ bitmap\_copy}}
+\DoxyCodeLine{00149\ \textcolor{comment}{\ \ \ \ \ *\ set\_intersection\ \ \ \ \ :\ bitmap\_intersect\_p\ /}}
+\DoxyCodeLine{00150\ \textcolor{comment}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ bitmap\_and\ /\ bitmap\_and\_into\ /}}
+\DoxyCodeLine{00151\ \textcolor{comment}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ EXECUTE\_IF\_AND\_IN\_BITMAP}}
+\DoxyCodeLine{00152\ \textcolor{comment}{\ \ \ \ \ *\ set\_union\ \ \ \ \ \ \ \ :\ bitmap\_ior\ /\ bitmap\_ior\_into}}
+\DoxyCodeLine{00153\ \textcolor{comment}{\ \ \ \ \ *\ set\_difference\ \ \ \ \ \ \ :\ bitmap\_intersect\_compl\_p\ /}}
+\DoxyCodeLine{00154\ \textcolor{comment}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ bitmap\_and\_comp\ /\ bitmap\_and\_comp\_into\ /}}
+\DoxyCodeLine{00155\ \textcolor{comment}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ EXECUTE\_IF\_AND\_COMPL\_IN\_BITMAP}}
+\DoxyCodeLine{00156\ \textcolor{comment}{\ \ \ \ \ *\ set\_disjuction\ \ \ \ \ \ \ :\ bitmap\_xor\_comp\ /\ bitmap\_xor\_comp\_into}}
+\DoxyCodeLine{00157\ \textcolor{comment}{\ \ \ \ \ *\ set\_compare\ \ \ \ \ \ :\ bitmap\_equal\_p}}
+\DoxyCodeLine{00158\ \textcolor{comment}{}}
+\DoxyCodeLine{00159\ \textcolor{comment}{\ \ \ Some\ operations\ on\ 3\ sets\ that\ occur\ frequently\ in\ data\ flow\ problems}}
+\DoxyCodeLine{00160\ \textcolor{comment}{\ \ \ are\ also\ implemented:}}
+\DoxyCodeLine{00161\ \textcolor{comment}{}}
+\DoxyCodeLine{00162\ \textcolor{comment}{\ \ \ \ \ *\ A\ |\ (B\ \&\ C)\ \ \ \ \ \ :\ bitmap\_ior\_and\_into}}
+\DoxyCodeLine{00163\ \textcolor{comment}{\ \ \ \ \ *\ A\ |\ (B\ \&\ \string~C)\ \ \ \ \ :\ bitmap\_ior\_and\_compl\ /}}
+\DoxyCodeLine{00164\ \textcolor{comment}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ bitmap\_ior\_and\_compl\_into}}
+\DoxyCodeLine{00165\ \textcolor{comment}{}}
+\DoxyCodeLine{00166\ \textcolor{comment}{}}
+\DoxyCodeLine{00167\ \textcolor{comment}{\ \ \ BINARY\ TREE\ FORM}}
+\DoxyCodeLine{00168\ \textcolor{comment}{\ \ \ ================}}
+\DoxyCodeLine{00169\ \textcolor{comment}{\ \ \ An\ alternate\ "{}view"{}\ of\ a\ bitmap\ is\ its\ binary\ tree\ representation.}}
+\DoxyCodeLine{00170\ \textcolor{comment}{\ \ \ For\ this\ representation,\ splay\ trees\ are\ used\ because\ they\ can\ be}}
+\DoxyCodeLine{00171\ \textcolor{comment}{\ \ \ implemented\ using\ the\ same\ data\ structures\ as\ the\ linked\ list,\ with}}
+\DoxyCodeLine{00172\ \textcolor{comment}{\ \ \ no\ overhead\ for\ meta-\/data\ (like\ color,\ or\ rank)\ on\ the\ tree\ nodes.}}
+\DoxyCodeLine{00173\ \textcolor{comment}{}}
+\DoxyCodeLine{00174\ \textcolor{comment}{\ \ \ In\ binary\ tree\ form,\ random-\/access\ to\ the\ set\ is\ much\ more\ efficient}}
+\DoxyCodeLine{00175\ \textcolor{comment}{\ \ \ than\ for\ the\ linked-\/list\ representation.\ \ Downsides\ are\ the\ high\ cost}}
+\DoxyCodeLine{00176\ \textcolor{comment}{\ \ \ of\ clearing\ the\ set,\ and\ the\ relatively\ large\ number\ of\ operations}}
+\DoxyCodeLine{00177\ \textcolor{comment}{\ \ \ necessary\ to\ balance\ the\ tree.\ \ Also,\ iterating\ the\ set\ members\ is}}
+\DoxyCodeLine{00178\ \textcolor{comment}{\ \ \ not\ supported.}}
+\DoxyCodeLine{00179\ \textcolor{comment}{\ \ \ }}
+\DoxyCodeLine{00180\ \textcolor{comment}{\ \ \ As\ for\ the\ linked-\/list\ representation,\ the\ last\ accessed\ element\ and}}
+\DoxyCodeLine{00181\ \textcolor{comment}{\ \ \ its\ index\ are\ cached,\ so\ that\ membership\ tests\ on\ the\ latest\ accessed}}
+\DoxyCodeLine{00182\ \textcolor{comment}{\ \ \ members\ is\ a\ constant-\/time\ operation.\ \ Other\ lookups\ take\ O(logE)}}
+\DoxyCodeLine{00183\ \textcolor{comment}{\ \ \ time\ amortized\ (but\ O(E)\ time\ worst-\/case).}}
+\DoxyCodeLine{00184\ \textcolor{comment}{}}
+\DoxyCodeLine{00185\ \textcolor{comment}{\ \ \ The\ following\ operations\ can\ always\ be\ performed\ in\ O(1)\ time:}}
+\DoxyCodeLine{00186\ \textcolor{comment}{}}
+\DoxyCodeLine{00187\ \textcolor{comment}{\ \ \ \ \ *\ choose\_one\ \ \ \ \ \ \ :\ (not\ implemented,\ but\ could\ be}}
+\DoxyCodeLine{00188\ \textcolor{comment}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ implemented\ in\ constant\ time)}}
+\DoxyCodeLine{00189\ \textcolor{comment}{}}
+\DoxyCodeLine{00190\ \textcolor{comment}{\ \ \ The\ following\ operations\ can\ be\ performed\ in\ O(logE)\ time\ amortized}}
+\DoxyCodeLine{00191\ \textcolor{comment}{\ \ \ but\ O(E)\ time\ worst-\/case,\ but\ in\ O(1)\ time\ if\ the\ same\ element\ is}}
+\DoxyCodeLine{00192\ \textcolor{comment}{\ \ \ accessed.}}
+\DoxyCodeLine{00193\ \textcolor{comment}{}}
+\DoxyCodeLine{00194\ \textcolor{comment}{\ \ \ \ \ *\ member\_p\ \ \ \ \ \ \ \ \ :\ bitmap\_bit\_p}}
+\DoxyCodeLine{00195\ \textcolor{comment}{\ \ \ \ \ *\ add\_member\ \ \ \ \ \ \ :\ bitmap\_set\_bit}}
+\DoxyCodeLine{00196\ \textcolor{comment}{\ \ \ \ \ *\ remove\_member\ \ \ \ \ \ \ \ :\ bitmap\_clear\_bit}}
+\DoxyCodeLine{00197\ \textcolor{comment}{}}
+\DoxyCodeLine{00198\ \textcolor{comment}{\ \ \ The\ following\ operations\ can\ be\ performed\ in\ O(logE)\ time\ amortized}}
+\DoxyCodeLine{00199\ \textcolor{comment}{\ \ \ but\ O(E)\ time\ worst-\/case:}}
+\DoxyCodeLine{00200\ \textcolor{comment}{}}
+\DoxyCodeLine{00201\ \textcolor{comment}{\ \ \ \ \ *\ smallest\_member\ \ \ \ \ \ :\ bitmap\_first\_set\_bit}}
+\DoxyCodeLine{00202\ \textcolor{comment}{\ \ \ \ \ *\ largest\_member\ \ \ \ \ \ \ :\ bitmap\_last\_set\_bit}}
+\DoxyCodeLine{00203\ \textcolor{comment}{\ \ \ \ \ *\ set\_size\ \ \ \ \ \ \ \ \ :\ bitmap\_last\_set\_bit}}
+\DoxyCodeLine{00204\ \textcolor{comment}{}}
+\DoxyCodeLine{00205\ \textcolor{comment}{\ \ \ The\ following\ operations\ can\ be\ performed\ in\ O(E)\ time:}}
+\DoxyCodeLine{00206\ \textcolor{comment}{}}
+\DoxyCodeLine{00207\ \textcolor{comment}{\ \ \ \ \ *\ clear\ \ \ \ \ \ \ \ \ \ \ \ :\ bitmap\_clear}}
+\DoxyCodeLine{00208\ \textcolor{comment}{}}
+\DoxyCodeLine{00209\ \textcolor{comment}{\ \ \ The\ binary\ tree\ sparse\ set\ representation\ does\ *not*\ support\ any\ form}}
+\DoxyCodeLine{00210\ \textcolor{comment}{\ \ \ of\ enumeration,\ and\ does\ also\ *not*\ support\ logical\ operations\ on\ sets.}}
+\DoxyCodeLine{00211\ \textcolor{comment}{\ \ \ The\ binary\ tree\ representation\ is\ only\ supposed\ to\ be\ used\ for\ sets}}
+\DoxyCodeLine{00212\ \textcolor{comment}{\ \ \ on\ which\ many\ random-\/access\ membership\ tests\ will\ happen.\ \ */}}
+\DoxyCodeLine{00213\ }
+\DoxyCodeLine{00214\ \textcolor{preprocessor}{\#include\ "{}\doxymbox{\hyperlink{obstack_8h}{obstack.h}}"{}}}
+\DoxyCodeLine{00215\ \textcolor{preprocessor}{\#include\ "{}\doxymbox{\hyperlink{array-traits_8h}{array-\/traits.h}}"{}}}
+\DoxyCodeLine{00216\ }
+\DoxyCodeLine{00217\ \textcolor{comment}{/*\ Bitmap\ memory\ usage.\ \ */}}
+\DoxyCodeLine{00218\ \textcolor{keyword}{class\ }\doxymbox{\hyperlink{classbitmap__usage_a6d6f9be679916ec899c77a5bea6b6f2e}{bitmap\_usage}}:\ \textcolor{keyword}{public}\ \doxymbox{\hyperlink{classmem__usage_a77cc2da8b90f68d4be2b6e7d8968bbb6}{mem\_usage}}}
+\DoxyCodeLine{00219\ \{}
+\DoxyCodeLine{00220\ \textcolor{keyword}{public}:}
+\DoxyCodeLine{00221\ \ \ \textcolor{comment}{/*\ Default\ contructor.\ \ */}}
+\DoxyCodeLine{00222\ \ \ \doxymbox{\hyperlink{classbitmap__usage_a6d6f9be679916ec899c77a5bea6b6f2e}{bitmap\_usage}}\ ():\ \doxymbox{\hyperlink{classbitmap__usage_abca12e35bbe29921f142aa316650e55f}{m\_nsearches}}\ (0),\ \doxymbox{\hyperlink{classbitmap__usage_af57121a56922de88bdb4c9ff811d87f3}{m\_search\_iter}}\ (0)\ \{\}}
+\DoxyCodeLine{00223\ \ \ \textcolor{comment}{/*\ Constructor.\ \ */}}
+\DoxyCodeLine{00224\ \ \ \doxymbox{\hyperlink{classbitmap__usage_a5ca013723b6b96585fd71d9511a5eaf0}{bitmap\_usage}}\ (\textcolor{keywordtype}{size\_t}\ allocated,\ \textcolor{keywordtype}{size\_t}\ times,\ \textcolor{keywordtype}{size\_t}\ peak,}
+\DoxyCodeLine{00225\ \ \ \ \ \ \ \ \ \ uint64\_t\ nsearches,\ uint64\_t\ search\_iter)}
+\DoxyCodeLine{00226\ \ \ \ \ :\ \doxymbox{\hyperlink{classmem__usage_a77cc2da8b90f68d4be2b6e7d8968bbb6}{mem\_usage}}\ (allocated,\ times,\ peak),}
+\DoxyCodeLine{00227\ \ \ \ \ \doxymbox{\hyperlink{classbitmap__usage_abca12e35bbe29921f142aa316650e55f}{m\_nsearches}}\ (nsearches),\ \doxymbox{\hyperlink{classbitmap__usage_af57121a56922de88bdb4c9ff811d87f3}{m\_search\_iter}}\ (search\_iter)\ \{\}}
+\DoxyCodeLine{00228\ }
+\DoxyCodeLine{00229\ \ \ \textcolor{comment}{/*\ Sum\ the\ usage\ with\ SECOND\ usage.\ \ */}}
+\DoxyCodeLine{00230\ \ \ \doxymbox{\hyperlink{classbitmap__usage}{bitmap\_usage}}}
+\DoxyCodeLine{00231\ \ \ \doxymbox{\hyperlink{classbitmap__usage_aee73336e41c02d64b1c221d14b82620d}{operator+\ }}(\textcolor{keyword}{const}\ \doxymbox{\hyperlink{classbitmap__usage_a6d6f9be679916ec899c77a5bea6b6f2e}{bitmap\_usage}}\ \&second)}
+\DoxyCodeLine{00232\ \ \ \{}
+\DoxyCodeLine{00233\ \ \ \ \ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{classbitmap__usage_a6d6f9be679916ec899c77a5bea6b6f2e}{bitmap\_usage}}\ (\doxymbox{\hyperlink{classmem__usage_a8911fca980b190c9f0b3f73f57c9a4df}{m\_allocated}}\ +\ second.\doxymbox{\hyperlink{classmem__usage_a8911fca980b190c9f0b3f73f57c9a4df}{m\_allocated}},}
+\DoxyCodeLine{00234\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{classmem__usage_ad5b165e5c31194bea16e6d45351c8b07}{m\_times}}\ +\ second.\doxymbox{\hyperlink{classmem__usage_ad5b165e5c31194bea16e6d45351c8b07}{m\_times}},}
+\DoxyCodeLine{00235\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{classmem__usage_aa1897689923bfd5444c59962e2219430}{m\_peak}}\ +\ second.\doxymbox{\hyperlink{classmem__usage_aa1897689923bfd5444c59962e2219430}{m\_peak}},}
+\DoxyCodeLine{00236\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{classbitmap__usage_abca12e35bbe29921f142aa316650e55f}{m\_nsearches}}\ +\ second.\doxymbox{\hyperlink{classbitmap__usage_abca12e35bbe29921f142aa316650e55f}{m\_nsearches}},}
+\DoxyCodeLine{00237\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{classbitmap__usage_af57121a56922de88bdb4c9ff811d87f3}{m\_search\_iter}}\ +\ second.\doxymbox{\hyperlink{classbitmap__usage_af57121a56922de88bdb4c9ff811d87f3}{m\_search\_iter}});}
+\DoxyCodeLine{00238\ \ \ \}}
+\DoxyCodeLine{00239\ }
+\DoxyCodeLine{00240\ \ \ \textcolor{comment}{/*\ Dump\ usage\ coupled\ to\ LOC\ location,\ where\ TOTAL\ is\ sum\ of\ all\ rows.\ \ */}}
+\DoxyCodeLine{00241\ \ \ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{void}}
+\DoxyCodeLine{00242\ \ \ \doxymbox{\hyperlink{classbitmap__usage_a656e27f27f804db9b2a5f0d08a6dc655}{dump}}\ (\doxymbox{\hyperlink{classmem__location}{mem\_location}}\ *loc,\ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classmem__usage_a77cc2da8b90f68d4be2b6e7d8968bbb6}{mem\_usage}}\ \&total)\textcolor{keyword}{\ const}}
+\DoxyCodeLine{00243\ \textcolor{keyword}{\ \ }\{}
+\DoxyCodeLine{00244\ \ \ \ \ \textcolor{keywordtype}{char}\ *location\_string\ =\ loc-\/>\doxymbox{\hyperlink{classmem__location_a1d2b7852a95f6b32a280c9d3126a56a4}{to\_string}}\ ();}
+\DoxyCodeLine{00245\ }
+\DoxyCodeLine{00246\ \ \ \ \ fprintf\ (stderr,\ \textcolor{stringliteral}{"{}\%-\/48s\ "{}}\ \doxymbox{\hyperlink{system_8h_adc258baf74f7ed9d1e1ac1396c7d55a4}{PRsa}}\ (9)\ \textcolor{stringliteral}{"{}:\%5.1f\%\%"{}}}
+\DoxyCodeLine{00247\ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{system_8h_adc258baf74f7ed9d1e1ac1396c7d55a4}{PRsa}}\ (9)\ \doxymbox{\hyperlink{system_8h_adc258baf74f7ed9d1e1ac1396c7d55a4}{PRsa}}\ (9)\ \textcolor{stringliteral}{"{}:\%5.1f\%\%"{}}}
+\DoxyCodeLine{00248\ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{system_8h_adc258baf74f7ed9d1e1ac1396c7d55a4}{PRsa}}\ (11)\ \doxymbox{\hyperlink{system_8h_adc258baf74f7ed9d1e1ac1396c7d55a4}{PRsa}}\ (11)\ \textcolor{stringliteral}{"{}\%10s\(\backslash\)n"{}},}
+\DoxyCodeLine{00249\ \ \ \ \ \ \ \ \ \ location\_string,\ \doxymbox{\hyperlink{system_8h_ace0edec0ca6c7554c112e42a6f9d9b33}{SIZE\_AMOUNT}}\ (\doxymbox{\hyperlink{classmem__usage_a8911fca980b190c9f0b3f73f57c9a4df}{m\_allocated}}),}
+\DoxyCodeLine{00250\ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{classmem__usage_afecd3b15257724f46073834d386f65e6}{get\_percent}}\ (\doxymbox{\hyperlink{classmem__usage_a8911fca980b190c9f0b3f73f57c9a4df}{m\_allocated}},\ total.\doxymbox{\hyperlink{classmem__usage_a8911fca980b190c9f0b3f73f57c9a4df}{m\_allocated}}),}
+\DoxyCodeLine{00251\ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{system_8h_ace0edec0ca6c7554c112e42a6f9d9b33}{SIZE\_AMOUNT}}\ (\doxymbox{\hyperlink{classmem__usage_aa1897689923bfd5444c59962e2219430}{m\_peak}}),\ \doxymbox{\hyperlink{system_8h_ace0edec0ca6c7554c112e42a6f9d9b33}{SIZE\_AMOUNT}}\ (\doxymbox{\hyperlink{classmem__usage_ad5b165e5c31194bea16e6d45351c8b07}{m\_times}}),}
+\DoxyCodeLine{00252\ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{classmem__usage_afecd3b15257724f46073834d386f65e6}{get\_percent}}\ (\doxymbox{\hyperlink{classmem__usage_ad5b165e5c31194bea16e6d45351c8b07}{m\_times}},\ total.\doxymbox{\hyperlink{classmem__usage_ad5b165e5c31194bea16e6d45351c8b07}{m\_times}}),}
+\DoxyCodeLine{00253\ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{system_8h_ace0edec0ca6c7554c112e42a6f9d9b33}{SIZE\_AMOUNT}}\ (\doxymbox{\hyperlink{classbitmap__usage_abca12e35bbe29921f142aa316650e55f}{m\_nsearches}}),\ \doxymbox{\hyperlink{system_8h_ace0edec0ca6c7554c112e42a6f9d9b33}{SIZE\_AMOUNT}}\ (\doxymbox{\hyperlink{classbitmap__usage_af57121a56922de88bdb4c9ff811d87f3}{m\_search\_iter}}),}
+\DoxyCodeLine{00254\ \ \ \ \ \ \ \ \ \ loc-\/>\doxymbox{\hyperlink{classmem__location_a6f3af9e185da8a7a2aff4becce272949}{m\_ggc}}\ ?\ \textcolor{stringliteral}{"{}ggc"{}}\ :\ \textcolor{stringliteral}{"{}heap"{}});}
+\DoxyCodeLine{00255\ }
+\DoxyCodeLine{00256\ \ \ \ \ free\ (location\_string);}
+\DoxyCodeLine{00257\ \ \ \}}
+\DoxyCodeLine{00258\ }
+\DoxyCodeLine{00259\ \ \ \textcolor{comment}{/*\ Dump\ header\ with\ NAME.\ \ */}}
+\DoxyCodeLine{00260\ \ \ \textcolor{keyword}{static}\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{void}}
+\DoxyCodeLine{00261\ \ \ \doxymbox{\hyperlink{classbitmap__usage_a179fe460356d1e20614ece1ef700c325}{dump\_header}}\ (\textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *\doxymbox{\hyperlink{configargs_8h_a8f8f80d37794cde9472343e4487ba3eb}{name}})}
+\DoxyCodeLine{00262\ \ \ \{}
+\DoxyCodeLine{00263\ \ \ \ \ fprintf\ (stderr,\ \textcolor{stringliteral}{"{}\%-\/48s\ \%11s\%16s\%17s\%12s\%12s\%10s\(\backslash\)n"{}},\ \doxymbox{\hyperlink{configargs_8h_a8f8f80d37794cde9472343e4487ba3eb}{name}},\ \textcolor{stringliteral}{"{}Leak"{}},\ \textcolor{stringliteral}{"{}Peak"{}},}
+\DoxyCodeLine{00264\ \ \ \ \ \ \ \ \ \ \textcolor{stringliteral}{"{}Times"{}},\ \textcolor{stringliteral}{"{}N\ searches"{}},\ \textcolor{stringliteral}{"{}Search\ iter"{}},\ \textcolor{stringliteral}{"{}Type"{}});}
+\DoxyCodeLine{00265\ \ \ \}}
+\DoxyCodeLine{00266\ }
+\DoxyCodeLine{00267\ \ \ \textcolor{comment}{/*\ Number\ search\ operations.\ \ */}}
+\DoxyCodeLine{00268\ \ \ uint64\_t\ \doxymbox{\hyperlink{classbitmap__usage_abca12e35bbe29921f142aa316650e55f}{m\_nsearches}};}
+\DoxyCodeLine{00269\ \ \ \textcolor{comment}{/*\ Number\ of\ search\ iterations.\ \ */}}
+\DoxyCodeLine{00270\ \ \ uint64\_t\ \doxymbox{\hyperlink{classbitmap__usage_af57121a56922de88bdb4c9ff811d87f3}{m\_search\_iter}};}
+\DoxyCodeLine{00271\ \};}
+\DoxyCodeLine{00272\ }
+\DoxyCodeLine{00273\ \textcolor{comment}{/*\ Bitmap\ memory\ description.\ \ */}}
+\DoxyCodeLine{00274\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{classmem__alloc__description}{mem\_alloc\_description<bitmap\_usage>}}\ \doxymbox{\hyperlink{bitmap_8h_a3d83d9b01f20865cbe0ab2be210d9ca3}{bitmap\_mem\_desc}};}
+\DoxyCodeLine{00275\ }
+\DoxyCodeLine{00276\ \textcolor{comment}{/*\ Fundamental\ storage\ type\ for\ bitmap.\ \ */}}
+\DoxyCodeLine{00277\ }
+\DoxyCodeLine{00278\ \textcolor{keyword}{typedef}\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{long}\ \doxymbox{\hyperlink{bitmap_8h_a0be004f2b77e90fa69490a76b1d62dee}{BITMAP\_WORD}};}
+\DoxyCodeLine{00279\ \textcolor{comment}{/*\ BITMAP\_WORD\_BITS\ needs\ to\ be\ unsigned,\ but\ cannot\ contain\ casts\ as}}
+\DoxyCodeLine{00280\ \textcolor{comment}{\ \ \ it\ is\ used\ in\ preprocessor\ directives\ -\/-\/\ hence\ the\ 1u.\ \ */}}
+\DoxyCodeLine{00281\ \textcolor{preprocessor}{\#define\ BITMAP\_WORD\_BITS\ (CHAR\_BIT\ *\ SIZEOF\_LONG\ *\ 1u)}}
+\DoxyCodeLine{00282\ }
+\DoxyCodeLine{00283\ \textcolor{comment}{/*\ Number\ of\ words\ to\ use\ for\ each\ element\ in\ the\ linked\ list.\ \ */}}
+\DoxyCodeLine{00284\ }
+\DoxyCodeLine{00285\ \textcolor{preprocessor}{\#ifndef\ BITMAP\_ELEMENT\_WORDS}}
+\DoxyCodeLine{00286\ \textcolor{preprocessor}{\#define\ BITMAP\_ELEMENT\_WORDS\ ((128\ +\ BITMAP\_WORD\_BITS\ -\/\ 1)\ /\ BITMAP\_WORD\_BITS)}}
+\DoxyCodeLine{00287\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00288\ }
+\DoxyCodeLine{00289\ \textcolor{comment}{/*\ Number\ of\ bits\ in\ each\ actual\ element\ of\ a\ bitmap.\ \ */}}
+\DoxyCodeLine{00290\ }
+\DoxyCodeLine{00291\ \textcolor{preprocessor}{\#define\ BITMAP\_ELEMENT\_ALL\_BITS\ (BITMAP\_ELEMENT\_WORDS\ *\ BITMAP\_WORD\_BITS)}}
+\DoxyCodeLine{00292\ }
+\DoxyCodeLine{00293\ \textcolor{comment}{/*\ Obstack\ for\ allocating\ bitmaps\ and\ elements\ from.\ \ */}}
+\DoxyCodeLine{00294\ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{structbitmap__obstack}{bitmap\_obstack}}\ \{}
+\DoxyCodeLine{00295\ \ \ \textcolor{keyword}{struct\ }bitmap\_element\ *\doxymbox{\hyperlink{structbitmap__obstack_a85a4955907171278e720e65dd2f96c0c}{elements}};}
+\DoxyCodeLine{00296\ \ \ bitmap\_head\ *\doxymbox{\hyperlink{structbitmap__obstack_a47d76190349d68e29983b3873add607c}{heads}};}
+\DoxyCodeLine{00297\ \ \ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{structbitmap__obstack_a327507103a6a2a66d619da56cb392c3e}{obstack}}\ \doxymbox{\hyperlink{structbitmap__obstack_a327507103a6a2a66d619da56cb392c3e}{obstack}};}
+\DoxyCodeLine{00298\ \};}
+\DoxyCodeLine{00299\ }
+\DoxyCodeLine{00300\ \textcolor{comment}{/*\ Bitmap\ set\ element.\ \ We\ use\ a\ linked\ list\ to\ hold\ only\ the\ bits\ that}}
+\DoxyCodeLine{00301\ \textcolor{comment}{\ \ \ are\ set.\ \ This\ allows\ for\ use\ to\ grow\ the\ bitset\ dynamically\ without}}
+\DoxyCodeLine{00302\ \textcolor{comment}{\ \ \ having\ to\ realloc\ and\ copy\ a\ giant\ bit\ array.}}
+\DoxyCodeLine{00303\ \textcolor{comment}{}}
+\DoxyCodeLine{00304\ \textcolor{comment}{\ \ \ The\ free\ list\ is\ implemented\ as\ a\ list\ of\ lists.\ \ There\ is\ one}}
+\DoxyCodeLine{00305\ \textcolor{comment}{\ \ \ outer\ list\ connected\ together\ by\ prev\ fields.\ \ Each\ element\ of\ that}}
+\DoxyCodeLine{00306\ \textcolor{comment}{\ \ \ outer\ is\ an\ inner\ list\ (that\ may\ consist\ only\ of\ the\ outer\ list}}
+\DoxyCodeLine{00307\ \textcolor{comment}{\ \ \ element)\ that\ are\ connected\ by\ the\ next\ fields.\ \ The\ prev\ pointer}}
+\DoxyCodeLine{00308\ \textcolor{comment}{\ \ \ is\ undefined\ for\ interior\ elements.\ \ This\ allows}}
+\DoxyCodeLine{00309\ \textcolor{comment}{\ \ \ bitmap\_elt\_clear\_from\ to\ be\ implemented\ in\ unit\ time\ rather\ than}}
+\DoxyCodeLine{00310\ \textcolor{comment}{\ \ \ linear\ in\ the\ number\ of\ elements\ to\ be\ freed.\ \ */}}
+\DoxyCodeLine{00311\ }
+\DoxyCodeLine{00312\ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{coretypes_8h_ae5708c4d4b300570eebe0bc0c78facbc}{GTY}}((chain\_next\ (\textcolor{stringliteral}{"{}\%h.next"{}})))\ bitmap\_element\ \{}
+\DoxyCodeLine{00313\ \ \ \textcolor{comment}{/*\ In\ list\ form,\ the\ next\ element\ in\ the\ linked\ list;}}
+\DoxyCodeLine{00314\ \textcolor{comment}{\ \ \ \ \ in\ tree\ form,\ the\ left\ child\ node\ in\ the\ tree.\ \ */}}
+\DoxyCodeLine{00315\ \ \ \textcolor{keyword}{struct\ }bitmap\_element\ *next;}
+\DoxyCodeLine{00316\ \ \ \textcolor{comment}{/*\ In\ list\ form,\ the\ previous\ element\ in\ the\ linked\ list;}}
+\DoxyCodeLine{00317\ \textcolor{comment}{\ \ \ \ \ in\ tree\ form,\ the\ right\ child\ node\ in\ the\ tree.\ \ */}}
+\DoxyCodeLine{00318\ \ \ \textcolor{keyword}{struct\ }bitmap\_element\ *prev;}
+\DoxyCodeLine{00319\ \ \ \textcolor{comment}{/*\ regno/BITMAP\_ELEMENT\_ALL\_BITS.\ \ */}}
+\DoxyCodeLine{00320\ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ indx;}
+\DoxyCodeLine{00321\ \ \ \textcolor{comment}{/*\ Bits\ that\ are\ set,\ counting\ from\ INDX,\ inclusive\ \ */}}
+\DoxyCodeLine{00322\ \ \ \doxymbox{\hyperlink{bitmap_8h_a0be004f2b77e90fa69490a76b1d62dee}{BITMAP\_WORD}}\ bits[\doxymbox{\hyperlink{bitmap_8h_aaa02b9f479c514c73e9623fc5a0f7ae2}{BITMAP\_ELEMENT\_WORDS}}];}
+\DoxyCodeLine{00323\ \};}
+\DoxyCodeLine{00324\ }
+\DoxyCodeLine{00325\ \textcolor{comment}{/*\ Head\ of\ bitmap\ linked\ list.\ \ The\ 'current'\ member\ points\ to\ something}}
+\DoxyCodeLine{00326\ \textcolor{comment}{\ \ \ already\ pointed\ to\ by\ the\ chain\ started\ by\ first,\ so\ GTY((skip))\ it.\ \ */}}
+\DoxyCodeLine{00327\ }
+\DoxyCodeLine{00328\ \textcolor{keyword}{class\ }\doxymbox{\hyperlink{coretypes_8h_ae5708c4d4b300570eebe0bc0c78facbc}{GTY}}(())\ bitmap\_head\ \{}
+\DoxyCodeLine{00329\ \textcolor{keyword}{public}:}
+\DoxyCodeLine{00330\ \ \ \textcolor{keyword}{static}\ bitmap\_obstack\ crashme;}
+\DoxyCodeLine{00331\ \ \ \textcolor{comment}{/*\ Poison\ obstack\ to\ not\ make\ it\ not\ a\ valid\ initialized\ GC\ bitmap.\ \ */}}
+\DoxyCodeLine{00332\ \ \ \doxymbox{\hyperlink{ansidecl_8h_acaa06fbc27c59926a41e7575667e5280}{CONSTEXPR}}\ bitmap\_head()}
+\DoxyCodeLine{00333\ \ \ \ \ :\ indx\ (0),\ tree\_form\ (\doxymbox{\hyperlink{stdbool_8h_a65e9886d74aaee76545e83dd09011727}{false}}),\ padding\ (0),\ alloc\_descriptor\ (0),\ first\ (\doxymbox{\hyperlink{stddef_8h_a070d2ce7b6bb7e5c05602aa8c308d0c4}{NULL}}),}
+\DoxyCodeLine{00334\ \ \ \ \ \ \ current\ (\doxymbox{\hyperlink{stddef_8h_a070d2ce7b6bb7e5c05602aa8c308d0c4}{NULL}}),\ obstack\ (\&crashme)}
+\DoxyCodeLine{00335\ \ \ \{\}}
+\DoxyCodeLine{00336\ \ \ \textcolor{comment}{/*\ Index\ of\ last\ element\ looked\ at.\ \ */}}
+\DoxyCodeLine{00337\ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ indx;}
+\DoxyCodeLine{00338\ \ \ \textcolor{comment}{/*\ False\ if\ the\ bitmap\ is\ in\ list\ form;\ true\ if\ the\ bitmap\ is\ in\ tree\ form.}}
+\DoxyCodeLine{00339\ \textcolor{comment}{\ \ \ \ \ Bitmap\ iterators\ only\ work\ on\ bitmaps\ in\ list\ form.\ \ */}}
+\DoxyCodeLine{00340\ \ \ \textcolor{keywordtype}{unsigned}\ tree\_form:\ 1;}
+\DoxyCodeLine{00341\ \ \ \textcolor{comment}{/*\ Next\ integer\ is\ shifted,\ so\ padding\ is\ needed.\ \ */}}
+\DoxyCodeLine{00342\ \ \ \textcolor{keywordtype}{unsigned}\ padding:\ 2;}
+\DoxyCodeLine{00343\ \ \ \textcolor{comment}{/*\ Bitmap\ UID\ used\ for\ memory\ allocation\ statistics.\ \ */}}
+\DoxyCodeLine{00344\ \ \ \textcolor{keywordtype}{unsigned}\ alloc\_descriptor:\ 29;}
+\DoxyCodeLine{00345\ \ \ \textcolor{comment}{/*\ In\ list\ form,\ the\ first\ element\ in\ the\ linked\ list;}}
+\DoxyCodeLine{00346\ \textcolor{comment}{\ \ \ \ \ in\ tree\ form,\ the\ root\ of\ the\ tree.\ \ \ */}}
+\DoxyCodeLine{00347\ \ \ bitmap\_element\ *first;}
+\DoxyCodeLine{00348\ \ \ \textcolor{comment}{/*\ Last\ element\ looked\ at.\ \ */}}
+\DoxyCodeLine{00349\ \ \ bitmap\_element\ *\ \doxymbox{\hyperlink{coretypes_8h_ae5708c4d4b300570eebe0bc0c78facbc}{GTY}}((skip(\textcolor{stringliteral}{"{}"{}})))\ current;}
+\DoxyCodeLine{00350\ \ \ \textcolor{comment}{/*\ Obstack\ to\ allocate\ elements\ from.\ \ If\ NULL,\ then\ use\ GGC\ allocation.\ \ */}}
+\DoxyCodeLine{00351\ \ \ bitmap\_obstack\ *\ \doxymbox{\hyperlink{coretypes_8h_ae5708c4d4b300570eebe0bc0c78facbc}{GTY}}((skip(\textcolor{stringliteral}{"{}"{}})))\ obstack;}
+\DoxyCodeLine{00352\ }
+\DoxyCodeLine{00353\ \ \ \textcolor{comment}{/*\ Dump\ bitmap.\ \ */}}
+\DoxyCodeLine{00354\ \ \ \textcolor{keywordtype}{void}\ dump\ ();}
+\DoxyCodeLine{00355\ }
+\DoxyCodeLine{00356\ \ \ \textcolor{comment}{/*\ Get\ bitmap\ descriptor\ UID\ casted\ to\ an\ unsigned\ integer\ pointer.}}
+\DoxyCodeLine{00357\ \textcolor{comment}{\ \ \ \ \ Shift\ the\ descriptor\ because\ pointer\_hash<Type>::hash\ is}}
+\DoxyCodeLine{00358\ \textcolor{comment}{\ \ \ \ \ doing\ >>\ 3\ shift\ operation.\ \ */}}
+\DoxyCodeLine{00359\ \ \ \textcolor{keywordtype}{unsigned}\ *get\_descriptor\ ()}
+\DoxyCodeLine{00360\ \ \ \{}
+\DoxyCodeLine{00361\ \ \ \ \ \textcolor{keywordflow}{return}\ (\textcolor{keywordtype}{unsigned}\ *)(\doxymbox{\hyperlink{stddef_8h_a6d26a0475a6d6c897e655cdc5d8019d2}{ptrdiff\_t}})(alloc\_descriptor\ <<\ 3);}
+\DoxyCodeLine{00362\ \ \ \}}
+\DoxyCodeLine{00363\ \};}
+\DoxyCodeLine{00364\ }
+\DoxyCodeLine{00365\ \textcolor{comment}{/*\ Global\ data\ */}}
+\DoxyCodeLine{00366\ \textcolor{keyword}{extern}\ bitmap\_element\ \doxymbox{\hyperlink{bitmap_8h_a5b846c6719bfd5dfe6169a69501352ef}{bitmap\_zero\_bits}};\ \textcolor{comment}{/*\ Zero\ bitmap\ element\ */}}
+\DoxyCodeLine{00367\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{structbitmap__obstack}{bitmap\_obstack}}\ \doxymbox{\hyperlink{bitmap_8h_a266f7b0a73eeee1f515875390dbb58a9}{bitmap\_default\_obstack}};\ \ \ \textcolor{comment}{/*\ Default\ bitmap\ obstack\ */}}
+\DoxyCodeLine{00368\ }
+\DoxyCodeLine{00369\ \textcolor{comment}{/*\ Change\ the\ view\ of\ the\ bitmap\ to\ list,\ or\ tree.\ \ */}}
+\DoxyCodeLine{00370\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{bitmap_8h_a68905a09371f6d9ce17dfd0120163a71}{bitmap\_list\_view}}\ (\doxymbox{\hyperlink{coretypes_8h_ae7ea3a04cabf8964dc6e8e95a9cde1b8}{bitmap}});}
+\DoxyCodeLine{00371\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{bitmap_8h_a0f6cab4d3d640caa8cc53ba9336c963b}{bitmap\_tree\_view}}\ (\doxymbox{\hyperlink{coretypes_8h_ae7ea3a04cabf8964dc6e8e95a9cde1b8}{bitmap}});}
+\DoxyCodeLine{00372\ }
+\DoxyCodeLine{00373\ \textcolor{comment}{/*\ Clear\ a\ bitmap\ by\ freeing\ up\ the\ linked\ list.\ \ */}}
+\DoxyCodeLine{00374\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{bitmap_8h_a5ff4a77aa8fd35ad7fc456cbc48bd33f}{bitmap\_clear}}\ (\doxymbox{\hyperlink{coretypes_8h_ae7ea3a04cabf8964dc6e8e95a9cde1b8}{bitmap}});}
+\DoxyCodeLine{00375\ }
+\DoxyCodeLine{00376\ \textcolor{comment}{/*\ Copy\ a\ bitmap\ to\ another\ bitmap.\ \ */}}
+\DoxyCodeLine{00377\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{bitmap_8h_a24b0c35a60af624cab5d424e01329c46}{bitmap\_copy}}\ (\doxymbox{\hyperlink{coretypes_8h_ae7ea3a04cabf8964dc6e8e95a9cde1b8}{bitmap}},\ \doxymbox{\hyperlink{coretypes_8h_ac1b200ce036f141b63e8c4e2855c9d40}{const\_bitmap}});}
+\DoxyCodeLine{00378\ }
+\DoxyCodeLine{00379\ \textcolor{comment}{/*\ Move\ a\ bitmap\ to\ another\ bitmap.\ \ */}}
+\DoxyCodeLine{00380\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{bitmap_8h_a9769937aae0b5caf1ead67368d731067}{bitmap\_move}}\ (\doxymbox{\hyperlink{coretypes_8h_ae7ea3a04cabf8964dc6e8e95a9cde1b8}{bitmap}},\ \doxymbox{\hyperlink{coretypes_8h_ae7ea3a04cabf8964dc6e8e95a9cde1b8}{bitmap}});}
+\DoxyCodeLine{00381\ }
+\DoxyCodeLine{00382\ \textcolor{comment}{/*\ True\ if\ two\ bitmaps\ are\ identical.\ \ */}}
+\DoxyCodeLine{00383\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{bitmap_8h_a1985866e191813744db8de91e6a94513}{bitmap\_equal\_p}}\ (\doxymbox{\hyperlink{coretypes_8h_ac1b200ce036f141b63e8c4e2855c9d40}{const\_bitmap}},\ \doxymbox{\hyperlink{coretypes_8h_ac1b200ce036f141b63e8c4e2855c9d40}{const\_bitmap}});}
+\DoxyCodeLine{00384\ }
+\DoxyCodeLine{00385\ \textcolor{comment}{/*\ True\ if\ the\ bitmaps\ intersect\ (their\ AND\ is\ non-\/empty).\ \ */}}
+\DoxyCodeLine{00386\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{bitmap_8h_af1d4080d406c630174cb48d58ac72d9b}{bitmap\_intersect\_p}}\ (\doxymbox{\hyperlink{coretypes_8h_ac1b200ce036f141b63e8c4e2855c9d40}{const\_bitmap}},\ \doxymbox{\hyperlink{coretypes_8h_ac1b200ce036f141b63e8c4e2855c9d40}{const\_bitmap}});}
+\DoxyCodeLine{00387\ }
+\DoxyCodeLine{00388\ \textcolor{comment}{/*\ True\ if\ the\ complement\ of\ the\ second\ intersects\ the\ first\ (their}}
+\DoxyCodeLine{00389\ \textcolor{comment}{\ \ \ AND\_COMPL\ is\ non-\/empty).\ \ */}}
+\DoxyCodeLine{00390\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{bitmap_8h_af25dbd39f9926c5ff190716bfa183c63}{bitmap\_intersect\_compl\_p}}\ (\doxymbox{\hyperlink{coretypes_8h_ac1b200ce036f141b63e8c4e2855c9d40}{const\_bitmap}},\ \doxymbox{\hyperlink{coretypes_8h_ac1b200ce036f141b63e8c4e2855c9d40}{const\_bitmap}});}
+\DoxyCodeLine{00391\ }
+\DoxyCodeLine{00392\ \textcolor{comment}{/*\ True\ if\ MAP\ is\ an\ empty\ bitmap.\ \ */}}
+\DoxyCodeLine{00393\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{bitmap_8h_a7c881b2b7816f06d4145387e6c9f8e7e}{bitmap\_empty\_p}}\ (\doxymbox{\hyperlink{coretypes_8h_ac1b200ce036f141b63e8c4e2855c9d40}{const\_bitmap}}\ map)}
+\DoxyCodeLine{00394\ \{}
+\DoxyCodeLine{00395\ \ \ \textcolor{keywordflow}{return}\ !map-\/>first;}
+\DoxyCodeLine{00396\ \}}
+\DoxyCodeLine{00397\ }
+\DoxyCodeLine{00398\ \textcolor{comment}{/*\ True\ if\ the\ bitmap\ has\ only\ a\ single\ bit\ set.\ \ */}}
+\DoxyCodeLine{00399\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{bitmap_8h_a205c25bfd97a5c0b5c4d75cd4095b4c2}{bitmap\_single\_bit\_set\_p}}\ (\doxymbox{\hyperlink{coretypes_8h_ac1b200ce036f141b63e8c4e2855c9d40}{const\_bitmap}});}
+\DoxyCodeLine{00400\ }
+\DoxyCodeLine{00401\ \textcolor{comment}{/*\ Count\ the\ number\ of\ bits\ set\ in\ the\ bitmap.\ \ */}}
+\DoxyCodeLine{00402\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{long}\ \doxymbox{\hyperlink{bitmap_8h_a802559b205adb1d362fa15b8210311fd}{bitmap\_count\_bits}}\ (\doxymbox{\hyperlink{coretypes_8h_ac1b200ce036f141b63e8c4e2855c9d40}{const\_bitmap}});}
+\DoxyCodeLine{00403\ }
+\DoxyCodeLine{00404\ \textcolor{comment}{/*\ Count\ the\ number\ of\ unique\ bits\ set\ across\ the\ two\ bitmaps.\ \ */}}
+\DoxyCodeLine{00405\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{long}\ \doxymbox{\hyperlink{bitmap_8h_a90a39431e626caef7f30e1abb4471e7e}{bitmap\_count\_unique\_bits}}\ (\doxymbox{\hyperlink{coretypes_8h_ac1b200ce036f141b63e8c4e2855c9d40}{const\_bitmap}},\ \doxymbox{\hyperlink{coretypes_8h_ac1b200ce036f141b63e8c4e2855c9d40}{const\_bitmap}});}
+\DoxyCodeLine{00406\ }
+\DoxyCodeLine{00407\ \textcolor{comment}{/*\ Boolean\ operations\ on\ bitmaps.\ \ The\ \_into\ variants\ are\ two\ operand}}
+\DoxyCodeLine{00408\ \textcolor{comment}{\ \ \ versions\ that\ modify\ the\ first\ source\ operand.\ \ The\ other\ variants}}
+\DoxyCodeLine{00409\ \textcolor{comment}{\ \ \ are\ three\ operand\ versions\ that\ to\ not\ destroy\ the\ source\ bitmaps.}}
+\DoxyCodeLine{00410\ \textcolor{comment}{\ \ \ The\ operations\ supported\ are\ \&,\ \&\ \string~,\ |,\ \string^.\ \ */}}
+\DoxyCodeLine{00411\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{bitmap_8h_a276d1538a8fd57055cacdb1825224fe0}{bitmap\_and}}\ (\doxymbox{\hyperlink{coretypes_8h_ae7ea3a04cabf8964dc6e8e95a9cde1b8}{bitmap}},\ \doxymbox{\hyperlink{coretypes_8h_ac1b200ce036f141b63e8c4e2855c9d40}{const\_bitmap}},\ \doxymbox{\hyperlink{coretypes_8h_ac1b200ce036f141b63e8c4e2855c9d40}{const\_bitmap}});}
+\DoxyCodeLine{00412\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{bitmap_8h_a7e615bbef5a24e1c60a290edd263cc4d}{bitmap\_and\_into}}\ (\doxymbox{\hyperlink{coretypes_8h_ae7ea3a04cabf8964dc6e8e95a9cde1b8}{bitmap}},\ \doxymbox{\hyperlink{coretypes_8h_ac1b200ce036f141b63e8c4e2855c9d40}{const\_bitmap}});}
+\DoxyCodeLine{00413\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{bitmap_8h_a59d1767cf02d2906bcae2cc8ccb15550}{bitmap\_and\_compl}}\ (\doxymbox{\hyperlink{coretypes_8h_ae7ea3a04cabf8964dc6e8e95a9cde1b8}{bitmap}},\ \doxymbox{\hyperlink{coretypes_8h_ac1b200ce036f141b63e8c4e2855c9d40}{const\_bitmap}},\ \doxymbox{\hyperlink{coretypes_8h_ac1b200ce036f141b63e8c4e2855c9d40}{const\_bitmap}});}
+\DoxyCodeLine{00414\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{bitmap_8h_a895b28918b4f4b358fe40d280b0520e0}{bitmap\_and\_compl\_into}}\ (\doxymbox{\hyperlink{coretypes_8h_ae7ea3a04cabf8964dc6e8e95a9cde1b8}{bitmap}},\ \doxymbox{\hyperlink{coretypes_8h_ac1b200ce036f141b63e8c4e2855c9d40}{const\_bitmap}});}
+\DoxyCodeLine{00415\ \textcolor{preprocessor}{\#define\ bitmap\_compl\_and(DST,\ A,\ B)\ bitmap\_and\_compl\ (DST,\ B,\ A)}}
+\DoxyCodeLine{00416\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{bitmap_8h_af2fac95e7375689b29c8d148cf5d5b58}{bitmap\_compl\_and\_into}}\ (\doxymbox{\hyperlink{coretypes_8h_ae7ea3a04cabf8964dc6e8e95a9cde1b8}{bitmap}},\ \doxymbox{\hyperlink{coretypes_8h_ac1b200ce036f141b63e8c4e2855c9d40}{const\_bitmap}});}
+\DoxyCodeLine{00417\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{bitmap_8h_a793d194ed9538ef6c3774bfa6155d69a}{bitmap\_clear\_range}}\ (\doxymbox{\hyperlink{coretypes_8h_ae7ea3a04cabf8964dc6e8e95a9cde1b8}{bitmap}},\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int},\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int});}
+\DoxyCodeLine{00418\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{bitmap_8h_adc1056effd08d9ec89215678a8fc4eaf}{bitmap\_set\_range}}\ (\doxymbox{\hyperlink{coretypes_8h_ae7ea3a04cabf8964dc6e8e95a9cde1b8}{bitmap}},\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int},\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int});}
+\DoxyCodeLine{00419\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{bitmap_8h_abe20cc6101f4dfc9576736bbd4cd0894}{bitmap\_ior}}\ (\doxymbox{\hyperlink{coretypes_8h_ae7ea3a04cabf8964dc6e8e95a9cde1b8}{bitmap}},\ \doxymbox{\hyperlink{coretypes_8h_ac1b200ce036f141b63e8c4e2855c9d40}{const\_bitmap}},\ \doxymbox{\hyperlink{coretypes_8h_ac1b200ce036f141b63e8c4e2855c9d40}{const\_bitmap}});}
+\DoxyCodeLine{00420\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{bitmap_8h_a0f747dbae6daa2fcd95a29fe657ab5d0}{bitmap\_ior\_into}}\ (\doxymbox{\hyperlink{coretypes_8h_ae7ea3a04cabf8964dc6e8e95a9cde1b8}{bitmap}},\ \doxymbox{\hyperlink{coretypes_8h_ac1b200ce036f141b63e8c4e2855c9d40}{const\_bitmap}});}
+\DoxyCodeLine{00421\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{bitmap_8h_ab703de735143fcc852b9b3a81754ddb0}{bitmap\_ior\_into\_and\_free}}\ (\doxymbox{\hyperlink{coretypes_8h_ae7ea3a04cabf8964dc6e8e95a9cde1b8}{bitmap}},\ \doxymbox{\hyperlink{coretypes_8h_ae7ea3a04cabf8964dc6e8e95a9cde1b8}{bitmap}}\ *);}
+\DoxyCodeLine{00422\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{bitmap_8h_a7fb39a300645b183d04759c9815c2d9c}{bitmap\_xor}}\ (\doxymbox{\hyperlink{coretypes_8h_ae7ea3a04cabf8964dc6e8e95a9cde1b8}{bitmap}},\ \doxymbox{\hyperlink{coretypes_8h_ac1b200ce036f141b63e8c4e2855c9d40}{const\_bitmap}},\ \doxymbox{\hyperlink{coretypes_8h_ac1b200ce036f141b63e8c4e2855c9d40}{const\_bitmap}});}
+\DoxyCodeLine{00423\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{bitmap_8h_a772f06a02503fefe17b33e16d5b36675}{bitmap\_xor\_into}}\ (\doxymbox{\hyperlink{coretypes_8h_ae7ea3a04cabf8964dc6e8e95a9cde1b8}{bitmap}},\ \doxymbox{\hyperlink{coretypes_8h_ac1b200ce036f141b63e8c4e2855c9d40}{const\_bitmap}});}
+\DoxyCodeLine{00424\ }
+\DoxyCodeLine{00425\ \textcolor{comment}{/*\ DST\ =\ A\ |\ (B\ \&\ C).\ \ Return\ true\ if\ DST\ changes.\ \ */}}
+\DoxyCodeLine{00426\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{bitmap_8h_aebeab4ec59439e94f7c52a02b21333ee}{bitmap\_ior\_and\_into}}\ (\doxymbox{\hyperlink{coretypes_8h_ae7ea3a04cabf8964dc6e8e95a9cde1b8}{bitmap}}\ DST,\ \doxymbox{\hyperlink{coretypes_8h_ac1b200ce036f141b63e8c4e2855c9d40}{const\_bitmap}}\ B,\ \doxymbox{\hyperlink{coretypes_8h_ac1b200ce036f141b63e8c4e2855c9d40}{const\_bitmap}}\ C);}
+\DoxyCodeLine{00427\ \textcolor{comment}{/*\ DST\ =\ A\ |\ (B\ \&\ \string~C).\ \ Return\ true\ if\ DST\ changes.\ \ */}}
+\DoxyCodeLine{00428\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{bitmap_8h_ad862bd63cab6323644e7450628851bce}{bitmap\_ior\_and\_compl}}\ (\doxymbox{\hyperlink{coretypes_8h_ae7ea3a04cabf8964dc6e8e95a9cde1b8}{bitmap}}\ DST,\ \doxymbox{\hyperlink{coretypes_8h_ac1b200ce036f141b63e8c4e2855c9d40}{const\_bitmap}}\ A,}
+\DoxyCodeLine{00429\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{coretypes_8h_ac1b200ce036f141b63e8c4e2855c9d40}{const\_bitmap}}\ B,\ \doxymbox{\hyperlink{coretypes_8h_ac1b200ce036f141b63e8c4e2855c9d40}{const\_bitmap}}\ C);}
+\DoxyCodeLine{00430\ \textcolor{comment}{/*\ A\ |=\ (B\ \&\ \string~C).\ \ Return\ true\ if\ A\ changes.\ \ */}}
+\DoxyCodeLine{00431\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{bitmap_8h_aca481c1fa21fd213fe8cfa6387864589}{bitmap\_ior\_and\_compl\_into}}\ (\doxymbox{\hyperlink{coretypes_8h_ae7ea3a04cabf8964dc6e8e95a9cde1b8}{bitmap}}\ A,}
+\DoxyCodeLine{00432\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{coretypes_8h_ac1b200ce036f141b63e8c4e2855c9d40}{const\_bitmap}}\ B,\ \doxymbox{\hyperlink{coretypes_8h_ac1b200ce036f141b63e8c4e2855c9d40}{const\_bitmap}}\ C);}
+\DoxyCodeLine{00433\ }
+\DoxyCodeLine{00434\ \textcolor{comment}{/*\ Clear\ a\ single\ bit\ in\ a\ bitmap.\ \ Return\ true\ if\ the\ bit\ changed.\ \ */}}
+\DoxyCodeLine{00435\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{bitmap_8h_a77e8ff2691cdd78bb8ca2f668283f87f}{bitmap\_clear\_bit}}\ (\doxymbox{\hyperlink{coretypes_8h_ae7ea3a04cabf8964dc6e8e95a9cde1b8}{bitmap}},\ \textcolor{keywordtype}{int});}
+\DoxyCodeLine{00436\ }
+\DoxyCodeLine{00437\ \textcolor{comment}{/*\ Set\ a\ single\ bit\ in\ a\ bitmap.\ \ Return\ true\ if\ the\ bit\ changed.\ \ */}}
+\DoxyCodeLine{00438\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{bitmap_8h_a1f011ae4cadb98f9a2095419b757f80c}{bitmap\_set\_bit}}\ (\doxymbox{\hyperlink{coretypes_8h_ae7ea3a04cabf8964dc6e8e95a9cde1b8}{bitmap}},\ \textcolor{keywordtype}{int});}
+\DoxyCodeLine{00439\ }
+\DoxyCodeLine{00440\ \textcolor{comment}{/*\ Return\ true\ if\ a\ bit\ is\ set\ in\ a\ bitmap.\ \ */}}
+\DoxyCodeLine{00441\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{bitmap_8h_a423ed90a8bb6c57224d02bcdc9eae766}{bitmap\_bit\_p}}\ (\doxymbox{\hyperlink{coretypes_8h_ac1b200ce036f141b63e8c4e2855c9d40}{const\_bitmap}},\ \textcolor{keywordtype}{int});}
+\DoxyCodeLine{00442\ }
+\DoxyCodeLine{00443\ \textcolor{comment}{/*\ Set\ and\ get\ multiple\ bit\ values\ in\ a\ sparse\ bitmap.\ \ This\ allows\ a\ bitmap\ to}}
+\DoxyCodeLine{00444\ \textcolor{comment}{\ \ \ function\ as\ a\ sparse\ array\ of\ bit\ patterns\ where\ the\ patterns\ are}}
+\DoxyCodeLine{00445\ \textcolor{comment}{\ \ \ multiples\ of\ power\ of\ 2.\ This\ is\ more\ efficient\ than\ performing\ this\ as}}
+\DoxyCodeLine{00446\ \textcolor{comment}{\ \ \ multiple\ individual\ operations.\ \ */}}
+\DoxyCodeLine{00447\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{bitmap_8h_ab71879ec207299883ad41c807e0cdd17}{bitmap\_set\_aligned\_chunk}}\ (\doxymbox{\hyperlink{coretypes_8h_ae7ea3a04cabf8964dc6e8e95a9cde1b8}{bitmap}},\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int},\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int},\ \doxymbox{\hyperlink{bitmap_8h_a0be004f2b77e90fa69490a76b1d62dee}{BITMAP\_WORD}});}
+\DoxyCodeLine{00448\ \doxymbox{\hyperlink{bitmap_8h_a0be004f2b77e90fa69490a76b1d62dee}{BITMAP\_WORD}}\ \doxymbox{\hyperlink{bitmap_8h_aa46f71edfd62c2c89091a4e9563ca855}{bitmap\_get\_aligned\_chunk}}\ (\doxymbox{\hyperlink{coretypes_8h_ac1b200ce036f141b63e8c4e2855c9d40}{const\_bitmap}},\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int},\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int});}
+\DoxyCodeLine{00449\ }
+\DoxyCodeLine{00450\ \textcolor{comment}{/*\ Debug\ functions\ to\ print\ a\ bitmap.\ \ */}}
+\DoxyCodeLine{00451\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{bitmap_8h_aa84d66208b20275b67559147a61faa01}{debug\_bitmap}}\ (\doxymbox{\hyperlink{coretypes_8h_ac1b200ce036f141b63e8c4e2855c9d40}{const\_bitmap}});}
+\DoxyCodeLine{00452\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{bitmap_8h_a3e3f038267c4f6b9af1c23ebcb61e352}{debug\_bitmap\_file}}\ (FILE\ *,\ \doxymbox{\hyperlink{coretypes_8h_ac1b200ce036f141b63e8c4e2855c9d40}{const\_bitmap}});}
+\DoxyCodeLine{00453\ }
+\DoxyCodeLine{00454\ \textcolor{comment}{/*\ Print\ a\ bitmap.\ \ */}}
+\DoxyCodeLine{00455\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{bitmap_8h_a29333bdb20f3e0190fa27366d78e55c2}{bitmap\_print}}\ (FILE\ *,\ \doxymbox{\hyperlink{coretypes_8h_ac1b200ce036f141b63e8c4e2855c9d40}{const\_bitmap}},\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *,\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *);}
+\DoxyCodeLine{00456\ }
+\DoxyCodeLine{00457\ \textcolor{comment}{/*\ Initialize\ and\ release\ a\ bitmap\ obstack.\ \ */}}
+\DoxyCodeLine{00458\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{bitmap_8h_a3fabf3d639e4b94a21f92b6b16df38ed}{bitmap\_obstack\_initialize}}\ (\doxymbox{\hyperlink{structbitmap__obstack}{bitmap\_obstack}}\ *);}
+\DoxyCodeLine{00459\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{bitmap_8h_a1fb660db06414b61b0bfcc1f1f15f8b6}{bitmap\_obstack\_release}}\ (\doxymbox{\hyperlink{structbitmap__obstack}{bitmap\_obstack}}\ *);}
+\DoxyCodeLine{00460\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{bitmap_8h_a219f30482cdcdd2866d4dba41b4a906d}{bitmap\_register}}\ (\doxymbox{\hyperlink{coretypes_8h_ae7ea3a04cabf8964dc6e8e95a9cde1b8}{bitmap}}\ \doxymbox{\hyperlink{statistics_8h_aa2ed6ded958d0e2a06f0a313e3961695}{MEM\_STAT\_DECL}});}
+\DoxyCodeLine{00461\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{bitmap_8h_a927a6f0494c3d0b69ac5981b4575dc94}{dump\_bitmap\_statistics}}\ (\textcolor{keywordtype}{void});}
+\DoxyCodeLine{00462\ }
+\DoxyCodeLine{00463\ \textcolor{comment}{/*\ Initialize\ a\ bitmap\ header.\ \ OBSTACK\ indicates\ the\ bitmap\ obstack}}
+\DoxyCodeLine{00464\ \textcolor{comment}{\ \ \ to\ allocate\ from,\ NULL\ for\ GC'd\ bitmap.\ \ */}}
+\DoxyCodeLine{00465\ }
+\DoxyCodeLine{00466\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{void}}
+\DoxyCodeLine{00467\ \doxymbox{\hyperlink{bitmap_8h_a2044be25a31d5ca656e041709747c4f5}{bitmap\_initialize}}\ (\doxymbox{\hyperlink{coretypes_8h_ae7ea3a04cabf8964dc6e8e95a9cde1b8}{bitmap}}\ head,\ \doxymbox{\hyperlink{structbitmap__obstack}{bitmap\_obstack}}\ *\doxymbox{\hyperlink{structobstack}{obstack}}\ \doxymbox{\hyperlink{statistics_8h_ad9b89af963cc7e535c9697fd40241a6f}{CXX\_MEM\_STAT\_INFO}})}
+\DoxyCodeLine{00468\ \{}
+\DoxyCodeLine{00469\ \ \ head-\/>first\ =\ head-\/>current\ =\ \doxymbox{\hyperlink{stddef_8h_a070d2ce7b6bb7e5c05602aa8c308d0c4}{NULL}};}
+\DoxyCodeLine{00470\ \ \ head-\/>indx\ =\ head-\/>tree\_form\ =\ 0;}
+\DoxyCodeLine{00471\ \ \ head-\/>padding\ =\ 0;}
+\DoxyCodeLine{00472\ \ \ head-\/>alloc\_descriptor\ =\ 0;}
+\DoxyCodeLine{00473\ \ \ head-\/>obstack\ =\ \doxymbox{\hyperlink{structobstack}{obstack}};}
+\DoxyCodeLine{00474\ \ \ \textcolor{keywordflow}{if}\ (\doxymbox{\hyperlink{auto-host_8h_afc5398d240462e7748efa4deb0fcc65d}{GATHER\_STATISTICS}})}
+\DoxyCodeLine{00475\ \ \ \ \ \doxymbox{\hyperlink{bitmap_8h_a219f30482cdcdd2866d4dba41b4a906d}{bitmap\_register}}\ (head\ \doxymbox{\hyperlink{statistics_8h_a75b4a65a7a5d197f17362673db5ece22}{PASS\_MEM\_STAT}});}
+\DoxyCodeLine{00476\ \}}
+\DoxyCodeLine{00477\ }
+\DoxyCodeLine{00478\ \textcolor{comment}{/*\ Release\ a\ bitmap\ (but\ not\ its\ head).\ \ This\ is\ suitable\ for\ pairing\ with}}
+\DoxyCodeLine{00479\ \textcolor{comment}{\ \ \ bitmap\_initialize.\ \ */}}
+\DoxyCodeLine{00480\ }
+\DoxyCodeLine{00481\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{void}}
+\DoxyCodeLine{00482\ \doxymbox{\hyperlink{bitmap_8h_a4d15e6bf164863f9ffe78387822d5be5}{bitmap\_release}}\ (\doxymbox{\hyperlink{coretypes_8h_ae7ea3a04cabf8964dc6e8e95a9cde1b8}{bitmap}}\ head)}
+\DoxyCodeLine{00483\ \{}
+\DoxyCodeLine{00484\ \ \ \doxymbox{\hyperlink{bitmap_8h_a5ff4a77aa8fd35ad7fc456cbc48bd33f}{bitmap\_clear}}\ (head);}
+\DoxyCodeLine{00485\ \ \ \textcolor{comment}{/*\ Poison\ the\ obstack\ pointer\ so\ the\ obstack\ can\ be\ safely\ released.}}
+\DoxyCodeLine{00486\ \textcolor{comment}{\ \ \ \ \ Do\ not\ zero\ it\ as\ the\ bitmap\ then\ becomes\ initialized\ GC.\ \ */}}
+\DoxyCodeLine{00487\ \ \ head-\/>obstack\ =\ \&bitmap\_head::crashme;}
+\DoxyCodeLine{00488\ \}}
+\DoxyCodeLine{00489\ }
+\DoxyCodeLine{00490\ \textcolor{comment}{/*\ Allocate\ and\ free\ bitmaps\ from\ obstack,\ malloc\ and\ gc'd\ memory.\ \ */}}
+\DoxyCodeLine{00491\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{coretypes_8h_ae7ea3a04cabf8964dc6e8e95a9cde1b8}{bitmap}}\ \doxymbox{\hyperlink{bitmap_8h_aacd27aa30408529b1c7fc007e44634b7}{bitmap\_alloc}}\ (\doxymbox{\hyperlink{structbitmap__obstack}{bitmap\_obstack}}\ *\doxymbox{\hyperlink{structobstack}{obstack}}\ \doxymbox{\hyperlink{statistics_8h_ad9b89af963cc7e535c9697fd40241a6f}{CXX\_MEM\_STAT\_INFO}});}
+\DoxyCodeLine{00492\ \textcolor{preprocessor}{\#define\ BITMAP\_ALLOC\ bitmap\_alloc}}
+\DoxyCodeLine{00493\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{coretypes_8h_ae7ea3a04cabf8964dc6e8e95a9cde1b8}{bitmap}}\ \doxymbox{\hyperlink{bitmap_8h_a086d60b5146de3118baadbfda25c005e}{bitmap\_gc\_alloc}}\ (\doxymbox{\hyperlink{statistics_8h_a3cdcffae73854a33ce452c309b9df449}{ALONE\_CXX\_MEM\_STAT\_INFO}});}
+\DoxyCodeLine{00494\ \textcolor{preprocessor}{\#define\ BITMAP\_GGC\_ALLOC\ bitmap\_gc\_alloc}}
+\DoxyCodeLine{00495\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{bitmap_8h_a18bc49c6f58257fc69aa1842850b35f1}{bitmap\_obstack\_free}}\ (\doxymbox{\hyperlink{coretypes_8h_ae7ea3a04cabf8964dc6e8e95a9cde1b8}{bitmap}});}
+\DoxyCodeLine{00496\ }
+\DoxyCodeLine{00497\ \textcolor{comment}{/*\ A\ few\ compatibility/functions\ macros\ for\ compatibility\ with\ sbitmaps\ */}}
+\DoxyCodeLine{00498\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{bitmap_8h_a65c42ec0199bb851d807d191cbdc1c75}{dump\_bitmap}}\ (FILE\ *file,\ \doxymbox{\hyperlink{coretypes_8h_ac1b200ce036f141b63e8c4e2855c9d40}{const\_bitmap}}\ map)}
+\DoxyCodeLine{00499\ \{}
+\DoxyCodeLine{00500\ \ \ \doxymbox{\hyperlink{bitmap_8h_a29333bdb20f3e0190fa27366d78e55c2}{bitmap\_print}}\ (file,\ map,\ \textcolor{stringliteral}{"{}"{}},\ \textcolor{stringliteral}{"{}\(\backslash\)n"{}});}
+\DoxyCodeLine{00501\ \}}
+\DoxyCodeLine{00502\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{collect-utils_8h_a398527b3e9e358c345c5047b16871957}{debug}}\ (\textcolor{keyword}{const}\ bitmap\_head\ \&ref);}
+\DoxyCodeLine{00503\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{collect-utils_8h_a398527b3e9e358c345c5047b16871957}{debug}}\ (\textcolor{keyword}{const}\ bitmap\_head\ *ptr);}
+\DoxyCodeLine{00504\ }
+\DoxyCodeLine{00505\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{unsigned}\ \doxymbox{\hyperlink{bitmap_8h_a89a4b9020144d10305f52672e06c9010}{bitmap\_first\_set\_bit}}\ (\doxymbox{\hyperlink{coretypes_8h_ac1b200ce036f141b63e8c4e2855c9d40}{const\_bitmap}});}
+\DoxyCodeLine{00506\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{unsigned}\ \doxymbox{\hyperlink{bitmap_8h_a3edf2d08f6f8caa8fdc05ebb04c4d937}{bitmap\_clear\_first\_set\_bit}}\ (\doxymbox{\hyperlink{coretypes_8h_ae7ea3a04cabf8964dc6e8e95a9cde1b8}{bitmap}});}
+\DoxyCodeLine{00507\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{unsigned}\ \doxymbox{\hyperlink{bitmap_8h_a44b95664b6a209262ec2ae78ade6f1ef}{bitmap\_last\_set\_bit}}\ (\doxymbox{\hyperlink{coretypes_8h_ac1b200ce036f141b63e8c4e2855c9d40}{const\_bitmap}});}
+\DoxyCodeLine{00508\ }
+\DoxyCodeLine{00509\ \textcolor{comment}{/*\ Compute\ bitmap\ hash\ (for\ purposes\ of\ hashing\ etc.)\ \ */}}
+\DoxyCodeLine{00510\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{hashtab_8h_a2d05e5049721cf3117dd6b34e20d4f65}{hashval\_t}}\ \doxymbox{\hyperlink{bitmap_8h_a943d430c9773ee2e2c59687523bfbe38}{bitmap\_hash}}\ (\doxymbox{\hyperlink{coretypes_8h_ac1b200ce036f141b63e8c4e2855c9d40}{const\_bitmap}});}
+\DoxyCodeLine{00511\ }
+\DoxyCodeLine{00512\ \textcolor{comment}{/*\ Do\ any\ cleanup\ needed\ on\ a\ bitmap\ when\ it\ is\ no\ longer\ used.\ \ */}}
+\DoxyCodeLine{00513\ \textcolor{preprocessor}{\#define\ BITMAP\_FREE(BITMAP)\ \(\backslash\)}}
+\DoxyCodeLine{00514\ \textcolor{preprocessor}{\ \ \ \ \ \ \ ((void)\ (bitmap\_obstack\_free\ ((bitmap)\ BITMAP),\ (BITMAP)\ =\ (bitmap)\ NULL))}}
+\DoxyCodeLine{00515\ }
+\DoxyCodeLine{00516\ \textcolor{comment}{/*\ Iterator\ for\ bitmaps.\ \ */}}
+\DoxyCodeLine{00517\ }
+\DoxyCodeLine{00518\ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{structbitmap__iterator}{bitmap\_iterator}}}
+\DoxyCodeLine{00519\ \{}
+\DoxyCodeLine{00520\ \ \ \textcolor{comment}{/*\ Pointer\ to\ the\ current\ bitmap\ element.\ \ */}}
+\DoxyCodeLine{00521\ \ \ bitmap\_element\ *\doxymbox{\hyperlink{structbitmap__iterator_a938fb816767502e3ae7fce8779feb651}{elt1}};}
+\DoxyCodeLine{00522\ }
+\DoxyCodeLine{00523\ \ \ \textcolor{comment}{/*\ Pointer\ to\ 2nd\ bitmap\ element\ when\ two\ are\ involved.\ \ */}}
+\DoxyCodeLine{00524\ \ \ bitmap\_element\ *\doxymbox{\hyperlink{structbitmap__iterator_a5c82f44c4195e4ba32f54eeebd70203b}{elt2}};}
+\DoxyCodeLine{00525\ }
+\DoxyCodeLine{00526\ \ \ \textcolor{comment}{/*\ Word\ within\ the\ current\ element.\ \ */}}
+\DoxyCodeLine{00527\ \ \ \textcolor{keywordtype}{unsigned}\ \doxymbox{\hyperlink{structbitmap__iterator_a9e695b3a101817a437dfa90573e21026}{word\_no}};}
+\DoxyCodeLine{00528\ }
+\DoxyCodeLine{00529\ \ \ \textcolor{comment}{/*\ Contents\ of\ the\ actually\ processed\ word.\ \ When\ finding\ next\ bit}}
+\DoxyCodeLine{00530\ \textcolor{comment}{\ \ \ \ \ it\ is\ shifted\ right,\ so\ that\ the\ actual\ bit\ is\ always\ the\ least}}
+\DoxyCodeLine{00531\ \textcolor{comment}{\ \ \ \ \ significant\ bit\ of\ ACTUAL.\ \ */}}
+\DoxyCodeLine{00532\ \ \ \doxymbox{\hyperlink{bitmap_8h_a0be004f2b77e90fa69490a76b1d62dee}{BITMAP\_WORD}}\ \doxymbox{\hyperlink{structbitmap__iterator_a222ead70416bafbf581cb443d06abaab}{bits}};}
+\DoxyCodeLine{00533\ \};}
+\DoxyCodeLine{00534\ }
+\DoxyCodeLine{00535\ \textcolor{comment}{/*\ Initialize\ a\ single\ bitmap\ iterator.\ \ START\_BIT\ is\ the\ first\ bit\ to}}
+\DoxyCodeLine{00536\ \textcolor{comment}{\ \ \ iterate\ from.\ \ */}}
+\DoxyCodeLine{00537\ }
+\DoxyCodeLine{00538\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{void}}
+\DoxyCodeLine{00539\ \doxymbox{\hyperlink{bitmap_8h_acdd246f37f8686ce9a90202fa3eb0772}{bmp\_iter\_set\_init}}\ (\doxymbox{\hyperlink{structbitmap__iterator}{bitmap\_iterator}}\ *bi,\ \doxymbox{\hyperlink{coretypes_8h_ac1b200ce036f141b63e8c4e2855c9d40}{const\_bitmap}}\ map,}
+\DoxyCodeLine{00540\ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{unsigned}\ start\_bit,\ \textcolor{keywordtype}{unsigned}\ *bit\_no)}
+\DoxyCodeLine{00541\ \{}
+\DoxyCodeLine{00542\ \ \ bi-\/>\doxymbox{\hyperlink{structbitmap__iterator_a938fb816767502e3ae7fce8779feb651}{elt1}}\ =\ map-\/>first;}
+\DoxyCodeLine{00543\ \ \ bi-\/>\doxymbox{\hyperlink{structbitmap__iterator_a5c82f44c4195e4ba32f54eeebd70203b}{elt2}}\ =\ \doxymbox{\hyperlink{stddef_8h_a070d2ce7b6bb7e5c05602aa8c308d0c4}{NULL}};}
+\DoxyCodeLine{00544\ }
+\DoxyCodeLine{00545\ \ \ \doxymbox{\hyperlink{system_8h_aff447899dc74d54931b2bc2d47de9423}{gcc\_checking\_assert}}\ (!map-\/>tree\_form);}
+\DoxyCodeLine{00546\ }
+\DoxyCodeLine{00547\ \ \ \textcolor{comment}{/*\ Advance\ elt1\ until\ it\ is\ not\ before\ the\ block\ containing\ start\_bit.\ \ */}}
+\DoxyCodeLine{00548\ \ \ \textcolor{keywordflow}{while}\ (1)}
+\DoxyCodeLine{00549\ \ \ \ \ \{}
+\DoxyCodeLine{00550\ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (!bi-\/>\doxymbox{\hyperlink{structbitmap__iterator_a938fb816767502e3ae7fce8779feb651}{elt1}})}
+\DoxyCodeLine{00551\ \ \ \ \ \{}
+\DoxyCodeLine{00552\ \ \ \ \ \ \ bi-\/>\doxymbox{\hyperlink{structbitmap__iterator_a938fb816767502e3ae7fce8779feb651}{elt1}}\ =\ \&\doxymbox{\hyperlink{bitmap_8h_a5b846c6719bfd5dfe6169a69501352ef}{bitmap\_zero\_bits}};}
+\DoxyCodeLine{00553\ \ \ \ \ \ \ \textcolor{keywordflow}{break};}
+\DoxyCodeLine{00554\ \ \ \ \ \}}
+\DoxyCodeLine{00555\ }
+\DoxyCodeLine{00556\ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (bi-\/>\doxymbox{\hyperlink{structbitmap__iterator_a938fb816767502e3ae7fce8779feb651}{elt1}}-\/>indx\ >=\ start\_bit\ /\ \doxymbox{\hyperlink{bitmap_8h_ab67fc1593157ee487d18a5348f7cc610}{BITMAP\_ELEMENT\_ALL\_BITS}})}
+\DoxyCodeLine{00557\ \ \ \ \ \textcolor{keywordflow}{break};}
+\DoxyCodeLine{00558\ \ \ \ \ \ \ bi-\/>\doxymbox{\hyperlink{structbitmap__iterator_a938fb816767502e3ae7fce8779feb651}{elt1}}\ =\ bi-\/>\doxymbox{\hyperlink{structbitmap__iterator_a938fb816767502e3ae7fce8779feb651}{elt1}}-\/>next;}
+\DoxyCodeLine{00559\ \ \ \ \ \}}
+\DoxyCodeLine{00560\ }
+\DoxyCodeLine{00561\ \ \ \textcolor{comment}{/*\ We\ might\ have\ gone\ past\ the\ start\ bit,\ so\ reinitialize\ it.\ \ */}}
+\DoxyCodeLine{00562\ \ \ \textcolor{keywordflow}{if}\ (bi-\/>\doxymbox{\hyperlink{structbitmap__iterator_a938fb816767502e3ae7fce8779feb651}{elt1}}-\/>indx\ !=\ start\_bit\ /\ \doxymbox{\hyperlink{bitmap_8h_ab67fc1593157ee487d18a5348f7cc610}{BITMAP\_ELEMENT\_ALL\_BITS}})}
+\DoxyCodeLine{00563\ \ \ \ \ start\_bit\ =\ bi-\/>\doxymbox{\hyperlink{structbitmap__iterator_a938fb816767502e3ae7fce8779feb651}{elt1}}-\/>indx\ *\ \doxymbox{\hyperlink{bitmap_8h_ab67fc1593157ee487d18a5348f7cc610}{BITMAP\_ELEMENT\_ALL\_BITS}};}
+\DoxyCodeLine{00564\ }
+\DoxyCodeLine{00565\ \ \ \textcolor{comment}{/*\ Initialize\ for\ what\ is\ now\ start\_bit.\ \ */}}
+\DoxyCodeLine{00566\ \ \ bi-\/>\doxymbox{\hyperlink{structbitmap__iterator_a9e695b3a101817a437dfa90573e21026}{word\_no}}\ =\ start\_bit\ /\ \doxymbox{\hyperlink{bitmap_8h_af1919de0e91034315cc30945d0ee27a5}{BITMAP\_WORD\_BITS}}\ \%\ \doxymbox{\hyperlink{bitmap_8h_aaa02b9f479c514c73e9623fc5a0f7ae2}{BITMAP\_ELEMENT\_WORDS}};}
+\DoxyCodeLine{00567\ \ \ bi-\/>\doxymbox{\hyperlink{structbitmap__iterator_a222ead70416bafbf581cb443d06abaab}{bits}}\ =\ bi-\/>\doxymbox{\hyperlink{structbitmap__iterator_a938fb816767502e3ae7fce8779feb651}{elt1}}-\/>bits[bi-\/>\doxymbox{\hyperlink{structbitmap__iterator_a9e695b3a101817a437dfa90573e21026}{word\_no}}];}
+\DoxyCodeLine{00568\ \ \ bi-\/>\doxymbox{\hyperlink{structbitmap__iterator_a222ead70416bafbf581cb443d06abaab}{bits}}\ >>=\ start\_bit\ \%\ \doxymbox{\hyperlink{bitmap_8h_af1919de0e91034315cc30945d0ee27a5}{BITMAP\_WORD\_BITS}};}
+\DoxyCodeLine{00569\ }
+\DoxyCodeLine{00570\ \ \ \textcolor{comment}{/*\ If\ this\ word\ is\ zero,\ we\ must\ make\ sure\ we're\ not\ pointing\ at\ the}}
+\DoxyCodeLine{00571\ \textcolor{comment}{\ \ \ \ \ first\ bit,\ otherwise\ our\ incrementing\ to\ the\ next\ word\ boundary}}
+\DoxyCodeLine{00572\ \textcolor{comment}{\ \ \ \ \ will\ fail.\ \ It\ won't\ matter\ if\ this\ increment\ moves\ us\ into\ the}}
+\DoxyCodeLine{00573\ \textcolor{comment}{\ \ \ \ \ next\ word.\ \ */}}
+\DoxyCodeLine{00574\ \ \ start\_bit\ +=\ !bi-\/>\doxymbox{\hyperlink{structbitmap__iterator_a222ead70416bafbf581cb443d06abaab}{bits}};}
+\DoxyCodeLine{00575\ }
+\DoxyCodeLine{00576\ \ \ *bit\_no\ =\ start\_bit;}
+\DoxyCodeLine{00577\ \}}
+\DoxyCodeLine{00578\ }
+\DoxyCodeLine{00579\ \textcolor{comment}{/*\ Initialize\ an\ iterator\ to\ iterate\ over\ the\ intersection\ of\ two}}
+\DoxyCodeLine{00580\ \textcolor{comment}{\ \ \ bitmaps.\ \ START\_BIT\ is\ the\ bit\ to\ commence\ from.\ \ */}}
+\DoxyCodeLine{00581\ }
+\DoxyCodeLine{00582\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{void}}
+\DoxyCodeLine{00583\ \doxymbox{\hyperlink{bitmap_8h_ab1577f9402ef391d853f78a2b5a638a2}{bmp\_iter\_and\_init}}\ (\doxymbox{\hyperlink{structbitmap__iterator}{bitmap\_iterator}}\ *bi,\ \doxymbox{\hyperlink{coretypes_8h_ac1b200ce036f141b63e8c4e2855c9d40}{const\_bitmap}}\ map1,\ \doxymbox{\hyperlink{coretypes_8h_ac1b200ce036f141b63e8c4e2855c9d40}{const\_bitmap}}\ map2,}
+\DoxyCodeLine{00584\ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{unsigned}\ start\_bit,\ \textcolor{keywordtype}{unsigned}\ *bit\_no)}
+\DoxyCodeLine{00585\ \{}
+\DoxyCodeLine{00586\ \ \ bi-\/>\doxymbox{\hyperlink{structbitmap__iterator_a938fb816767502e3ae7fce8779feb651}{elt1}}\ =\ map1-\/>first;}
+\DoxyCodeLine{00587\ \ \ bi-\/>\doxymbox{\hyperlink{structbitmap__iterator_a5c82f44c4195e4ba32f54eeebd70203b}{elt2}}\ =\ map2-\/>first;}
+\DoxyCodeLine{00588\ }
+\DoxyCodeLine{00589\ \ \ \doxymbox{\hyperlink{system_8h_aff447899dc74d54931b2bc2d47de9423}{gcc\_checking\_assert}}\ (!map1-\/>tree\_form\ \&\&\ !map2-\/>tree\_form);}
+\DoxyCodeLine{00590\ }
+\DoxyCodeLine{00591\ \ \ \textcolor{comment}{/*\ Advance\ elt1\ until\ it\ is\ not\ before\ the\ block\ containing}}
+\DoxyCodeLine{00592\ \textcolor{comment}{\ \ \ \ \ start\_bit.\ \ */}}
+\DoxyCodeLine{00593\ \ \ \textcolor{keywordflow}{while}\ (1)}
+\DoxyCodeLine{00594\ \ \ \ \ \{}
+\DoxyCodeLine{00595\ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (!bi-\/>\doxymbox{\hyperlink{structbitmap__iterator_a938fb816767502e3ae7fce8779feb651}{elt1}})}
+\DoxyCodeLine{00596\ \ \ \ \ \{}
+\DoxyCodeLine{00597\ \ \ \ \ \ \ bi-\/>\doxymbox{\hyperlink{structbitmap__iterator_a5c82f44c4195e4ba32f54eeebd70203b}{elt2}}\ =\ \doxymbox{\hyperlink{stddef_8h_a070d2ce7b6bb7e5c05602aa8c308d0c4}{NULL}};}
+\DoxyCodeLine{00598\ \ \ \ \ \ \ \textcolor{keywordflow}{break};}
+\DoxyCodeLine{00599\ \ \ \ \ \}}
+\DoxyCodeLine{00600\ }
+\DoxyCodeLine{00601\ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (bi-\/>\doxymbox{\hyperlink{structbitmap__iterator_a938fb816767502e3ae7fce8779feb651}{elt1}}-\/>indx\ >=\ start\_bit\ /\ \doxymbox{\hyperlink{bitmap_8h_ab67fc1593157ee487d18a5348f7cc610}{BITMAP\_ELEMENT\_ALL\_BITS}})}
+\DoxyCodeLine{00602\ \ \ \ \ \textcolor{keywordflow}{break};}
+\DoxyCodeLine{00603\ \ \ \ \ \ \ bi-\/>\doxymbox{\hyperlink{structbitmap__iterator_a938fb816767502e3ae7fce8779feb651}{elt1}}\ =\ bi-\/>\doxymbox{\hyperlink{structbitmap__iterator_a938fb816767502e3ae7fce8779feb651}{elt1}}-\/>next;}
+\DoxyCodeLine{00604\ \ \ \ \ \}}
+\DoxyCodeLine{00605\ }
+\DoxyCodeLine{00606\ \ \ \textcolor{comment}{/*\ Advance\ elt2\ until\ it\ is\ not\ before\ elt1.\ \ */}}
+\DoxyCodeLine{00607\ \ \ \textcolor{keywordflow}{while}\ (1)}
+\DoxyCodeLine{00608\ \ \ \ \ \{}
+\DoxyCodeLine{00609\ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (!bi-\/>\doxymbox{\hyperlink{structbitmap__iterator_a5c82f44c4195e4ba32f54eeebd70203b}{elt2}})}
+\DoxyCodeLine{00610\ \ \ \ \ \{}
+\DoxyCodeLine{00611\ \ \ \ \ \ \ bi-\/>\doxymbox{\hyperlink{structbitmap__iterator_a938fb816767502e3ae7fce8779feb651}{elt1}}\ =\ bi-\/>\doxymbox{\hyperlink{structbitmap__iterator_a5c82f44c4195e4ba32f54eeebd70203b}{elt2}}\ =\ \&\doxymbox{\hyperlink{bitmap_8h_a5b846c6719bfd5dfe6169a69501352ef}{bitmap\_zero\_bits}};}
+\DoxyCodeLine{00612\ \ \ \ \ \ \ \textcolor{keywordflow}{break};}
+\DoxyCodeLine{00613\ \ \ \ \ \}}
+\DoxyCodeLine{00614\ }
+\DoxyCodeLine{00615\ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (bi-\/>\doxymbox{\hyperlink{structbitmap__iterator_a5c82f44c4195e4ba32f54eeebd70203b}{elt2}}-\/>indx\ >=\ bi-\/>\doxymbox{\hyperlink{structbitmap__iterator_a938fb816767502e3ae7fce8779feb651}{elt1}}-\/>indx)}
+\DoxyCodeLine{00616\ \ \ \ \ \textcolor{keywordflow}{break};}
+\DoxyCodeLine{00617\ \ \ \ \ \ \ bi-\/>\doxymbox{\hyperlink{structbitmap__iterator_a5c82f44c4195e4ba32f54eeebd70203b}{elt2}}\ =\ bi-\/>\doxymbox{\hyperlink{structbitmap__iterator_a5c82f44c4195e4ba32f54eeebd70203b}{elt2}}-\/>next;}
+\DoxyCodeLine{00618\ \ \ \ \ \}}
+\DoxyCodeLine{00619\ }
+\DoxyCodeLine{00620\ \ \ \textcolor{comment}{/*\ If\ we're\ at\ the\ same\ index,\ then\ we\ have\ some\ intersecting\ bits.\ \ */}}
+\DoxyCodeLine{00621\ \ \ \textcolor{keywordflow}{if}\ (bi-\/>\doxymbox{\hyperlink{structbitmap__iterator_a938fb816767502e3ae7fce8779feb651}{elt1}}-\/>indx\ ==\ bi-\/>\doxymbox{\hyperlink{structbitmap__iterator_a5c82f44c4195e4ba32f54eeebd70203b}{elt2}}-\/>indx)}
+\DoxyCodeLine{00622\ \ \ \ \ \{}
+\DoxyCodeLine{00623\ \ \ \ \ \ \ \textcolor{comment}{/*\ We\ might\ have\ advanced\ beyond\ the\ start\_bit,\ so\ reinitialize}}
+\DoxyCodeLine{00624\ \textcolor{comment}{\ \ \ \ \ for\ that.\ \ */}}
+\DoxyCodeLine{00625\ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (bi-\/>\doxymbox{\hyperlink{structbitmap__iterator_a938fb816767502e3ae7fce8779feb651}{elt1}}-\/>indx\ !=\ start\_bit\ /\ \doxymbox{\hyperlink{bitmap_8h_ab67fc1593157ee487d18a5348f7cc610}{BITMAP\_ELEMENT\_ALL\_BITS}})}
+\DoxyCodeLine{00626\ \ \ \ \ start\_bit\ =\ bi-\/>\doxymbox{\hyperlink{structbitmap__iterator_a938fb816767502e3ae7fce8779feb651}{elt1}}-\/>indx\ *\ \doxymbox{\hyperlink{bitmap_8h_ab67fc1593157ee487d18a5348f7cc610}{BITMAP\_ELEMENT\_ALL\_BITS}};}
+\DoxyCodeLine{00627\ }
+\DoxyCodeLine{00628\ \ \ \ \ \ \ bi-\/>\doxymbox{\hyperlink{structbitmap__iterator_a9e695b3a101817a437dfa90573e21026}{word\_no}}\ =\ start\_bit\ /\ \doxymbox{\hyperlink{bitmap_8h_af1919de0e91034315cc30945d0ee27a5}{BITMAP\_WORD\_BITS}}\ \%\ \doxymbox{\hyperlink{bitmap_8h_aaa02b9f479c514c73e9623fc5a0f7ae2}{BITMAP\_ELEMENT\_WORDS}};}
+\DoxyCodeLine{00629\ \ \ \ \ \ \ bi-\/>\doxymbox{\hyperlink{structbitmap__iterator_a222ead70416bafbf581cb443d06abaab}{bits}}\ =\ bi-\/>\doxymbox{\hyperlink{structbitmap__iterator_a938fb816767502e3ae7fce8779feb651}{elt1}}-\/>bits[bi-\/>\doxymbox{\hyperlink{structbitmap__iterator_a9e695b3a101817a437dfa90573e21026}{word\_no}}]\ \&\ bi-\/>\doxymbox{\hyperlink{structbitmap__iterator_a5c82f44c4195e4ba32f54eeebd70203b}{elt2}}-\/>bits[bi-\/>\doxymbox{\hyperlink{structbitmap__iterator_a9e695b3a101817a437dfa90573e21026}{word\_no}}];}
+\DoxyCodeLine{00630\ \ \ \ \ \ \ bi-\/>\doxymbox{\hyperlink{structbitmap__iterator_a222ead70416bafbf581cb443d06abaab}{bits}}\ >>=\ start\_bit\ \%\ \doxymbox{\hyperlink{bitmap_8h_af1919de0e91034315cc30945d0ee27a5}{BITMAP\_WORD\_BITS}};}
+\DoxyCodeLine{00631\ \ \ \ \ \}}
+\DoxyCodeLine{00632\ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00633\ \ \ \ \ \{}
+\DoxyCodeLine{00634\ \ \ \ \ \ \ \textcolor{comment}{/*\ Otherwise\ we\ must\ immediately\ advance\ elt1,\ so\ initialize\ for}}
+\DoxyCodeLine{00635\ \textcolor{comment}{\ \ \ \ \ that.\ \ */}}
+\DoxyCodeLine{00636\ \ \ \ \ \ \ bi-\/>\doxymbox{\hyperlink{structbitmap__iterator_a9e695b3a101817a437dfa90573e21026}{word\_no}}\ =\ \doxymbox{\hyperlink{bitmap_8h_aaa02b9f479c514c73e9623fc5a0f7ae2}{BITMAP\_ELEMENT\_WORDS}}\ -\/\ 1;}
+\DoxyCodeLine{00637\ \ \ \ \ \ \ bi-\/>\doxymbox{\hyperlink{structbitmap__iterator_a222ead70416bafbf581cb443d06abaab}{bits}}\ =\ 0;}
+\DoxyCodeLine{00638\ \ \ \ \ \}}
+\DoxyCodeLine{00639\ }
+\DoxyCodeLine{00640\ \ \ \textcolor{comment}{/*\ If\ this\ word\ is\ zero,\ we\ must\ make\ sure\ we're\ not\ pointing\ at\ the}}
+\DoxyCodeLine{00641\ \textcolor{comment}{\ \ \ \ \ first\ bit,\ otherwise\ our\ incrementing\ to\ the\ next\ word\ boundary}}
+\DoxyCodeLine{00642\ \textcolor{comment}{\ \ \ \ \ will\ fail.\ \ It\ won't\ matter\ if\ this\ increment\ moves\ us\ into\ the}}
+\DoxyCodeLine{00643\ \textcolor{comment}{\ \ \ \ \ next\ word.\ \ */}}
+\DoxyCodeLine{00644\ \ \ start\_bit\ +=\ !bi-\/>\doxymbox{\hyperlink{structbitmap__iterator_a222ead70416bafbf581cb443d06abaab}{bits}};}
+\DoxyCodeLine{00645\ }
+\DoxyCodeLine{00646\ \ \ *bit\_no\ =\ start\_bit;}
+\DoxyCodeLine{00647\ \}}
+\DoxyCodeLine{00648\ }
+\DoxyCodeLine{00649\ \textcolor{comment}{/*\ Initialize\ an\ iterator\ to\ iterate\ over\ the\ bits\ in\ MAP1\ \&\ \string~MAP2.\ \ */}}
+\DoxyCodeLine{00650\ }
+\DoxyCodeLine{00651\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{void}}
+\DoxyCodeLine{00652\ \doxymbox{\hyperlink{bitmap_8h_a6d0e8fff56768aae90e7efd55fdcb15a}{bmp\_iter\_and\_compl\_init}}\ (\doxymbox{\hyperlink{structbitmap__iterator}{bitmap\_iterator}}\ *bi,}
+\DoxyCodeLine{00653\ \ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{coretypes_8h_ac1b200ce036f141b63e8c4e2855c9d40}{const\_bitmap}}\ map1,\ \doxymbox{\hyperlink{coretypes_8h_ac1b200ce036f141b63e8c4e2855c9d40}{const\_bitmap}}\ map2,}
+\DoxyCodeLine{00654\ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{unsigned}\ start\_bit,\ \textcolor{keywordtype}{unsigned}\ *bit\_no)}
+\DoxyCodeLine{00655\ \{}
+\DoxyCodeLine{00656\ \ \ bi-\/>\doxymbox{\hyperlink{structbitmap__iterator_a938fb816767502e3ae7fce8779feb651}{elt1}}\ =\ map1-\/>first;}
+\DoxyCodeLine{00657\ \ \ bi-\/>\doxymbox{\hyperlink{structbitmap__iterator_a5c82f44c4195e4ba32f54eeebd70203b}{elt2}}\ =\ map2-\/>first;}
+\DoxyCodeLine{00658\ }
+\DoxyCodeLine{00659\ \ \ \doxymbox{\hyperlink{system_8h_aff447899dc74d54931b2bc2d47de9423}{gcc\_checking\_assert}}\ (!map1-\/>tree\_form\ \&\&\ !map2-\/>tree\_form);}
+\DoxyCodeLine{00660\ }
+\DoxyCodeLine{00661\ \ \ \textcolor{comment}{/*\ Advance\ elt1\ until\ it\ is\ not\ before\ the\ block\ containing\ start\_bit.\ \ */}}
+\DoxyCodeLine{00662\ \ \ \textcolor{keywordflow}{while}\ (1)}
+\DoxyCodeLine{00663\ \ \ \ \ \{}
+\DoxyCodeLine{00664\ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (!bi-\/>\doxymbox{\hyperlink{structbitmap__iterator_a938fb816767502e3ae7fce8779feb651}{elt1}})}
+\DoxyCodeLine{00665\ \ \ \ \ \{}
+\DoxyCodeLine{00666\ \ \ \ \ \ \ bi-\/>\doxymbox{\hyperlink{structbitmap__iterator_a938fb816767502e3ae7fce8779feb651}{elt1}}\ =\ \&\doxymbox{\hyperlink{bitmap_8h_a5b846c6719bfd5dfe6169a69501352ef}{bitmap\_zero\_bits}};}
+\DoxyCodeLine{00667\ \ \ \ \ \ \ \textcolor{keywordflow}{break};}
+\DoxyCodeLine{00668\ \ \ \ \ \}}
+\DoxyCodeLine{00669\ }
+\DoxyCodeLine{00670\ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (bi-\/>\doxymbox{\hyperlink{structbitmap__iterator_a938fb816767502e3ae7fce8779feb651}{elt1}}-\/>indx\ >=\ start\_bit\ /\ \doxymbox{\hyperlink{bitmap_8h_ab67fc1593157ee487d18a5348f7cc610}{BITMAP\_ELEMENT\_ALL\_BITS}})}
+\DoxyCodeLine{00671\ \ \ \ \ \textcolor{keywordflow}{break};}
+\DoxyCodeLine{00672\ \ \ \ \ \ \ bi-\/>\doxymbox{\hyperlink{structbitmap__iterator_a938fb816767502e3ae7fce8779feb651}{elt1}}\ =\ bi-\/>\doxymbox{\hyperlink{structbitmap__iterator_a938fb816767502e3ae7fce8779feb651}{elt1}}-\/>next;}
+\DoxyCodeLine{00673\ \ \ \ \ \}}
+\DoxyCodeLine{00674\ }
+\DoxyCodeLine{00675\ \ \ \textcolor{comment}{/*\ Advance\ elt2\ until\ it\ is\ not\ before\ elt1.\ \ */}}
+\DoxyCodeLine{00676\ \ \ \textcolor{keywordflow}{while}\ (bi-\/>\doxymbox{\hyperlink{structbitmap__iterator_a5c82f44c4195e4ba32f54eeebd70203b}{elt2}}\ \&\&\ bi-\/>\doxymbox{\hyperlink{structbitmap__iterator_a5c82f44c4195e4ba32f54eeebd70203b}{elt2}}-\/>indx\ <\ bi-\/>\doxymbox{\hyperlink{structbitmap__iterator_a938fb816767502e3ae7fce8779feb651}{elt1}}-\/>indx)}
+\DoxyCodeLine{00677\ \ \ \ \ bi-\/>\doxymbox{\hyperlink{structbitmap__iterator_a5c82f44c4195e4ba32f54eeebd70203b}{elt2}}\ =\ bi-\/>\doxymbox{\hyperlink{structbitmap__iterator_a5c82f44c4195e4ba32f54eeebd70203b}{elt2}}-\/>next;}
+\DoxyCodeLine{00678\ }
+\DoxyCodeLine{00679\ \ \ \textcolor{comment}{/*\ We\ might\ have\ advanced\ beyond\ the\ start\_bit,\ so\ reinitialize\ for}}
+\DoxyCodeLine{00680\ \textcolor{comment}{\ \ \ \ \ that.\ \ */}}
+\DoxyCodeLine{00681\ \ \ \textcolor{keywordflow}{if}\ (bi-\/>\doxymbox{\hyperlink{structbitmap__iterator_a938fb816767502e3ae7fce8779feb651}{elt1}}-\/>indx\ !=\ start\_bit\ /\ \doxymbox{\hyperlink{bitmap_8h_ab67fc1593157ee487d18a5348f7cc610}{BITMAP\_ELEMENT\_ALL\_BITS}})}
+\DoxyCodeLine{00682\ \ \ \ \ start\_bit\ =\ bi-\/>\doxymbox{\hyperlink{structbitmap__iterator_a938fb816767502e3ae7fce8779feb651}{elt1}}-\/>indx\ *\ \doxymbox{\hyperlink{bitmap_8h_ab67fc1593157ee487d18a5348f7cc610}{BITMAP\_ELEMENT\_ALL\_BITS}};}
+\DoxyCodeLine{00683\ }
+\DoxyCodeLine{00684\ \ \ bi-\/>\doxymbox{\hyperlink{structbitmap__iterator_a9e695b3a101817a437dfa90573e21026}{word\_no}}\ =\ start\_bit\ /\ \doxymbox{\hyperlink{bitmap_8h_af1919de0e91034315cc30945d0ee27a5}{BITMAP\_WORD\_BITS}}\ \%\ \doxymbox{\hyperlink{bitmap_8h_aaa02b9f479c514c73e9623fc5a0f7ae2}{BITMAP\_ELEMENT\_WORDS}};}
+\DoxyCodeLine{00685\ \ \ bi-\/>\doxymbox{\hyperlink{structbitmap__iterator_a222ead70416bafbf581cb443d06abaab}{bits}}\ =\ bi-\/>\doxymbox{\hyperlink{structbitmap__iterator_a938fb816767502e3ae7fce8779feb651}{elt1}}-\/>bits[bi-\/>\doxymbox{\hyperlink{structbitmap__iterator_a9e695b3a101817a437dfa90573e21026}{word\_no}}];}
+\DoxyCodeLine{00686\ \ \ \textcolor{keywordflow}{if}\ (bi-\/>\doxymbox{\hyperlink{structbitmap__iterator_a5c82f44c4195e4ba32f54eeebd70203b}{elt2}}\ \&\&\ bi-\/>\doxymbox{\hyperlink{structbitmap__iterator_a938fb816767502e3ae7fce8779feb651}{elt1}}-\/>indx\ ==\ bi-\/>\doxymbox{\hyperlink{structbitmap__iterator_a5c82f44c4195e4ba32f54eeebd70203b}{elt2}}-\/>indx)}
+\DoxyCodeLine{00687\ \ \ \ \ bi-\/>\doxymbox{\hyperlink{structbitmap__iterator_a222ead70416bafbf581cb443d06abaab}{bits}}\ \&=\ \string~bi-\/>elt2-\/>bits[bi-\/>\doxymbox{\hyperlink{structbitmap__iterator_a9e695b3a101817a437dfa90573e21026}{word\_no}}];}
+\DoxyCodeLine{00688\ \ \ bi-\/>\doxymbox{\hyperlink{structbitmap__iterator_a222ead70416bafbf581cb443d06abaab}{bits}}\ >>=\ start\_bit\ \%\ \doxymbox{\hyperlink{bitmap_8h_af1919de0e91034315cc30945d0ee27a5}{BITMAP\_WORD\_BITS}};}
+\DoxyCodeLine{00689\ }
+\DoxyCodeLine{00690\ \ \ \textcolor{comment}{/*\ If\ this\ word\ is\ zero,\ we\ must\ make\ sure\ we're\ not\ pointing\ at\ the}}
+\DoxyCodeLine{00691\ \textcolor{comment}{\ \ \ \ \ first\ bit,\ otherwise\ our\ incrementing\ to\ the\ next\ word\ boundary}}
+\DoxyCodeLine{00692\ \textcolor{comment}{\ \ \ \ \ will\ fail.\ \ It\ won't\ matter\ if\ this\ increment\ moves\ us\ into\ the}}
+\DoxyCodeLine{00693\ \textcolor{comment}{\ \ \ \ \ next\ word.\ \ */}}
+\DoxyCodeLine{00694\ \ \ start\_bit\ +=\ !bi-\/>\doxymbox{\hyperlink{structbitmap__iterator_a222ead70416bafbf581cb443d06abaab}{bits}};}
+\DoxyCodeLine{00695\ }
+\DoxyCodeLine{00696\ \ \ *bit\_no\ =\ start\_bit;}
+\DoxyCodeLine{00697\ \}}
+\DoxyCodeLine{00698\ }
+\DoxyCodeLine{00699\ \textcolor{comment}{/*\ Advance\ to\ the\ next\ bit\ in\ BI.\ \ We\ don't\ advance\ to\ the\ next}}
+\DoxyCodeLine{00700\ \textcolor{comment}{\ \ \ nonzero\ bit\ yet.\ \ */}}
+\DoxyCodeLine{00701\ }
+\DoxyCodeLine{00702\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{void}}
+\DoxyCodeLine{00703\ \doxymbox{\hyperlink{bitmap_8h_a95a3cd130ff83a19175ecb15b2c652ff}{bmp\_iter\_next}}\ (\doxymbox{\hyperlink{structbitmap__iterator}{bitmap\_iterator}}\ *bi,\ \textcolor{keywordtype}{unsigned}\ *bit\_no)}
+\DoxyCodeLine{00704\ \{}
+\DoxyCodeLine{00705\ \ \ bi-\/>\doxymbox{\hyperlink{structbitmap__iterator_a222ead70416bafbf581cb443d06abaab}{bits}}\ >>=\ 1;}
+\DoxyCodeLine{00706\ \ \ *bit\_no\ +=\ 1;}
+\DoxyCodeLine{00707\ \}}
+\DoxyCodeLine{00708\ }
+\DoxyCodeLine{00709\ \textcolor{comment}{/*\ Advance\ to\ first\ set\ bit\ in\ BI.\ \ */}}
+\DoxyCodeLine{00710\ }
+\DoxyCodeLine{00711\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{void}}
+\DoxyCodeLine{00712\ \doxymbox{\hyperlink{bitmap_8h_a55dfb93e73b50ab17a54737789901c9b}{bmp\_iter\_next\_bit}}\ (\doxymbox{\hyperlink{structbitmap__iterator}{bitmap\_iterator}}\ *\ bi,\ \textcolor{keywordtype}{unsigned}\ *bit\_no)}
+\DoxyCodeLine{00713\ \{}
+\DoxyCodeLine{00714\ \textcolor{preprocessor}{\#if\ (GCC\_VERSION\ >=\ 3004)}}
+\DoxyCodeLine{00715\ \ \ \{}
+\DoxyCodeLine{00716\ \ \ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ n\ =\ \_\_builtin\_ctzl\ (bi-\/>\doxymbox{\hyperlink{structbitmap__iterator_a222ead70416bafbf581cb443d06abaab}{bits}});}
+\DoxyCodeLine{00717\ \ \ \ \ \doxymbox{\hyperlink{system_8h_a0deee0ddaa8ce3bbd400ab5f75de06ff}{gcc\_assert}}\ (\textcolor{keyword}{sizeof}\ (\textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{long})\ ==\ \textcolor{keyword}{sizeof}\ (\doxymbox{\hyperlink{bitmap_8h_a0be004f2b77e90fa69490a76b1d62dee}{BITMAP\_WORD}}));}
+\DoxyCodeLine{00718\ \ \ \ \ bi-\/>\doxymbox{\hyperlink{structbitmap__iterator_a222ead70416bafbf581cb443d06abaab}{bits}}\ >>=\ n;}
+\DoxyCodeLine{00719\ \ \ \ \ *bit\_no\ +=\ n;}
+\DoxyCodeLine{00720\ \ \ \}}
+\DoxyCodeLine{00721\ \textcolor{preprocessor}{\#else}}
+\DoxyCodeLine{00722\ \ \ \textcolor{keywordflow}{while}\ (!(bi-\/>\doxymbox{\hyperlink{structbitmap__iterator_a222ead70416bafbf581cb443d06abaab}{bits}}\ \&\ 1))}
+\DoxyCodeLine{00723\ \ \ \ \ \{}
+\DoxyCodeLine{00724\ \ \ \ \ \ \ bi-\/>\doxymbox{\hyperlink{structbitmap__iterator_a222ead70416bafbf581cb443d06abaab}{bits}}\ >>=\ 1;}
+\DoxyCodeLine{00725\ \ \ \ \ \ \ *bit\_no\ +=\ 1;}
+\DoxyCodeLine{00726\ \ \ \ \ \}}
+\DoxyCodeLine{00727\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00728\ \}}
+\DoxyCodeLine{00729\ }
+\DoxyCodeLine{00730\ \textcolor{comment}{/*\ Advance\ to\ the\ next\ nonzero\ bit\ of\ a\ single\ bitmap,\ we\ will\ have}}
+\DoxyCodeLine{00731\ \textcolor{comment}{\ \ \ already\ advanced\ past\ the\ just\ iterated\ bit.\ \ Return\ true\ if\ there}}
+\DoxyCodeLine{00732\ \textcolor{comment}{\ \ \ is\ a\ bit\ to\ iterate.\ \ */}}
+\DoxyCodeLine{00733\ }
+\DoxyCodeLine{00734\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{bool}}
+\DoxyCodeLine{00735\ \doxymbox{\hyperlink{bitmap_8h_ad9c94e61953a6d6d891c47e93d93467e}{bmp\_iter\_set}}\ (\doxymbox{\hyperlink{structbitmap__iterator}{bitmap\_iterator}}\ *bi,\ \textcolor{keywordtype}{unsigned}\ *bit\_no)}
+\DoxyCodeLine{00736\ \{}
+\DoxyCodeLine{00737\ \ \ \textcolor{comment}{/*\ If\ our\ current\ word\ is\ nonzero,\ it\ contains\ the\ bit\ we\ want.\ \ */}}
+\DoxyCodeLine{00738\ \ \ \textcolor{keywordflow}{if}\ (bi-\/>\doxymbox{\hyperlink{structbitmap__iterator_a222ead70416bafbf581cb443d06abaab}{bits}})}
+\DoxyCodeLine{00739\ \ \ \ \ \{}
+\DoxyCodeLine{00740\ \ \ \ \ next\_bit:}
+\DoxyCodeLine{00741\ \ \ \ \ \ \ \doxymbox{\hyperlink{bitmap_8h_a55dfb93e73b50ab17a54737789901c9b}{bmp\_iter\_next\_bit}}\ (bi,\ bit\_no);}
+\DoxyCodeLine{00742\ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ \textcolor{keyword}{true};}
+\DoxyCodeLine{00743\ \ \ \ \ \}}
+\DoxyCodeLine{00744\ }
+\DoxyCodeLine{00745\ \ \ \textcolor{comment}{/*\ Round\ up\ to\ the\ word\ boundary.\ \ We\ might\ have\ just\ iterated\ past}}
+\DoxyCodeLine{00746\ \textcolor{comment}{\ \ \ \ \ the\ end\ of\ the\ last\ word,\ hence\ the\ -\/1.\ \ It\ is\ not\ possible\ for}}
+\DoxyCodeLine{00747\ \textcolor{comment}{\ \ \ \ \ bit\_no\ to\ point\ at\ the\ beginning\ of\ the\ now\ last\ word.\ \ */}}
+\DoxyCodeLine{00748\ \ \ *bit\_no\ =\ ((*bit\_no\ +\ \doxymbox{\hyperlink{bitmap_8h_af1919de0e91034315cc30945d0ee27a5}{BITMAP\_WORD\_BITS}}\ -\/\ 1)}
+\DoxyCodeLine{00749\ \ \ \ \ \ \ \ \ \ /\ \doxymbox{\hyperlink{bitmap_8h_af1919de0e91034315cc30945d0ee27a5}{BITMAP\_WORD\_BITS}}\ *\ \doxymbox{\hyperlink{bitmap_8h_af1919de0e91034315cc30945d0ee27a5}{BITMAP\_WORD\_BITS}});}
+\DoxyCodeLine{00750\ \ \ bi-\/>\doxymbox{\hyperlink{structbitmap__iterator_a9e695b3a101817a437dfa90573e21026}{word\_no}}++;}
+\DoxyCodeLine{00751\ }
+\DoxyCodeLine{00752\ \ \ \textcolor{keywordflow}{while}\ (1)}
+\DoxyCodeLine{00753\ \ \ \ \ \{}
+\DoxyCodeLine{00754\ \ \ \ \ \ \ \textcolor{comment}{/*\ Find\ the\ next\ nonzero\ word\ in\ this\ elt.\ \ */}}
+\DoxyCodeLine{00755\ \ \ \ \ \ \ \textcolor{keywordflow}{while}\ (bi-\/>\doxymbox{\hyperlink{structbitmap__iterator_a9e695b3a101817a437dfa90573e21026}{word\_no}}\ !=\ \doxymbox{\hyperlink{bitmap_8h_aaa02b9f479c514c73e9623fc5a0f7ae2}{BITMAP\_ELEMENT\_WORDS}})}
+\DoxyCodeLine{00756\ \ \ \ \ \{}
+\DoxyCodeLine{00757\ \ \ \ \ \ \ bi-\/>\doxymbox{\hyperlink{structbitmap__iterator_a222ead70416bafbf581cb443d06abaab}{bits}}\ =\ bi-\/>\doxymbox{\hyperlink{structbitmap__iterator_a938fb816767502e3ae7fce8779feb651}{elt1}}-\/>bits[bi-\/>\doxymbox{\hyperlink{structbitmap__iterator_a9e695b3a101817a437dfa90573e21026}{word\_no}}];}
+\DoxyCodeLine{00758\ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (bi-\/>\doxymbox{\hyperlink{structbitmap__iterator_a222ead70416bafbf581cb443d06abaab}{bits}})}
+\DoxyCodeLine{00759\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{goto}\ next\_bit;}
+\DoxyCodeLine{00760\ \ \ \ \ \ \ *bit\_no\ +=\ \doxymbox{\hyperlink{bitmap_8h_af1919de0e91034315cc30945d0ee27a5}{BITMAP\_WORD\_BITS}};}
+\DoxyCodeLine{00761\ \ \ \ \ \ \ bi-\/>\doxymbox{\hyperlink{structbitmap__iterator_a9e695b3a101817a437dfa90573e21026}{word\_no}}++;}
+\DoxyCodeLine{00762\ \ \ \ \ \}}
+\DoxyCodeLine{00763\ }
+\DoxyCodeLine{00764\ \ \ \ \ \ \ \textcolor{comment}{/*\ Make\ sure\ we\ didn't\ remove\ the\ element\ while\ iterating.\ \ */}}
+\DoxyCodeLine{00765\ \ \ \ \ \ \ \doxymbox{\hyperlink{system_8h_aff447899dc74d54931b2bc2d47de9423}{gcc\_checking\_assert}}\ (bi-\/>\doxymbox{\hyperlink{structbitmap__iterator_a938fb816767502e3ae7fce8779feb651}{elt1}}-\/>indx\ !=\ -\/1U);}
+\DoxyCodeLine{00766\ }
+\DoxyCodeLine{00767\ \ \ \ \ \ \ \textcolor{comment}{/*\ Advance\ to\ the\ next\ element.\ \ */}}
+\DoxyCodeLine{00768\ \ \ \ \ \ \ bi-\/>\doxymbox{\hyperlink{structbitmap__iterator_a938fb816767502e3ae7fce8779feb651}{elt1}}\ =\ bi-\/>\doxymbox{\hyperlink{structbitmap__iterator_a938fb816767502e3ae7fce8779feb651}{elt1}}-\/>next;}
+\DoxyCodeLine{00769\ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (!bi-\/>\doxymbox{\hyperlink{structbitmap__iterator_a938fb816767502e3ae7fce8779feb651}{elt1}})}
+\DoxyCodeLine{00770\ \ \ \ \ \textcolor{keywordflow}{return}\ \textcolor{keyword}{false};}
+\DoxyCodeLine{00771\ \ \ \ \ \ \ *bit\_no\ =\ bi-\/>\doxymbox{\hyperlink{structbitmap__iterator_a938fb816767502e3ae7fce8779feb651}{elt1}}-\/>indx\ *\ \doxymbox{\hyperlink{bitmap_8h_ab67fc1593157ee487d18a5348f7cc610}{BITMAP\_ELEMENT\_ALL\_BITS}};}
+\DoxyCodeLine{00772\ \ \ \ \ \ \ bi-\/>\doxymbox{\hyperlink{structbitmap__iterator_a9e695b3a101817a437dfa90573e21026}{word\_no}}\ =\ 0;}
+\DoxyCodeLine{00773\ \ \ \ \ \}}
+\DoxyCodeLine{00774\ \}}
+\DoxyCodeLine{00775\ }
+\DoxyCodeLine{00776\ \textcolor{comment}{/*\ Advance\ to\ the\ next\ nonzero\ bit\ of\ an\ intersecting\ pair\ of}}
+\DoxyCodeLine{00777\ \textcolor{comment}{\ \ \ bitmaps.\ \ We\ will\ have\ already\ advanced\ past\ the\ just\ iterated\ bit.}}
+\DoxyCodeLine{00778\ \textcolor{comment}{\ \ \ Return\ true\ if\ there\ is\ a\ bit\ to\ iterate.\ \ */}}
+\DoxyCodeLine{00779\ }
+\DoxyCodeLine{00780\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{bool}}
+\DoxyCodeLine{00781\ \doxymbox{\hyperlink{bitmap_8h_a9eccf01e121fdb3cc21eedad4cbbb78a}{bmp\_iter\_and}}\ (\doxymbox{\hyperlink{structbitmap__iterator}{bitmap\_iterator}}\ *bi,\ \textcolor{keywordtype}{unsigned}\ *bit\_no)}
+\DoxyCodeLine{00782\ \{}
+\DoxyCodeLine{00783\ \ \ \textcolor{comment}{/*\ If\ our\ current\ word\ is\ nonzero,\ it\ contains\ the\ bit\ we\ want.\ \ */}}
+\DoxyCodeLine{00784\ \ \ \textcolor{keywordflow}{if}\ (bi-\/>\doxymbox{\hyperlink{structbitmap__iterator_a222ead70416bafbf581cb443d06abaab}{bits}})}
+\DoxyCodeLine{00785\ \ \ \ \ \{}
+\DoxyCodeLine{00786\ \ \ \ \ next\_bit:}
+\DoxyCodeLine{00787\ \ \ \ \ \ \ \doxymbox{\hyperlink{bitmap_8h_a55dfb93e73b50ab17a54737789901c9b}{bmp\_iter\_next\_bit}}\ (bi,\ bit\_no);}
+\DoxyCodeLine{00788\ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ \textcolor{keyword}{true};}
+\DoxyCodeLine{00789\ \ \ \ \ \}}
+\DoxyCodeLine{00790\ }
+\DoxyCodeLine{00791\ \ \ \textcolor{comment}{/*\ Round\ up\ to\ the\ word\ boundary.\ \ We\ might\ have\ just\ iterated\ past}}
+\DoxyCodeLine{00792\ \textcolor{comment}{\ \ \ \ \ the\ end\ of\ the\ last\ word,\ hence\ the\ -\/1.\ \ It\ is\ not\ possible\ for}}
+\DoxyCodeLine{00793\ \textcolor{comment}{\ \ \ \ \ bit\_no\ to\ point\ at\ the\ beginning\ of\ the\ now\ last\ word.\ \ */}}
+\DoxyCodeLine{00794\ \ \ *bit\_no\ =\ ((*bit\_no\ +\ \doxymbox{\hyperlink{bitmap_8h_af1919de0e91034315cc30945d0ee27a5}{BITMAP\_WORD\_BITS}}\ -\/\ 1)}
+\DoxyCodeLine{00795\ \ \ \ \ \ \ \ \ \ /\ \doxymbox{\hyperlink{bitmap_8h_af1919de0e91034315cc30945d0ee27a5}{BITMAP\_WORD\_BITS}}\ *\ \doxymbox{\hyperlink{bitmap_8h_af1919de0e91034315cc30945d0ee27a5}{BITMAP\_WORD\_BITS}});}
+\DoxyCodeLine{00796\ \ \ bi-\/>\doxymbox{\hyperlink{structbitmap__iterator_a9e695b3a101817a437dfa90573e21026}{word\_no}}++;}
+\DoxyCodeLine{00797\ }
+\DoxyCodeLine{00798\ \ \ \textcolor{keywordflow}{while}\ (1)}
+\DoxyCodeLine{00799\ \ \ \ \ \{}
+\DoxyCodeLine{00800\ \ \ \ \ \ \ \textcolor{comment}{/*\ Find\ the\ next\ nonzero\ word\ in\ this\ elt.\ \ */}}
+\DoxyCodeLine{00801\ \ \ \ \ \ \ \textcolor{keywordflow}{while}\ (bi-\/>\doxymbox{\hyperlink{structbitmap__iterator_a9e695b3a101817a437dfa90573e21026}{word\_no}}\ !=\ \doxymbox{\hyperlink{bitmap_8h_aaa02b9f479c514c73e9623fc5a0f7ae2}{BITMAP\_ELEMENT\_WORDS}})}
+\DoxyCodeLine{00802\ \ \ \ \ \{}
+\DoxyCodeLine{00803\ \ \ \ \ \ \ bi-\/>\doxymbox{\hyperlink{structbitmap__iterator_a222ead70416bafbf581cb443d06abaab}{bits}}\ =\ bi-\/>\doxymbox{\hyperlink{structbitmap__iterator_a938fb816767502e3ae7fce8779feb651}{elt1}}-\/>bits[bi-\/>\doxymbox{\hyperlink{structbitmap__iterator_a9e695b3a101817a437dfa90573e21026}{word\_no}}]\ \&\ bi-\/>\doxymbox{\hyperlink{structbitmap__iterator_a5c82f44c4195e4ba32f54eeebd70203b}{elt2}}-\/>bits[bi-\/>\doxymbox{\hyperlink{structbitmap__iterator_a9e695b3a101817a437dfa90573e21026}{word\_no}}];}
+\DoxyCodeLine{00804\ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (bi-\/>\doxymbox{\hyperlink{structbitmap__iterator_a222ead70416bafbf581cb443d06abaab}{bits}})}
+\DoxyCodeLine{00805\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{goto}\ next\_bit;}
+\DoxyCodeLine{00806\ \ \ \ \ \ \ *bit\_no\ +=\ \doxymbox{\hyperlink{bitmap_8h_af1919de0e91034315cc30945d0ee27a5}{BITMAP\_WORD\_BITS}};}
+\DoxyCodeLine{00807\ \ \ \ \ \ \ bi-\/>\doxymbox{\hyperlink{structbitmap__iterator_a9e695b3a101817a437dfa90573e21026}{word\_no}}++;}
+\DoxyCodeLine{00808\ \ \ \ \ \}}
+\DoxyCodeLine{00809\ }
+\DoxyCodeLine{00810\ \ \ \ \ \ \ \textcolor{comment}{/*\ Advance\ to\ the\ next\ identical\ element.\ \ */}}
+\DoxyCodeLine{00811\ \ \ \ \ \ \ \textcolor{keywordflow}{do}}
+\DoxyCodeLine{00812\ \ \ \ \ \{}
+\DoxyCodeLine{00813\ \ \ \ \ \ \ \textcolor{comment}{/*\ Make\ sure\ we\ didn't\ remove\ the\ element\ while\ iterating.\ \ */}}
+\DoxyCodeLine{00814\ \ \ \ \ \ \ \doxymbox{\hyperlink{system_8h_aff447899dc74d54931b2bc2d47de9423}{gcc\_checking\_assert}}\ (bi-\/>\doxymbox{\hyperlink{structbitmap__iterator_a938fb816767502e3ae7fce8779feb651}{elt1}}-\/>indx\ !=\ -\/1U);}
+\DoxyCodeLine{00815\ }
+\DoxyCodeLine{00816\ \ \ \ \ \ \ \textcolor{comment}{/*\ Advance\ elt1\ while\ it\ is\ less\ than\ elt2.\ \ We\ always\ want}}
+\DoxyCodeLine{00817\ \textcolor{comment}{\ \ \ \ \ \ \ \ \ to\ advance\ one\ elt.\ \ */}}
+\DoxyCodeLine{00818\ \ \ \ \ \ \ \textcolor{keywordflow}{do}}
+\DoxyCodeLine{00819\ \ \ \ \ \ \ \ \ \{}
+\DoxyCodeLine{00820\ \ \ \ \ \ \ \ \ \ \ bi-\/>\doxymbox{\hyperlink{structbitmap__iterator_a938fb816767502e3ae7fce8779feb651}{elt1}}\ =\ bi-\/>\doxymbox{\hyperlink{structbitmap__iterator_a938fb816767502e3ae7fce8779feb651}{elt1}}-\/>next;}
+\DoxyCodeLine{00821\ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (!bi-\/>\doxymbox{\hyperlink{structbitmap__iterator_a938fb816767502e3ae7fce8779feb651}{elt1}})}
+\DoxyCodeLine{00822\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ \textcolor{keyword}{false};}
+\DoxyCodeLine{00823\ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00824\ \ \ \ \ \ \ \textcolor{keywordflow}{while}\ (bi-\/>\doxymbox{\hyperlink{structbitmap__iterator_a938fb816767502e3ae7fce8779feb651}{elt1}}-\/>indx\ <\ bi-\/>\doxymbox{\hyperlink{structbitmap__iterator_a5c82f44c4195e4ba32f54eeebd70203b}{elt2}}-\/>indx);}
+\DoxyCodeLine{00825\ }
+\DoxyCodeLine{00826\ \ \ \ \ \ \ \textcolor{comment}{/*\ Make\ sure\ we\ didn't\ remove\ the\ element\ while\ iterating.\ \ */}}
+\DoxyCodeLine{00827\ \ \ \ \ \ \ \doxymbox{\hyperlink{system_8h_aff447899dc74d54931b2bc2d47de9423}{gcc\_checking\_assert}}\ (bi-\/>\doxymbox{\hyperlink{structbitmap__iterator_a5c82f44c4195e4ba32f54eeebd70203b}{elt2}}-\/>indx\ !=\ -\/1U);}
+\DoxyCodeLine{00828\ }
+\DoxyCodeLine{00829\ \ \ \ \ \ \ \textcolor{comment}{/*\ Advance\ elt2\ to\ be\ no\ less\ than\ elt1.\ \ This\ might\ not}}
+\DoxyCodeLine{00830\ \textcolor{comment}{\ \ \ \ \ \ \ \ \ advance.\ \ */}}
+\DoxyCodeLine{00831\ \ \ \ \ \ \ \textcolor{keywordflow}{while}\ (bi-\/>\doxymbox{\hyperlink{structbitmap__iterator_a5c82f44c4195e4ba32f54eeebd70203b}{elt2}}-\/>indx\ <\ bi-\/>\doxymbox{\hyperlink{structbitmap__iterator_a938fb816767502e3ae7fce8779feb651}{elt1}}-\/>indx)}
+\DoxyCodeLine{00832\ \ \ \ \ \ \ \ \ \{}
+\DoxyCodeLine{00833\ \ \ \ \ \ \ \ \ \ \ bi-\/>\doxymbox{\hyperlink{structbitmap__iterator_a5c82f44c4195e4ba32f54eeebd70203b}{elt2}}\ =\ bi-\/>\doxymbox{\hyperlink{structbitmap__iterator_a5c82f44c4195e4ba32f54eeebd70203b}{elt2}}-\/>next;}
+\DoxyCodeLine{00834\ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (!bi-\/>\doxymbox{\hyperlink{structbitmap__iterator_a5c82f44c4195e4ba32f54eeebd70203b}{elt2}})}
+\DoxyCodeLine{00835\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ \textcolor{keyword}{false};}
+\DoxyCodeLine{00836\ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00837\ \ \ \ \ \}}
+\DoxyCodeLine{00838\ \ \ \ \ \ \ \textcolor{keywordflow}{while}\ (bi-\/>\doxymbox{\hyperlink{structbitmap__iterator_a938fb816767502e3ae7fce8779feb651}{elt1}}-\/>indx\ !=\ bi-\/>\doxymbox{\hyperlink{structbitmap__iterator_a5c82f44c4195e4ba32f54eeebd70203b}{elt2}}-\/>indx);}
+\DoxyCodeLine{00839\ }
+\DoxyCodeLine{00840\ \ \ \ \ \ \ *bit\_no\ =\ bi-\/>\doxymbox{\hyperlink{structbitmap__iterator_a938fb816767502e3ae7fce8779feb651}{elt1}}-\/>indx\ *\ \doxymbox{\hyperlink{bitmap_8h_ab67fc1593157ee487d18a5348f7cc610}{BITMAP\_ELEMENT\_ALL\_BITS}};}
+\DoxyCodeLine{00841\ \ \ \ \ \ \ bi-\/>\doxymbox{\hyperlink{structbitmap__iterator_a9e695b3a101817a437dfa90573e21026}{word\_no}}\ =\ 0;}
+\DoxyCodeLine{00842\ \ \ \ \ \}}
+\DoxyCodeLine{00843\ \}}
+\DoxyCodeLine{00844\ }
+\DoxyCodeLine{00845\ \textcolor{comment}{/*\ Advance\ to\ the\ next\ nonzero\ bit\ in\ the\ intersection\ of}}
+\DoxyCodeLine{00846\ \textcolor{comment}{\ \ \ complemented\ bitmaps.\ \ We\ will\ have\ already\ advanced\ past\ the\ just}}
+\DoxyCodeLine{00847\ \textcolor{comment}{\ \ \ iterated\ bit.\ \ */}}
+\DoxyCodeLine{00848\ }
+\DoxyCodeLine{00849\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{bool}}
+\DoxyCodeLine{00850\ \doxymbox{\hyperlink{bitmap_8h_a506ca1bef6f953e4e8c0ff8653a01f90}{bmp\_iter\_and\_compl}}\ (\doxymbox{\hyperlink{structbitmap__iterator}{bitmap\_iterator}}\ *bi,\ \textcolor{keywordtype}{unsigned}\ *bit\_no)}
+\DoxyCodeLine{00851\ \{}
+\DoxyCodeLine{00852\ \ \ \textcolor{comment}{/*\ If\ our\ current\ word\ is\ nonzero,\ it\ contains\ the\ bit\ we\ want.\ \ */}}
+\DoxyCodeLine{00853\ \ \ \textcolor{keywordflow}{if}\ (bi-\/>\doxymbox{\hyperlink{structbitmap__iterator_a222ead70416bafbf581cb443d06abaab}{bits}})}
+\DoxyCodeLine{00854\ \ \ \ \ \{}
+\DoxyCodeLine{00855\ \ \ \ \ next\_bit:}
+\DoxyCodeLine{00856\ \ \ \ \ \ \ \doxymbox{\hyperlink{bitmap_8h_a55dfb93e73b50ab17a54737789901c9b}{bmp\_iter\_next\_bit}}\ (bi,\ bit\_no);}
+\DoxyCodeLine{00857\ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ \textcolor{keyword}{true};}
+\DoxyCodeLine{00858\ \ \ \ \ \}}
+\DoxyCodeLine{00859\ }
+\DoxyCodeLine{00860\ \ \ \textcolor{comment}{/*\ Round\ up\ to\ the\ word\ boundary.\ \ We\ might\ have\ just\ iterated\ past}}
+\DoxyCodeLine{00861\ \textcolor{comment}{\ \ \ \ \ the\ end\ of\ the\ last\ word,\ hence\ the\ -\/1.\ \ It\ is\ not\ possible\ for}}
+\DoxyCodeLine{00862\ \textcolor{comment}{\ \ \ \ \ bit\_no\ to\ point\ at\ the\ beginning\ of\ the\ now\ last\ word.\ \ */}}
+\DoxyCodeLine{00863\ \ \ *bit\_no\ =\ ((*bit\_no\ +\ \doxymbox{\hyperlink{bitmap_8h_af1919de0e91034315cc30945d0ee27a5}{BITMAP\_WORD\_BITS}}\ -\/\ 1)}
+\DoxyCodeLine{00864\ \ \ \ \ \ \ \ \ \ /\ \doxymbox{\hyperlink{bitmap_8h_af1919de0e91034315cc30945d0ee27a5}{BITMAP\_WORD\_BITS}}\ *\ \doxymbox{\hyperlink{bitmap_8h_af1919de0e91034315cc30945d0ee27a5}{BITMAP\_WORD\_BITS}});}
+\DoxyCodeLine{00865\ \ \ bi-\/>\doxymbox{\hyperlink{structbitmap__iterator_a9e695b3a101817a437dfa90573e21026}{word\_no}}++;}
+\DoxyCodeLine{00866\ }
+\DoxyCodeLine{00867\ \ \ \textcolor{keywordflow}{while}\ (1)}
+\DoxyCodeLine{00868\ \ \ \ \ \{}
+\DoxyCodeLine{00869\ \ \ \ \ \ \ \textcolor{comment}{/*\ Find\ the\ next\ nonzero\ word\ in\ this\ elt.\ \ */}}
+\DoxyCodeLine{00870\ \ \ \ \ \ \ \textcolor{keywordflow}{while}\ (bi-\/>\doxymbox{\hyperlink{structbitmap__iterator_a9e695b3a101817a437dfa90573e21026}{word\_no}}\ !=\ \doxymbox{\hyperlink{bitmap_8h_aaa02b9f479c514c73e9623fc5a0f7ae2}{BITMAP\_ELEMENT\_WORDS}})}
+\DoxyCodeLine{00871\ \ \ \ \ \{}
+\DoxyCodeLine{00872\ \ \ \ \ \ \ bi-\/>\doxymbox{\hyperlink{structbitmap__iterator_a222ead70416bafbf581cb443d06abaab}{bits}}\ =\ bi-\/>\doxymbox{\hyperlink{structbitmap__iterator_a938fb816767502e3ae7fce8779feb651}{elt1}}-\/>bits[bi-\/>\doxymbox{\hyperlink{structbitmap__iterator_a9e695b3a101817a437dfa90573e21026}{word\_no}}];}
+\DoxyCodeLine{00873\ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (bi-\/>\doxymbox{\hyperlink{structbitmap__iterator_a5c82f44c4195e4ba32f54eeebd70203b}{elt2}}\ \&\&\ bi-\/>\doxymbox{\hyperlink{structbitmap__iterator_a5c82f44c4195e4ba32f54eeebd70203b}{elt2}}-\/>indx\ ==\ bi-\/>\doxymbox{\hyperlink{structbitmap__iterator_a938fb816767502e3ae7fce8779feb651}{elt1}}-\/>indx)}
+\DoxyCodeLine{00874\ \ \ \ \ \ \ \ \ bi-\/>\doxymbox{\hyperlink{structbitmap__iterator_a222ead70416bafbf581cb443d06abaab}{bits}}\ \&=\ \string~bi-\/>elt2-\/>bits[bi-\/>\doxymbox{\hyperlink{structbitmap__iterator_a9e695b3a101817a437dfa90573e21026}{word\_no}}];}
+\DoxyCodeLine{00875\ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (bi-\/>\doxymbox{\hyperlink{structbitmap__iterator_a222ead70416bafbf581cb443d06abaab}{bits}})}
+\DoxyCodeLine{00876\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{goto}\ next\_bit;}
+\DoxyCodeLine{00877\ \ \ \ \ \ \ *bit\_no\ +=\ \doxymbox{\hyperlink{bitmap_8h_af1919de0e91034315cc30945d0ee27a5}{BITMAP\_WORD\_BITS}};}
+\DoxyCodeLine{00878\ \ \ \ \ \ \ bi-\/>\doxymbox{\hyperlink{structbitmap__iterator_a9e695b3a101817a437dfa90573e21026}{word\_no}}++;}
+\DoxyCodeLine{00879\ \ \ \ \ \}}
+\DoxyCodeLine{00880\ }
+\DoxyCodeLine{00881\ \ \ \ \ \ \ \textcolor{comment}{/*\ Make\ sure\ we\ didn't\ remove\ the\ element\ while\ iterating.\ \ */}}
+\DoxyCodeLine{00882\ \ \ \ \ \ \ \doxymbox{\hyperlink{system_8h_aff447899dc74d54931b2bc2d47de9423}{gcc\_checking\_assert}}\ (bi-\/>\doxymbox{\hyperlink{structbitmap__iterator_a938fb816767502e3ae7fce8779feb651}{elt1}}-\/>indx\ !=\ -\/1U);}
+\DoxyCodeLine{00883\ }
+\DoxyCodeLine{00884\ \ \ \ \ \ \ \textcolor{comment}{/*\ Advance\ to\ the\ next\ element\ of\ elt1.\ \ */}}
+\DoxyCodeLine{00885\ \ \ \ \ \ \ bi-\/>\doxymbox{\hyperlink{structbitmap__iterator_a938fb816767502e3ae7fce8779feb651}{elt1}}\ =\ bi-\/>\doxymbox{\hyperlink{structbitmap__iterator_a938fb816767502e3ae7fce8779feb651}{elt1}}-\/>next;}
+\DoxyCodeLine{00886\ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (!bi-\/>\doxymbox{\hyperlink{structbitmap__iterator_a938fb816767502e3ae7fce8779feb651}{elt1}})}
+\DoxyCodeLine{00887\ \ \ \ \ \textcolor{keywordflow}{return}\ \textcolor{keyword}{false};}
+\DoxyCodeLine{00888\ }
+\DoxyCodeLine{00889\ \ \ \ \ \ \ \textcolor{comment}{/*\ Make\ sure\ we\ didn't\ remove\ the\ element\ while\ iterating.\ \ */}}
+\DoxyCodeLine{00890\ \ \ \ \ \ \ \doxymbox{\hyperlink{system_8h_aff447899dc74d54931b2bc2d47de9423}{gcc\_checking\_assert}}\ (!\ bi-\/>\doxymbox{\hyperlink{structbitmap__iterator_a5c82f44c4195e4ba32f54eeebd70203b}{elt2}}\ ||\ bi-\/>\doxymbox{\hyperlink{structbitmap__iterator_a5c82f44c4195e4ba32f54eeebd70203b}{elt2}}-\/>indx\ !=\ -\/1U);}
+\DoxyCodeLine{00891\ }
+\DoxyCodeLine{00892\ \ \ \ \ \ \ \textcolor{comment}{/*\ Advance\ elt2\ until\ it\ is\ no\ less\ than\ elt1.\ \ */}}
+\DoxyCodeLine{00893\ \ \ \ \ \ \ \textcolor{keywordflow}{while}\ (bi-\/>\doxymbox{\hyperlink{structbitmap__iterator_a5c82f44c4195e4ba32f54eeebd70203b}{elt2}}\ \&\&\ bi-\/>\doxymbox{\hyperlink{structbitmap__iterator_a5c82f44c4195e4ba32f54eeebd70203b}{elt2}}-\/>indx\ <\ bi-\/>\doxymbox{\hyperlink{structbitmap__iterator_a938fb816767502e3ae7fce8779feb651}{elt1}}-\/>indx)}
+\DoxyCodeLine{00894\ \ \ \ \ bi-\/>\doxymbox{\hyperlink{structbitmap__iterator_a5c82f44c4195e4ba32f54eeebd70203b}{elt2}}\ =\ bi-\/>\doxymbox{\hyperlink{structbitmap__iterator_a5c82f44c4195e4ba32f54eeebd70203b}{elt2}}-\/>next;}
+\DoxyCodeLine{00895\ }
+\DoxyCodeLine{00896\ \ \ \ \ \ \ *bit\_no\ =\ bi-\/>\doxymbox{\hyperlink{structbitmap__iterator_a938fb816767502e3ae7fce8779feb651}{elt1}}-\/>indx\ *\ \doxymbox{\hyperlink{bitmap_8h_ab67fc1593157ee487d18a5348f7cc610}{BITMAP\_ELEMENT\_ALL\_BITS}};}
+\DoxyCodeLine{00897\ \ \ \ \ \ \ bi-\/>\doxymbox{\hyperlink{structbitmap__iterator_a9e695b3a101817a437dfa90573e21026}{word\_no}}\ =\ 0;}
+\DoxyCodeLine{00898\ \ \ \ \ \}}
+\DoxyCodeLine{00899\ \}}
+\DoxyCodeLine{00900\ }
+\DoxyCodeLine{00901\ \textcolor{comment}{/*\ If\ you\ are\ modifying\ a\ bitmap\ you\ are\ currently\ iterating\ over\ you}}
+\DoxyCodeLine{00902\ \textcolor{comment}{\ \ \ have\ to\ ensure\ to}}
+\DoxyCodeLine{00903\ \textcolor{comment}{\ \ \ \ \ -\/\ never\ remove\ the\ current\ bit;}}
+\DoxyCodeLine{00904\ \textcolor{comment}{\ \ \ \ \ -\/\ if\ you\ set\ or\ clear\ a\ bit\ before\ the\ current\ bit\ this\ operation}}
+\DoxyCodeLine{00905\ \textcolor{comment}{\ \ \ \ \ \ \ will\ not\ affect\ the\ set\ of\ bits\ you\ are\ visiting\ during\ the\ iteration;}}
+\DoxyCodeLine{00906\ \textcolor{comment}{\ \ \ \ \ -\/\ if\ you\ set\ or\ clear\ a\ bit\ after\ the\ current\ bit\ it\ is\ unspecified}}
+\DoxyCodeLine{00907\ \textcolor{comment}{\ \ \ \ \ \ \ whether\ that\ affects\ the\ set\ of\ bits\ you\ are\ visiting\ during\ the}}
+\DoxyCodeLine{00908\ \textcolor{comment}{\ \ \ \ \ \ \ iteration.}}
+\DoxyCodeLine{00909\ \textcolor{comment}{\ \ \ If\ you\ want\ to\ remove\ the\ current\ bit\ you\ can\ delay\ this\ to\ the\ next}}
+\DoxyCodeLine{00910\ \textcolor{comment}{\ \ \ iteration\ (and\ after\ the\ iteration\ in\ case\ the\ last\ iteration\ is}}
+\DoxyCodeLine{00911\ \textcolor{comment}{\ \ \ affected).\ \ */}}
+\DoxyCodeLine{00912\ }
+\DoxyCodeLine{00913\ \textcolor{comment}{/*\ Loop\ over\ all\ bits\ set\ in\ BITMAP,\ starting\ with\ MIN\ and\ setting}}
+\DoxyCodeLine{00914\ \textcolor{comment}{\ \ \ BITNUM\ to\ the\ bit\ number.\ \ ITER\ is\ a\ bitmap\ iterator.\ \ BITNUM}}
+\DoxyCodeLine{00915\ \textcolor{comment}{\ \ \ should\ be\ treated\ as\ a\ read-\/only\ variable\ as\ it\ contains\ loop}}
+\DoxyCodeLine{00916\ \textcolor{comment}{\ \ \ state.\ \ */}}
+\DoxyCodeLine{00917\ }
+\DoxyCodeLine{00918\ \textcolor{preprocessor}{\#ifndef\ EXECUTE\_IF\_SET\_IN\_BITMAP}}
+\DoxyCodeLine{00919\ \textcolor{comment}{/*\ See\ sbitmap.h\ for\ the\ other\ definition\ of\ EXECUTE\_IF\_SET\_IN\_BITMAP.\ \ */}}
+\DoxyCodeLine{00920\ \textcolor{preprocessor}{\#define\ EXECUTE\_IF\_SET\_IN\_BITMAP(BITMAP,\ MIN,\ BITNUM,\ ITER)\ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00921\ \textcolor{preprocessor}{\ \ for\ (bmp\_iter\_set\_init\ (\&(ITER),\ (BITMAP),\ (MIN),\ \&(BITNUM));\ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00922\ \textcolor{preprocessor}{\ \ \ \ \ \ \ bmp\_iter\_set\ (\&(ITER),\ \&(BITNUM));\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00923\ \textcolor{preprocessor}{\ \ \ \ \ \ \ bmp\_iter\_next\ (\&(ITER),\ \&(BITNUM)))}}
+\DoxyCodeLine{00924\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00925\ }
+\DoxyCodeLine{00926\ \textcolor{comment}{/*\ Loop\ over\ all\ the\ bits\ set\ in\ BITMAP1\ \&\ BITMAP2,\ starting\ with\ MIN}}
+\DoxyCodeLine{00927\ \textcolor{comment}{\ \ \ and\ setting\ BITNUM\ to\ the\ bit\ number.\ \ ITER\ is\ a\ bitmap\ iterator.}}
+\DoxyCodeLine{00928\ \textcolor{comment}{\ \ \ BITNUM\ should\ be\ treated\ as\ a\ read-\/only\ variable\ as\ it\ contains}}
+\DoxyCodeLine{00929\ \textcolor{comment}{\ \ \ loop\ state.\ \ */}}
+\DoxyCodeLine{00930\ }
+\DoxyCodeLine{00931\ \textcolor{preprocessor}{\#define\ EXECUTE\_IF\_AND\_IN\_BITMAP(BITMAP1,\ BITMAP2,\ MIN,\ BITNUM,\ ITER)\ \ \ \(\backslash\)}}
+\DoxyCodeLine{00932\ \textcolor{preprocessor}{\ \ for\ (bmp\_iter\_and\_init\ (\&(ITER),\ (BITMAP1),\ (BITMAP2),\ (MIN),\ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00933\ \textcolor{preprocessor}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \&(BITNUM));\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00934\ \textcolor{preprocessor}{\ \ \ \ \ \ \ bmp\_iter\_and\ (\&(ITER),\ \&(BITNUM));\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00935\ \textcolor{preprocessor}{\ \ \ \ \ \ \ bmp\_iter\_next\ (\&(ITER),\ \&(BITNUM)))}}
+\DoxyCodeLine{00936\ }
+\DoxyCodeLine{00937\ \textcolor{comment}{/*\ Loop\ over\ all\ the\ bits\ set\ in\ BITMAP1\ \&\ \string~BITMAP2,\ starting\ with\ MIN}}
+\DoxyCodeLine{00938\ \textcolor{comment}{\ \ \ and\ setting\ BITNUM\ to\ the\ bit\ number.\ \ ITER\ is\ a\ bitmap\ iterator.}}
+\DoxyCodeLine{00939\ \textcolor{comment}{\ \ \ BITNUM\ should\ be\ treated\ as\ a\ read-\/only\ variable\ as\ it\ contains}}
+\DoxyCodeLine{00940\ \textcolor{comment}{\ \ \ loop\ state.\ \ */}}
+\DoxyCodeLine{00941\ }
+\DoxyCodeLine{00942\ \textcolor{preprocessor}{\#define\ EXECUTE\_IF\_AND\_COMPL\_IN\_BITMAP(BITMAP1,\ BITMAP2,\ MIN,\ BITNUM,\ ITER)\ \(\backslash\)}}
+\DoxyCodeLine{00943\ \textcolor{preprocessor}{\ \ for\ (bmp\_iter\_and\_compl\_init\ (\&(ITER),\ (BITMAP1),\ (BITMAP2),\ (MIN),\ \ \ \(\backslash\)}}
+\DoxyCodeLine{00944\ \textcolor{preprocessor}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&(BITNUM));\ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00945\ \textcolor{preprocessor}{\ \ \ \ \ \ \ bmp\_iter\_and\_compl\ (\&(ITER),\ \&(BITNUM));\ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00946\ \textcolor{preprocessor}{\ \ \ \ \ \ \ bmp\_iter\_next\ (\&(ITER),\ \&(BITNUM)))}}
+\DoxyCodeLine{00947\ }
+\DoxyCodeLine{00948\ \textcolor{comment}{/*\ A\ class\ that\ ties\ the\ lifetime\ of\ a\ bitmap\ to\ its\ scope.\ \ */}}
+\DoxyCodeLine{00949\ \textcolor{keyword}{class\ }\doxymbox{\hyperlink{classauto__bitmap_a702c52f15cd5ee96f2aee928bf55d1ec}{auto\_bitmap}}}
+\DoxyCodeLine{00950\ \{}
+\DoxyCodeLine{00951\ \ \textcolor{keyword}{public}:}
+\DoxyCodeLine{00952\ \ \ \doxymbox{\hyperlink{classauto__bitmap_a702c52f15cd5ee96f2aee928bf55d1ec}{auto\_bitmap}}\ (\doxymbox{\hyperlink{statistics_8h_a3cdcffae73854a33ce452c309b9df449}{ALONE\_CXX\_MEM\_STAT\_INFO}})}
+\DoxyCodeLine{00953\ \ \ \ \ \{\ \doxymbox{\hyperlink{bitmap_8h_a2044be25a31d5ca656e041709747c4f5}{bitmap\_initialize}}\ (\&\doxymbox{\hyperlink{classauto__bitmap_a15fa9ec1e854c756b164a1133b786795}{m\_bits}},\ \&\doxymbox{\hyperlink{bitmap_8h_a266f7b0a73eeee1f515875390dbb58a9}{bitmap\_default\_obstack}}\ \doxymbox{\hyperlink{statistics_8h_a75b4a65a7a5d197f17362673db5ece22}{PASS\_MEM\_STAT}});\ \}}
+\DoxyCodeLine{00954\ \ \ \textcolor{keyword}{explicit}\ \doxymbox{\hyperlink{classauto__bitmap_ac95b90d41dbac1e813ec7b81e96c838a}{auto\_bitmap}}\ (\doxymbox{\hyperlink{structbitmap__obstack}{bitmap\_obstack}}\ *o\ \doxymbox{\hyperlink{statistics_8h_ad9b89af963cc7e535c9697fd40241a6f}{CXX\_MEM\_STAT\_INFO}})}
+\DoxyCodeLine{00955\ \ \ \ \ \{\ \doxymbox{\hyperlink{bitmap_8h_a2044be25a31d5ca656e041709747c4f5}{bitmap\_initialize}}\ (\&\doxymbox{\hyperlink{classauto__bitmap_a15fa9ec1e854c756b164a1133b786795}{m\_bits}},\ o\ \doxymbox{\hyperlink{statistics_8h_a75b4a65a7a5d197f17362673db5ece22}{PASS\_MEM\_STAT}});\ \}}
+\DoxyCodeLine{00956\ \ \ \doxymbox{\hyperlink{classauto__bitmap_a78ef0cc5688aa54acdceb028d736d868}{\string~auto\_bitmap}}\ ()\ \{\ \doxymbox{\hyperlink{bitmap_8h_a5ff4a77aa8fd35ad7fc456cbc48bd33f}{bitmap\_clear}}\ (\&\doxymbox{\hyperlink{classauto__bitmap_a15fa9ec1e854c756b164a1133b786795}{m\_bits}});\ \}}
+\DoxyCodeLine{00957\ \ \ \textcolor{comment}{//\ Allow\ calling\ bitmap\ functions\ on\ our\ bitmap.}}
+\DoxyCodeLine{00958\ \ \ \textcolor{keyword}{operator}\ \doxymbox{\hyperlink{coretypes_8h_ae7ea3a04cabf8964dc6e8e95a9cde1b8}{bitmap}}\ ()\ \{\ \textcolor{keywordflow}{return}\ \&\doxymbox{\hyperlink{classauto__bitmap_a15fa9ec1e854c756b164a1133b786795}{m\_bits}};\ \}}
+\DoxyCodeLine{00959\ }
+\DoxyCodeLine{00960\ \ \textcolor{keyword}{private}:}
+\DoxyCodeLine{00961\ \ \ \textcolor{comment}{//\ Prevent\ making\ a\ copy\ that\ references\ our\ bitmap.}}
+\DoxyCodeLine{00962\ \ \ \doxymbox{\hyperlink{classauto__bitmap_a68a7990dac3f0033e627789061230c23}{auto\_bitmap}}\ (\textcolor{keyword}{const}\ \doxymbox{\hyperlink{classauto__bitmap_a702c52f15cd5ee96f2aee928bf55d1ec}{auto\_bitmap}}\ \&);}
+\DoxyCodeLine{00963\ \ \ \doxymbox{\hyperlink{classauto__bitmap_a702c52f15cd5ee96f2aee928bf55d1ec}{auto\_bitmap}}\ \&\doxymbox{\hyperlink{classauto__bitmap_a87108194d0d64ff19f8f13af54645660}{operator\ =\ }}(\textcolor{keyword}{const}\ \doxymbox{\hyperlink{classauto__bitmap_a702c52f15cd5ee96f2aee928bf55d1ec}{auto\_bitmap}}\ \&);}
+\DoxyCodeLine{00964\ \ \ \doxymbox{\hyperlink{classauto__bitmap_a80443de09a2ea74b86b392ec0d44192b}{auto\_bitmap}}\ (\doxymbox{\hyperlink{classauto__bitmap_a702c52f15cd5ee96f2aee928bf55d1ec}{auto\_bitmap}}\ \&\&);}
+\DoxyCodeLine{00965\ \ \ \doxymbox{\hyperlink{classauto__bitmap_a702c52f15cd5ee96f2aee928bf55d1ec}{auto\_bitmap}}\ \&\doxymbox{\hyperlink{classauto__bitmap_a87108194d0d64ff19f8f13af54645660}{operator\ =\ }}(\doxymbox{\hyperlink{classauto__bitmap_a702c52f15cd5ee96f2aee928bf55d1ec}{auto\_bitmap}}\ \&\&);}
+\DoxyCodeLine{00966\ }
+\DoxyCodeLine{00967\ \ \ bitmap\_head\ \doxymbox{\hyperlink{classauto__bitmap_a15fa9ec1e854c756b164a1133b786795}{m\_bits}};}
+\DoxyCodeLine{00968\ \};}
+\DoxyCodeLine{00969\ }
+\DoxyCodeLine{00970\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{collect-utils_8h_a398527b3e9e358c345c5047b16871957}{debug}}\ (\textcolor{keyword}{const}\ \doxymbox{\hyperlink{classauto__bitmap}{auto\_bitmap}}\ \&ref);}
+\DoxyCodeLine{00971\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{collect-utils_8h_a398527b3e9e358c345c5047b16871957}{debug}}\ (\textcolor{keyword}{const}\ \doxymbox{\hyperlink{classauto__bitmap}{auto\_bitmap}}\ *ptr);}
+\DoxyCodeLine{00972\ }
+\DoxyCodeLine{00973\ \textcolor{comment}{/*\ Base\ class\ for\ bitmap\_view;\ see\ there\ for\ details.\ \ */}}
+\DoxyCodeLine{00974\ \textcolor{keyword}{template}<\textcolor{keyword}{typename}\ T,\ \textcolor{keyword}{typename}\ Traits\ =\ array\_traits<T>\ >}
+\DoxyCodeLine{00975\ \textcolor{keyword}{class\ }\doxymbox{\hyperlink{classbase__bitmap__view_adedbff0c8dc99b5f08395da81860adf8}{base\_bitmap\_view}}}
+\DoxyCodeLine{00976\ \{}
+\DoxyCodeLine{00977\ \textcolor{keyword}{public}:}
+\DoxyCodeLine{00978\ \ \ \textcolor{keyword}{typedef}\ \textcolor{keyword}{typename}\ Traits::element\_type\ \doxymbox{\hyperlink{classbase__bitmap__view_ad0f96077f64d4f197f921df017cef603}{array\_element\_type}};}
+\DoxyCodeLine{00979\ }
+\DoxyCodeLine{00980\ \ \ \doxymbox{\hyperlink{classbase__bitmap__view_adedbff0c8dc99b5f08395da81860adf8}{base\_bitmap\_view}}\ (\textcolor{keyword}{const}\ T\ \&,\ bitmap\_element\ *);}
+\DoxyCodeLine{00981\ \ \ \textcolor{keyword}{operator}\ \doxymbox{\hyperlink{coretypes_8h_ac1b200ce036f141b63e8c4e2855c9d40}{const\_bitmap}}\ ()\textcolor{keyword}{\ const\ }\{\ \textcolor{keywordflow}{return}\ \&\doxymbox{\hyperlink{classbase__bitmap__view_a738bb176ed5e18d57c97805a08c9a7b9}{m\_head}};\ \}}
+\DoxyCodeLine{00982\ }
+\DoxyCodeLine{00983\ \textcolor{keyword}{private}:}
+\DoxyCodeLine{00984\ \ \ \doxymbox{\hyperlink{classbase__bitmap__view_a5a7cc5e21664f2c32d8dea4328d3e478}{base\_bitmap\_view}}\ (\textcolor{keyword}{const}\ \doxymbox{\hyperlink{classbase__bitmap__view_adedbff0c8dc99b5f08395da81860adf8}{base\_bitmap\_view}}\ \&);}
+\DoxyCodeLine{00985\ }
+\DoxyCodeLine{00986\ \ \ bitmap\_head\ \doxymbox{\hyperlink{classbase__bitmap__view_a738bb176ed5e18d57c97805a08c9a7b9}{m\_head}};}
+\DoxyCodeLine{00987\ \};}
+\DoxyCodeLine{00988\ }
+\DoxyCodeLine{00989\ \textcolor{comment}{/*\ Provides\ a\ read-\/only\ bitmap\ view\ of\ a\ single\ integer\ bitmask\ or\ a}}
+\DoxyCodeLine{00990\ \textcolor{comment}{\ \ \ constant-\/sized\ array\ of\ integer\ bitmasks,\ or\ of\ a\ wrapper\ around\ such}}
+\DoxyCodeLine{00991\ \textcolor{comment}{\ \ \ bitmasks.\ \ */}}
+\DoxyCodeLine{00992\ \textcolor{keyword}{template}<\textcolor{keyword}{typename}\ T,\ \textcolor{keyword}{typename}\ Traits>}
+\DoxyCodeLine{00993\ \textcolor{keyword}{class\ }\doxymbox{\hyperlink{classbitmap__view_3_01T_00_01Traits_00_01true_01_4_aee968e8f210a6eedf4995f2ebfcb9b1c}{bitmap\_view}}<T,\ Traits,\ \doxymbox{\hyperlink{stdbool_8h_a41f9c5fb8b08eb5dc3edce4dcb37fee7}{true}}>\ :\ \textcolor{keyword}{public}\ \doxymbox{\hyperlink{classbase__bitmap__view_adedbff0c8dc99b5f08395da81860adf8}{base\_bitmap\_view}}<T,\ Traits>}
+\DoxyCodeLine{00994\ \{}
+\DoxyCodeLine{00995\ \textcolor{keyword}{public}:}
+\DoxyCodeLine{00996\ \ \ \doxymbox{\hyperlink{classbitmap__view_3_01T_00_01Traits_00_01true_01_4_aee968e8f210a6eedf4995f2ebfcb9b1c}{bitmap\_view}}\ (\textcolor{keyword}{const}\ T\ \&array)}
+\DoxyCodeLine{00997\ \ \ \ \ :\ \doxymbox{\hyperlink{classbase__bitmap__view_adedbff0c8dc99b5f08395da81860adf8}{base\_bitmap\_view}}<T,\ Traits>\ (array,\ \doxymbox{\hyperlink{classbitmap__view_3_01T_00_01Traits_00_01true_01_4_a33e84735b28a0de858d44ed14a8b2257}{m\_bitmap\_elements}})\ \{\}}
+\DoxyCodeLine{00998\ }
+\DoxyCodeLine{00999\ \textcolor{keyword}{private}:}
+\DoxyCodeLine{01000\ \ \ \textcolor{comment}{/*\ How\ many\ bitmap\_elements\ we\ need\ to\ hold\ a\ full\ T.\ \ */}}
+\DoxyCodeLine{01001\ \ \ \textcolor{keyword}{static}\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{size\_t}\ \doxymbox{\hyperlink{classbitmap__view_3_01T_00_01Traits_00_01true_01_4_a0c75e8ae0e988bb360cca2af055fe2f8}{num\_bitmap\_elements}}}
+\DoxyCodeLine{01002\ \ \ \ \ =\ \doxymbox{\hyperlink{system_8h_a20336fc81ebceab8ae0f0650eadbaeef}{CEIL}}\ (\doxymbox{\hyperlink{include_2limits_8h_a308d9dd2c0028ddb184b455bbd7865de}{CHAR\_BIT}}}
+\DoxyCodeLine{01003\ \ \ \ \ \ \ \ \ *\ \textcolor{keyword}{sizeof}\ (\textcolor{keyword}{typename}\ Traits::element\_type)}
+\DoxyCodeLine{01004\ \ \ \ \ \ \ \ \ *\ Traits::constant\_size,}
+\DoxyCodeLine{01005\ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{bitmap_8h_ab67fc1593157ee487d18a5348f7cc610}{BITMAP\_ELEMENT\_ALL\_BITS}});}
+\DoxyCodeLine{01006\ \ \ bitmap\_element\ \doxymbox{\hyperlink{classbitmap__view_3_01T_00_01Traits_00_01true_01_4_a33e84735b28a0de858d44ed14a8b2257}{m\_bitmap\_elements}}[\doxymbox{\hyperlink{classbitmap__view_3_01T_00_01Traits_00_01true_01_4_a0c75e8ae0e988bb360cca2af055fe2f8}{num\_bitmap\_elements}}];}
+\DoxyCodeLine{01007\ \};}
+\DoxyCodeLine{01008\ }
+\DoxyCodeLine{01009\ \textcolor{comment}{/*\ Initialize\ the\ view\ for\ array\ ARRAY,\ using\ the\ array\ of\ bitmap}}
+\DoxyCodeLine{01010\ \textcolor{comment}{\ \ \ elements\ in\ BITMAP\_ELEMENTS\ (which\ is\ known\ to\ contain\ enough}}
+\DoxyCodeLine{01011\ \textcolor{comment}{\ \ \ entries).\ \ */}}
+\DoxyCodeLine{01012\ \textcolor{keyword}{template}<\textcolor{keyword}{typename}\ T,\ \textcolor{keyword}{typename}\ Traits>}
+\DoxyCodeLine{01013\ \doxymbox{\hyperlink{classbase__bitmap__view_adedbff0c8dc99b5f08395da81860adf8}{base\_bitmap\_view<T,\ Traits>::base\_bitmap\_view}}\ (\textcolor{keyword}{const}\ T\ \&array,}
+\DoxyCodeLine{01014\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ bitmap\_element\ *bitmap\_elements)}
+\DoxyCodeLine{01015\ \{}
+\DoxyCodeLine{01016\ \ \ \doxymbox{\hyperlink{classbase__bitmap__view_a738bb176ed5e18d57c97805a08c9a7b9}{m\_head}}.obstack\ =\ \doxymbox{\hyperlink{stddef_8h_a070d2ce7b6bb7e5c05602aa8c308d0c4}{NULL}};}
+\DoxyCodeLine{01017\ }
+\DoxyCodeLine{01018\ \ \ \textcolor{comment}{/*\ The\ code\ currently\ assumes\ that\ each\ element\ of\ ARRAY\ corresponds}}
+\DoxyCodeLine{01019\ \textcolor{comment}{\ \ \ \ \ to\ exactly\ one\ bitmap\_element.\ \ */}}
+\DoxyCodeLine{01020\ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{size\_t}\ array\_element\_bits\ =\ \doxymbox{\hyperlink{include_2limits_8h_a308d9dd2c0028ddb184b455bbd7865de}{CHAR\_BIT}}\ *\ \textcolor{keyword}{sizeof}\ (\doxymbox{\hyperlink{classbase__bitmap__view_ad0f96077f64d4f197f921df017cef603}{array\_element\_type}});}
+\DoxyCodeLine{01021\ \ \ \doxymbox{\hyperlink{system_8h_ad43df400ec5a5f05d7099854a1829264}{STATIC\_ASSERT}}\ (\doxymbox{\hyperlink{bitmap_8h_ab67fc1593157ee487d18a5348f7cc610}{BITMAP\_ELEMENT\_ALL\_BITS}}\ \%\ array\_element\_bits\ ==\ 0);}
+\DoxyCodeLine{01022\ \ \ \textcolor{keywordtype}{size\_t}\ array\_step\ =\ \doxymbox{\hyperlink{bitmap_8h_ab67fc1593157ee487d18a5348f7cc610}{BITMAP\_ELEMENT\_ALL\_BITS}}\ /\ array\_element\_bits;}
+\DoxyCodeLine{01023\ \ \ \textcolor{keywordtype}{size\_t}\ array\_size\ =\ Traits::size\ (array);}
+\DoxyCodeLine{01024\ }
+\DoxyCodeLine{01025\ \ \ \textcolor{comment}{/*\ Process\ each\ potential\ bitmap\_element\ in\ turn.\ \ The\ loop\ is\ written}}
+\DoxyCodeLine{01026\ \textcolor{comment}{\ \ \ \ \ this\ way\ rather\ than\ per\ array\ element\ because\ usually\ there\ are}}
+\DoxyCodeLine{01027\ \textcolor{comment}{\ \ \ \ \ only\ a\ small\ number\ of\ array\ elements\ per\ bitmap\ element\ (typically}}
+\DoxyCodeLine{01028\ \textcolor{comment}{\ \ \ \ \ two\ or\ four).\ \ The\ inner\ loops\ should\ therefore\ unroll\ completely.\ \ */}}
+\DoxyCodeLine{01029\ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classbase__bitmap__view_ad0f96077f64d4f197f921df017cef603}{array\_element\_type}}\ *array\_elements\ =\ Traits::base\ (array);}
+\DoxyCodeLine{01030\ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ indx\ =\ 0;}
+\DoxyCodeLine{01031\ \ \ \textcolor{keywordflow}{for}\ (\textcolor{keywordtype}{size\_t}\ array\_base\ =\ 0;}
+\DoxyCodeLine{01032\ \ \ \ \ \ \ \ array\_base\ <\ array\_size;}
+\DoxyCodeLine{01033\ \ \ \ \ \ \ \ array\_base\ +=\ array\_step,\ indx\ +=\ 1)}
+\DoxyCodeLine{01034\ \ \ \ \ \{}
+\DoxyCodeLine{01035\ \ \ \ \ \ \ \textcolor{comment}{/*\ How\ many\ array\ elements\ are\ in\ this\ particular\ bitmap\_element.\ \ */}}
+\DoxyCodeLine{01036\ \ \ \ \ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ array\_count}
+\DoxyCodeLine{01037\ \ \ \ \ =\ (\doxymbox{\hyperlink{system_8h_a9fdc3b4a2938849460162446af907112}{STATIC\_CONSTANT\_P}}\ (array\_size\ \%\ array\_step\ ==\ 0)}
+\DoxyCodeLine{01038\ \ \ \ \ \ \ \ ?\ array\_step\ :\ \doxymbox{\hyperlink{system_8h_ad2f3678bf5eae3684fc497130b946eae}{MIN}}\ (array\_step,\ array\_size\ -\/\ array\_base));}
+\DoxyCodeLine{01039\ }
+\DoxyCodeLine{01040\ \ \ \ \ \ \ \textcolor{comment}{/*\ See\ whether\ we\ need\ this\ bitmap\ element.\ \ */}}
+\DoxyCodeLine{01041\ \ \ \ \ \ \ \doxymbox{\hyperlink{classbase__bitmap__view_ad0f96077f64d4f197f921df017cef603}{array\_element\_type}}\ ior\ =\ array\_elements[array\_base];}
+\DoxyCodeLine{01042\ \ \ \ \ \ \ \textcolor{keywordflow}{for}\ (\textcolor{keywordtype}{size\_t}\ \doxymbox{\hyperlink{poly-int_8h_a7e98b8a17c0aad30ba64d47b74e2a6c1}{i}}\ =\ 1;\ \doxymbox{\hyperlink{poly-int_8h_a7e98b8a17c0aad30ba64d47b74e2a6c1}{i}}\ <\ array\_count;\ ++\doxymbox{\hyperlink{poly-int_8h_a7e98b8a17c0aad30ba64d47b74e2a6c1}{i}})}
+\DoxyCodeLine{01043\ \ \ \ \ ior\ |=\ array\_elements[array\_base\ +\ \doxymbox{\hyperlink{poly-int_8h_a7e98b8a17c0aad30ba64d47b74e2a6c1}{i}}];}
+\DoxyCodeLine{01044\ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (ior\ ==\ 0)}
+\DoxyCodeLine{01045\ \ \ \ \ \textcolor{keywordflow}{continue};}
+\DoxyCodeLine{01046\ }
+\DoxyCodeLine{01047\ \ \ \ \ \ \ \textcolor{comment}{/*\ Grab\ the\ next\ bitmap\ element\ and\ chain\ it.\ \ */}}
+\DoxyCodeLine{01048\ \ \ \ \ \ \ bitmap\_element\ *bitmap\_element\ =\ bitmap\_elements++;}
+\DoxyCodeLine{01049\ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (\doxymbox{\hyperlink{classbase__bitmap__view_a738bb176ed5e18d57c97805a08c9a7b9}{m\_head}}.current)}
+\DoxyCodeLine{01050\ \ \ \ \ \doxymbox{\hyperlink{classbase__bitmap__view_a738bb176ed5e18d57c97805a08c9a7b9}{m\_head}}.current-\/>next\ =\ bitmap\_element;}
+\DoxyCodeLine{01051\ \ \ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{01052\ \ \ \ \ \doxymbox{\hyperlink{classbase__bitmap__view_a738bb176ed5e18d57c97805a08c9a7b9}{m\_head}}.first\ =\ bitmap\_element;}
+\DoxyCodeLine{01053\ \ \ \ \ \ \ bitmap\_element-\/>prev\ =\ \doxymbox{\hyperlink{classbase__bitmap__view_a738bb176ed5e18d57c97805a08c9a7b9}{m\_head}}.current;}
+\DoxyCodeLine{01054\ \ \ \ \ \ \ bitmap\_element-\/>next\ =\ \doxymbox{\hyperlink{stddef_8h_a070d2ce7b6bb7e5c05602aa8c308d0c4}{NULL}};}
+\DoxyCodeLine{01055\ \ \ \ \ \ \ bitmap\_element-\/>indx\ =\ indx;}
+\DoxyCodeLine{01056\ \ \ \ \ \ \ \doxymbox{\hyperlink{classbase__bitmap__view_a738bb176ed5e18d57c97805a08c9a7b9}{m\_head}}.current\ =\ bitmap\_element;}
+\DoxyCodeLine{01057\ \ \ \ \ \ \ \doxymbox{\hyperlink{classbase__bitmap__view_a738bb176ed5e18d57c97805a08c9a7b9}{m\_head}}.indx\ =\ indx;}
+\DoxyCodeLine{01058\ }
+\DoxyCodeLine{01059\ \ \ \ \ \ \ \textcolor{comment}{/*\ Fill\ in\ the\ bits\ of\ the\ bitmap\ element.\ \ */}}
+\DoxyCodeLine{01060\ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (array\_element\_bits\ <\ \doxymbox{\hyperlink{bitmap_8h_af1919de0e91034315cc30945d0ee27a5}{BITMAP\_WORD\_BITS}})}
+\DoxyCodeLine{01061\ \ \ \ \ \{}
+\DoxyCodeLine{01062\ \ \ \ \ \ \ \textcolor{comment}{/*\ Multiple\ array\ elements\ fit\ in\ one\ element\ of}}
+\DoxyCodeLine{01063\ \textcolor{comment}{\ \ \ \ \ \ \ \ \ bitmap\_element-\/>bits.\ \ */}}
+\DoxyCodeLine{01064\ \ \ \ \ \ \ \textcolor{keywordtype}{size\_t}\ array\_i\ =\ array\_base;}
+\DoxyCodeLine{01065\ \ \ \ \ \ \ \textcolor{keywordflow}{for}\ (\textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ word\_i\ =\ 0;\ word\_i\ <\ \doxymbox{\hyperlink{bitmap_8h_aaa02b9f479c514c73e9623fc5a0f7ae2}{BITMAP\_ELEMENT\_WORDS}};}
+\DoxyCodeLine{01066\ \ \ \ \ \ \ \ \ \ \ \ ++word\_i)}
+\DoxyCodeLine{01067\ \ \ \ \ \ \ \ \ \{}
+\DoxyCodeLine{01068\ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{bitmap_8h_a0be004f2b77e90fa69490a76b1d62dee}{BITMAP\_WORD}}\ word\ =\ 0;}
+\DoxyCodeLine{01069\ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{for}\ (\textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ shift\ =\ 0;}
+\DoxyCodeLine{01070\ \ \ \ \ \ \ \ \ \ \ \ shift\ <\ \doxymbox{\hyperlink{bitmap_8h_af1919de0e91034315cc30945d0ee27a5}{BITMAP\_WORD\_BITS}}\ \&\&\ array\_i\ <\ array\_size;}
+\DoxyCodeLine{01071\ \ \ \ \ \ \ \ \ \ \ \ shift\ +=\ array\_element\_bits)}
+\DoxyCodeLine{01072\ \ \ \ \ \ \ \ \ word\ |=\ array\_elements[array\_i++]\ <<\ shift;}
+\DoxyCodeLine{01073\ \ \ \ \ \ \ \ \ \ \ bitmap\_element-\/>bits[word\_i]\ =\ word;}
+\DoxyCodeLine{01074\ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{01075\ \ \ \ \ \}}
+\DoxyCodeLine{01076\ \ \ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{01077\ \ \ \ \ \{}
+\DoxyCodeLine{01078\ \ \ \ \ \ \ \textcolor{comment}{/*\ Array\ elements\ are\ the\ same\ size\ as\ elements\ of}}
+\DoxyCodeLine{01079\ \textcolor{comment}{\ \ \ \ \ \ \ \ \ bitmap\_element-\/>bits,\ or\ are\ an\ exact\ multiple\ of\ that\ size.\ \ */}}
+\DoxyCodeLine{01080\ \ \ \ \ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ word\_i\ =\ 0;}
+\DoxyCodeLine{01081\ \ \ \ \ \ \ \textcolor{keywordflow}{for}\ (\textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{poly-int_8h_a7e98b8a17c0aad30ba64d47b74e2a6c1}{i}}\ =\ 0;\ \doxymbox{\hyperlink{poly-int_8h_a7e98b8a17c0aad30ba64d47b74e2a6c1}{i}}\ <\ array\_count;\ ++\doxymbox{\hyperlink{poly-int_8h_a7e98b8a17c0aad30ba64d47b74e2a6c1}{i}})}
+\DoxyCodeLine{01082\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{for}\ (\textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ shift\ =\ 0;\ shift\ <\ array\_element\_bits;}
+\DoxyCodeLine{01083\ \ \ \ \ \ \ \ \ \ shift\ +=\ \doxymbox{\hyperlink{bitmap_8h_af1919de0e91034315cc30945d0ee27a5}{BITMAP\_WORD\_BITS}})}
+\DoxyCodeLine{01084\ \ \ \ \ \ \ \ \ \ \ bitmap\_element-\/>bits[word\_i++]}
+\DoxyCodeLine{01085\ \ \ \ \ \ \ \ \ =\ array\_elements[array\_base\ +\ \doxymbox{\hyperlink{poly-int_8h_a7e98b8a17c0aad30ba64d47b74e2a6c1}{i}}]\ >>\ shift;}
+\DoxyCodeLine{01086\ \ \ \ \ \ \ \textcolor{keywordflow}{while}\ (word\_i\ <\ \doxymbox{\hyperlink{bitmap_8h_aaa02b9f479c514c73e9623fc5a0f7ae2}{BITMAP\_ELEMENT\_WORDS}})}
+\DoxyCodeLine{01087\ \ \ \ \ \ \ \ \ bitmap\_element-\/>bits[word\_i++]\ =\ 0;}
+\DoxyCodeLine{01088\ \ \ \ \ \}}
+\DoxyCodeLine{01089\ \ \ \ \ \}}
+\DoxyCodeLine{01090\ \}}
+\DoxyCodeLine{01091\ }
+\DoxyCodeLine{01092\ \textcolor{preprocessor}{\#endif\ }\textcolor{comment}{/*\ GCC\_BITMAP\_H\ */}\textcolor{preprocessor}{}}
+
+\end{DoxyCode}

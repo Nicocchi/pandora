@@ -1,0 +1,414 @@
+\doxysection{read-\/md.h}
+\hypertarget{read-md_8h_source}{}\label{read-md_8h_source}\index{toolchain/x86\_64-\/elf/lib/gcc/x86\_64-\/elf/14.2.0/plugin/include/read-\/md.h@{toolchain/x86\_64-\/elf/lib/gcc/x86\_64-\/elf/14.2.0/plugin/include/read-\/md.h}}
+\doxymbox{\hyperlink{read-md_8h}{Go to the documentation of this file.}}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001\ \textcolor{comment}{/*\ MD\ reader\ definitions.}}
+\DoxyCodeLine{00002\ \textcolor{comment}{\ \ \ Copyright\ (C)\ 1987-\/2024\ Free\ Software\ Foundation,\ Inc.}}
+\DoxyCodeLine{00003\ \textcolor{comment}{}}
+\DoxyCodeLine{00004\ \textcolor{comment}{This\ file\ is\ part\ of\ GCC.}}
+\DoxyCodeLine{00005\ \textcolor{comment}{}}
+\DoxyCodeLine{00006\ \textcolor{comment}{GCC\ is\ free\ software;\ you\ can\ redistribute\ it\ and/or\ modify\ it\ under}}
+\DoxyCodeLine{00007\ \textcolor{comment}{the\ terms\ of\ the\ GNU\ General\ Public\ License\ as\ published\ by\ the\ Free}}
+\DoxyCodeLine{00008\ \textcolor{comment}{Software\ Foundation;\ either\ version\ 3,\ or\ (at\ your\ option)\ any\ later}}
+\DoxyCodeLine{00009\ \textcolor{comment}{version.}}
+\DoxyCodeLine{00010\ \textcolor{comment}{}}
+\DoxyCodeLine{00011\ \textcolor{comment}{GCC\ is\ distributed\ in\ the\ hope\ that\ it\ will\ be\ useful,\ but\ WITHOUT\ ANY}}
+\DoxyCodeLine{00012\ \textcolor{comment}{WARRANTY;\ without\ even\ the\ implied\ warranty\ of\ MERCHANTABILITY\ or}}
+\DoxyCodeLine{00013\ \textcolor{comment}{FITNESS\ FOR\ A\ PARTICULAR\ PURPOSE.\ \ See\ the\ GNU\ General\ Public\ License}}
+\DoxyCodeLine{00014\ \textcolor{comment}{for\ more\ details.}}
+\DoxyCodeLine{00015\ \textcolor{comment}{}}
+\DoxyCodeLine{00016\ \textcolor{comment}{You\ should\ have\ received\ a\ copy\ of\ the\ GNU\ General\ Public\ License}}
+\DoxyCodeLine{00017\ \textcolor{comment}{along\ with\ GCC;\ see\ the\ file\ COPYING3.\ \ If\ not\ see}}
+\DoxyCodeLine{00018\ \textcolor{comment}{<http://www.gnu.org/licenses/>.\ \ */}}
+\DoxyCodeLine{00019\ }
+\DoxyCodeLine{00020\ \textcolor{preprocessor}{\#ifndef\ GCC\_READ\_MD\_H}}
+\DoxyCodeLine{00021\ \textcolor{preprocessor}{\#define\ GCC\_READ\_MD\_H}}
+\DoxyCodeLine{00022\ }
+\DoxyCodeLine{00023\ \textcolor{preprocessor}{\#include\ "{}\doxymbox{\hyperlink{obstack_8h}{obstack.h}}"{}}}
+\DoxyCodeLine{00024\ }
+\DoxyCodeLine{00025\ \textcolor{comment}{/*\ Records\ a\ position\ in\ the\ file.\ \ */}}
+\DoxyCodeLine{00026\ \textcolor{keyword}{class\ }\doxymbox{\hyperlink{classfile__location_a86a754aa4fee513184e336d6e9853a41}{file\_location}}\ \{}
+\DoxyCodeLine{00027\ \textcolor{keyword}{public}:}
+\DoxyCodeLine{00028\ \ \ \doxymbox{\hyperlink{classfile__location_a86a754aa4fee513184e336d6e9853a41}{file\_location}}\ ()\ \{\}}
+\DoxyCodeLine{00029\ \ \ \doxymbox{\hyperlink{classfile__location_a86a754aa4fee513184e336d6e9853a41}{file\_location}}\ (\textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *,\ \textcolor{keywordtype}{int},\ \textcolor{keywordtype}{int});}
+\DoxyCodeLine{00030\ }
+\DoxyCodeLine{00031\ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *\doxymbox{\hyperlink{classfile__location_a37649db5118245db81f460357c42ad86}{filename}};}
+\DoxyCodeLine{00032\ \ \ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{classfile__location_a1adb39ea3b62acde39fb6249072f88f2}{lineno}};}
+\DoxyCodeLine{00033\ \ \ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{classfile__location_aae9394f55f2046683ba30ac8d14ec0d6}{colno}};}
+\DoxyCodeLine{00034\ \};}
+\DoxyCodeLine{00035\ }
+\DoxyCodeLine{00036\ \textcolor{keyword}{inline}\ \doxymbox{\hyperlink{classfile__location_a86a754aa4fee513184e336d6e9853a41}{file\_location::file\_location}}\ (\textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *filename\_in,\ \textcolor{keywordtype}{int}\ lineno\_in,\ \textcolor{keywordtype}{int}\ colno\_in)}
+\DoxyCodeLine{00037\ :\ \doxymbox{\hyperlink{classfile__location_a37649db5118245db81f460357c42ad86}{filename}}\ (filename\_in),\ \doxymbox{\hyperlink{classfile__location_a1adb39ea3b62acde39fb6249072f88f2}{lineno}}\ (lineno\_in),\ \doxymbox{\hyperlink{classfile__location_aae9394f55f2046683ba30ac8d14ec0d6}{colno}}\ (colno\_in)\ \{\}}
+\DoxyCodeLine{00038\ }
+\DoxyCodeLine{00039\ \textcolor{comment}{/*\ Holds\ one\ symbol\ or\ number\ in\ the\ .md\ file.\ \ */}}
+\DoxyCodeLine{00040\ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{structmd__name}{md\_name}}\ \{}
+\DoxyCodeLine{00041\ \ \ \textcolor{comment}{/*\ The\ name\ as\ it\ appeared\ in\ the\ .md\ file.\ \ Names\ are\ syntactically}}
+\DoxyCodeLine{00042\ \textcolor{comment}{\ \ \ \ \ limited\ to\ the\ length\ of\ this\ buffer.\ \ */}}
+\DoxyCodeLine{00043\ \ \ \textcolor{keywordtype}{char}\ \doxymbox{\hyperlink{structmd__name_af5237102e2ea7a441e3af9f9c5de0da0}{buffer}}[256];}
+\DoxyCodeLine{00044\ }
+\DoxyCodeLine{00045\ \ \ \textcolor{comment}{/*\ The\ name\ that\ should\ actually\ be\ used\ by\ the\ generator\ programs.}}
+\DoxyCodeLine{00046\ \textcolor{comment}{\ \ \ \ \ This\ is\ an\ expansion\ of\ NAME,\ after\ things\ like\ constant\ substitution.\ \ */}}
+\DoxyCodeLine{00047\ \ \ \textcolor{keywordtype}{char}\ *\doxymbox{\hyperlink{structmd__name_a6246ca2ad0fc8757f09364a3d7e48aee}{string}};}
+\DoxyCodeLine{00048\ \};}
+\DoxyCodeLine{00049\ }
+\DoxyCodeLine{00050\ \textcolor{comment}{/*\ This\ structure\ represents\ a\ constant\ defined\ by\ define\_constant,}}
+\DoxyCodeLine{00051\ \textcolor{comment}{\ \ \ define\_enum,\ or\ such-\/like.\ \ */}}
+\DoxyCodeLine{00052\ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{structmd__constant}{md\_constant}}\ \{}
+\DoxyCodeLine{00053\ \ \ \textcolor{comment}{/*\ The\ name\ of\ the\ constant.\ \ */}}
+\DoxyCodeLine{00054\ \ \ \textcolor{keywordtype}{char}\ *\doxymbox{\hyperlink{structmd__constant_a31affe88d4b9d1477572d220ba2d3a72}{name}};}
+\DoxyCodeLine{00055\ }
+\DoxyCodeLine{00056\ \ \ \textcolor{comment}{/*\ The\ string\ to\ which\ the\ constants\ expands.\ \ */}}
+\DoxyCodeLine{00057\ \ \ \textcolor{keywordtype}{char}\ *\doxymbox{\hyperlink{structmd__constant_a2aa5c03a52a209e389a5151fa700264d}{value}};}
+\DoxyCodeLine{00058\ }
+\DoxyCodeLine{00059\ \ \ \textcolor{comment}{/*\ If\ the\ constant\ is\ associated\ with\ a\ enumeration,\ this\ field}}
+\DoxyCodeLine{00060\ \textcolor{comment}{\ \ \ \ \ points\ to\ that\ enumeration,\ otherwise\ it\ is\ null.\ \ */}}
+\DoxyCodeLine{00061\ \ \ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{structenum__type}{enum\_type}}\ *\doxymbox{\hyperlink{structmd__constant_ada0ad7e84d2786d00cff92b2c9b57f22}{parent\_enum}};}
+\DoxyCodeLine{00062\ \};}
+\DoxyCodeLine{00063\ }
+\DoxyCodeLine{00064\ \textcolor{comment}{/*\ This\ structure\ represents\ one\ value\ in\ an\ enum\_type.\ \ */}}
+\DoxyCodeLine{00065\ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{structenum__value}{enum\_value}}\ \{}
+\DoxyCodeLine{00066\ \ \ \textcolor{comment}{/*\ The\ next\ value\ in\ the\ enum,\ or\ null\ if\ this\ is\ the\ last.\ \ */}}
+\DoxyCodeLine{00067\ \ \ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{structenum__value}{enum\_value}}\ *\doxymbox{\hyperlink{structenum__value_a2ba3f90200a2f4cd81538cef63d9393e}{next}};}
+\DoxyCodeLine{00068\ }
+\DoxyCodeLine{00069\ \ \ \textcolor{comment}{/*\ The\ name\ of\ the\ value\ as\ it\ appears\ in\ the\ .md\ file.\ \ */}}
+\DoxyCodeLine{00070\ \ \ \textcolor{keywordtype}{char}\ *\doxymbox{\hyperlink{structenum__value_ac75291a2173e08de34cc42426f7d3283}{name}};}
+\DoxyCodeLine{00071\ }
+\DoxyCodeLine{00072\ \ \ \textcolor{comment}{/*\ The\ definition\ of\ the\ related\ C\ value.\ \ */}}
+\DoxyCodeLine{00073\ \ \ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{structmd__constant}{md\_constant}}\ *\doxymbox{\hyperlink{structenum__value_a97579f24a59eaffec88325b86f70aef0}{def}};}
+\DoxyCodeLine{00074\ \};}
+\DoxyCodeLine{00075\ }
+\DoxyCodeLine{00076\ \textcolor{comment}{/*\ This\ structure\ represents\ an\ enum\ defined\ by\ define\_enum\ or\ the\ like.\ \ */}}
+\DoxyCodeLine{00077\ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{structenum__type}{enum\_type}}\ \{}
+\DoxyCodeLine{00078\ \ \ \textcolor{comment}{/*\ The\ C\ name\ of\ the\ enumeration.\ \ */}}
+\DoxyCodeLine{00079\ \ \ \textcolor{keywordtype}{char}\ *\doxymbox{\hyperlink{structenum__type_a4104ef0e81626d9c3b35d16774fdde98}{name}};}
+\DoxyCodeLine{00080\ }
+\DoxyCodeLine{00081\ \ \ \textcolor{comment}{/*\ True\ if\ this\ is\ an\ md-\/style\ enum\ (DEFINE\_ENUM)\ rather\ than}}
+\DoxyCodeLine{00082\ \textcolor{comment}{\ \ \ \ \ a\ C-\/style\ enum\ (DEFINE\_C\_ENUM).\ \ */}}
+\DoxyCodeLine{00083\ \ \ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{structenum__type_a964948958d9b0c438ed75237e901ebeb}{md\_p}};}
+\DoxyCodeLine{00084\ }
+\DoxyCodeLine{00085\ \ \ \textcolor{comment}{/*\ The\ values\ of\ the\ enumeration.\ \ There\ is\ always\ at\ least\ one.\ \ */}}
+\DoxyCodeLine{00086\ \ \ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{structenum__value}{enum\_value}}\ *\doxymbox{\hyperlink{structenum__type_aa0ec504c4794c81d69846769de4ab06f}{values}};}
+\DoxyCodeLine{00087\ }
+\DoxyCodeLine{00088\ \ \ \textcolor{comment}{/*\ A\ pointer\ to\ the\ null\ terminator\ in\ VALUES.\ \ */}}
+\DoxyCodeLine{00089\ \ \ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{structenum__value}{enum\_value}}\ **\doxymbox{\hyperlink{structenum__type_a311cb8896eb68990961d5c7c7029df0b}{tail\_ptr}};}
+\DoxyCodeLine{00090\ }
+\DoxyCodeLine{00091\ \ \ \textcolor{comment}{/*\ The\ number\ of\ enumeration\ values.\ \ */}}
+\DoxyCodeLine{00092\ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{structenum__type_a4b4e69e94fbbc28e51d28c7eb8efacd4}{num\_values}};}
+\DoxyCodeLine{00093\ \};}
+\DoxyCodeLine{00094\ }
+\DoxyCodeLine{00095\ \textcolor{comment}{/*\ Describes\ one\ instance\ of\ an\ overloaded\_name.\ \ */}}
+\DoxyCodeLine{00096\ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{structoverloaded__instance}{overloaded\_instance}}\ \{}
+\DoxyCodeLine{00097\ \ \ \textcolor{comment}{/*\ The\ next\ instance\ in\ the\ chain,\ or\ null\ if\ none.\ \ */}}
+\DoxyCodeLine{00098\ \ \ \doxymbox{\hyperlink{structoverloaded__instance}{overloaded\_instance}}\ *\doxymbox{\hyperlink{structoverloaded__instance_aedef17aff907499f0fef7008d8af39e1}{next}};}
+\DoxyCodeLine{00099\ }
+\DoxyCodeLine{00100\ \ \ \textcolor{comment}{/*\ The\ values\ that\ the\ overloaded\_name\ arguments\ should\ have\ for\ this}}
+\DoxyCodeLine{00101\ \textcolor{comment}{\ \ \ \ \ instance\ to\ be\ chosen.\ \ Each\ value\ is\ a\ C\ token.\ \ */}}
+\DoxyCodeLine{00102\ \ \ \doxymbox{\hyperlink{structvec}{vec<const\ char\ *>}}\ \doxymbox{\hyperlink{structoverloaded__instance_a1b3701299e7cda7fd5cdc36167a27768}{arg\_values}};}
+\DoxyCodeLine{00103\ }
+\DoxyCodeLine{00104\ \ \ \textcolor{comment}{/*\ The\ full\ (non-\/overloaded)\ name\ of\ the\ pattern.\ \ */}}
+\DoxyCodeLine{00105\ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *\doxymbox{\hyperlink{structoverloaded__instance_aa6ec4dae04298ca2e00ed0c73745b6bd}{name}};}
+\DoxyCodeLine{00106\ }
+\DoxyCodeLine{00107\ \ \ \textcolor{comment}{/*\ The\ corresponding\ define\_expand\ or\ define\_insn.\ \ */}}
+\DoxyCodeLine{00108\ \ \ \doxymbox{\hyperlink{coretypes_8h_a20e671ce9e7827268658cff844f4281c}{rtx}}\ \doxymbox{\hyperlink{structoverloaded__instance_a490c8706c138b7ea552d872007211460}{insn}};}
+\DoxyCodeLine{00109\ \};}
+\DoxyCodeLine{00110\ }
+\DoxyCodeLine{00111\ \textcolor{comment}{/*\ Describes\ a\ define\_expand\ or\ define\_insn\ whose\ name\ was\ preceded\ by\ '@'.}}
+\DoxyCodeLine{00112\ \textcolor{comment}{\ \ \ Overloads\ are\ uniquely\ determined\ by\ their\ name\ and\ the\ types\ of\ their}}
+\DoxyCodeLine{00113\ \textcolor{comment}{\ \ \ arguments;\ it's\ possible\ to\ have\ overloads\ with\ the\ same\ name\ but}}
+\DoxyCodeLine{00114\ \textcolor{comment}{\ \ \ different\ argument\ types.\ \ */}}
+\DoxyCodeLine{00115\ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{structoverloaded__name}{overloaded\_name}}\ \{}
+\DoxyCodeLine{00116\ \ \ \textcolor{comment}{/*\ The\ next\ overloaded\ name\ in\ the\ chain.\ \ */}}
+\DoxyCodeLine{00117\ \ \ \doxymbox{\hyperlink{structoverloaded__name}{overloaded\_name}}\ *\doxymbox{\hyperlink{structoverloaded__name_ae29e998dbb4e050cd891f1d1603f68fb}{next}};}
+\DoxyCodeLine{00118\ }
+\DoxyCodeLine{00119\ \ \ \textcolor{comment}{/*\ The\ overloaded\ name\ (i.e.\ the\ name\ with\ "{}@"{}\ character\ and}}
+\DoxyCodeLine{00120\ \textcolor{comment}{\ \ \ \ \ "{}<...>"{}\ placeholders\ removed).\ \ */}}
+\DoxyCodeLine{00121\ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *\doxymbox{\hyperlink{structoverloaded__name_a17a03fddfb2a6f90c1bf7baea63a4788}{name}};}
+\DoxyCodeLine{00122\ }
+\DoxyCodeLine{00123\ \ \ \textcolor{comment}{/*\ The\ C\ types\ of\ the\ iterators\ that\ determine\ the\ underlying\ pattern,}}
+\DoxyCodeLine{00124\ \textcolor{comment}{\ \ \ \ \ in\ the\ same\ order\ as\ in\ the\ pattern\ name.\ \ E.g.\ "{}<mode>"{}\ in\ the}}
+\DoxyCodeLine{00125\ \textcolor{comment}{\ \ \ \ \ pattern\ name\ would\ give\ a\ "{}machine\_mode"{}\ argument\ here.\ \ */}}
+\DoxyCodeLine{00126\ \ \ \doxymbox{\hyperlink{structvec}{vec<const\ char\ *>}}\ \doxymbox{\hyperlink{structoverloaded__name_a166e1a35f916bef673485699dc78c4b4}{arg\_types}};}
+\DoxyCodeLine{00127\ }
+\DoxyCodeLine{00128\ \ \ \textcolor{comment}{/*\ The\ first\ instance\ associated\ with\ this\ overloaded\_name.\ \ */}}
+\DoxyCodeLine{00129\ \ \ \doxymbox{\hyperlink{structoverloaded__instance}{overloaded\_instance}}\ *\doxymbox{\hyperlink{structoverloaded__name_a52b09125b06aa094640d93a9f976bba8}{first\_instance}};}
+\DoxyCodeLine{00130\ }
+\DoxyCodeLine{00131\ \ \ \textcolor{comment}{/*\ Where\ to\ chain\ new\ overloaded\_instances.\ \ */}}
+\DoxyCodeLine{00132\ \ \ \doxymbox{\hyperlink{structoverloaded__instance}{overloaded\_instance}}\ **\doxymbox{\hyperlink{structoverloaded__name_a9667dbf7a52441aa32c97b05320e94f5}{next\_instance\_ptr}};}
+\DoxyCodeLine{00133\ \};}
+\DoxyCodeLine{00134\ }
+\DoxyCodeLine{00135\ \textcolor{keyword}{struct\ }mapping;}
+\DoxyCodeLine{00136\ }
+\DoxyCodeLine{00137\ \textcolor{comment}{/*\ A\ class\ for\ reading\ .md\ files\ and\ RTL\ dump\ files.}}
+\DoxyCodeLine{00138\ \textcolor{comment}{}}
+\DoxyCodeLine{00139\ \textcolor{comment}{\ \ \ Implemented\ in\ read-\/md.cc.}}
+\DoxyCodeLine{00140\ \textcolor{comment}{}}
+\DoxyCodeLine{00141\ \textcolor{comment}{\ \ \ This\ class\ has\ responsibility\ for\ reading\ chars\ from\ input\ files,\ and}}
+\DoxyCodeLine{00142\ \textcolor{comment}{\ \ \ for\ certain\ common\ top-\/level\ directives\ including\ the\ "{}include"{}}}
+\DoxyCodeLine{00143\ \textcolor{comment}{\ \ \ directive.}}
+\DoxyCodeLine{00144\ \textcolor{comment}{}}
+\DoxyCodeLine{00145\ \textcolor{comment}{\ \ \ It\ does\ not\ handle\ parsing\ the\ hierarchically-\/nested\ expressions\ of}}
+\DoxyCodeLine{00146\ \textcolor{comment}{\ \ \ rtl.def;\ for\ that\ see\ the\ rtx\_reader\ subclass\ below\ (implemented\ in}}
+\DoxyCodeLine{00147\ \textcolor{comment}{\ \ \ read-\/rtl.cc).\ \ */}}
+\DoxyCodeLine{00148\ }
+\DoxyCodeLine{00149\ \textcolor{keyword}{class\ }\doxymbox{\hyperlink{classmd__reader_a0b4aa1f3a292923a29c79dcbd8c387b7}{md\_reader}}}
+\DoxyCodeLine{00150\ \{}
+\DoxyCodeLine{00151\ \ \textcolor{keyword}{public}:}
+\DoxyCodeLine{00152\ \ \ \textcolor{comment}{/*\ Associates\ PTR\ (which\ can\ be\ a\ string,\ etc.)\ with\ the\ file\ location}}
+\DoxyCodeLine{00153\ \textcolor{comment}{\ \ \ \ \ specified\ by\ LOC.\ \ */}}
+\DoxyCodeLine{00154\ \ \ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{structmd__reader_1_1ptr__loc}{ptr\_loc}}\ \{}
+\DoxyCodeLine{00155\ \ \ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{void}\ *\doxymbox{\hyperlink{structmd__reader_1_1ptr__loc_ac5afb85ef63d8a5d4aa7fe5fbb8ae275}{ptr}};}
+\DoxyCodeLine{00156\ \ \ \ \ \doxymbox{\hyperlink{classfile__location}{file\_location}}\ \doxymbox{\hyperlink{structmd__reader_1_1ptr__loc_a3117d57536230e452dbb216a878e16db}{loc}};}
+\DoxyCodeLine{00157\ \ \ \};}
+\DoxyCodeLine{00158\ }
+\DoxyCodeLine{00159\ \ \ \doxymbox{\hyperlink{classmd__reader_a0b4aa1f3a292923a29c79dcbd8c387b7}{md\_reader}}\ (\textcolor{keywordtype}{bool}\ compact);}
+\DoxyCodeLine{00160\ \ \ \textcolor{keyword}{virtual}\ \doxymbox{\hyperlink{classmd__reader_af8886bbe6f7f11adbee400eb9f134044}{\string~md\_reader}}\ ();}
+\DoxyCodeLine{00161\ }
+\DoxyCodeLine{00162\ \ \ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{classmd__reader_a6fe66d797ad3efbf91644bb38a88a9e3}{read\_md\_files}}\ (\textcolor{keywordtype}{int},\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ **,\ \textcolor{keywordtype}{bool}\ (*)\ (\textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *));}
+\DoxyCodeLine{00163\ \ \ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{classmd__reader_ac3ec76620b5be0b31d77d4ff54443985}{read\_file}}\ (\textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *filename);}
+\DoxyCodeLine{00164\ \ \ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{classmd__reader_a8984e0965addd9063b8e92a6fd62c23c}{read\_file\_fragment}}\ (\textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *filename,}
+\DoxyCodeLine{00165\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{int}\ first\_line,}
+\DoxyCodeLine{00166\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{int}\ last\_line);}
+\DoxyCodeLine{00167\ }
+\DoxyCodeLine{00168\ \ \ \textcolor{comment}{/*\ A\ hook\ that\ handles\ a\ single\ .md-\/file\ directive,\ up\ to\ but\ not}}
+\DoxyCodeLine{00169\ \textcolor{comment}{\ \ \ \ \ including\ the\ closing\ ')'.\ \ It\ takes\ two\ arguments:\ the\ file\ position}}
+\DoxyCodeLine{00170\ \textcolor{comment}{\ \ \ \ \ at\ which\ the\ directive\ started,\ and\ the\ name\ of\ the\ directive.\ \ The\ next}}
+\DoxyCodeLine{00171\ \textcolor{comment}{\ \ \ \ \ unread\ character\ is\ the\ optional\ space\ after\ the\ directive\ name.\ \ */}}
+\DoxyCodeLine{00172\ \ \ \textcolor{keyword}{virtual}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classmd__reader_a11b904d48c635acbf381d2fc2a92f16a}{handle\_unknown\_directive}}\ (\doxymbox{\hyperlink{classfile__location}{file\_location}},\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *)\ =\ 0;}
+\DoxyCodeLine{00173\ }
+\DoxyCodeLine{00174\ \ \ \doxymbox{\hyperlink{classfile__location}{file\_location}}\ \doxymbox{\hyperlink{classmd__reader_ad9aa45150f54550e50fe24c2d50804e3}{get\_current\_location}}\ ()\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00175\ }
+\DoxyCodeLine{00176\ \ \ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{classmd__reader_aad61c1399e97d1e0b95942f3b1d92f77}{is\_compact}}\ ()\textcolor{keyword}{\ const\ }\{\ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{classmd__reader_aaabe86a71a57f4516fbc270a6346925a}{m\_compact}};\ \}}
+\DoxyCodeLine{00177\ }
+\DoxyCodeLine{00178\ \ \ \textcolor{comment}{/*\ Defined\ in\ read-\/md.cc.\ \ */}}
+\DoxyCodeLine{00179\ \ \ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{classmd__reader_a21b66adf2ab2f58d76c118b374e95ec5}{read\_char}}\ (\textcolor{keywordtype}{void});}
+\DoxyCodeLine{00180\ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classmd__reader_adcc5c6185c53cca1631af0083fc8e665}{unread\_char}}\ (\textcolor{keywordtype}{int}\ ch);}
+\DoxyCodeLine{00181\ \ \ \doxymbox{\hyperlink{classfile__location}{file\_location}}\ \doxymbox{\hyperlink{classmd__reader_a062e64b5cef0f926692d9acd0ebf7aba}{read\_name}}\ (\textcolor{keyword}{struct}\ \doxymbox{\hyperlink{structmd__name}{md\_name}}\ *\doxymbox{\hyperlink{configargs_8h_a8f8f80d37794cde9472343e4487ba3eb}{name}});}
+\DoxyCodeLine{00182\ \ \ \doxymbox{\hyperlink{classfile__location}{file\_location}}\ \doxymbox{\hyperlink{classmd__reader_adb46bdfb2e541eda32718e522ac2432b}{read\_name\_or\_nil}}\ (\textcolor{keyword}{struct}\ \doxymbox{\hyperlink{structmd__name}{md\_name}}\ *);}
+\DoxyCodeLine{00183\ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classmd__reader_a0882ff16927971f0b084a6ef2d928fab}{read\_escape}}\ ();}
+\DoxyCodeLine{00184\ \ \ \textcolor{keywordtype}{char}\ *\doxymbox{\hyperlink{classmd__reader_a9465a2c31c59ee6a7c4562ca5f78b565}{read\_quoted\_string}}\ ();}
+\DoxyCodeLine{00185\ \ \ \textcolor{keywordtype}{char}\ *\doxymbox{\hyperlink{classmd__reader_abb300a7af46e32a80379e91161bc4ffe}{read\_braced\_string}}\ ();}
+\DoxyCodeLine{00186\ \ \ \textcolor{keywordtype}{char}\ *\doxymbox{\hyperlink{classmd__reader_a15221c77abf69d2abff2e501b09b61e6}{read\_string}}\ (\textcolor{keywordtype}{int}\ star\_if\_braced);}
+\DoxyCodeLine{00187\ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classmd__reader_a2cab9361000de385516ab68512fd719e}{read\_skip\_construct}}\ (\textcolor{keywordtype}{int}\ depth,\ \doxymbox{\hyperlink{classfile__location}{file\_location}}\ loc);}
+\DoxyCodeLine{00188\ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classmd__reader_ae0f8231acf4826caa7d9f5dfce2d685c}{require\_char}}\ (\textcolor{keywordtype}{char}\ expected);}
+\DoxyCodeLine{00189\ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classmd__reader_a82d56a5aa76f35b2efb0193101acffab}{require\_char\_ws}}\ (\textcolor{keywordtype}{char}\ expected);}
+\DoxyCodeLine{00190\ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classmd__reader_ac90fb56bee1f3cdf9f1d8987b17ee60d}{require\_word\_ws}}\ (\textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *expected);}
+\DoxyCodeLine{00191\ \ \ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{classmd__reader_a5abd391c823922600c1bb9e6c84cca86}{peek\_char}}\ (\textcolor{keywordtype}{void});}
+\DoxyCodeLine{00192\ }
+\DoxyCodeLine{00193\ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classmd__reader_a597238a13a78f3305a6d2012d99d00a8}{set\_md\_ptr\_loc}}\ (\textcolor{keyword}{const}\ \textcolor{keywordtype}{void}\ *ptr,\ \doxymbox{\hyperlink{classfile__location}{file\_location}});}
+\DoxyCodeLine{00194\ \ \ \textcolor{keyword}{const}\ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{structmd__reader_1_1ptr__loc}{ptr\_loc}}\ *\doxymbox{\hyperlink{classmd__reader_a5e9f32530f2d96d13c6d8eb1cb801ca4}{get\_md\_ptr\_loc}}\ (\textcolor{keyword}{const}\ \textcolor{keywordtype}{void}\ *ptr);}
+\DoxyCodeLine{00195\ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classmd__reader_a6a9626f3a8597c614a3a42767a15e854}{copy\_md\_ptr\_loc}}\ (\textcolor{keyword}{const}\ \textcolor{keywordtype}{void}\ *new\_ptr,\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{void}\ *old\_ptr);}
+\DoxyCodeLine{00196\ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classmd__reader_a2cad14b77e1a84dedea3e800710fd7b6}{fprint\_md\_ptr\_loc}}\ (FILE\ *\doxymbox{\hyperlink{structoutf}{outf}},\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{void}\ *ptr);}
+\DoxyCodeLine{00197\ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classmd__reader_adc55614c2b18f63a99f2751c71a6f971}{print\_md\_ptr\_loc}}\ (\textcolor{keyword}{const}\ \textcolor{keywordtype}{void}\ *ptr,\ FILE\ *\ =\ stdout);}
+\DoxyCodeLine{00198\ }
+\DoxyCodeLine{00199\ \ \ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{structenum__type}{enum\_type}}\ *\doxymbox{\hyperlink{classmd__reader_a6d8fd086358da10e076cb6c66fc5a65a}{lookup\_enum\_type}}\ (\textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *\doxymbox{\hyperlink{configargs_8h_a8f8f80d37794cde9472343e4487ba3eb}{name}});}
+\DoxyCodeLine{00200\ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classmd__reader_a2535644ce7856bd39f519a29799363af}{traverse\_enum\_types}}\ (\doxymbox{\hyperlink{hashtab_8h_ac000ac9cf06032d1b62d998837f6bdce}{htab\_trav}}\ callback,\ \textcolor{keywordtype}{void}\ *info);}
+\DoxyCodeLine{00201\ }
+\DoxyCodeLine{00202\ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classmd__reader_a869d5f2bcf67fdf8833b2531ffd29162}{handle\_constants}}\ ();}
+\DoxyCodeLine{00203\ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classmd__reader_a592e8587a2d8f3804722dd745e78222c}{traverse\_md\_constants}}\ (\doxymbox{\hyperlink{hashtab_8h_ac000ac9cf06032d1b62d998837f6bdce}{htab\_trav}}\ callback,\ \textcolor{keywordtype}{void}\ *info);}
+\DoxyCodeLine{00204\ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classmd__reader_aeee27ead567501c175967fd141b1d2d0}{handle\_enum}}\ (\doxymbox{\hyperlink{classfile__location}{file\_location}}\ loc,\ \textcolor{keywordtype}{bool}\ md\_p);}
+\DoxyCodeLine{00205\ }
+\DoxyCodeLine{00206\ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *\doxymbox{\hyperlink{classmd__reader_a2ad941bbdc0608db46377f523c925830}{join\_c\_conditions}}\ (\textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *cond1,\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *cond2);}
+\DoxyCodeLine{00207\ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classmd__reader_a0ffc247946c8937343b92fd59047c6b8}{fprint\_c\_condition}}\ (FILE\ *\doxymbox{\hyperlink{structoutf}{outf}},\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *cond);}
+\DoxyCodeLine{00208\ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classmd__reader_a2543ec46abb3f0acde543dd48c3fc27b}{print\_c\_condition}}\ (\textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *cond);}
+\DoxyCodeLine{00209\ }
+\DoxyCodeLine{00210\ \ \ \textcolor{comment}{/*\ Defined\ in\ read-\/rtl.cc.\ \ */}}
+\DoxyCodeLine{00211\ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *\doxymbox{\hyperlink{classmd__reader_a71cb14f2a2c4a10e4a44e26b531260a4}{apply\_iterator\_to\_string}}\ (\textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *\textcolor{keywordtype}{string});}
+\DoxyCodeLine{00212\ \ \ \doxymbox{\hyperlink{coretypes_8h_a20e671ce9e7827268658cff844f4281c}{rtx}}\ \doxymbox{\hyperlink{classmd__reader_a9a8c98b2bdc9b7803a179d3800de6e78}{copy\_rtx\_for\_iterators}}\ (\doxymbox{\hyperlink{coretypes_8h_a20e671ce9e7827268658cff844f4281c}{rtx}}\ original);}
+\DoxyCodeLine{00213\ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classmd__reader_a2e6ec46e4894c00b26ffbe2d31f9a9a2}{read\_conditions}}\ ();}
+\DoxyCodeLine{00214\ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classmd__reader_a32408319959022f757e9b5d046810d62}{record\_potential\_iterator\_use}}\ (\textcolor{keyword}{struct}\ iterator\_group\ *group,}
+\DoxyCodeLine{00215\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{classfile__location}{file\_location}}\ loc,\ \doxymbox{\hyperlink{coretypes_8h_a20e671ce9e7827268658cff844f4281c}{rtx}}\ x,}
+\DoxyCodeLine{00216\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ index,\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *\doxymbox{\hyperlink{configargs_8h_a8f8f80d37794cde9472343e4487ba3eb}{name}});}
+\DoxyCodeLine{00217\ \ \ \textcolor{keyword}{struct\ }mapping\ *\doxymbox{\hyperlink{classmd__reader_ae4422d4485367208134ebaf5953e52cf}{read\_mapping}}\ (\textcolor{keyword}{struct}\ iterator\_group\ *group,\ \doxymbox{\hyperlink{hashtab_8h_aa3847a9bffeefab8f9895fc38007118a}{htab\_t}}\ table);}
+\DoxyCodeLine{00218\ \ \ \doxymbox{\hyperlink{structoverloaded__name}{overloaded\_name}}\ *\doxymbox{\hyperlink{classmd__reader_a5750d8044798ab3642b93eb7f589893f}{handle\_overloaded\_name}}\ (\doxymbox{\hyperlink{coretypes_8h_a20e671ce9e7827268658cff844f4281c}{rtx}},\ \doxymbox{\hyperlink{structvec}{vec<mapping\ *>}}\ *);}
+\DoxyCodeLine{00219\ }
+\DoxyCodeLine{00220\ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *\doxymbox{\hyperlink{classmd__reader_a7c79451970ff7a5524f9804e641d3bdc}{get\_top\_level\_filename}}\ ()\textcolor{keyword}{\ const\ }\{\ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{classmd__reader_af24301d1aa18ac5a1f6dc1e3459158da}{m\_toplevel\_fname}};\ \}}
+\DoxyCodeLine{00221\ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *\doxymbox{\hyperlink{classmd__reader_a2ac3fd881c3ca87c3c718d66b5b74534}{get\_filename}}\ ()\textcolor{keyword}{\ const\ }\{\ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{classmd__reader_aa28b84424a3a9e55f729b6b824f5b517}{m\_read\_md\_filename}};\ \}}
+\DoxyCodeLine{00222\ \ \ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{classmd__reader_a73790a0c92a98e9b1d8759cd465b3bf6}{get\_lineno}}\ ()\textcolor{keyword}{\ const\ }\{\ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{classmd__reader_a2f2697f26512c5887bc424086864516c}{m\_read\_md\_lineno}};\ \}}
+\DoxyCodeLine{00223\ \ \ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{classmd__reader_a9c1220f9cf2b37ea6b25f5564f2adc77}{get\_colno}}\ ()\textcolor{keyword}{\ const\ }\{\ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{classmd__reader_ad5fd8a164fb7bd630ab9e56fccbff254}{m\_read\_md\_colno}};\ \}}
+\DoxyCodeLine{00224\ }
+\DoxyCodeLine{00225\ \ \ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{structobstack}{obstack}}\ *\doxymbox{\hyperlink{classmd__reader_a8f63245ebc0333cb47723f1771d5a885}{get\_string\_obstack}}\ ()\ \{\ \textcolor{keywordflow}{return}\ \&\doxymbox{\hyperlink{classmd__reader_a75785f0283bb8d7389d30cf7972489f6}{m\_string\_obstack}};\ \}}
+\DoxyCodeLine{00226\ \ \ \doxymbox{\hyperlink{hashtab_8h_aa3847a9bffeefab8f9895fc38007118a}{htab\_t}}\ \doxymbox{\hyperlink{classmd__reader_acb16b29b8b192494d683ef8ae2e975dc}{get\_md\_constants}}\ ()\ \{\ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{classmd__reader_aa978ca6b10e71bc7cc04785009dbb611}{m\_md\_constants}};\ \}}
+\DoxyCodeLine{00227\ }
+\DoxyCodeLine{00228\ \ \ \doxymbox{\hyperlink{structoverloaded__name}{overloaded\_name}}\ *\doxymbox{\hyperlink{classmd__reader_ab7868d98c2dcf50d8a359100661cba8a}{get\_overloads}}\ ()\textcolor{keyword}{\ const\ }\{\ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{classmd__reader_ab127e72b62e10e81e669e6159da2c1e6}{m\_first\_overload}};\ \}}
+\DoxyCodeLine{00229\ }
+\DoxyCodeLine{00230\ \ \textcolor{keyword}{private}:}
+\DoxyCodeLine{00231\ \ \ \textcolor{comment}{/*\ A\ singly-\/linked\ list\ of\ filenames.\ \ */}}
+\DoxyCodeLine{00232\ \ \ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{structmd__reader_1_1file__name__list}{file\_name\_list}}\ \{}
+\DoxyCodeLine{00233\ \ \ \ \ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{structmd__reader_1_1file__name__list}{file\_name\_list}}\ *\doxymbox{\hyperlink{structmd__reader_1_1file__name__list_ae8db180327dd4754cccf8b220c280a63}{next}};}
+\DoxyCodeLine{00234\ \ \ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *\doxymbox{\hyperlink{structmd__reader_1_1file__name__list_a687a970872bb7133d099961333f546ef}{fname}};}
+\DoxyCodeLine{00235\ \ \ \};}
+\DoxyCodeLine{00236\ }
+\DoxyCodeLine{00237\ \ \textcolor{keyword}{private}:}
+\DoxyCodeLine{00238\ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classmd__reader_af0feb18fa33d89834cbb05737246835c}{handle\_file}}\ ();}
+\DoxyCodeLine{00239\ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classmd__reader_aa3c39c93de77a6f1cbc1f3f1da8ab871}{handle\_toplevel\_file}}\ ();}
+\DoxyCodeLine{00240\ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classmd__reader_a25341fb994ec73726db4807935532b0c}{handle\_include}}\ (\doxymbox{\hyperlink{classfile__location}{file\_location}}\ loc);}
+\DoxyCodeLine{00241\ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classmd__reader_a9bc4fe3ed5ba4adbdfe57fdf598e78fc}{add\_include\_path}}\ (\textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *arg);}
+\DoxyCodeLine{00242\ }
+\DoxyCodeLine{00243\ \ \ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{classmd__reader_ab6bea4be9cf719c9e60d7cdfbc7589e5}{read\_name\_1}}\ (\textcolor{keyword}{struct}\ \doxymbox{\hyperlink{structmd__name}{md\_name}}\ *\doxymbox{\hyperlink{configargs_8h_a8f8f80d37794cde9472343e4487ba3eb}{name}},\ \doxymbox{\hyperlink{classfile__location}{file\_location}}\ *out\_loc);}
+\DoxyCodeLine{00244\ }
+\DoxyCodeLine{00245\ \ \textcolor{keyword}{private}:}
+\DoxyCodeLine{00246\ \ \ \textcolor{comment}{/*\ Are\ we\ reading\ a\ compact\ dump?\ \ */}}
+\DoxyCodeLine{00247\ \ \ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{classmd__reader_aaabe86a71a57f4516fbc270a6346925a}{m\_compact}};}
+\DoxyCodeLine{00248\ }
+\DoxyCodeLine{00249\ \ \ \textcolor{comment}{/*\ The\ name\ of\ the\ toplevel\ file\ that\ indirectly\ included}}
+\DoxyCodeLine{00250\ \textcolor{comment}{\ \ \ \ \ m\_read\_md\_file.\ \ */}}
+\DoxyCodeLine{00251\ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *\doxymbox{\hyperlink{classmd__reader_af24301d1aa18ac5a1f6dc1e3459158da}{m\_toplevel\_fname}};}
+\DoxyCodeLine{00252\ }
+\DoxyCodeLine{00253\ \ \ \textcolor{comment}{/*\ The\ directory\ part\ of\ m\_toplevel\_fname}}
+\DoxyCodeLine{00254\ \textcolor{comment}{\ \ \ \ \ NULL\ if\ m\_toplevel\_fname\ is\ a\ bare\ filename.\ \ */}}
+\DoxyCodeLine{00255\ \ \ \textcolor{keywordtype}{char}\ *\doxymbox{\hyperlink{classmd__reader_a0727877aceb14c8f98ff9f5574fc0ba3}{m\_base\_dir}};}
+\DoxyCodeLine{00256\ }
+\DoxyCodeLine{00257\ \ \ \textcolor{comment}{/*\ The\ file\ we\ are\ reading.\ \ */}}
+\DoxyCodeLine{00258\ \ \ FILE\ *\doxymbox{\hyperlink{classmd__reader_add130e5c15bc8a10b87d70c789e25bf1}{m\_read\_md\_file}};}
+\DoxyCodeLine{00259\ }
+\DoxyCodeLine{00260\ \ \ \textcolor{comment}{/*\ The\ filename\ of\ m\_read\_md\_file.\ \ */}}
+\DoxyCodeLine{00261\ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *\doxymbox{\hyperlink{classmd__reader_aa28b84424a3a9e55f729b6b824f5b517}{m\_read\_md\_filename}};}
+\DoxyCodeLine{00262\ }
+\DoxyCodeLine{00263\ \ \ \textcolor{comment}{/*\ The\ current\ line\ number\ in\ m\_read\_md\_file.\ \ */}}
+\DoxyCodeLine{00264\ \ \ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{classmd__reader_a2f2697f26512c5887bc424086864516c}{m\_read\_md\_lineno}};}
+\DoxyCodeLine{00265\ }
+\DoxyCodeLine{00266\ \ \ \textcolor{comment}{/*\ The\ current\ column\ number\ in\ m\_read\_md\_file.\ \ */}}
+\DoxyCodeLine{00267\ \ \ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{classmd__reader_ad5fd8a164fb7bd630ab9e56fccbff254}{m\_read\_md\_colno}};}
+\DoxyCodeLine{00268\ }
+\DoxyCodeLine{00269\ \ \ \textcolor{comment}{/*\ The\ column\ number\ before\ the\ last\ newline,\ so\ that}}
+\DoxyCodeLine{00270\ \textcolor{comment}{\ \ \ \ \ we\ can\ handle\ unread\_char\ ('\(\backslash\)n')\ at\ least\ once\ whilst}}
+\DoxyCodeLine{00271\ \textcolor{comment}{\ \ \ \ \ retaining\ column\ information.\ \ */}}
+\DoxyCodeLine{00272\ \ \ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{classmd__reader_a9e6bd8be776608d47dfe04f2e127cda1}{m\_last\_line\_colno}};}
+\DoxyCodeLine{00273\ }
+\DoxyCodeLine{00274\ \ \ \textcolor{comment}{/*\ The\ first\ directory\ to\ search.\ \ */}}
+\DoxyCodeLine{00275\ \ \ \doxymbox{\hyperlink{structmd__reader_1_1file__name__list}{file\_name\_list}}\ *\doxymbox{\hyperlink{classmd__reader_a57475bcbaf30b66e2a02f89cd8ed1b15}{m\_first\_dir\_md\_include}};}
+\DoxyCodeLine{00276\ }
+\DoxyCodeLine{00277\ \ \ \textcolor{comment}{/*\ A\ pointer\ to\ the\ null\ terminator\ of\ the\ md\ include\ chain.\ \ */}}
+\DoxyCodeLine{00278\ \ \ \doxymbox{\hyperlink{structmd__reader_1_1file__name__list}{file\_name\_list}}\ **\doxymbox{\hyperlink{classmd__reader_a092f2f38e3f53b111de1fa84447c0256}{m\_last\_dir\_md\_include\_ptr}};}
+\DoxyCodeLine{00279\ }
+\DoxyCodeLine{00280\ \ \ \textcolor{comment}{/*\ Obstack\ used\ for\ allocating\ MD\ strings.\ \ */}}
+\DoxyCodeLine{00281\ \ \ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{structobstack}{obstack}}\ \doxymbox{\hyperlink{classmd__reader_a75785f0283bb8d7389d30cf7972489f6}{m\_string\_obstack}};}
+\DoxyCodeLine{00282\ }
+\DoxyCodeLine{00283\ \ \ \textcolor{comment}{/*\ A\ table\ of\ ptr\_locs,\ hashed\ on\ the\ PTR\ field.\ \ */}}
+\DoxyCodeLine{00284\ \ \ \doxymbox{\hyperlink{hashtab_8h_aa3847a9bffeefab8f9895fc38007118a}{htab\_t}}\ \doxymbox{\hyperlink{classmd__reader_a2d3d2998440af776c5076f9b3a083f96}{m\_ptr\_locs}};}
+\DoxyCodeLine{00285\ }
+\DoxyCodeLine{00286\ \ \ \textcolor{comment}{/*\ An\ obstack\ for\ the\ above.\ \ Plain\ xmalloc\ is\ a\ bit\ heavyweight\ for\ a}}
+\DoxyCodeLine{00287\ \textcolor{comment}{\ \ \ \ \ small\ structure\ like\ ptr\_loc.\ \ */}}
+\DoxyCodeLine{00288\ \ \ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{structobstack}{obstack}}\ \doxymbox{\hyperlink{classmd__reader_a90aa936b7345534ae67ca6f80ed6c390}{m\_ptr\_loc\_obstack}};}
+\DoxyCodeLine{00289\ }
+\DoxyCodeLine{00290\ \ \ \textcolor{comment}{/*\ A\ hash\ table\ of\ triples\ (A,\ B,\ C),\ where\ each\ of\ A,\ B\ and\ C\ is\ a\ condition}}
+\DoxyCodeLine{00291\ \textcolor{comment}{\ \ \ \ \ and\ A\ is\ equivalent\ to\ "{}B\ \&\&\ C"{}.\ \ This\ is\ used\ to\ keep\ track\ of\ the\ source}}
+\DoxyCodeLine{00292\ \textcolor{comment}{\ \ \ \ \ of\ conditions\ that\ are\ made\ up\ of\ separate\ MD\ strings\ (such\ as\ the\ split}}
+\DoxyCodeLine{00293\ \textcolor{comment}{\ \ \ \ \ condition\ of\ a\ define\_insn\_and\_split).\ \ */}}
+\DoxyCodeLine{00294\ \ \ \doxymbox{\hyperlink{hashtab_8h_aa3847a9bffeefab8f9895fc38007118a}{htab\_t}}\ \doxymbox{\hyperlink{classmd__reader_a1db051f3b12fe749c117615d5b3f0e60}{m\_joined\_conditions}};}
+\DoxyCodeLine{00295\ }
+\DoxyCodeLine{00296\ \ \ \textcolor{comment}{/*\ An\ obstack\ for\ allocating\ joined\_conditions\ entries.\ \ */}}
+\DoxyCodeLine{00297\ \ \ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{structobstack}{obstack}}\ \doxymbox{\hyperlink{classmd__reader_ab9c758c8a50d7bfadec06e45006338ca}{m\_joined\_conditions\_obstack}};}
+\DoxyCodeLine{00298\ }
+\DoxyCodeLine{00299\ \ \ \textcolor{comment}{/*\ A\ table\ of\ md\_constant\ structures,\ hashed\ by\ name.\ \ Null\ if\ no}}
+\DoxyCodeLine{00300\ \textcolor{comment}{\ \ \ \ \ constant\ expansion\ should\ occur.\ \ */}}
+\DoxyCodeLine{00301\ \ \ \doxymbox{\hyperlink{hashtab_8h_aa3847a9bffeefab8f9895fc38007118a}{htab\_t}}\ \doxymbox{\hyperlink{classmd__reader_aa978ca6b10e71bc7cc04785009dbb611}{m\_md\_constants}};}
+\DoxyCodeLine{00302\ }
+\DoxyCodeLine{00303\ \ \ \textcolor{comment}{/*\ A\ table\ of\ enum\_type\ structures,\ hashed\ by\ name.\ \ */}}
+\DoxyCodeLine{00304\ \ \ \doxymbox{\hyperlink{hashtab_8h_aa3847a9bffeefab8f9895fc38007118a}{htab\_t}}\ \doxymbox{\hyperlink{classmd__reader_aff41d08d09cd28555c1de4abca3653c6}{m\_enum\_types}};}
+\DoxyCodeLine{00305\ }
+\DoxyCodeLine{00306\ \ \ \textcolor{comment}{/*\ If\ non-\/zero,\ filter\ the\ input\ to\ just\ this\ subset\ of\ lines.\ \ */}}
+\DoxyCodeLine{00307\ \ \ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{classmd__reader_a53f55b8bbf29d2c2fd8a73b291f3b0f5}{m\_first\_line}};}
+\DoxyCodeLine{00308\ \ \ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{classmd__reader_a3a0f13a52794fe1f7086e0ab55501a0a}{m\_last\_line}};}
+\DoxyCodeLine{00309\ }
+\DoxyCodeLine{00310\ \ \ \textcolor{comment}{/*\ The\ first\ overloaded\_name.\ \ */}}
+\DoxyCodeLine{00311\ \ \ \doxymbox{\hyperlink{structoverloaded__name}{overloaded\_name}}\ *\doxymbox{\hyperlink{classmd__reader_ab127e72b62e10e81e669e6159da2c1e6}{m\_first\_overload}};}
+\DoxyCodeLine{00312\ }
+\DoxyCodeLine{00313\ \ \ \textcolor{comment}{/*\ Where\ to\ chain\ further\ overloaded\_names,\ \ */}}
+\DoxyCodeLine{00314\ \ \ \doxymbox{\hyperlink{structoverloaded__name}{overloaded\_name}}\ **\doxymbox{\hyperlink{classmd__reader_a11fbc2ca7e457883e6b29dd230b6277d}{m\_next\_overload\_ptr}};}
+\DoxyCodeLine{00315\ }
+\DoxyCodeLine{00316\ \ \ \textcolor{comment}{/*\ A\ hash\ table\ of\ overloaded\_names,\ keyed\ off\ their\ name\ and\ the\ types\ of}}
+\DoxyCodeLine{00317\ \textcolor{comment}{\ \ \ \ \ their\ arguments.\ \ */}}
+\DoxyCodeLine{00318\ \ \ \doxymbox{\hyperlink{hashtab_8h_aa3847a9bffeefab8f9895fc38007118a}{htab\_t}}\ \doxymbox{\hyperlink{classmd__reader_a5814906f4ceef12eb99b1377c0a71254}{m\_overloads\_htab}};}
+\DoxyCodeLine{00319\ \};}
+\DoxyCodeLine{00320\ }
+\DoxyCodeLine{00321\ \textcolor{comment}{/*\ Global\ singleton;\ constrast\ with\ rtx\_reader\_ptr\ below.\ \ */}}
+\DoxyCodeLine{00322\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{classmd__reader}{md\_reader}}\ *\doxymbox{\hyperlink{read-md_8h_a6dd156f7e6b809aced13c93fc30cdf8a}{md\_reader\_ptr}};}
+\DoxyCodeLine{00323\ }
+\DoxyCodeLine{00324\ \textcolor{comment}{/*\ An\ md\_reader\ subclass\ which\ skips\ unknown\ directives,\ for}}
+\DoxyCodeLine{00325\ \textcolor{comment}{\ \ \ the\ gen*\ tools\ that\ purely\ use\ read-\/md.o.\ \ */}}
+\DoxyCodeLine{00326\ }
+\DoxyCodeLine{00327\ \textcolor{keyword}{class\ }\doxymbox{\hyperlink{classnoop__reader_a4d868d29a178e9a0d3b950436aadc8b7}{noop\_reader}}\ :\ \textcolor{keyword}{public}\ \doxymbox{\hyperlink{classmd__reader_a0b4aa1f3a292923a29c79dcbd8c387b7}{md\_reader}}}
+\DoxyCodeLine{00328\ \{}
+\DoxyCodeLine{00329\ \ \textcolor{keyword}{public}:}
+\DoxyCodeLine{00330\ \ \ \doxymbox{\hyperlink{classnoop__reader_a4d868d29a178e9a0d3b950436aadc8b7}{noop\_reader}}\ ()\ :\ \doxymbox{\hyperlink{classmd__reader_a0b4aa1f3a292923a29c79dcbd8c387b7}{md\_reader}}\ (\doxymbox{\hyperlink{stdbool_8h_a65e9886d74aaee76545e83dd09011727}{false}})\ \{\}}
+\DoxyCodeLine{00331\ }
+\DoxyCodeLine{00332\ \ \ \textcolor{comment}{/*\ A\ dummy\ implementation\ which\ skips\ unknown\ directives.\ \ */}}
+\DoxyCodeLine{00333\ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classnoop__reader_aa0b9f8bf49909603caa284dc81c96763}{handle\_unknown\_directive}}\ (\doxymbox{\hyperlink{classfile__location}{file\_location}},\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *)\ \textcolor{keyword}{override};}
+\DoxyCodeLine{00334\ \};}
+\DoxyCodeLine{00335\ }
+\DoxyCodeLine{00336\ \textcolor{comment}{/*\ An\ md\_reader\ subclass\ that\ actually\ handles\ full\ hierarchical}}
+\DoxyCodeLine{00337\ \textcolor{comment}{\ \ \ rtx\ expressions.}}
+\DoxyCodeLine{00338\ \textcolor{comment}{}}
+\DoxyCodeLine{00339\ \textcolor{comment}{\ \ \ Implemented\ in\ read-\/rtl.cc.\ \ */}}
+\DoxyCodeLine{00340\ }
+\DoxyCodeLine{00341\ \textcolor{keyword}{class\ }\doxymbox{\hyperlink{classrtx__reader_a3859506eff8214e9848015048429faa9}{rtx\_reader}}\ :\ \textcolor{keyword}{public}\ \doxymbox{\hyperlink{classmd__reader_a0b4aa1f3a292923a29c79dcbd8c387b7}{md\_reader}}}
+\DoxyCodeLine{00342\ \{}
+\DoxyCodeLine{00343\ \ \textcolor{keyword}{public}:}
+\DoxyCodeLine{00344\ \ \ \doxymbox{\hyperlink{classrtx__reader_a3859506eff8214e9848015048429faa9}{rtx\_reader}}\ (\textcolor{keywordtype}{bool}\ compact);}
+\DoxyCodeLine{00345\ \ \ \doxymbox{\hyperlink{classrtx__reader_ac4027ed2663f1fd0684d9c12e2182b1a}{\string~rtx\_reader}}\ ();}
+\DoxyCodeLine{00346\ }
+\DoxyCodeLine{00347\ \ \ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{classrtx__reader_a1b923e09d1b910457a3da0e7538ff746}{read\_rtx}}\ (\textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *\doxymbox{\hyperlink{rtl_8h_a3cdcb7e5bc33dadf934991ef647d2327}{rtx\_name}},\ \doxymbox{\hyperlink{structvec}{vec<rtx>}}\ *rtxen);}
+\DoxyCodeLine{00348\ \ \ \doxymbox{\hyperlink{coretypes_8h_a20e671ce9e7827268658cff844f4281c}{rtx}}\ \doxymbox{\hyperlink{classrtx__reader_a563102fbf74d3ee8bd64c3d1a62311e6}{rtx\_alloc\_for\_name}}\ (\textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *);}
+\DoxyCodeLine{00349\ \ \ \doxymbox{\hyperlink{coretypes_8h_a20e671ce9e7827268658cff844f4281c}{rtx}}\ \doxymbox{\hyperlink{classrtx__reader_a8c63bb874a24abd11a2cb9bd94f151fc}{read\_rtx\_code}}\ (\textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *code\_name);}
+\DoxyCodeLine{00350\ \ \ \textcolor{keyword}{virtual}\ \doxymbox{\hyperlink{coretypes_8h_a20e671ce9e7827268658cff844f4281c}{rtx}}\ \doxymbox{\hyperlink{classrtx__reader_accd50dc54d330f18ebd2075c3247da1d}{read\_rtx\_operand}}\ (\doxymbox{\hyperlink{coretypes_8h_a20e671ce9e7827268658cff844f4281c}{rtx}}\ return\_rtx,\ \textcolor{keywordtype}{int}\ idx);}
+\DoxyCodeLine{00351\ \ \ \doxymbox{\hyperlink{coretypes_8h_a20e671ce9e7827268658cff844f4281c}{rtx}}\ \doxymbox{\hyperlink{classrtx__reader_a00493fab71b0ddee33849a71000d5df2}{read\_nested\_rtx}}\ ();}
+\DoxyCodeLine{00352\ \ \ \doxymbox{\hyperlink{coretypes_8h_a20e671ce9e7827268658cff844f4281c}{rtx}}\ \doxymbox{\hyperlink{classrtx__reader_a2e95ed0b250c90179cc7fd9824088dc0}{read\_rtx\_variadic}}\ (\doxymbox{\hyperlink{coretypes_8h_a20e671ce9e7827268658cff844f4281c}{rtx}}\ form);}
+\DoxyCodeLine{00353\ \ \ \textcolor{keywordtype}{char}\ *\doxymbox{\hyperlink{classrtx__reader_a7b610c180266c456cb8e9d0ce884d7db}{read\_until}}\ (\textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *terminator\_chars,\ \textcolor{keywordtype}{bool}\ consume\_terminator);}
+\DoxyCodeLine{00354\ }
+\DoxyCodeLine{00355\ \ \ \textcolor{keyword}{virtual}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classrtx__reader_ac944d2492751119124c9112f889fb912}{handle\_any\_trailing\_information}}\ (\doxymbox{\hyperlink{coretypes_8h_a20e671ce9e7827268658cff844f4281c}{rtx}})\ \{\}}
+\DoxyCodeLine{00356\ \ \ \textcolor{keyword}{virtual}\ \doxymbox{\hyperlink{coretypes_8h_a20e671ce9e7827268658cff844f4281c}{rtx}}\ \doxymbox{\hyperlink{classrtx__reader_a14ffcfc3cc9fdaf8baaf22a4216ab378}{postprocess}}\ (\doxymbox{\hyperlink{coretypes_8h_a20e671ce9e7827268658cff844f4281c}{rtx}}\ x)\ \{\ \textcolor{keywordflow}{return}\ x;\ \}}
+\DoxyCodeLine{00357\ }
+\DoxyCodeLine{00358\ \ \ \textcolor{comment}{/*\ Hook\ to\ allow\ function\_reader\ subclass\ to\ put\ STRINGBUF\ into\ gc-\/managed}}
+\DoxyCodeLine{00359\ \textcolor{comment}{\ \ \ \ \ memory,\ rather\ than\ within\ an\ obstack.}}
+\DoxyCodeLine{00360\ \textcolor{comment}{\ \ \ \ \ This\ base\ class\ implementation\ is\ a\ no-\/op.\ \ */}}
+\DoxyCodeLine{00361\ \ \ \textcolor{keyword}{virtual}\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *\doxymbox{\hyperlink{classrtx__reader_a4345021b3f8bbe40338bf6c5f9f6301f}{finalize\_string}}\ (\textcolor{keywordtype}{char}\ *stringbuf)\ \{\ \textcolor{keywordflow}{return}\ stringbuf;\ \}}
+\DoxyCodeLine{00362\ }
+\DoxyCodeLine{00363\ \ \textcolor{keyword}{protected}:}
+\DoxyCodeLine{00364\ \ \ \textcolor{comment}{/*\ Analogous\ to\ rtx\_writer's\ m\_in\_call\_function\_usage.\ \ */}}
+\DoxyCodeLine{00365\ \ \ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{classrtx__reader_a157b702a37267a9cd02910a4235ce0ba}{m\_in\_call\_function\_usage}};}
+\DoxyCodeLine{00366\ }
+\DoxyCodeLine{00367\ \ \ \textcolor{comment}{/*\ Support\ for\ "{}reuse\_rtx"{}\ directives.\ \ */}}
+\DoxyCodeLine{00368\ \ \ \doxymbox{\hyperlink{classauto__vec}{auto\_vec<rtx>}}\ \doxymbox{\hyperlink{classrtx__reader_a3d3966b4386da6040df1e2144aa7d02f}{m\_reuse\_rtx\_by\_id}};}
+\DoxyCodeLine{00369\ \};}
+\DoxyCodeLine{00370\ }
+\DoxyCodeLine{00371\ \textcolor{comment}{/*\ Global\ singleton;\ constrast\ with\ md\_reader\_ptr\ above.\ \ */}}
+\DoxyCodeLine{00372\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{classrtx__reader}{rtx\_reader}}\ *\doxymbox{\hyperlink{read-md_8h_a8743bf1e798590a24dbe72c2593f210f}{rtx\_reader\_ptr}};}
+\DoxyCodeLine{00373\ }
+\DoxyCodeLine{00374\ \textcolor{keyword}{extern}\ void\ (*\doxymbox{\hyperlink{read-md_8h_a5acf59fa123bef1e8bbd72366d76141b}{include\_callback}})\ (\textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *);}
+\DoxyCodeLine{00375\ }
+\DoxyCodeLine{00376\ \textcolor{comment}{/*\ Read\ the\ next\ character\ from\ the\ MD\ file.\ \ */}}
+\DoxyCodeLine{00377\ }
+\DoxyCodeLine{00378\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{int}}
+\DoxyCodeLine{00379\ \doxymbox{\hyperlink{read-md_8h_ac4bf21eef6ac32637bf866720dd0a2a2}{read\_char}}\ (\textcolor{keywordtype}{void})}
+\DoxyCodeLine{00380\ \{}
+\DoxyCodeLine{00381\ \ \ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{read-md_8h_a6dd156f7e6b809aced13c93fc30cdf8a}{md\_reader\_ptr}}-\/>read\_char\ ();}
+\DoxyCodeLine{00382\ \}}
+\DoxyCodeLine{00383\ }
+\DoxyCodeLine{00384\ \textcolor{comment}{/*\ Put\ back\ CH,\ which\ was\ the\ last\ character\ read\ from\ the\ MD\ file.\ \ */}}
+\DoxyCodeLine{00385\ }
+\DoxyCodeLine{00386\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{void}}
+\DoxyCodeLine{00387\ \doxymbox{\hyperlink{read-md_8h_ace4234eb5d43633ffe7f06989ac94290}{unread\_char}}\ (\textcolor{keywordtype}{int}\ ch)}
+\DoxyCodeLine{00388\ \{}
+\DoxyCodeLine{00389\ \ \ \doxymbox{\hyperlink{read-md_8h_a6dd156f7e6b809aced13c93fc30cdf8a}{md\_reader\_ptr}}-\/>unread\_char\ (ch);}
+\DoxyCodeLine{00390\ \}}
+\DoxyCodeLine{00391\ }
+\DoxyCodeLine{00392\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{hashtab_8h_a2d05e5049721cf3117dd6b34e20d4f65}{hashval\_t}}\ \doxymbox{\hyperlink{read-md_8h_a0f431ff53a49320e3f14b39bf7288258}{leading\_string\_hash}}\ (\textcolor{keyword}{const}\ \textcolor{keywordtype}{void}\ *);}
+\DoxyCodeLine{00393\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{read-md_8h_a7e2e029d239a54230988d53ff0407a7e}{leading\_string\_eq\_p}}\ (\textcolor{keyword}{const}\ \textcolor{keywordtype}{void}\ *,\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{void}\ *);}
+\DoxyCodeLine{00394\ \textcolor{keyword}{extern}\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *\doxymbox{\hyperlink{read-md_8h_a68cd4e0a6925ae93d4c0304fcbec5b87}{join\_c\_conditions}}\ (\textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *,\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *);}
+\DoxyCodeLine{00395\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{read-md_8h_a221dfc8be1a9f9ddb157bd8dd169ff59}{message\_at}}\ (\doxymbox{\hyperlink{classfile__location}{file\_location}},\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *,\ ...)\ \doxymbox{\hyperlink{ansidecl_8h_ad5412d6bed6cc0e12f3bb460caae7ff5}{ATTRIBUTE\_PRINTF\_2}};}
+\DoxyCodeLine{00396\ extern\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{diagnostic-core_8h_af95c2d5e78dd66bfde597261aea466c9}{error\_at}}\ (\doxymbox{\hyperlink{classfile__location}{file\_location}},\ const\ \textcolor{keywordtype}{char}\ *,\ ...)\ \doxymbox{\hyperlink{ansidecl_8h_ad5412d6bed6cc0e12f3bb460caae7ff5}{ATTRIBUTE\_PRINTF\_2}};}
+\DoxyCodeLine{00397\ extern\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{read-md_8h_af3b76e4d024a91112172f8d5002bd9bf}{fatal\_at}}\ (\doxymbox{\hyperlink{classfile__location}{file\_location}},\ const\ \textcolor{keywordtype}{char}\ *,\ ...)\ \doxymbox{\hyperlink{ansidecl_8h_ad5412d6bed6cc0e12f3bb460caae7ff5}{ATTRIBUTE\_PRINTF\_2}};}
+\DoxyCodeLine{00398\ extern\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{read-md_8h_a42f4734067bcf6b3083809bf35cdd414}{fatal\_with\_file\_and\_line}}\ (const\ \textcolor{keywordtype}{char}\ *,\ ...)}
+\DoxyCodeLine{00399\ \ \ \doxymbox{\hyperlink{ansidecl_8h_ab26b17ca51b09bf2e99ab067e8caf945}{ATTRIBUTE\_PRINTF\_1}}\ \doxymbox{\hyperlink{ansidecl_8h_ab5c6b9dfdcc70f672f37121b673a3bb9}{ATTRIBUTE\_NORETURN}};}
+\DoxyCodeLine{00400\ extern\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{read-md_8h_a30bb743f04e7a73213f9e1e9e47074b4}{fatal\_expected\_char}}\ (\textcolor{keywordtype}{int},\ \textcolor{keywordtype}{int})\ \doxymbox{\hyperlink{ansidecl_8h_ab5c6b9dfdcc70f672f37121b673a3bb9}{ATTRIBUTE\_NORETURN}};}
+\DoxyCodeLine{00401\ extern\ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{read-md_8h_a9c73bf669a274ce2a967166a3049f4bb}{read\_skip\_spaces}}\ (\textcolor{keywordtype}{void});}
+\DoxyCodeLine{00402\ extern\ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{read-md_8h_a38a9f7f6dc1dc185376771bb85941c77}{n\_comma\_elts}}\ (const\ \textcolor{keywordtype}{char}\ *);}
+\DoxyCodeLine{00403\ extern\ const\ \textcolor{keywordtype}{char}\ *\doxymbox{\hyperlink{read-md_8h_a8d35f898eda7fac10fbf5acc018fc937}{scan\_comma\_elt}}\ (const\ \textcolor{keywordtype}{char}\ **);}
+\DoxyCodeLine{00404\ extern\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{read-md_8h_ac1dda77a54cb23ea7c3ae6490cf731ad}{upcase\_string}}\ (\textcolor{keywordtype}{char}\ *);}
+\DoxyCodeLine{00405\ extern\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{read-md_8h_a8a0a2e716965cd8e85bcd2f9f046e1b5}{traverse\_enum\_types}}\ (\doxymbox{\hyperlink{hashtab_8h_ac000ac9cf06032d1b62d998837f6bdce}{htab\_trav}},\ \textcolor{keywordtype}{void}\ *);}
+\DoxyCodeLine{00406\ extern\ struct\ \doxymbox{\hyperlink{structenum__type}{enum\_type}}\ *\doxymbox{\hyperlink{read-md_8h_a8958e6abf03e554e21545a1121275231}{lookup\_enum\_type}}\ (const\ \textcolor{keywordtype}{char}\ *);}
+\DoxyCodeLine{00407\ }
+\DoxyCodeLine{00408\ \textcolor{preprocessor}{\#endif\ }\textcolor{comment}{/*\ GCC\_READ\_MD\_H\ */}\textcolor{preprocessor}{}}
+
+\end{DoxyCode}

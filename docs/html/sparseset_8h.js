@@ -1,0 +1,26 @@
+var sparseset_8h =
+[
+    [ "sparseset_def", "structsparseset__def.html", "structsparseset__def" ],
+    [ "EXECUTE_IF_SET_IN_SPARSESET", "sparseset_8h.html#a081a15e57a60fc0619609363846c2986", null ],
+    [ "SPARSESET_ELT_TYPE", "sparseset_8h.html#a6459ff84725ae7f5d6bac015fb5c848f", null ],
+    [ "sparseset_free", "sparseset_8h.html#ab021400272958dde198db22f03069124", null ],
+    [ "sparseset", "sparseset_8h.html#a61069e60dfc27f038e2c361bc108e7fa", null ],
+    [ "sparseset_alloc", "sparseset_8h.html#a213d57fd0a05831e1edf8fdfb760520a", null ],
+    [ "sparseset_and", "sparseset_8h.html#a76ee579dfd47577e8d3478217fbde694", null ],
+    [ "sparseset_and_compl", "sparseset_8h.html#ad7f36e403f2f21620e43668ea68cb280", null ],
+    [ "sparseset_bit_p", "sparseset_8h.html#a7f1091555fcf359558a4f51833384776", null ],
+    [ "sparseset_cardinality", "sparseset_8h.html#a2acb61a260e86fb11206a60676601af1", null ],
+    [ "sparseset_clear", "sparseset_8h.html#a5939446cc1af137fc6ec8c48792a5b40", null ],
+    [ "sparseset_clear_bit", "sparseset_8h.html#a92c03152745747711cf8886acd90e19f", null ],
+    [ "sparseset_copy", "sparseset_8h.html#aca0913bf0763a3e6c01981dc559a3169", null ],
+    [ "sparseset_equal_p", "sparseset_8h.html#a63233699fccb8c56356cfb513dd42414", null ],
+    [ "sparseset_insert_bit", "sparseset_8h.html#ac253bea8e8571905cce79ea48815bd3e", null ],
+    [ "sparseset_ior", "sparseset_8h.html#a07420f5dda8c82e52bbbacffc29ba399", null ],
+    [ "sparseset_iter_elm", "sparseset_8h.html#a6cf5b1a03c461b00112a3cd732ea4266", null ],
+    [ "sparseset_iter_init", "sparseset_8h.html#ad793eb0643d98e7b610b977eb9f3c888", null ],
+    [ "sparseset_iter_next", "sparseset_8h.html#aeb63bd8da936115d393bb04cbbec05fa", null ],
+    [ "sparseset_iter_p", "sparseset_8h.html#ac9277a4709cad16c3db016a590776c3e", null ],
+    [ "sparseset_pop", "sparseset_8h.html#a4cb8516ab62105604b8eee7acd921007", null ],
+    [ "sparseset_set_bit", "sparseset_8h.html#ace9f5e6f638686889a56059b9dd9179b", null ],
+    [ "sparseset_size", "sparseset_8h.html#a95b6b83b2f50b28aa11a80959524792d", null ]
+];

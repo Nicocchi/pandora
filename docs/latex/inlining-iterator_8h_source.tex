@@ -1,0 +1,155 @@
+\doxysection{inlining-\/iterator.h}
+\hypertarget{inlining-iterator_8h_source}{}\label{inlining-iterator_8h_source}\index{toolchain/x86\_64-\/elf/lib/gcc/x86\_64-\/elf/14.2.0/plugin/include/analyzer/inlining-\/iterator.h@{toolchain/x86\_64-\/elf/lib/gcc/x86\_64-\/elf/14.2.0/plugin/include/analyzer/inlining-\/iterator.h}}
+\doxymbox{\hyperlink{inlining-iterator_8h}{Go to the documentation of this file.}}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001\ \textcolor{comment}{/*\ Iterator\ for\ walking\ a\ chain\ of\ inlining\ locations.}}
+\DoxyCodeLine{00002\ \textcolor{comment}{\ \ \ Copyright\ (C)\ 2022-\/2024\ Free\ Software\ Foundation,\ Inc.}}
+\DoxyCodeLine{00003\ \textcolor{comment}{\ \ \ Contributed\ by\ David\ Malcolm\ <dmalcolm@redhat.com>.}}
+\DoxyCodeLine{00004\ \textcolor{comment}{}}
+\DoxyCodeLine{00005\ \textcolor{comment}{This\ file\ is\ part\ of\ GCC.}}
+\DoxyCodeLine{00006\ \textcolor{comment}{}}
+\DoxyCodeLine{00007\ \textcolor{comment}{GCC\ is\ free\ software;\ you\ can\ redistribute\ it\ and/or\ modify\ it}}
+\DoxyCodeLine{00008\ \textcolor{comment}{under\ the\ terms\ of\ the\ GNU\ General\ Public\ License\ as\ published\ by}}
+\DoxyCodeLine{00009\ \textcolor{comment}{the\ Free\ Software\ Foundation;\ either\ version\ 3,\ or\ (at\ your\ option)}}
+\DoxyCodeLine{00010\ \textcolor{comment}{any\ later\ version.}}
+\DoxyCodeLine{00011\ \textcolor{comment}{}}
+\DoxyCodeLine{00012\ \textcolor{comment}{GCC\ is\ distributed\ in\ the\ hope\ that\ it\ will\ be\ useful,\ but}}
+\DoxyCodeLine{00013\ \textcolor{comment}{WITHOUT\ ANY\ WARRANTY;\ without\ even\ the\ implied\ warranty\ of}}
+\DoxyCodeLine{00014\ \textcolor{comment}{MERCHANTABILITY\ or\ FITNESS\ FOR\ A\ PARTICULAR\ PURPOSE.\ \ See\ the\ GNU}}
+\DoxyCodeLine{00015\ \textcolor{comment}{General\ Public\ License\ for\ more\ details.}}
+\DoxyCodeLine{00016\ \textcolor{comment}{}}
+\DoxyCodeLine{00017\ \textcolor{comment}{You\ should\ have\ received\ a\ copy\ of\ the\ GNU\ General\ Public\ License}}
+\DoxyCodeLine{00018\ \textcolor{comment}{along\ with\ GCC;\ see\ the\ file\ COPYING3.\ \ If\ not\ see}}
+\DoxyCodeLine{00019\ \textcolor{comment}{<http://www.gnu.org/licenses/>.\ \ */}}
+\DoxyCodeLine{00020\ }
+\DoxyCodeLine{00021\ \textcolor{preprocessor}{\#ifndef\ GCC\_ANALYZER\_INLINING\_ITERATOR\_H}}
+\DoxyCodeLine{00022\ \textcolor{preprocessor}{\#define\ GCC\_ANALYZER\_INLINING\_ITERATOR\_H}}
+\DoxyCodeLine{00023\ }
+\DoxyCodeLine{00024\ \textcolor{comment}{/*\ Iterator\ for\ walking\ a\ chain\ of\ inlining\ locations.}}
+\DoxyCodeLine{00025\ \textcolor{comment}{}}
+\DoxyCodeLine{00026\ \textcolor{comment}{\ \ \ The\ fndecls\ and\ locations\ will\ be\ traversed\ from\ innermost\ to\ outermost.}}
+\DoxyCodeLine{00027\ \textcolor{comment}{\ \ \ For\ example,\ given:}}
+\DoxyCodeLine{00028\ \textcolor{comment}{}}
+\DoxyCodeLine{00029\ \textcolor{comment}{\ \ \ \ inline\ void\ inner\ (void)}}
+\DoxyCodeLine{00030\ \textcolor{comment}{\ \ \ \ \{}}
+\DoxyCodeLine{00031\ \textcolor{comment}{\ \ \ \ \ \ \ ...LOCATION\ HERE...}}
+\DoxyCodeLine{00032\ \textcolor{comment}{\ \ \ \ \}}}
+\DoxyCodeLine{00033\ \textcolor{comment}{\ \ \ \ void\ outer\ (void)}}
+\DoxyCodeLine{00034\ \textcolor{comment}{\ \ \ \ \{}}
+\DoxyCodeLine{00035\ \textcolor{comment}{\ \ \ \ \ \ \ inner\ ();\ <-\/-\/\ CALLSITE}}
+\DoxyCodeLine{00036\ \textcolor{comment}{\ \ \ \ \}}}
+\DoxyCodeLine{00037\ \textcolor{comment}{}}
+\DoxyCodeLine{00038\ \textcolor{comment}{\ \ \ then\ the\ fndecl\ will\ be\ "{}inner"{}\ on\ the\ initial\ iteration,\ and\ "{}outer"{}\ on}}
+\DoxyCodeLine{00039\ \textcolor{comment}{\ \ \ the\ second\ (final)\ iteration.}}
+\DoxyCodeLine{00040\ \textcolor{comment}{}}
+\DoxyCodeLine{00041\ \textcolor{comment}{\ \ \ Compare\ with\ lhd\_print\_error\_function,\ cp\_print\_error\_function,}}
+\DoxyCodeLine{00042\ \textcolor{comment}{\ \ \ and\ optrecord\_json\_writer::inlining\_chain\_to\_json.\ \ */}}
+\DoxyCodeLine{00043\ }
+\DoxyCodeLine{00044\ \textcolor{keyword}{class\ }\doxymbox{\hyperlink{classinlining__iterator_a54c4ee690416742af3640e1075d9aba8}{inlining\_iterator}}}
+\DoxyCodeLine{00045\ \{}
+\DoxyCodeLine{00046\ \textcolor{keyword}{public}:}
+\DoxyCodeLine{00047\ \ \ \doxymbox{\hyperlink{classinlining__iterator_a54c4ee690416742af3640e1075d9aba8}{inlining\_iterator}}\ (\doxymbox{\hyperlink{line-map_8h_aedf25620511d64e43327f1a229906a96}{location\_t}}\ loc)}
+\DoxyCodeLine{00048\ \ \ :\ \doxymbox{\hyperlink{classinlining__iterator_a262bf0e9e92ab5d4bf6d5ddee76063f8}{m\_abstract\_origin}}\ (\doxymbox{\hyperlink{input_8h_a55af5e0deb8130d710e29b41ecfc57c2}{LOCATION\_BLOCK}}\ (loc)),}
+\DoxyCodeLine{00049\ \ \ \ \ \doxymbox{\hyperlink{classinlining__iterator_abc63358ffd18f87ef386533e17d33da2}{m\_callsite}}\ (\doxymbox{\hyperlink{input_8h_a846cad98d2567653f058bedc23bd90fc}{UNKNOWN\_LOCATION}}),\ \doxymbox{\hyperlink{classinlining__iterator_af58a89fbf05dd1a7f45dfe7532ab3a2b}{m\_fndecl}}\ (\doxymbox{\hyperlink{stddef_8h_a070d2ce7b6bb7e5c05602aa8c308d0c4}{NULL}}),}
+\DoxyCodeLine{00050\ \ \ \ \ \doxymbox{\hyperlink{classinlining__iterator_a3535d8d6d91aeccd2ca2bec19fe2da28}{m\_next\_abstract\_origin}}\ (\doxymbox{\hyperlink{stddef_8h_a070d2ce7b6bb7e5c05602aa8c308d0c4}{NULL}})}
+\DoxyCodeLine{00051\ \ \ \{}
+\DoxyCodeLine{00052\ \ \ \ \ \doxymbox{\hyperlink{classinlining__iterator_aa11cd355835f0c6dad930de0e99a77e8}{prepare\_iteration}}\ ();}
+\DoxyCodeLine{00053\ \ \ \}}
+\DoxyCodeLine{00054\ }
+\DoxyCodeLine{00055\ \ \ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{classinlining__iterator_ad3715b3328986f45c6164de5b85438bb}{done\_p}}\ ()\textcolor{keyword}{\ const\ }\{\ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{classinlining__iterator_a262bf0e9e92ab5d4bf6d5ddee76063f8}{m\_abstract\_origin}}\ ==\ \doxymbox{\hyperlink{stddef_8h_a070d2ce7b6bb7e5c05602aa8c308d0c4}{NULL}};\ \}}
+\DoxyCodeLine{00056\ }
+\DoxyCodeLine{00057\ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classinlining__iterator_a4ddab151fa7c7ec4a648ce48ab789955}{next}}\ ()}
+\DoxyCodeLine{00058\ \ \ \{}
+\DoxyCodeLine{00059\ \ \ \ \ \doxymbox{\hyperlink{classinlining__iterator_a262bf0e9e92ab5d4bf6d5ddee76063f8}{m\_abstract\_origin}}\ =\ \doxymbox{\hyperlink{classinlining__iterator_a3535d8d6d91aeccd2ca2bec19fe2da28}{m\_next\_abstract\_origin}};}
+\DoxyCodeLine{00060\ \ \ \ \ \doxymbox{\hyperlink{classinlining__iterator_aa11cd355835f0c6dad930de0e99a77e8}{prepare\_iteration}}\ ();}
+\DoxyCodeLine{00061\ \ \ \}}
+\DoxyCodeLine{00062\ }
+\DoxyCodeLine{00063\ \ \ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ \doxymbox{\hyperlink{classinlining__iterator_aac0fc045f88d8c1664279f0df92e1c91}{get\_fndecl}}\ ()\textcolor{keyword}{\ const\ }\{\ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{classinlining__iterator_af58a89fbf05dd1a7f45dfe7532ab3a2b}{m\_fndecl}};\ \}}
+\DoxyCodeLine{00064\ \ \ \doxymbox{\hyperlink{line-map_8h_aedf25620511d64e43327f1a229906a96}{location\_t}}\ \doxymbox{\hyperlink{classinlining__iterator_aeb793f7694771f8d2b99af1ac1ffc855}{get\_callsite}}\ ()\textcolor{keyword}{\ const\ }\{\ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{classinlining__iterator_abc63358ffd18f87ef386533e17d33da2}{m\_callsite}};\ \}}
+\DoxyCodeLine{00065\ \ \ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ \doxymbox{\hyperlink{classinlining__iterator_a21b786e1ca0b8dab7e390fc1b36fd395}{get\_block}}\ ()\textcolor{keyword}{\ const\ }\{\ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{classinlining__iterator_a262bf0e9e92ab5d4bf6d5ddee76063f8}{m\_abstract\_origin}};\ \}}
+\DoxyCodeLine{00066\ }
+\DoxyCodeLine{00067\ \textcolor{keyword}{private}:}
+\DoxyCodeLine{00068\ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classinlining__iterator_aa11cd355835f0c6dad930de0e99a77e8}{prepare\_iteration}}\ ()}
+\DoxyCodeLine{00069\ \ \ \{}
+\DoxyCodeLine{00070\ \ \ \ \ \textcolor{keywordflow}{if}\ (\doxymbox{\hyperlink{classinlining__iterator_ad3715b3328986f45c6164de5b85438bb}{done\_p}}\ ())}
+\DoxyCodeLine{00071\ \ \ \ \ \ \ \textcolor{keywordflow}{return};}
+\DoxyCodeLine{00072\ \ \ \ \ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ block\ =\ \doxymbox{\hyperlink{classinlining__iterator_a262bf0e9e92ab5d4bf6d5ddee76063f8}{m\_abstract\_origin}};}
+\DoxyCodeLine{00073\ \ \ \ \ \doxymbox{\hyperlink{classinlining__iterator_abc63358ffd18f87ef386533e17d33da2}{m\_callsite}}\ =\ \doxymbox{\hyperlink{tree_8h_a55ed47514e9f6f64d129f2728d5a0f53}{BLOCK\_SOURCE\_LOCATION}}\ (block);}
+\DoxyCodeLine{00074\ \ \ \ \ \doxymbox{\hyperlink{classinlining__iterator_af58a89fbf05dd1a7f45dfe7532ab3a2b}{m\_fndecl}}\ =\ \doxymbox{\hyperlink{stddef_8h_a070d2ce7b6bb7e5c05602aa8c308d0c4}{NULL}};}
+\DoxyCodeLine{00075\ \ \ \ \ block\ =\ \doxymbox{\hyperlink{tree_8h_ab2f911c5e168f896da6b4e471ebf42cc}{BLOCK\_SUPERCONTEXT}}\ (block);}
+\DoxyCodeLine{00076\ \ \ \ \ \textcolor{keywordflow}{while}\ (block\ \&\&\ \doxymbox{\hyperlink{tree_8h_a6449672126fbdb41758e25c87196efc1}{TREE\_CODE}}\ (block)\ ==\ \doxymbox{\hyperlink{name-lookup_8h_a311cafda98863fcd3926d927e3544170a4d34f53389ed7f28ca91fc31ea360a66}{BLOCK}}}
+\DoxyCodeLine{00077\ \ \ \ \ \ \ \ \&\&\ \doxymbox{\hyperlink{tree_8h_a354678dc90ff713f1b8d3ca707ae6fb7}{BLOCK\_ABSTRACT\_ORIGIN}}\ (block))}
+\DoxyCodeLine{00078\ \ \ \ \ \ \ \{}
+\DoxyCodeLine{00079\ \ \ \ \ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ ao\ =\ \doxymbox{\hyperlink{tree_8h_a354678dc90ff713f1b8d3ca707ae6fb7}{BLOCK\_ABSTRACT\_ORIGIN}}\ (block);}
+\DoxyCodeLine{00080\ \ \ \ \ \textcolor{keywordflow}{if}\ (\doxymbox{\hyperlink{tree_8h_a6449672126fbdb41758e25c87196efc1}{TREE\_CODE}}\ (ao)\ ==\ FUNCTION\_DECL)}
+\DoxyCodeLine{00081\ \ \ \ \ \ \ \{}
+\DoxyCodeLine{00082\ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{classinlining__iterator_af58a89fbf05dd1a7f45dfe7532ab3a2b}{m\_fndecl}}\ =\ ao;}
+\DoxyCodeLine{00083\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{break};}
+\DoxyCodeLine{00084\ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00085\ \ \ \ \ \textcolor{keywordflow}{else}\ \textcolor{keywordflow}{if}\ (\doxymbox{\hyperlink{tree_8h_a6449672126fbdb41758e25c87196efc1}{TREE\_CODE}}\ (ao)\ !=\ \doxymbox{\hyperlink{name-lookup_8h_a311cafda98863fcd3926d927e3544170a4d34f53389ed7f28ca91fc31ea360a66}{BLOCK}})}
+\DoxyCodeLine{00086\ \ \ \ \ \ \ \textcolor{keywordflow}{break};}
+\DoxyCodeLine{00087\ }
+\DoxyCodeLine{00088\ \ \ \ \ block\ =\ \doxymbox{\hyperlink{tree_8h_ab2f911c5e168f896da6b4e471ebf42cc}{BLOCK\_SUPERCONTEXT}}\ (block);}
+\DoxyCodeLine{00089\ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00090\ \ \ \ \ \textcolor{keywordflow}{if}\ (\doxymbox{\hyperlink{classinlining__iterator_af58a89fbf05dd1a7f45dfe7532ab3a2b}{m\_fndecl}})}
+\DoxyCodeLine{00091\ \ \ \ \ \ \ \doxymbox{\hyperlink{classinlining__iterator_a3535d8d6d91aeccd2ca2bec19fe2da28}{m\_next\_abstract\_origin}}\ =\ block;}
+\DoxyCodeLine{00092\ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00093\ \ \ \ \ \ \ \{}
+\DoxyCodeLine{00094\ \ \ \ \ \textcolor{keywordflow}{while}\ (block\ \&\&\ \doxymbox{\hyperlink{tree_8h_a6449672126fbdb41758e25c87196efc1}{TREE\_CODE}}\ (block)\ ==\ \doxymbox{\hyperlink{name-lookup_8h_a311cafda98863fcd3926d927e3544170a4d34f53389ed7f28ca91fc31ea360a66}{BLOCK}})}
+\DoxyCodeLine{00095\ \ \ \ \ \ \ block\ =\ \doxymbox{\hyperlink{tree_8h_ab2f911c5e168f896da6b4e471ebf42cc}{BLOCK\_SUPERCONTEXT}}\ (block);}
+\DoxyCodeLine{00096\ }
+\DoxyCodeLine{00097\ \ \ \ \ \textcolor{keywordflow}{if}\ (block\ \&\&\ \doxymbox{\hyperlink{tree_8h_a6449672126fbdb41758e25c87196efc1}{TREE\_CODE}}\ (block)\ ==\ FUNCTION\_DECL)}
+\DoxyCodeLine{00098\ \ \ \ \ \ \ \doxymbox{\hyperlink{classinlining__iterator_af58a89fbf05dd1a7f45dfe7532ab3a2b}{m\_fndecl}}\ =\ block;}
+\DoxyCodeLine{00099\ \ \ \ \ \doxymbox{\hyperlink{classinlining__iterator_a3535d8d6d91aeccd2ca2bec19fe2da28}{m\_next\_abstract\_origin}}\ =\ \doxymbox{\hyperlink{stddef_8h_a070d2ce7b6bb7e5c05602aa8c308d0c4}{NULL}};}
+\DoxyCodeLine{00100\ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00101\ \ \ \}}
+\DoxyCodeLine{00102\ }
+\DoxyCodeLine{00103\ \ \ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ \doxymbox{\hyperlink{classinlining__iterator_a262bf0e9e92ab5d4bf6d5ddee76063f8}{m\_abstract\_origin}};}
+\DoxyCodeLine{00104\ \ \ \doxymbox{\hyperlink{line-map_8h_aedf25620511d64e43327f1a229906a96}{location\_t}}\ \doxymbox{\hyperlink{classinlining__iterator_abc63358ffd18f87ef386533e17d33da2}{m\_callsite}};}
+\DoxyCodeLine{00105\ \ \ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ \doxymbox{\hyperlink{classinlining__iterator_af58a89fbf05dd1a7f45dfe7532ab3a2b}{m\_fndecl}};}
+\DoxyCodeLine{00106\ \ \ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ \doxymbox{\hyperlink{classinlining__iterator_a3535d8d6d91aeccd2ca2bec19fe2da28}{m\_next\_abstract\_origin}};}
+\DoxyCodeLine{00107\ \};}
+\DoxyCodeLine{00108\ }
+\DoxyCodeLine{00109\ \textcolor{comment}{/*\ A\ class\ for\ fixing\ up\ fndecls\ and\ stack\ depths\ in\ checker\_event,\ based}}
+\DoxyCodeLine{00110\ \textcolor{comment}{\ \ \ on\ inlining\ records.}}
+\DoxyCodeLine{00111\ \textcolor{comment}{}}
+\DoxyCodeLine{00112\ \textcolor{comment}{\ \ \ The\ early\ inliner\ runs\ before\ the\ analyzer,\ which\ can\ lead\ to\ confusing}}
+\DoxyCodeLine{00113\ \textcolor{comment}{\ \ \ output.}}
+\DoxyCodeLine{00114\ \textcolor{comment}{}}
+\DoxyCodeLine{00115\ \textcolor{comment}{\ \ \ Tne\ base\ fndecl\ and\ depth\ within\ a\ checker\_event\ are\ from\ call\ strings}}
+\DoxyCodeLine{00116\ \textcolor{comment}{\ \ \ in\ program\_points,\ which\ reflect\ the\ call\ strings\ after\ inlining.}}
+\DoxyCodeLine{00117\ \textcolor{comment}{\ \ \ This\ class\ lets\ us\ offset\ the\ depth\ and\ fix\ up\ the\ reported\ fndecl\ and}}
+\DoxyCodeLine{00118\ \textcolor{comment}{\ \ \ stack\ depth\ to\ better\ reflect\ the\ user's\ original\ code.\ \ */}}
+\DoxyCodeLine{00119\ }
+\DoxyCodeLine{00120\ \textcolor{keyword}{class\ }\doxymbox{\hyperlink{classinlining__info_ac46964cb1428b1cc3ea787cc932f95c9}{inlining\_info}}}
+\DoxyCodeLine{00121\ \{}
+\DoxyCodeLine{00122\ \textcolor{keyword}{public}:}
+\DoxyCodeLine{00123\ \ \ \doxymbox{\hyperlink{classinlining__info_ac46964cb1428b1cc3ea787cc932f95c9}{inlining\_info}}\ (\doxymbox{\hyperlink{line-map_8h_aedf25620511d64e43327f1a229906a96}{location\_t}}\ loc)}
+\DoxyCodeLine{00124\ \ \ \{}
+\DoxyCodeLine{00125\ \ \ \ \ \doxymbox{\hyperlink{classinlining__iterator}{inlining\_iterator}}\ iter\ (loc);}
+\DoxyCodeLine{00126\ \ \ \ \ \doxymbox{\hyperlink{classinlining__info_a6919fd8e53d28796cf703caeedc108b1}{m\_inner\_fndecl}}\ =\ iter.\doxymbox{\hyperlink{classinlining__iterator_aac0fc045f88d8c1664279f0df92e1c91}{get\_fndecl}}\ ();}
+\DoxyCodeLine{00127\ \ \ \ \ \textcolor{keywordtype}{int}\ num\_frames\ =\ 0;}
+\DoxyCodeLine{00128\ \ \ \ \ \textcolor{keywordflow}{while}\ (!iter.\doxymbox{\hyperlink{classinlining__iterator_ad3715b3328986f45c6164de5b85438bb}{done\_p}}\ ())}
+\DoxyCodeLine{00129\ \ \ \ \ \ \ \{}
+\DoxyCodeLine{00130\ \ \ \ \ \doxymbox{\hyperlink{classinlining__info_ab91713a2c188a0bd569c83aa3ce713f2}{m\_outer\_fndecl}}\ =\ iter.\doxymbox{\hyperlink{classinlining__iterator_aac0fc045f88d8c1664279f0df92e1c91}{get\_fndecl}}\ ();}
+\DoxyCodeLine{00131\ \ \ \ \ num\_frames++;}
+\DoxyCodeLine{00132\ \ \ \ \ iter.\doxymbox{\hyperlink{classinlining__iterator_a4ddab151fa7c7ec4a648ce48ab789955}{next}}\ ();}
+\DoxyCodeLine{00133\ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00134\ \ \ \ \ \textcolor{keywordflow}{if}\ (num\_frames\ >\ 1)}
+\DoxyCodeLine{00135\ \ \ \ \ \ \ \doxymbox{\hyperlink{classinlining__info_a0f653f5f10af6bbd3e7ad226b94a28f9}{m\_extra\_frames}}\ =\ num\_frames\ -\/\ 1;}
+\DoxyCodeLine{00136\ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00137\ \ \ \ \ \ \ \doxymbox{\hyperlink{classinlining__info_a0f653f5f10af6bbd3e7ad226b94a28f9}{m\_extra\_frames}}\ =\ 0;}
+\DoxyCodeLine{00138\ \ \ \}}
+\DoxyCodeLine{00139\ }
+\DoxyCodeLine{00140\ \ \ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ \doxymbox{\hyperlink{classinlining__info_ae6056cb07500de74be5e5d1cf2c6918e}{get\_inner\_fndecl}}\ ()\textcolor{keyword}{\ const\ }\{\ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{classinlining__info_a6919fd8e53d28796cf703caeedc108b1}{m\_inner\_fndecl}};\ \}}
+\DoxyCodeLine{00141\ \ \ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{classinlining__info_a846a0d58627d0b2ad323fce6d2c13939}{get\_extra\_frames}}\ ()\textcolor{keyword}{\ const\ }\{\ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{classinlining__info_a0f653f5f10af6bbd3e7ad226b94a28f9}{m\_extra\_frames}};\ \}}
+\DoxyCodeLine{00142\ }
+\DoxyCodeLine{00143\ \textcolor{keyword}{private}:}
+\DoxyCodeLine{00144\ \ \ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ \doxymbox{\hyperlink{classinlining__info_ab91713a2c188a0bd569c83aa3ce713f2}{m\_outer\_fndecl}};}
+\DoxyCodeLine{00145\ \ \ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ \doxymbox{\hyperlink{classinlining__info_a6919fd8e53d28796cf703caeedc108b1}{m\_inner\_fndecl}};}
+\DoxyCodeLine{00146\ \ \ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{classinlining__info_a0f653f5f10af6bbd3e7ad226b94a28f9}{m\_extra\_frames}};}
+\DoxyCodeLine{00147\ \};}
+\DoxyCodeLine{00148\ }
+\DoxyCodeLine{00149\ \textcolor{preprocessor}{\#endif\ }\textcolor{comment}{/*\ GCC\_ANALYZER\_INLINING\_ITERATOR\_H\ */}\textcolor{preprocessor}{}}
+
+\end{DoxyCode}

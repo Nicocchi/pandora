@@ -1,0 +1,159 @@
+\doxysection{vec-\/perm-\/indices.h}
+\hypertarget{vec-perm-indices_8h_source}{}\label{vec-perm-indices_8h_source}\index{toolchain/x86\_64-\/elf/lib/gcc/x86\_64-\/elf/14.2.0/plugin/include/vec-\/perm-\/indices.h@{toolchain/x86\_64-\/elf/lib/gcc/x86\_64-\/elf/14.2.0/plugin/include/vec-\/perm-\/indices.h}}
+\doxymbox{\hyperlink{vec-perm-indices_8h}{Go to the documentation of this file.}}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001\ \textcolor{comment}{/*\ A\ representation\ of\ vector\ permutation\ indices.}}
+\DoxyCodeLine{00002\ \textcolor{comment}{\ \ \ Copyright\ (C)\ 2017-\/2024\ Free\ Software\ Foundation,\ Inc.}}
+\DoxyCodeLine{00003\ \textcolor{comment}{}}
+\DoxyCodeLine{00004\ \textcolor{comment}{This\ file\ is\ part\ of\ GCC.}}
+\DoxyCodeLine{00005\ \textcolor{comment}{}}
+\DoxyCodeLine{00006\ \textcolor{comment}{GCC\ is\ free\ software;\ you\ can\ redistribute\ it\ and/or\ modify\ it\ under}}
+\DoxyCodeLine{00007\ \textcolor{comment}{the\ terms\ of\ the\ GNU\ General\ Public\ License\ as\ published\ by\ the\ Free}}
+\DoxyCodeLine{00008\ \textcolor{comment}{Software\ Foundation;\ either\ version\ 3,\ or\ (at\ your\ option)\ any\ later}}
+\DoxyCodeLine{00009\ \textcolor{comment}{version.}}
+\DoxyCodeLine{00010\ \textcolor{comment}{}}
+\DoxyCodeLine{00011\ \textcolor{comment}{GCC\ is\ distributed\ in\ the\ hope\ that\ it\ will\ be\ useful,\ but\ WITHOUT\ ANY}}
+\DoxyCodeLine{00012\ \textcolor{comment}{WARRANTY;\ without\ even\ the\ implied\ warranty\ of\ MERCHANTABILITY\ or}}
+\DoxyCodeLine{00013\ \textcolor{comment}{FITNESS\ FOR\ A\ PARTICULAR\ PURPOSE.\ \ See\ the\ GNU\ General\ Public\ License}}
+\DoxyCodeLine{00014\ \textcolor{comment}{for\ more\ details.}}
+\DoxyCodeLine{00015\ \textcolor{comment}{}}
+\DoxyCodeLine{00016\ \textcolor{comment}{You\ should\ have\ received\ a\ copy\ of\ the\ GNU\ General\ Public\ License}}
+\DoxyCodeLine{00017\ \textcolor{comment}{along\ with\ GCC;\ see\ the\ file\ COPYING3.\ \ If\ not\ see}}
+\DoxyCodeLine{00018\ \textcolor{comment}{<http://www.gnu.org/licenses/>.\ \ */}}
+\DoxyCodeLine{00019\ }
+\DoxyCodeLine{00020\ \textcolor{preprocessor}{\#ifndef\ GCC\_VEC\_PERN\_INDICES\_H}}
+\DoxyCodeLine{00021\ \textcolor{preprocessor}{\#define\ GCC\_VEC\_PERN\_INDICES\_H\ 1}}
+\DoxyCodeLine{00022\ }
+\DoxyCodeLine{00023\ \textcolor{preprocessor}{\#include\ "{}\doxymbox{\hyperlink{int-vector-builder_8h}{int-\/vector-\/builder.h}}"{}}}
+\DoxyCodeLine{00024\ }
+\DoxyCodeLine{00025\ \textcolor{comment}{/*\ A\ vector\_builder\ for\ building\ constant\ permutation\ vectors.}}
+\DoxyCodeLine{00026\ \textcolor{comment}{\ \ \ The\ elements\ do\ not\ need\ to\ be\ clamped\ to\ a\ particular\ range}}
+\DoxyCodeLine{00027\ \textcolor{comment}{\ \ \ of\ input\ elements.\ \ */}}
+\DoxyCodeLine{00028\ \textcolor{keyword}{typedef}\ \doxymbox{\hyperlink{classint__vector__builder}{int\_vector\_builder<poly\_int64>}}\ \doxymbox{\hyperlink{vec-perm-indices_8h_ac2af422f1d586a194bd8cf6daeaf3281}{vec\_perm\_builder}};}
+\DoxyCodeLine{00029\ }
+\DoxyCodeLine{00030\ \textcolor{comment}{/*\ This\ class\ represents\ a\ constant\ permutation\ vector,\ such\ as\ that\ used}}
+\DoxyCodeLine{00031\ \textcolor{comment}{\ \ \ as\ the\ final\ operand\ to\ a\ VEC\_PERM\_EXPR.}}
+\DoxyCodeLine{00032\ \textcolor{comment}{}}
+\DoxyCodeLine{00033\ \textcolor{comment}{\ \ \ Permutation\ vectors\ select\ indices\ modulo\ the\ number\ of\ input\ elements,}}
+\DoxyCodeLine{00034\ \textcolor{comment}{\ \ \ and\ the\ class\ canonicalizes\ each\ permutation\ vector\ for\ a\ particular}}
+\DoxyCodeLine{00035\ \textcolor{comment}{\ \ \ number\ of\ input\ vectors\ and\ for\ a\ particular\ number\ of\ elements\ per}}
+\DoxyCodeLine{00036\ \textcolor{comment}{\ \ \ input.\ \ For\ example,\ the\ gimple\ statements:}}
+\DoxyCodeLine{00037\ \textcolor{comment}{}}
+\DoxyCodeLine{00038\ \textcolor{comment}{\ \ \ \ \_1\ =\ VEC\_PERM\_EXPR\ <a,\ a,\ \{\ 0,\ 2,\ 4,\ 6,\ 0,\ 2,\ 4,\ 6\ \}>;}}
+\DoxyCodeLine{00039\ \textcolor{comment}{\ \ \ \ \_2\ =\ VEC\_PERM\_EXPR\ <a,\ a,\ \{\ 0,\ 2,\ 4,\ 6,\ 8,\ 10,\ 12,\ 14\ \}>;}}
+\DoxyCodeLine{00040\ \textcolor{comment}{\ \ \ \ \_3\ =\ VEC\_PERM\_EXPR\ <a,\ a,\ \{\ 0,\ 2,\ 20,\ 22,\ 24,\ 2,\ 4,\ 14\ \}>;}}
+\DoxyCodeLine{00041\ \textcolor{comment}{}}
+\DoxyCodeLine{00042\ \textcolor{comment}{\ \ \ effectively\ have\ only\ a\ single\ vector\ input\ "{}a"{}.\ \ If\ "{}a"{}\ has\ 8}}
+\DoxyCodeLine{00043\ \textcolor{comment}{\ \ \ elements,\ the\ indices\ select\ elements\ modulo\ 8,\ which\ makes\ all\ three}}
+\DoxyCodeLine{00044\ \textcolor{comment}{\ \ \ VEC\_PERM\_EXPRs\ equivalent.\ \ The\ canonical\ form\ is\ for\ the\ indices\ to\ be}}
+\DoxyCodeLine{00045\ \textcolor{comment}{\ \ \ in\ the\ range\ [0,\ number\ of\ input\ elements\ -\/\ 1],\ so\ the\ class\ treats\ the}}
+\DoxyCodeLine{00046\ \textcolor{comment}{\ \ \ second\ and\ third\ permutation\ vectors\ as\ though\ they\ had\ been\ the\ first.}}
+\DoxyCodeLine{00047\ \textcolor{comment}{}}
+\DoxyCodeLine{00048\ \textcolor{comment}{\ \ \ The\ class\ copes\ with\ cases\ in\ which\ the\ input\ and\ output\ vectors\ have}}
+\DoxyCodeLine{00049\ \textcolor{comment}{\ \ \ different\ numbers\ of\ elements.\ \ */}}
+\DoxyCodeLine{00050\ \textcolor{keyword}{class\ }\doxymbox{\hyperlink{classvec__perm__indices_ae4edb13210d82d8a4840b3877f6f53c1}{vec\_perm\_indices}}}
+\DoxyCodeLine{00051\ \{}
+\DoxyCodeLine{00052\ \ \ \textcolor{keyword}{typedef}\ \doxymbox{\hyperlink{poly-int-types_8h_af5255601feb5e9a21f3193d378a55845}{poly\_int64}}\ \doxymbox{\hyperlink{classvec__perm__indices_a46c61dc130fce69cd4aa7a51e8485db3}{element\_type}};}
+\DoxyCodeLine{00053\ }
+\DoxyCodeLine{00054\ \textcolor{keyword}{public}:}
+\DoxyCodeLine{00055\ \ \ \doxymbox{\hyperlink{classvec__perm__indices_ae4edb13210d82d8a4840b3877f6f53c1}{vec\_perm\_indices}}\ ();}
+\DoxyCodeLine{00056\ \ \ \doxymbox{\hyperlink{classvec__perm__indices_ae4edb13210d82d8a4840b3877f6f53c1}{vec\_perm\_indices}}\ (\textcolor{keyword}{const}\ \doxymbox{\hyperlink{vec-perm-indices_8h_ac2af422f1d586a194bd8cf6daeaf3281}{vec\_perm\_builder}}\ \&,\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int},\ \doxymbox{\hyperlink{poly-int-types_8h_a6d0ddbcb345e1192ca8249c789c1cb0f}{poly\_uint64}});}
+\DoxyCodeLine{00057\ }
+\DoxyCodeLine{00058\ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classvec__perm__indices_aa67940753df1689679fff276410906dd}{new\_vector}}\ (\textcolor{keyword}{const}\ \doxymbox{\hyperlink{vec-perm-indices_8h_ac2af422f1d586a194bd8cf6daeaf3281}{vec\_perm\_builder}}\ \&,\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int},\ \doxymbox{\hyperlink{poly-int-types_8h_a6d0ddbcb345e1192ca8249c789c1cb0f}{poly\_uint64}});}
+\DoxyCodeLine{00059\ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classvec__perm__indices_aa8cc29cae3bea6542dfb6076c2bca8b4}{new\_expanded\_vector}}\ (\textcolor{keyword}{const}\ \doxymbox{\hyperlink{classvec__perm__indices_ae4edb13210d82d8a4840b3877f6f53c1}{vec\_perm\_indices}}\ \&,\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int});}
+\DoxyCodeLine{00060\ \ \ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{classvec__perm__indices_ae1f60bfb5847c664a631f82743c49eef}{new\_shrunk\_vector}}\ (\textcolor{keyword}{const}\ \doxymbox{\hyperlink{classvec__perm__indices_ae4edb13210d82d8a4840b3877f6f53c1}{vec\_perm\_indices}}\ \&,\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int});}
+\DoxyCodeLine{00061\ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classvec__perm__indices_a69ff49b435de469a0f3180b0b4226408}{rotate\_inputs}}\ (\textcolor{keywordtype}{int}\ delta);}
+\DoxyCodeLine{00062\ }
+\DoxyCodeLine{00063\ \ \ \textcolor{comment}{/*\ Return\ the\ underlying\ vector\ encoding.\ \ */}}
+\DoxyCodeLine{00064\ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{vec-perm-indices_8h_ac2af422f1d586a194bd8cf6daeaf3281}{vec\_perm\_builder}}\ \&\doxymbox{\hyperlink{classvec__perm__indices_a7c7e40308a916892aa90d68232331117}{encoding}}\ ()\textcolor{keyword}{\ const\ }\{\ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{classvec__perm__indices_af8d2fd4cdcf031825ad8c9ad6b8c5202}{m\_encoding}};\ \}}
+\DoxyCodeLine{00065\ }
+\DoxyCodeLine{00066\ \ \ \textcolor{comment}{/*\ Return\ the\ number\ of\ output\ elements.\ \ This\ is\ called\ length\ ()}}
+\DoxyCodeLine{00067\ \textcolor{comment}{\ \ \ \ \ so\ that\ we\ present\ a\ more\ vec-\/like\ interface.\ \ */}}
+\DoxyCodeLine{00068\ \ \ \doxymbox{\hyperlink{poly-int-types_8h_a6d0ddbcb345e1192ca8249c789c1cb0f}{poly\_uint64}}\ \doxymbox{\hyperlink{classvec__perm__indices_acd251716750b1848e73067df11fdccac}{length}}\ ()\textcolor{keyword}{\ const\ }\{\ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{classvec__perm__indices_af8d2fd4cdcf031825ad8c9ad6b8c5202}{m\_encoding}}.full\_nelts\ ();\ \}}
+\DoxyCodeLine{00069\ }
+\DoxyCodeLine{00070\ \ \ \textcolor{comment}{/*\ Return\ the\ number\ of\ input\ vectors\ being\ permuted.\ \ */}}
+\DoxyCodeLine{00071\ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{classvec__perm__indices_a4f47b1fb9e2a039e930d8b5a528fb31a}{ninputs}}\ ()\textcolor{keyword}{\ const\ }\{\ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{classvec__perm__indices_abf9d87581852ef4e693b18b644e28c3e}{m\_ninputs}};\ \}}
+\DoxyCodeLine{00072\ }
+\DoxyCodeLine{00073\ \ \ \textcolor{comment}{/*\ Return\ the\ number\ of\ elements\ in\ each\ input\ vector.\ \ */}}
+\DoxyCodeLine{00074\ \ \ \doxymbox{\hyperlink{poly-int-types_8h_a6d0ddbcb345e1192ca8249c789c1cb0f}{poly\_uint64}}\ \doxymbox{\hyperlink{classvec__perm__indices_a7ea7a0e4a00031339704f48be796b2a9}{nelts\_per\_input}}\ ()\textcolor{keyword}{\ const\ }\{\ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{classvec__perm__indices_a3874d33d853e8f2498eb5c706adf89e7}{m\_nelts\_per\_input}};\ \}}
+\DoxyCodeLine{00075\ }
+\DoxyCodeLine{00076\ \ \ \textcolor{comment}{/*\ Return\ the\ total\ number\ of\ input\ elements.\ \ */}}
+\DoxyCodeLine{00077\ \ \ \doxymbox{\hyperlink{poly-int-types_8h_a6d0ddbcb345e1192ca8249c789c1cb0f}{poly\_uint64}}\ \doxymbox{\hyperlink{classvec__perm__indices_abaa3c30802ed408f0183297cc4cdbf63}{input\_nelts}}\ ()\textcolor{keyword}{\ const\ }\{\ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{classvec__perm__indices_abf9d87581852ef4e693b18b644e28c3e}{m\_ninputs}}\ *\ \doxymbox{\hyperlink{classvec__perm__indices_a3874d33d853e8f2498eb5c706adf89e7}{m\_nelts\_per\_input}};\ \}}
+\DoxyCodeLine{00078\ }
+\DoxyCodeLine{00079\ \ \ \doxymbox{\hyperlink{classvec__perm__indices_a46c61dc130fce69cd4aa7a51e8485db3}{element\_type}}\ \doxymbox{\hyperlink{classvec__perm__indices_afdb006c13df850d4622d73d5b64f72db}{clamp}}\ (\doxymbox{\hyperlink{classvec__perm__indices_a46c61dc130fce69cd4aa7a51e8485db3}{element\_type}})\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00080\ \ \ \doxymbox{\hyperlink{classvec__perm__indices_a46c61dc130fce69cd4aa7a51e8485db3}{element\_type}}\ \doxymbox{\hyperlink{classvec__perm__indices_ad715e5971f1a9ac779cdacea14bc6f15}{operator[]\ }}(\textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{poly-int_8h_a7e98b8a17c0aad30ba64d47b74e2a6c1}{i}})\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00081\ \ \ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{classvec__perm__indices_a1da7e2f0c4cc192d4d5c221d205dfa3e}{series\_p}}\ (\textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int},\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int},\ \doxymbox{\hyperlink{classvec__perm__indices_a46c61dc130fce69cd4aa7a51e8485db3}{element\_type}},\ \doxymbox{\hyperlink{classvec__perm__indices_a46c61dc130fce69cd4aa7a51e8485db3}{element\_type}})\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00082\ \ \ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{classvec__perm__indices_a48de9404a05c27ef3e902fb4ed9dcdeb}{all\_in\_range\_p}}\ (\doxymbox{\hyperlink{classvec__perm__indices_a46c61dc130fce69cd4aa7a51e8485db3}{element\_type}},\ \doxymbox{\hyperlink{classvec__perm__indices_a46c61dc130fce69cd4aa7a51e8485db3}{element\_type}})\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00083\ \ \ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{classvec__perm__indices_a8eac25bbc912e65cdcfb76a0b0f65305}{all\_from\_input\_p}}\ (\textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int})\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00084\ }
+\DoxyCodeLine{00085\ \textcolor{keyword}{private}:}
+\DoxyCodeLine{00086\ \ \ \doxymbox{\hyperlink{classvec__perm__indices_a93948998487512ad84fbecd79922483c}{vec\_perm\_indices}}\ (\textcolor{keyword}{const}\ \doxymbox{\hyperlink{classvec__perm__indices_ae4edb13210d82d8a4840b3877f6f53c1}{vec\_perm\_indices}}\ \&);}
+\DoxyCodeLine{00087\ }
+\DoxyCodeLine{00088\ \ \ \doxymbox{\hyperlink{vec-perm-indices_8h_ac2af422f1d586a194bd8cf6daeaf3281}{vec\_perm\_builder}}\ \doxymbox{\hyperlink{classvec__perm__indices_af8d2fd4cdcf031825ad8c9ad6b8c5202}{m\_encoding}};}
+\DoxyCodeLine{00089\ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{classvec__perm__indices_abf9d87581852ef4e693b18b644e28c3e}{m\_ninputs}};}
+\DoxyCodeLine{00090\ \ \ \doxymbox{\hyperlink{poly-int-types_8h_a6d0ddbcb345e1192ca8249c789c1cb0f}{poly\_uint64}}\ \doxymbox{\hyperlink{classvec__perm__indices_a3874d33d853e8f2498eb5c706adf89e7}{m\_nelts\_per\_input}};}
+\DoxyCodeLine{00091\ \};}
+\DoxyCodeLine{00092\ }
+\DoxyCodeLine{00093\ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{vec-perm-indices_8h_a178f9ec94baa1d1f85759d47880c14cc}{tree\_to\_vec\_perm\_builder}}\ (\doxymbox{\hyperlink{vec-perm-indices_8h_ac2af422f1d586a194bd8cf6daeaf3281}{vec\_perm\_builder}}\ *,\ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}});}
+\DoxyCodeLine{00094\ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ \doxymbox{\hyperlink{vec-perm-indices_8h_af42f33455156a8937336493c0d807655}{vec\_perm\_indices\_to\_tree}}\ (\doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}},\ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classvec__perm__indices}{vec\_perm\_indices}}\ \&);}
+\DoxyCodeLine{00095\ \doxymbox{\hyperlink{coretypes_8h_a20e671ce9e7827268658cff844f4281c}{rtx}}\ \doxymbox{\hyperlink{vec-perm-indices_8h_aff4ed5e1b9dd65d4e97baa75a2fc0780}{vec\_perm\_indices\_to\_rtx}}\ (\doxymbox{\hyperlink{insn-modes_8h_a3c592bc51c57098d62602b12c9468e92}{machine\_mode}},\ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classvec__perm__indices}{vec\_perm\_indices}}\ \&);}
+\DoxyCodeLine{00096\ }
+\DoxyCodeLine{00097\ \textcolor{keyword}{inline}}
+\DoxyCodeLine{00098\ \doxymbox{\hyperlink{classvec__perm__indices_ae4edb13210d82d8a4840b3877f6f53c1}{vec\_perm\_indices::vec\_perm\_indices}}\ ()}
+\DoxyCodeLine{00099\ \ \ :\ \doxymbox{\hyperlink{classvec__perm__indices_abf9d87581852ef4e693b18b644e28c3e}{m\_ninputs}}\ (0),}
+\DoxyCodeLine{00100\ \ \ \ \ \doxymbox{\hyperlink{classvec__perm__indices_a3874d33d853e8f2498eb5c706adf89e7}{m\_nelts\_per\_input}}\ (0)}
+\DoxyCodeLine{00101\ \{}
+\DoxyCodeLine{00102\ \}}
+\DoxyCodeLine{00103\ }
+\DoxyCodeLine{00104\ \textcolor{comment}{/*\ Construct\ a\ permutation\ vector\ that\ selects\ between\ NINPUTS\ vector}}
+\DoxyCodeLine{00105\ \textcolor{comment}{\ \ \ inputs\ that\ have\ NELTS\_PER\_INPUT\ elements\ each.\ \ Take\ the\ elements\ of}}
+\DoxyCodeLine{00106\ \textcolor{comment}{\ \ \ the\ new\ vector\ from\ ELEMENTS,\ clamping\ each\ one\ to\ be\ in\ range.\ \ */}}
+\DoxyCodeLine{00107\ }
+\DoxyCodeLine{00108\ \textcolor{keyword}{inline}}
+\DoxyCodeLine{00109\ \doxymbox{\hyperlink{classvec__perm__indices_ae4edb13210d82d8a4840b3877f6f53c1}{vec\_perm\_indices::vec\_perm\_indices}}\ (\textcolor{keyword}{const}\ \doxymbox{\hyperlink{vec-perm-indices_8h_ac2af422f1d586a194bd8cf6daeaf3281}{vec\_perm\_builder}}\ \&elements,}
+\DoxyCodeLine{00110\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{classvec__perm__indices_a4f47b1fb9e2a039e930d8b5a528fb31a}{ninputs}},}
+\DoxyCodeLine{00111\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{poly-int-types_8h_a6d0ddbcb345e1192ca8249c789c1cb0f}{poly\_uint64}}\ \doxymbox{\hyperlink{classvec__perm__indices_a7ea7a0e4a00031339704f48be796b2a9}{nelts\_per\_input}})}
+\DoxyCodeLine{00112\ \{}
+\DoxyCodeLine{00113\ \ \ \doxymbox{\hyperlink{classvec__perm__indices_aa67940753df1689679fff276410906dd}{new\_vector}}\ (elements,\ \doxymbox{\hyperlink{classvec__perm__indices_a4f47b1fb9e2a039e930d8b5a528fb31a}{ninputs}},\ \doxymbox{\hyperlink{classvec__perm__indices_a7ea7a0e4a00031339704f48be796b2a9}{nelts\_per\_input}});}
+\DoxyCodeLine{00114\ \}}
+\DoxyCodeLine{00115\ }
+\DoxyCodeLine{00116\ \textcolor{comment}{/*\ Return\ the\ canonical\ value\ for\ permutation\ vector\ element\ ELT,}}
+\DoxyCodeLine{00117\ \textcolor{comment}{\ \ \ taking\ into\ account\ the\ current\ number\ of\ input\ elements.\ \ */}}
+\DoxyCodeLine{00118\ }
+\DoxyCodeLine{00119\ \textcolor{keyword}{inline}\ \doxymbox{\hyperlink{classvec__perm__indices_a46c61dc130fce69cd4aa7a51e8485db3}{vec\_perm\_indices::element\_type}}}
+\DoxyCodeLine{00120\ \doxymbox{\hyperlink{classvec__perm__indices_afdb006c13df850d4622d73d5b64f72db}{vec\_perm\_indices::clamp}}\ (\doxymbox{\hyperlink{classvec__perm__indices_a46c61dc130fce69cd4aa7a51e8485db3}{element\_type}}\ elt)\textcolor{keyword}{\ const}}
+\DoxyCodeLine{00121\ \textcolor{keyword}{}\{}
+\DoxyCodeLine{00122\ \ \ \doxymbox{\hyperlink{classvec__perm__indices_a46c61dc130fce69cd4aa7a51e8485db3}{element\_type}}\ limit\ =\ \doxymbox{\hyperlink{classvec__perm__indices_abaa3c30802ed408f0183297cc4cdbf63}{input\_nelts}}\ (),\ elem\_within\_input;}
+\DoxyCodeLine{00123\ \ \ HOST\_WIDE\_INT\ input;}
+\DoxyCodeLine{00124\ \ \ \textcolor{keywordflow}{if}\ (!can\_div\_trunc\_p\ (elt,\ limit,\ \&input,\ \&elem\_within\_input))}
+\DoxyCodeLine{00125\ \ \ \ \ \textcolor{keywordflow}{return}\ elt;}
+\DoxyCodeLine{00126\ }
+\DoxyCodeLine{00127\ \ \ \textcolor{comment}{/*\ Treat\ negative\ elements\ as\ counting\ from\ the\ end.\ \ This\ only\ matters}}
+\DoxyCodeLine{00128\ \textcolor{comment}{\ \ \ \ \ if\ the\ vector\ size\ is\ not\ a\ power\ of\ 2.\ \ */}}
+\DoxyCodeLine{00129\ \ \ \textcolor{keywordflow}{if}\ (\doxymbox{\hyperlink{poly-int_8h_ac15c1009033bc139996934b019ca0252}{known\_lt}}\ (elem\_within\_input,\ 0))}
+\DoxyCodeLine{00130\ \ \ \ \ \textcolor{keywordflow}{return}\ elem\_within\_input\ +\ limit;}
+\DoxyCodeLine{00131\ }
+\DoxyCodeLine{00132\ \ \ \textcolor{keywordflow}{return}\ elem\_within\_input;}
+\DoxyCodeLine{00133\ \}}
+\DoxyCodeLine{00134\ }
+\DoxyCodeLine{00135\ \textcolor{comment}{/*\ Return\ the\ value\ of\ vector\ element\ I,\ which\ might\ or\ might\ not\ be}}
+\DoxyCodeLine{00136\ \textcolor{comment}{\ \ \ explicitly\ encoded.\ \ */}}
+\DoxyCodeLine{00137\ }
+\DoxyCodeLine{00138\ \textcolor{keyword}{inline}\ \doxymbox{\hyperlink{classvec__perm__indices_a46c61dc130fce69cd4aa7a51e8485db3}{vec\_perm\_indices::element\_type}}}
+\DoxyCodeLine{00139\ \doxymbox{\hyperlink{classvec__perm__indices_ad715e5971f1a9ac779cdacea14bc6f15}{vec\_perm\_indices::operator[]\ }}(\textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{poly-int_8h_a7e98b8a17c0aad30ba64d47b74e2a6c1}{i}})\textcolor{keyword}{\ const}}
+\DoxyCodeLine{00140\ \textcolor{keyword}{}\{}
+\DoxyCodeLine{00141\ \ \ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{classvec__perm__indices_afdb006c13df850d4622d73d5b64f72db}{clamp}}\ (\doxymbox{\hyperlink{classvec__perm__indices_af8d2fd4cdcf031825ad8c9ad6b8c5202}{m\_encoding}}.elt\ (\doxymbox{\hyperlink{poly-int_8h_a7e98b8a17c0aad30ba64d47b74e2a6c1}{i}}));}
+\DoxyCodeLine{00142\ \}}
+\DoxyCodeLine{00143\ }
+\DoxyCodeLine{00144\ \textcolor{comment}{/*\ Return\ true\ if\ the\ permutation\ vector\ only\ selects\ elements\ from}}
+\DoxyCodeLine{00145\ \textcolor{comment}{\ \ \ input\ I.\ \ */}}
+\DoxyCodeLine{00146\ }
+\DoxyCodeLine{00147\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{bool}}
+\DoxyCodeLine{00148\ \doxymbox{\hyperlink{classvec__perm__indices_a8eac25bbc912e65cdcfb76a0b0f65305}{vec\_perm\_indices::all\_from\_input\_p}}\ (\textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{poly-int_8h_a7e98b8a17c0aad30ba64d47b74e2a6c1}{i}})\textcolor{keyword}{\ const}}
+\DoxyCodeLine{00149\ \textcolor{keyword}{}\{}
+\DoxyCodeLine{00150\ \ \ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{classvec__perm__indices_a48de9404a05c27ef3e902fb4ed9dcdeb}{all\_in\_range\_p}}\ (\doxymbox{\hyperlink{poly-int_8h_a7e98b8a17c0aad30ba64d47b74e2a6c1}{i}}\ *\ \doxymbox{\hyperlink{classvec__perm__indices_a3874d33d853e8f2498eb5c706adf89e7}{m\_nelts\_per\_input}},\ \doxymbox{\hyperlink{classvec__perm__indices_a3874d33d853e8f2498eb5c706adf89e7}{m\_nelts\_per\_input}});}
+\DoxyCodeLine{00151\ \}}
+\DoxyCodeLine{00152\ }
+\DoxyCodeLine{00153\ \textcolor{preprocessor}{\#endif}}
+
+\end{DoxyCode}

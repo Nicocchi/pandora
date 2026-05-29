@@ -1,0 +1,38 @@
+var plugin_8h =
+[
+    [ "plugin_argument", "structplugin__argument.html", "structplugin__argument" ],
+    [ "plugin_gcc_version", "structplugin__gcc__version.html", "structplugin__gcc__version" ],
+    [ "plugin_info", "structplugin__info.html", "structplugin__info" ],
+    [ "plugin_name_args", "structplugin__name__args.html", "structplugin__name__args" ],
+    [ "DEFEVENT", "plugin_8h.html#a2f6182ea28f07563f8871c7bec6639dc", null ],
+    [ "plugin_callback_func", "plugin_8h.html#a9f0b6067c7285d36403682b6132acc02", null ],
+    [ "plugin_init_func", "plugin_8h.html#a41e165d276cc0baebbf8fd800d5f03f5", null ],
+    [ "plugin_event", "plugin_8h.html#aa24e4ca61ad1e97f48bcd28412821611", [
+      [ "PLUGIN_EVENT_FIRST_DYNAMIC", "plugin_8h.html#aa24e4ca61ad1e97f48bcd28412821611a4d306b2e49771accee19d10b1d268379", null ]
+    ] ],
+    [ "add_new_plugin", "plugin_8h.html#a5b4f5477c8b69fb73e5eac587036034a", null ],
+    [ "debug_active_plugins", "plugin_8h.html#a3d0814733ebd9f74c5c024554411e642", null ],
+    [ "default_plugin_dir_name", "plugin_8h.html#ab4bd9d58e47446551b4933ded11c118f", null ],
+    [ "dump_active_plugins", "plugin_8h.html#a25e8d4c93e52dbd90abbd0c36beee7bd", null ],
+    [ "finalize_plugins", "plugin_8h.html#a11b10b2f17e8d5f8c42686ff4fc8f3ac", null ],
+    [ "for_each_plugin", "plugin_8h.html#afc2961bd109d613be734e4395e279475", null ],
+    [ "get_event_last", "plugin_8h.html#afb70146868c78094449c23364f54b8a7", null ],
+    [ "get_named_event_id", "plugin_8h.html#aba42479e3093a4f10ea06142c78299d5", null ],
+    [ "initialize_plugins", "plugin_8h.html#a86a54f2a2a62c76e5b9ce6d1cc4b9deb", null ],
+    [ "invoke_plugin_callbacks", "plugin_8h.html#ab21312f36b1f298bb8fec4b69214fd8d", null ],
+    [ "invoke_plugin_callbacks_full", "plugin_8h.html#acac94dad13a58d760bea033279235bcd", null ],
+    [ "parse_plugin_arg_opt", "plugin_8h.html#a7874674923e4df467221972184552d68", null ],
+    [ "plugin_default_version_check", "plugin_8h.html#ad9e7168b1e0eb1931885b9d83cfd5882", null ],
+    [ "plugin_init", "plugin_8h.html#aa8d7f4386801b36b3bac6ed1ed1e2c56", null ],
+    [ "plugins_active_p", "plugin_8h.html#a105dbe960f0f7735c5bcc6435be5b1e1", null ],
+    [ "print_plugins_help", "plugin_8h.html#a5bcd1777c1b241eb15f35daa9403d1a4", null ],
+    [ "print_plugins_versions", "plugin_8h.html#a714804df9c49c588b037b15f2461aad3", null ],
+    [ "register_attribute", "plugin_8h.html#aa250b6c1d242f8186be7e947b749dde8", null ],
+    [ "register_callback", "plugin_8h.html#a417e576812f6ca12b25dbf8f111fbe22", null ],
+    [ "register_scoped_attributes", "plugin_8h.html#ae2732e7dbc37a7ca3a61cad489229066", null ],
+    [ "unregister_callback", "plugin_8h.html#a1de2eed3d01c8916d90653efa18a9b38", null ],
+    [ "warn_if_plugins", "plugin_8h.html#a88b46f412d8a452d34509230394c731e", null ],
+    [ "flag_plugin_added", "plugin_8h.html#aab0ea547ccc84e5bc090bc394cc99453", null ],
+    [ "plugin_event_name", "plugin_8h.html#ab2a4b73fe588d075f9d366bfb1338d18", null ],
+    [ "plugin_is_GPL_compatible", "plugin_8h.html#a4093a1ca7d33d526947c99ff3235c480", null ]
+];

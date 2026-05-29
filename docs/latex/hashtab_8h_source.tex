@@ -1,0 +1,213 @@
+\doxysection{hashtab.\+h}
+\hypertarget{hashtab_8h_source}{}\label{hashtab_8h_source}\index{toolchain/x86\_64-\/elf/lib/gcc/x86\_64-\/elf/14.2.0/plugin/include/hashtab.h@{toolchain/x86\_64-\/elf/lib/gcc/x86\_64-\/elf/14.2.0/plugin/include/hashtab.h}}
+\doxymbox{\hyperlink{hashtab_8h}{Go to the documentation of this file.}}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001\ \textcolor{comment}{/*\ An\ expandable\ hash\ tables\ datatype.\ \ }}
+\DoxyCodeLine{00002\ \textcolor{comment}{\ \ \ Copyright\ (C)\ 1999-\/2024\ Free\ Software\ Foundation,\ Inc.}}
+\DoxyCodeLine{00003\ \textcolor{comment}{\ \ \ Contributed\ by\ Vladimir\ Makarov\ (vmakarov@cygnus.com).}}
+\DoxyCodeLine{00004\ \textcolor{comment}{}}
+\DoxyCodeLine{00005\ \textcolor{comment}{This\ program\ is\ free\ software;\ you\ can\ redistribute\ it\ and/or\ modify}}
+\DoxyCodeLine{00006\ \textcolor{comment}{it\ under\ the\ terms\ of\ the\ GNU\ General\ Public\ License\ as\ published\ by}}
+\DoxyCodeLine{00007\ \textcolor{comment}{the\ Free\ Software\ Foundation;\ either\ version\ 2\ of\ the\ License,\ or}}
+\DoxyCodeLine{00008\ \textcolor{comment}{(at\ your\ option)\ any\ later\ version.}}
+\DoxyCodeLine{00009\ \textcolor{comment}{}}
+\DoxyCodeLine{00010\ \textcolor{comment}{This\ program\ is\ distributed\ in\ the\ hope\ that\ it\ will\ be\ useful,}}
+\DoxyCodeLine{00011\ \textcolor{comment}{but\ WITHOUT\ ANY\ WARRANTY;\ without\ even\ the\ implied\ warranty\ of}}
+\DoxyCodeLine{00012\ \textcolor{comment}{MERCHANTABILITY\ or\ FITNESS\ FOR\ A\ PARTICULAR\ PURPOSE.\ \ See\ the}}
+\DoxyCodeLine{00013\ \textcolor{comment}{GNU\ General\ Public\ License\ for\ more\ details.}}
+\DoxyCodeLine{00014\ \textcolor{comment}{}}
+\DoxyCodeLine{00015\ \textcolor{comment}{You\ should\ have\ received\ a\ copy\ of\ the\ GNU\ General\ Public\ License}}
+\DoxyCodeLine{00016\ \textcolor{comment}{along\ with\ this\ program;\ if\ not,\ write\ to\ the\ Free\ Software}}
+\DoxyCodeLine{00017\ \textcolor{comment}{Foundation,\ Inc.,\ 51\ Franklin\ Street\ -\/\ Fifth\ Floor,\ Boston,\ MA\ 02110-\/1301,\ USA.\ \ */}}
+\DoxyCodeLine{00018\ }
+\DoxyCodeLine{00019\ \textcolor{comment}{/*\ This\ package\ implements\ basic\ hash\ table\ functionality.\ \ It\ is\ possible}}
+\DoxyCodeLine{00020\ \textcolor{comment}{\ \ \ to\ search\ for\ an\ entry,\ create\ an\ entry\ and\ destroy\ an\ entry.}}
+\DoxyCodeLine{00021\ \textcolor{comment}{}}
+\DoxyCodeLine{00022\ \textcolor{comment}{\ \ \ Elements\ in\ the\ table\ are\ generic\ pointers.}}
+\DoxyCodeLine{00023\ \textcolor{comment}{}}
+\DoxyCodeLine{00024\ \textcolor{comment}{\ \ \ The\ size\ of\ the\ table\ is\ not\ fixed;\ if\ the\ occupancy\ of\ the\ table}}
+\DoxyCodeLine{00025\ \textcolor{comment}{\ \ \ grows\ too\ high\ the\ hash\ table\ will\ be\ expanded.}}
+\DoxyCodeLine{00026\ \textcolor{comment}{}}
+\DoxyCodeLine{00027\ \textcolor{comment}{\ \ \ The\ abstract\ data\ implementation\ is\ based\ on\ generalized\ Algorithm\ D}}
+\DoxyCodeLine{00028\ \textcolor{comment}{\ \ \ from\ Knuth's\ book\ "{}The\ art\ of\ computer\ programming"{}.\ \ Hash\ table\ is}}
+\DoxyCodeLine{00029\ \textcolor{comment}{\ \ \ expanded\ by\ creation\ of\ new\ hash\ table\ and\ transferring\ elements\ from}}
+\DoxyCodeLine{00030\ \textcolor{comment}{\ \ \ the\ old\ table\ to\ the\ new\ table.\ \ */}}
+\DoxyCodeLine{00031\ }
+\DoxyCodeLine{00032\ \textcolor{preprocessor}{\#ifndef\ \_\_HASHTAB\_H\_\_}}
+\DoxyCodeLine{00033\ \textcolor{preprocessor}{\#define\ \_\_HASHTAB\_H\_\_}}
+\DoxyCodeLine{00034\ }
+\DoxyCodeLine{00035\ \textcolor{preprocessor}{\#ifdef\ \_\_cplusplus}}
+\DoxyCodeLine{00036\ \textcolor{keyword}{extern}\ \textcolor{stringliteral}{"{}C"{}}\ \{}
+\DoxyCodeLine{00037\ \textcolor{preprocessor}{\#endif\ }\textcolor{comment}{/*\ \_\_cplusplus\ */}\textcolor{preprocessor}{}}
+\DoxyCodeLine{00038\ }
+\DoxyCodeLine{00039\ \textcolor{preprocessor}{\#include\ "{}\doxymbox{\hyperlink{ansidecl_8h}{ansidecl.h}}"{}}}
+\DoxyCodeLine{00040\ }
+\DoxyCodeLine{00041\ \textcolor{comment}{/*\ The\ type\ for\ a\ hash\ code.\ \ */}}
+\DoxyCodeLine{00042\ \textcolor{keyword}{typedef}\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{hashtab_8h_a2d05e5049721cf3117dd6b34e20d4f65}{hashval\_t}};}
+\DoxyCodeLine{00043\ }
+\DoxyCodeLine{00044\ \textcolor{comment}{/*\ Callback\ function\ pointer\ types.\ \ */}}
+\DoxyCodeLine{00045\ }
+\DoxyCodeLine{00046\ \textcolor{comment}{/*\ Calculate\ hash\ of\ a\ table\ entry.\ \ */}}
+\DoxyCodeLine{00047\ \textcolor{keyword}{typedef}\ \doxymbox{\hyperlink{hashtab_8h_a2d05e5049721cf3117dd6b34e20d4f65}{hashval\_t}}\ (*\doxymbox{\hyperlink{hashtab_8h_a0d7ff599ca00c4beaff9d4884ae4398f}{htab\_hash}})\ (\textcolor{keyword}{const}\ \textcolor{keywordtype}{void}\ *);}
+\DoxyCodeLine{00048\ }
+\DoxyCodeLine{00049\ \textcolor{comment}{/*\ Compare\ a\ table\ entry\ with\ a\ possible\ entry.\ \ The\ entry\ already\ in}}
+\DoxyCodeLine{00050\ \textcolor{comment}{\ \ \ the\ table\ always\ comes\ first,\ so\ the\ second\ element\ can\ be\ of\ a}}
+\DoxyCodeLine{00051\ \textcolor{comment}{\ \ \ different\ type\ (but\ in\ this\ case\ htab\_find\ and\ htab\_find\_slot}}
+\DoxyCodeLine{00052\ \textcolor{comment}{\ \ \ cannot\ be\ used;\ instead\ the\ variants\ that\ accept\ a\ hash\ value}}
+\DoxyCodeLine{00053\ \textcolor{comment}{\ \ \ must\ be\ used).\ \ */}}
+\DoxyCodeLine{00054\ \textcolor{keyword}{typedef}\ int\ (*\doxymbox{\hyperlink{hashtab_8h_a010267e4a50ef500cc83dbc33dc73568}{htab\_eq}})\ (\textcolor{keyword}{const}\ \textcolor{keywordtype}{void}\ *,\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{void}\ *);}
+\DoxyCodeLine{00055\ }
+\DoxyCodeLine{00056\ \textcolor{comment}{/*\ Cleanup\ function\ called\ whenever\ a\ live\ element\ is\ removed\ from}}
+\DoxyCodeLine{00057\ \textcolor{comment}{\ \ \ the\ hash\ table.\ \ */}}
+\DoxyCodeLine{00058\ \textcolor{keyword}{typedef}\ void\ (*\doxymbox{\hyperlink{hashtab_8h_af80567a2f9698a5d86e5cafb37b4c317}{htab\_del}})\ (\textcolor{keywordtype}{void}\ *);}
+\DoxyCodeLine{00059\ \ \ }
+\DoxyCodeLine{00060\ \textcolor{comment}{/*\ Function\ called\ by\ htab\_traverse\ for\ each\ live\ element.\ \ The\ first}}
+\DoxyCodeLine{00061\ \textcolor{comment}{\ \ \ arg\ is\ the\ slot\ of\ the\ element\ (which\ can\ be\ passed\ to\ htab\_clear\_slot}}
+\DoxyCodeLine{00062\ \textcolor{comment}{\ \ \ if\ desired),\ the\ second\ arg\ is\ the\ auxiliary\ pointer\ handed\ to}}
+\DoxyCodeLine{00063\ \textcolor{comment}{\ \ \ htab\_traverse.\ \ Return\ 1\ to\ continue\ scan,\ 0\ to\ stop.\ \ */}}
+\DoxyCodeLine{00064\ \textcolor{keyword}{typedef}\ int\ (*\doxymbox{\hyperlink{hashtab_8h_ac000ac9cf06032d1b62d998837f6bdce}{htab\_trav}})\ (\textcolor{keywordtype}{void}\ **,\ \textcolor{keywordtype}{void}\ *);}
+\DoxyCodeLine{00065\ }
+\DoxyCodeLine{00066\ \textcolor{comment}{/*\ Memory-\/allocation\ function,\ with\ the\ same\ functionality\ as\ calloc().}}
+\DoxyCodeLine{00067\ \textcolor{comment}{\ \ \ Iff\ it\ returns\ NULL,\ the\ hash\ table\ implementation\ will\ pass\ an\ error}}
+\DoxyCodeLine{00068\ \textcolor{comment}{\ \ \ code\ back\ to\ the\ user,\ so\ if\ your\ code\ doesn't\ handle\ errors,}}
+\DoxyCodeLine{00069\ \textcolor{comment}{\ \ \ best\ if\ you\ use\ xcalloc\ instead.\ \ */}}
+\DoxyCodeLine{00070\ \textcolor{keyword}{typedef}\ \textcolor{keywordtype}{void}\ *(*htab\_alloc)\ (\doxymbox{\hyperlink{stddef_8h_aa9d55e2f20e580b7445617d0d12fff6e}{size\_t}},\ \doxymbox{\hyperlink{stddef_8h_aa9d55e2f20e580b7445617d0d12fff6e}{size\_t}});}
+\DoxyCodeLine{00071\ }
+\DoxyCodeLine{00072\ \textcolor{comment}{/*\ We\ also\ need\ a\ free()\ routine.\ \ */}}
+\DoxyCodeLine{00073\ \textcolor{keyword}{typedef}\ void\ (*\doxymbox{\hyperlink{hashtab_8h_a43a522e677ab68478c472397dc744cf5}{htab\_free}})\ (\textcolor{keywordtype}{void}\ *);}
+\DoxyCodeLine{00074\ }
+\DoxyCodeLine{00075\ \textcolor{comment}{/*\ Memory\ allocation\ and\ deallocation;\ variants\ which\ take\ an\ extra}}
+\DoxyCodeLine{00076\ \textcolor{comment}{\ \ \ argument.\ \ */}}
+\DoxyCodeLine{00077\ \textcolor{keyword}{typedef}\ \textcolor{keywordtype}{void}\ *(*htab\_alloc\_with\_arg)\ (\textcolor{keywordtype}{void}\ *,\ \doxymbox{\hyperlink{stddef_8h_aa9d55e2f20e580b7445617d0d12fff6e}{size\_t}},\ \doxymbox{\hyperlink{stddef_8h_aa9d55e2f20e580b7445617d0d12fff6e}{size\_t}});}
+\DoxyCodeLine{00078\ \textcolor{keyword}{typedef}\ void\ (*\doxymbox{\hyperlink{hashtab_8h_af39f80793ad1d583751caec8b94c7619}{htab\_free\_with\_arg}})\ (\textcolor{keywordtype}{void}\ *,\ \textcolor{keywordtype}{void}\ *);}
+\DoxyCodeLine{00079\ }
+\DoxyCodeLine{00080\ \textcolor{comment}{/*\ This\ macro\ defines\ reserved\ value\ for\ empty\ table\ entry.\ \ */}}
+\DoxyCodeLine{00081\ }
+\DoxyCodeLine{00082\ \textcolor{preprocessor}{\#define\ HTAB\_EMPTY\_ENTRY\ \ \ \ ((void\ *)\ 0)}}
+\DoxyCodeLine{00083\ }
+\DoxyCodeLine{00084\ \textcolor{comment}{/*\ This\ macro\ defines\ reserved\ value\ for\ table\ entry\ which\ contained}}
+\DoxyCodeLine{00085\ \textcolor{comment}{\ \ \ a\ deleted\ element.\ */}}
+\DoxyCodeLine{00086\ }
+\DoxyCodeLine{00087\ \textcolor{preprocessor}{\#define\ HTAB\_DELETED\_ENTRY\ \ ((void\ *)\ 1)}}
+\DoxyCodeLine{00088\ }
+\DoxyCodeLine{00089\ \textcolor{comment}{/*\ Hash\ tables\ are\ of\ the\ following\ type.\ \ The\ structure}}
+\DoxyCodeLine{00090\ \textcolor{comment}{\ \ \ (implementation)\ of\ this\ type\ is\ not\ needed\ for\ using\ the\ hash}}
+\DoxyCodeLine{00091\ \textcolor{comment}{\ \ \ tables.\ \ All\ work\ with\ hash\ table\ should\ be\ executed\ only\ through}}
+\DoxyCodeLine{00092\ \textcolor{comment}{\ \ \ functions\ mentioned\ below.\ \ The\ size\ of\ this\ structure\ is\ subject\ to}}
+\DoxyCodeLine{00093\ \textcolor{comment}{\ \ \ change.\ \ */}}
+\DoxyCodeLine{00094\ }
+\DoxyCodeLine{00095\ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{structhtab}{htab}}\ \{}
+\DoxyCodeLine{00096\ \ \ \textcolor{comment}{/*\ Pointer\ to\ hash\ function.\ \ */}}
+\DoxyCodeLine{00097\ \ \ \doxymbox{\hyperlink{hashtab_8h_a0d7ff599ca00c4beaff9d4884ae4398f}{htab\_hash}}\ \doxymbox{\hyperlink{structhtab_acf379f427d254ecefaa9c5d71ccc2a2a}{hash\_f}};}
+\DoxyCodeLine{00098\ }
+\DoxyCodeLine{00099\ \ \ \textcolor{comment}{/*\ Pointer\ to\ comparison\ function.\ \ */}}
+\DoxyCodeLine{00100\ \ \ \doxymbox{\hyperlink{hashtab_8h_a010267e4a50ef500cc83dbc33dc73568}{htab\_eq}}\ \doxymbox{\hyperlink{structhtab_a190b9a2ca369c3d33478a582f072580b}{eq\_f}};}
+\DoxyCodeLine{00101\ }
+\DoxyCodeLine{00102\ \ \ \textcolor{comment}{/*\ Pointer\ to\ cleanup\ function.\ \ */}}
+\DoxyCodeLine{00103\ \ \ \doxymbox{\hyperlink{hashtab_8h_af80567a2f9698a5d86e5cafb37b4c317}{htab\_del}}\ \doxymbox{\hyperlink{structhtab_a92c62dff81b6c8ac84c6539b5dbdf847}{del\_f}};}
+\DoxyCodeLine{00104\ }
+\DoxyCodeLine{00105\ \ \ \textcolor{comment}{/*\ Table\ itself.\ \ */}}
+\DoxyCodeLine{00106\ \ \ \textcolor{keywordtype}{void}\ **\doxymbox{\hyperlink{structhtab_a828261fa7726b383467cc47e57500435}{entries}};}
+\DoxyCodeLine{00107\ }
+\DoxyCodeLine{00108\ \ \ \textcolor{comment}{/*\ Current\ size\ (in\ entries)\ of\ the\ hash\ table.\ \ */}}
+\DoxyCodeLine{00109\ \ \ \textcolor{keywordtype}{size\_t}\ \doxymbox{\hyperlink{structhtab_aec012be183bb5f6a7ec3c710fce1617d}{size}};}
+\DoxyCodeLine{00110\ }
+\DoxyCodeLine{00111\ \ \ \textcolor{comment}{/*\ Current\ number\ of\ elements\ including\ also\ deleted\ elements.\ \ */}}
+\DoxyCodeLine{00112\ \ \ \textcolor{keywordtype}{size\_t}\ \doxymbox{\hyperlink{structhtab_ad7bdd28359d6f6461262344585ab15c1}{n\_elements}};}
+\DoxyCodeLine{00113\ }
+\DoxyCodeLine{00114\ \ \ \textcolor{comment}{/*\ Current\ number\ of\ deleted\ elements\ in\ the\ table.\ \ */}}
+\DoxyCodeLine{00115\ \ \ \textcolor{keywordtype}{size\_t}\ \doxymbox{\hyperlink{structhtab_a830a890597402863155bb04e3f87ddd4}{n\_deleted}};}
+\DoxyCodeLine{00116\ }
+\DoxyCodeLine{00117\ \ \ \textcolor{comment}{/*\ The\ following\ member\ is\ used\ for\ debugging.\ Its\ value\ is\ number}}
+\DoxyCodeLine{00118\ \textcolor{comment}{\ \ \ \ \ of\ all\ calls\ of\ \`{}htab\_find\_slot'\ for\ the\ hash\ table.\ */}}
+\DoxyCodeLine{00119\ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{structhtab_a21608e7616940edd72570d95929f959e}{searches}};}
+\DoxyCodeLine{00120\ }
+\DoxyCodeLine{00121\ \ \ \textcolor{comment}{/*\ The\ following\ member\ is\ used\ for\ debugging.\ \ Its\ value\ is\ number}}
+\DoxyCodeLine{00122\ \textcolor{comment}{\ \ \ \ \ of\ collisions\ fixed\ for\ time\ of\ work\ with\ the\ hash\ table.\ */}}
+\DoxyCodeLine{00123\ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{structhtab_a7c66fc917ed78e11298e9b223fc675eb}{collisions}};}
+\DoxyCodeLine{00124\ }
+\DoxyCodeLine{00125\ \ \ \textcolor{comment}{/*\ Pointers\ to\ allocate/free\ functions.\ \ */}}
+\DoxyCodeLine{00126\ \ \ \doxymbox{\hyperlink{hashtab_8h_a58e6659e6d0bca8c5d159311e4ab0990}{htab\_alloc}}\ \doxymbox{\hyperlink{structhtab_acf60d93835bff13b3131d4bc71cd62ba}{alloc\_f}};}
+\DoxyCodeLine{00127\ \ \ \doxymbox{\hyperlink{hashtab_8h_a43a522e677ab68478c472397dc744cf5}{htab\_free}}\ \doxymbox{\hyperlink{structhtab_a73c6386375ed56500f1bfd7877fe6049}{free\_f}};}
+\DoxyCodeLine{00128\ }
+\DoxyCodeLine{00129\ \ \ \textcolor{comment}{/*\ Alternate\ allocate/free\ functions,\ which\ take\ an\ extra\ argument.\ \ */}}
+\DoxyCodeLine{00130\ \ \ \textcolor{keywordtype}{void}\ *\doxymbox{\hyperlink{structhtab_abc3e7f7e9b0cec707a0d15c7aee768f6}{alloc\_arg}};}
+\DoxyCodeLine{00131\ \ \ \doxymbox{\hyperlink{hashtab_8h_ad084aaf2a2010e3a9b246eb4e4d385af}{htab\_alloc\_with\_arg}}\ \doxymbox{\hyperlink{structhtab_a4ab254b219e7ad460adf3b6a48e30e92}{alloc\_with\_arg\_f}};}
+\DoxyCodeLine{00132\ \ \ \doxymbox{\hyperlink{hashtab_8h_af39f80793ad1d583751caec8b94c7619}{htab\_free\_with\_arg}}\ \doxymbox{\hyperlink{structhtab_a4ff24083567d20129a4b4428d2a9a492}{free\_with\_arg\_f}};}
+\DoxyCodeLine{00133\ }
+\DoxyCodeLine{00134\ \ \ \textcolor{comment}{/*\ Current\ size\ (in\ entries)\ of\ the\ hash\ table,\ as\ an\ index\ into\ the}}
+\DoxyCodeLine{00135\ \textcolor{comment}{\ \ \ \ \ table\ of\ primes.\ \ */}}
+\DoxyCodeLine{00136\ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{structhtab_a82d51bd5600889f2f54d26dff2b2ac18}{size\_prime\_index}};}
+\DoxyCodeLine{00137\ \};}
+\DoxyCodeLine{00138\ }
+\DoxyCodeLine{00139\ \textcolor{keyword}{typedef}\ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{structhtab}{htab}}\ *\doxymbox{\hyperlink{hashtab_8h_aa3847a9bffeefab8f9895fc38007118a}{htab\_t}};}
+\DoxyCodeLine{00140\ }
+\DoxyCodeLine{00141\ \textcolor{comment}{/*\ An\ enum\ saying\ whether\ we\ insert\ into\ the\ hash\ table\ or\ not.\ \ */}}
+\DoxyCodeLine{00142\ \textcolor{keyword}{enum}\ \doxymbox{\hyperlink{hashtab_8h_a701f25efbbc26447d63fde40272dbf4c}{insert\_option}}\ \{\doxymbox{\hyperlink{hashtab_8h_a701f25efbbc26447d63fde40272dbf4cae04c3036d3f398fee4c2a300d6dd0173}{NO\_INSERT}},\ \doxymbox{\hyperlink{hashtab_8h_a701f25efbbc26447d63fde40272dbf4caa15c451953b2d2a93403afe786930d0f}{INSERT}}\};}
+\DoxyCodeLine{00143\ }
+\DoxyCodeLine{00144\ \textcolor{comment}{/*\ The\ prototypes\ of\ the\ package\ functions.\ */}}
+\DoxyCodeLine{00145\ }
+\DoxyCodeLine{00146\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{hashtab_8h_aa3847a9bffeefab8f9895fc38007118a}{htab\_t}}\ \ \ \doxymbox{\hyperlink{hashtab_8h_a3262fe034bcb1e7a0dae151b4e19b927}{htab\_create\_alloc}}\ \ (\textcolor{keywordtype}{size\_t},\ \doxymbox{\hyperlink{hashtab_8h_a0d7ff599ca00c4beaff9d4884ae4398f}{htab\_hash}},}
+\DoxyCodeLine{00147\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{hashtab_8h_a010267e4a50ef500cc83dbc33dc73568}{htab\_eq}},\ \doxymbox{\hyperlink{hashtab_8h_af80567a2f9698a5d86e5cafb37b4c317}{htab\_del}},}
+\DoxyCodeLine{00148\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{hashtab_8h_a58e6659e6d0bca8c5d159311e4ab0990}{htab\_alloc}},\ \doxymbox{\hyperlink{hashtab_8h_a43a522e677ab68478c472397dc744cf5}{htab\_free}});}
+\DoxyCodeLine{00149\ }
+\DoxyCodeLine{00150\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{hashtab_8h_aa3847a9bffeefab8f9895fc38007118a}{htab\_t}}\ \ \ \doxymbox{\hyperlink{hashtab_8h_a05d39cc5b7cab63becdc05395a349f93}{htab\_create\_alloc\_ex}}\ (\textcolor{keywordtype}{size\_t},\ \doxymbox{\hyperlink{hashtab_8h_a0d7ff599ca00c4beaff9d4884ae4398f}{htab\_hash}},}
+\DoxyCodeLine{00151\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{hashtab_8h_a010267e4a50ef500cc83dbc33dc73568}{htab\_eq}},\ \doxymbox{\hyperlink{hashtab_8h_af80567a2f9698a5d86e5cafb37b4c317}{htab\_del}},}
+\DoxyCodeLine{00152\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{void}\ *,\ \doxymbox{\hyperlink{hashtab_8h_ad084aaf2a2010e3a9b246eb4e4d385af}{htab\_alloc\_with\_arg}},}
+\DoxyCodeLine{00153\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{hashtab_8h_af39f80793ad1d583751caec8b94c7619}{htab\_free\_with\_arg}});}
+\DoxyCodeLine{00154\ }
+\DoxyCodeLine{00155\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{hashtab_8h_aa3847a9bffeefab8f9895fc38007118a}{htab\_t}}\ \ \doxymbox{\hyperlink{hashtab_8h_ac106e451794e4297da085b996009339f}{htab\_create\_typed\_alloc}}\ (\textcolor{keywordtype}{size\_t},\ \doxymbox{\hyperlink{hashtab_8h_a0d7ff599ca00c4beaff9d4884ae4398f}{htab\_hash}},\ \doxymbox{\hyperlink{hashtab_8h_a010267e4a50ef500cc83dbc33dc73568}{htab\_eq}},\ \doxymbox{\hyperlink{hashtab_8h_af80567a2f9698a5d86e5cafb37b4c317}{htab\_del}},}
+\DoxyCodeLine{00156\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{hashtab_8h_a58e6659e6d0bca8c5d159311e4ab0990}{htab\_alloc}},\ \doxymbox{\hyperlink{hashtab_8h_a58e6659e6d0bca8c5d159311e4ab0990}{htab\_alloc}},\ \doxymbox{\hyperlink{hashtab_8h_a43a522e677ab68478c472397dc744cf5}{htab\_free}});}
+\DoxyCodeLine{00157\ }
+\DoxyCodeLine{00158\ \textcolor{comment}{/*\ Backward-\/compatibility\ functions.\ \ */}}
+\DoxyCodeLine{00159\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{hashtab_8h_aa3847a9bffeefab8f9895fc38007118a}{htab\_t}}\ \doxymbox{\hyperlink{hashtab_8h_ae58dc7c54c8a027ade1930933ecc4705}{htab\_create}}\ (\textcolor{keywordtype}{size\_t},\ \doxymbox{\hyperlink{hashtab_8h_a0d7ff599ca00c4beaff9d4884ae4398f}{htab\_hash}},\ \doxymbox{\hyperlink{hashtab_8h_a010267e4a50ef500cc83dbc33dc73568}{htab\_eq}},\ \doxymbox{\hyperlink{hashtab_8h_af80567a2f9698a5d86e5cafb37b4c317}{htab\_del}});}
+\DoxyCodeLine{00160\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{hashtab_8h_aa3847a9bffeefab8f9895fc38007118a}{htab\_t}}\ \doxymbox{\hyperlink{hashtab_8h_af86300c44267be347d7b0677449d6ea1}{htab\_try\_create}}\ (\textcolor{keywordtype}{size\_t},\ \doxymbox{\hyperlink{hashtab_8h_a0d7ff599ca00c4beaff9d4884ae4398f}{htab\_hash}},\ \doxymbox{\hyperlink{hashtab_8h_a010267e4a50ef500cc83dbc33dc73568}{htab\_eq}},\ \doxymbox{\hyperlink{hashtab_8h_af80567a2f9698a5d86e5cafb37b4c317}{htab\_del}});}
+\DoxyCodeLine{00161\ }
+\DoxyCodeLine{00162\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{hashtab_8h_a425895c9a9643238a9dedf650ee71c2d}{htab\_set\_functions\_ex}}\ (\doxymbox{\hyperlink{hashtab_8h_aa3847a9bffeefab8f9895fc38007118a}{htab\_t}},\ \doxymbox{\hyperlink{hashtab_8h_a0d7ff599ca00c4beaff9d4884ae4398f}{htab\_hash}},}
+\DoxyCodeLine{00163\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{hashtab_8h_a010267e4a50ef500cc83dbc33dc73568}{htab\_eq}},\ \doxymbox{\hyperlink{hashtab_8h_af80567a2f9698a5d86e5cafb37b4c317}{htab\_del}},}
+\DoxyCodeLine{00164\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{void}\ *,\ \doxymbox{\hyperlink{hashtab_8h_ad084aaf2a2010e3a9b246eb4e4d385af}{htab\_alloc\_with\_arg}},}
+\DoxyCodeLine{00165\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{hashtab_8h_af39f80793ad1d583751caec8b94c7619}{htab\_free\_with\_arg}});}
+\DoxyCodeLine{00166\ }
+\DoxyCodeLine{00167\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{hashtab_8h_ac64a5d00114a416a376dd5c1cc895f7e}{htab\_delete}}\ (\doxymbox{\hyperlink{hashtab_8h_aa3847a9bffeefab8f9895fc38007118a}{htab\_t}});}
+\DoxyCodeLine{00168\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{hashtab_8h_a69cf9c32aafa1e3fc2e2854c8a3ed616}{htab\_empty}}\ (\doxymbox{\hyperlink{hashtab_8h_aa3847a9bffeefab8f9895fc38007118a}{htab\_t}});}
+\DoxyCodeLine{00169\ }
+\DoxyCodeLine{00170\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ *\ \ \ \doxymbox{\hyperlink{hashtab_8h_a50547cf80d0ad74d88aba531304e4174}{htab\_find}}\ (\doxymbox{\hyperlink{hashtab_8h_aa3847a9bffeefab8f9895fc38007118a}{htab\_t}},\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{void}\ *);}
+\DoxyCodeLine{00171\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ **\ \ \doxymbox{\hyperlink{hashtab_8h_a0345e043893c5c166947712331795e31}{htab\_find\_slot}}\ (\doxymbox{\hyperlink{hashtab_8h_aa3847a9bffeefab8f9895fc38007118a}{htab\_t}},\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{void}\ *,\ \textcolor{keyword}{enum}\ \doxymbox{\hyperlink{hashtab_8h_a701f25efbbc26447d63fde40272dbf4c}{insert\_option}});}
+\DoxyCodeLine{00172\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ *\ \ \ \doxymbox{\hyperlink{hashtab_8h_a11fa563d34c71eece4b7c7bcedd70999}{htab\_find\_with\_hash}}\ (\doxymbox{\hyperlink{hashtab_8h_aa3847a9bffeefab8f9895fc38007118a}{htab\_t}},\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{void}\ *,\ \doxymbox{\hyperlink{hashtab_8h_a2d05e5049721cf3117dd6b34e20d4f65}{hashval\_t}});}
+\DoxyCodeLine{00173\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ **\ \ \doxymbox{\hyperlink{hashtab_8h_a461caeb2aac85f576c200a51ad013681}{htab\_find\_slot\_with\_hash}}\ (\doxymbox{\hyperlink{hashtab_8h_aa3847a9bffeefab8f9895fc38007118a}{htab\_t}},\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{void}\ *,}
+\DoxyCodeLine{00174\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{hashtab_8h_a2d05e5049721cf3117dd6b34e20d4f65}{hashval\_t}},\ \textcolor{keyword}{enum}\ \doxymbox{\hyperlink{hashtab_8h_a701f25efbbc26447d63fde40272dbf4c}{insert\_option}});}
+\DoxyCodeLine{00175\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{hashtab_8h_a0e1545edf2e2585ef897c56c0b775fa6}{htab\_clear\_slot}}\ (\doxymbox{\hyperlink{hashtab_8h_aa3847a9bffeefab8f9895fc38007118a}{htab\_t}},\ \textcolor{keywordtype}{void}\ **);}
+\DoxyCodeLine{00176\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{hashtab_8h_ab86ce8fef8f7c15de8629ec71fa7b4b2}{htab\_remove\_elt}}\ (\doxymbox{\hyperlink{hashtab_8h_aa3847a9bffeefab8f9895fc38007118a}{htab\_t}},\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{void}\ *);}
+\DoxyCodeLine{00177\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{hashtab_8h_a1c463fc81ebad0db6ecc614519f301b7}{htab\_remove\_elt\_with\_hash}}\ (\doxymbox{\hyperlink{hashtab_8h_aa3847a9bffeefab8f9895fc38007118a}{htab\_t}},\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{void}\ *,\ \doxymbox{\hyperlink{hashtab_8h_a2d05e5049721cf3117dd6b34e20d4f65}{hashval\_t}});}
+\DoxyCodeLine{00178\ }
+\DoxyCodeLine{00179\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{hashtab_8h_a987b33598fb57e9b7cebf6dff6f6b179}{htab\_traverse}}\ (\doxymbox{\hyperlink{hashtab_8h_aa3847a9bffeefab8f9895fc38007118a}{htab\_t}},\ \doxymbox{\hyperlink{hashtab_8h_ac000ac9cf06032d1b62d998837f6bdce}{htab\_trav}},\ \textcolor{keywordtype}{void}\ *);}
+\DoxyCodeLine{00180\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{hashtab_8h_a3e19056f5708443d41945dd53c53c5f1}{htab\_traverse\_noresize}}\ (\doxymbox{\hyperlink{hashtab_8h_aa3847a9bffeefab8f9895fc38007118a}{htab\_t}},\ \doxymbox{\hyperlink{hashtab_8h_ac000ac9cf06032d1b62d998837f6bdce}{htab\_trav}},\ \textcolor{keywordtype}{void}\ *);}
+\DoxyCodeLine{00181\ }
+\DoxyCodeLine{00182\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{size\_t}\ \ \ \doxymbox{\hyperlink{hashtab_8h_a08ffe0d4fd87e561260912fc72ab59e4}{htab\_size}}\ (\doxymbox{\hyperlink{hashtab_8h_aa3847a9bffeefab8f9895fc38007118a}{htab\_t}});}
+\DoxyCodeLine{00183\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{size\_t}\ \ \ \doxymbox{\hyperlink{hashtab_8h_a8c6d30df880b0aa80d4d1f627cec4dd4}{htab\_elements}}\ (\doxymbox{\hyperlink{hashtab_8h_aa3847a9bffeefab8f9895fc38007118a}{htab\_t}});}
+\DoxyCodeLine{00184\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{double}\ \ \ \doxymbox{\hyperlink{hashtab_8h_a33ffb3a2ba12fa90b2b73929f0ca1749}{htab\_collisions}}\ (\doxymbox{\hyperlink{hashtab_8h_aa3847a9bffeefab8f9895fc38007118a}{htab\_t}});}
+\DoxyCodeLine{00185\ }
+\DoxyCodeLine{00186\ \textcolor{comment}{/*\ A\ hash\ function\ for\ pointers.\ \ */}}
+\DoxyCodeLine{00187\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{hashtab_8h_a0d7ff599ca00c4beaff9d4884ae4398f}{htab\_hash}}\ \doxymbox{\hyperlink{hashtab_8h_a47e4c89c9c747e205b18b78657ce113a}{htab\_hash\_pointer}};}
+\DoxyCodeLine{00188\ }
+\DoxyCodeLine{00189\ \textcolor{comment}{/*\ An\ equality\ function\ for\ pointers.\ \ */}}
+\DoxyCodeLine{00190\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{hashtab_8h_a010267e4a50ef500cc83dbc33dc73568}{htab\_eq}}\ \doxymbox{\hyperlink{hashtab_8h_a91ca137f6f77ae74d9a377bc66e10c27}{htab\_eq\_pointer}};}
+\DoxyCodeLine{00191\ }
+\DoxyCodeLine{00192\ \textcolor{comment}{/*\ A\ hash\ function\ for\ null-\/terminated\ strings.\ \ */}}
+\DoxyCodeLine{00193\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{hashtab_8h_a2d05e5049721cf3117dd6b34e20d4f65}{hashval\_t}}\ \doxymbox{\hyperlink{hashtab_8h_ae73595d0572b43b16e202adc0090d47d}{htab\_hash\_string}}\ (\textcolor{keyword}{const}\ \textcolor{keywordtype}{void}\ *);}
+\DoxyCodeLine{00194\ }
+\DoxyCodeLine{00195\ \textcolor{comment}{/*\ An\ equality\ function\ for\ null-\/terminated\ strings.\ \ */}}
+\DoxyCodeLine{00196\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{hashtab_8h_ab127a9381fdccd3c19ee158ae87b1dcf}{htab\_eq\_string}}\ (\textcolor{keyword}{const}\ \textcolor{keywordtype}{void}\ *,\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{void}\ *);}
+\DoxyCodeLine{00197\ }
+\DoxyCodeLine{00198\ \textcolor{comment}{/*\ An\ iterative\ hash\ function\ for\ arbitrary\ data.\ \ */}}
+\DoxyCodeLine{00199\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{hashtab_8h_a2d05e5049721cf3117dd6b34e20d4f65}{hashval\_t}}\ \doxymbox{\hyperlink{hashtab_8h_a117f1dcc7e7b550c6aeeb2cce0addbca}{iterative\_hash}}\ (\textcolor{keyword}{const}\ \textcolor{keywordtype}{void}\ *,\ \textcolor{keywordtype}{size\_t},\ \doxymbox{\hyperlink{hashtab_8h_a2d05e5049721cf3117dd6b34e20d4f65}{hashval\_t}});}
+\DoxyCodeLine{00200\ \textcolor{comment}{/*\ Shorthand\ for\ hashing\ something\ with\ an\ intrinsic\ size.\ \ */}}
+\DoxyCodeLine{00201\ \textcolor{preprocessor}{\#define\ iterative\_hash\_object(OB,INIT)\ iterative\_hash\ (\&OB,\ sizeof\ (OB),\ INIT)}}
+\DoxyCodeLine{00202\ }
+\DoxyCodeLine{00203\ \textcolor{preprocessor}{\#ifdef\ \_\_cplusplus}}
+\DoxyCodeLine{00204\ \}}
+\DoxyCodeLine{00205\ \textcolor{preprocessor}{\#endif\ }\textcolor{comment}{/*\ \_\_cplusplus\ */}\textcolor{preprocessor}{}}
+\DoxyCodeLine{00206\ }
+\DoxyCodeLine{00207\ \textcolor{preprocessor}{\#endif\ }\textcolor{comment}{/*\ \_\_HASHTAB\_H\ */}\textcolor{preprocessor}{}}
+
+\end{DoxyCode}

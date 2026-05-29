@@ -1,0 +1,136 @@
+var plugin_api_8h =
+[
+    [ "ld_plugin_input_file", "structld__plugin__input__file.html", "structld__plugin__input__file" ],
+    [ "ld_plugin_section", "structld__plugin__section.html", "structld__plugin__section" ],
+    [ "ld_plugin_symbol", "structld__plugin__symbol.html", "structld__plugin__symbol" ],
+    [ "ld_plugin_tv", "structld__plugin__tv.html", "structld__plugin__tv" ],
+    [ "ld_plugin_add_input_file", "plugin-api_8h.html#ab2a6832287fa981ae6dafc650782ee69", null ],
+    [ "ld_plugin_add_input_library", "plugin-api_8h.html#a8e50d57bafd16415e382a9d9d99792c6", null ],
+    [ "ld_plugin_add_symbols", "plugin-api_8h.html#ad0f676abf1647b144679e8607207475c", null ],
+    [ "ld_plugin_all_symbols_read_handler", "plugin-api_8h.html#a74683bcc8b04ec857f09ce092b4a2534", null ],
+    [ "ld_plugin_allow_section_ordering", "plugin-api_8h.html#a2578dacad7b7435e3bac6f32ad4a2993", null ],
+    [ "ld_plugin_allow_unique_segment_for_sections", "plugin-api_8h.html#a189d6c459731f3715faf506eedac7a1e", null ],
+    [ "ld_plugin_claim_file_handler", "plugin-api_8h.html#ac48d0bfaafa6477529221cdb613d3cc1", null ],
+    [ "ld_plugin_claim_file_handler_v2", "plugin-api_8h.html#a0f0e7bd6f34f27f5f83de3504cbd578a", null ],
+    [ "ld_plugin_cleanup_handler", "plugin-api_8h.html#abc6131eb5f59a423cadc6d7529513a18", null ],
+    [ "ld_plugin_get_api_version", "plugin-api_8h.html#a8d36a88fba3c9db3fb3cea2d7b6589cb", null ],
+    [ "ld_plugin_get_input_file", "plugin-api_8h.html#a789191edc1637f2d5c2206d11ca2c1a8", null ],
+    [ "ld_plugin_get_input_section_alignment", "plugin-api_8h.html#a2a984fa663e78de6f3db87a0f7438bff", null ],
+    [ "ld_plugin_get_input_section_contents", "plugin-api_8h.html#acd699c4806321573342201934808822c", null ],
+    [ "ld_plugin_get_input_section_count", "plugin-api_8h.html#aaec0e1696a1ceaf06b0f00d5b26edf77", null ],
+    [ "ld_plugin_get_input_section_name", "plugin-api_8h.html#a2e97321f53581f1f5e2a46f7cbd96455", null ],
+    [ "ld_plugin_get_input_section_size", "plugin-api_8h.html#ad984763479915d6e8d4e3fab243f7ee0", null ],
+    [ "ld_plugin_get_input_section_type", "plugin-api_8h.html#a4093be004dbad8de6a17665b4e73f0a6", null ],
+    [ "ld_plugin_get_symbols", "plugin-api_8h.html#adb30349cba34df1e747e91425475def6", null ],
+    [ "ld_plugin_get_view", "plugin-api_8h.html#a2f195a093344bfb27a942928d1184adc", null ],
+    [ "ld_plugin_get_wrap_symbols", "plugin-api_8h.html#aa3f31f03d94f740e8d8583f8f7bd681a", null ],
+    [ "ld_plugin_message", "plugin-api_8h.html#a1170bfd2366a3ddcc5a5f27813c6ef58", null ],
+    [ "ld_plugin_new_input_handler", "plugin-api_8h.html#ab710d41bcfb2ba3e017b97817ab8ff4a", null ],
+    [ "ld_plugin_onload", "plugin-api_8h.html#ade5ed1bee5cca34bc15bd39aa2fa87ea", null ],
+    [ "ld_plugin_register_all_symbols_read", "plugin-api_8h.html#a4998ed8414b5bd77e87dd13a035a67c8", null ],
+    [ "ld_plugin_register_claim_file", "plugin-api_8h.html#ad37d1f36a52cff49df14276894118161", null ],
+    [ "ld_plugin_register_claim_file_v2", "plugin-api_8h.html#afa8ad35db271c9e1dc70642662362a65", null ],
+    [ "ld_plugin_register_cleanup", "plugin-api_8h.html#ac33cf5056c5774ba4b4d8aa78c3c091a", null ],
+    [ "ld_plugin_register_new_input", "plugin-api_8h.html#a7f40299c09240ccae865a86249779c1c", null ],
+    [ "ld_plugin_release_input_file", "plugin-api_8h.html#ae9fa21c7efca1778cbfbce321daa7c69", null ],
+    [ "ld_plugin_set_extra_library_path", "plugin-api_8h.html#a0f563ee74535c47f756667ce5e59093c", null ],
+    [ "ld_plugin_unique_segment_for_sections", "plugin-api_8h.html#ac75215d96d16d1a744af3eedbf39681e", null ],
+    [ "ld_plugin_update_section_order", "plugin-api_8h.html#a88ae99fd5199329526a66bd7f0e4119d", null ],
+    [ "ld_plugin_api_version", "plugin-api_8h.html#ae7beda992dc0430bc054b87632450a33", [
+      [ "LD_PLUGIN_API_VERSION", "plugin-api_8h.html#ae7beda992dc0430bc054b87632450a33a6ec8a9b96221f998e3dd1a1710452bcd", null ]
+    ] ],
+    [ "ld_plugin_level", "plugin-api_8h.html#a5eca55fdfb82c4fc2da7f118e156706c", [
+      [ "LDPL_INFO", "plugin-api_8h.html#a5eca55fdfb82c4fc2da7f118e156706ca61e84ace3aa1b505c4c9f0a3704023a4", null ],
+      [ "LDPL_WARNING", "plugin-api_8h.html#a5eca55fdfb82c4fc2da7f118e156706ca3e8a67906f572ca19c1cbafe32773780", null ],
+      [ "LDPL_ERROR", "plugin-api_8h.html#a5eca55fdfb82c4fc2da7f118e156706cad19b54854cdacfa9b067b8706c021e59", null ],
+      [ "LDPL_FATAL", "plugin-api_8h.html#a5eca55fdfb82c4fc2da7f118e156706ca40da75a56e6cb89e8c6d308fb9b2084e", null ]
+    ] ],
+    [ "ld_plugin_output_file_type", "plugin-api_8h.html#a7059362753b94a871a0c4021ecd519cc", [
+      [ "LDPO_REL", "plugin-api_8h.html#a7059362753b94a871a0c4021ecd519cca57f20f875ae83116aa204e375a8b071d", null ],
+      [ "LDPO_EXEC", "plugin-api_8h.html#a7059362753b94a871a0c4021ecd519ccabf6f61256f06a839509244830257907a", null ],
+      [ "LDPO_DYN", "plugin-api_8h.html#a7059362753b94a871a0c4021ecd519cca6bd9aca6944af54cd379b17795ea2f6e", null ],
+      [ "LDPO_PIE", "plugin-api_8h.html#a7059362753b94a871a0c4021ecd519cca39b7ecf2178035b40b9160761fc12d33", null ]
+    ] ],
+    [ "ld_plugin_status", "plugin-api_8h.html#a4335d34beee0024e4558323c50fd3ac6", [
+      [ "LDPS_OK", "plugin-api_8h.html#a4335d34beee0024e4558323c50fd3ac6ab0c2ab46673367a5951c2bc80f28c4d4", null ],
+      [ "LDPS_NO_SYMS", "plugin-api_8h.html#a4335d34beee0024e4558323c50fd3ac6ab3a903a9d093174c45faff7ded18ae22", null ],
+      [ "LDPS_BAD_HANDLE", "plugin-api_8h.html#a4335d34beee0024e4558323c50fd3ac6aee16f347ac24ad3c0cc82a165ea1a491", null ],
+      [ "LDPS_ERR", "plugin-api_8h.html#a4335d34beee0024e4558323c50fd3ac6a52da6fc7f3815189df93957cbbabeb41", null ]
+    ] ],
+    [ "ld_plugin_symbol_kind", "plugin-api_8h.html#a14fb9c32d86777769c2c240bf4fe2619", [
+      [ "LDPK_DEF", "plugin-api_8h.html#a14fb9c32d86777769c2c240bf4fe2619a0123f631a590e666bfba671bba9ffe40", null ],
+      [ "LDPK_WEAKDEF", "plugin-api_8h.html#a14fb9c32d86777769c2c240bf4fe2619a0b53aebe675c4d4f3bbeeac6120f1c09", null ],
+      [ "LDPK_UNDEF", "plugin-api_8h.html#a14fb9c32d86777769c2c240bf4fe2619a1221cf6bf97ef0851df4f23ab1e69048", null ],
+      [ "LDPK_WEAKUNDEF", "plugin-api_8h.html#a14fb9c32d86777769c2c240bf4fe2619a3b58103ae3c54b2b99445c0e58d7b209", null ],
+      [ "LDPK_COMMON", "plugin-api_8h.html#a14fb9c32d86777769c2c240bf4fe2619a14669df9f0e648bcaa6e880a5fd851eb", null ]
+    ] ],
+    [ "ld_plugin_symbol_resolution", "plugin-api_8h.html#ae8a95573c08683bcb79f9009902f372e", [
+      [ "LDPR_UNKNOWN", "plugin-api_8h.html#ae8a95573c08683bcb79f9009902f372eae7afffef25cda9a8f79a7b51b191103b", null ],
+      [ "LDPR_UNDEF", "plugin-api_8h.html#ae8a95573c08683bcb79f9009902f372ea44b7fcd337168cd68666ad697cedcbf9", null ],
+      [ "LDPR_PREVAILING_DEF", "plugin-api_8h.html#ae8a95573c08683bcb79f9009902f372ea2eb40b429a032240f4058bdc847f2787", null ],
+      [ "LDPR_PREVAILING_DEF_IRONLY", "plugin-api_8h.html#ae8a95573c08683bcb79f9009902f372ea3da8040c90e468a0adb8f853f28df5ef", null ],
+      [ "LDPR_PREEMPTED_REG", "plugin-api_8h.html#ae8a95573c08683bcb79f9009902f372eacde0770141885495799ae3bfe635f3e8", null ],
+      [ "LDPR_PREEMPTED_IR", "plugin-api_8h.html#ae8a95573c08683bcb79f9009902f372ea1f342ce0b8d2c018bbb1e514502ed9bb", null ],
+      [ "LDPR_RESOLVED_IR", "plugin-api_8h.html#ae8a95573c08683bcb79f9009902f372ea9f5a319e605ed1f6a3b5c6316a6edcfc", null ],
+      [ "LDPR_RESOLVED_EXEC", "plugin-api_8h.html#ae8a95573c08683bcb79f9009902f372ea12dc660bb2fd330bfb177526c3ccd557", null ],
+      [ "LDPR_RESOLVED_DYN", "plugin-api_8h.html#ae8a95573c08683bcb79f9009902f372ea28033c36ca2a364a581b86609a18a356", null ],
+      [ "LDPR_PREVAILING_DEF_IRONLY_EXP", "plugin-api_8h.html#ae8a95573c08683bcb79f9009902f372eaa015bf7202594c3e0db8ef9ec29bba63", null ]
+    ] ],
+    [ "ld_plugin_symbol_section_kind", "plugin-api_8h.html#a1d3afe6d5abdaa213f28f3f927135db8", [
+      [ "LDSSK_DEFAULT", "plugin-api_8h.html#a1d3afe6d5abdaa213f28f3f927135db8a2a58ca5c822f0502da9abfe836db8037", null ],
+      [ "LDSSK_BSS", "plugin-api_8h.html#a1d3afe6d5abdaa213f28f3f927135db8ac0443a931c6613ec79f556f89b892f89", null ]
+    ] ],
+    [ "ld_plugin_symbol_type", "plugin-api_8h.html#afe8bd7bf5bf96ac96cac12bbd34a21b5", [
+      [ "LDST_UNKNOWN", "plugin-api_8h.html#afe8bd7bf5bf96ac96cac12bbd34a21b5ae7a75178b5eefc6094dda7b5aad21930", null ],
+      [ "LDST_FUNCTION", "plugin-api_8h.html#afe8bd7bf5bf96ac96cac12bbd34a21b5a5fe5c08779c42392be717cfea1a0fa43", null ],
+      [ "LDST_VARIABLE", "plugin-api_8h.html#afe8bd7bf5bf96ac96cac12bbd34a21b5a8acb718a9c356791c717f9d57bfe950e", null ]
+    ] ],
+    [ "ld_plugin_symbol_visibility", "plugin-api_8h.html#acb0260f56e4608a89f9e0468cf513c8f", [
+      [ "LDPV_DEFAULT", "plugin-api_8h.html#acb0260f56e4608a89f9e0468cf513c8fa6d439620ff953093d186b84ab8a1bd62", null ],
+      [ "LDPV_PROTECTED", "plugin-api_8h.html#acb0260f56e4608a89f9e0468cf513c8fa5a486e27316214ad2e9f833bd3f3ee01", null ],
+      [ "LDPV_INTERNAL", "plugin-api_8h.html#acb0260f56e4608a89f9e0468cf513c8fa317be261548771a630d4c09f5c418182", null ],
+      [ "LDPV_HIDDEN", "plugin-api_8h.html#acb0260f56e4608a89f9e0468cf513c8fa3c6110ec905ba5785957490139e8db46", null ]
+    ] ],
+    [ "ld_plugin_tag", "plugin-api_8h.html#a14c9fd478853137daebcf950a46ccc92", [
+      [ "LDPT_NULL", "plugin-api_8h.html#a14c9fd478853137daebcf950a46ccc92a9c5b9635700494fe3222a992793be0c6", null ],
+      [ "LDPT_API_VERSION", "plugin-api_8h.html#a14c9fd478853137daebcf950a46ccc92af532a189da38d9c1c4a7d63819f42863", null ],
+      [ "LDPT_GOLD_VERSION", "plugin-api_8h.html#a14c9fd478853137daebcf950a46ccc92afa310d489cf3fc478253d84eba2174b9", null ],
+      [ "LDPT_LINKER_OUTPUT", "plugin-api_8h.html#a14c9fd478853137daebcf950a46ccc92ab9a9768805a8648e3f7545daf6a81592", null ],
+      [ "LDPT_OPTION", "plugin-api_8h.html#a14c9fd478853137daebcf950a46ccc92a60d08e83097bb93d197bd5023573a736", null ],
+      [ "LDPT_REGISTER_CLAIM_FILE_HOOK", "plugin-api_8h.html#a14c9fd478853137daebcf950a46ccc92adf2d3a46efb2c72f003302919741cc03", null ],
+      [ "LDPT_REGISTER_ALL_SYMBOLS_READ_HOOK", "plugin-api_8h.html#a14c9fd478853137daebcf950a46ccc92ab94b5ea9fe4e2b366f6c3575d44cfeb9", null ],
+      [ "LDPT_REGISTER_CLEANUP_HOOK", "plugin-api_8h.html#a14c9fd478853137daebcf950a46ccc92ab46b8e11fc44e3606fe16577a405cabc", null ],
+      [ "LDPT_ADD_SYMBOLS", "plugin-api_8h.html#a14c9fd478853137daebcf950a46ccc92ab5ce53d8efb89529f8f1b9629af32486", null ],
+      [ "LDPT_GET_SYMBOLS", "plugin-api_8h.html#a14c9fd478853137daebcf950a46ccc92a11956e5b290a20fb26880fa6b96947b1", null ],
+      [ "LDPT_ADD_INPUT_FILE", "plugin-api_8h.html#a14c9fd478853137daebcf950a46ccc92a39063d83303b220694647576e17e94b8", null ],
+      [ "LDPT_MESSAGE", "plugin-api_8h.html#a14c9fd478853137daebcf950a46ccc92a4bebc25c1a8ffa405d018ae029e7d2b1", null ],
+      [ "LDPT_GET_INPUT_FILE", "plugin-api_8h.html#a14c9fd478853137daebcf950a46ccc92ad7798283adb37d24a5c86c5404bc5a5f", null ],
+      [ "LDPT_RELEASE_INPUT_FILE", "plugin-api_8h.html#a14c9fd478853137daebcf950a46ccc92a6d1157d1738db3bff92a5d2c5e7618b3", null ],
+      [ "LDPT_ADD_INPUT_LIBRARY", "plugin-api_8h.html#a14c9fd478853137daebcf950a46ccc92af817305e616930d025d0b0a016831702", null ],
+      [ "LDPT_OUTPUT_NAME", "plugin-api_8h.html#a14c9fd478853137daebcf950a46ccc92a3213a3e8eef692829b5afb615d386cd1", null ],
+      [ "LDPT_SET_EXTRA_LIBRARY_PATH", "plugin-api_8h.html#a14c9fd478853137daebcf950a46ccc92a7be1774bf9f8e073ec16f5ff65d9d68a", null ],
+      [ "LDPT_GNU_LD_VERSION", "plugin-api_8h.html#a14c9fd478853137daebcf950a46ccc92a472dde9e5ca364577597de701b2de5ea", null ],
+      [ "LDPT_GET_VIEW", "plugin-api_8h.html#a14c9fd478853137daebcf950a46ccc92a77da39075018b77ea1880c76cdbeaa6f", null ],
+      [ "LDPT_GET_INPUT_SECTION_COUNT", "plugin-api_8h.html#a14c9fd478853137daebcf950a46ccc92a14d779988177f08453cd2a99bde5fbb9", null ],
+      [ "LDPT_GET_INPUT_SECTION_TYPE", "plugin-api_8h.html#a14c9fd478853137daebcf950a46ccc92ab87349fec3512f30cbfd1b4e1fe5018d", null ],
+      [ "LDPT_GET_INPUT_SECTION_NAME", "plugin-api_8h.html#a14c9fd478853137daebcf950a46ccc92a069e852123df0e0eaffa92722876699f", null ],
+      [ "LDPT_GET_INPUT_SECTION_CONTENTS", "plugin-api_8h.html#a14c9fd478853137daebcf950a46ccc92aaac998860ec5430312daccb83e906dfc", null ],
+      [ "LDPT_UPDATE_SECTION_ORDER", "plugin-api_8h.html#a14c9fd478853137daebcf950a46ccc92a4f9452e955eab39045c6dbdeff063480", null ],
+      [ "LDPT_ALLOW_SECTION_ORDERING", "plugin-api_8h.html#a14c9fd478853137daebcf950a46ccc92abfb6deef025edd2256aeb4b042214f8d", null ],
+      [ "LDPT_GET_SYMBOLS_V2", "plugin-api_8h.html#a14c9fd478853137daebcf950a46ccc92acd587445645391439f1528caa53f4643", null ],
+      [ "LDPT_ALLOW_UNIQUE_SEGMENT_FOR_SECTIONS", "plugin-api_8h.html#a14c9fd478853137daebcf950a46ccc92a11123a0a85f03efc630a87c0c55a63aa", null ],
+      [ "LDPT_UNIQUE_SEGMENT_FOR_SECTIONS", "plugin-api_8h.html#a14c9fd478853137daebcf950a46ccc92a5c03a88f2cac7dcbb7bfee0521db679b", null ],
+      [ "LDPT_GET_SYMBOLS_V3", "plugin-api_8h.html#a14c9fd478853137daebcf950a46ccc92a84b21ec9d3a2bdd3867a42bcfa6ca762", null ],
+      [ "LDPT_GET_INPUT_SECTION_ALIGNMENT", "plugin-api_8h.html#a14c9fd478853137daebcf950a46ccc92a0088de24b40cbf94341104880f45ae4c", null ],
+      [ "LDPT_GET_INPUT_SECTION_SIZE", "plugin-api_8h.html#a14c9fd478853137daebcf950a46ccc92a787354c4274656444ee30563da358a2d", null ],
+      [ "LDPT_REGISTER_NEW_INPUT_HOOK", "plugin-api_8h.html#a14c9fd478853137daebcf950a46ccc92ae8f97f791c7426c23398c6687d54ea7c", null ],
+      [ "LDPT_GET_WRAP_SYMBOLS", "plugin-api_8h.html#a14c9fd478853137daebcf950a46ccc92a20bf6129c0bb37d52d7f14948319f5a7", null ],
+      [ "LDPT_ADD_SYMBOLS_V2", "plugin-api_8h.html#a14c9fd478853137daebcf950a46ccc92a7fe42596f1c1c535691d5ffccf867ba2", null ],
+      [ "LDPT_GET_API_VERSION", "plugin-api_8h.html#a14c9fd478853137daebcf950a46ccc92ae1665c14a437a42196d5cc61492b39f4", null ],
+      [ "LDPT_REGISTER_CLAIM_FILE_HOOK_V2", "plugin-api_8h.html#a14c9fd478853137daebcf950a46ccc92a72d85e8c4deb2402bdb574610457bedf", null ]
+    ] ],
+    [ "linker_api_version", "plugin-api_8h.html#a1873344b0675c030934f29fefd959b75", [
+      [ "LAPI_V0", "plugin-api_8h.html#a1873344b0675c030934f29fefd959b75ac93d24813608633111e6f42a31492c7b", null ],
+      [ "LAPI_V1", "plugin-api_8h.html#a1873344b0675c030934f29fefd959b75a2a2fc128685f08ef5deb20d1e9f45c48", null ]
+    ] ]
+];

@@ -1,0 +1,686 @@
+\doxysection{ipa-\/icf.h}
+\hypertarget{ipa-icf_8h_source}{}\label{ipa-icf_8h_source}\index{toolchain/x86\_64-\/elf/lib/gcc/x86\_64-\/elf/14.2.0/plugin/include/ipa-\/icf.h@{toolchain/x86\_64-\/elf/lib/gcc/x86\_64-\/elf/14.2.0/plugin/include/ipa-\/icf.h}}
+\doxymbox{\hyperlink{ipa-icf_8h}{Go to the documentation of this file.}}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001\ \textcolor{comment}{/*\ Interprocedural\ semantic\ function\ equality\ pass}}
+\DoxyCodeLine{00002\ \textcolor{comment}{\ \ \ Copyright\ (C)\ 2014-\/2024\ Free\ Software\ Foundation,\ Inc.}}
+\DoxyCodeLine{00003\ \textcolor{comment}{}}
+\DoxyCodeLine{00004\ \textcolor{comment}{\ \ \ Contributed\ by\ Jan\ Hubicka\ <hubicka@ucw.cz>\ and\ Martin\ Liska\ <mliska@suse.cz>}}
+\DoxyCodeLine{00005\ \textcolor{comment}{}}
+\DoxyCodeLine{00006\ \textcolor{comment}{This\ file\ is\ part\ of\ GCC.}}
+\DoxyCodeLine{00007\ \textcolor{comment}{}}
+\DoxyCodeLine{00008\ \textcolor{comment}{GCC\ is\ free\ software;\ you\ can\ redistribute\ it\ and/or\ modify\ it\ under}}
+\DoxyCodeLine{00009\ \textcolor{comment}{the\ terms\ of\ the\ GNU\ General\ Public\ License\ as\ published\ by\ the\ Free}}
+\DoxyCodeLine{00010\ \textcolor{comment}{Software\ Foundation;\ either\ version\ 3,\ or\ (at\ your\ option)\ any\ later}}
+\DoxyCodeLine{00011\ \textcolor{comment}{version.}}
+\DoxyCodeLine{00012\ \textcolor{comment}{}}
+\DoxyCodeLine{00013\ \textcolor{comment}{GCC\ is\ distributed\ in\ the\ hope\ that\ it\ will\ be\ useful,\ but\ WITHOUT\ ANY}}
+\DoxyCodeLine{00014\ \textcolor{comment}{WARRANTY;\ without\ even\ the\ implied\ warranty\ of\ MERCHANTABILITY\ or}}
+\DoxyCodeLine{00015\ \textcolor{comment}{FITNESS\ FOR\ A\ PARTICULAR\ PURPOSE.\ \ See\ the\ GNU\ General\ Public\ License}}
+\DoxyCodeLine{00016\ \textcolor{comment}{for\ more\ details.}}
+\DoxyCodeLine{00017\ \textcolor{comment}{}}
+\DoxyCodeLine{00018\ \textcolor{comment}{You\ should\ have\ received\ a\ copy\ of\ the\ GNU\ General\ Public\ License}}
+\DoxyCodeLine{00019\ \textcolor{comment}{along\ with\ GCC;\ see\ the\ file\ COPYING3.\ \ If\ not\ see}}
+\DoxyCodeLine{00020\ \textcolor{comment}{<http://www.gnu.org/licenses/>.\ \ */}}
+\DoxyCodeLine{00021\ }
+\DoxyCodeLine{00022\ \textcolor{keyword}{namespace\ }\doxymbox{\hyperlink{namespaceipa__icf}{ipa\_icf}}\ \{}
+\DoxyCodeLine{00023\ \textcolor{keyword}{class\ }\doxymbox{\hyperlink{classipa__icf_1_1sem__item}{sem\_item}};}
+\DoxyCodeLine{00024\ }
+\DoxyCodeLine{00025\ \textcolor{comment}{/*\ Congruence\ class\ encompasses\ a\ collection\ of\ either\ functions\ or}}
+\DoxyCodeLine{00026\ \textcolor{comment}{\ \ \ read-\/only\ variables.\ These\ items\ are\ considered\ to\ be\ equivalent}}
+\DoxyCodeLine{00027\ \textcolor{comment}{\ \ \ if\ not\ proved\ the\ opposite.\ \ */}}
+\DoxyCodeLine{00028\ \textcolor{keyword}{class\ }\doxymbox{\hyperlink{classipa__icf_1_1congruence__class_a501161fe344dab2a3c76cdb0f01f3937}{congruence\_class}}}
+\DoxyCodeLine{00029\ \{}
+\DoxyCodeLine{00030\ \textcolor{keyword}{public}:}
+\DoxyCodeLine{00031\ \ \ \textcolor{comment}{/*\ Congruence\ class\ constructor\ for\ a\ new\ class\ with\ \_ID.\ \ */}}
+\DoxyCodeLine{00032\ \ \ \doxymbox{\hyperlink{classipa__icf_1_1congruence__class_a501161fe344dab2a3c76cdb0f01f3937}{congruence\_class}}\ (\textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ \_id):\ \doxymbox{\hyperlink{classipa__icf_1_1congruence__class_ad7d65d4615b02c438f98cbf271127297}{in\_worklist}}\ (\doxymbox{\hyperlink{stdbool_8h_a65e9886d74aaee76545e83dd09011727}{false}}),\ \doxymbox{\hyperlink{classipa__icf_1_1congruence__class_adbddfee504cbfc11aa30c5c10daa8f9d}{id}}\ (\_id),}
+\DoxyCodeLine{00033\ \ \ \doxymbox{\hyperlink{classipa__icf_1_1congruence__class_a769582dcc4906214de7cec53939afabb}{referenced\_by\_count}}\ (0)}
+\DoxyCodeLine{00034\ \ \ \{}
+\DoxyCodeLine{00035\ \ \ \}}
+\DoxyCodeLine{00036\ }
+\DoxyCodeLine{00037\ \ \ \textcolor{comment}{/*\ Destructor.\ \ */}}
+\DoxyCodeLine{00038\ \ \ \doxymbox{\hyperlink{classipa__icf_1_1congruence__class_a9938ae1e5cfaf44b56f333b8b1a509c7}{\string~congruence\_class}}\ ()}
+\DoxyCodeLine{00039\ \ \ \{}
+\DoxyCodeLine{00040\ \ \ \}}
+\DoxyCodeLine{00041\ }
+\DoxyCodeLine{00042\ \ \ \textcolor{comment}{/*\ Dump\ function\ prints\ all\ class\ members\ to\ a\ FILE\ with\ an\ INDENT.\ \ */}}
+\DoxyCodeLine{00043\ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classipa__icf_1_1congruence__class_a8407d3f2b3a02d65dc83ead33d2f6160}{dump}}\ (FILE\ *file,\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ indent\ =\ 0)\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00044\ }
+\DoxyCodeLine{00045\ \ \ \textcolor{comment}{/*\ Returns\ true\ if\ there's\ a\ member\ that\ is\ used\ from\ another\ group.\ \ */}}
+\DoxyCodeLine{00046\ \ \ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{classipa__icf_1_1congruence__class_a6e87d4990b093020f7457d82e06b8e38}{is\_class\_used}}\ (\textcolor{keywordtype}{void});}
+\DoxyCodeLine{00047\ }
+\DoxyCodeLine{00048\ \ \ \textcolor{comment}{/*\ Flag\ is\ used\ in\ case\ we\ want\ to\ remove\ a\ class\ from\ worklist\ and}}
+\DoxyCodeLine{00049\ \textcolor{comment}{\ \ \ \ \ delete\ operation\ is\ quite\ expensive\ for}}
+\DoxyCodeLine{00050\ \textcolor{comment}{\ \ \ \ \ the\ data\ structure\ (linked\ list).\ \ */}}
+\DoxyCodeLine{00051\ \ \ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{classipa__icf_1_1congruence__class_ad7d65d4615b02c438f98cbf271127297}{in\_worklist}};}
+\DoxyCodeLine{00052\ }
+\DoxyCodeLine{00053\ \ \ \textcolor{comment}{/*\ Vector\ of\ all\ group\ members.\ \ */}}
+\DoxyCodeLine{00054\ \ \ auto\_vec\ <sem\_item\ *>\ \doxymbox{\hyperlink{classipa__icf_1_1congruence__class_a15bd8db72fbdf69786a401826d213f5b}{members}};}
+\DoxyCodeLine{00055\ }
+\DoxyCodeLine{00056\ \ \ \textcolor{comment}{/*\ Global\ unique\ class\ identifier.\ \ */}}
+\DoxyCodeLine{00057\ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{classipa__icf_1_1congruence__class_adbddfee504cbfc11aa30c5c10daa8f9d}{id}};}
+\DoxyCodeLine{00058\ }
+\DoxyCodeLine{00059\ \ \ \textcolor{comment}{/*\ Total\ number\ of\ references\ to\ items\ of\ this\ class.\ \ */}}
+\DoxyCodeLine{00060\ \ \ \textcolor{keywordtype}{unsigned}\ \doxymbox{\hyperlink{classipa__icf_1_1congruence__class_a769582dcc4906214de7cec53939afabb}{referenced\_by\_count}};}
+\DoxyCodeLine{00061\ \};}
+\DoxyCodeLine{00062\ }
+\DoxyCodeLine{00063\ \textcolor{comment}{/*\ Semantic\ item\ type\ enum.\ \ */}}
+\DoxyCodeLine{00064\ \textcolor{keyword}{enum}\ \doxymbox{\hyperlink{namespaceipa__icf_aa9cc95f60967af0bbffd51a09be2f964}{sem\_item\_type}}}
+\DoxyCodeLine{00065\ \{}
+\DoxyCodeLine{00066\ \ \ \doxymbox{\hyperlink{namespaceipa__icf_aa9cc95f60967af0bbffd51a09be2f964a6c92fd5496e126ddcca9feb43dd585d5}{FUNC}},}
+\DoxyCodeLine{00067\ \ \ \doxymbox{\hyperlink{namespaceipa__icf_aa9cc95f60967af0bbffd51a09be2f964aec8b8d397c44ba65ed0a91c1f5a44ae9}{VAR}}}
+\DoxyCodeLine{00068\ \};}
+\DoxyCodeLine{00069\ }
+\DoxyCodeLine{00070\ \textcolor{comment}{/*\ Class\ is\ container\ for\ address\ references\ for\ a\ symtab\_node.\ \ */}}
+\DoxyCodeLine{00071\ }
+\DoxyCodeLine{00072\ \textcolor{keyword}{class\ }\doxymbox{\hyperlink{classipa__icf_1_1symbol__compare__collection_a96f43c4d9abb07e0b6bd421a48feed70}{symbol\_compare\_collection}}}
+\DoxyCodeLine{00073\ \{}
+\DoxyCodeLine{00074\ \textcolor{keyword}{public}:}
+\DoxyCodeLine{00075\ \ \ \textcolor{comment}{/*\ Constructor.\ \ */}}
+\DoxyCodeLine{00076\ \ \ \doxymbox{\hyperlink{classipa__icf_1_1symbol__compare__collection_a96f43c4d9abb07e0b6bd421a48feed70}{symbol\_compare\_collection}}\ (symtab\_node\ *node);}
+\DoxyCodeLine{00077\ }
+\DoxyCodeLine{00078\ \ \ \textcolor{comment}{/*\ Destructor.\ \ */}}
+\DoxyCodeLine{00079\ \ \ \doxymbox{\hyperlink{classipa__icf_1_1symbol__compare__collection_ac5fa9d1704d20e8199c376b221fcbf02}{\string~symbol\_compare\_collection}}\ ()}
+\DoxyCodeLine{00080\ \ \ \{}
+\DoxyCodeLine{00081\ \ \ \ \ \doxymbox{\hyperlink{classipa__icf_1_1symbol__compare__collection_a2d6dd27df45f7cb7db52a7831267eeec}{m\_references}}.release\ ();}
+\DoxyCodeLine{00082\ \ \ \ \ \doxymbox{\hyperlink{classipa__icf_1_1symbol__compare__collection_a28daa77286448842484a4efd5c33355b}{m\_interposables}}.release\ ();}
+\DoxyCodeLine{00083\ \ \ \}}
+\DoxyCodeLine{00084\ }
+\DoxyCodeLine{00085\ \ \ \textcolor{comment}{/*\ Vector\ of\ address\ references.\ \ */}}
+\DoxyCodeLine{00086\ \ \ \doxymbox{\hyperlink{structvec}{vec<symtab\_node\ *>}}\ \doxymbox{\hyperlink{classipa__icf_1_1symbol__compare__collection_a2d6dd27df45f7cb7db52a7831267eeec}{m\_references}};}
+\DoxyCodeLine{00087\ }
+\DoxyCodeLine{00088\ \ \ \textcolor{comment}{/*\ Vector\ of\ interposable\ references.\ \ */}}
+\DoxyCodeLine{00089\ \ \ \doxymbox{\hyperlink{structvec}{vec<symtab\_node\ *>}}\ \doxymbox{\hyperlink{classipa__icf_1_1symbol__compare__collection_a28daa77286448842484a4efd5c33355b}{m\_interposables}};}
+\DoxyCodeLine{00090\ \};}
+\DoxyCodeLine{00091\ }
+\DoxyCodeLine{00092\ \textcolor{comment}{/*\ Hash\ traits\ for\ symbol\_compare\_collection\ map.\ \ */}}
+\DoxyCodeLine{00093\ }
+\DoxyCodeLine{00094\ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{structipa__icf_1_1symbol__compare__hash}{symbol\_compare\_hash}}\ :\ \doxymbox{\hyperlink{structnofree__ptr__hash}{nofree\_ptr\_hash}}\ <symbol\_compare\_collection>}
+\DoxyCodeLine{00095\ \{}
+\DoxyCodeLine{00096\ \ \ \textcolor{keyword}{static}\ \doxymbox{\hyperlink{hashtab_8h_a2d05e5049721cf3117dd6b34e20d4f65}{hashval\_t}}}
+\DoxyCodeLine{00097\ \ \ \doxymbox{\hyperlink{structipa__icf_1_1symbol__compare__hash_a2ec1eca281088401166c30967004b27a}{hash}}\ (\doxymbox{\hyperlink{structpointer__hash_ac6dc5a34e4e8483037750c19850a3198}{value\_type}}\ v)}
+\DoxyCodeLine{00098\ \ \ \{}
+\DoxyCodeLine{00099\ \ \ \ \ \doxymbox{\hyperlink{classinchash_1_1hash}{inchash::hash}}\ hstate;}
+\DoxyCodeLine{00100\ \ \ \ \ hstate.\doxymbox{\hyperlink{classinchash_1_1hash_a254cdd0915b3d594c725bda753ba07a2}{add\_int}}\ (v-\/>m\_references.length\ ());}
+\DoxyCodeLine{00101\ }
+\DoxyCodeLine{00102\ \ \ \ \ \textcolor{keywordflow}{for}\ (\textcolor{keywordtype}{unsigned}\ \doxymbox{\hyperlink{poly-int_8h_a7e98b8a17c0aad30ba64d47b74e2a6c1}{i}}\ =\ 0;\ \doxymbox{\hyperlink{poly-int_8h_a7e98b8a17c0aad30ba64d47b74e2a6c1}{i}}\ <\ v-\/>m\_references.length\ ();\ \doxymbox{\hyperlink{poly-int_8h_a7e98b8a17c0aad30ba64d47b74e2a6c1}{i}}++)}
+\DoxyCodeLine{00103\ \ \ \ \ \ \ hstate.\doxymbox{\hyperlink{classinchash_1_1hash_a254cdd0915b3d594c725bda753ba07a2}{add\_int}}\ (v-\/>m\_references[\doxymbox{\hyperlink{poly-int_8h_a7e98b8a17c0aad30ba64d47b74e2a6c1}{i}}]-\/>ultimate\_alias\_target\ ()-\/>order);}
+\DoxyCodeLine{00104\ }
+\DoxyCodeLine{00105\ \ \ \ \ hstate.\doxymbox{\hyperlink{classinchash_1_1hash_a254cdd0915b3d594c725bda753ba07a2}{add\_int}}\ (v-\/>m\_interposables.length\ ());}
+\DoxyCodeLine{00106\ }
+\DoxyCodeLine{00107\ \ \ \ \ \textcolor{keywordflow}{for}\ (\textcolor{keywordtype}{unsigned}\ \doxymbox{\hyperlink{poly-int_8h_a7e98b8a17c0aad30ba64d47b74e2a6c1}{i}}\ =\ 0;\ \doxymbox{\hyperlink{poly-int_8h_a7e98b8a17c0aad30ba64d47b74e2a6c1}{i}}\ <\ v-\/>m\_interposables.length\ ();\ \doxymbox{\hyperlink{poly-int_8h_a7e98b8a17c0aad30ba64d47b74e2a6c1}{i}}++)}
+\DoxyCodeLine{00108\ \ \ \ \ \ \ hstate.\doxymbox{\hyperlink{classinchash_1_1hash_a254cdd0915b3d594c725bda753ba07a2}{add\_int}}\ (v-\/>m\_interposables[\doxymbox{\hyperlink{poly-int_8h_a7e98b8a17c0aad30ba64d47b74e2a6c1}{i}}]-\/>ultimate\_alias\_target\ ()-\/>order);}
+\DoxyCodeLine{00109\ }
+\DoxyCodeLine{00110\ \ \ \ \ \textcolor{keywordflow}{return}\ hstate.\doxymbox{\hyperlink{classinchash_1_1hash_abbb8b89688e2bc759f3f4585887bc96a}{end}}\ ();}
+\DoxyCodeLine{00111\ \ \ \}}
+\DoxyCodeLine{00112\ }
+\DoxyCodeLine{00113\ \ \ \textcolor{keyword}{static}\ \textcolor{keywordtype}{bool}}
+\DoxyCodeLine{00114\ \ \ \doxymbox{\hyperlink{structipa__icf_1_1symbol__compare__hash_a6c296c1620050c8fe042e50e4281cc78}{equal}}\ (\doxymbox{\hyperlink{structpointer__hash_ac6dc5a34e4e8483037750c19850a3198}{value\_type}}\ \doxymbox{\hyperlink{poly-int_8h_af77c881600a14567e276ee17dfb8764f}{a}},\ \doxymbox{\hyperlink{structpointer__hash_ac6dc5a34e4e8483037750c19850a3198}{value\_type}}\ \doxymbox{\hyperlink{poly-int_8h_af3bb9d9df219585072cf9e4e95572f70}{b}})}
+\DoxyCodeLine{00115\ \ \ \{}
+\DoxyCodeLine{00116\ \ \ \ \ \textcolor{keywordflow}{if}\ (\doxymbox{\hyperlink{poly-int_8h_af77c881600a14567e276ee17dfb8764f}{a}}-\/>m\_references.length\ ()\ !=\ \doxymbox{\hyperlink{poly-int_8h_af3bb9d9df219585072cf9e4e95572f70}{b}}-\/>m\_references.length\ ()}
+\DoxyCodeLine{00117\ \ \ \ \ ||\ \doxymbox{\hyperlink{poly-int_8h_af77c881600a14567e276ee17dfb8764f}{a}}-\/>m\_interposables.length\ ()\ !=\ \doxymbox{\hyperlink{poly-int_8h_af3bb9d9df219585072cf9e4e95572f70}{b}}-\/>m\_interposables.length\ ())}
+\DoxyCodeLine{00118\ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ \textcolor{keyword}{false};}
+\DoxyCodeLine{00119\ }
+\DoxyCodeLine{00120\ \ \ \ \ \textcolor{keywordflow}{for}\ (\textcolor{keywordtype}{unsigned}\ \doxymbox{\hyperlink{poly-int_8h_a7e98b8a17c0aad30ba64d47b74e2a6c1}{i}}\ =\ 0;\ \doxymbox{\hyperlink{poly-int_8h_a7e98b8a17c0aad30ba64d47b74e2a6c1}{i}}\ <\ \doxymbox{\hyperlink{poly-int_8h_af77c881600a14567e276ee17dfb8764f}{a}}-\/>m\_references.length\ ();\ \doxymbox{\hyperlink{poly-int_8h_a7e98b8a17c0aad30ba64d47b74e2a6c1}{i}}++)}
+\DoxyCodeLine{00121\ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (\doxymbox{\hyperlink{poly-int_8h_af77c881600a14567e276ee17dfb8764f}{a}}-\/>m\_references[\doxymbox{\hyperlink{poly-int_8h_a7e98b8a17c0aad30ba64d47b74e2a6c1}{i}}]-\/>equal\_address\_to\ (\doxymbox{\hyperlink{poly-int_8h_af3bb9d9df219585072cf9e4e95572f70}{b}}-\/>m\_references[\doxymbox{\hyperlink{poly-int_8h_a7e98b8a17c0aad30ba64d47b74e2a6c1}{i}}])\ !=\ 1)}
+\DoxyCodeLine{00122\ \ \ \ \ \textcolor{keywordflow}{return}\ \textcolor{keyword}{false};}
+\DoxyCodeLine{00123\ }
+\DoxyCodeLine{00124\ \ \ \ \ \textcolor{keywordflow}{for}\ (\textcolor{keywordtype}{unsigned}\ \doxymbox{\hyperlink{poly-int_8h_a7e98b8a17c0aad30ba64d47b74e2a6c1}{i}}\ =\ 0;\ \doxymbox{\hyperlink{poly-int_8h_a7e98b8a17c0aad30ba64d47b74e2a6c1}{i}}\ <\ \doxymbox{\hyperlink{poly-int_8h_af77c881600a14567e276ee17dfb8764f}{a}}-\/>m\_interposables.length\ ();\ \doxymbox{\hyperlink{poly-int_8h_a7e98b8a17c0aad30ba64d47b74e2a6c1}{i}}++)}
+\DoxyCodeLine{00125\ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (!\doxymbox{\hyperlink{poly-int_8h_af77c881600a14567e276ee17dfb8764f}{a}}-\/>m\_interposables[\doxymbox{\hyperlink{poly-int_8h_a7e98b8a17c0aad30ba64d47b74e2a6c1}{i}}]-\/>semantically\_equivalent\_p}
+\DoxyCodeLine{00126\ \ \ \ \ (\doxymbox{\hyperlink{poly-int_8h_af3bb9d9df219585072cf9e4e95572f70}{b}}-\/>m\_interposables[\doxymbox{\hyperlink{poly-int_8h_a7e98b8a17c0aad30ba64d47b74e2a6c1}{i}}]))}
+\DoxyCodeLine{00127\ \ \ \ \ \textcolor{keywordflow}{return}\ \textcolor{keyword}{false};}
+\DoxyCodeLine{00128\ }
+\DoxyCodeLine{00129\ \ \ \ \ \textcolor{keywordflow}{return}\ \textcolor{keyword}{true};}
+\DoxyCodeLine{00130\ \ \ \}}
+\DoxyCodeLine{00131\ \};}
+\DoxyCodeLine{00132\ }
+\DoxyCodeLine{00133\ \textcolor{comment}{/*\ Semantic\ item\ usage\ pair.\ \ */}}
+\DoxyCodeLine{00134\ \textcolor{keyword}{class\ }\doxymbox{\hyperlink{classipa__icf_1_1sem__usage__pair_a049caf7d10b09d1e337101bdeef48dc9}{sem\_usage\_pair}}}
+\DoxyCodeLine{00135\ \{}
+\DoxyCodeLine{00136\ \textcolor{keyword}{public}:}
+\DoxyCodeLine{00137\ \ \ \textcolor{comment}{/*\ Constructor\ for\ key\ value\ pair,\ where\ \_ITEM\ is\ key\ and\ \_INDEX\ is\ a\ target.\ \ */}}
+\DoxyCodeLine{00138\ \ \ \doxymbox{\hyperlink{classipa__icf_1_1sem__usage__pair_a049caf7d10b09d1e337101bdeef48dc9}{sem\_usage\_pair}}\ (\doxymbox{\hyperlink{classipa__icf_1_1sem__item}{sem\_item}}\ *\_item,\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ \_index);}
+\DoxyCodeLine{00139\ }
+\DoxyCodeLine{00140\ \ \ \textcolor{comment}{/*\ Target\ semantic\ item\ where\ an\ item\ is\ used.\ \ */}}
+\DoxyCodeLine{00141\ \ \ \doxymbox{\hyperlink{classipa__icf_1_1sem__item}{sem\_item}}\ *\doxymbox{\hyperlink{classipa__icf_1_1sem__usage__pair_a9806d63f2b145bc1ea6c1e980be1019e}{item}};}
+\DoxyCodeLine{00142\ }
+\DoxyCodeLine{00143\ \ \ \textcolor{comment}{/*\ Index\ of\ usage\ of\ such\ an\ item.\ \ */}}
+\DoxyCodeLine{00144\ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{classipa__icf_1_1sem__usage__pair_ac8f5500f2caac0edfe3e98591fa60eb8}{index}};}
+\DoxyCodeLine{00145\ \};}
+\DoxyCodeLine{00146\ }
+\DoxyCodeLine{00147\ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{structipa__icf_1_1sem__usage__pair__hash}{sem\_usage\_pair\_hash}}\ :\ \doxymbox{\hyperlink{structpointer__hash}{pointer\_hash}}\ <sem\_usage\_pair>}
+\DoxyCodeLine{00148\ \{}
+\DoxyCodeLine{00149\ \ \ \textcolor{keyword}{static}\ \textcolor{keyword}{inline}\ \doxymbox{\hyperlink{hashtab_8h_a2d05e5049721cf3117dd6b34e20d4f65}{hashval\_t}}\ \doxymbox{\hyperlink{structipa__icf_1_1sem__usage__pair__hash_a42bef2b8748e9d1745b8651d58c70ef8}{hash}}\ (\doxymbox{\hyperlink{classipa__icf_1_1sem__usage__pair}{sem\_usage\_pair}}\ *);}
+\DoxyCodeLine{00150\ \ \ \textcolor{keyword}{static}\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{structipa__icf_1_1sem__usage__pair__hash_a2626c890931f8864bce24672ffe4f77b}{equal}}\ (\doxymbox{\hyperlink{classipa__icf_1_1sem__usage__pair}{sem\_usage\_pair}}\ *,\ \doxymbox{\hyperlink{classipa__icf_1_1sem__usage__pair}{sem\_usage\_pair}}\ *);}
+\DoxyCodeLine{00151\ \};}
+\DoxyCodeLine{00152\ }
+\DoxyCodeLine{00153\ \textcolor{keyword}{inline}\ \doxymbox{\hyperlink{hashtab_8h_a2d05e5049721cf3117dd6b34e20d4f65}{hashval\_t}}}
+\DoxyCodeLine{00154\ \doxymbox{\hyperlink{structipa__icf_1_1sem__usage__pair__hash_a42bef2b8748e9d1745b8651d58c70ef8}{sem\_usage\_pair\_hash::hash}}\ (\doxymbox{\hyperlink{classipa__icf_1_1sem__usage__pair}{sem\_usage\_pair}}\ *\doxymbox{\hyperlink{structpair}{pair}})}
+\DoxyCodeLine{00155\ \{}
+\DoxyCodeLine{00156\ \ \ \doxymbox{\hyperlink{classinchash_1_1hash}{inchash::hash}}\ hstate;}
+\DoxyCodeLine{00157\ }
+\DoxyCodeLine{00158\ \ \ hstate.\doxymbox{\hyperlink{classinchash_1_1hash_aff714f51e9a2c0c61f2aebde19a5f0a0}{add\_ptr}}\ (\doxymbox{\hyperlink{structpair}{pair}}-\/>item);}
+\DoxyCodeLine{00159\ \ \ hstate.\doxymbox{\hyperlink{classinchash_1_1hash_a254cdd0915b3d594c725bda753ba07a2}{add\_int}}\ (\doxymbox{\hyperlink{structpair}{pair}}-\/>index);}
+\DoxyCodeLine{00160\ }
+\DoxyCodeLine{00161\ \ \ \textcolor{keywordflow}{return}\ hstate.\doxymbox{\hyperlink{classinchash_1_1hash_abbb8b89688e2bc759f3f4585887bc96a}{end}}\ ();}
+\DoxyCodeLine{00162\ \}}
+\DoxyCodeLine{00163\ }
+\DoxyCodeLine{00164\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{bool}}
+\DoxyCodeLine{00165\ \doxymbox{\hyperlink{structipa__icf_1_1sem__usage__pair__hash_a2626c890931f8864bce24672ffe4f77b}{sem\_usage\_pair\_hash::equal}}\ (\doxymbox{\hyperlink{classipa__icf_1_1sem__usage__pair}{sem\_usage\_pair}}\ *p1,\ \doxymbox{\hyperlink{classipa__icf_1_1sem__usage__pair}{sem\_usage\_pair}}\ *p2)}
+\DoxyCodeLine{00166\ \{}
+\DoxyCodeLine{00167\ \ \ \textcolor{keywordflow}{return}\ p1-\/>\doxymbox{\hyperlink{classipa__icf_1_1sem__usage__pair_a9806d63f2b145bc1ea6c1e980be1019e}{item}}\ ==\ p2-\/>\doxymbox{\hyperlink{classipa__icf_1_1sem__usage__pair_a9806d63f2b145bc1ea6c1e980be1019e}{item}}\ \&\&\ p1-\/>\doxymbox{\hyperlink{classipa__icf_1_1sem__usage__pair_ac8f5500f2caac0edfe3e98591fa60eb8}{index}}\ ==\ p2-\/>\doxymbox{\hyperlink{classipa__icf_1_1sem__usage__pair_ac8f5500f2caac0edfe3e98591fa60eb8}{index}};}
+\DoxyCodeLine{00168\ \}}
+\DoxyCodeLine{00169\ }
+\DoxyCodeLine{00170\ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{structipa__icf_1_1sem__usage__hash}{sem\_usage\_hash}}\ :\ \doxymbox{\hyperlink{structipa__icf_1_1sem__usage__pair__hash}{sem\_usage\_pair\_hash}},\ \doxymbox{\hyperlink{structtyped__delete__remove}{typed\_delete\_remove}}\ <sem\_usage\_pair>\ \{\};}
+\DoxyCodeLine{00171\ \textcolor{keyword}{typedef}\ \doxymbox{\hyperlink{classhash__map}{hash\_map<sem\_usage\_hash,\ auto\_vec<sem\_item\ *>}}\ >\ \doxymbox{\hyperlink{namespaceipa__icf_a97fb3e8c36911142c3e1313646c64388}{ref\_map}};}
+\DoxyCodeLine{00172\ }
+\DoxyCodeLine{00173\ \textcolor{keyword}{typedef}\ std::pair<symtab\_node\ *,\ symtab\_node\ *>\ \doxymbox{\hyperlink{namespaceipa__icf_a0e76802d35702eaa59bd83ad30ab5db9}{symtab\_pair}};}
+\DoxyCodeLine{00174\ }
+\DoxyCodeLine{00175\ \textcolor{comment}{/*\ Semantic\ item\ is\ a\ base\ class\ that\ encapsulates\ all\ shared\ functionality}}
+\DoxyCodeLine{00176\ \textcolor{comment}{\ \ \ for\ both\ semantic\ function\ and\ variable\ items.\ \ */}}
+\DoxyCodeLine{00177\ \textcolor{keyword}{class\ }\doxymbox{\hyperlink{classipa__icf_1_1sem__item_a578709a89df949d07db41a4b762fe5d3}{sem\_item}}}
+\DoxyCodeLine{00178\ \{}
+\DoxyCodeLine{00179\ \textcolor{keyword}{public}:}
+\DoxyCodeLine{00180\ \ \ \textcolor{comment}{/*\ Semantic\ item\ constructor\ for\ a\ node\ of\ \_TYPE,\ where\ STACK\ is\ used}}
+\DoxyCodeLine{00181\ \textcolor{comment}{\ \ \ \ \ for\ bitmap\ memory\ allocation.\ \ */}}
+\DoxyCodeLine{00182\ \ \ \doxymbox{\hyperlink{classipa__icf_1_1sem__item_a578709a89df949d07db41a4b762fe5d3}{sem\_item}}\ (\doxymbox{\hyperlink{namespaceipa__icf_aa9cc95f60967af0bbffd51a09be2f964}{sem\_item\_type}}\ \_type,\ \doxymbox{\hyperlink{structbitmap__obstack}{bitmap\_obstack}}\ *stack);}
+\DoxyCodeLine{00183\ }
+\DoxyCodeLine{00184\ \ \ \textcolor{comment}{/*\ Semantic\ item\ constructor\ for\ a\ node\ of\ \_TYPE,\ where\ STACK\ is\ used}}
+\DoxyCodeLine{00185\ \textcolor{comment}{\ \ \ \ \ for\ bitmap\ memory\ allocation.\ \ The\ item\ is\ based\ on\ symtab\ node\ \_NODE.\ \ */}}
+\DoxyCodeLine{00186\ \ \ \doxymbox{\hyperlink{classipa__icf_1_1sem__item_a20a2d1fa68a0ea693d739bf7861b666c}{sem\_item}}\ (\doxymbox{\hyperlink{namespaceipa__icf_aa9cc95f60967af0bbffd51a09be2f964}{sem\_item\_type}}\ \_type,\ symtab\_node\ *\_node,\ \doxymbox{\hyperlink{structbitmap__obstack}{bitmap\_obstack}}\ *stack);}
+\DoxyCodeLine{00187\ }
+\DoxyCodeLine{00188\ \ \ \textcolor{keyword}{virtual}\ \doxymbox{\hyperlink{classipa__icf_1_1sem__item_a27d07c59e52d2a0c3cd8cfce6cc175d9}{\string~sem\_item}}\ ();}
+\DoxyCodeLine{00189\ }
+\DoxyCodeLine{00190\ \ \ \textcolor{comment}{/*\ Dump\ function\ for\ debugging\ purpose.\ \ */}}
+\DoxyCodeLine{00191\ \ \ \doxymbox{\hyperlink{system_8h_afb9d038ae651c7cd350e9c5d38759ebe}{DEBUG\_FUNCTION}}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classipa__icf_1_1sem__item_ad8c128708e5f67cb5f30bbb5041ff62c}{dump}}\ (\textcolor{keywordtype}{void});}
+\DoxyCodeLine{00192\ }
+\DoxyCodeLine{00193\ \ \ \textcolor{comment}{/*\ Semantic\ item\ initialization\ function.\ \ */}}
+\DoxyCodeLine{00194\ \ \ \textcolor{keyword}{virtual}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classipa__icf_1_1sem__item_a3f6ff02800762246fc423baf98283b50}{init}}\ (\doxymbox{\hyperlink{classipa__icf__gimple_1_1func__checker}{ipa\_icf\_gimple::func\_checker}}\ *)\ =\ 0;}
+\DoxyCodeLine{00195\ }
+\DoxyCodeLine{00196\ \ \ \textcolor{comment}{/*\ Add\ reference\ to\ a\ semantic\ TARGET.\ \ */}}
+\DoxyCodeLine{00197\ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classipa__icf_1_1sem__item_ae914a1fde2362dd0c1139f6c4b166ede}{add\_reference}}\ (\doxymbox{\hyperlink{namespaceipa__icf_a97fb3e8c36911142c3e1313646c64388}{ref\_map}}\ *map,\ \doxymbox{\hyperlink{classipa__icf_1_1sem__item_a578709a89df949d07db41a4b762fe5d3}{sem\_item}}\ *target);}
+\DoxyCodeLine{00198\ }
+\DoxyCodeLine{00199\ \ \ \textcolor{comment}{/*\ Fast\ equality\ function\ based\ on\ knowledge\ known\ in\ WPA.\ \ */}}
+\DoxyCodeLine{00200\ \ \ \textcolor{keyword}{virtual}\ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{classipa__icf_1_1sem__item_a1c62810ba98d580715e8926207193161}{equals\_wpa}}\ (\doxymbox{\hyperlink{classipa__icf_1_1sem__item_a578709a89df949d07db41a4b762fe5d3}{sem\_item}}\ *item,}
+\DoxyCodeLine{00201\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ hash\_map\ <symtab\_node\ *,\ sem\_item\ *>\ \&ignored\_nodes)\ =\ 0;}
+\DoxyCodeLine{00202\ }
+\DoxyCodeLine{00203\ \ \ \textcolor{comment}{/*\ Returns\ true\ if\ the\ item\ equals\ to\ ITEM\ given\ as\ argument.\ \ */}}
+\DoxyCodeLine{00204\ \ \ \textcolor{keyword}{virtual}\ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{classipa__icf_1_1sem__item_a041071eb8411e88febcb5617150a06db}{equals}}\ (\doxymbox{\hyperlink{classipa__icf_1_1sem__item_a578709a89df949d07db41a4b762fe5d3}{sem\_item}}\ *item,}
+\DoxyCodeLine{00205\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ hash\_map\ <symtab\_node\ *,\ sem\_item\ *>\ \&ignored\_nodes)\ =\ 0;}
+\DoxyCodeLine{00206\ }
+\DoxyCodeLine{00207\ \ \ \textcolor{comment}{/*\ References\ independent\ hash\ function.\ \ */}}
+\DoxyCodeLine{00208\ \ \ \textcolor{keyword}{virtual}\ \doxymbox{\hyperlink{hashtab_8h_a2d05e5049721cf3117dd6b34e20d4f65}{hashval\_t}}\ \doxymbox{\hyperlink{classipa__icf_1_1sem__item_a960d209409183fea423a908d6ab67c06}{get\_hash}}\ (\textcolor{keywordtype}{void})\ =\ 0;}
+\DoxyCodeLine{00209\ }
+\DoxyCodeLine{00210\ \ \ \textcolor{comment}{/*\ Set\ new\ hash\ value\ of\ the\ item.\ \ */}}
+\DoxyCodeLine{00211\ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classipa__icf_1_1sem__item_ae582f6a56d27d118e32311ff590b58cb}{set\_hash}}\ (\doxymbox{\hyperlink{hashtab_8h_a2d05e5049721cf3117dd6b34e20d4f65}{hashval\_t}}\ hash);}
+\DoxyCodeLine{00212\ }
+\DoxyCodeLine{00213\ \ \ \textcolor{comment}{/*\ Merges\ instance\ with\ an\ ALIAS\_ITEM,\ where\ alias,\ thunk\ or\ redirection\ can}}
+\DoxyCodeLine{00214\ \textcolor{comment}{\ \ \ \ \ be\ applied.\ \ */}}
+\DoxyCodeLine{00215\ \ \ \textcolor{keyword}{virtual}\ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{classipa__icf_1_1sem__item_aa518d8e4e57252fc9c8769851cc857f5}{merge}}\ (\doxymbox{\hyperlink{classipa__icf_1_1sem__item_a578709a89df949d07db41a4b762fe5d3}{sem\_item}}\ *alias\_item)\ =\ 0;}
+\DoxyCodeLine{00216\ }
+\DoxyCodeLine{00217\ \ \ \textcolor{comment}{/*\ Dump\ symbol\ to\ FILE.\ \ */}}
+\DoxyCodeLine{00218\ \ \ \textcolor{keyword}{virtual}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classipa__icf_1_1sem__item_a40dd190758e7696d71c0220e03a1ba3b}{dump\_to\_file}}\ (FILE\ *file)\ =\ 0;}
+\DoxyCodeLine{00219\ }
+\DoxyCodeLine{00220\ \ \ \textcolor{comment}{/*\ Update\ hash\ by\ address\ sensitive\ references.\ \ */}}
+\DoxyCodeLine{00221\ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classipa__icf_1_1sem__item_aa4322c6b0c3d54cddefbcf4c105c35c2}{update\_hash\_by\_addr\_refs}}\ (\doxymbox{\hyperlink{classhash__map}{hash\_map}}\ <symtab\_node\ *,}
+\DoxyCodeLine{00222\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{classipa__icf_1_1sem__item_a578709a89df949d07db41a4b762fe5d3}{sem\_item}}\ *>\ \&m\_symtab\_node\_map);}
+\DoxyCodeLine{00223\ }
+\DoxyCodeLine{00224\ \ \ \textcolor{comment}{/*\ Update\ hash\ by\ computed\ local\ hash\ values\ taken\ from\ different}}
+\DoxyCodeLine{00225\ \textcolor{comment}{\ \ \ \ \ semantic\ items.\ \ */}}
+\DoxyCodeLine{00226\ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classipa__icf_1_1sem__item_acfaaa6a0a3c42aa1e2a7cf3c4e02be94}{update\_hash\_by\_local\_refs}}\ (\doxymbox{\hyperlink{classhash__map}{hash\_map}}\ <symtab\_node\ *,}
+\DoxyCodeLine{00227\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{classipa__icf_1_1sem__item_a578709a89df949d07db41a4b762fe5d3}{sem\_item}}\ *>\ \&m\_symtab\_node\_map);}
+\DoxyCodeLine{00228\ }
+\DoxyCodeLine{00229\ \ \ \textcolor{comment}{/*\ Return\ base\ tree\ that\ can\ be\ used\ for\ compatible\_types\_p\ and}}
+\DoxyCodeLine{00230\ \textcolor{comment}{\ \ \ \ \ contains\_polymorphic\_type\_p\ comparison.\ \ */}}
+\DoxyCodeLine{00231\ \ \ \textcolor{keyword}{static}\ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{classipa__icf_1_1sem__item_a13929595be24bee28dc1b5f73cb9a550}{get\_base\_types}}\ (\doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ *t1,\ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ *t2);}
+\DoxyCodeLine{00232\ }
+\DoxyCodeLine{00233\ \ \ \textcolor{comment}{/*\ Return\ true\ if\ target\ supports\ alias\ symbols.\ \ */}}
+\DoxyCodeLine{00234\ \ \ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{classipa__icf_1_1sem__item_add86391272bdccfc6b5899a586cbbc94}{target\_supports\_symbol\_aliases\_p}}\ (\textcolor{keywordtype}{void});}
+\DoxyCodeLine{00235\ }
+\DoxyCodeLine{00236\ \ \ \textcolor{comment}{/*\ Item\ type.\ \ */}}
+\DoxyCodeLine{00237\ \ \ \doxymbox{\hyperlink{namespaceipa__icf_aa9cc95f60967af0bbffd51a09be2f964}{sem\_item\_type}}\ \doxymbox{\hyperlink{classipa__icf_1_1sem__item_ad983b3361f813ca725d4f26553fe55ba}{type}};}
+\DoxyCodeLine{00238\ }
+\DoxyCodeLine{00239\ \ \ \textcolor{comment}{/*\ Symtab\ node.\ \ */}}
+\DoxyCodeLine{00240\ \ \ symtab\_node\ *\doxymbox{\hyperlink{classipa__icf_1_1sem__item_a8341363a7e8540b738ada7812665ffc2}{node}};}
+\DoxyCodeLine{00241\ }
+\DoxyCodeLine{00242\ \ \ \textcolor{comment}{/*\ Declaration\ tree\ node.\ \ */}}
+\DoxyCodeLine{00243\ \ \ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ \doxymbox{\hyperlink{classipa__icf_1_1sem__item_a84d0da22cd1c95dc87647b5639908df9}{decl}};}
+\DoxyCodeLine{00244\ }
+\DoxyCodeLine{00245\ \ \ \textcolor{comment}{/*\ Number\ of\ references\ to\ a\ semantic\ symbols\ (function\ calls,}}
+\DoxyCodeLine{00246\ \textcolor{comment}{\ \ \ \ \ variable\ references).\ \ */}}
+\DoxyCodeLine{00247\ \ \ \textcolor{keywordtype}{unsigned}\ \doxymbox{\hyperlink{classipa__icf_1_1sem__item_ac22067a9601de8381b94429d844753dd}{reference\_count}};}
+\DoxyCodeLine{00248\ }
+\DoxyCodeLine{00249\ \ \ \textcolor{comment}{/*\ Pointer\ to\ a\ congruence\ class\ the\ item\ belongs\ to.\ \ */}}
+\DoxyCodeLine{00250\ \ \ \doxymbox{\hyperlink{classipa__icf_1_1congruence__class}{congruence\_class}}\ *\doxymbox{\hyperlink{classipa__icf_1_1sem__item_a15219de9a3990c5da85f477ea3d744f7}{cls}};}
+\DoxyCodeLine{00251\ }
+\DoxyCodeLine{00252\ \ \ \textcolor{comment}{/*\ Index\ of\ the\ item\ in\ a\ class\ belonging\ to.\ \ */}}
+\DoxyCodeLine{00253\ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{classipa__icf_1_1sem__item_a63b1167b45314b5ef12494ffa91b188b}{index\_in\_class}};}
+\DoxyCodeLine{00254\ }
+\DoxyCodeLine{00255\ \ \ \textcolor{comment}{/*\ A\ bitmap\ with\ indices\ of\ all\ classes\ referencing\ this\ item.\ \ */}}
+\DoxyCodeLine{00256\ \ \ \doxymbox{\hyperlink{coretypes_8h_ae7ea3a04cabf8964dc6e8e95a9cde1b8}{bitmap}}\ \doxymbox{\hyperlink{classipa__icf_1_1sem__item_a96174d85b0dfd021b90763f5c3159507}{usage\_index\_bitmap}};}
+\DoxyCodeLine{00257\ }
+\DoxyCodeLine{00258\ \ \ \textcolor{comment}{/*\ List\ of\ tree\ references\ (either\ FUNC\_DECL\ or\ VAR\_DECL).\ \ */}}
+\DoxyCodeLine{00259\ \ \ vec\ <tree>\ \doxymbox{\hyperlink{classipa__icf_1_1sem__item_aa2675e9d85549f2b8ee5c12281feb454}{tree\_refs}};}
+\DoxyCodeLine{00260\ }
+\DoxyCodeLine{00261\ \ \ \textcolor{comment}{/*\ A\ set\ with\ symbol\ table\ references.\ \ */}}
+\DoxyCodeLine{00262\ \ \ hash\_set\ <symtab\_node\ *>\ \doxymbox{\hyperlink{classipa__icf_1_1sem__item_a4e2effdbf4ff42218456ac92532b141d}{refs\_set}};}
+\DoxyCodeLine{00263\ }
+\DoxyCodeLine{00264\ \ \ \textcolor{comment}{/*\ Temporary\ hash\ used\ where\ hash\ values\ of\ references\ are\ added.\ \ */}}
+\DoxyCodeLine{00265\ \ \ \doxymbox{\hyperlink{hashtab_8h_a2d05e5049721cf3117dd6b34e20d4f65}{hashval\_t}}\ \doxymbox{\hyperlink{classipa__icf_1_1sem__item_aaef3fe7dafdbe58e70b625ca335f9b26}{global\_hash}};}
+\DoxyCodeLine{00266\ }
+\DoxyCodeLine{00267\ \ \ \textcolor{comment}{/*\ Number\ of\ references\ to\ this\ symbol.\ \ */}}
+\DoxyCodeLine{00268\ \ \ \textcolor{keywordtype}{unsigned}\ \doxymbox{\hyperlink{classipa__icf_1_1sem__item_a3d9bb5e1f28c591d6863432eca768051}{referenced\_by\_count}};}
+\DoxyCodeLine{00269\ \textcolor{keyword}{protected}:}
+\DoxyCodeLine{00270\ \ \ \textcolor{comment}{/*\ Cached,\ once\ calculated\ hash\ for\ the\ item.\ \ */}}
+\DoxyCodeLine{00271\ }
+\DoxyCodeLine{00272\ \ \ \textcolor{comment}{/*\ Compare\ properties\ of\ symbol\ that\ does\ not\ affect\ semantics\ of\ symbol}}
+\DoxyCodeLine{00273\ \textcolor{comment}{\ \ \ \ \ itself\ but\ affects\ semantics\ of\ its\ references.}}
+\DoxyCodeLine{00274\ \textcolor{comment}{\ \ \ \ \ If\ ADDRESS\ is\ true,\ do\ extra\ checking\ needed\ for\ IPA\_REF\_ADDR.\ \ */}}
+\DoxyCodeLine{00275\ \ \ \textcolor{keyword}{static}\ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{classipa__icf_1_1sem__item_a2a6c9b563544a9aed25b2e7d7a7b5c21}{compare\_referenced\_symbol\_properties}}\ (symtab\_node\ *used\_by,}
+\DoxyCodeLine{00276\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ symtab\_node\ *n1,}
+\DoxyCodeLine{00277\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ symtab\_node\ *n2,}
+\DoxyCodeLine{00278\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{bool}\ address);}
+\DoxyCodeLine{00279\ }
+\DoxyCodeLine{00280\ \ \ \textcolor{comment}{/*\ Hash\ properties\ compared\ by\ compare\_referenced\_symbol\_properties.\ \ */}}
+\DoxyCodeLine{00281\ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classipa__icf_1_1sem__item_a62f3d94f52d90ab73935d33c956362fc}{hash\_referenced\_symbol\_properties}}\ (symtab\_node\ *ref,}
+\DoxyCodeLine{00282\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{classinchash_1_1hash}{inchash::hash}}\ \&hstate,}
+\DoxyCodeLine{00283\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{bool}\ address);}
+\DoxyCodeLine{00284\ }
+\DoxyCodeLine{00285\ \ \ \textcolor{comment}{/*\ For\ a\ given\ symbol\ table\ nodes\ N1\ and\ N2,\ we\ check\ that\ FUNCTION\_DECLs}}
+\DoxyCodeLine{00286\ \textcolor{comment}{\ \ \ \ \ point\ to\ a\ same\ function.\ Comparison\ can\ be\ skipped\ if\ IGNORED\_NODES}}
+\DoxyCodeLine{00287\ \textcolor{comment}{\ \ \ \ \ contains\ these\ nodes.\ \ ADDRESS\ indicate\ if\ address\ is\ taken.\ \ */}}
+\DoxyCodeLine{00288\ \ \ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{classipa__icf_1_1sem__item_a7db3eaeec5a4ee078d82d78286c6885d}{compare\_symbol\_references}}\ (hash\_map\ <symtab\_node\ *,\ sem\_item\ *>}
+\DoxyCodeLine{00289\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&ignored\_nodes,}
+\DoxyCodeLine{00290\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ symtab\_node\ *n1,\ symtab\_node\ *n2,}
+\DoxyCodeLine{00291\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{bool}\ address);}
+\DoxyCodeLine{00292\ \textcolor{keyword}{protected}:}
+\DoxyCodeLine{00293\ \ \ \textcolor{comment}{/*\ Hash\ of\ item.\ \ */}}
+\DoxyCodeLine{00294\ \ \ \doxymbox{\hyperlink{hashtab_8h_a2d05e5049721cf3117dd6b34e20d4f65}{hashval\_t}}\ \doxymbox{\hyperlink{classipa__icf_1_1sem__item_a55b9bd9293371527b00bfdb69450db2d}{m\_hash}};}
+\DoxyCodeLine{00295\ }
+\DoxyCodeLine{00296\ \ \ \textcolor{comment}{/*\ Indicated\ whether\ a\ hash\ value\ has\ been\ set\ or\ not.\ \ */}}
+\DoxyCodeLine{00297\ \ \ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{classipa__icf_1_1sem__item_a26d7d99d9178fa0f0ca20c52cd7e3f6f}{m\_hash\_set}};}
+\DoxyCodeLine{00298\ }
+\DoxyCodeLine{00299\ \textcolor{keyword}{private}:}
+\DoxyCodeLine{00300\ \ \ \textcolor{comment}{/*\ Initialize\ internal\ data\ structures.\ Bitmap\ STACK\ is\ used\ for}}
+\DoxyCodeLine{00301\ \textcolor{comment}{\ \ \ \ \ bitmap\ memory\ allocation\ process.\ \ */}}
+\DoxyCodeLine{00302\ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classipa__icf_1_1sem__item_a7a3a6e0e7d686fc3a4b7c61170f38f57}{setup}}\ (\doxymbox{\hyperlink{structbitmap__obstack}{bitmap\_obstack}}\ *stack);}
+\DoxyCodeLine{00303\ }
+\DoxyCodeLine{00304\ \ \ \textcolor{comment}{/*\ Because\ types\ can\ be\ arbitrarily\ large,\ avoid\ quadratic\ bottleneck.\ \ */}}
+\DoxyCodeLine{00305\ \ \ \textcolor{keyword}{static}\ \doxymbox{\hyperlink{classhash__map}{hash\_map<const\_tree,\ hashval\_t>}}\ \doxymbox{\hyperlink{classipa__icf_1_1sem__item_a4639085b9e3da3132d50073e4bb74717}{m\_type\_hash\_cache}};}
+\DoxyCodeLine{00306\ \};\ \textcolor{comment}{//\ class\ sem\_item}}
+\DoxyCodeLine{00307\ }
+\DoxyCodeLine{00308\ \textcolor{keyword}{class\ }\doxymbox{\hyperlink{classipa__icf_1_1sem__function_aa0cb8eabf3c4b2d02e60059a4faeb0c2}{sem\_function}}:\ \textcolor{keyword}{public}\ \doxymbox{\hyperlink{classipa__icf_1_1sem__item_a578709a89df949d07db41a4b762fe5d3}{sem\_item}}}
+\DoxyCodeLine{00309\ \{}
+\DoxyCodeLine{00310\ \textcolor{keyword}{public}:}
+\DoxyCodeLine{00311\ \ \ \textcolor{comment}{/*\ Semantic\ function\ constructor\ that\ uses\ STACK\ as\ bitmap\ memory\ stack.\ \ */}}
+\DoxyCodeLine{00312\ \ \ \doxymbox{\hyperlink{classipa__icf_1_1sem__function_aa0cb8eabf3c4b2d02e60059a4faeb0c2}{sem\_function}}\ (\doxymbox{\hyperlink{structbitmap__obstack}{bitmap\_obstack}}\ *stack);}
+\DoxyCodeLine{00313\ }
+\DoxyCodeLine{00314\ \ \ \textcolor{comment}{/*\ \ Constructor\ based\ on\ callgraph\ node\ \_NODE.}}
+\DoxyCodeLine{00315\ \textcolor{comment}{\ \ \ \ \ \ Bitmap\ STACK\ is\ used\ for\ memory\ allocation.\ \ */}}
+\DoxyCodeLine{00316\ \ \ \doxymbox{\hyperlink{classipa__icf_1_1sem__function_a32a1de2da1809faf93977be69d7155f4}{sem\_function}}\ (cgraph\_node\ *\_node,\ \doxymbox{\hyperlink{structbitmap__obstack}{bitmap\_obstack}}\ *stack);}
+\DoxyCodeLine{00317\ }
+\DoxyCodeLine{00318\ \ \ \doxymbox{\hyperlink{classipa__icf_1_1sem__function_acaf967a3d910c1c10ad8544ffba1af39}{\string~sem\_function}}\ ();}
+\DoxyCodeLine{00319\ }
+\DoxyCodeLine{00320\ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classipa__icf_1_1sem__function_a7d3e72f619e3144369b30d2d597e4b52}{init}}\ (\doxymbox{\hyperlink{classipa__icf__gimple_1_1func__checker}{ipa\_icf\_gimple::func\_checker}}\ *)\ \textcolor{keyword}{final}\ \textcolor{keyword}{override};}
+\DoxyCodeLine{00321\ \ \ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{classipa__icf_1_1sem__function_a3dbc083aeb3c61e74ea8a4acdf043447}{equals\_wpa}}\ (\doxymbox{\hyperlink{classipa__icf_1_1sem__item_a578709a89df949d07db41a4b762fe5d3}{sem\_item}}\ *item,}
+\DoxyCodeLine{00322\ \ \ \ \ \ \ \ \ \ \ \ hash\_map\ <symtab\_node\ *,\ sem\_item\ *>\ \&ignored\_nodes)}
+\DoxyCodeLine{00323\ \ \ \ \ \textcolor{keyword}{final}\ \textcolor{keyword}{override};}
+\DoxyCodeLine{00324\ \ \ \doxymbox{\hyperlink{hashtab_8h_a2d05e5049721cf3117dd6b34e20d4f65}{hashval\_t}}\ \doxymbox{\hyperlink{classipa__icf_1_1sem__function_ab39f6f4fcbd6a879be332e8220c0ef32}{get\_hash}}\ (\textcolor{keywordtype}{void})\ \textcolor{keyword}{final}\ \textcolor{keyword}{override};}
+\DoxyCodeLine{00325\ \ \ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{classipa__icf_1_1sem__function_a0942322687a03abd682de4a3d19c4152}{equals}}\ (\doxymbox{\hyperlink{classipa__icf_1_1sem__item_a578709a89df949d07db41a4b762fe5d3}{sem\_item}}\ *item,}
+\DoxyCodeLine{00326\ \ \ \ \ \ \ \ \ \ \ \ hash\_map\ <symtab\_node\ *,\ sem\_item\ *>\ \&ignored\_nodes)}
+\DoxyCodeLine{00327\ \ \ \ \ \textcolor{keyword}{final}\ \textcolor{keyword}{override};}
+\DoxyCodeLine{00328\ \ \ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{classipa__icf_1_1sem__function_a3d87866be32fbd5f022cb8e1f298bb53}{merge}}\ (\doxymbox{\hyperlink{classipa__icf_1_1sem__item_a578709a89df949d07db41a4b762fe5d3}{sem\_item}}\ *alias\_item)\ \textcolor{keyword}{final}\ \textcolor{keyword}{override};}
+\DoxyCodeLine{00329\ }
+\DoxyCodeLine{00330\ \ \ \textcolor{comment}{/*\ Dump\ symbol\ to\ FILE.\ \ */}}
+\DoxyCodeLine{00331\ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classipa__icf_1_1sem__function_a161ed6421aa601cb155aa0e1de8116c0}{dump\_to\_file}}\ (FILE\ *file)\ \textcolor{keyword}{final}\ \textcolor{keyword}{override}}
+\DoxyCodeLine{00332\ \ \ \{}
+\DoxyCodeLine{00333\ \ \ \ \ \doxymbox{\hyperlink{system_8h_a0deee0ddaa8ce3bbd400ab5f75de06ff}{gcc\_assert}}\ (file);}
+\DoxyCodeLine{00334\ \ \ \ \ \doxymbox{\hyperlink{tree-cfg_8h_a2890104a178ff98c6da5438e8386543c}{dump\_function\_to\_file}}\ (\doxymbox{\hyperlink{classipa__icf_1_1sem__item_a84d0da22cd1c95dc87647b5639908df9}{decl}},\ file,\ \doxymbox{\hyperlink{dumpfile_8h_a46ea204a52b2b7db3da32879f10ed1bca70f7814a774aefe3f44056d248f58f6a}{TDF\_DETAILS}});}
+\DoxyCodeLine{00335\ \ \ \}}
+\DoxyCodeLine{00336\ }
+\DoxyCodeLine{00337\ \ \ \textcolor{comment}{/*\ Returns\ cgraph\_node.\ \ */}}
+\DoxyCodeLine{00338\ \ \ \textcolor{keyword}{inline}\ cgraph\_node\ *\doxymbox{\hyperlink{classipa__icf_1_1sem__function_ad37473e45f1919599a79e7426ec81434}{get\_node}}\ (\textcolor{keywordtype}{void})}
+\DoxyCodeLine{00339\ \ \ \{}
+\DoxyCodeLine{00340\ \ \ \ \ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{is-a_8h_aea38ccb7ddbe54f14c7c56e9cffe887b}{dyn\_cast\ <cgraph\_node\ *>}}\ (\doxymbox{\hyperlink{classipa__icf_1_1sem__item_a8341363a7e8540b738ada7812665ffc2}{node}});}
+\DoxyCodeLine{00341\ \ \ \}}
+\DoxyCodeLine{00342\ }
+\DoxyCodeLine{00343\ \ \ \textcolor{comment}{/*\ Improve\ accumulated\ hash\ for\ HSTATE\ based\ on\ a\ gimple\ statement\ STMT.\ \ */}}
+\DoxyCodeLine{00344\ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classipa__icf_1_1sem__function_adb3d75abe0c769f45f30eafcb1fb0f9f}{hash\_stmt}}\ (gimple\ *stmt,\ \doxymbox{\hyperlink{classinchash_1_1hash}{inchash::hash}}\ \&\doxymbox{\hyperlink{namespaceinchash}{inchash}});}
+\DoxyCodeLine{00345\ }
+\DoxyCodeLine{00346\ \ \ \textcolor{comment}{/*\ Return\ true\ if\ polymorphic\ comparison\ must\ be\ processed.\ \ */}}
+\DoxyCodeLine{00347\ \ \ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{classipa__icf_1_1sem__function_a7dd14fba9fd1b6141cf5830c7d3b59f5}{compare\_polymorphic\_p}}\ (\textcolor{keywordtype}{void});}
+\DoxyCodeLine{00348\ }
+\DoxyCodeLine{00349\ \ \ \textcolor{comment}{/*\ For\ a\ given\ call\ graph\ NODE,\ the\ function\ constructs\ new}}
+\DoxyCodeLine{00350\ \textcolor{comment}{\ \ \ \ \ semantic\ function\ item.\ \ */}}
+\DoxyCodeLine{00351\ \ \ \textcolor{keyword}{static}\ \doxymbox{\hyperlink{classipa__icf_1_1sem__function_aa0cb8eabf3c4b2d02e60059a4faeb0c2}{sem\_function}}\ *\doxymbox{\hyperlink{classipa__icf_1_1sem__function_aee8f06d4d4d1fadad82a1505530f1dce}{parse}}\ (cgraph\_node\ *\doxymbox{\hyperlink{classipa__icf_1_1sem__item_a8341363a7e8540b738ada7812665ffc2}{node}},\ \doxymbox{\hyperlink{structbitmap__obstack}{bitmap\_obstack}}\ *stack,}
+\DoxyCodeLine{00352\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{classipa__icf__gimple_1_1func__checker}{ipa\_icf\_gimple::func\_checker}}\ *checker);}
+\DoxyCodeLine{00353\ }
+\DoxyCodeLine{00354\ \ \ \textcolor{comment}{/*\ Perform\ additional\ checks\ needed\ to\ match\ types\ of\ used\ function}}
+\DoxyCodeLine{00355\ \textcolor{comment}{\ \ \ \ \ parameters.\ \ */}}
+\DoxyCodeLine{00356\ \ \ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{classipa__icf_1_1sem__function_a7ea46d35b46e4b74666699e128e116f4}{compatible\_parm\_types\_p}}\ (\doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}},\ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}});}
+\DoxyCodeLine{00357\ }
+\DoxyCodeLine{00358\ \ \ \textcolor{comment}{/*\ Exception\ handling\ region\ tree.\ \ */}}
+\DoxyCodeLine{00359\ \ \ \doxymbox{\hyperlink{except_8h_acd17f2b80a4697d7722f7d16d9032e47}{eh\_region}}\ \doxymbox{\hyperlink{classipa__icf_1_1sem__function_a2887ff498ffba9f83002ad604f7ea047}{region\_tree}};}
+\DoxyCodeLine{00360\ }
+\DoxyCodeLine{00361\ \ \ \textcolor{comment}{/*\ Number\ of\ function\ arguments.\ \ */}}
+\DoxyCodeLine{00362\ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{classipa__icf_1_1sem__function_aea18f7f8fffbda22f7f197e8b2cce415}{arg\_count}};}
+\DoxyCodeLine{00363\ }
+\DoxyCodeLine{00364\ \ \ \textcolor{comment}{/*\ Total\ amount\ of\ edges\ in\ the\ function.\ \ */}}
+\DoxyCodeLine{00365\ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{classipa__icf_1_1sem__function_a7c0f1a45320c5bbd0e89b0b448c7bebc}{edge\_count}};}
+\DoxyCodeLine{00366\ }
+\DoxyCodeLine{00367\ \ \ \textcolor{comment}{/*\ Vector\ of\ sizes\ of\ all\ basic\ blocks.\ \ */}}
+\DoxyCodeLine{00368\ \ \ vec\ <unsigned\ int>\ \doxymbox{\hyperlink{classipa__icf_1_1sem__function_a4fcbdbd0e6e4019c4962be40a1edd041}{bb\_sizes}};}
+\DoxyCodeLine{00369\ }
+\DoxyCodeLine{00370\ \ \ \textcolor{comment}{/*\ Control\ flow\ graph\ checksum.\ \ */}}
+\DoxyCodeLine{00371\ \ \ \doxymbox{\hyperlink{hashtab_8h_a2d05e5049721cf3117dd6b34e20d4f65}{hashval\_t}}\ \doxymbox{\hyperlink{classipa__icf_1_1sem__function_a69840a2ae1dd0e43c58da717bd77b499}{cfg\_checksum}};}
+\DoxyCodeLine{00372\ }
+\DoxyCodeLine{00373\ \ \ \textcolor{comment}{/*\ GIMPLE\ codes\ hash\ value.\ \ */}}
+\DoxyCodeLine{00374\ \ \ \doxymbox{\hyperlink{hashtab_8h_a2d05e5049721cf3117dd6b34e20d4f65}{hashval\_t}}\ \doxymbox{\hyperlink{classipa__icf_1_1sem__function_a8589b5e7ed7be714e4ff352905837253}{gcode\_hash}};}
+\DoxyCodeLine{00375\ }
+\DoxyCodeLine{00376\ \ \ \textcolor{comment}{/*\ Vector\ of\ subpart\ of\ memory\ access\ types.\ \ */}}
+\DoxyCodeLine{00377\ \ \ \doxymbox{\hyperlink{classauto__vec}{auto\_vec<tree>}}\ \doxymbox{\hyperlink{classipa__icf_1_1sem__function_a64856f32d9247de0bd0b4567047e4aa8}{memory\_access\_types}};}
+\DoxyCodeLine{00378\ }
+\DoxyCodeLine{00379\ \ \ \textcolor{comment}{/*\ Total\ number\ of\ SSA\ names\ used\ in\ the\ function.\ \ */}}
+\DoxyCodeLine{00380\ \ \ \textcolor{keywordtype}{unsigned}\ \doxymbox{\hyperlink{classipa__icf_1_1sem__function_a95f54b37a5f0c0bfa87772ca4d75c337}{ssa\_names\_size}};}
+\DoxyCodeLine{00381\ }
+\DoxyCodeLine{00382\ \ \ \textcolor{comment}{/*\ Array\ of\ structures\ for\ all\ basic\ blocks.\ \ */}}
+\DoxyCodeLine{00383\ \ \ vec\ <ipa\_icf\_gimple::sem\_bb\ *>\ \doxymbox{\hyperlink{classipa__icf_1_1sem__function_a7d230f454a32996b2430115e4baeb02a}{bb\_sorted}};}
+\DoxyCodeLine{00384\ }
+\DoxyCodeLine{00385\ \ \ \textcolor{comment}{/*\ Hash\ of\ canonical\ types\ used\ for\ memory\ references\ in\ the}}
+\DoxyCodeLine{00386\ \textcolor{comment}{\ \ \ \ \ function.\ \ */}}
+\DoxyCodeLine{00387\ \ \ \doxymbox{\hyperlink{hashtab_8h_a2d05e5049721cf3117dd6b34e20d4f65}{hashval\_t}}\ \doxymbox{\hyperlink{classipa__icf_1_1sem__function_aaf38416c7842eaf35dc76561d6504a32}{m\_alias\_sets\_hash}};}
+\DoxyCodeLine{00388\ }
+\DoxyCodeLine{00389\ \ \ \textcolor{comment}{/*\ Return\ true\ if\ parameter\ I\ may\ be\ used.\ \ */}}
+\DoxyCodeLine{00390\ \ \ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{classipa__icf_1_1sem__function_a674f4d3bea976fc94414095ddb43dfc7}{param\_used\_p}}\ (\textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{poly-int_8h_a7e98b8a17c0aad30ba64d47b74e2a6c1}{i}});}
+\DoxyCodeLine{00391\ }
+\DoxyCodeLine{00392\ \textcolor{keyword}{private}:}
+\DoxyCodeLine{00393\ \ \ \textcolor{comment}{/*\ Calculates\ hash\ value\ based\ on\ a\ BASIC\_BLOCK.\ \ */}}
+\DoxyCodeLine{00394\ \ \ \doxymbox{\hyperlink{hashtab_8h_a2d05e5049721cf3117dd6b34e20d4f65}{hashval\_t}}\ \doxymbox{\hyperlink{classipa__icf_1_1sem__function_af8b10e77685abb7a23ab3d0300702cff}{get\_bb\_hash}}\ (\textcolor{keyword}{const}\ \doxymbox{\hyperlink{classipa__icf__gimple_1_1sem__bb}{ipa\_icf\_gimple::sem\_bb}}\ *\doxymbox{\hyperlink{coretypes_8h_a0469df20b471a4cd7c81fbdce5027487}{basic\_block}});}
+\DoxyCodeLine{00395\ }
+\DoxyCodeLine{00396\ \ \ \textcolor{comment}{/*\ For\ given\ basic\ blocks\ BB1\ and\ BB2\ (from\ functions\ FUNC1\ and\ FUNC),}}
+\DoxyCodeLine{00397\ \textcolor{comment}{\ \ \ \ \ true\ value\ is\ returned\ if\ phi\ nodes\ are\ semantically}}
+\DoxyCodeLine{00398\ \textcolor{comment}{\ \ \ \ \ equivalent\ in\ these\ blocks\ .\ \ */}}
+\DoxyCodeLine{00399\ \ \ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{classipa__icf_1_1sem__function_a37500dd40fbddaadb98a2c80e4e9c8da}{compare\_phi\_node}}\ (\doxymbox{\hyperlink{coretypes_8h_a0469df20b471a4cd7c81fbdce5027487}{basic\_block}}\ bb1,\ \doxymbox{\hyperlink{coretypes_8h_a0469df20b471a4cd7c81fbdce5027487}{basic\_block}}\ bb2);}
+\DoxyCodeLine{00400\ }
+\DoxyCodeLine{00401\ \ \ \textcolor{comment}{/*\ Basic\ blocks\ dictionary\ BB\_DICT\ returns\ true\ if\ SOURCE\ index\ BB}}
+\DoxyCodeLine{00402\ \textcolor{comment}{\ \ \ \ \ corresponds\ to\ TARGET.\ \ */}}
+\DoxyCodeLine{00403\ \ \ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{classipa__icf_1_1sem__function_ae7a7ab504c1c4f8d699276021406f0e8}{bb\_dict\_test}}\ (\doxymbox{\hyperlink{structvec}{vec<int>}}\ *bb\_dict,\ \textcolor{keywordtype}{int}\ source,\ \textcolor{keywordtype}{int}\ target);}
+\DoxyCodeLine{00404\ }
+\DoxyCodeLine{00405\ \ \ \textcolor{comment}{/*\ If\ cgraph\ edges\ E1\ and\ E2\ are\ indirect\ calls,\ verify\ that}}
+\DoxyCodeLine{00406\ \textcolor{comment}{\ \ \ \ \ ICF\ flags\ are\ the\ same.\ \ */}}
+\DoxyCodeLine{00407\ \ \ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{classipa__icf_1_1sem__function_ad01f597d040cb19be35c0c7dd1acac82}{compare\_edge\_flags}}\ (cgraph\_edge\ *e1,\ cgraph\_edge\ *e2);}
+\DoxyCodeLine{00408\ }
+\DoxyCodeLine{00409\ \ \ \textcolor{comment}{/*\ Processes\ function\ equality\ comparison.\ \ */}}
+\DoxyCodeLine{00410\ \ \ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{classipa__icf_1_1sem__function_af0afc72db5a3b6288c0f9a81890a3d47}{equals\_private}}\ (\doxymbox{\hyperlink{classipa__icf_1_1sem__item_a578709a89df949d07db41a4b762fe5d3}{sem\_item}}\ *item);}
+\DoxyCodeLine{00411\ }
+\DoxyCodeLine{00412\ \ \ \textcolor{comment}{/*\ Function\ checker\ stores\ binding\ between\ functions.\ \ \ */}}
+\DoxyCodeLine{00413\ \ \ \doxymbox{\hyperlink{classipa__icf__gimple_1_1func__checker}{ipa\_icf\_gimple::func\_checker}}\ *\doxymbox{\hyperlink{classipa__icf_1_1sem__function_a0d9825fd2c7f763b5c0665afdaf50d4d}{m\_checker}};}
+\DoxyCodeLine{00414\ }
+\DoxyCodeLine{00415\ \ \ \textcolor{comment}{/*\ COMPARED\_FUNC\ is\ a\ function\ that\ we\ compare\ to.\ \ */}}
+\DoxyCodeLine{00416\ \ \ \doxymbox{\hyperlink{classipa__icf_1_1sem__function_aa0cb8eabf3c4b2d02e60059a4faeb0c2}{sem\_function}}\ *\doxymbox{\hyperlink{classipa__icf_1_1sem__function_a2fbdd540dc51ff01d2dcaed1786fc885}{m\_compared\_func}};}
+\DoxyCodeLine{00417\ \};\ \textcolor{comment}{//\ class\ sem\_function}}
+\DoxyCodeLine{00418\ }
+\DoxyCodeLine{00419\ \textcolor{keyword}{class\ }\doxymbox{\hyperlink{classipa__icf_1_1sem__variable_aaa334cfbc5443ca6e84159745040d76d}{sem\_variable}}:\ \textcolor{keyword}{public}\ \doxymbox{\hyperlink{classipa__icf_1_1sem__item_a578709a89df949d07db41a4b762fe5d3}{sem\_item}}}
+\DoxyCodeLine{00420\ \{}
+\DoxyCodeLine{00421\ \textcolor{keyword}{public}:}
+\DoxyCodeLine{00422\ \ \ \textcolor{comment}{/*\ Semantic\ variable\ constructor\ that\ uses\ STACK\ as\ bitmap\ memory\ stack.\ \ */}}
+\DoxyCodeLine{00423\ \ \ \doxymbox{\hyperlink{classipa__icf_1_1sem__variable_aaa334cfbc5443ca6e84159745040d76d}{sem\_variable}}\ (\doxymbox{\hyperlink{structbitmap__obstack}{bitmap\_obstack}}\ *stack);}
+\DoxyCodeLine{00424\ }
+\DoxyCodeLine{00425\ \ \ \textcolor{comment}{/*\ \ Constructor\ based\ on\ callgraph\ node\ \_NODE.}}
+\DoxyCodeLine{00426\ \textcolor{comment}{\ \ \ \ \ \ Bitmap\ STACK\ is\ used\ for\ memory\ allocation.\ \ */}}
+\DoxyCodeLine{00427\ }
+\DoxyCodeLine{00428\ \ \ \doxymbox{\hyperlink{classipa__icf_1_1sem__variable_a1e23370b8254f9447694a4e37c03d9d0}{sem\_variable}}\ (varpool\_node\ *\_node,\ \doxymbox{\hyperlink{structbitmap__obstack}{bitmap\_obstack}}\ *stack);}
+\DoxyCodeLine{00429\ }
+\DoxyCodeLine{00430\ \ \ \textcolor{comment}{/*\ Semantic\ variable\ initialization\ function.\ \ */}}
+\DoxyCodeLine{00431\ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classipa__icf_1_1sem__variable_a2904b3ef7ae40bcb5e7f54760960176b}{init}}\ (\doxymbox{\hyperlink{classipa__icf__gimple_1_1func__checker}{ipa\_icf\_gimple::func\_checker}}\ *)\ \textcolor{keyword}{final}\ \textcolor{keyword}{override};}
+\DoxyCodeLine{00432\ }
+\DoxyCodeLine{00433\ \ \ \doxymbox{\hyperlink{hashtab_8h_a2d05e5049721cf3117dd6b34e20d4f65}{hashval\_t}}\ \doxymbox{\hyperlink{classipa__icf_1_1sem__variable_afd56f5cc972d76dec9e3d541eea78368}{get\_hash}}\ (\textcolor{keywordtype}{void})\ \textcolor{keyword}{final}\ \textcolor{keyword}{override};}
+\DoxyCodeLine{00434\ \ \ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{classipa__icf_1_1sem__variable_a520ae9c56afc4824b8e0c608ed1f74a8}{merge}}\ (\doxymbox{\hyperlink{classipa__icf_1_1sem__item_a578709a89df949d07db41a4b762fe5d3}{sem\_item}}\ *alias\_item)\ \textcolor{keyword}{final}\ \textcolor{keyword}{override};}
+\DoxyCodeLine{00435\ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classipa__icf_1_1sem__variable_a6dee1c13a171de0c4858d30043a0ec4e}{dump\_to\_file}}\ (FILE\ *file)\ \textcolor{keyword}{final}\ \textcolor{keyword}{override};}
+\DoxyCodeLine{00436\ \ \ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{classipa__icf_1_1sem__variable_a410a2770d127d6d20aaae660816c360d}{equals}}\ (\doxymbox{\hyperlink{classipa__icf_1_1sem__item_a578709a89df949d07db41a4b762fe5d3}{sem\_item}}\ *item,}
+\DoxyCodeLine{00437\ \ \ \ \ \ \ \ \ \ \ \ hash\_map\ <symtab\_node\ *,\ sem\_item\ *>\ \&ignored\_nodes)}
+\DoxyCodeLine{00438\ \ \ \ \ \textcolor{keyword}{final}\ \textcolor{keyword}{override};}
+\DoxyCodeLine{00439\ }
+\DoxyCodeLine{00440\ \ \ \textcolor{comment}{/*\ Fast\ equality\ variable\ based\ on\ knowledge\ known\ in\ WPA.\ \ */}}
+\DoxyCodeLine{00441\ \ \ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{classipa__icf_1_1sem__variable_afd8d5536bb52fff26fc6dec886dd3966}{equals\_wpa}}\ (\doxymbox{\hyperlink{classipa__icf_1_1sem__item_a578709a89df949d07db41a4b762fe5d3}{sem\_item}}\ *item,}
+\DoxyCodeLine{00442\ \ \ \ \ \ \ \ \ \ \ \ hash\_map\ <symtab\_node\ *,\ sem\_item\ *>\ \&ignored\_nodes)}
+\DoxyCodeLine{00443\ \ \ \ \ \ \textcolor{keyword}{final}\ \textcolor{keyword}{override};}
+\DoxyCodeLine{00444\ }
+\DoxyCodeLine{00445\ \ \ \textcolor{comment}{/*\ Returns\ varpool\_node.\ \ */}}
+\DoxyCodeLine{00446\ \ \ \textcolor{keyword}{inline}\ varpool\_node\ *\doxymbox{\hyperlink{classipa__icf_1_1sem__variable_a53a6bac81de260b28887d05152b32160}{get\_node}}\ (\textcolor{keywordtype}{void})}
+\DoxyCodeLine{00447\ \ \ \{}
+\DoxyCodeLine{00448\ \ \ \ \ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{is-a_8h_aea38ccb7ddbe54f14c7c56e9cffe887b}{dyn\_cast\ <varpool\_node\ *>}}\ (\doxymbox{\hyperlink{classipa__icf_1_1sem__item_a8341363a7e8540b738ada7812665ffc2}{node}});}
+\DoxyCodeLine{00449\ \ \ \}}
+\DoxyCodeLine{00450\ }
+\DoxyCodeLine{00451\ \ \ \textcolor{comment}{/*\ Parser\ function\ that\ visits\ a\ varpool\ NODE.\ \ */}}
+\DoxyCodeLine{00452\ \ \ \textcolor{keyword}{static}\ \doxymbox{\hyperlink{classipa__icf_1_1sem__variable_aaa334cfbc5443ca6e84159745040d76d}{sem\_variable}}\ *\doxymbox{\hyperlink{classipa__icf_1_1sem__variable_a9ab9f157b694f890cb521b58c514bd56}{parse}}\ (varpool\_node\ *\doxymbox{\hyperlink{classipa__icf_1_1sem__item_a8341363a7e8540b738ada7812665ffc2}{node}},\ \doxymbox{\hyperlink{structbitmap__obstack}{bitmap\_obstack}}\ *stack,}
+\DoxyCodeLine{00453\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{classipa__icf__gimple_1_1func__checker}{ipa\_icf\_gimple::func\_checker}}\ *checker);}
+\DoxyCodeLine{00454\ }
+\DoxyCodeLine{00455\ \textcolor{keyword}{private}:}
+\DoxyCodeLine{00456\ \ \ \textcolor{comment}{/*\ Compares\ trees\ T1\ and\ T2\ for\ semantic\ equality.\ \ */}}
+\DoxyCodeLine{00457\ \ \ \textcolor{keyword}{static}\ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{classipa__icf_1_1sem__variable_ad9f685d0894473333c8d358d56069fc8}{equals}}\ (\doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ t1,\ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ t2);}
+\DoxyCodeLine{00458\ \};\ \textcolor{comment}{//\ class\ sem\_variable}}
+\DoxyCodeLine{00459\ }
+\DoxyCodeLine{00460\ \textcolor{keyword}{class\ }\doxymbox{\hyperlink{classipa__icf_1_1sem__item__optimizer}{sem\_item\_optimizer}};}
+\DoxyCodeLine{00461\ }
+\DoxyCodeLine{00462\ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{structipa__icf_1_1congruence__class__group}{congruence\_class\_group}}}
+\DoxyCodeLine{00463\ \{}
+\DoxyCodeLine{00464\ \ \ \doxymbox{\hyperlink{hashtab_8h_a2d05e5049721cf3117dd6b34e20d4f65}{hashval\_t}}\ \doxymbox{\hyperlink{structipa__icf_1_1congruence__class__group_a61fdd051dcae9846939ec2ba7dfd1e08}{hash}};}
+\DoxyCodeLine{00465\ \ \ \doxymbox{\hyperlink{namespaceipa__icf_aa9cc95f60967af0bbffd51a09be2f964}{sem\_item\_type}}\ \doxymbox{\hyperlink{structipa__icf_1_1congruence__class__group_a47b7393a7663be23807e291f896c37b8}{type}};}
+\DoxyCodeLine{00466\ \ \ \doxymbox{\hyperlink{vec_8h_ac6299229087b122e17686611255dfa27}{vec\ <congruence\_class\ *>}}\ \doxymbox{\hyperlink{structipa__icf_1_1congruence__class__group_a910df7f308df6b6f5f6c1981639be341}{classes}};}
+\DoxyCodeLine{00467\ \};}
+\DoxyCodeLine{00468\ }
+\DoxyCodeLine{00469\ \textcolor{comment}{/*\ Congruence\ class\ set\ structure.\ \ */}}
+\DoxyCodeLine{00470\ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{structipa__icf_1_1congruence__class__hash}{congruence\_class\_hash}}\ :\ \doxymbox{\hyperlink{structnofree__ptr__hash}{nofree\_ptr\_hash}}\ <congruence\_class\_group>}
+\DoxyCodeLine{00471\ \{}
+\DoxyCodeLine{00472\ \ \ \textcolor{keyword}{static}\ \textcolor{keyword}{inline}\ \doxymbox{\hyperlink{hashtab_8h_a2d05e5049721cf3117dd6b34e20d4f65}{hashval\_t}}\ \doxymbox{\hyperlink{structipa__icf_1_1congruence__class__hash_a9c9415eb02809887cf5f755d4fbd94e6}{hash}}\ (\textcolor{keyword}{const}\ \doxymbox{\hyperlink{structipa__icf_1_1congruence__class__group}{congruence\_class\_group}}\ *item)}
+\DoxyCodeLine{00473\ \ \ \{}
+\DoxyCodeLine{00474\ \ \ \ \ \textcolor{keywordflow}{return}\ item-\/>\doxymbox{\hyperlink{structipa__icf_1_1congruence__class__group_a61fdd051dcae9846939ec2ba7dfd1e08}{hash}};}
+\DoxyCodeLine{00475\ \ \ \}}
+\DoxyCodeLine{00476\ }
+\DoxyCodeLine{00477\ \ \ \textcolor{keyword}{static}\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{structipa__icf_1_1congruence__class__hash_a8f68e8361d31a837d364e60edc07ad01}{equal}}\ (\textcolor{keyword}{const}\ \doxymbox{\hyperlink{structipa__icf_1_1congruence__class__group}{congruence\_class\_group}}\ *item1,}
+\DoxyCodeLine{00478\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{structipa__icf_1_1congruence__class__group}{congruence\_class\_group}}\ *item2)}
+\DoxyCodeLine{00479\ \ \ \{}
+\DoxyCodeLine{00480\ \ \ \ \ \textcolor{keywordflow}{return}\ item1-\/>\doxymbox{\hyperlink{structipa__icf_1_1congruence__class__group_a61fdd051dcae9846939ec2ba7dfd1e08}{hash}}\ ==\ item2-\/>\doxymbox{\hyperlink{structipa__icf_1_1congruence__class__group_a61fdd051dcae9846939ec2ba7dfd1e08}{hash}}\ \&\&\ item1-\/>\doxymbox{\hyperlink{structipa__icf_1_1congruence__class__group_a47b7393a7663be23807e291f896c37b8}{type}}\ ==\ item2-\/>\doxymbox{\hyperlink{structipa__icf_1_1congruence__class__group_a47b7393a7663be23807e291f896c37b8}{type}};}
+\DoxyCodeLine{00481\ \ \ \}}
+\DoxyCodeLine{00482\ \};}
+\DoxyCodeLine{00483\ }
+\DoxyCodeLine{00484\ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{structipa__icf_1_1traverse__split__pair}{traverse\_split\_pair}}}
+\DoxyCodeLine{00485\ \{}
+\DoxyCodeLine{00486\ \ \ \doxymbox{\hyperlink{classipa__icf_1_1sem__item__optimizer}{sem\_item\_optimizer}}\ *\doxymbox{\hyperlink{structipa__icf_1_1traverse__split__pair_a8fa20410cd8f2557c903c6e2dcf7f882}{optimizer}};}
+\DoxyCodeLine{00487\ \ \ \textcolor{keyword}{class\ }\doxymbox{\hyperlink{classipa__icf_1_1congruence__class}{congruence\_class}}\ *\doxymbox{\hyperlink{structipa__icf_1_1traverse__split__pair_aed05c75dea4e17502e671bf249b9d0f2}{cls}};}
+\DoxyCodeLine{00488\ \};}
+\DoxyCodeLine{00489\ }
+\DoxyCodeLine{00490\ \textcolor{comment}{/*\ Semantic\ item\ optimizer\ includes\ all\ top-\/level\ logic}}
+\DoxyCodeLine{00491\ \textcolor{comment}{\ \ \ related\ to\ semantic\ equality\ comparison.\ \ */}}
+\DoxyCodeLine{00492\ \textcolor{keyword}{class\ }\doxymbox{\hyperlink{classipa__icf_1_1sem__item__optimizer_af0f97d6b82ecb0b8f8f8c7668a568490}{sem\_item\_optimizer}}}
+\DoxyCodeLine{00493\ \{}
+\DoxyCodeLine{00494\ \textcolor{keyword}{public}:}
+\DoxyCodeLine{00495\ \ \ \doxymbox{\hyperlink{classipa__icf_1_1sem__item__optimizer_af0f97d6b82ecb0b8f8f8c7668a568490}{sem\_item\_optimizer}}\ ();}
+\DoxyCodeLine{00496\ \ \ \doxymbox{\hyperlink{classipa__icf_1_1sem__item__optimizer_ad09665ba5e23831602b306f87f03914c}{\string~sem\_item\_optimizer}}\ ();}
+\DoxyCodeLine{00497\ }
+\DoxyCodeLine{00498\ \ \ \textcolor{comment}{/*\ Function\ responsible\ for\ visiting\ all\ potential\ functions\ and}}
+\DoxyCodeLine{00499\ \textcolor{comment}{\ \ \ \ \ read-\/only\ variables\ that\ can\ be\ merged.\ \ */}}
+\DoxyCodeLine{00500\ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classipa__icf_1_1sem__item__optimizer_aac6b2df6fcce9b8fec11f6469a05b947}{parse\_funcs\_and\_vars}}\ (\textcolor{keywordtype}{void});}
+\DoxyCodeLine{00501\ }
+\DoxyCodeLine{00502\ \ \ \textcolor{comment}{/*\ Optimizer\ entry\ point\ which\ returns\ true\ in\ case\ it\ processes}}
+\DoxyCodeLine{00503\ \textcolor{comment}{\ \ \ \ \ a\ merge\ operation.\ True\ is\ returned\ if\ there's\ a\ merge\ operation}}
+\DoxyCodeLine{00504\ \textcolor{comment}{\ \ \ \ \ processed.\ \ */}}
+\DoxyCodeLine{00505\ \ \ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{classipa__icf_1_1sem__item__optimizer_a354a4dbef6081022384b17c39ba6621f}{execute}}\ (\textcolor{keywordtype}{void});}
+\DoxyCodeLine{00506\ }
+\DoxyCodeLine{00507\ \ \ \textcolor{comment}{/*\ Dump\ function.\ */}}
+\DoxyCodeLine{00508\ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classipa__icf_1_1sem__item__optimizer_a9cfa5bdcfb43d34f3d9f5d176c1bd4fc}{dump}}\ (\textcolor{keywordtype}{void});}
+\DoxyCodeLine{00509\ }
+\DoxyCodeLine{00510\ \ \ \textcolor{comment}{/*\ Verify\ congruence\ classes\ if\ checking\ is\ enabled.\ \ */}}
+\DoxyCodeLine{00511\ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classipa__icf_1_1sem__item__optimizer_a2d31619e1c411b6f16538ffc742fbde8}{checking\_verify\_classes}}\ (\textcolor{keywordtype}{void});}
+\DoxyCodeLine{00512\ }
+\DoxyCodeLine{00513\ \ \ \textcolor{comment}{/*\ Verify\ congruence\ classes.\ \ */}}
+\DoxyCodeLine{00514\ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classipa__icf_1_1sem__item__optimizer_a9a1a7ec4222a95fa772257be9ae9a82e}{verify\_classes}}\ (\textcolor{keywordtype}{void});}
+\DoxyCodeLine{00515\ }
+\DoxyCodeLine{00516\ \ \ \textcolor{comment}{/*\ Write\ IPA\ ICF\ summary\ for\ symbols.\ \ */}}
+\DoxyCodeLine{00517\ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classipa__icf_1_1sem__item__optimizer_a8a11ebf0ae22d9fe9a14cc4aadd0fe56}{write\_summary}}\ (\textcolor{keywordtype}{void});}
+\DoxyCodeLine{00518\ }
+\DoxyCodeLine{00519\ \ \ \textcolor{comment}{/*\ Read\ IPA\ ICF\ summary\ for\ symbols.\ \ */}}
+\DoxyCodeLine{00520\ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classipa__icf_1_1sem__item__optimizer_a96f8fb95f03e5d64d6d771347fa0d2f6}{read\_summary}}\ (\textcolor{keywordtype}{void});}
+\DoxyCodeLine{00521\ }
+\DoxyCodeLine{00522\ \ \ \textcolor{comment}{/*\ Callgraph\ removal\ hook\ called\ for\ a\ NODE\ with\ a\ custom\ DATA.\ \ */}}
+\DoxyCodeLine{00523\ \ \ \textcolor{keyword}{static}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classipa__icf_1_1sem__item__optimizer_ad6232b9ca3f5f6ce35e6214499e080a1}{cgraph\_removal\_hook}}\ (cgraph\_node\ *node,\ \textcolor{keywordtype}{void}\ *data);}
+\DoxyCodeLine{00524\ }
+\DoxyCodeLine{00525\ \ \ \textcolor{comment}{/*\ Varpool\ removal\ hook\ called\ for\ a\ NODE\ with\ a\ custom\ DATA.\ \ */}}
+\DoxyCodeLine{00526\ \ \ \textcolor{keyword}{static}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classipa__icf_1_1sem__item__optimizer_afafef3ef2f35af68f75848833d5fbdcb}{varpool\_removal\_hook}}\ (varpool\_node\ *node,\ \textcolor{keywordtype}{void}\ *data);}
+\DoxyCodeLine{00527\ }
+\DoxyCodeLine{00528\ \ \ \textcolor{comment}{/*\ Worklist\ of\ congruence\ classes\ that\ can\ potentially}}
+\DoxyCodeLine{00529\ \textcolor{comment}{\ \ \ \ \ refine\ classes\ of\ congruence.\ \ */}}
+\DoxyCodeLine{00530\ \ \ \doxymbox{\hyperlink{classfibonacci__heap}{fibonacci\_heap<unsigned,\ congruence\_class>}}\ \doxymbox{\hyperlink{classipa__icf_1_1sem__item__optimizer_a83a77cc02b0c268ff7976b0d1bae466f}{worklist}};}
+\DoxyCodeLine{00531\ }
+\DoxyCodeLine{00532\ \ \ \textcolor{comment}{/*\ Remove\ semantic\ ITEM\ and\ release\ memory.\ \ */}}
+\DoxyCodeLine{00533\ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classipa__icf_1_1sem__item__optimizer_a41816d616fc47da07739aae31f149d57}{remove\_item}}\ (\doxymbox{\hyperlink{classipa__icf_1_1sem__item}{sem\_item}}\ *item);}
+\DoxyCodeLine{00534\ }
+\DoxyCodeLine{00535\ \ \ \textcolor{comment}{/*\ Remove\ symtab\ NODE\ triggered\ by\ symtab\ removal\ hooks.\ \ */}}
+\DoxyCodeLine{00536\ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classipa__icf_1_1sem__item__optimizer_ab9e6960c90b1dc1307c8d3ae9345b2a1}{remove\_symtab\_node}}\ (symtab\_node\ *node);}
+\DoxyCodeLine{00537\ }
+\DoxyCodeLine{00538\ \ \ \textcolor{comment}{/*\ Register\ callgraph\ and\ varpool\ hooks.\ \ */}}
+\DoxyCodeLine{00539\ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classipa__icf_1_1sem__item__optimizer_ad3b5bc1c358b26a2080e6cb7cbcda3cf}{register\_hooks}}\ (\textcolor{keywordtype}{void});}
+\DoxyCodeLine{00540\ }
+\DoxyCodeLine{00541\ \ \ \textcolor{comment}{/*\ Unregister\ callgraph\ and\ varpool\ hooks.\ \ */}}
+\DoxyCodeLine{00542\ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classipa__icf_1_1sem__item__optimizer_afc8127dfe6ffe5029bf91f60342f12b1}{unregister\_hooks}}\ (\textcolor{keywordtype}{void});}
+\DoxyCodeLine{00543\ }
+\DoxyCodeLine{00544\ \ \ \textcolor{comment}{/*\ Adds\ a\ CLS\ to\ hashtable\ associated\ by\ hash\ value.\ \ */}}
+\DoxyCodeLine{00545\ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classipa__icf_1_1sem__item__optimizer_aaa65cb82f7a0f51680813c0a7c8642a3}{add\_class}}\ (\doxymbox{\hyperlink{classipa__icf_1_1congruence__class}{congruence\_class}}\ *cls);}
+\DoxyCodeLine{00546\ }
+\DoxyCodeLine{00547\ \ \ \textcolor{comment}{/*\ Gets\ a\ congruence\ class\ group\ based\ on\ given\ HASH\ value\ and\ TYPE.\ \ */}}
+\DoxyCodeLine{00548\ \ \ \doxymbox{\hyperlink{structipa__icf_1_1congruence__class__group}{congruence\_class\_group}}\ *\doxymbox{\hyperlink{classipa__icf_1_1sem__item__optimizer_aaacaa2398abd49b401a4c7035a509b30}{get\_group\_by\_hash}}\ (\doxymbox{\hyperlink{hashtab_8h_a2d05e5049721cf3117dd6b34e20d4f65}{hashval\_t}}\ hash,}
+\DoxyCodeLine{00549\ \ \ \ \ \ \ \doxymbox{\hyperlink{namespaceipa__icf_aa9cc95f60967af0bbffd51a09be2f964}{sem\_item\_type}}\ \doxymbox{\hyperlink{structtype}{type}});}
+\DoxyCodeLine{00550\ \textcolor{keyword}{private}:}
+\DoxyCodeLine{00551\ }
+\DoxyCodeLine{00552\ \ \ \textcolor{comment}{/*\ For\ each\ semantic\ item,\ append\ hash\ values\ of\ references.\ \ */}}
+\DoxyCodeLine{00553\ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classipa__icf_1_1sem__item__optimizer_a2028cfbe35363a7302e343146894c77d}{update\_hash\_by\_addr\_refs}}\ ();}
+\DoxyCodeLine{00554\ }
+\DoxyCodeLine{00555\ \ \ \textcolor{comment}{/*\ Update\ hash\ by\ canonical\ types\ of\ memory\ accesses.\ \ */}}
+\DoxyCodeLine{00556\ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classipa__icf_1_1sem__item__optimizer_a28f1feeaa64b544d5d81473f5400054a}{update\_hash\_by\_memory\_access\_type}}\ ();}
+\DoxyCodeLine{00557\ }
+\DoxyCodeLine{00558\ \ \ \textcolor{comment}{/*\ Congruence\ classes\ are\ built\ by\ hash\ value.\ \ */}}
+\DoxyCodeLine{00559\ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classipa__icf_1_1sem__item__optimizer_a603013591b2dafdc0ff8c6b8be3fcfe8}{build\_hash\_based\_classes}}\ (\textcolor{keywordtype}{void});}
+\DoxyCodeLine{00560\ }
+\DoxyCodeLine{00561\ \ \ \textcolor{comment}{/*\ Semantic\ items\ in\ classes\ having\ more\ than\ one\ element\ and\ initialized.}}
+\DoxyCodeLine{00562\ \textcolor{comment}{\ \ \ \ \ In\ case\ of\ WPA,\ we\ load\ function\ body.\ \ */}}
+\DoxyCodeLine{00563\ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{classipa__icf_1_1sem__item__optimizer_a9e0f931951e7a49e1b894478458cebe2}{parse\_nonsingleton\_classes}}\ (\textcolor{keywordtype}{void});}
+\DoxyCodeLine{00564\ }
+\DoxyCodeLine{00565\ \ \ \textcolor{comment}{/*\ Equality\ function\ for\ semantic\ items\ is\ used\ to\ subdivide\ existing}}
+\DoxyCodeLine{00566\ \textcolor{comment}{\ \ \ \ \ classes.\ If\ IN\_WPA,\ fast\ equality\ function\ is\ invoked.\ \ */}}
+\DoxyCodeLine{00567\ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classipa__icf_1_1sem__item__optimizer_a84f71217541593222ded7f66785e26cf}{subdivide\_classes\_by\_equality}}\ (\textcolor{keywordtype}{bool}\ in\_wpa\ =\ \textcolor{keyword}{false});}
+\DoxyCodeLine{00568\ }
+\DoxyCodeLine{00569\ \ \ \textcolor{comment}{/*\ Subdivide\ classes\ by\ address\ and\ interposable\ references}}
+\DoxyCodeLine{00570\ \textcolor{comment}{\ \ \ \ \ that\ members\ of\ the\ class\ reference.}}
+\DoxyCodeLine{00571\ \textcolor{comment}{\ \ \ \ \ Example\ can\ be\ a\ pair\ of\ functions\ that\ have\ an\ address}}
+\DoxyCodeLine{00572\ \textcolor{comment}{\ \ \ \ \ taken\ from\ a\ function.\ If\ these\ addresses\ are\ different\ the\ class}}
+\DoxyCodeLine{00573\ \textcolor{comment}{\ \ \ \ \ is\ split.\ \ */}}
+\DoxyCodeLine{00574\ \ \ \textcolor{keywordtype}{unsigned}\ \doxymbox{\hyperlink{classipa__icf_1_1sem__item__optimizer_a29b84546c3dd804a501cf532b6dd0f45}{subdivide\_classes\_by\_sensitive\_refs}}();}
+\DoxyCodeLine{00575\ }
+\DoxyCodeLine{00576\ \ \ \textcolor{comment}{/*\ Debug\ function\ prints\ all\ informations\ about\ congruence\ classes.\ \ */}}
+\DoxyCodeLine{00577\ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classipa__icf_1_1sem__item__optimizer_a1964e077c1249ccea11bd1b573aa8c16}{dump\_cong\_classes}}\ (\textcolor{keywordtype}{void});}
+\DoxyCodeLine{00578\ }
+\DoxyCodeLine{00579\ \ \ \textcolor{comment}{/*\ Build\ references\ according\ to\ call\ graph.\ \ */}}
+\DoxyCodeLine{00580\ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classipa__icf_1_1sem__item__optimizer_a334cadb90a21cb3f89495bd2996bc7e1}{build\_graph}}\ (\textcolor{keywordtype}{void});}
+\DoxyCodeLine{00581\ }
+\DoxyCodeLine{00582\ \ \ \textcolor{comment}{/*\ Iterative\ congruence\ reduction\ function.\ \ */}}
+\DoxyCodeLine{00583\ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classipa__icf_1_1sem__item__optimizer_a959a6b7d76decf4e3c1390d1b2a48067}{process\_cong\_reduction}}\ (\textcolor{keywordtype}{void});}
+\DoxyCodeLine{00584\ }
+\DoxyCodeLine{00585\ \ \ \textcolor{comment}{/*\ After\ reduction\ is\ done,\ we\ can\ declare\ all\ items\ in\ a\ group}}
+\DoxyCodeLine{00586\ \textcolor{comment}{\ \ \ \ \ to\ be\ equal.\ PREV\_CLASS\_COUNT\ is\ start\ number\ of\ classes}}
+\DoxyCodeLine{00587\ \textcolor{comment}{\ \ \ \ \ before\ reduction.\ True\ is\ returned\ if\ there's\ a\ merge\ operation}}
+\DoxyCodeLine{00588\ \textcolor{comment}{\ \ \ \ \ processed.\ \ LOADED\_SYMBOLS\ is\ number\ of\ symbols\ that\ were\ loaded}}
+\DoxyCodeLine{00589\ \textcolor{comment}{\ \ \ \ \ in\ WPA.\ \ */}}
+\DoxyCodeLine{00590\ \ \ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{classipa__icf_1_1sem__item__optimizer_a645a21c7b0d9a9a9b3da127d7c300cb6}{merge\_classes}}\ (\textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ prev\_class\_count,}
+\DoxyCodeLine{00591\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ loaded\_symbols);}
+\DoxyCodeLine{00592\ }
+\DoxyCodeLine{00593\ \ \ \textcolor{comment}{/*\ Fixup\ points\ to\ analysis\ info.\ \ */}}
+\DoxyCodeLine{00594\ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classipa__icf_1_1sem__item__optimizer_a04c31014c01920f56c972ff67e1b34a3}{fixup\_points\_to\_sets}}\ (\textcolor{keywordtype}{void});}
+\DoxyCodeLine{00595\ }
+\DoxyCodeLine{00596\ \ \ \textcolor{comment}{/*\ Fixup\ points\ to\ set\ PT.\ \ */}}
+\DoxyCodeLine{00597\ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classipa__icf_1_1sem__item__optimizer_aa1778ac6bbc1f10bc1ef907e320629b4}{fixup\_pt\_set}}\ (\textcolor{keyword}{struct}\ pt\_solution\ *pt);}
+\DoxyCodeLine{00598\ }
+\DoxyCodeLine{00599\ \ \ \textcolor{comment}{/*\ Adds\ a\ newly\ created\ congruence\ class\ CLS\ to\ worklist.\ \ */}}
+\DoxyCodeLine{00600\ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classipa__icf_1_1sem__item__optimizer_ab436663f6e14b0dcb467a609b1526dc5}{worklist\_push}}\ (\doxymbox{\hyperlink{classipa__icf_1_1congruence__class}{congruence\_class}}\ *cls);}
+\DoxyCodeLine{00601\ }
+\DoxyCodeLine{00602\ \ \ \textcolor{comment}{/*\ Pops\ a\ class\ from\ worklist.\ */}}
+\DoxyCodeLine{00603\ \ \ \doxymbox{\hyperlink{classipa__icf_1_1congruence__class}{congruence\_class}}\ *\doxymbox{\hyperlink{classipa__icf_1_1sem__item__optimizer_a951e39367b53a85fe723dfc69ad836ac}{worklist\_pop}}\ ();}
+\DoxyCodeLine{00604\ }
+\DoxyCodeLine{00605\ \ \ \textcolor{comment}{/*\ Every\ usage\ of\ a\ congruence\ class\ CLS\ is\ a\ candidate\ that\ can\ split\ the}}
+\DoxyCodeLine{00606\ \textcolor{comment}{\ \ \ \ \ collection\ of\ classes.\ Bitmap\ stack\ BMSTACK\ is\ used\ for\ bitmap}}
+\DoxyCodeLine{00607\ \textcolor{comment}{\ \ \ \ \ allocation.\ \ */}}
+\DoxyCodeLine{00608\ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classipa__icf_1_1sem__item__optimizer_a661359d8aa32d61cf4390c583c32990d}{do\_congruence\_step}}\ (\doxymbox{\hyperlink{classipa__icf_1_1congruence__class}{congruence\_class}}\ *cls);}
+\DoxyCodeLine{00609\ }
+\DoxyCodeLine{00610\ \ \ \textcolor{comment}{/*\ Tests\ if\ a\ class\ CLS\ used\ as\ INDEXth\ splits\ any\ congruence\ classes.}}
+\DoxyCodeLine{00611\ \textcolor{comment}{\ \ \ \ \ Bitmap\ stack\ BMSTACK\ is\ used\ for\ bitmap\ allocation.\ \ */}}
+\DoxyCodeLine{00612\ \ \ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{classipa__icf_1_1sem__item__optimizer_aa4002a3558465c596ff6b03a21a984d0}{do\_congruence\_step\_for\_index}}\ (\doxymbox{\hyperlink{classipa__icf_1_1congruence__class}{congruence\_class}}\ *cls,\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ index);}
+\DoxyCodeLine{00613\ }
+\DoxyCodeLine{00614\ \ \ \textcolor{comment}{/*\ Makes\ pairing\ between\ a\ congruence\ class\ CLS\ and\ semantic\ ITEM.\ \ */}}
+\DoxyCodeLine{00615\ \ \ \textcolor{keyword}{static}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classipa__icf_1_1sem__item__optimizer_a3db0bbe65fe7f674100880fc68986c6d}{add\_item\_to\_class}}\ (\doxymbox{\hyperlink{classipa__icf_1_1congruence__class}{congruence\_class}}\ *cls,\ \doxymbox{\hyperlink{classipa__icf_1_1sem__item}{sem\_item}}\ *item);}
+\DoxyCodeLine{00616\ }
+\DoxyCodeLine{00617\ \ \ \textcolor{comment}{/*\ Disposes\ split\ map\ traverse\ function.\ CLS\ is\ congruence}}
+\DoxyCodeLine{00618\ \textcolor{comment}{\ \ \ \ \ class,\ BSLOT\ is\ bitmap\ slot\ we\ want\ to\ release.\ DATA\ is\ mandatory,}}
+\DoxyCodeLine{00619\ \textcolor{comment}{\ \ \ \ \ but\ unused\ argument.\ \ */}}
+\DoxyCodeLine{00620\ \ \ \textcolor{keyword}{static}\ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{classipa__icf_1_1sem__item__optimizer_a5a52ac6221c9330eecde4ac0483b3411}{release\_split\_map}}\ (\doxymbox{\hyperlink{classipa__icf_1_1congruence__class}{congruence\_class}}\ *\ \textcolor{keyword}{const}\ \&cls,\ \doxymbox{\hyperlink{coretypes_8h_ae7ea3a04cabf8964dc6e8e95a9cde1b8}{bitmap}}\ \textcolor{keyword}{const}\ \&\doxymbox{\hyperlink{poly-int_8h_af3bb9d9df219585072cf9e4e95572f70}{b}},}
+\DoxyCodeLine{00621\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{structipa__icf_1_1traverse__split__pair}{traverse\_split\_pair}}\ *\doxymbox{\hyperlink{structpair}{pair}});}
+\DoxyCodeLine{00622\ }
+\DoxyCodeLine{00623\ \ \ \textcolor{comment}{/*\ Process\ split\ operation\ for\ a\ congruence\ class\ CLS,}}
+\DoxyCodeLine{00624\ \textcolor{comment}{\ \ \ \ \ where\ bitmap\ B\ splits\ congruence\ class\ members.\ DATA\ is\ used}}
+\DoxyCodeLine{00625\ \textcolor{comment}{\ \ \ \ \ as\ argument\ of\ split\ pair.\ \ */}}
+\DoxyCodeLine{00626\ \ \ \textcolor{keyword}{static}\ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{classipa__icf_1_1sem__item__optimizer_a8d3072593f1a4c49cc8bc8466640197c}{traverse\_congruence\_split}}\ (\doxymbox{\hyperlink{classipa__icf_1_1congruence__class}{congruence\_class}}\ *\ \textcolor{keyword}{const}\ \&cls,}
+\DoxyCodeLine{00627\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{coretypes_8h_ae7ea3a04cabf8964dc6e8e95a9cde1b8}{bitmap}}\ \textcolor{keyword}{const}\ \&\doxymbox{\hyperlink{poly-int_8h_af3bb9d9df219585072cf9e4e95572f70}{b}},}
+\DoxyCodeLine{00628\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{structipa__icf_1_1traverse__split__pair}{traverse\_split\_pair}}\ *\doxymbox{\hyperlink{structpair}{pair}});}
+\DoxyCodeLine{00629\ }
+\DoxyCodeLine{00630\ \ \ \textcolor{comment}{/*\ Compare\ function\ for\ sorting\ pairs\ in\ do\_congruence\_step\_f.\ \ */}}
+\DoxyCodeLine{00631\ \ \ \textcolor{keyword}{static}\ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{classipa__icf_1_1sem__item__optimizer_adb8ef5da8de9e78fe8acf61ee6064b3e}{sort\_congruence\_split}}\ (\textcolor{keyword}{const}\ \textcolor{keywordtype}{void}\ *,\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{void}\ *);}
+\DoxyCodeLine{00632\ }
+\DoxyCodeLine{00633\ \ \ \textcolor{comment}{/*\ Reads\ a\ section\ from\ LTO\ stream\ file\ FILE\_DATA.\ Input\ block\ for\ DATA}}
+\DoxyCodeLine{00634\ \textcolor{comment}{\ \ \ \ \ contains\ LEN\ bytes.\ \ */}}
+\DoxyCodeLine{00635\ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classipa__icf_1_1sem__item__optimizer_a6dd748c183101a33319a59de76e47ed8}{read\_section}}\ (lto\_file\_decl\_data\ *file\_data,\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *data,}
+\DoxyCodeLine{00636\ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{size\_t}\ len);}
+\DoxyCodeLine{00637\ }
+\DoxyCodeLine{00638\ \ \ \textcolor{comment}{/*\ Removes\ all\ callgraph\ and\ varpool\ nodes\ that\ are\ marked\ by\ symtab}}
+\DoxyCodeLine{00639\ \textcolor{comment}{\ \ \ \ \ as\ deleted.\ \ */}}
+\DoxyCodeLine{00640\ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classipa__icf_1_1sem__item__optimizer_aa0a81d06681d729ffdadefd82d5949d8}{filter\_removed\_items}}\ (\textcolor{keywordtype}{void});}
+\DoxyCodeLine{00641\ }
+\DoxyCodeLine{00642\ \ \ \textcolor{comment}{/*\ Vector\ of\ semantic\ items.\ \ */}}
+\DoxyCodeLine{00643\ \ \ \doxymbox{\hyperlink{vec_8h_ac6299229087b122e17686611255dfa27}{vec\ <sem\_item\ *>}}\ \doxymbox{\hyperlink{classipa__icf_1_1sem__item__optimizer_ad02f0eb5c8897aa0d83904b432245c14}{m\_items}};}
+\DoxyCodeLine{00644\ }
+\DoxyCodeLine{00645\ \ \ \textcolor{comment}{/*\ A\ set\ containing\ all\ items\ removed\ by\ hooks.\ \ */}}
+\DoxyCodeLine{00646\ \ \ hash\_set\ <symtab\_node\ *>\ \doxymbox{\hyperlink{classipa__icf_1_1sem__item__optimizer_a6f0ea8f4276ba7f107d519dea8b78602}{m\_removed\_items\_set}};}
+\DoxyCodeLine{00647\ }
+\DoxyCodeLine{00648\ \ \ \textcolor{comment}{/*\ Hashtable\ of\ congruence\ classes.\ \ */}}
+\DoxyCodeLine{00649\ \ \ hash\_table\ <congruence\_class\_hash>\ \doxymbox{\hyperlink{classipa__icf_1_1sem__item__optimizer_a0ec7c87ead360cbffad0ef4982efa016}{m\_classes}};}
+\DoxyCodeLine{00650\ }
+\DoxyCodeLine{00651\ \ \ \textcolor{comment}{/*\ Count\ of\ congruence\ classes.\ \ */}}
+\DoxyCodeLine{00652\ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{classipa__icf_1_1sem__item__optimizer_a946fc9d433df2bc6df7db1b98fa3bddd}{m\_classes\_count}};}
+\DoxyCodeLine{00653\ }
+\DoxyCodeLine{00654\ \ \ \textcolor{comment}{/*\ Map\ data\ structure\ maps\ symtab\ nodes\ to\ semantic\ items.\ \ */}}
+\DoxyCodeLine{00655\ \ \ hash\_map\ <symtab\_node\ *,\ sem\_item\ *>\ \doxymbox{\hyperlink{classipa__icf_1_1sem__item__optimizer_a103ac1a0f40067c8bc6c8cda0966cd3f}{m\_symtab\_node\_map}};}
+\DoxyCodeLine{00656\ }
+\DoxyCodeLine{00657\ \ \ \textcolor{comment}{/*\ Set\ to\ true\ if\ a\ splitter\ class\ is\ removed.\ \ */}}
+\DoxyCodeLine{00658\ \ \ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{classipa__icf_1_1sem__item__optimizer_a5604558b82efeadbca1408cc466b5872}{splitter\_class\_removed}};}
+\DoxyCodeLine{00659\ }
+\DoxyCodeLine{00660\ \ \ \textcolor{comment}{/*\ Global\ unique\ class\ id\ counter.\ \ */}}
+\DoxyCodeLine{00661\ \ \ \textcolor{keyword}{static}\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{classipa__icf_1_1sem__item__optimizer_ab5d34c5f37fa8283ed29abc2c4056ecd}{class\_id}};}
+\DoxyCodeLine{00662\ }
+\DoxyCodeLine{00663\ \ \ \textcolor{comment}{/*\ Callgraph\ node\ removal\ hook\ holder.\ \ */}}
+\DoxyCodeLine{00664\ \ \ cgraph\_node\_hook\_list\ *\doxymbox{\hyperlink{classipa__icf_1_1sem__item__optimizer_abc6a5d90cacd1735e1732f27cccede7e}{m\_cgraph\_node\_hooks}};}
+\DoxyCodeLine{00665\ }
+\DoxyCodeLine{00666\ \ \ \textcolor{comment}{/*\ Varpool\ node\ removal\ hook\ holder.\ \ */}}
+\DoxyCodeLine{00667\ \ \ varpool\_node\_hook\_list\ *\doxymbox{\hyperlink{classipa__icf_1_1sem__item__optimizer_a78ba70592f4b8b8d69d35a4cb60e6c4b}{m\_varpool\_node\_hooks}};}
+\DoxyCodeLine{00668\ }
+\DoxyCodeLine{00669\ \ \ \textcolor{comment}{/*\ Bitmap\ stack.\ \ */}}
+\DoxyCodeLine{00670\ \ \ \doxymbox{\hyperlink{structbitmap__obstack}{bitmap\_obstack}}\ \doxymbox{\hyperlink{classipa__icf_1_1sem__item__optimizer_af16139950401e05c02fdb4a0b0e49f46}{m\_bmstack}};}
+\DoxyCodeLine{00671\ }
+\DoxyCodeLine{00672\ \ \ \textcolor{comment}{/*\ Vector\ of\ merged\ variables.\ \ Needed\ for\ fixup\ of\ points-\/to-\/analysis}}
+\DoxyCodeLine{00673\ \textcolor{comment}{\ \ \ \ \ info.\ \ */}}
+\DoxyCodeLine{00674\ \ \ vec\ <symtab\_pair>\ \doxymbox{\hyperlink{classipa__icf_1_1sem__item__optimizer_aa8a984af1b7ce5150423e33d303c0961}{m\_merged\_variables}};}
+\DoxyCodeLine{00675\ }
+\DoxyCodeLine{00676\ \ \ \textcolor{comment}{/*\ Hash\ map\ will\ all\ references.\ \ */}}
+\DoxyCodeLine{00677\ \ \ \doxymbox{\hyperlink{namespaceipa__icf_a97fb3e8c36911142c3e1313646c64388}{ref\_map}}\ \doxymbox{\hyperlink{classipa__icf_1_1sem__item__optimizer_aa986c26226fe3f6aae62db80c0eb74d0}{m\_references}};}
+\DoxyCodeLine{00678\ \};\ \textcolor{comment}{//\ class\ sem\_item\_optimizer}}
+\DoxyCodeLine{00679\ }
+\DoxyCodeLine{00680\ \}\ \textcolor{comment}{//\ ipa\_icf\ namespace}}
+
+\end{DoxyCode}

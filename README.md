@@ -85,6 +85,8 @@ The operating system currently boots using the **Limine Bootloader** and is bein
 * [x] FAT32 disk image generation
 * [x] ISO image generation
 * [x] Serial port driver
+* [x] GDT
+* [x] TSS
 
 ### In Progress
 

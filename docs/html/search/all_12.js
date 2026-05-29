@@ -1,8 +1,25 @@
 var searchData=
 [
-  ['tblack_0',['TBLACK',['../group__VGA__Colors.html#gaf513d0274a634bed5fe663a3c6739f29',1,'limine_vga.h']]],
-  ['tftp_5fip_1',['tftp_ip',['../structlimine__file.html#a9d4093867da52e1f27d08be784212a67',1,'limine_file']]],
-  ['tftp_5fport_2',['tftp_port',['../structlimine__file.html#a949f13c2f063dee81d733bbf380c16fb',1,'limine_file']]],
-  ['timestamp_3',['timestamp',['../structlimine__date__at__boot__response.html#a2b646c0b681b837d34e8f64a55ccf996',1,'limine_date_at_boot_response']]],
-  ['type_4',['type',['../structlimine__memmap__entry.html#ac553330b3a732a61e4639940dbb085f1',1,'limine_memmap_entry']]]
+  ['screen_20font_20v1_20constants_0',['PC Screen Font v1 Constants',['../group__PSF1__Macros.html',1,'']]],
+  ['script_20options_1',['Toolchain Script Options',['../md_README.html#autotoc_md27',1,'']]],
+  ['scrollscreen_2',['ScrollScreen',['../limine__vga_8cpp.html#a530aaf5a5e746a31c88cb7b4903eddd0',1,'limine_vga.cpp']]],
+  ['segmentation_20task_20state_20management_3',['CPU Segmentation &amp;amp; Task State Management',['../group__CPU__SEGMENTATION.html',1,'']]],
+  ['segmentdescriptor_4',['SegmentDescriptor',['../structSegmentDescriptor.html',1,'SegmentDescriptor'],['../group__CPU__SEGMENTATION.html#gadd097d11ea7951126b5d05bd3d8243db',1,'SegmentDescriptor:&#160;gdt.h']]],
+  ['serial_5fport_2ecpp_5',['serial_port.cpp',['../serial__port_8cpp.html',1,'']]],
+  ['serial_5fport_2eh_6',['serial_port.h',['../serial__port_8h.html',1,'']]],
+  ['serialinit_7',['SerialInit',['../serial__port_8cpp.html#a1752f7e262ee5d877d8065138cbf5040',1,'SerialInit(uint16_t port):&#160;serial_port.cpp'],['../serial__port_8h.html#a1752f7e262ee5d877d8065138cbf5040',1,'SerialInit(uint16_t port):&#160;serial_port.cpp']]],
+  ['serialwrite_8',['SerialWrite',['../serial__port_8h.html#a4c4cc66e215b50a7df5efda9d3c466c0',1,'serial_port.h']]],
+  ['serialwritechar_9',['SerialWriteChar',['../serial__port_8cpp.html#a29f6d48f34501d5b3f6fe06088eaa769',1,'serial_port.cpp']]],
+  ['serialwritestring_10',['SerialWriteString',['../serial__port_8cpp.html#adeb2415fd0a7de75682e3d4637963281',1,'SerialWriteString(uint16_t port, const char *str):&#160;serial_port.cpp'],['../serial__port_8h.html#adeb2415fd0a7de75682e3d4637963281',1,'SerialWriteString(uint16_t port, const char *str):&#160;serial_port.cpp']]],
+  ['setgdtentry_11',['SetGDTEntry',['../group__CPU__SEGMENTATION.html#gacdff8480eac089719fa81ea30634e697',1,'SetGDTEntry(int index, uint32_t base, uint32_t limit, uint8_t access, uint8_t flags):&#160;gdt.cpp'],['../group__CPU__SEGMENTATION.html#gacdff8480eac089719fa81ea30634e697',1,'SetGDTEntry(int index, uint32_t base, uint32_t limit, uint8_t access, uint8_t flags):&#160;gdt.cpp']]],
+  ['silver_12',['SILVER',['../group__VGA__Colors.html#ga7e76a14a479114a4b9b20782bb00e69a',1,'limine_vga.h']]],
+  ['size_13',['size',['../structlimine__file.html#abde6f4e1977437a0d7091442b46161dc',1,'limine_file::size'],['../structlimine__tpm__event__log__response.html#af4a763114b12b271b613070f8ced8458',1,'limine_tpm_event_log_response::size']]],
+  ['software_14',['Required Software',['../md_README.html#autotoc_md30',1,'']]],
+  ['stack_5fsize_15',['stack_size',['../structlimine__stack__size__request.html#afa37f8104bb28136e202e8633e1e01b3',1,'limine_stack_size_request']]],
+  ['state_20management_16',['CPU Segmentation &amp;amp; Task State Management',['../group__CPU__SEGMENTATION.html',1,'']]],
+  ['status_17',['Current Status',['../md_README.html#autotoc_md6',1,'']]],
+  ['string_2ecpp_18',['string.cpp',['../string_8cpp.html',1,'']]],
+  ['string_2eh_19',['string.h',['../string_8h.html',1,'']]],
+  ['strlen_20',['strlen',['../string_8cpp.html#a688836b83c3a8edbdf3bf7f9de1236d9',1,'strlen(const char s[]):&#160;string.cpp'],['../string_8h.html#a688836b83c3a8edbdf3bf7f9de1236d9',1,'strlen(const char s[]):&#160;string.cpp']]],
+  ['structure_21',['Project Structure',['../md_README.html#autotoc_md46',1,'']]]
 ];

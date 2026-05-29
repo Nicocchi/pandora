@@ -1,0 +1,176 @@
+\doxysection{optinfo.\+h}
+\hypertarget{optinfo_8h_source}{}\label{optinfo_8h_source}\index{toolchain/x86\_64-\/elf/lib/gcc/x86\_64-\/elf/14.2.0/plugin/include/optinfo.h@{toolchain/x86\_64-\/elf/lib/gcc/x86\_64-\/elf/14.2.0/plugin/include/optinfo.h}}
+\doxymbox{\hyperlink{optinfo_8h}{Go to the documentation of this file.}}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001\ \textcolor{comment}{/*\ Optimization\ information.}}
+\DoxyCodeLine{00002\ \textcolor{comment}{\ \ \ Copyright\ (C)\ 2018-\/2024\ Free\ Software\ Foundation,\ Inc.}}
+\DoxyCodeLine{00003\ \textcolor{comment}{\ \ \ Contributed\ by\ David\ Malcolm\ <dmalcolm@redhat.com>.}}
+\DoxyCodeLine{00004\ \textcolor{comment}{}}
+\DoxyCodeLine{00005\ \textcolor{comment}{This\ file\ is\ part\ of\ GCC.}}
+\DoxyCodeLine{00006\ \textcolor{comment}{}}
+\DoxyCodeLine{00007\ \textcolor{comment}{GCC\ is\ free\ software;\ you\ can\ redistribute\ it\ and/or\ modify\ it\ under}}
+\DoxyCodeLine{00008\ \textcolor{comment}{the\ terms\ of\ the\ GNU\ General\ Public\ License\ as\ published\ by\ the\ Free}}
+\DoxyCodeLine{00009\ \textcolor{comment}{Software\ Foundation;\ either\ version\ 3,\ or\ (at\ your\ option)\ any\ later}}
+\DoxyCodeLine{00010\ \textcolor{comment}{version.}}
+\DoxyCodeLine{00011\ \textcolor{comment}{}}
+\DoxyCodeLine{00012\ \textcolor{comment}{GCC\ is\ distributed\ in\ the\ hope\ that\ it\ will\ be\ useful,\ but\ WITHOUT\ ANY}}
+\DoxyCodeLine{00013\ \textcolor{comment}{WARRANTY;\ without\ even\ the\ implied\ warranty\ of\ MERCHANTABILITY\ or}}
+\DoxyCodeLine{00014\ \textcolor{comment}{FITNESS\ FOR\ A\ PARTICULAR\ PURPOSE.\ \ See\ the\ GNU\ General\ Public\ License}}
+\DoxyCodeLine{00015\ \textcolor{comment}{for\ more\ details.}}
+\DoxyCodeLine{00016\ \textcolor{comment}{}}
+\DoxyCodeLine{00017\ \textcolor{comment}{You\ should\ have\ received\ a\ copy\ of\ the\ GNU\ General\ Public\ License}}
+\DoxyCodeLine{00018\ \textcolor{comment}{along\ with\ GCC;\ see\ the\ file\ COPYING3.\ \ If\ not\ see}}
+\DoxyCodeLine{00019\ \textcolor{comment}{<http://www.gnu.org/licenses/>.\ \ */}}
+\DoxyCodeLine{00020\ }
+\DoxyCodeLine{00021\ \textcolor{preprocessor}{\#ifndef\ GCC\_OPTINFO\_H}}
+\DoxyCodeLine{00022\ \textcolor{preprocessor}{\#define\ GCC\_OPTINFO\_H}}
+\DoxyCodeLine{00023\ }
+\DoxyCodeLine{00024\ \textcolor{comment}{/*\ An\ "{}optinfo"{}\ is\ a\ bundle\ of\ information\ describing\ part\ of\ an}}
+\DoxyCodeLine{00025\ \textcolor{comment}{\ \ \ optimization,\ which\ can\ be\ emitted\ to\ zero\ or\ more\ of\ several}}
+\DoxyCodeLine{00026\ \textcolor{comment}{\ \ \ destinations,\ such\ as:}}
+\DoxyCodeLine{00027\ \textcolor{comment}{}}
+\DoxyCodeLine{00028\ \textcolor{comment}{\ \ \ *\ saved\ to\ a\ file\ as\ an\ "{}optimization\ record"{}}}
+\DoxyCodeLine{00029\ \textcolor{comment}{}}
+\DoxyCodeLine{00030\ \textcolor{comment}{\ \ \ They\ are\ generated\ in\ response\ to\ calls\ to\ the\ "{}dump\_*"{}\ API\ in}}
+\DoxyCodeLine{00031\ \textcolor{comment}{\ \ \ dumpfile.h;\ repeated\ calls\ to\ the\ "{}dump\_*"{}\ API\ are\ consolidated}}
+\DoxyCodeLine{00032\ \textcolor{comment}{\ \ \ into\ a\ pending\ optinfo\ instance,\ with\ a\ "{}dump\_*\_loc"{}\ starting\ a\ new}}
+\DoxyCodeLine{00033\ \textcolor{comment}{\ \ \ optinfo\ instance.}}
+\DoxyCodeLine{00034\ \textcolor{comment}{}}
+\DoxyCodeLine{00035\ \textcolor{comment}{\ \ \ The\ data\ sent\ to\ the\ dump\ calls\ are\ captured\ within\ the\ pending\ optinfo}}
+\DoxyCodeLine{00036\ \textcolor{comment}{\ \ \ instance\ as\ a\ sequence\ of\ optinfo\_items.\ \ For\ example,\ given:}}
+\DoxyCodeLine{00037\ \textcolor{comment}{}}
+\DoxyCodeLine{00038\ \textcolor{comment}{\ \ \ \ \ \ if\ (dump\_enabled\_p\ ())}}
+\DoxyCodeLine{00039\ \textcolor{comment}{\ \ \ \ \ \ \ \ \{}}
+\DoxyCodeLine{00040\ \textcolor{comment}{\ \ \ \ \ \ \ \ \ \ dump\_printf\_loc\ (MSG\_MISSED\_OPTIMIZATION,\ vect\_location,}}
+\DoxyCodeLine{00041\ \textcolor{comment}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ "{}not\ vectorized:\ live\ stmt\ not\ supported:\ "{});}}
+\DoxyCodeLine{00042\ \textcolor{comment}{\ \ \ \ \ \ \ \ \ \ dump\_gimple\_stmt\ (MSG\_MISSED\_OPTIMIZATION,\ TDF\_SLIM,\ stmt,\ 0);}}
+\DoxyCodeLine{00043\ \textcolor{comment}{\ \ \ \ \ \ \ \ \}}}
+\DoxyCodeLine{00044\ \textcolor{comment}{}}
+\DoxyCodeLine{00045\ \textcolor{comment}{\ \ \ the\ "{}dump\_printf\_loc"{}\ call\ begins\ a\ new\ optinfo\ containing\ two\ items:}}
+\DoxyCodeLine{00046\ \textcolor{comment}{\ \ \ (1)\ a\ text\ item\ containing\ "{}not\ vectorized:\ live\ stmt\ not\ supported:\ "{}}}
+\DoxyCodeLine{00047\ \textcolor{comment}{\ \ \ (2)\ a\ gimple\ item\ for\ "{}stmt"{}}}
+\DoxyCodeLine{00048\ \textcolor{comment}{}}
+\DoxyCodeLine{00049\ \textcolor{comment}{\ \ \ Dump\ destinations\ are\ thus\ able\ to\ access\ rich\ metadata\ about\ the}}
+\DoxyCodeLine{00050\ \textcolor{comment}{\ \ \ items\ when\ the\ optinfo\ is\ emitted\ to\ them,\ rather\ than\ just\ having\ plain}}
+\DoxyCodeLine{00051\ \textcolor{comment}{\ \ \ text.\ \ For\ example,\ when\ saving\ the\ above\ optinfo\ to\ a\ file\ as\ an}}
+\DoxyCodeLine{00052\ \textcolor{comment}{\ \ \ "{}optimization\ record"{},\ the\ record\ could\ capture\ the\ source\ location\ of}}
+\DoxyCodeLine{00053\ \textcolor{comment}{\ \ \ "{}stmt"{}\ above,\ rather\ than\ just\ its\ textual\ form.}}
+\DoxyCodeLine{00054\ \textcolor{comment}{}}
+\DoxyCodeLine{00055\ \textcolor{comment}{\ \ \ The\ currently\ pending\ optinfo\ is\ emitted\ and\ deleted:}}
+\DoxyCodeLine{00056\ \textcolor{comment}{\ \ \ *\ each\ time\ a\ "{}dump\_*\_loc"{}\ call\ occurs\ (which\ starts\ the\ next\ optinfo),\ or}}
+\DoxyCodeLine{00057\ \textcolor{comment}{\ \ \ *\ when\ the\ dump\ files\ are\ changed\ (at\ the\ end\ of\ a\ pass)}}
+\DoxyCodeLine{00058\ \textcolor{comment}{}}
+\DoxyCodeLine{00059\ \textcolor{comment}{\ \ \ Dumping\ to\ an\ optinfo\ instance\ is\ non-\/trivial\ (due\ to\ building\ optinfo\_item}}
+\DoxyCodeLine{00060\ \textcolor{comment}{\ \ \ instances),\ so\ all\ usage\ should\ be\ guarded\ by}}
+\DoxyCodeLine{00061\ \textcolor{comment}{}}
+\DoxyCodeLine{00062\ \textcolor{comment}{\ \ \ \ \ if\ (optinfo\_enabled\_p\ ())}}
+\DoxyCodeLine{00063\ \textcolor{comment}{}}
+\DoxyCodeLine{00064\ \textcolor{comment}{\ \ \ which\ is\ off\ by\ default.\ \ */}}
+\DoxyCodeLine{00065\ }
+\DoxyCodeLine{00066\ }
+\DoxyCodeLine{00067\ \textcolor{comment}{/*\ Forward\ decls.\ \ */}}
+\DoxyCodeLine{00068\ \textcolor{keyword}{class\ }\doxymbox{\hyperlink{classopt__pass}{opt\_pass}};}
+\DoxyCodeLine{00069\ \textcolor{keyword}{class\ }\doxymbox{\hyperlink{classoptinfo__item}{optinfo\_item}};}
+\DoxyCodeLine{00070\ }
+\DoxyCodeLine{00071\ \textcolor{comment}{/*\ Return\ true\ if\ any\ of\ the\ active\ optinfo\ destinations\ make\ use}}
+\DoxyCodeLine{00072\ \textcolor{comment}{\ \ \ of\ inlining\ information.}}
+\DoxyCodeLine{00073\ \textcolor{comment}{\ \ \ (if\ true,\ then\ the\ information\ is\ preserved).\ \ */}}
+\DoxyCodeLine{00074\ }
+\DoxyCodeLine{00075\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{optinfo_8h_af1a4d8755ab673ded316f7dced0ba041}{optinfo\_wants\_inlining\_info\_p}}\ ();}
+\DoxyCodeLine{00076\ }
+\DoxyCodeLine{00077\ \textcolor{comment}{/*\ The\ various\ kinds\ of\ optinfo.\ \ */}}
+\DoxyCodeLine{00078\ }
+\DoxyCodeLine{00079\ \textcolor{keyword}{enum}\ \doxymbox{\hyperlink{optinfo_8h_aeb8daa4454c3201ce60b45c6b95397f6}{optinfo\_kind}}}
+\DoxyCodeLine{00080\ \{}
+\DoxyCodeLine{00081\ \ \ \doxymbox{\hyperlink{optinfo_8h_aeb8daa4454c3201ce60b45c6b95397f6ab64041232040eb506b84a570e94a18bd}{OPTINFO\_KIND\_SUCCESS}},}
+\DoxyCodeLine{00082\ \ \ \doxymbox{\hyperlink{optinfo_8h_aeb8daa4454c3201ce60b45c6b95397f6af7b7dfdf6772d8b836426b482d644304}{OPTINFO\_KIND\_FAILURE}},}
+\DoxyCodeLine{00083\ \ \ \doxymbox{\hyperlink{optinfo_8h_aeb8daa4454c3201ce60b45c6b95397f6ae35f87c1b097a4a62bea25b9880ce041}{OPTINFO\_KIND\_NOTE}},}
+\DoxyCodeLine{00084\ \ \ \doxymbox{\hyperlink{optinfo_8h_aeb8daa4454c3201ce60b45c6b95397f6a422656346671bc544d537247dbcf8ce9}{OPTINFO\_KIND\_SCOPE}}}
+\DoxyCodeLine{00085\ \};}
+\DoxyCodeLine{00086\ }
+\DoxyCodeLine{00087\ \textcolor{keyword}{extern}\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *\doxymbox{\hyperlink{optinfo_8h_a86be0136cfe3a6d6b4d79397f37145bc}{optinfo\_kind\_to\_string}}\ (\textcolor{keyword}{enum}\ \doxymbox{\hyperlink{optinfo_8h_aeb8daa4454c3201ce60b45c6b95397f6}{optinfo\_kind}}\ kind);}
+\DoxyCodeLine{00088\ }
+\DoxyCodeLine{00089\ \textcolor{keyword}{class\ }\doxymbox{\hyperlink{classdump__context}{dump\_context}};}
+\DoxyCodeLine{00090\ }
+\DoxyCodeLine{00091\ \textcolor{comment}{/*\ A\ bundle\ of\ information\ describing\ part\ of\ an\ optimization.\ \ */}}
+\DoxyCodeLine{00092\ }
+\DoxyCodeLine{00093\ \textcolor{keyword}{class\ }\doxymbox{\hyperlink{classoptinfo_a52037165ec8e10bf46a5f2b5bb08f023}{optinfo}}}
+\DoxyCodeLine{00094\ \{}
+\DoxyCodeLine{00095\ \ \ \textcolor{keyword}{friend}\ \textcolor{keyword}{class\ }\doxymbox{\hyperlink{classoptinfo_ab298ac655e7a50e9afd893cf4657db30}{dump\_context}};}
+\DoxyCodeLine{00096\ }
+\DoxyCodeLine{00097\ \ \textcolor{keyword}{public}:}
+\DoxyCodeLine{00098\ \ \ \doxymbox{\hyperlink{classoptinfo_a52037165ec8e10bf46a5f2b5bb08f023}{optinfo}}\ (\textcolor{keyword}{const}\ \doxymbox{\hyperlink{classdump__location__t}{dump\_location\_t}}\ \&loc,}
+\DoxyCodeLine{00099\ \ \ \ \ \ \ \ \textcolor{keyword}{enum}\ \doxymbox{\hyperlink{optinfo_8h_aeb8daa4454c3201ce60b45c6b95397f6}{optinfo\_kind}}\ kind,}
+\DoxyCodeLine{00100\ \ \ \ \ \ \ \ \doxymbox{\hyperlink{classopt__pass}{opt\_pass}}\ *pass)}
+\DoxyCodeLine{00101\ \ \ :\ \doxymbox{\hyperlink{classoptinfo_ac1c2758f28adec82ea8a530fe53df436}{m\_loc}}\ (loc),\ \doxymbox{\hyperlink{classoptinfo_aaa07b614a6df7007a59083693fec4083}{m\_kind}}\ (kind),\ \doxymbox{\hyperlink{classoptinfo_aa2051a9cdd86f676ef7860b5d1a6151f}{m\_pass}}\ (pass),\ \doxymbox{\hyperlink{classoptinfo_ae56befb86d9206734d7340a2d57a7bd1}{m\_items}}\ ()}
+\DoxyCodeLine{00102\ \ \ \{\}}
+\DoxyCodeLine{00103\ \ \ \doxymbox{\hyperlink{classoptinfo_adad0faad4f6816644b4e08b4aba0caf9}{\string~optinfo}}\ ();}
+\DoxyCodeLine{00104\ }
+\DoxyCodeLine{00105\ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classdump__location__t}{dump\_location\_t}}\ \&}
+\DoxyCodeLine{00106\ \ \ \doxymbox{\hyperlink{classoptinfo_a6933c6374570e1dffaff3d374a5045df}{get\_dump\_location}}\ ()\textcolor{keyword}{\ const\ }\{\ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{classoptinfo_ac1c2758f28adec82ea8a530fe53df436}{m\_loc}};\ \}}
+\DoxyCodeLine{00107\ }
+\DoxyCodeLine{00108\ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classdump__user__location__t}{dump\_user\_location\_t}}\ \&}
+\DoxyCodeLine{00109\ \ \ \doxymbox{\hyperlink{classoptinfo_a3698f26d641fe585695f7af7b9760251}{get\_user\_location}}\ ()\textcolor{keyword}{\ const\ }\{\ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{classoptinfo_ac1c2758f28adec82ea8a530fe53df436}{m\_loc}}.get\_user\_location\ ();\ \}}
+\DoxyCodeLine{00110\ }
+\DoxyCodeLine{00111\ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classdump__impl__location__t}{dump\_impl\_location\_t}}\ \&}
+\DoxyCodeLine{00112\ \ \ \doxymbox{\hyperlink{classoptinfo_a1f20e6e628a83fcb1f7f35731cf504aa}{get\_impl\_location}}\ ()\textcolor{keyword}{\ const\ }\{\ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{classoptinfo_ac1c2758f28adec82ea8a530fe53df436}{m\_loc}}.get\_impl\_location\ ();\ \}}
+\DoxyCodeLine{00113\ }
+\DoxyCodeLine{00114\ \ \ \textcolor{keyword}{enum}\ \doxymbox{\hyperlink{optinfo_8h_aeb8daa4454c3201ce60b45c6b95397f6}{optinfo\_kind}}\ \doxymbox{\hyperlink{classoptinfo_a9a065690346b4ff0ac1a3f5206678b86}{get\_kind}}\ ()\textcolor{keyword}{\ const\ }\{\ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{classoptinfo_aaa07b614a6df7007a59083693fec4083}{m\_kind}};\ \}}
+\DoxyCodeLine{00115\ \ \ \doxymbox{\hyperlink{classopt__pass}{opt\_pass}}\ *\doxymbox{\hyperlink{classoptinfo_af2015d3281955e5ce40f46baacded41c}{get\_pass}}\ ()\textcolor{keyword}{\ const\ }\{\ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{classoptinfo_aa2051a9cdd86f676ef7860b5d1a6151f}{m\_pass}};\ \}}
+\DoxyCodeLine{00116\ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{classoptinfo_abc2fe2e3b9e2b13505277420c2de09bc}{num\_items}}\ ()\textcolor{keyword}{\ const\ }\{\ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{classoptinfo_ae56befb86d9206734d7340a2d57a7bd1}{m\_items}}.length\ ();\ \}}
+\DoxyCodeLine{00117\ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classoptinfo__item}{optinfo\_item}}\ *\doxymbox{\hyperlink{classoptinfo_a1bf61850f4a60fec555ea5c00e4c45d0}{get\_item}}\ (\textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{poly-int_8h_a7e98b8a17c0aad30ba64d47b74e2a6c1}{i}})\textcolor{keyword}{\ const\ }\{\ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{classoptinfo_ae56befb86d9206734d7340a2d57a7bd1}{m\_items}}[\doxymbox{\hyperlink{poly-int_8h_a7e98b8a17c0aad30ba64d47b74e2a6c1}{i}}];\ \}}
+\DoxyCodeLine{00118\ }
+\DoxyCodeLine{00119\ \ \ \doxymbox{\hyperlink{line-map_8h_aedf25620511d64e43327f1a229906a96}{location\_t}}\ \doxymbox{\hyperlink{classoptinfo_af15e0720b5412b8290dcb59f15080d0a}{get\_location\_t}}\ ()\textcolor{keyword}{\ const\ }\{\ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{classoptinfo_ac1c2758f28adec82ea8a530fe53df436}{m\_loc}}.get\_location\_t\ ();\ \}}
+\DoxyCodeLine{00120\ \ \ profile\_count\ \doxymbox{\hyperlink{classoptinfo_a5991b153ad647f88015aa539f3ca9961}{get\_count}}\ ()\textcolor{keyword}{\ const\ }\{\ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{classoptinfo_ac1c2758f28adec82ea8a530fe53df436}{m\_loc}}.get\_count\ ();\ \}}
+\DoxyCodeLine{00121\ }
+\DoxyCodeLine{00122\ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classoptinfo_a479055b5722a8a28246bc576934e6409}{add\_item}}\ (\doxymbox{\hyperlink{classoptinfo__item}{optinfo\_item}}\ *item);}
+\DoxyCodeLine{00123\ }
+\DoxyCodeLine{00124\ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classoptinfo_a511343f591048328346484e503645daf}{emit\_for\_opt\_problem}}\ ()\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00125\ }
+\DoxyCodeLine{00126\ \ \textcolor{keyword}{private}:}
+\DoxyCodeLine{00127\ \ \ \textcolor{comment}{/*\ Pre-\/canned\ ways\ of\ manipulating\ the\ optinfo,\ for\ use\ by\ friend\ class}}
+\DoxyCodeLine{00128\ \textcolor{comment}{\ \ \ \ \ dump\_context.\ \ */}}
+\DoxyCodeLine{00129\ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classoptinfo_a65eab2adaac98cac6bd9f9c9a0b56193}{handle\_dump\_file\_kind}}\ (\doxymbox{\hyperlink{dumpfile_8h_ae3aeb1ff52915e32d52ac788388fbeef}{dump\_flags\_t}});}
+\DoxyCodeLine{00130\ }
+\DoxyCodeLine{00131\ \ \textcolor{keyword}{private}:}
+\DoxyCodeLine{00132\ \ \ \doxymbox{\hyperlink{classdump__location__t}{dump\_location\_t}}\ \doxymbox{\hyperlink{classoptinfo_ac1c2758f28adec82ea8a530fe53df436}{m\_loc}};}
+\DoxyCodeLine{00133\ \ \ \textcolor{keyword}{enum}\ \doxymbox{\hyperlink{optinfo_8h_aeb8daa4454c3201ce60b45c6b95397f6}{optinfo\_kind}}\ \doxymbox{\hyperlink{classoptinfo_aaa07b614a6df7007a59083693fec4083}{m\_kind}};}
+\DoxyCodeLine{00134\ \ \ \doxymbox{\hyperlink{classopt__pass}{opt\_pass}}\ *\doxymbox{\hyperlink{classoptinfo_aa2051a9cdd86f676ef7860b5d1a6151f}{m\_pass}};}
+\DoxyCodeLine{00135\ \ \ auto\_vec\ <optinfo\_item\ *>\ \doxymbox{\hyperlink{classoptinfo_ae56befb86d9206734d7340a2d57a7bd1}{m\_items}};}
+\DoxyCodeLine{00136\ \};}
+\DoxyCodeLine{00137\ }
+\DoxyCodeLine{00138\ \textcolor{comment}{/*\ An\ enum\ for\ discriminating\ between\ different\ kinds\ of\ optinfo\_item.\ \ */}}
+\DoxyCodeLine{00139\ }
+\DoxyCodeLine{00140\ \textcolor{keyword}{enum}\ \doxymbox{\hyperlink{optinfo_8h_ad88757a41a0fec08675121621a0aa034}{optinfo\_item\_kind}}}
+\DoxyCodeLine{00141\ \{}
+\DoxyCodeLine{00142\ \ \ \doxymbox{\hyperlink{optinfo_8h_ad88757a41a0fec08675121621a0aa034a40c37424dfc43bfb8a657c724fd58c97}{OPTINFO\_ITEM\_KIND\_TEXT}},}
+\DoxyCodeLine{00143\ \ \ \doxymbox{\hyperlink{optinfo_8h_ad88757a41a0fec08675121621a0aa034a5b9a01152b305f3b64d6977bcfd1f91c}{OPTINFO\_ITEM\_KIND\_TREE}},}
+\DoxyCodeLine{00144\ \ \ \doxymbox{\hyperlink{optinfo_8h_ad88757a41a0fec08675121621a0aa034af696eb5cfeeefadc96f70c225c501b0e}{OPTINFO\_ITEM\_KIND\_GIMPLE}},}
+\DoxyCodeLine{00145\ \ \ \doxymbox{\hyperlink{optinfo_8h_ad88757a41a0fec08675121621a0aa034a8bb341b1c14be26104f2323893748c89}{OPTINFO\_ITEM\_KIND\_SYMTAB\_NODE}}}
+\DoxyCodeLine{00146\ \};}
+\DoxyCodeLine{00147\ }
+\DoxyCodeLine{00148\ \textcolor{comment}{/*\ An\ item\ within\ an\ optinfo.\ \ */}}
+\DoxyCodeLine{00149\ }
+\DoxyCodeLine{00150\ \textcolor{keyword}{class\ }\doxymbox{\hyperlink{classoptinfo__item_a1a94c415f01c371fa55aafdd739992f1}{optinfo\_item}}}
+\DoxyCodeLine{00151\ \{}
+\DoxyCodeLine{00152\ \ \textcolor{keyword}{public}:}
+\DoxyCodeLine{00153\ \ \ \doxymbox{\hyperlink{classoptinfo__item_a1a94c415f01c371fa55aafdd739992f1}{optinfo\_item}}\ (\textcolor{keyword}{enum}\ \doxymbox{\hyperlink{optinfo_8h_ad88757a41a0fec08675121621a0aa034}{optinfo\_item\_kind}}\ kind,\ \doxymbox{\hyperlink{line-map_8h_aedf25620511d64e43327f1a229906a96}{location\_t}}\ location,}
+\DoxyCodeLine{00154\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{char}\ *text);}
+\DoxyCodeLine{00155\ \ \ \doxymbox{\hyperlink{classoptinfo__item_a321a3faf62f848a8e3217dfd8879feac}{\string~optinfo\_item}}\ ();}
+\DoxyCodeLine{00156\ }
+\DoxyCodeLine{00157\ \ \ \textcolor{keyword}{enum}\ \doxymbox{\hyperlink{optinfo_8h_ad88757a41a0fec08675121621a0aa034}{optinfo\_item\_kind}}\ \doxymbox{\hyperlink{classoptinfo__item_abe4072d6770734a058532d2f90b98bad}{get\_kind}}\ ()\textcolor{keyword}{\ const\ }\{\ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{classoptinfo__item_a9bac8554e60e48ebc73d09500d4c3f1f}{m\_kind}};\ \}}
+\DoxyCodeLine{00158\ \ \ \doxymbox{\hyperlink{line-map_8h_aedf25620511d64e43327f1a229906a96}{location\_t}}\ \doxymbox{\hyperlink{classoptinfo__item_a179f15b267bebaf5b8d2eaed086a17ef}{get\_location}}\ ()\textcolor{keyword}{\ const\ }\{\ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{classoptinfo__item_a12c5fb88ed3a62765634c0a9e2b020c7}{m\_location}};\ \}}
+\DoxyCodeLine{00159\ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *\doxymbox{\hyperlink{classoptinfo__item_a1bcd86e495ab79668bce0cc18c42493e}{get\_text}}\ ()\textcolor{keyword}{\ const\ }\{\ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{classoptinfo__item_a418b5b9a4cfe230bf10920fcfd6823c5}{m\_text}};\ \}}
+\DoxyCodeLine{00160\ }
+\DoxyCodeLine{00161\ \ \textcolor{keyword}{private}:}
+\DoxyCodeLine{00162\ \ \ \textcolor{comment}{/*\ Metadata\ (e.g.\ for\ optimization\ records).\ \ */}}
+\DoxyCodeLine{00163\ \ \ \textcolor{keyword}{enum}\ \doxymbox{\hyperlink{optinfo_8h_ad88757a41a0fec08675121621a0aa034}{optinfo\_item\_kind}}\ \doxymbox{\hyperlink{classoptinfo__item_a9bac8554e60e48ebc73d09500d4c3f1f}{m\_kind}};}
+\DoxyCodeLine{00164\ \ \ \doxymbox{\hyperlink{line-map_8h_aedf25620511d64e43327f1a229906a96}{location\_t}}\ \doxymbox{\hyperlink{classoptinfo__item_a12c5fb88ed3a62765634c0a9e2b020c7}{m\_location}};}
+\DoxyCodeLine{00165\ }
+\DoxyCodeLine{00166\ \ \ \textcolor{comment}{/*\ The\ textual\ form\ of\ the\ item,\ owned\ by\ the\ item.\ \ */}}
+\DoxyCodeLine{00167\ \ \ \textcolor{keywordtype}{char}\ *\doxymbox{\hyperlink{classoptinfo__item_a418b5b9a4cfe230bf10920fcfd6823c5}{m\_text}};}
+\DoxyCodeLine{00168\ \};}
+\DoxyCodeLine{00169\ }
+\DoxyCodeLine{00170\ \textcolor{preprocessor}{\#endif\ }\textcolor{comment}{/*\ \#ifndef\ GCC\_OPTINFO\_H\ */}\textcolor{preprocessor}{}}
+
+\end{DoxyCode}

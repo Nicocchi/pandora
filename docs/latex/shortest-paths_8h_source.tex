@@ -1,0 +1,221 @@
+\doxysection{shortest-\/paths.h}
+\hypertarget{shortest-paths_8h_source}{}\label{shortest-paths_8h_source}\index{toolchain/x86\_64-\/elf/lib/gcc/x86\_64-\/elf/14.2.0/plugin/include/shortest-\/paths.h@{toolchain/x86\_64-\/elf/lib/gcc/x86\_64-\/elf/14.2.0/plugin/include/shortest-\/paths.h}}
+\doxymbox{\hyperlink{shortest-paths_8h}{Go to the documentation of this file.}}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001\ \textcolor{comment}{/*\ Template\ class\ for\ Dijkstra's\ algorithm\ on\ directed\ graphs.}}
+\DoxyCodeLine{00002\ \textcolor{comment}{\ \ \ Copyright\ (C)\ 2019-\/2024\ Free\ Software\ Foundation,\ Inc.}}
+\DoxyCodeLine{00003\ \textcolor{comment}{\ \ \ Contributed\ by\ David\ Malcolm\ <dmalcolm@redhat.com>.}}
+\DoxyCodeLine{00004\ \textcolor{comment}{}}
+\DoxyCodeLine{00005\ \textcolor{comment}{This\ file\ is\ part\ of\ GCC.}}
+\DoxyCodeLine{00006\ \textcolor{comment}{}}
+\DoxyCodeLine{00007\ \textcolor{comment}{GCC\ is\ free\ software;\ you\ can\ redistribute\ it\ and/or\ modify\ it}}
+\DoxyCodeLine{00008\ \textcolor{comment}{under\ the\ terms\ of\ the\ GNU\ General\ Public\ License\ as\ published\ by}}
+\DoxyCodeLine{00009\ \textcolor{comment}{the\ Free\ Software\ Foundation;\ either\ version\ 3,\ or\ (at\ your\ option)}}
+\DoxyCodeLine{00010\ \textcolor{comment}{any\ later\ version.}}
+\DoxyCodeLine{00011\ \textcolor{comment}{}}
+\DoxyCodeLine{00012\ \textcolor{comment}{GCC\ is\ distributed\ in\ the\ hope\ that\ it\ will\ be\ useful,\ but}}
+\DoxyCodeLine{00013\ \textcolor{comment}{WITHOUT\ ANY\ WARRANTY;\ without\ even\ the\ implied\ warranty\ of}}
+\DoxyCodeLine{00014\ \textcolor{comment}{MERCHANTABILITY\ or\ FITNESS\ FOR\ A\ PARTICULAR\ PURPOSE.\ \ See\ the\ GNU}}
+\DoxyCodeLine{00015\ \textcolor{comment}{General\ Public\ License\ for\ more\ details.}}
+\DoxyCodeLine{00016\ \textcolor{comment}{}}
+\DoxyCodeLine{00017\ \textcolor{comment}{You\ should\ have\ received\ a\ copy\ of\ the\ GNU\ General\ Public\ License}}
+\DoxyCodeLine{00018\ \textcolor{comment}{along\ with\ GCC;\ see\ the\ file\ COPYING3.\ \ If\ not\ see}}
+\DoxyCodeLine{00019\ \textcolor{comment}{<http://www.gnu.org/licenses/>.\ \ */}}
+\DoxyCodeLine{00020\ }
+\DoxyCodeLine{00021\ \textcolor{preprocessor}{\#ifndef\ GCC\_SHORTEST\_PATHS\_H}}
+\DoxyCodeLine{00022\ \textcolor{preprocessor}{\#define\ GCC\_SHORTEST\_PATHS\_H}}
+\DoxyCodeLine{00023\ }
+\DoxyCodeLine{00024\ \textcolor{preprocessor}{\#include\ "{}\doxymbox{\hyperlink{timevar_8h}{timevar.h}}"{}}}
+\DoxyCodeLine{00025\ }
+\DoxyCodeLine{00026\ \textcolor{keyword}{enum}\ \doxymbox{\hyperlink{shortest-paths_8h_a4737c4ca9aadd7d4bb433a9a94116fc8}{shortest\_path\_sense}}}
+\DoxyCodeLine{00027\ \{}
+\DoxyCodeLine{00028\ \ \ \textcolor{comment}{/*\ Find\ the\ shortest\ path\ from\ the\ given\ origin\ node\ to\ each}}
+\DoxyCodeLine{00029\ \textcolor{comment}{\ \ \ \ \ node\ in\ the\ graph.\ \ */}}
+\DoxyCodeLine{00030\ \ \ \doxymbox{\hyperlink{shortest-paths_8h_a4737c4ca9aadd7d4bb433a9a94116fc8a81aa11fdf33625ce2f900e36b795f41e}{SPS\_FROM\_GIVEN\_ORIGIN}},}
+\DoxyCodeLine{00031\ }
+\DoxyCodeLine{00032\ \ \ \textcolor{comment}{/*\ Find\ the\ shortest\ path\ from\ each\ node\ in\ the\ graph\ to\ the}}
+\DoxyCodeLine{00033\ \textcolor{comment}{\ \ \ \ \ given\ target\ node.\ \ */}}
+\DoxyCodeLine{00034\ \ \ \doxymbox{\hyperlink{shortest-paths_8h_a4737c4ca9aadd7d4bb433a9a94116fc8a6d1347b9cd65571dafd2d1135a98d91d}{SPS\_TO\_GIVEN\_TARGET}}}
+\DoxyCodeLine{00035\ \};}
+\DoxyCodeLine{00036\ }
+\DoxyCodeLine{00037\ \textcolor{comment}{/*\ A\ record\ of\ the\ shortest\ path\ for\ each\ node\ relative\ to\ a\ special}}
+\DoxyCodeLine{00038\ \textcolor{comment}{\ \ \ "{}given\ node"{},\ either:}}
+\DoxyCodeLine{00039\ \textcolor{comment}{\ \ \ SPS\_FROM\_GIVEN\_ORIGIN:}}
+\DoxyCodeLine{00040\ \textcolor{comment}{\ \ \ \ \ from\ the\ given\ origin\ node\ to\ each\ node\ in\ a\ graph,\ or}}
+\DoxyCodeLine{00041\ \textcolor{comment}{\ \ \ SPS\_TO\_GIVEN\_TARGET:}}
+\DoxyCodeLine{00042\ \textcolor{comment}{\ \ \ \ \ from\ each\ node\ in\ a\ graph\ to\ the\ given\ target\ node.}}
+\DoxyCodeLine{00043\ \textcolor{comment}{}}
+\DoxyCodeLine{00044\ \textcolor{comment}{\ \ \ The\ constructor\ runs\ Dijkstra's\ algorithm,\ and\ the\ results\ are}}
+\DoxyCodeLine{00045\ \textcolor{comment}{\ \ \ stored\ in\ this\ class.\ \ */}}
+\DoxyCodeLine{00046\ }
+\DoxyCodeLine{00047\ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ GraphTraits,\ \textcolor{keyword}{typename}\ Path\_t>}
+\DoxyCodeLine{00048\ \textcolor{keyword}{class\ }\doxymbox{\hyperlink{classshortest__paths_a29f3152c9fb841b528ee959b4787de9f}{shortest\_paths}}}
+\DoxyCodeLine{00049\ \{}
+\DoxyCodeLine{00050\ \textcolor{keyword}{public}:}
+\DoxyCodeLine{00051\ \ \ \textcolor{keyword}{typedef}\ \textcolor{keyword}{typename}\ GraphTraits::graph\_t\ \doxymbox{\hyperlink{classshortest__paths_a142a222955ab97581bfc15bb49f1e33c}{graph\_t}};}
+\DoxyCodeLine{00052\ \ \ \textcolor{keyword}{typedef}\ \textcolor{keyword}{typename}\ GraphTraits::node\_t\ \doxymbox{\hyperlink{classshortest__paths_a1a196452faf022386a847f93e5603198}{node\_t}};}
+\DoxyCodeLine{00053\ \ \ \textcolor{keyword}{typedef}\ \textcolor{keyword}{typename}\ GraphTraits::edge\_t\ \doxymbox{\hyperlink{classshortest__paths_a998a348976fa75f6ce2d82a3b0ee3e61}{edge\_t}};}
+\DoxyCodeLine{00054\ \ \ \textcolor{keyword}{typedef}\ Path\_t\ \doxymbox{\hyperlink{classshortest__paths_a22381259236b2ec50db8bf947a118b9b}{path\_t}};}
+\DoxyCodeLine{00055\ }
+\DoxyCodeLine{00056\ \ \ \doxymbox{\hyperlink{classshortest__paths_a29f3152c9fb841b528ee959b4787de9f}{shortest\_paths}}\ (\textcolor{keyword}{const}\ \doxymbox{\hyperlink{classshortest__paths_a142a222955ab97581bfc15bb49f1e33c}{graph\_t}}\ \&\doxymbox{\hyperlink{structgraph}{graph}},\ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classshortest__paths_a1a196452faf022386a847f93e5603198}{node\_t}}\ *given\_node,}
+\DoxyCodeLine{00057\ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{enum}\ \doxymbox{\hyperlink{shortest-paths_8h_a4737c4ca9aadd7d4bb433a9a94116fc8}{shortest\_path\_sense}}\ sense);}
+\DoxyCodeLine{00058\ }
+\DoxyCodeLine{00059\ \ \ \doxymbox{\hyperlink{classshortest__paths_a22381259236b2ec50db8bf947a118b9b}{path\_t}}\ \doxymbox{\hyperlink{classshortest__paths_ad5a5279063c5cedd3c764d186ef85dbe}{get\_shortest\_path}}\ (\textcolor{keyword}{const}\ \doxymbox{\hyperlink{classshortest__paths_a1a196452faf022386a847f93e5603198}{node\_t}}\ *other\_node)\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00060\ \ \ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{classshortest__paths_a493b5a5df8d781a92833672b071df3be}{get\_shortest\_distance}}\ (\textcolor{keyword}{const}\ \doxymbox{\hyperlink{classshortest__paths_a1a196452faf022386a847f93e5603198}{node\_t}}\ *other\_node)\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00061\ }
+\DoxyCodeLine{00062\ \textcolor{keyword}{private}:}
+\DoxyCodeLine{00063\ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classshortest__paths_a142a222955ab97581bfc15bb49f1e33c}{graph\_t}}\ \&\doxymbox{\hyperlink{classshortest__paths_a3a0d893cd7a3f887a1a377e595d44d01}{m\_graph}};}
+\DoxyCodeLine{00064\ }
+\DoxyCodeLine{00065\ \ \ \textcolor{keyword}{enum}\ \doxymbox{\hyperlink{shortest-paths_8h_a4737c4ca9aadd7d4bb433a9a94116fc8}{shortest\_path\_sense}}\ \doxymbox{\hyperlink{classshortest__paths_a25b97d82ea1a84438bfd10495d4dfaee}{m\_sense}};}
+\DoxyCodeLine{00066\ }
+\DoxyCodeLine{00067\ \ \ \textcolor{comment}{/*\ For\ each\ node\ (by\ index),\ the\ minimal\ distance\ between\ that\ node}}
+\DoxyCodeLine{00068\ \textcolor{comment}{\ \ \ \ \ and\ the\ given\ node\ (with\ direction\ depending\ on\ m\_sense).\ \ */}}
+\DoxyCodeLine{00069\ \ \ \doxymbox{\hyperlink{classauto__vec}{auto\_vec<int>}}\ \doxymbox{\hyperlink{classshortest__paths_ac84e0afc58d77efc312136a73e2b0071}{m\_dist}};}
+\DoxyCodeLine{00070\ }
+\DoxyCodeLine{00071\ \ \ \textcolor{comment}{/*\ For\ each\ node\ (by\ index):}}
+\DoxyCodeLine{00072\ \textcolor{comment}{\ \ \ \ \ SPS\_FROM\_GIVEN\_ORIGIN:}}
+\DoxyCodeLine{00073\ \textcolor{comment}{\ \ \ \ \ \ \ the\ previous\ edge\ in\ the\ shortest\ path\ from\ the\ origin,}}
+\DoxyCodeLine{00074\ \textcolor{comment}{\ \ \ \ \ SPS\_TO\_GIVEN\_TARGET:}}
+\DoxyCodeLine{00075\ \textcolor{comment}{\ \ \ \ \ \ \ the\ next\ edge\ in\ the\ shortest\ path\ to\ the\ target.\ \ */}}
+\DoxyCodeLine{00076\ \ \ \doxymbox{\hyperlink{classauto__vec}{auto\_vec<const\ edge\_t\ *>}}\ \doxymbox{\hyperlink{classshortest__paths_a21b72e9f550ef568f781f72d6276559e}{m\_best\_edge}};}
+\DoxyCodeLine{00077\ \};}
+\DoxyCodeLine{00078\ }
+\DoxyCodeLine{00079\ \textcolor{comment}{/*\ shortest\_paths's\ constructor.}}
+\DoxyCodeLine{00080\ \textcolor{comment}{}}
+\DoxyCodeLine{00081\ \textcolor{comment}{\ \ \ Use\ Dijkstra's\ algorithm\ relative\ to\ GIVEN\_NODE\ to\ populate\ m\_dist\ and}}
+\DoxyCodeLine{00082\ \textcolor{comment}{\ \ \ m\_best\_edge\ with\ enough\ information\ to\ be\ able\ to\ generate\ Path\_t\ instances}}
+\DoxyCodeLine{00083\ \textcolor{comment}{\ \ \ to\ give\ the\ shortest\ path...}}
+\DoxyCodeLine{00084\ \textcolor{comment}{\ \ \ SPS\_FROM\_GIVEN\_ORIGIN:\ to\ each\ node\ in\ a\ graph\ from\ the\ origin\ node,\ or}}
+\DoxyCodeLine{00085\ \textcolor{comment}{\ \ \ SPS\_TO\_GIVEN\_TARGET:\ from\ each\ node\ in\ a\ graph\ to\ the\ target\ node.\ \ */}}
+\DoxyCodeLine{00086\ }
+\DoxyCodeLine{00087\ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ GraphTraits,\ \textcolor{keyword}{typename}\ Path\_t>}
+\DoxyCodeLine{00088\ \textcolor{keyword}{inline}}
+\DoxyCodeLine{00089\ \doxymbox{\hyperlink{classshortest__paths_a29f3152c9fb841b528ee959b4787de9f}{shortest\_paths<GraphTraits,\ Path\_t>::}}}
+\DoxyCodeLine{00090\ \doxymbox{\hyperlink{classshortest__paths_a29f3152c9fb841b528ee959b4787de9f}{shortest\_paths}}\ (\textcolor{keyword}{const}\ \doxymbox{\hyperlink{classshortest__paths_a142a222955ab97581bfc15bb49f1e33c}{graph\_t}}\ \&\doxymbox{\hyperlink{structgraph}{graph}},}
+\DoxyCodeLine{00091\ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classshortest__paths_a1a196452faf022386a847f93e5603198}{node\_t}}\ *given\_node,}
+\DoxyCodeLine{00092\ \ \ \ \ \ \ \ \ \textcolor{keyword}{enum}\ \doxymbox{\hyperlink{shortest-paths_8h_a4737c4ca9aadd7d4bb433a9a94116fc8}{shortest\_path\_sense}}\ sense)}
+\DoxyCodeLine{00093\ :\ \doxymbox{\hyperlink{classshortest__paths_a3a0d893cd7a3f887a1a377e595d44d01}{m\_graph}}\ (\doxymbox{\hyperlink{structgraph}{graph}}),}
+\DoxyCodeLine{00094\ \ \ \doxymbox{\hyperlink{classshortest__paths_a25b97d82ea1a84438bfd10495d4dfaee}{m\_sense}}\ (sense),}
+\DoxyCodeLine{00095\ \ \ \doxymbox{\hyperlink{classshortest__paths_ac84e0afc58d77efc312136a73e2b0071}{m\_dist}}\ (\doxymbox{\hyperlink{structgraph}{graph}}.m\_nodes.length\ ()),}
+\DoxyCodeLine{00096\ \ \ \doxymbox{\hyperlink{classshortest__paths_a21b72e9f550ef568f781f72d6276559e}{m\_best\_edge}}\ (\doxymbox{\hyperlink{structgraph}{graph}}.m\_nodes.length\ ())}
+\DoxyCodeLine{00097\ \{}
+\DoxyCodeLine{00098\ \ \ \doxymbox{\hyperlink{classauto__timevar}{auto\_timevar}}\ tv\ (TV\_ANALYZER\_SHORTEST\_PATHS);}
+\DoxyCodeLine{00099\ }
+\DoxyCodeLine{00100\ \ \ \doxymbox{\hyperlink{classauto__vec}{auto\_vec<int>}}\ queue\ (\doxymbox{\hyperlink{structgraph}{graph}}.m\_nodes.length\ ());}
+\DoxyCodeLine{00101\ }
+\DoxyCodeLine{00102\ \ \ \textcolor{keywordflow}{for}\ (\textcolor{keywordtype}{unsigned}\ \doxymbox{\hyperlink{poly-int_8h_a7e98b8a17c0aad30ba64d47b74e2a6c1}{i}}\ =\ 0;\ \doxymbox{\hyperlink{poly-int_8h_a7e98b8a17c0aad30ba64d47b74e2a6c1}{i}}\ <\ \doxymbox{\hyperlink{structgraph}{graph}}.m\_nodes.length\ ();\ \doxymbox{\hyperlink{poly-int_8h_a7e98b8a17c0aad30ba64d47b74e2a6c1}{i}}++)}
+\DoxyCodeLine{00103\ \ \ \ \ \{}
+\DoxyCodeLine{00104\ \ \ \ \ \ \ \doxymbox{\hyperlink{classshortest__paths_ac84e0afc58d77efc312136a73e2b0071}{m\_dist}}.quick\_push\ (\doxymbox{\hyperlink{include_2limits_8h_a9ec306f36d50c7375e74f0d1c55a3a67}{INT\_MAX}});}
+\DoxyCodeLine{00105\ \ \ \ \ \ \ \doxymbox{\hyperlink{classshortest__paths_a21b72e9f550ef568f781f72d6276559e}{m\_best\_edge}}.quick\_push\ (\doxymbox{\hyperlink{stddef_8h_a070d2ce7b6bb7e5c05602aa8c308d0c4}{NULL}});}
+\DoxyCodeLine{00106\ \ \ \ \ \ \ queue.quick\_push\ (\doxymbox{\hyperlink{poly-int_8h_a7e98b8a17c0aad30ba64d47b74e2a6c1}{i}});}
+\DoxyCodeLine{00107\ \ \ \ \ \}}
+\DoxyCodeLine{00108\ \ \ \doxymbox{\hyperlink{classshortest__paths_ac84e0afc58d77efc312136a73e2b0071}{m\_dist}}[given\_node-\/>m\_index]\ =\ 0;}
+\DoxyCodeLine{00109\ }
+\DoxyCodeLine{00110\ \ \ \textcolor{keywordflow}{while}\ (queue.length\ ()\ >\ 0)}
+\DoxyCodeLine{00111\ \ \ \ \ \{}
+\DoxyCodeLine{00112\ \ \ \ \ \ \ \textcolor{comment}{/*\ Get\ minimal\ distance\ in\ queue.}}
+\DoxyCodeLine{00113\ \textcolor{comment}{\ \ \ \ \ FIXME:\ this\ is\ O(N\string^2);\ replace\ with\ a\ priority\ queue.\ \ */}}
+\DoxyCodeLine{00114\ \ \ \ \ \ \ \textcolor{keywordtype}{int}\ idx\_with\_min\_dist\ =\ -\/1;}
+\DoxyCodeLine{00115\ \ \ \ \ \ \ \textcolor{keywordtype}{int}\ idx\_in\_queue\_with\_min\_dist\ =\ -\/1;}
+\DoxyCodeLine{00116\ \ \ \ \ \ \ \textcolor{keywordtype}{int}\ min\_dist\ =\ \doxymbox{\hyperlink{include_2limits_8h_a9ec306f36d50c7375e74f0d1c55a3a67}{INT\_MAX}};}
+\DoxyCodeLine{00117\ \ \ \ \ \ \ \textcolor{keywordflow}{for}\ (\textcolor{keywordtype}{unsigned}\ \doxymbox{\hyperlink{poly-int_8h_a7e98b8a17c0aad30ba64d47b74e2a6c1}{i}}\ =\ 0;\ \doxymbox{\hyperlink{poly-int_8h_a7e98b8a17c0aad30ba64d47b74e2a6c1}{i}}\ <\ queue.length\ ();\ \doxymbox{\hyperlink{poly-int_8h_a7e98b8a17c0aad30ba64d47b74e2a6c1}{i}}++)}
+\DoxyCodeLine{00118\ \ \ \ \ \{}
+\DoxyCodeLine{00119\ \ \ \ \ \ \ \textcolor{keywordtype}{int}\ idx\ =\ queue[\doxymbox{\hyperlink{poly-int_8h_a7e98b8a17c0aad30ba64d47b74e2a6c1}{i}}];}
+\DoxyCodeLine{00120\ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (\doxymbox{\hyperlink{classshortest__paths_ac84e0afc58d77efc312136a73e2b0071}{m\_dist}}[queue[\doxymbox{\hyperlink{poly-int_8h_a7e98b8a17c0aad30ba64d47b74e2a6c1}{i}}]]\ <\ min\_dist)}
+\DoxyCodeLine{00121\ \ \ \ \ \ \ \ \ \{}
+\DoxyCodeLine{00122\ \ \ \ \ \ \ \ \ \ \ min\_dist\ =\ \doxymbox{\hyperlink{classshortest__paths_ac84e0afc58d77efc312136a73e2b0071}{m\_dist}}[idx];}
+\DoxyCodeLine{00123\ \ \ \ \ \ \ \ \ \ \ idx\_with\_min\_dist\ =\ idx;}
+\DoxyCodeLine{00124\ \ \ \ \ \ \ \ \ \ \ idx\_in\_queue\_with\_min\_dist\ =\ \doxymbox{\hyperlink{poly-int_8h_a7e98b8a17c0aad30ba64d47b74e2a6c1}{i}};}
+\DoxyCodeLine{00125\ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00126\ \ \ \ \ \}}
+\DoxyCodeLine{00127\ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (idx\_with\_min\_dist\ ==\ -\/1)}
+\DoxyCodeLine{00128\ \ \ \ \ \textcolor{keywordflow}{break};}
+\DoxyCodeLine{00129\ \ \ \ \ \ \ \doxymbox{\hyperlink{system_8h_a0deee0ddaa8ce3bbd400ab5f75de06ff}{gcc\_assert}}\ (idx\_in\_queue\_with\_min\_dist\ !=\ -\/1);}
+\DoxyCodeLine{00130\ }
+\DoxyCodeLine{00131\ \ \ \ \ \ \ \textcolor{comment}{//\ FIXME:\ this\ is\ confusing:\ there\ are\ two\ indices\ here}}
+\DoxyCodeLine{00132\ }
+\DoxyCodeLine{00133\ \ \ \ \ \ \ queue.unordered\_remove\ (idx\_in\_queue\_with\_min\_dist);}
+\DoxyCodeLine{00134\ }
+\DoxyCodeLine{00135\ \ \ \ \ \ \ \doxymbox{\hyperlink{classshortest__paths_a1a196452faf022386a847f93e5603198}{node\_t}}\ *n}
+\DoxyCodeLine{00136\ \ \ \ \ =\ \textcolor{keyword}{static\_cast\ <}\doxymbox{\hyperlink{classshortest__paths_a1a196452faf022386a847f93e5603198}{node\_t}}\ *\textcolor{keyword}{>}\ (\doxymbox{\hyperlink{classshortest__paths_a3a0d893cd7a3f887a1a377e595d44d01}{m\_graph}}.m\_nodes[idx\_with\_min\_dist]);}
+\DoxyCodeLine{00137\ }
+\DoxyCodeLine{00138\ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (\doxymbox{\hyperlink{classshortest__paths_a25b97d82ea1a84438bfd10495d4dfaee}{m\_sense}}\ ==\ \doxymbox{\hyperlink{shortest-paths_8h_a4737c4ca9aadd7d4bb433a9a94116fc8a81aa11fdf33625ce2f900e36b795f41e}{SPS\_FROM\_GIVEN\_ORIGIN}})}
+\DoxyCodeLine{00139\ \ \ \ \ \{}
+\DoxyCodeLine{00140\ \ \ \ \ \ \ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{poly-int_8h_a7e98b8a17c0aad30ba64d47b74e2a6c1}{i}};}
+\DoxyCodeLine{00141\ \ \ \ \ \ \ \doxymbox{\hyperlink{classshortest__paths_a998a348976fa75f6ce2d82a3b0ee3e61}{edge\_t}}\ *succ;}
+\DoxyCodeLine{00142\ \ \ \ \ \ \ \doxymbox{\hyperlink{vec_8h_a04cef0e4dc670277ea774723bb2df982}{FOR\_EACH\_VEC\_ELT}}\ (n-\/>m\_succs,\ \doxymbox{\hyperlink{poly-int_8h_a7e98b8a17c0aad30ba64d47b74e2a6c1}{i}},\ succ)}
+\DoxyCodeLine{00143\ \ \ \ \ \ \ \ \ \{}
+\DoxyCodeLine{00144\ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ TODO:\ only\ for\ dest\ still\ in\ queue}}
+\DoxyCodeLine{00145\ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{classshortest__paths_a1a196452faf022386a847f93e5603198}{node\_t}}\ *dest\ =\ succ-\/>m\_dest;}
+\DoxyCodeLine{00146\ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{int}\ alt\ =\ \doxymbox{\hyperlink{classshortest__paths_ac84e0afc58d77efc312136a73e2b0071}{m\_dist}}[n-\/>m\_index]\ +\ 1;}
+\DoxyCodeLine{00147\ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (alt\ <\ \doxymbox{\hyperlink{classshortest__paths_ac84e0afc58d77efc312136a73e2b0071}{m\_dist}}[dest-\/>m\_index])}
+\DoxyCodeLine{00148\ \ \ \ \ \ \ \ \ \{}
+\DoxyCodeLine{00149\ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{classshortest__paths_ac84e0afc58d77efc312136a73e2b0071}{m\_dist}}[dest-\/>m\_index]\ =\ alt;}
+\DoxyCodeLine{00150\ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{classshortest__paths_a21b72e9f550ef568f781f72d6276559e}{m\_best\_edge}}[dest-\/>m\_index]\ =\ succ;}
+\DoxyCodeLine{00151\ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00152\ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00153\ \ \ \ \ \}}
+\DoxyCodeLine{00154\ \ \ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00155\ \ \ \ \ \{}
+\DoxyCodeLine{00156\ \ \ \ \ \ \ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{poly-int_8h_a7e98b8a17c0aad30ba64d47b74e2a6c1}{i}};}
+\DoxyCodeLine{00157\ \ \ \ \ \ \ \doxymbox{\hyperlink{classshortest__paths_a998a348976fa75f6ce2d82a3b0ee3e61}{edge\_t}}\ *pred;}
+\DoxyCodeLine{00158\ \ \ \ \ \ \ \doxymbox{\hyperlink{vec_8h_a04cef0e4dc670277ea774723bb2df982}{FOR\_EACH\_VEC\_ELT}}\ (n-\/>m\_preds,\ \doxymbox{\hyperlink{poly-int_8h_a7e98b8a17c0aad30ba64d47b74e2a6c1}{i}},\ pred)}
+\DoxyCodeLine{00159\ \ \ \ \ \ \ \ \ \{}
+\DoxyCodeLine{00160\ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ TODO:\ only\ for\ dest\ still\ in\ queue}}
+\DoxyCodeLine{00161\ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{classshortest__paths_a1a196452faf022386a847f93e5603198}{node\_t}}\ *src\ =\ pred-\/>m\_src;}
+\DoxyCodeLine{00162\ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{int}\ alt\ =\ \doxymbox{\hyperlink{classshortest__paths_ac84e0afc58d77efc312136a73e2b0071}{m\_dist}}[n-\/>m\_index]\ +\ 1;}
+\DoxyCodeLine{00163\ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (alt\ <\ \doxymbox{\hyperlink{classshortest__paths_ac84e0afc58d77efc312136a73e2b0071}{m\_dist}}[src-\/>m\_index])}
+\DoxyCodeLine{00164\ \ \ \ \ \ \ \ \ \{}
+\DoxyCodeLine{00165\ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{classshortest__paths_ac84e0afc58d77efc312136a73e2b0071}{m\_dist}}[src-\/>m\_index]\ =\ alt;}
+\DoxyCodeLine{00166\ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{classshortest__paths_a21b72e9f550ef568f781f72d6276559e}{m\_best\_edge}}[src-\/>m\_index]\ =\ pred;}
+\DoxyCodeLine{00167\ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00168\ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00169\ \ \ \ \ \}}
+\DoxyCodeLine{00170\ \ \ \ \}}
+\DoxyCodeLine{00171\ \}}
+\DoxyCodeLine{00172\ }
+\DoxyCodeLine{00173\ \textcolor{comment}{/*\ Generate\ an\ Path\_t\ instance\ giving\ the\ shortest\ path\ between\ OTHER\_NODE}}
+\DoxyCodeLine{00174\ \textcolor{comment}{\ \ \ and\ the\ given\ node.}}
+\DoxyCodeLine{00175\ \textcolor{comment}{}}
+\DoxyCodeLine{00176\ \textcolor{comment}{\ \ \ SPS\_FROM\_GIVEN\_ORIGIN:\ shortest\ path\ from\ given\ origin\ node\ to\ OTHER\_NODE}}
+\DoxyCodeLine{00177\ \textcolor{comment}{\ \ \ SPS\_TO\_GIVEN\_TARGET:\ shortest\ path\ from\ OTHER\_NODE\ to\ given\ target\ node.}}
+\DoxyCodeLine{00178\ \textcolor{comment}{}}
+\DoxyCodeLine{00179\ \textcolor{comment}{\ \ \ If\ no\ such\ path\ exists,\ return\ an\ empty\ path.\ \ */}}
+\DoxyCodeLine{00180\ }
+\DoxyCodeLine{00181\ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ GraphTraits,\ \textcolor{keyword}{typename}\ Path\_t>}
+\DoxyCodeLine{00182\ \textcolor{keyword}{inline}\ Path\_t}
+\DoxyCodeLine{00183\ \doxymbox{\hyperlink{classshortest__paths_ad5a5279063c5cedd3c764d186ef85dbe}{shortest\_paths<GraphTraits,\ Path\_t>::}}}
+\DoxyCodeLine{00184\ \doxymbox{\hyperlink{classshortest__paths_ad5a5279063c5cedd3c764d186ef85dbe}{get\_shortest\_path}}\ (\textcolor{keyword}{const}\ \doxymbox{\hyperlink{classshortest__paths_a1a196452faf022386a847f93e5603198}{node\_t}}\ *other\_node)\textcolor{keyword}{\ const}}
+\DoxyCodeLine{00185\ \textcolor{keyword}{}\{}
+\DoxyCodeLine{00186\ \ \ Path\_t\ result;}
+\DoxyCodeLine{00187\ }
+\DoxyCodeLine{00188\ \ \ \textcolor{keywordflow}{while}\ (\doxymbox{\hyperlink{classshortest__paths_a21b72e9f550ef568f781f72d6276559e}{m\_best\_edge}}[other\_node-\/>m\_index])}
+\DoxyCodeLine{00189\ \ \ \ \ \{}
+\DoxyCodeLine{00190\ \ \ \ \ \ \ result.m\_edges.safe\_push\ (\doxymbox{\hyperlink{classshortest__paths_a21b72e9f550ef568f781f72d6276559e}{m\_best\_edge}}[other\_node-\/>m\_index]);}
+\DoxyCodeLine{00191\ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (\doxymbox{\hyperlink{classshortest__paths_a25b97d82ea1a84438bfd10495d4dfaee}{m\_sense}}\ ==\ \doxymbox{\hyperlink{shortest-paths_8h_a4737c4ca9aadd7d4bb433a9a94116fc8a81aa11fdf33625ce2f900e36b795f41e}{SPS\_FROM\_GIVEN\_ORIGIN}})}
+\DoxyCodeLine{00192\ \ \ \ \ other\_node\ =\ \doxymbox{\hyperlink{classshortest__paths_a21b72e9f550ef568f781f72d6276559e}{m\_best\_edge}}[other\_node-\/>m\_index]-\/>m\_src;}
+\DoxyCodeLine{00193\ \ \ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00194\ \ \ \ \ other\_node\ =\ \doxymbox{\hyperlink{classshortest__paths_a21b72e9f550ef568f781f72d6276559e}{m\_best\_edge}}[other\_node-\/>m\_index]-\/>m\_dest;}
+\DoxyCodeLine{00195\ \ \ \ \ \}}
+\DoxyCodeLine{00196\ }
+\DoxyCodeLine{00197\ \ \ \textcolor{keywordflow}{if}\ (\doxymbox{\hyperlink{classshortest__paths_a25b97d82ea1a84438bfd10495d4dfaee}{m\_sense}}\ ==\ \doxymbox{\hyperlink{shortest-paths_8h_a4737c4ca9aadd7d4bb433a9a94116fc8a81aa11fdf33625ce2f900e36b795f41e}{SPS\_FROM\_GIVEN\_ORIGIN}})}
+\DoxyCodeLine{00198\ \ \ \ \ result.m\_edges.reverse\ ();}
+\DoxyCodeLine{00199\ }
+\DoxyCodeLine{00200\ \ \ \textcolor{keywordflow}{return}\ result;}
+\DoxyCodeLine{00201\ \}}
+\DoxyCodeLine{00202\ }
+\DoxyCodeLine{00203\ \textcolor{comment}{/*\ Get\ the\ shortest\ distance...}}
+\DoxyCodeLine{00204\ \textcolor{comment}{\ \ \ SPS\_FROM\_GIVEN\_ORIGIN:\ ...from\ given\ origin\ node\ to\ OTHER\_NODE}}
+\DoxyCodeLine{00205\ \textcolor{comment}{\ \ \ SPS\_TO\_GIVEN\_TARGET:\ ...from\ OTHER\_NODE\ to\ given\ target\ node.\ \ */}}
+\DoxyCodeLine{00206\ }
+\DoxyCodeLine{00207\ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ GraphTraits,\ \textcolor{keyword}{typename}\ Path\_t>}
+\DoxyCodeLine{00208\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{int}}
+\DoxyCodeLine{00209\ \doxymbox{\hyperlink{classshortest__paths_a493b5a5df8d781a92833672b071df3be}{shortest\_paths<GraphTraits,\ Path\_t>::}}}
+\DoxyCodeLine{00210\ \doxymbox{\hyperlink{classshortest__paths_a493b5a5df8d781a92833672b071df3be}{get\_shortest\_distance}}\ (\textcolor{keyword}{const}\ \doxymbox{\hyperlink{classshortest__paths_a1a196452faf022386a847f93e5603198}{node\_t}}\ *other\_node)\textcolor{keyword}{\ const}}
+\DoxyCodeLine{00211\ \textcolor{keyword}{}\{}
+\DoxyCodeLine{00212\ \ \ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{classshortest__paths_ac84e0afc58d77efc312136a73e2b0071}{m\_dist}}[other\_node-\/>m\_index];}
+\DoxyCodeLine{00213\ \}}
+\DoxyCodeLine{00214\ }
+\DoxyCodeLine{00215\ \textcolor{preprocessor}{\#endif\ }\textcolor{comment}{/*\ GCC\_SHORTEST\_PATHS\_H\ */}\textcolor{preprocessor}{}}
+
+\end{DoxyCode}

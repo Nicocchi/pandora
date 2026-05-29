@@ -1,0 +1,149 @@
+\doxysection{vtable-\/verify.h}
+\hypertarget{vtable-verify_8h_source}{}\label{vtable-verify_8h_source}\index{toolchain/x86\_64-\/elf/lib/gcc/x86\_64-\/elf/14.2.0/plugin/include/vtable-\/verify.h@{toolchain/x86\_64-\/elf/lib/gcc/x86\_64-\/elf/14.2.0/plugin/include/vtable-\/verify.h}}
+\doxymbox{\hyperlink{vtable-verify_8h}{Go to the documentation of this file.}}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001\ \textcolor{comment}{/*\ Copyright\ (C)\ 2013-\/2024\ Free\ Software\ Foundation,\ Inc.}}
+\DoxyCodeLine{00002\ \textcolor{comment}{}}
+\DoxyCodeLine{00003\ \textcolor{comment}{This\ file\ is\ part\ of\ GCC.}}
+\DoxyCodeLine{00004\ \textcolor{comment}{}}
+\DoxyCodeLine{00005\ \textcolor{comment}{GCC\ is\ free\ software;\ you\ can\ redistribute\ it\ and/or\ modify\ it\ under}}
+\DoxyCodeLine{00006\ \textcolor{comment}{the\ terms\ of\ the\ GNU\ General\ Public\ License\ as\ published\ by\ the\ Free}}
+\DoxyCodeLine{00007\ \textcolor{comment}{Software\ Foundation;\ either\ version\ 3,\ or\ (at\ your\ option)\ any\ later}}
+\DoxyCodeLine{00008\ \textcolor{comment}{version.}}
+\DoxyCodeLine{00009\ \textcolor{comment}{}}
+\DoxyCodeLine{00010\ \textcolor{comment}{GCC\ is\ distributed\ in\ the\ hope\ that\ it\ will\ be\ useful,\ but\ WITHOUT\ ANY}}
+\DoxyCodeLine{00011\ \textcolor{comment}{WARRANTY;\ without\ even\ the\ implied\ warranty\ of\ MERCHANTABILITY\ or}}
+\DoxyCodeLine{00012\ \textcolor{comment}{FITNESS\ FOR\ A\ PARTICULAR\ PURPOSE.\ \ See\ the\ GNU\ General\ Public\ License}}
+\DoxyCodeLine{00013\ \textcolor{comment}{for\ more\ details.}}
+\DoxyCodeLine{00014\ \textcolor{comment}{}}
+\DoxyCodeLine{00015\ \textcolor{comment}{You\ should\ have\ received\ a\ copy\ of\ the\ GNU\ General\ Public\ License}}
+\DoxyCodeLine{00016\ \textcolor{comment}{along\ with\ GCC;\ see\ the\ file\ COPYING3.\ \ If\ not\ see}}
+\DoxyCodeLine{00017\ \textcolor{comment}{<http://www.gnu.org/licenses/>.\ \ */}}
+\DoxyCodeLine{00018\ }
+\DoxyCodeLine{00019\ \textcolor{comment}{/*\ Virtual\ Table\ Pointer\ Security.\ \ */}}
+\DoxyCodeLine{00020\ }
+\DoxyCodeLine{00021\ \textcolor{preprocessor}{\#ifndef\ VTABLE\_VERIFY\_H}}
+\DoxyCodeLine{00022\ \textcolor{preprocessor}{\#define\ VTABLE\_VERIFY\_H}}
+\DoxyCodeLine{00023\ }
+\DoxyCodeLine{00024\ \textcolor{preprocessor}{\#include\ "{}\doxymbox{\hyperlink{sbitmap_8h}{sbitmap.h}}"{}}}
+\DoxyCodeLine{00025\ }
+\DoxyCodeLine{00026\ \textcolor{comment}{/*\ The\ function\ decl\ used\ to\ create\ calls\ to\ \_\_VLTVtableVerify.\ \ It\ must}}
+\DoxyCodeLine{00027\ \textcolor{comment}{\ \ \ be\ global\ because\ it\ needs\ to\ be\ initialized\ in\ the\ C++\ front\ end,\ but}}
+\DoxyCodeLine{00028\ \textcolor{comment}{\ \ \ used\ in\ the\ middle\ end\ (in\ the\ vtable\ verification\ pass).\ \ */}}
+\DoxyCodeLine{00029\ }
+\DoxyCodeLine{00030\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ \doxymbox{\hyperlink{vtable-verify_8h_a5ddca07788c05561ce9f8dc796637f31}{verify\_vtbl\_ptr\_fndecl}};}
+\DoxyCodeLine{00031\ }
+\DoxyCodeLine{00032\ \textcolor{comment}{/*\ Global\ variable\ keeping\ track\ of\ how\ many\ vtable\ map\ variables\ we}}
+\DoxyCodeLine{00033\ \textcolor{comment}{\ \ \ have\ created.\ */}}
+\DoxyCodeLine{00034\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{unsigned}\ \doxymbox{\hyperlink{vtable-verify_8h_a090e8286e789d0a52bf51ee2fee19fd8}{num\_vtable\_map\_nodes}};}
+\DoxyCodeLine{00035\ }
+\DoxyCodeLine{00036\ \textcolor{comment}{/*\ Keep\ track\ of\ how\ many\ virtual\ calls\ we\ are\ actually\ verifying.\ \ */}}
+\DoxyCodeLine{00037\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{vtable-verify_8h_a5c05d57d57d37aad6b27b57feb4f496e}{total\_num\_virtual\_calls}};}
+\DoxyCodeLine{00038\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{vtable-verify_8h_a85322f4b501ffcd2b669d40886030e2d}{total\_num\_verified\_vcalls}};}
+\DoxyCodeLine{00039\ }
+\DoxyCodeLine{00040\ \textcolor{comment}{/*\ Each\ vtable\ map\ variable\ corresponds\ to\ a\ virtual\ class.\ \ Each}}
+\DoxyCodeLine{00041\ \textcolor{comment}{\ \ \ vtable\ map\ variable\ has\ a\ hash\ table\ associated\ with\ it,\ that\ keeps}}
+\DoxyCodeLine{00042\ \textcolor{comment}{\ \ \ track\ of\ the\ vtable\ pointers\ for\ which\ we\ have\ generated\ a\ call\ to}}
+\DoxyCodeLine{00043\ \textcolor{comment}{\ \ \ \_\_VLTRegisterPair\ (with\ the\ current\ vtable\ map\ variable).\ \ This\ is}}
+\DoxyCodeLine{00044\ \textcolor{comment}{\ \ \ the\ hash\ table\ node\ that\ is\ used\ for\ each\ entry\ in\ this\ hash\ table}}
+\DoxyCodeLine{00045\ \textcolor{comment}{\ \ \ of\ vtable\ pointers.}}
+\DoxyCodeLine{00046\ \textcolor{comment}{}}
+\DoxyCodeLine{00047\ \textcolor{comment}{\ \ \ Sometimes\ there\ are\ multiple\ valid\ vtable\ pointer\ entries\ that\ use}}
+\DoxyCodeLine{00048\ \textcolor{comment}{\ \ \ the\ same\ vtable\ pointer\ decl\ with\ different\ offsets.\ \ Therefore,}}
+\DoxyCodeLine{00049\ \textcolor{comment}{\ \ \ for\ each\ vtable\ pointer\ in\ the\ hash\ table,\ there\ is\ also\ an\ array}}
+\DoxyCodeLine{00050\ \textcolor{comment}{\ \ \ of\ offsets\ used\ with\ that\ vtable.\ */}}
+\DoxyCodeLine{00051\ }
+\DoxyCodeLine{00052\ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{structvtable__registration}{vtable\_registration}}}
+\DoxyCodeLine{00053\ \{}
+\DoxyCodeLine{00054\ \ \ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ \doxymbox{\hyperlink{structvtable__registration_ace6a3c91272fdeaaf73b1dccf9455a62}{vtable\_decl}};\ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{/*\ The\ var\ decl\ of\ the\ vtable.\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ */}}
+\DoxyCodeLine{00055\ \ \ \doxymbox{\hyperlink{structvec}{vec<unsigned>}}\ \doxymbox{\hyperlink{structvtable__registration_a939405e742ed442c074751e1697ac57f}{offsets}};\ \ \ \ \ \ \ \textcolor{comment}{/*\ The\ offsets\ array.\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ */}}
+\DoxyCodeLine{00056\ \};}
+\DoxyCodeLine{00057\ }
+\DoxyCodeLine{00058\ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{structregistration__hasher}{registration\_hasher}}\ :\ \doxymbox{\hyperlink{structnofree__ptr__hash}{nofree\_ptr\_hash}}\ <struct\ vtable\_registration>}
+\DoxyCodeLine{00059\ \{}
+\DoxyCodeLine{00060\ \ \ \textcolor{keyword}{static}\ \textcolor{keyword}{inline}\ \doxymbox{\hyperlink{hashtab_8h_a2d05e5049721cf3117dd6b34e20d4f65}{hashval\_t}}\ \doxymbox{\hyperlink{structregistration__hasher_a282faff0bb56d6bc9cc5a0258e03e9fa}{hash}}\ (\textcolor{keyword}{const}\ \doxymbox{\hyperlink{structvtable__registration}{vtable\_registration}}\ *);}
+\DoxyCodeLine{00061\ \ \ \textcolor{keyword}{static}\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{structregistration__hasher_a341f896fb843ca9a2e22f8c053b6399f}{equal}}\ (\textcolor{keyword}{const}\ \doxymbox{\hyperlink{structvtable__registration}{vtable\_registration}}\ *,}
+\DoxyCodeLine{00062\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{structvtable__registration}{vtable\_registration}}\ *);}
+\DoxyCodeLine{00063\ \};}
+\DoxyCodeLine{00064\ }
+\DoxyCodeLine{00065\ \textcolor{keyword}{typedef}\ \doxymbox{\hyperlink{classhash__table}{hash\_table<registration\_hasher>}}\ \doxymbox{\hyperlink{vtable-verify_8h_a94bd898ec9b934a295be29b1af38742a}{register\_table\_type}};}
+\DoxyCodeLine{00066\ \textcolor{keyword}{typedef}\ register\_table\_type::iterator\ \doxymbox{\hyperlink{vtable-verify_8h_aaffdee1dea297c0196e49f82f65ba64c}{registration\_iterator\_type}};}
+\DoxyCodeLine{00067\ }
+\DoxyCodeLine{00068\ \textcolor{comment}{/*\ \ This\ struct\ is\ used\ to\ represent\ the\ class\ hierarchy\ information}}
+\DoxyCodeLine{00069\ \textcolor{comment}{\ \ \ \ that\ we\ need.\ \ Each\ vtable\ map\ variable\ has\ an\ associated\ class}}
+\DoxyCodeLine{00070\ \textcolor{comment}{\ \ \ \ hierarchy\ node\ (struct\ vtv\_graph\_node).\ \ Note:\ In\ this\ struct,}}
+\DoxyCodeLine{00071\ \textcolor{comment}{\ \ \ \ 'children'\ means\ immediate\ descendants\ in\ the\ class\ hierarchy;}}
+\DoxyCodeLine{00072\ \textcolor{comment}{\ \ \ \ 'descendant'\ means\ any\ descendant\ however\ many\ levels\ deep.\ */}}
+\DoxyCodeLine{00073\ }
+\DoxyCodeLine{00074\ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{structvtv__graph__node}{vtv\_graph\_node}}\ \{}
+\DoxyCodeLine{00075\ \ \ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ \doxymbox{\hyperlink{structvtv__graph__node_aa602665e5873066f414bc594ce3a43bc}{class\_type}};\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{/*\ The\ record\_type\ of\ the\ class.\ \ \ \ \ \ \ \ */}}
+\DoxyCodeLine{00076\ \ \ \textcolor{keywordtype}{unsigned}\ \doxymbox{\hyperlink{structvtv__graph__node_a59c5ca846e6cdef1e672374a1caf29ba}{class\_uid}};\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{/*\ A\ unique,\ monotonically}}
+\DoxyCodeLine{00077\ \textcolor{comment}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ ascending\ id\ for\ class\ node.}}
+\DoxyCodeLine{00078\ \textcolor{comment}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ Each\ vtable\ map\ node\ also\ has}}
+\DoxyCodeLine{00079\ \textcolor{comment}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ an\ id.\ \ The\ class\ uid\ is\ the}}
+\DoxyCodeLine{00080\ \textcolor{comment}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ same\ as\ the\ vtable\ map\ node\ id}}
+\DoxyCodeLine{00081\ \textcolor{comment}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ for\ nodes\ corresponding\ to\ the}}
+\DoxyCodeLine{00082\ \textcolor{comment}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ same\ class.\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ */}}
+\DoxyCodeLine{00083\ \ \ \textcolor{keywordtype}{unsigned}\ \doxymbox{\hyperlink{structvtv__graph__node_ac617346fc1f84e3621b9ea30496d28c1}{num\_processed\_children}};\ \ \textcolor{comment}{/*\ \#\ of\ children\ for\ whom\ we\ have}}
+\DoxyCodeLine{00084\ \textcolor{comment}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ computed\ the\ class\ hierarchy}}
+\DoxyCodeLine{00085\ \textcolor{comment}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ transitive\ closure.\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ */}}
+\DoxyCodeLine{00086\ \ \ \doxymbox{\hyperlink{structvec}{vec<struct\ vtv\_graph\_node\ *>}}\ \doxymbox{\hyperlink{structvtv__graph__node_adf9fcf8c2a3205421d78925485c496f4}{parents}};\ \ \textcolor{comment}{/*\ Vector\ of\ parents\ in\ the\ graph.\ */}}
+\DoxyCodeLine{00087\ \ \ \doxymbox{\hyperlink{structvec}{vec<struct\ vtv\_graph\_node\ *>}}\ \doxymbox{\hyperlink{structvtv__graph__node_a7cdeced744d3b12487a4e2c8854d8128}{children}};\ \textcolor{comment}{/*\ Vector\ of\ children\ in\ the\ graph.*/}}
+\DoxyCodeLine{00088\ \ \ \doxymbox{\hyperlink{coretypes_8h_a780cd5c6b7453aa0a01cdf1c5b379abd}{sbitmap}}\ \doxymbox{\hyperlink{structvtv__graph__node_ab480085d153580ba10556a9178977b34}{descendants}};\ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{/*\ Bitmap\ representing\ all\ this\ node's}}
+\DoxyCodeLine{00089\ \textcolor{comment}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ descendants\ in\ the\ graph.\ \ \ \ \ \ \ \ \ \ \ \ */}}
+\DoxyCodeLine{00090\ \};}
+\DoxyCodeLine{00091\ }
+\DoxyCodeLine{00092\ \textcolor{comment}{/*\ This\ is\ the\ node\ used\ for\ our\ hashtable\ of\ vtable\ map\ variable}}
+\DoxyCodeLine{00093\ \textcolor{comment}{\ \ \ information.\ \ When\ we\ create\ a\ vtable\ map\ variable\ (var\ decl)\ we}}
+\DoxyCodeLine{00094\ \textcolor{comment}{\ \ \ put\ it\ into\ one\ of\ these\ nodes;\ create\ a\ corresponding}}
+\DoxyCodeLine{00095\ \textcolor{comment}{\ \ \ vtv\_graph\_node\ for\ our\ class\ hierarchy\ info\ and\ store\ that\ in\ this}}
+\DoxyCodeLine{00096\ \textcolor{comment}{\ \ \ node;\ generate\ a\ unique\ (monotonically\ ascending)\ id\ for\ both\ the}}
+\DoxyCodeLine{00097\ \textcolor{comment}{\ \ \ vtbl\_map\_node\ and\ the\ vtv\_graph\_node;\ and\ insert\ the\ node\ into\ two}}
+\DoxyCodeLine{00098\ \textcolor{comment}{\ \ \ data\ structures\ (to\ make\ it\ easy\ to\ find\ in\ several\ different}}
+\DoxyCodeLine{00099\ \textcolor{comment}{\ \ \ ways):\ 1).\ A\ hash\ table\ ("{}vtbl\_map\_hash"{}\ in\ vtable-\/verify.cc).}}
+\DoxyCodeLine{00100\ \textcolor{comment}{\ \ \ This\ gives\ us\ an\ easy\ way\ to\ check\ to\ see\ if\ we\ already\ have\ a\ node}}
+\DoxyCodeLine{00101\ \textcolor{comment}{\ \ \ for\ the\ vtable\ map\ variable\ or\ not;\ and\ 2).\ An\ array\ (vector)\ of}}
+\DoxyCodeLine{00102\ \textcolor{comment}{\ \ \ vtbl\_map\_nodes,\ where\ the\ array\ index\ corresponds\ to\ the\ unique\ id}}
+\DoxyCodeLine{00103\ \textcolor{comment}{\ \ \ of\ the\ vtbl\_map\_node,\ which\ gives\ us\ an\ easy\ way\ to\ use\ bitmaps\ to}}
+\DoxyCodeLine{00104\ \textcolor{comment}{\ \ \ represent\ and\ find\ the\ vtable\ map\ nodes.\ \ */}}
+\DoxyCodeLine{00105\ }
+\DoxyCodeLine{00106\ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{structvtbl__map__node}{vtbl\_map\_node}}\ \{}
+\DoxyCodeLine{00107\ \ \ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ \doxymbox{\hyperlink{structvtbl__map__node_a8e0f90c2b1c64cdeecb3b386420e2d83}{vtbl\_map\_decl}};\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{/*\ The\ var\ decl\ for\ the\ vtable\ map}}
+\DoxyCodeLine{00108\ \textcolor{comment}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ variable.\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ */}}
+\DoxyCodeLine{00109\ \ \ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ \doxymbox{\hyperlink{structvtbl__map__node_a0320935ba13d4d3a01573292b826a0ac}{class\_name}};\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{/*\ The\ DECL\_ASSEMBLER\_NAME\ of\ the}}
+\DoxyCodeLine{00110\ \textcolor{comment}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ class.\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ */}}
+\DoxyCodeLine{00111\ \ \ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{structvtv__graph__node}{vtv\_graph\_node}}\ *\doxymbox{\hyperlink{structvtbl__map__node_a41df527823e7ab4c2dc3b6ce0aca533d}{class\_info}};\ \ \textcolor{comment}{/*\ Our\ class\ hierarchy\ info\ for\ the}}
+\DoxyCodeLine{00112\ \textcolor{comment}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ class.\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ */}}
+\DoxyCodeLine{00113\ \ \ \textcolor{keywordtype}{unsigned}\ \doxymbox{\hyperlink{structvtbl__map__node_a906383538ce18d72b2d0995d3867a6ca}{uid}};\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{/*\ The\ unique\ id\ for\ the\ vtable\ map}}
+\DoxyCodeLine{00114\ \textcolor{comment}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ variable.\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ */}}
+\DoxyCodeLine{00115\ \ \ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{structvtbl__map__node}{vtbl\_map\_node}}\ *\doxymbox{\hyperlink{structvtbl__map__node_ae0c03eec2e21b94ffd91e0d46e34aa68}{next}},\ *\doxymbox{\hyperlink{structvtbl__map__node_a18b2282bc3fb5c591ab188ede8ced824}{prev}};\ \ \textcolor{comment}{/*\ Pointers\ for\ the\ linked\ list}}
+\DoxyCodeLine{00116\ \textcolor{comment}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ structure.\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ */}}
+\DoxyCodeLine{00117\ \ \ \doxymbox{\hyperlink{vtable-verify_8h_a94bd898ec9b934a295be29b1af38742a}{register\_table\_type}}\ *\doxymbox{\hyperlink{structvtbl__map__node_af86bcee021f606ab1aac7ec61eb3b40e}{registered}};\ \ \ \ \ \textcolor{comment}{/*\ Hashtable\ of\ vtable\ pointers\ for\ which}}
+\DoxyCodeLine{00118\ \textcolor{comment}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ we\ have\ generated\ a\ \_VLTRegisterPair}}
+\DoxyCodeLine{00119\ \textcolor{comment}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ call\ with\ this\ vtable\ map\ variable.\ */}}
+\DoxyCodeLine{00120\ \ \ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{structvtbl__map__node_adb7ec559340ca266b5ed605867f39d6f}{is\_used}};\ \ \ \ \ \ \ \ \ \ \textcolor{comment}{/*\ Boolean\ indicating\ if\ we\ used\ this\ vtable\ map}}
+\DoxyCodeLine{00121\ \textcolor{comment}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ variable\ in\ a\ call\ to\ \_\_VLTVerifyVtablePointer.\ */}}
+\DoxyCodeLine{00122\ \};}
+\DoxyCodeLine{00123\ }
+\DoxyCodeLine{00124\ \textcolor{comment}{/*\ Controls\ debugging\ for\ vtable\ verification.\ \ */}}
+\DoxyCodeLine{00125\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{vtable-verify_8h_af0f53cca3e6733d7367b45a663609d0c}{vtv\_debug}};}
+\DoxyCodeLine{00126\ }
+\DoxyCodeLine{00127\ \textcolor{comment}{/*\ The\ global\ vector\ of\ vtbl\_map\_nodes.\ \ */}}
+\DoxyCodeLine{00128\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{structvec}{vec<struct\ vtbl\_map\_node\ *>}}\ \doxymbox{\hyperlink{vtable-verify_8h_a2ec286ebcfe8b81a8d89c4d78e8fb90b}{vtbl\_map\_nodes\_vec}};}
+\DoxyCodeLine{00129\ }
+\DoxyCodeLine{00130\ \textcolor{comment}{/*\ \ The\ global\ vectors\ for\ mangled\ class\ names\ for\ anonymous\ classes.\ \ */}}
+\DoxyCodeLine{00131\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{coretypes_8h_ae5708c4d4b300570eebe0bc0c78facbc}{GTY}}(())\ \doxymbox{\hyperlink{structvec}{vec}}<\doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}},\ \doxymbox{\hyperlink{structva__gc}{va\_gc}}>\ *\doxymbox{\hyperlink{vtable-verify_8h_a786eb2299d9e9ca4226556268afe243a}{vtbl\_mangled\_name\_types}};}
+\DoxyCodeLine{00132\ extern\ \doxymbox{\hyperlink{coretypes_8h_ae5708c4d4b300570eebe0bc0c78facbc}{GTY}}(())\ \doxymbox{\hyperlink{structvec}{vec}}<\doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}},\ \doxymbox{\hyperlink{structva__gc}{va\_gc}}>\ *\doxymbox{\hyperlink{vtable-verify_8h_ac1383847b76ab59c18d59f7f0abaafac}{vtbl\_mangled\_name\_ids}};}
+\DoxyCodeLine{00133\ }
+\DoxyCodeLine{00134\ extern\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{vtable-verify_8h_aa8611904786d4d018d75a7ce07566ff2}{vtbl\_register\_mangled\_name}}\ (\doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}},\ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}});}
+\DoxyCodeLine{00135\ extern\ struct\ \doxymbox{\hyperlink{structvtbl__map__node}{vtbl\_map\_node}}\ *\doxymbox{\hyperlink{vtable-verify_8h_af412493585d68e72c21e84ecb17ab2a1}{vtbl\_map\_get\_node}}\ (\doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}});}
+\DoxyCodeLine{00136\ extern\ struct\ \doxymbox{\hyperlink{structvtbl__map__node}{vtbl\_map\_node}}\ *\doxymbox{\hyperlink{vtable-verify_8h_acb33035be6ebeeb2d8f8d9edad2a5043}{find\_or\_create\_vtbl\_map\_node}}\ (\doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}});}
+\DoxyCodeLine{00137\ extern\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{vtable-verify_8h_ab92183e0efb2ae5d90cdff8bc95aa706}{vtbl\_map\_node\_class\_insert}}\ (struct\ \doxymbox{\hyperlink{structvtbl__map__node}{vtbl\_map\_node}}\ *,\ \textcolor{keywordtype}{unsigned});}
+\DoxyCodeLine{00138\ extern\ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{vtable-verify_8h_a7dfec86bb9cab620eb4470ea159432ea}{vtbl\_map\_node\_registration\_find}}\ (struct\ \doxymbox{\hyperlink{structvtbl__map__node}{vtbl\_map\_node}}\ *,}
+\DoxyCodeLine{00139\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}},\ \textcolor{keywordtype}{unsigned});}
+\DoxyCodeLine{00140\ extern\ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{vtable-verify_8h_afb1082ff036c7cf715f911c93b7a1cf2}{vtbl\_map\_node\_registration\_insert}}\ (struct\ \doxymbox{\hyperlink{structvtbl__map__node}{vtbl\_map\_node}}\ *,}
+\DoxyCodeLine{00141\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}},\ \textcolor{keywordtype}{unsigned});}
+\DoxyCodeLine{00142\ }
+\DoxyCodeLine{00143\ \textcolor{preprocessor}{\#endif\ }\textcolor{comment}{/*\ VTABLE\_VERIFY\_H\ */}\textcolor{preprocessor}{}}
+
+\end{DoxyCode}

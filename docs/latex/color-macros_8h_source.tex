@@ -1,0 +1,130 @@
+\doxysection{color-\/macros.h}
+\hypertarget{color-macros_8h_source}{}\label{color-macros_8h_source}\index{toolchain/x86\_64-\/elf/lib/gcc/x86\_64-\/elf/14.2.0/plugin/include/color-\/macros.h@{toolchain/x86\_64-\/elf/lib/gcc/x86\_64-\/elf/14.2.0/plugin/include/color-\/macros.h}}
+\doxymbox{\hyperlink{color-macros_8h}{Go to the documentation of this file.}}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001\ \textcolor{comment}{/*\ Terminal\ color\ manipulation\ macros.}}
+\DoxyCodeLine{00002\ \textcolor{comment}{\ \ \ Copyright\ (C)\ 2005-\/2024\ Free\ Software\ Foundation,\ Inc.}}
+\DoxyCodeLine{00003\ \textcolor{comment}{}}
+\DoxyCodeLine{00004\ \textcolor{comment}{This\ file\ is\ part\ of\ GCC.}}
+\DoxyCodeLine{00005\ \textcolor{comment}{}}
+\DoxyCodeLine{00006\ \textcolor{comment}{GCC\ is\ free\ software;\ you\ can\ redistribute\ it\ and/or\ modify\ it\ under}}
+\DoxyCodeLine{00007\ \textcolor{comment}{the\ terms\ of\ the\ GNU\ General\ Public\ License\ as\ published\ by\ the\ Free}}
+\DoxyCodeLine{00008\ \textcolor{comment}{Software\ Foundation;\ either\ version\ 3,\ or\ (at\ your\ option)\ any\ later}}
+\DoxyCodeLine{00009\ \textcolor{comment}{version.}}
+\DoxyCodeLine{00010\ \textcolor{comment}{}}
+\DoxyCodeLine{00011\ \textcolor{comment}{GCC\ is\ distributed\ in\ the\ hope\ that\ it\ will\ be\ useful,\ but\ WITHOUT\ ANY}}
+\DoxyCodeLine{00012\ \textcolor{comment}{WARRANTY;\ without\ even\ the\ implied\ warranty\ of\ MERCHANTABILITY\ or}}
+\DoxyCodeLine{00013\ \textcolor{comment}{FITNESS\ FOR\ A\ PARTICULAR\ PURPOSE.\ \ See\ the\ GNU\ General\ Public\ License}}
+\DoxyCodeLine{00014\ \textcolor{comment}{for\ more\ details.}}
+\DoxyCodeLine{00015\ \textcolor{comment}{}}
+\DoxyCodeLine{00016\ \textcolor{comment}{You\ should\ have\ received\ a\ copy\ of\ the\ GNU\ General\ Public\ License}}
+\DoxyCodeLine{00017\ \textcolor{comment}{along\ with\ GCC;\ see\ the\ file\ COPYING3.\ \ If\ not\ see}}
+\DoxyCodeLine{00018\ \textcolor{comment}{<http://www.gnu.org/licenses/>.\ \ */}}
+\DoxyCodeLine{00019\ }
+\DoxyCodeLine{00020\ \textcolor{preprocessor}{\#ifndef\ GCC\_COLOR\_MACROS\_H}}
+\DoxyCodeLine{00021\ \textcolor{preprocessor}{\#define\ GCC\_COLOR\_MACROS\_H}}
+\DoxyCodeLine{00022\ }
+\DoxyCodeLine{00023\ \textcolor{comment}{/*\ Select\ Graphic\ Rendition\ (SGR,\ "{}\(\backslash\)33[...m"{})\ strings.\ \ */}}
+\DoxyCodeLine{00024\ \textcolor{comment}{/*\ Also\ Erase\ in\ Line\ (EL)\ to\ Right\ ("{}\(\backslash\)33[K"{})\ by\ default.\ \ */}}
+\DoxyCodeLine{00025\ \textcolor{comment}{/*\ \ \ \ Why\ have\ EL\ to\ Right\ after\ SGR?}}
+\DoxyCodeLine{00026\ \textcolor{comment}{\ \ \ \ \ -\/-\/\ The\ behavior\ of\ line-\/wrapping\ when\ at\ the\ bottom\ of\ the}}
+\DoxyCodeLine{00027\ \textcolor{comment}{\ \ \ \ \ \ \ \ terminal\ screen\ and\ at\ the\ end\ of\ the\ current\ line\ is\ often}}
+\DoxyCodeLine{00028\ \textcolor{comment}{\ \ \ \ \ \ \ \ such\ that\ a\ new\ line\ is\ introduced,\ entirely\ cleared\ with}}
+\DoxyCodeLine{00029\ \textcolor{comment}{\ \ \ \ \ \ \ \ the\ current\ background\ color\ which\ may\ be\ different\ from\ the}}
+\DoxyCodeLine{00030\ \textcolor{comment}{\ \ \ \ \ \ \ \ default\ one\ (see\ the\ boolean\ back\_color\_erase\ terminfo(5)}}
+\DoxyCodeLine{00031\ \textcolor{comment}{\ \ \ \ \ \ \ \ capability),\ thus\ scrolling\ the\ display\ by\ one\ line.}}
+\DoxyCodeLine{00032\ \textcolor{comment}{\ \ \ \ \ \ \ \ The\ end\ of\ this\ new\ line\ will\ stay\ in\ this\ background\ color}}
+\DoxyCodeLine{00033\ \textcolor{comment}{\ \ \ \ \ \ \ \ even\ after\ reverting\ to\ the\ default\ background\ color\ with}}
+\DoxyCodeLine{00034\ \textcolor{comment}{\ \ \ \ \ \ \ \ "{}\(\backslash\)33[m',\ unless\ it\ is\ explicitly\ cleared\ again\ with\ "{}\(\backslash\)33[K"{}}}
+\DoxyCodeLine{00035\ \textcolor{comment}{\ \ \ \ \ \ \ \ (which\ is\ the\ behavior\ the\ user\ would\ instinctively\ expect}}
+\DoxyCodeLine{00036\ \textcolor{comment}{\ \ \ \ \ \ \ \ from\ the\ whole\ thing).\ \ There\ may\ be\ some\ unavoidable}}
+\DoxyCodeLine{00037\ \textcolor{comment}{\ \ \ \ \ \ \ \ background-\/color\ flicker\ at\ the\ end\ of\ this\ new\ line\ because}}
+\DoxyCodeLine{00038\ \textcolor{comment}{\ \ \ \ \ \ \ \ of\ this\ (when\ timing\ with\ the\ monitor's\ redraw\ is\ just\ right).}}
+\DoxyCodeLine{00039\ \textcolor{comment}{\ \ \ \ \ -\/-\/\ The\ behavior\ of\ HT\ (tab,\ "{}\(\backslash\)t"{})\ is\ usually\ the\ same\ as\ that\ of}}
+\DoxyCodeLine{00040\ \textcolor{comment}{\ \ \ \ \ \ \ \ Cursor\ Forward\ Tabulation\ (CHT)\ with\ a\ default\ parameter}}
+\DoxyCodeLine{00041\ \textcolor{comment}{\ \ \ \ \ \ \ \ of\ 1\ ("{}\(\backslash\)33[I"{}),\ i.e.,\ it\ performs\ pure\ movement\ to\ the\ next}}
+\DoxyCodeLine{00042\ \textcolor{comment}{\ \ \ \ \ \ \ \ tab\ stop,\ without\ any\ clearing\ of\ either\ content\ or\ screen}}
+\DoxyCodeLine{00043\ \textcolor{comment}{\ \ \ \ \ \ \ \ attributes\ (including\ background\ color);\ try}}
+\DoxyCodeLine{00044\ \textcolor{comment}{\ \ \ \ \ \ \ \ \ \ \ printf\ 'asdfqwerzxcv\(\backslash\)rASDF\(\backslash\)tZXCV\(\backslash\)n'}}
+\DoxyCodeLine{00045\ \textcolor{comment}{\ \ \ \ \ \ \ \ in\ a\ bash(1)\ shell\ to\ demonstrate\ this.\ \ This\ is\ not\ what\ the}}
+\DoxyCodeLine{00046\ \textcolor{comment}{\ \ \ \ \ \ \ \ user\ would\ instinctively\ expect\ of\ HT\ (but\ is\ ok\ for\ CHT).}}
+\DoxyCodeLine{00047\ \textcolor{comment}{\ \ \ \ \ \ \ \ The\ instinctive\ behavior\ would\ include\ clearing\ the\ terminal}}
+\DoxyCodeLine{00048\ \textcolor{comment}{\ \ \ \ \ \ \ \ cells\ that\ are\ skipped\ over\ by\ HT\ with\ blank\ cells\ in\ the}}
+\DoxyCodeLine{00049\ \textcolor{comment}{\ \ \ \ \ \ \ \ current\ screen\ attributes,\ including\ background\ color;}}
+\DoxyCodeLine{00050\ \textcolor{comment}{\ \ \ \ \ \ \ \ the\ boolean\ dest\_tabs\_magic\_smso\ terminfo(5)\ capability}}
+\DoxyCodeLine{00051\ \textcolor{comment}{\ \ \ \ \ \ \ \ indicates\ this\ saner\ behavior\ for\ HT,\ but\ only\ some\ rare}}
+\DoxyCodeLine{00052\ \textcolor{comment}{\ \ \ \ \ \ \ \ terminals\ have\ it\ (although\ it\ also\ indicates\ a\ special}}
+\DoxyCodeLine{00053\ \textcolor{comment}{\ \ \ \ \ \ \ \ glitch\ with\ standout\ mode\ in\ the\ Teleray\ terminal\ for\ which}}
+\DoxyCodeLine{00054\ \textcolor{comment}{\ \ \ \ \ \ \ \ it\ was\ initially\ introduced).\ \ The\ remedy\ is\ to\ add\ "{}\(\backslash\)33K"{}}}
+\DoxyCodeLine{00055\ \textcolor{comment}{\ \ \ \ \ \ \ \ after\ each\ SGR\ sequence,\ be\ it\ START\ (to\ fix\ the\ behavior}}
+\DoxyCodeLine{00056\ \textcolor{comment}{\ \ \ \ \ \ \ \ of\ any\ HT\ after\ that\ before\ another\ SGR)\ or\ END\ (to\ fix\ the}}
+\DoxyCodeLine{00057\ \textcolor{comment}{\ \ \ \ \ \ \ \ behavior\ of\ an\ HT\ in\ default\ background\ color\ that\ would}}
+\DoxyCodeLine{00058\ \textcolor{comment}{\ \ \ \ \ \ \ \ follow\ a\ line-\/wrapping\ at\ the\ bottom\ of\ the\ screen\ in\ another}}
+\DoxyCodeLine{00059\ \textcolor{comment}{\ \ \ \ \ \ \ \ background\ color,\ and\ to\ complement\ doing\ it\ after\ START).}}
+\DoxyCodeLine{00060\ \textcolor{comment}{\ \ \ \ \ \ \ \ Piping\ GCC's\ output\ through\ a\ pager\ such\ as\ less(1)\ avoids}}
+\DoxyCodeLine{00061\ \textcolor{comment}{\ \ \ \ \ \ \ \ any\ HT\ problems\ since\ the\ pager\ performs\ tab\ expansion.}}
+\DoxyCodeLine{00062\ \textcolor{comment}{}}
+\DoxyCodeLine{00063\ \textcolor{comment}{\ \ \ \ \ \ Generic\ disadvantages\ of\ this\ remedy\ are:}}
+\DoxyCodeLine{00064\ \textcolor{comment}{\ \ \ \ \ -\/-\/\ Some\ very\ rare\ terminals\ might\ support\ SGR\ but\ not\ EL\ (nobody}}
+\DoxyCodeLine{00065\ \textcolor{comment}{\ \ \ \ \ \ \ \ will\ use\ "{}gcc\ -\/fdiagnostics-\/color"{}\ on\ a\ terminal\ that\ does\ not}}
+\DoxyCodeLine{00066\ \textcolor{comment}{\ \ \ \ \ \ \ \ support\ SGR\ in\ the\ first\ place).}}
+\DoxyCodeLine{00067\ \textcolor{comment}{\ \ \ \ \ -\/-\/\ Having\ these\ extra\ control\ sequences\ might\ somewhat\ complicate}}
+\DoxyCodeLine{00068\ \textcolor{comment}{\ \ \ \ \ \ \ \ the\ task\ of\ any\ program\ trying\ to\ parse\ "{}gcc\ -\/fdiagnostics-\/color"{}}}
+\DoxyCodeLine{00069\ \textcolor{comment}{\ \ \ \ \ \ \ \ output\ in\ order\ to\ extract\ structuring\ information\ from\ it.}}
+\DoxyCodeLine{00070\ \textcolor{comment}{\ \ \ \ \ \ A\ specific\ disadvantage\ to\ doing\ it\ after\ SGR\ START\ is:}}
+\DoxyCodeLine{00071\ \textcolor{comment}{\ \ \ \ \ -\/-\/\ Even\ more\ possible\ background\ color\ flicker\ (when\ timing}}
+\DoxyCodeLine{00072\ \textcolor{comment}{\ \ \ \ \ \ \ \ with\ the\ monitor's\ redraw\ is\ just\ right),\ even\ when\ not\ at\ the}}
+\DoxyCodeLine{00073\ \textcolor{comment}{\ \ \ \ \ \ \ \ bottom\ of\ the\ screen.}}
+\DoxyCodeLine{00074\ \textcolor{comment}{\ \ \ \ \ \ There\ are\ no\ additional\ disadvantages\ specific\ to\ doing\ it\ after}}
+\DoxyCodeLine{00075\ \textcolor{comment}{\ \ \ \ \ \ SGR\ END.}}
+\DoxyCodeLine{00076\ \textcolor{comment}{}}
+\DoxyCodeLine{00077\ \textcolor{comment}{\ \ \ \ \ \ It\ would\ be\ impractical\ for\ GCC\ to\ become\ a\ full-\/fledged}}
+\DoxyCodeLine{00078\ \textcolor{comment}{\ \ \ \ \ \ terminal\ program\ linked\ against\ ncurses\ or\ the\ like,\ so\ it\ will}}
+\DoxyCodeLine{00079\ \textcolor{comment}{\ \ \ \ \ \ not\ detect\ terminfo(5)\ capabilities.\ \ */}}
+\DoxyCodeLine{00080\ }
+\DoxyCodeLine{00081\ \textcolor{preprocessor}{\#define\ COLOR\_SEPARATOR\ \ \ \ \ "{};"{}}}
+\DoxyCodeLine{00082\ \textcolor{preprocessor}{\#define\ COLOR\_NONE\ \ \ \ \ \ "{}00"{}}}
+\DoxyCodeLine{00083\ \textcolor{preprocessor}{\#define\ COLOR\_BOLD\ \ \ \ \ \ "{}01"{}}}
+\DoxyCodeLine{00084\ \textcolor{preprocessor}{\#define\ COLOR\_UNDERSCORE\ \ \ \ "{}04"{}}}
+\DoxyCodeLine{00085\ \textcolor{preprocessor}{\#define\ COLOR\_BLINK\ \ \ \ \ "{}05"{}}}
+\DoxyCodeLine{00086\ \textcolor{preprocessor}{\#define\ COLOR\_REVERSE\ \ \ \ \ \ \ "{}07"{}}}
+\DoxyCodeLine{00087\ \textcolor{preprocessor}{\#define\ COLOR\_FG\_BLACK\ \ \ \ \ \ "{}30"{}}}
+\DoxyCodeLine{00088\ \textcolor{preprocessor}{\#define\ COLOR\_FG\_RED\ \ \ \ \ \ \ \ "{}31"{}}}
+\DoxyCodeLine{00089\ \textcolor{preprocessor}{\#define\ COLOR\_FG\_GREEN\ \ \ \ \ \ "{}32"{}}}
+\DoxyCodeLine{00090\ \textcolor{preprocessor}{\#define\ COLOR\_FG\_YELLOW\ \ \ \ \ "{}33"{}}}
+\DoxyCodeLine{00091\ \textcolor{preprocessor}{\#define\ COLOR\_FG\_BLUE\ \ \ \ \ \ \ "{}34"{}}}
+\DoxyCodeLine{00092\ \textcolor{preprocessor}{\#define\ COLOR\_FG\_MAGENTA\ \ \ \ "{}35"{}}}
+\DoxyCodeLine{00093\ \textcolor{preprocessor}{\#define\ COLOR\_FG\_CYAN\ \ \ \ \ \ \ "{}36"{}}}
+\DoxyCodeLine{00094\ \textcolor{preprocessor}{\#define\ COLOR\_FG\_WHITE\ \ \ \ \ \ "{}37"{}}}
+\DoxyCodeLine{00095\ \textcolor{preprocessor}{\#define\ COLOR\_FG\_BRIGHT\_BLACK\ \ \ "{}90"{}}}
+\DoxyCodeLine{00096\ \textcolor{preprocessor}{\#define\ COLOR\_FG\_BRIGHT\_RED\ "{}91"{}}}
+\DoxyCodeLine{00097\ \textcolor{preprocessor}{\#define\ COLOR\_FG\_BRIGHT\_GREEN\ \ \ "{}92"{}}}
+\DoxyCodeLine{00098\ \textcolor{preprocessor}{\#define\ COLOR\_FG\_BRIGHT\_YELLOW\ \ "{}93"{}}}
+\DoxyCodeLine{00099\ \textcolor{preprocessor}{\#define\ COLOR\_FG\_BRIGHT\_BLUE\ \ \ \ "{}94"{}}}
+\DoxyCodeLine{00100\ \textcolor{preprocessor}{\#define\ COLOR\_FG\_BRIGHT\_MAGENTA\ "{}95"{}}}
+\DoxyCodeLine{00101\ \textcolor{preprocessor}{\#define\ COLOR\_FG\_BRIGHT\_CYAN\ \ \ \ "{}96"{}}}
+\DoxyCodeLine{00102\ \textcolor{preprocessor}{\#define\ COLOR\_FG\_BRIGHT\_WHITE\ \ \ "{}97"{}}}
+\DoxyCodeLine{00103\ \textcolor{preprocessor}{\#define\ COLOR\_BG\_BLACK\ \ \ \ \ \ "{}40"{}}}
+\DoxyCodeLine{00104\ \textcolor{preprocessor}{\#define\ COLOR\_BG\_RED\ \ \ \ \ \ \ \ "{}41"{}}}
+\DoxyCodeLine{00105\ \textcolor{preprocessor}{\#define\ COLOR\_BG\_GREEN\ \ \ \ \ \ "{}42"{}}}
+\DoxyCodeLine{00106\ \textcolor{preprocessor}{\#define\ COLOR\_BG\_YELLOW\ \ \ \ \ "{}43"{}}}
+\DoxyCodeLine{00107\ \textcolor{preprocessor}{\#define\ COLOR\_BG\_BLUE\ \ \ \ \ \ \ "{}44"{}}}
+\DoxyCodeLine{00108\ \textcolor{preprocessor}{\#define\ COLOR\_BG\_MAGENTA\ \ \ \ "{}45"{}}}
+\DoxyCodeLine{00109\ \textcolor{preprocessor}{\#define\ COLOR\_BG\_CYAN\ \ \ \ \ \ \ "{}46"{}}}
+\DoxyCodeLine{00110\ \textcolor{preprocessor}{\#define\ COLOR\_BG\_WHITE\ \ \ \ \ \ "{}47"{}}}
+\DoxyCodeLine{00111\ \textcolor{preprocessor}{\#define\ COLOR\_BG\_BRIGHT\_BLACK\ \ \ "{}100"{}}}
+\DoxyCodeLine{00112\ \textcolor{preprocessor}{\#define\ COLOR\_BG\_BRIGHT\_RED\ "{}101"{}}}
+\DoxyCodeLine{00113\ \textcolor{preprocessor}{\#define\ COLOR\_BG\_BRIGHT\_GREEN\ \ \ "{}102"{}}}
+\DoxyCodeLine{00114\ \textcolor{preprocessor}{\#define\ COLOR\_BG\_BRIGHT\_YELLOW\ \ "{}103"{}}}
+\DoxyCodeLine{00115\ \textcolor{preprocessor}{\#define\ COLOR\_BG\_BRIGHT\_BLUE\ \ \ \ "{}104"{}}}
+\DoxyCodeLine{00116\ \textcolor{preprocessor}{\#define\ COLOR\_BG\_BRIGHT\_MAGENTA\ "{}105"{}}}
+\DoxyCodeLine{00117\ \textcolor{preprocessor}{\#define\ COLOR\_BG\_BRIGHT\_CYAN\ \ \ \ "{}106"{}}}
+\DoxyCodeLine{00118\ \textcolor{preprocessor}{\#define\ COLOR\_BG\_BRIGHT\_WHITE\ \ \ "{}107"{}}}
+\DoxyCodeLine{00119\ \textcolor{preprocessor}{\#define\ SGR\_START\ \ \ \ \ \ \ "{}\(\backslash\)33["{}}}
+\DoxyCodeLine{00120\ \textcolor{preprocessor}{\#define\ SGR\_END\ \ \ \ \ \ \ \ \ "{}m\(\backslash\)33[K"{}}}
+\DoxyCodeLine{00121\ \textcolor{preprocessor}{\#define\ SGR\_SEQ(str)\ \ \ \ \ \ \ \ SGR\_START\ str\ SGR\_END}}
+\DoxyCodeLine{00122\ \textcolor{preprocessor}{\#define\ SGR\_RESET\ \ \ \ \ \ \ SGR\_SEQ("{}"{})}}
+\DoxyCodeLine{00123\ }
+\DoxyCodeLine{00124\ \textcolor{preprocessor}{\#endif\ \ }\textcolor{comment}{/*\ GCC\_COLOR\_MACROS\_H\ */}\textcolor{preprocessor}{}}
+
+\end{DoxyCode}

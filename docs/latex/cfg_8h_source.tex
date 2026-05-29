@@ -1,0 +1,198 @@
+\doxysection{cfg.\+h}
+\hypertarget{cfg_8h_source}{}\label{cfg_8h_source}\index{toolchain/x86\_64-\/elf/lib/gcc/x86\_64-\/elf/14.2.0/plugin/include/cfg.h@{toolchain/x86\_64-\/elf/lib/gcc/x86\_64-\/elf/14.2.0/plugin/include/cfg.h}}
+\doxymbox{\hyperlink{cfg_8h}{Go to the documentation of this file.}}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001\ \textcolor{comment}{/*\ Control\ flow\ graph\ manipulation\ code\ header\ file.}}
+\DoxyCodeLine{00002\ \textcolor{comment}{\ \ \ Copyright\ (C)\ 2014-\/2024\ Free\ Software\ Foundation,\ Inc.}}
+\DoxyCodeLine{00003\ \textcolor{comment}{}}
+\DoxyCodeLine{00004\ \textcolor{comment}{This\ file\ is\ part\ of\ GCC.}}
+\DoxyCodeLine{00005\ \textcolor{comment}{}}
+\DoxyCodeLine{00006\ \textcolor{comment}{GCC\ is\ free\ software;\ you\ can\ redistribute\ it\ and/or\ modify\ it\ under}}
+\DoxyCodeLine{00007\ \textcolor{comment}{the\ terms\ of\ the\ GNU\ General\ Public\ License\ as\ published\ by\ the\ Free}}
+\DoxyCodeLine{00008\ \textcolor{comment}{Software\ Foundation;\ either\ version\ 3,\ or\ (at\ your\ option)\ any\ later}}
+\DoxyCodeLine{00009\ \textcolor{comment}{version.}}
+\DoxyCodeLine{00010\ \textcolor{comment}{}}
+\DoxyCodeLine{00011\ \textcolor{comment}{GCC\ is\ distributed\ in\ the\ hope\ that\ it\ will\ be\ useful,\ but\ WITHOUT\ ANY}}
+\DoxyCodeLine{00012\ \textcolor{comment}{WARRANTY;\ without\ even\ the\ implied\ warranty\ of\ MERCHANTABILITY\ or}}
+\DoxyCodeLine{00013\ \textcolor{comment}{FITNESS\ FOR\ A\ PARTICULAR\ PURPOSE.\ \ See\ the\ GNU\ General\ Public\ License}}
+\DoxyCodeLine{00014\ \textcolor{comment}{for\ more\ details.}}
+\DoxyCodeLine{00015\ \textcolor{comment}{}}
+\DoxyCodeLine{00016\ \textcolor{comment}{You\ should\ have\ received\ a\ copy\ of\ the\ GNU\ General\ Public\ License}}
+\DoxyCodeLine{00017\ \textcolor{comment}{along\ with\ GCC;\ see\ the\ file\ COPYING3.\ \ If\ not\ see}}
+\DoxyCodeLine{00018\ \textcolor{comment}{<http://www.gnu.org/licenses/>.\ \ */}}
+\DoxyCodeLine{00019\ }
+\DoxyCodeLine{00020\ \textcolor{preprocessor}{\#ifndef\ GCC\_CFG\_H}}
+\DoxyCodeLine{00021\ \textcolor{preprocessor}{\#define\ GCC\_CFG\_H}}
+\DoxyCodeLine{00022\ }
+\DoxyCodeLine{00023\ \textcolor{preprocessor}{\#include\ "{}\doxymbox{\hyperlink{dominance_8h}{dominance.h}}"{}}}
+\DoxyCodeLine{00024\ }
+\DoxyCodeLine{00025\ \textcolor{comment}{/*\ What\ sort\ of\ profiling\ information\ we\ have.\ \ */}}
+\DoxyCodeLine{00026\ \textcolor{keyword}{enum}\ \doxymbox{\hyperlink{cfg_8h_a42b0c45dcf7b060239e2af8c96d1a431}{profile\_status\_d}}}
+\DoxyCodeLine{00027\ \{}
+\DoxyCodeLine{00028\ \ \ \doxymbox{\hyperlink{cfg_8h_a42b0c45dcf7b060239e2af8c96d1a431a3fbf5a1f667570d660bec0ce7f656a27}{PROFILE\_ABSENT}},}
+\DoxyCodeLine{00029\ \ \ \doxymbox{\hyperlink{cfg_8h_a42b0c45dcf7b060239e2af8c96d1a431a3d7cb567b545d81144698f22454013fa}{PROFILE\_GUESSED}},}
+\DoxyCodeLine{00030\ \ \ \doxymbox{\hyperlink{cfg_8h_a42b0c45dcf7b060239e2af8c96d1a431a3387b596fd48859e471a170aeb5fbe1d}{PROFILE\_READ}},}
+\DoxyCodeLine{00031\ \ \ \doxymbox{\hyperlink{cfg_8h_a42b0c45dcf7b060239e2af8c96d1a431a2865c78ab7d7a3c211465296c48255ae}{PROFILE\_LAST}}\ \ \textcolor{comment}{/*\ Last\ value,\ used\ by\ profile\ streaming.\ \ */}}
+\DoxyCodeLine{00032\ \};}
+\DoxyCodeLine{00033\ }
+\DoxyCodeLine{00034\ \textcolor{comment}{/*\ A\ structure\ to\ group\ all\ the\ per-\/function\ control\ flow\ graph\ data.}}
+\DoxyCodeLine{00035\ \textcolor{comment}{\ \ \ The\ x\_*\ prefixing\ is\ necessary\ because\ otherwise\ references\ to\ the}}
+\DoxyCodeLine{00036\ \textcolor{comment}{\ \ \ fields\ of\ this\ struct\ are\ interpreted\ as\ the\ defines\ for\ backward}}
+\DoxyCodeLine{00037\ \textcolor{comment}{\ \ \ source\ compatibility\ following\ the\ definition\ of\ this\ struct.\ \ */}}
+\DoxyCodeLine{00038\ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{coretypes_8h_ae5708c4d4b300570eebe0bc0c78facbc}{GTY}}(())\ control\_flow\_graph\ \{}
+\DoxyCodeLine{00039\ \ \ \textcolor{comment}{/*\ Block\ pointers\ for\ the\ exit\ and\ entry\ of\ a\ function.}}
+\DoxyCodeLine{00040\ \textcolor{comment}{\ \ \ \ \ These\ are\ always\ the\ head\ and\ tail\ of\ the\ basic\ block\ list.\ \ */}}
+\DoxyCodeLine{00041\ \ \ \doxymbox{\hyperlink{coretypes_8h_a0469df20b471a4cd7c81fbdce5027487}{basic\_block}}\ x\_entry\_block\_ptr;}
+\DoxyCodeLine{00042\ \ \ \doxymbox{\hyperlink{coretypes_8h_a0469df20b471a4cd7c81fbdce5027487}{basic\_block}}\ x\_exit\_block\_ptr;}
+\DoxyCodeLine{00043\ }
+\DoxyCodeLine{00044\ \ \ \textcolor{comment}{/*\ Index\ by\ basic\ block\ number,\ get\ basic\ block\ struct\ info.\ \ */}}
+\DoxyCodeLine{00045\ \ \ \doxymbox{\hyperlink{vec_8h_ac6299229087b122e17686611255dfa27}{vec<basic\_block,\ va\_gc>}}\ *x\_basic\_block\_info;}
+\DoxyCodeLine{00046\ }
+\DoxyCodeLine{00047\ \ \ \textcolor{comment}{/*\ Number\ of\ basic\ blocks\ in\ this\ flow\ graph.\ \ */}}
+\DoxyCodeLine{00048\ \ \ \textcolor{keywordtype}{int}\ x\_n\_basic\_blocks;}
+\DoxyCodeLine{00049\ }
+\DoxyCodeLine{00050\ \ \ \textcolor{comment}{/*\ Number\ of\ edges\ in\ this\ flow\ graph.\ \ */}}
+\DoxyCodeLine{00051\ \ \ \textcolor{keywordtype}{int}\ x\_n\_edges;}
+\DoxyCodeLine{00052\ }
+\DoxyCodeLine{00053\ \ \ \textcolor{comment}{/*\ The\ first\ free\ basic\ block\ number.\ \ */}}
+\DoxyCodeLine{00054\ \ \ \textcolor{keywordtype}{int}\ x\_last\_basic\_block;}
+\DoxyCodeLine{00055\ }
+\DoxyCodeLine{00056\ \ \ \textcolor{comment}{/*\ UIDs\ for\ LABEL\_DECLs.\ \ */}}
+\DoxyCodeLine{00057\ \ \ \textcolor{keywordtype}{int}\ last\_label\_uid;}
+\DoxyCodeLine{00058\ }
+\DoxyCodeLine{00059\ \ \ \textcolor{comment}{/*\ Mapping\ of\ labels\ to\ their\ associated\ blocks.\ \ At\ present}}
+\DoxyCodeLine{00060\ \textcolor{comment}{\ \ \ \ \ only\ used\ for\ the\ gimple\ CFG.\ \ */}}
+\DoxyCodeLine{00061\ \ \ \doxymbox{\hyperlink{vec_8h_ac6299229087b122e17686611255dfa27}{vec<basic\_block,\ va\_gc>}}\ *x\_label\_to\_block\_map;}
+\DoxyCodeLine{00062\ }
+\DoxyCodeLine{00063\ \ \ \textcolor{keyword}{enum}\ \doxymbox{\hyperlink{cfg_8h_a42b0c45dcf7b060239e2af8c96d1a431}{profile\_status\_d}}\ x\_profile\_status;}
+\DoxyCodeLine{00064\ }
+\DoxyCodeLine{00065\ \ \ \textcolor{comment}{/*\ Whether\ the\ dominators\ and\ the\ postdominators\ are\ available.\ \ */}}
+\DoxyCodeLine{00066\ \ \ \textcolor{keyword}{enum}\ \doxymbox{\hyperlink{dominance_8h_a9f646cb5dc264a24199736ab61eec0fe}{dom\_state}}\ x\_dom\_computed[2];}
+\DoxyCodeLine{00067\ }
+\DoxyCodeLine{00068\ \ \ \textcolor{comment}{/*\ Number\ of\ basic\ blocks\ in\ the\ dominance\ tree.\ \ */}}
+\DoxyCodeLine{00069\ \ \ \textcolor{keywordtype}{unsigned}\ x\_n\_bbs\_in\_dom\_tree[2];}
+\DoxyCodeLine{00070\ }
+\DoxyCodeLine{00071\ \ \ \textcolor{comment}{/*\ Maximal\ number\ of\ entities\ in\ the\ single\ jumptable.\ \ Used\ to\ estimate}}
+\DoxyCodeLine{00072\ \textcolor{comment}{\ \ \ \ \ final\ flowgraph\ size.\ \ */}}
+\DoxyCodeLine{00073\ \ \ \textcolor{keywordtype}{int}\ max\_jumptable\_ents;}
+\DoxyCodeLine{00074\ }
+\DoxyCodeLine{00075\ \ \ \textcolor{comment}{/*\ Maximal\ count\ of\ BB\ in\ function.\ \ */}}
+\DoxyCodeLine{00076\ \ \ profile\_count\ count\_max;}
+\DoxyCodeLine{00077\ }
+\DoxyCodeLine{00078\ \ \ \textcolor{comment}{/*\ Dynamically\ allocated\ edge/bb\ flags.\ \ */}}
+\DoxyCodeLine{00079\ \ \ \textcolor{keywordtype}{int}\ edge\_flags\_allocated;}
+\DoxyCodeLine{00080\ \ \ \textcolor{keywordtype}{int}\ bb\_flags\_allocated;}
+\DoxyCodeLine{00081\ }
+\DoxyCodeLine{00082\ \ \ \textcolor{comment}{/*\ Set\ if\ the\ profile\ is\ computed\ on\ every\ edge\ and\ basic\ block.\ \ */}}
+\DoxyCodeLine{00083\ \ \ \textcolor{keywordtype}{bool}\ full\_profile;}
+\DoxyCodeLine{00084\ \};}
+\DoxyCodeLine{00085\ }
+\DoxyCodeLine{00086\ }
+\DoxyCodeLine{00087\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{cfg_8h_a38946936893444d982515893602504b7}{init\_flow}}\ (function\ *);}
+\DoxyCodeLine{00088\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{cfg_8h_a84232c3ff9828032b0827be8a386989d}{free\_cfg}}\ (function\ *);}
+\DoxyCodeLine{00089\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{coretypes_8h_a0469df20b471a4cd7c81fbdce5027487}{basic\_block}}\ \doxymbox{\hyperlink{cfg_8h_a749d128f205c836c5cf65a126b0d8927}{alloc\_block}}\ (\textcolor{keywordtype}{void});}
+\DoxyCodeLine{00090\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{cfg_8h_a9af3a99b97074447cb8ebc1f1e917ca9}{link\_block}}\ (\doxymbox{\hyperlink{coretypes_8h_a0469df20b471a4cd7c81fbdce5027487}{basic\_block}},\ \doxymbox{\hyperlink{coretypes_8h_a0469df20b471a4cd7c81fbdce5027487}{basic\_block}});}
+\DoxyCodeLine{00091\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{cfg_8h_a3222de08c34850c7d4b79bf9d231c823}{unlink\_block}}\ (\doxymbox{\hyperlink{coretypes_8h_a0469df20b471a4cd7c81fbdce5027487}{basic\_block}});}
+\DoxyCodeLine{00092\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{cfg_8h_aaf0fce312c1e1587f1ac883266fce7be}{compact\_blocks}}\ (\textcolor{keywordtype}{void});}
+\DoxyCodeLine{00093\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{cfg_8h_a6c2ee6de66838353d6b15a381aea7821}{expunge\_block}}\ (\doxymbox{\hyperlink{coretypes_8h_a0469df20b471a4cd7c81fbdce5027487}{basic\_block}});}
+\DoxyCodeLine{00094\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{coretypes_8h_a44ae11f0c90646aa6208ad4bf486490b}{edge}}\ \doxymbox{\hyperlink{cfg_8h_a3aa4b286717209dfeda5db6b2efb0818}{unchecked\_make\_edge}}\ (\doxymbox{\hyperlink{coretypes_8h_a0469df20b471a4cd7c81fbdce5027487}{basic\_block}},\ \doxymbox{\hyperlink{coretypes_8h_a0469df20b471a4cd7c81fbdce5027487}{basic\_block}},\ \textcolor{keywordtype}{int});}
+\DoxyCodeLine{00095\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{coretypes_8h_a44ae11f0c90646aa6208ad4bf486490b}{edge}}\ \doxymbox{\hyperlink{cfg_8h_a7ac5768839f15186a5c8fbccfbca1b09}{cached\_make\_edge}}\ (\doxymbox{\hyperlink{coretypes_8h_a780cd5c6b7453aa0a01cdf1c5b379abd}{sbitmap}},\ \doxymbox{\hyperlink{coretypes_8h_a0469df20b471a4cd7c81fbdce5027487}{basic\_block}},\ \doxymbox{\hyperlink{coretypes_8h_a0469df20b471a4cd7c81fbdce5027487}{basic\_block}},\ \textcolor{keywordtype}{int});}
+\DoxyCodeLine{00096\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{coretypes_8h_a44ae11f0c90646aa6208ad4bf486490b}{edge}}\ \doxymbox{\hyperlink{cfg_8h_aba06fe689b28950763fb6703d5ca72a5}{make\_edge}}\ (\doxymbox{\hyperlink{coretypes_8h_a0469df20b471a4cd7c81fbdce5027487}{basic\_block}},\ \doxymbox{\hyperlink{coretypes_8h_a0469df20b471a4cd7c81fbdce5027487}{basic\_block}},\ \textcolor{keywordtype}{int});}
+\DoxyCodeLine{00097\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{coretypes_8h_a44ae11f0c90646aa6208ad4bf486490b}{edge}}\ \doxymbox{\hyperlink{cfg_8h_a20aacce4eb741613032cc3b37f8e573a}{make\_single\_succ\_edge}}\ (\doxymbox{\hyperlink{coretypes_8h_a0469df20b471a4cd7c81fbdce5027487}{basic\_block}},\ \doxymbox{\hyperlink{coretypes_8h_a0469df20b471a4cd7c81fbdce5027487}{basic\_block}},\ \textcolor{keywordtype}{int});}
+\DoxyCodeLine{00098\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{cfg_8h_ab6046079807a5b30b35b70256a9b063b}{remove\_edge\_raw}}\ (\doxymbox{\hyperlink{coretypes_8h_a44ae11f0c90646aa6208ad4bf486490b}{edge}});}
+\DoxyCodeLine{00099\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{cfg_8h_a92654791702a24ddae8aa9d9860f1e3e}{redirect\_edge\_succ}}\ (\doxymbox{\hyperlink{coretypes_8h_a44ae11f0c90646aa6208ad4bf486490b}{edge}},\ \doxymbox{\hyperlink{coretypes_8h_a0469df20b471a4cd7c81fbdce5027487}{basic\_block}});}
+\DoxyCodeLine{00100\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{cfg_8h_a7397bd46f8d137310574cf4c22879298}{redirect\_edge\_pred}}\ (\doxymbox{\hyperlink{coretypes_8h_a44ae11f0c90646aa6208ad4bf486490b}{edge}},\ \doxymbox{\hyperlink{coretypes_8h_a0469df20b471a4cd7c81fbdce5027487}{basic\_block}});}
+\DoxyCodeLine{00101\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{cfg_8h_ac3b00765c4842a35b11eeb0c966115b6}{clear\_bb\_flags}}\ (\textcolor{keywordtype}{void});}
+\DoxyCodeLine{00102\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{cfg_8h_a2548a64a94e6373e8ab6275490b35a25}{dump\_edge\_info}}\ (FILE\ *,\ \doxymbox{\hyperlink{coretypes_8h_a44ae11f0c90646aa6208ad4bf486490b}{edge}},\ \doxymbox{\hyperlink{dumpfile_8h_ae3aeb1ff52915e32d52ac788388fbeef}{dump\_flags\_t}},\ \textcolor{keywordtype}{int});}
+\DoxyCodeLine{00103\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{collect-utils_8h_a398527b3e9e358c345c5047b16871957}{debug}}\ (edge\_def\ \&ref);}
+\DoxyCodeLine{00104\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{collect-utils_8h_a398527b3e9e358c345c5047b16871957}{debug}}\ (edge\_def\ *ptr);}
+\DoxyCodeLine{00105\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{cfg_8h_a14a03559654813c21a6776abcb16a751}{alloc\_aux\_for\_blocks}}\ (\textcolor{keywordtype}{int});}
+\DoxyCodeLine{00106\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{cfg_8h_a5dd101b5fa0816d64b92e67bf3c0784f}{clear\_aux\_for\_blocks}}\ (\textcolor{keywordtype}{void});}
+\DoxyCodeLine{00107\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{cfg_8h_aa68268e252d38128dc2b84fc047cbfd0}{free\_aux\_for\_blocks}}\ (\textcolor{keywordtype}{void});}
+\DoxyCodeLine{00108\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{cfg_8h_a5876183ad2326b42b73130ab439fc243}{alloc\_aux\_for\_edge}}\ (\doxymbox{\hyperlink{coretypes_8h_a44ae11f0c90646aa6208ad4bf486490b}{edge}},\ \textcolor{keywordtype}{int});}
+\DoxyCodeLine{00109\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{cfg_8h_a3607af752bb5d319d89eadf7a814fc9a}{alloc\_aux\_for\_edges}}\ (\textcolor{keywordtype}{int});}
+\DoxyCodeLine{00110\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{cfg_8h_abd30b35207d208567854dba3c180e5c6}{clear\_aux\_for\_edges}}\ (\textcolor{keywordtype}{void});}
+\DoxyCodeLine{00111\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{cfg_8h_a722173827c52c2548d1891ef68f8fd79}{free\_aux\_for\_edges}}\ (\textcolor{keywordtype}{void});}
+\DoxyCodeLine{00112\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{cfg_8h_a84c287d48bc9e9f3179f8ad27e4cf317}{debug\_bb}}\ (\doxymbox{\hyperlink{coretypes_8h_a0469df20b471a4cd7c81fbdce5027487}{basic\_block}});}
+\DoxyCodeLine{00113\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{coretypes_8h_a0469df20b471a4cd7c81fbdce5027487}{basic\_block}}\ \doxymbox{\hyperlink{cfg_8h_a680cf4aceeb8f114ffa9d18733f1bcb4}{debug\_bb\_n}}\ (\textcolor{keywordtype}{int});}
+\DoxyCodeLine{00114\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{cfg_8h_a84c287d48bc9e9f3179f8ad27e4cf317}{debug\_bb}}\ (\doxymbox{\hyperlink{coretypes_8h_a0469df20b471a4cd7c81fbdce5027487}{basic\_block}},\ \doxymbox{\hyperlink{dumpfile_8h_ae3aeb1ff52915e32d52ac788388fbeef}{dump\_flags\_t}});}
+\DoxyCodeLine{00115\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{coretypes_8h_a0469df20b471a4cd7c81fbdce5027487}{basic\_block}}\ \doxymbox{\hyperlink{cfg_8h_a680cf4aceeb8f114ffa9d18733f1bcb4}{debug\_bb\_n}}\ (\textcolor{keywordtype}{int},\ \doxymbox{\hyperlink{dumpfile_8h_ae3aeb1ff52915e32d52ac788388fbeef}{dump\_flags\_t}});}
+\DoxyCodeLine{00116\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{cfg_8h_a72da21e9ccb2aef914b215a1fa6b5fff}{dump\_bb\_info}}\ (FILE\ *,\ \doxymbox{\hyperlink{coretypes_8h_a0469df20b471a4cd7c81fbdce5027487}{basic\_block}},\ \textcolor{keywordtype}{int},\ \doxymbox{\hyperlink{dumpfile_8h_ae3aeb1ff52915e32d52ac788388fbeef}{dump\_flags\_t}},\ \textcolor{keywordtype}{bool},\ \textcolor{keywordtype}{bool});}
+\DoxyCodeLine{00117\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{cfg_8h_ac5dc37c409c9b06d4d3c1c6b91a39e38}{brief\_dump\_cfg}}\ (FILE\ *,\ \doxymbox{\hyperlink{dumpfile_8h_ae3aeb1ff52915e32d52ac788388fbeef}{dump\_flags\_t}});}
+\DoxyCodeLine{00118\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{cfg_8h_a2fd3ae8a13f2e90ca734780dc407ba80}{set\_edge\_probability\_and\_rescale\_others}}\ (\doxymbox{\hyperlink{coretypes_8h_a44ae11f0c90646aa6208ad4bf486490b}{edge}},\ profile\_probability);}
+\DoxyCodeLine{00119\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{cfg_8h_a4998292bb71321976b3f13b892e23d6d}{update\_bb\_profile\_for\_threading}}\ (\doxymbox{\hyperlink{coretypes_8h_a0469df20b471a4cd7c81fbdce5027487}{basic\_block}},\ profile\_count,\ \doxymbox{\hyperlink{coretypes_8h_a44ae11f0c90646aa6208ad4bf486490b}{edge}});}
+\DoxyCodeLine{00120\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{cfg_8h_a1e9e51e6127455a0eb128ba5649c5c03}{scale\_bbs\_frequencies\_profile\_count}}\ (\doxymbox{\hyperlink{coretypes_8h_a0469df20b471a4cd7c81fbdce5027487}{basic\_block}}\ *,\ \textcolor{keywordtype}{int},}
+\DoxyCodeLine{00121\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ profile\_count,\ profile\_count);}
+\DoxyCodeLine{00122\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{cfg_8h_aa516c4d8ee837a4f7948913567421d2d}{scale\_bbs\_frequencies}}\ (\doxymbox{\hyperlink{coretypes_8h_a0469df20b471a4cd7c81fbdce5027487}{basic\_block}}\ *,\ \textcolor{keywordtype}{int},\ profile\_probability);}
+\DoxyCodeLine{00123\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{cfg_8h_aed366073a272c0f00346946ddce04552}{initialize\_original\_copy\_tables}}\ (\textcolor{keywordtype}{void});}
+\DoxyCodeLine{00124\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{cfg_8h_ac3c3c08bc35025bda078b07fe388ee86}{reset\_original\_copy\_tables}}\ (\textcolor{keywordtype}{void});}
+\DoxyCodeLine{00125\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{cfg_8h_a347ce643c44c2b96b0575b6213d9de0d}{free\_original\_copy\_tables}}\ (\textcolor{keywordtype}{void});}
+\DoxyCodeLine{00126\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{cfg_8h_ac36b659099fb23c261df5cc27a953123}{original\_copy\_tables\_initialized\_p}}\ (\textcolor{keywordtype}{void});}
+\DoxyCodeLine{00127\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{cfg_8h_ade6f850e3eb4c6d2fd396de63dae713d}{set\_bb\_original}}\ (\doxymbox{\hyperlink{coretypes_8h_a0469df20b471a4cd7c81fbdce5027487}{basic\_block}},\ \doxymbox{\hyperlink{coretypes_8h_a0469df20b471a4cd7c81fbdce5027487}{basic\_block}});}
+\DoxyCodeLine{00128\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{coretypes_8h_a0469df20b471a4cd7c81fbdce5027487}{basic\_block}}\ \doxymbox{\hyperlink{cfg_8h_aca32cf6ac74fdeca29446030c0be7e63}{get\_bb\_original}}\ (\doxymbox{\hyperlink{coretypes_8h_a0469df20b471a4cd7c81fbdce5027487}{basic\_block}});}
+\DoxyCodeLine{00129\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{cfg_8h_a349a5f3964f46a4861710d6a79582c31}{set\_bb\_copy}}\ (\doxymbox{\hyperlink{coretypes_8h_a0469df20b471a4cd7c81fbdce5027487}{basic\_block}},\ \doxymbox{\hyperlink{coretypes_8h_a0469df20b471a4cd7c81fbdce5027487}{basic\_block}});}
+\DoxyCodeLine{00130\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{coretypes_8h_a0469df20b471a4cd7c81fbdce5027487}{basic\_block}}\ \doxymbox{\hyperlink{cfg_8h_a5d419faffdb8a87c56862f727792c1ce}{get\_bb\_copy}}\ (\doxymbox{\hyperlink{coretypes_8h_a0469df20b471a4cd7c81fbdce5027487}{basic\_block}});}
+\DoxyCodeLine{00131\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{cfg_8h_add3ee8f729f4c89975962105a76748ae}{set\_loop\_copy}}\ (\textcolor{keyword}{class}\ loop\ *,\ \textcolor{keyword}{class}\ loop\ *);}
+\DoxyCodeLine{00132\ \textcolor{keyword}{class\ }loop\ *\doxymbox{\hyperlink{cfg_8h_a7db12fa69a94233a02ed398bb2c3eabe}{get\_loop\_copy}}\ (\textcolor{keyword}{class}\ loop\ *);}
+\DoxyCodeLine{00133\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{cfg_8h_a4255e32720fa69dfdcc54f91d2da5d79}{scale\_strictly\_dominated\_blocks}}\ (\doxymbox{\hyperlink{coretypes_8h_a0469df20b471a4cd7c81fbdce5027487}{basic\_block}},}
+\DoxyCodeLine{00134\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ profile\_count,\ profile\_count);}
+\DoxyCodeLine{00135\ }
+\DoxyCodeLine{00136\ \textcolor{comment}{/*\ Generic\ RAII\ class\ to\ allocate\ a\ bit\ from\ storage\ of\ integer\ type\ T.}}
+\DoxyCodeLine{00137\ \textcolor{comment}{\ \ \ The\ allocated\ bit\ is\ accessible\ as\ mask\ with\ the\ single\ bit\ set}}
+\DoxyCodeLine{00138\ \textcolor{comment}{\ \ \ via\ the\ conversion\ operator\ to\ T.\ \ */}}
+\DoxyCodeLine{00139\ }
+\DoxyCodeLine{00140\ \textcolor{keyword}{template}\ <\textcolor{keyword}{class}\ T>}
+\DoxyCodeLine{00141\ \textcolor{keyword}{class\ }\doxymbox{\hyperlink{classauto__flag_af4b3bac1ff27b06986a10e899dd3e3a3}{auto\_flag}}}
+\DoxyCodeLine{00142\ \{}
+\DoxyCodeLine{00143\ \textcolor{keyword}{public}:}
+\DoxyCodeLine{00144\ \ \ \textcolor{comment}{/*\ static\ assert\ T\ is\ integer\ type\ of\ max\ HOST\_WIDE\_INT\ precision.\ \ */}}
+\DoxyCodeLine{00145\ \ \ \doxymbox{\hyperlink{classauto__flag_af4b3bac1ff27b06986a10e899dd3e3a3}{auto\_flag}}\ (T\ *sptr)}
+\DoxyCodeLine{00146\ \ \ \ \ \{}
+\DoxyCodeLine{00147\ \ \ \ \ \ \ \doxymbox{\hyperlink{classauto__flag_a10341219c7519e03cad95db242725670}{m\_sptr}}\ =\ sptr;}
+\DoxyCodeLine{00148\ \ \ \ \ \ \ \textcolor{keywordtype}{int}\ free\_bit\ =\ \doxymbox{\hyperlink{hwint_8h_a201ba66d6ffd0f8380d3e656b8146e83}{ffs\_hwi}}\ (\string~*sptr);}
+\DoxyCodeLine{00149\ \ \ \ \ \ \ \textcolor{comment}{/*\ If\ there\ are\ no\ unset\ bits...\ */}}
+\DoxyCodeLine{00150\ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (free\_bit\ ==\ 0)}
+\DoxyCodeLine{00151\ \ \ \ \ \doxymbox{\hyperlink{system_8h_a32b3b26e9883686d3022c1ffe5ec3aa4}{gcc\_unreachable}}\ ();}
+\DoxyCodeLine{00152\ \ \ \ \ \ \ \doxymbox{\hyperlink{classauto__flag_adbd55313ab75d43fdbfef3a057f69007}{m\_flag}}\ =\ \doxymbox{\hyperlink{hwint_8h_a38da5b64b70242ee2851fd6427ed4a80}{HOST\_WIDE\_INT\_1U}}\ <<\ (free\_bit\ -\/\ 1);}
+\DoxyCodeLine{00153\ \ \ \ \ \ \ \textcolor{comment}{/*\ ...or\ if\ T\ is\ signed\ and\ thus\ the\ complement\ is\ sign-\/extended,}}
+\DoxyCodeLine{00154\ \textcolor{comment}{\ \ \ \ \ \ \ \ \ check\ if\ we\ ran\ out\ of\ bits.\ \ We\ could\ spare\ us\ this\ bit}}
+\DoxyCodeLine{00155\ \textcolor{comment}{\ \ \ \ \ if\ we\ could\ use\ C++11\ std::make\_unsigned<T>::type\ to\ pass}}
+\DoxyCodeLine{00156\ \textcolor{comment}{\ \ \ \ \ \string~*sptr\ to\ ffs\_hwi.\ \ */}}
+\DoxyCodeLine{00157\ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (\doxymbox{\hyperlink{classauto__flag_adbd55313ab75d43fdbfef3a057f69007}{m\_flag}}\ ==\ 0)}
+\DoxyCodeLine{00158\ \ \ \ \ \doxymbox{\hyperlink{system_8h_a32b3b26e9883686d3022c1ffe5ec3aa4}{gcc\_unreachable}}\ ();}
+\DoxyCodeLine{00159\ \ \ \ \ \ \ \doxymbox{\hyperlink{system_8h_aff447899dc74d54931b2bc2d47de9423}{gcc\_checking\_assert}}\ ((*sptr\ \&\ \doxymbox{\hyperlink{classauto__flag_adbd55313ab75d43fdbfef3a057f69007}{m\_flag}})\ ==\ 0);}
+\DoxyCodeLine{00160\ \ \ \ \ \ \ *sptr\ |=\ \doxymbox{\hyperlink{classauto__flag_adbd55313ab75d43fdbfef3a057f69007}{m\_flag}};}
+\DoxyCodeLine{00161\ \ \ \ \ \}}
+\DoxyCodeLine{00162\ \ \ \doxymbox{\hyperlink{classauto__flag_a331a7b24df7b8ce3dbf2aaa5f87c5438}{\string~auto\_flag}}\ ()}
+\DoxyCodeLine{00163\ \ \ \ \ \{}
+\DoxyCodeLine{00164\ \ \ \ \ \ \ \doxymbox{\hyperlink{system_8h_aff447899dc74d54931b2bc2d47de9423}{gcc\_checking\_assert}}\ ((*\doxymbox{\hyperlink{classauto__flag_a10341219c7519e03cad95db242725670}{m\_sptr}}\ \&\ \doxymbox{\hyperlink{classauto__flag_adbd55313ab75d43fdbfef3a057f69007}{m\_flag}})\ ==\ \doxymbox{\hyperlink{classauto__flag_adbd55313ab75d43fdbfef3a057f69007}{m\_flag}});}
+\DoxyCodeLine{00165\ \ \ \ \ \ \ *\doxymbox{\hyperlink{classauto__flag_a10341219c7519e03cad95db242725670}{m\_sptr}}\ \&=\ \doxymbox{\hyperlink{classauto__flag_adbd55313ab75d43fdbfef3a057f69007}{\string~m\_flag}};}
+\DoxyCodeLine{00166\ \ \ \ \ \}}
+\DoxyCodeLine{00167\ \ \ \textcolor{keyword}{operator}\ T\ ()\textcolor{keyword}{\ const\ }\{\ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{classauto__flag_adbd55313ab75d43fdbfef3a057f69007}{m\_flag}};\ \}}
+\DoxyCodeLine{00168\ \textcolor{keyword}{private}:}
+\DoxyCodeLine{00169\ \ \ T\ *\doxymbox{\hyperlink{classauto__flag_a10341219c7519e03cad95db242725670}{m\_sptr}};}
+\DoxyCodeLine{00170\ \ \ T\ \doxymbox{\hyperlink{classauto__flag_adbd55313ab75d43fdbfef3a057f69007}{m\_flag}};}
+\DoxyCodeLine{00171\ \};}
+\DoxyCodeLine{00172\ }
+\DoxyCodeLine{00173\ \textcolor{comment}{/*\ RAII\ class\ to\ allocate\ an\ edge\ flag\ for\ temporary\ use.\ \ You\ have}}
+\DoxyCodeLine{00174\ \textcolor{comment}{\ \ \ to\ clear\ the\ flag\ from\ all\ edges\ when\ you\ are\ finished\ using\ it.\ \ */}}
+\DoxyCodeLine{00175\ }
+\DoxyCodeLine{00176\ \textcolor{keyword}{class\ }\doxymbox{\hyperlink{classauto__edge__flag_a17cc07ca0da3046c2f09dffa4ce12596}{auto\_edge\_flag}}\ :\ \textcolor{keyword}{public}\ \doxymbox{\hyperlink{classauto__flag_af4b3bac1ff27b06986a10e899dd3e3a3}{auto\_flag}}<int>}
+\DoxyCodeLine{00177\ \{}
+\DoxyCodeLine{00178\ \textcolor{keyword}{public}:}
+\DoxyCodeLine{00179\ \ \ \doxymbox{\hyperlink{classauto__edge__flag_a17cc07ca0da3046c2f09dffa4ce12596}{auto\_edge\_flag}}\ (function\ *fun)}
+\DoxyCodeLine{00180\ \ \ \ \ :\ \doxymbox{\hyperlink{classauto__flag_af4b3bac1ff27b06986a10e899dd3e3a3}{auto\_flag}}<int>\ (\&fun-\/>cfg-\/>edge\_flags\_allocated)\ \{\}}
+\DoxyCodeLine{00181\ \};}
+\DoxyCodeLine{00182\ }
+\DoxyCodeLine{00183\ \textcolor{comment}{/*\ RAII\ class\ to\ allocate\ a\ bb\ flag\ for\ temporary\ use.\ \ You\ have}}
+\DoxyCodeLine{00184\ \textcolor{comment}{\ \ \ to\ clear\ the\ flag\ from\ all\ edges\ when\ you\ are\ finished\ using\ it.\ \ */}}
+\DoxyCodeLine{00185\ \textcolor{keyword}{class\ }\doxymbox{\hyperlink{classauto__bb__flag_ae43a641ee6978a235d868e008c5ecd1d}{auto\_bb\_flag}}\ :\ \textcolor{keyword}{public}\ \doxymbox{\hyperlink{classauto__flag_af4b3bac1ff27b06986a10e899dd3e3a3}{auto\_flag}}<int>}
+\DoxyCodeLine{00186\ \{}
+\DoxyCodeLine{00187\ \textcolor{keyword}{public}:}
+\DoxyCodeLine{00188\ \ \ \doxymbox{\hyperlink{classauto__bb__flag_ae43a641ee6978a235d868e008c5ecd1d}{auto\_bb\_flag}}\ (function\ *fun)}
+\DoxyCodeLine{00189\ \ \ \ \ :\ \doxymbox{\hyperlink{classauto__flag_af4b3bac1ff27b06986a10e899dd3e3a3}{auto\_flag}}<int>\ (\&fun-\/>cfg-\/>bb\_flags\_allocated)\ \{\}}
+\DoxyCodeLine{00190\ \};}
+\DoxyCodeLine{00191\ }
+\DoxyCodeLine{00192\ \textcolor{preprocessor}{\#endif\ }\textcolor{comment}{/*\ GCC\_CFG\_H\ */}\textcolor{preprocessor}{}}
+
+\end{DoxyCode}

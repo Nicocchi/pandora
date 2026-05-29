@@ -1,0 +1,327 @@
+\doxysection{sbitmap.\+h}
+\hypertarget{sbitmap_8h_source}{}\label{sbitmap_8h_source}\index{toolchain/x86\_64-\/elf/lib/gcc/x86\_64-\/elf/14.2.0/plugin/include/sbitmap.h@{toolchain/x86\_64-\/elf/lib/gcc/x86\_64-\/elf/14.2.0/plugin/include/sbitmap.h}}
+\doxymbox{\hyperlink{sbitmap_8h}{Go to the documentation of this file.}}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001\ \textcolor{comment}{/*\ Simple\ bitmaps.}}
+\DoxyCodeLine{00002\ \textcolor{comment}{\ \ \ Copyright\ (C)\ 1999-\/2024\ Free\ Software\ Foundation,\ Inc.}}
+\DoxyCodeLine{00003\ \textcolor{comment}{}}
+\DoxyCodeLine{00004\ \textcolor{comment}{This\ file\ is\ part\ of\ GCC.}}
+\DoxyCodeLine{00005\ \textcolor{comment}{}}
+\DoxyCodeLine{00006\ \textcolor{comment}{GCC\ is\ free\ software;\ you\ can\ redistribute\ it\ and/or\ modify\ it\ under}}
+\DoxyCodeLine{00007\ \textcolor{comment}{the\ terms\ of\ the\ GNU\ General\ Public\ License\ as\ published\ by\ the\ Free}}
+\DoxyCodeLine{00008\ \textcolor{comment}{Software\ Foundation;\ either\ version\ 3,\ or\ (at\ your\ option)\ any\ later}}
+\DoxyCodeLine{00009\ \textcolor{comment}{version.}}
+\DoxyCodeLine{00010\ \textcolor{comment}{}}
+\DoxyCodeLine{00011\ \textcolor{comment}{GCC\ is\ distributed\ in\ the\ hope\ that\ it\ will\ be\ useful,\ but\ WITHOUT\ ANY}}
+\DoxyCodeLine{00012\ \textcolor{comment}{WARRANTY;\ without\ even\ the\ implied\ warranty\ of\ MERCHANTABILITY\ or}}
+\DoxyCodeLine{00013\ \textcolor{comment}{FITNESS\ FOR\ A\ PARTICULAR\ PURPOSE.\ \ See\ the\ GNU\ General\ Public\ License}}
+\DoxyCodeLine{00014\ \textcolor{comment}{for\ more\ details.}}
+\DoxyCodeLine{00015\ \textcolor{comment}{}}
+\DoxyCodeLine{00016\ \textcolor{comment}{You\ should\ have\ received\ a\ copy\ of\ the\ GNU\ General\ Public\ License}}
+\DoxyCodeLine{00017\ \textcolor{comment}{along\ with\ GCC;\ see\ the\ file\ COPYING3.\ \ If\ not\ see}}
+\DoxyCodeLine{00018\ \textcolor{comment}{<http://www.gnu.org/licenses/>.\ \ */}}
+\DoxyCodeLine{00019\ }
+\DoxyCodeLine{00020\ \textcolor{preprocessor}{\#ifndef\ GCC\_SBITMAP\_H}}
+\DoxyCodeLine{00021\ \textcolor{preprocessor}{\#define\ GCC\_SBITMAP\_H}}
+\DoxyCodeLine{00022\ }
+\DoxyCodeLine{00023\ \textcolor{comment}{/*\ Implementation\ of\ sets\ using\ simple\ bitmap\ vectors.}}
+\DoxyCodeLine{00024\ \textcolor{comment}{}}
+\DoxyCodeLine{00025\ \textcolor{comment}{\ \ \ This\ set\ representation\ is\ suitable\ for\ non-\/sparse\ sets\ with\ a\ known}}
+\DoxyCodeLine{00026\ \textcolor{comment}{\ \ \ (a\ priori)\ universe.\ \ The\ set\ is\ represented\ as\ a\ simple\ array\ of\ the}}
+\DoxyCodeLine{00027\ \textcolor{comment}{\ \ \ host's\ fastest\ unsigned\ integer.\ \ For\ a\ given\ member\ I\ in\ the\ set:}}
+\DoxyCodeLine{00028\ \textcolor{comment}{\ \ \ \ \ -\/\ the\ element\ for\ I\ will\ be\ at\ sbitmap[I\ /\ (bits\ per\ element)]}}
+\DoxyCodeLine{00029\ \textcolor{comment}{\ \ \ \ \ -\/\ the\ position\ for\ I\ within\ element\ is\ I\ \%\ (bits\ per\ element)}}
+\DoxyCodeLine{00030\ \textcolor{comment}{}}
+\DoxyCodeLine{00031\ \textcolor{comment}{\ \ \ This\ representation\ is\ very\ space-\/efficient\ for\ large\ non-\/sparse\ sets}}
+\DoxyCodeLine{00032\ \textcolor{comment}{\ \ \ with\ random\ access\ patterns.}}
+\DoxyCodeLine{00033\ \textcolor{comment}{}}
+\DoxyCodeLine{00034\ \textcolor{comment}{\ \ \ The\ following\ operations\ can\ be\ performed\ in\ O(1)\ time:}}
+\DoxyCodeLine{00035\ \textcolor{comment}{}}
+\DoxyCodeLine{00036\ \textcolor{comment}{\ \ \ \ \ *\ set\_size\ \ \ \ \ \ \ \ \ :\ SBITMAP\_SIZE}}
+\DoxyCodeLine{00037\ \textcolor{comment}{\ \ \ \ \ *\ member\_p\ \ \ \ \ \ \ \ \ :\ bitmap\_bit\_p}}
+\DoxyCodeLine{00038\ \textcolor{comment}{\ \ \ \ \ *\ add\_member\ \ \ \ \ \ \ :\ bitmap\_set\_bit}}
+\DoxyCodeLine{00039\ \textcolor{comment}{\ \ \ \ \ *\ remove\_member\ \ \ \ \ \ \ \ :\ bitmap\_clear\_bit}}
+\DoxyCodeLine{00040\ \textcolor{comment}{}}
+\DoxyCodeLine{00041\ \textcolor{comment}{\ \ \ Most\ other\ operations\ on\ this\ set\ representation\ are\ O(U)\ where\ U\ is}}
+\DoxyCodeLine{00042\ \textcolor{comment}{\ \ \ the\ size\ of\ the\ set\ universe:}}
+\DoxyCodeLine{00043\ \textcolor{comment}{}}
+\DoxyCodeLine{00044\ \textcolor{comment}{\ \ \ \ \ *\ clear\ \ \ \ \ \ \ \ \ \ \ \ :\ bitmap\_clear}}
+\DoxyCodeLine{00045\ \textcolor{comment}{\ \ \ \ \ *\ choose\_one\ \ \ \ \ \ \ :\ bitmap\_first\_set\_bit\ /}}
+\DoxyCodeLine{00046\ \textcolor{comment}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ bitmap\_last\_set\_bit}}
+\DoxyCodeLine{00047\ \textcolor{comment}{\ \ \ \ \ *\ forall\ \ \ \ \ \ \ \ \ \ \ :\ EXECUTE\_IF\_SET\_IN\_BITMAP}}
+\DoxyCodeLine{00048\ \textcolor{comment}{\ \ \ \ \ *\ set\_copy\ \ \ \ \ \ \ \ \ :\ bitmap\_copy}}
+\DoxyCodeLine{00049\ \textcolor{comment}{\ \ \ \ \ *\ set\_intersection\ \ \ \ \ :\ bitmap\_and}}
+\DoxyCodeLine{00050\ \textcolor{comment}{\ \ \ \ \ *\ set\_union\ \ \ \ \ \ \ \ :\ bitmap\_ior}}
+\DoxyCodeLine{00051\ \textcolor{comment}{\ \ \ \ \ *\ set\_difference\ \ \ \ \ \ \ :\ bitmap\_and\_compl}}
+\DoxyCodeLine{00052\ \textcolor{comment}{\ \ \ \ \ *\ set\_disjuction\ \ \ \ \ \ \ :\ (not\ implemented)}}
+\DoxyCodeLine{00053\ \textcolor{comment}{\ \ \ \ \ *\ set\_compare\ \ \ \ \ \ :\ bitmap\_equal\_p}}
+\DoxyCodeLine{00054\ \textcolor{comment}{\ \ \ \ \ *\ bit\_in\_range\_p\ \ \ \ \ \ \ :\ bitmap\_bit\_in\_range\_p}}
+\DoxyCodeLine{00055\ \textcolor{comment}{}}
+\DoxyCodeLine{00056\ \textcolor{comment}{\ \ \ Some\ operations\ on\ 3\ sets\ that\ occur\ frequently\ in\ data\ flow\ problems}}
+\DoxyCodeLine{00057\ \textcolor{comment}{\ \ \ are\ also\ implemented:}}
+\DoxyCodeLine{00058\ \textcolor{comment}{}}
+\DoxyCodeLine{00059\ \textcolor{comment}{\ \ \ \ \ \ *\ A\ |\ (B\ \&\ C)\ \ \ \ \ :\ bitmap\_or\_and}}
+\DoxyCodeLine{00060\ \textcolor{comment}{\ \ \ \ \ \ *\ A\ |\ (B\ \&\ \string~C)\ \ \ \ \ \ \ \ :\ bitmap\_ior\_and\_compl}}
+\DoxyCodeLine{00061\ \textcolor{comment}{\ \ \ \ \ \ *\ A\ \&\ (B\ |\ C)\ \ \ \ \ :\ bitmap\_and\_or}}
+\DoxyCodeLine{00062\ \textcolor{comment}{}}
+\DoxyCodeLine{00063\ \textcolor{comment}{\ \ \ Most\ of\ the\ set\ functions\ have\ two\ variants:\ One\ that\ returns\ non-\/zero}}
+\DoxyCodeLine{00064\ \textcolor{comment}{\ \ \ if\ members\ were\ added\ or\ removed\ from\ the\ target\ set,\ and\ one\ that\ just}}
+\DoxyCodeLine{00065\ \textcolor{comment}{\ \ \ performs\ the\ operation\ without\ feedback.\ \ The\ former\ operations\ are\ a}}
+\DoxyCodeLine{00066\ \textcolor{comment}{\ \ \ bit\ more\ expensive\ but\ the\ result\ can\ often\ be\ used\ to\ avoid\ iterations}}
+\DoxyCodeLine{00067\ \textcolor{comment}{\ \ \ on\ other\ sets.}}
+\DoxyCodeLine{00068\ \textcolor{comment}{}}
+\DoxyCodeLine{00069\ \textcolor{comment}{\ \ \ Allocating\ a\ bitmap\ is\ done\ with\ sbitmap\_alloc,\ and\ resizing\ is}}
+\DoxyCodeLine{00070\ \textcolor{comment}{\ \ \ performed\ with\ sbitmap\_resize.}}
+\DoxyCodeLine{00071\ \textcolor{comment}{}}
+\DoxyCodeLine{00072\ \textcolor{comment}{\ \ \ The\ storage\ requirements\ for\ simple\ bitmap\ sets\ is\ O(U)\ where\ U\ is\ the}}
+\DoxyCodeLine{00073\ \textcolor{comment}{\ \ \ size\ of\ the\ set\ universe\ (colloquially\ the\ number\ of\ bits\ in\ the\ bitmap).}}
+\DoxyCodeLine{00074\ \textcolor{comment}{}}
+\DoxyCodeLine{00075\ \textcolor{comment}{\ \ \ This\ set\ representation\ works\ well\ for\ relatively\ small\ data\ flow\ problems}}
+\DoxyCodeLine{00076\ \textcolor{comment}{\ \ \ (there\ are\ special\ routines\ for\ that,\ see\ sbitmap\_vector\_*).\ \ The\ set}}
+\DoxyCodeLine{00077\ \textcolor{comment}{\ \ \ operations\ can\ be\ vectorized\ and\ there\ is\ almost\ no\ computating\ overhead,}}
+\DoxyCodeLine{00078\ \textcolor{comment}{\ \ \ so\ that\ even\ sparse\ simple\ bitmap\ sets\ outperform\ dedicated\ sparse\ set}}
+\DoxyCodeLine{00079\ \textcolor{comment}{\ \ \ representations\ like\ linked-\/list\ bitmaps.\ \ For\ larger\ problems,\ the\ size}}
+\DoxyCodeLine{00080\ \textcolor{comment}{\ \ \ overhead\ of\ simple\ bitmap\ sets\ gets\ too\ high\ and\ other\ set\ representations}}
+\DoxyCodeLine{00081\ \textcolor{comment}{\ \ \ have\ to\ be\ used.\ \ */}}
+\DoxyCodeLine{00082\ }
+\DoxyCodeLine{00083\ \textcolor{preprocessor}{\#define\ SBITMAP\_ELT\_BITS\ (HOST\_BITS\_PER\_WIDEST\_FAST\_INT\ *\ 1u)}}
+\DoxyCodeLine{00084\ \textcolor{preprocessor}{\#define\ SBITMAP\_ELT\_TYPE\ unsigned\ HOST\_WIDEST\_FAST\_INT}}
+\DoxyCodeLine{00085\ }
+\DoxyCodeLine{00086\ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{structsimple__bitmap__def}{simple\_bitmap\_def}}}
+\DoxyCodeLine{00087\ \{}
+\DoxyCodeLine{00088\ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{structsimple__bitmap__def_a4d7350ec93ceedf738965824a0640640}{n\_bits}};\ \ \ \ \ \ \textcolor{comment}{/*\ Number\ of\ bits.\ \ */}}
+\DoxyCodeLine{00089\ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{structsimple__bitmap__def_a55f1147d4f30c211b8d8ce0b0eab5d66}{size}};\ \ \ \ \ \ \ \ \textcolor{comment}{/*\ Size\ in\ elements.\ \ */}}
+\DoxyCodeLine{00090\ \ \ \doxymbox{\hyperlink{sbitmap_8h_a9c1ae6b93044a30d49a51ba91211558b}{SBITMAP\_ELT\_TYPE}}\ \doxymbox{\hyperlink{structsimple__bitmap__def_a28ed0b2d04a66e6a503330f8b8d2669d}{elms}}[1];\ \textcolor{comment}{/*\ The\ elements.\ \ */}}
+\DoxyCodeLine{00091\ \};}
+\DoxyCodeLine{00092\ }
+\DoxyCodeLine{00093\ \textcolor{comment}{/*\ Return\ the\ set\ size\ needed\ for\ N\ elements.\ \ */}}
+\DoxyCodeLine{00094\ \textcolor{preprocessor}{\#define\ SBITMAP\_SET\_SIZE(N)\ (((N)\ +\ SBITMAP\_ELT\_BITS\ -\/\ 1)\ /\ SBITMAP\_ELT\_BITS)}}
+\DoxyCodeLine{00095\ }
+\DoxyCodeLine{00096\ \textcolor{comment}{/*\ Return\ the\ number\ of\ bits\ in\ BITMAP.\ \ */}}
+\DoxyCodeLine{00097\ \textcolor{preprocessor}{\#define\ SBITMAP\_SIZE(BITMAP)\ ((BITMAP)-\/>n\_bits)}}
+\DoxyCodeLine{00098\ }
+\DoxyCodeLine{00099\ \textcolor{comment}{/*\ Verify\ that\ access\ at\ INDEX\ in\ bitmap\ MAP\ is\ valid.\ \ */}\ }
+\DoxyCodeLine{00100\ }
+\DoxyCodeLine{00101\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{void}}
+\DoxyCodeLine{00102\ \doxymbox{\hyperlink{sbitmap_8h_a8d6e7acf1f264007dd0261c93774e086}{bitmap\_check\_index}}\ (\doxymbox{\hyperlink{coretypes_8h_a9afe23ed29f80a4a650f5dd343566bd8}{const\_sbitmap}}\ map,\ \textcolor{keywordtype}{int}\ index)}
+\DoxyCodeLine{00103\ \{}
+\DoxyCodeLine{00104\ \ \ \doxymbox{\hyperlink{system_8h_aff447899dc74d54931b2bc2d47de9423}{gcc\_checking\_assert}}\ (index\ >=\ 0);}
+\DoxyCodeLine{00105\ \ \ \doxymbox{\hyperlink{system_8h_aff447899dc74d54931b2bc2d47de9423}{gcc\_checking\_assert}}\ ((\textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int})index\ <\ map-\/>n\_bits);}
+\DoxyCodeLine{00106\ \}}
+\DoxyCodeLine{00107\ }
+\DoxyCodeLine{00108\ \textcolor{comment}{/*\ Verify\ that\ bitmaps\ A\ and\ B\ have\ same\ size.\ \ */}\ }
+\DoxyCodeLine{00109\ }
+\DoxyCodeLine{00110\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{void}}
+\DoxyCodeLine{00111\ \doxymbox{\hyperlink{sbitmap_8h_ac55248b5c53e91e5b04b4eaff412ef97}{bitmap\_check\_sizes}}\ (\doxymbox{\hyperlink{coretypes_8h_a9afe23ed29f80a4a650f5dd343566bd8}{const\_sbitmap}}\ \doxymbox{\hyperlink{poly-int_8h_af77c881600a14567e276ee17dfb8764f}{a}},\ \doxymbox{\hyperlink{coretypes_8h_a9afe23ed29f80a4a650f5dd343566bd8}{const\_sbitmap}}\ \doxymbox{\hyperlink{poly-int_8h_af3bb9d9df219585072cf9e4e95572f70}{b}})}
+\DoxyCodeLine{00112\ \{}
+\DoxyCodeLine{00113\ \ \ \doxymbox{\hyperlink{system_8h_aff447899dc74d54931b2bc2d47de9423}{gcc\_checking\_assert}}\ (\doxymbox{\hyperlink{poly-int_8h_af77c881600a14567e276ee17dfb8764f}{a}}-\/>n\_bits\ ==\ \doxymbox{\hyperlink{poly-int_8h_af3bb9d9df219585072cf9e4e95572f70}{b}}-\/>n\_bits);}
+\DoxyCodeLine{00114\ \}}
+\DoxyCodeLine{00115\ }
+\DoxyCodeLine{00116\ \textcolor{comment}{/*\ Test\ if\ bit\ number\ bitno\ in\ the\ bitmap\ is\ set.\ \ */}}
+\DoxyCodeLine{00117\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{bool}}
+\DoxyCodeLine{00118\ \doxymbox{\hyperlink{sbitmap_8h_a49f55f7b65d69f5fb1594a9217b4e56c}{bitmap\_bit\_p}}\ (\doxymbox{\hyperlink{coretypes_8h_a9afe23ed29f80a4a650f5dd343566bd8}{const\_sbitmap}}\ map,\ \textcolor{keywordtype}{int}\ bitno)}
+\DoxyCodeLine{00119\ \{}
+\DoxyCodeLine{00120\ \ \ \doxymbox{\hyperlink{sbitmap_8h_a8d6e7acf1f264007dd0261c93774e086}{bitmap\_check\_index}}\ (map,\ bitno);}
+\DoxyCodeLine{00121\ }
+\DoxyCodeLine{00122\ \ \ \textcolor{keywordtype}{size\_t}\ \doxymbox{\hyperlink{poly-int_8h_a7e98b8a17c0aad30ba64d47b74e2a6c1}{i}}\ =\ bitno\ /\ \doxymbox{\hyperlink{sbitmap_8h_a8f4fabe02583c616903ee55256c1de76}{SBITMAP\_ELT\_BITS}};}
+\DoxyCodeLine{00123\ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ s\ =\ bitno\ \%\ \doxymbox{\hyperlink{sbitmap_8h_a8f4fabe02583c616903ee55256c1de76}{SBITMAP\_ELT\_BITS}};}
+\DoxyCodeLine{00124\ \ \ \textcolor{keywordflow}{return}\ (map-\/>\doxymbox{\hyperlink{structsimple__bitmap__def_a28ed0b2d04a66e6a503330f8b8d2669d}{elms}}[\doxymbox{\hyperlink{poly-int_8h_a7e98b8a17c0aad30ba64d47b74e2a6c1}{i}}]\ >>\ s)\ \&\ (\doxymbox{\hyperlink{sbitmap_8h_a9c1ae6b93044a30d49a51ba91211558b}{SBITMAP\_ELT\_TYPE}})\ 1;}
+\DoxyCodeLine{00125\ \}}
+\DoxyCodeLine{00126\ }
+\DoxyCodeLine{00127\ \textcolor{comment}{/*\ Set\ bit\ number\ BITNO\ in\ the\ sbitmap\ MAP.}}
+\DoxyCodeLine{00128\ \textcolor{comment}{\ \ \ Return\ true\ if\ the\ bit\ changed.\ \ */}}
+\DoxyCodeLine{00129\ }
+\DoxyCodeLine{00130\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{bool}}
+\DoxyCodeLine{00131\ \doxymbox{\hyperlink{sbitmap_8h_afa2b8947cff48acf59dfeb8ca7a4f3a9}{bitmap\_set\_bit}}\ (\doxymbox{\hyperlink{coretypes_8h_a780cd5c6b7453aa0a01cdf1c5b379abd}{sbitmap}}\ map,\ \textcolor{keywordtype}{int}\ bitno)}
+\DoxyCodeLine{00132\ \{}
+\DoxyCodeLine{00133\ \ \ \doxymbox{\hyperlink{sbitmap_8h_a8d6e7acf1f264007dd0261c93774e086}{bitmap\_check\_index}}\ (map,\ bitno);}
+\DoxyCodeLine{00134\ }
+\DoxyCodeLine{00135\ \ \ \textcolor{keywordtype}{size\_t}\ \doxymbox{\hyperlink{poly-int_8h_a7e98b8a17c0aad30ba64d47b74e2a6c1}{i}}\ =\ bitno\ /\ \doxymbox{\hyperlink{sbitmap_8h_a8f4fabe02583c616903ee55256c1de76}{SBITMAP\_ELT\_BITS}};}
+\DoxyCodeLine{00136\ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ s\ =\ bitno\ \%\ \doxymbox{\hyperlink{sbitmap_8h_a8f4fabe02583c616903ee55256c1de76}{SBITMAP\_ELT\_BITS}};}
+\DoxyCodeLine{00137\ \ \ \textcolor{keywordflow}{if}\ (map-\/>\doxymbox{\hyperlink{structsimple__bitmap__def_a28ed0b2d04a66e6a503330f8b8d2669d}{elms}}[\doxymbox{\hyperlink{poly-int_8h_a7e98b8a17c0aad30ba64d47b74e2a6c1}{i}}]\ \&\ ((\doxymbox{\hyperlink{sbitmap_8h_a9c1ae6b93044a30d49a51ba91211558b}{SBITMAP\_ELT\_TYPE}})\ 1\ <<\ s))}
+\DoxyCodeLine{00138\ \ \ \ \ \textcolor{keywordflow}{return}\ \textcolor{keyword}{false};}
+\DoxyCodeLine{00139\ \ \ map-\/>\doxymbox{\hyperlink{structsimple__bitmap__def_a28ed0b2d04a66e6a503330f8b8d2669d}{elms}}[\doxymbox{\hyperlink{poly-int_8h_a7e98b8a17c0aad30ba64d47b74e2a6c1}{i}}]\ |=\ (\doxymbox{\hyperlink{sbitmap_8h_a9c1ae6b93044a30d49a51ba91211558b}{SBITMAP\_ELT\_TYPE}})\ 1\ <<\ s;}
+\DoxyCodeLine{00140\ \ \ \textcolor{keywordflow}{return}\ \textcolor{keyword}{true};}
+\DoxyCodeLine{00141\ \}}
+\DoxyCodeLine{00142\ }
+\DoxyCodeLine{00143\ \textcolor{comment}{/*\ Reset\ bit\ number\ BITNO\ in\ the\ sbitmap\ MAP.}}
+\DoxyCodeLine{00144\ \textcolor{comment}{\ \ \ Return\ true\ if\ the\ bit\ changed.\ \ */}}
+\DoxyCodeLine{00145\ }
+\DoxyCodeLine{00146\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{bool}}
+\DoxyCodeLine{00147\ \doxymbox{\hyperlink{sbitmap_8h_a9c7f1262524dc1101bf9e9aba57ab7b6}{bitmap\_clear\_bit}}\ (\doxymbox{\hyperlink{coretypes_8h_a780cd5c6b7453aa0a01cdf1c5b379abd}{sbitmap}}\ map,\ \textcolor{keywordtype}{int}\ bitno)}
+\DoxyCodeLine{00148\ \{}
+\DoxyCodeLine{00149\ \ \ \doxymbox{\hyperlink{sbitmap_8h_a8d6e7acf1f264007dd0261c93774e086}{bitmap\_check\_index}}\ (map,\ bitno);}
+\DoxyCodeLine{00150\ }
+\DoxyCodeLine{00151\ \ \ \textcolor{keywordtype}{size\_t}\ \doxymbox{\hyperlink{poly-int_8h_a7e98b8a17c0aad30ba64d47b74e2a6c1}{i}}\ =\ bitno\ /\ \doxymbox{\hyperlink{sbitmap_8h_a8f4fabe02583c616903ee55256c1de76}{SBITMAP\_ELT\_BITS}};}
+\DoxyCodeLine{00152\ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ s\ =\ bitno\ \%\ \doxymbox{\hyperlink{sbitmap_8h_a8f4fabe02583c616903ee55256c1de76}{SBITMAP\_ELT\_BITS}};}
+\DoxyCodeLine{00153\ \ \ \textcolor{keywordflow}{if}\ (!(map-\/>\doxymbox{\hyperlink{structsimple__bitmap__def_a28ed0b2d04a66e6a503330f8b8d2669d}{elms}}[\doxymbox{\hyperlink{poly-int_8h_a7e98b8a17c0aad30ba64d47b74e2a6c1}{i}}]\ \&\ ((\doxymbox{\hyperlink{sbitmap_8h_a9c1ae6b93044a30d49a51ba91211558b}{SBITMAP\_ELT\_TYPE}})\ 1\ <<\ s)))}
+\DoxyCodeLine{00154\ \ \ \ \ \textcolor{keywordflow}{return}\ \textcolor{keyword}{false};}
+\DoxyCodeLine{00155\ \ \ map-\/>\doxymbox{\hyperlink{structsimple__bitmap__def_a28ed0b2d04a66e6a503330f8b8d2669d}{elms}}[\doxymbox{\hyperlink{poly-int_8h_a7e98b8a17c0aad30ba64d47b74e2a6c1}{i}}]\ \&=\ \string~((\doxymbox{\hyperlink{sbitmap_8h_a9c1ae6b93044a30d49a51ba91211558b}{SBITMAP\_ELT\_TYPE}})\ 1\ <<\ s);}
+\DoxyCodeLine{00156\ \ \ \textcolor{keywordflow}{return}\ \textcolor{keyword}{true};}
+\DoxyCodeLine{00157\ \}}
+\DoxyCodeLine{00158\ }
+\DoxyCodeLine{00159\ \textcolor{comment}{/*\ The\ iterator\ for\ sbitmap.\ \ */}}
+\DoxyCodeLine{00160\ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{structsbitmap__iterator}{sbitmap\_iterator}}\ \{}
+\DoxyCodeLine{00161\ \ \ \textcolor{comment}{/*\ The\ pointer\ to\ the\ first\ word\ of\ the\ bitmap.\ \ */}}
+\DoxyCodeLine{00162\ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{sbitmap_8h_a9c1ae6b93044a30d49a51ba91211558b}{SBITMAP\_ELT\_TYPE}}\ *\doxymbox{\hyperlink{structsbitmap__iterator_a5b398a752b34995f0011b271b9888679}{ptr}};}
+\DoxyCodeLine{00163\ }
+\DoxyCodeLine{00164\ \ \ \textcolor{comment}{/*\ The\ size\ of\ the\ bitmap.\ \ */}}
+\DoxyCodeLine{00165\ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{structsbitmap__iterator_a5ad1a53d1a85e90b324b6ae6900468af}{size}};}
+\DoxyCodeLine{00166\ }
+\DoxyCodeLine{00167\ \ \ \textcolor{comment}{/*\ The\ current\ word\ index.\ \ */}}
+\DoxyCodeLine{00168\ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{structsbitmap__iterator_ab978aede632155232759fefc592e1f65}{word\_num}};}
+\DoxyCodeLine{00169\ }
+\DoxyCodeLine{00170\ \ \ \textcolor{comment}{/*\ The\ current\ bit\ index\ (not\ modulo\ SBITMAP\_ELT\_BITS).\ \ */}}
+\DoxyCodeLine{00171\ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{structsbitmap__iterator_a16caa70877b8bb0e5fdafd69339f6e84}{bit\_num}};}
+\DoxyCodeLine{00172\ }
+\DoxyCodeLine{00173\ \ \ \textcolor{comment}{/*\ The\ words\ currently\ visited.\ \ */}}
+\DoxyCodeLine{00174\ \ \ \doxymbox{\hyperlink{sbitmap_8h_a9c1ae6b93044a30d49a51ba91211558b}{SBITMAP\_ELT\_TYPE}}\ \doxymbox{\hyperlink{structsbitmap__iterator_a2a08c1733dc86a4a39d9906c50684863}{word}};}
+\DoxyCodeLine{00175\ \};}
+\DoxyCodeLine{00176\ }
+\DoxyCodeLine{00177\ \textcolor{comment}{/*\ Initialize\ the\ iterator\ I\ with\ sbitmap\ BMP\ and\ the\ initial\ index}}
+\DoxyCodeLine{00178\ \textcolor{comment}{\ \ \ MIN.\ \ */}}
+\DoxyCodeLine{00179\ }
+\DoxyCodeLine{00180\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{void}}
+\DoxyCodeLine{00181\ \doxymbox{\hyperlink{sbitmap_8h_ace0c1d0ebad3a7a59c73c0b34955ab2d}{bmp\_iter\_set\_init}}\ (\doxymbox{\hyperlink{structsbitmap__iterator}{sbitmap\_iterator}}\ *\doxymbox{\hyperlink{poly-int_8h_a7e98b8a17c0aad30ba64d47b74e2a6c1}{i}},\ \doxymbox{\hyperlink{coretypes_8h_a9afe23ed29f80a4a650f5dd343566bd8}{const\_sbitmap}}\ bmp,}
+\DoxyCodeLine{00182\ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ min,\ \textcolor{keywordtype}{unsigned}\ *bit\_no\ \doxymbox{\hyperlink{ansidecl_8h_a635a8d08da53567d5c3b67deb7f98ed3}{ATTRIBUTE\_UNUSED}})}
+\DoxyCodeLine{00183\ \{}
+\DoxyCodeLine{00184\ \ \ \doxymbox{\hyperlink{poly-int_8h_a7e98b8a17c0aad30ba64d47b74e2a6c1}{i}}-\/>word\_num\ =\ min\ /\ (\textcolor{keywordtype}{unsigned}\ int)\ \doxymbox{\hyperlink{sbitmap_8h_a8f4fabe02583c616903ee55256c1de76}{SBITMAP\_ELT\_BITS}};}
+\DoxyCodeLine{00185\ \ \ \doxymbox{\hyperlink{poly-int_8h_a7e98b8a17c0aad30ba64d47b74e2a6c1}{i}}-\/>bit\_num\ =\ min;}
+\DoxyCodeLine{00186\ \ \ \doxymbox{\hyperlink{poly-int_8h_a7e98b8a17c0aad30ba64d47b74e2a6c1}{i}}-\/>size\ =\ bmp-\/>\doxymbox{\hyperlink{structsimple__bitmap__def_a55f1147d4f30c211b8d8ce0b0eab5d66}{size}};}
+\DoxyCodeLine{00187\ \ \ \doxymbox{\hyperlink{poly-int_8h_a7e98b8a17c0aad30ba64d47b74e2a6c1}{i}}-\/>ptr\ =\ bmp-\/>\doxymbox{\hyperlink{structsimple__bitmap__def_a28ed0b2d04a66e6a503330f8b8d2669d}{elms}};}
+\DoxyCodeLine{00188\ }
+\DoxyCodeLine{00189\ \ \ \textcolor{keywordflow}{if}\ (\doxymbox{\hyperlink{poly-int_8h_a7e98b8a17c0aad30ba64d47b74e2a6c1}{i}}-\/>word\_num\ >=\ \doxymbox{\hyperlink{poly-int_8h_a7e98b8a17c0aad30ba64d47b74e2a6c1}{i}}-\/>size)}
+\DoxyCodeLine{00190\ \ \ \ \ \doxymbox{\hyperlink{poly-int_8h_a7e98b8a17c0aad30ba64d47b74e2a6c1}{i}}-\/>word\ =\ 0;}
+\DoxyCodeLine{00191\ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00192\ \ \ \ \ \doxymbox{\hyperlink{poly-int_8h_a7e98b8a17c0aad30ba64d47b74e2a6c1}{i}}-\/>word\ =\ (\doxymbox{\hyperlink{poly-int_8h_a7e98b8a17c0aad30ba64d47b74e2a6c1}{i}}-\/>ptr[\doxymbox{\hyperlink{poly-int_8h_a7e98b8a17c0aad30ba64d47b74e2a6c1}{i}}-\/>word\_num]}
+\DoxyCodeLine{00193\ \ \ \ \ \ \ \ \ \ \ \ >>\ (\doxymbox{\hyperlink{poly-int_8h_a7e98b8a17c0aad30ba64d47b74e2a6c1}{i}}-\/>bit\_num\ \%\ (\textcolor{keywordtype}{unsigned}\ int)\ \doxymbox{\hyperlink{sbitmap_8h_a8f4fabe02583c616903ee55256c1de76}{SBITMAP\_ELT\_BITS}}));}
+\DoxyCodeLine{00194\ \}}
+\DoxyCodeLine{00195\ }
+\DoxyCodeLine{00196\ \textcolor{comment}{/*\ Return\ true\ if\ we\ have\ more\ bits\ to\ visit,\ in\ which\ case\ *N\ is\ set}}
+\DoxyCodeLine{00197\ \textcolor{comment}{\ \ \ to\ the\ index\ of\ the\ bit\ to\ be\ visited.\ \ Otherwise,\ return}}
+\DoxyCodeLine{00198\ \textcolor{comment}{\ \ \ false.\ \ */}}
+\DoxyCodeLine{00199\ }
+\DoxyCodeLine{00200\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{bool}}
+\DoxyCodeLine{00201\ \doxymbox{\hyperlink{sbitmap_8h_a590b306430c91d245f61e5fa0a27149f}{bmp\_iter\_set}}\ (\doxymbox{\hyperlink{structsbitmap__iterator}{sbitmap\_iterator}}\ *\doxymbox{\hyperlink{poly-int_8h_a7e98b8a17c0aad30ba64d47b74e2a6c1}{i}},\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ *n)}
+\DoxyCodeLine{00202\ \{}
+\DoxyCodeLine{00203\ \ \ \textcolor{comment}{/*\ Skip\ words\ that\ are\ zeros.\ \ */}}
+\DoxyCodeLine{00204\ \ \ \textcolor{keywordflow}{for}\ (;\ \doxymbox{\hyperlink{poly-int_8h_a7e98b8a17c0aad30ba64d47b74e2a6c1}{i}}-\/>word\ ==\ 0;\ \doxymbox{\hyperlink{poly-int_8h_a7e98b8a17c0aad30ba64d47b74e2a6c1}{i}}-\/>word\ =\ \doxymbox{\hyperlink{poly-int_8h_a7e98b8a17c0aad30ba64d47b74e2a6c1}{i}}-\/>ptr[\doxymbox{\hyperlink{poly-int_8h_a7e98b8a17c0aad30ba64d47b74e2a6c1}{i}}-\/>word\_num])}
+\DoxyCodeLine{00205\ \ \ \ \ \{}
+\DoxyCodeLine{00206\ \ \ \ \ \ \ \doxymbox{\hyperlink{poly-int_8h_a7e98b8a17c0aad30ba64d47b74e2a6c1}{i}}-\/>word\_num++;}
+\DoxyCodeLine{00207\ }
+\DoxyCodeLine{00208\ \ \ \ \ \ \ \textcolor{comment}{/*\ If\ we\ have\ reached\ the\ end,\ break.\ \ */}}
+\DoxyCodeLine{00209\ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (\doxymbox{\hyperlink{poly-int_8h_a7e98b8a17c0aad30ba64d47b74e2a6c1}{i}}-\/>word\_num\ >=\ \doxymbox{\hyperlink{poly-int_8h_a7e98b8a17c0aad30ba64d47b74e2a6c1}{i}}-\/>size)}
+\DoxyCodeLine{00210\ \ \ \ \ \textcolor{keywordflow}{return}\ \textcolor{keyword}{false};}
+\DoxyCodeLine{00211\ }
+\DoxyCodeLine{00212\ \ \ \ \ \ \ \doxymbox{\hyperlink{poly-int_8h_a7e98b8a17c0aad30ba64d47b74e2a6c1}{i}}-\/>bit\_num\ =\ \doxymbox{\hyperlink{poly-int_8h_a7e98b8a17c0aad30ba64d47b74e2a6c1}{i}}-\/>word\_num\ *\ \doxymbox{\hyperlink{sbitmap_8h_a8f4fabe02583c616903ee55256c1de76}{SBITMAP\_ELT\_BITS}};}
+\DoxyCodeLine{00213\ \ \ \ \ \}}
+\DoxyCodeLine{00214\ }
+\DoxyCodeLine{00215\ \ \ \textcolor{comment}{/*\ Skip\ bits\ that\ are\ zero.\ \ */}}
+\DoxyCodeLine{00216\ \ \ \textcolor{keywordflow}{for}\ (;\ (\doxymbox{\hyperlink{poly-int_8h_a7e98b8a17c0aad30ba64d47b74e2a6c1}{i}}-\/>word\ \&\ 1)\ ==\ 0;\ \doxymbox{\hyperlink{poly-int_8h_a7e98b8a17c0aad30ba64d47b74e2a6c1}{i}}-\/>word\ >>=\ 1)}
+\DoxyCodeLine{00217\ \ \ \ \ \doxymbox{\hyperlink{poly-int_8h_a7e98b8a17c0aad30ba64d47b74e2a6c1}{i}}-\/>bit\_num++;}
+\DoxyCodeLine{00218\ }
+\DoxyCodeLine{00219\ \ \ *n\ =\ \doxymbox{\hyperlink{poly-int_8h_a7e98b8a17c0aad30ba64d47b74e2a6c1}{i}}-\/>bit\_num;}
+\DoxyCodeLine{00220\ }
+\DoxyCodeLine{00221\ \ \ \textcolor{keywordflow}{return}\ \textcolor{keyword}{true};}
+\DoxyCodeLine{00222\ \}}
+\DoxyCodeLine{00223\ }
+\DoxyCodeLine{00224\ \textcolor{comment}{/*\ Advance\ to\ the\ next\ bit.\ \ */}}
+\DoxyCodeLine{00225\ }
+\DoxyCodeLine{00226\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{void}}
+\DoxyCodeLine{00227\ \doxymbox{\hyperlink{sbitmap_8h_ad32fa0596ee61415e18a2eba8f999d55}{bmp\_iter\_next}}\ (\doxymbox{\hyperlink{structsbitmap__iterator}{sbitmap\_iterator}}\ *\doxymbox{\hyperlink{poly-int_8h_a7e98b8a17c0aad30ba64d47b74e2a6c1}{i}},\ \textcolor{keywordtype}{unsigned}\ *bit\_no\ \doxymbox{\hyperlink{ansidecl_8h_a635a8d08da53567d5c3b67deb7f98ed3}{ATTRIBUTE\_UNUSED}})}
+\DoxyCodeLine{00228\ \{}
+\DoxyCodeLine{00229\ \ \ \doxymbox{\hyperlink{poly-int_8h_a7e98b8a17c0aad30ba64d47b74e2a6c1}{i}}-\/>word\ >>=\ 1;}
+\DoxyCodeLine{00230\ \ \ \doxymbox{\hyperlink{poly-int_8h_a7e98b8a17c0aad30ba64d47b74e2a6c1}{i}}-\/>bit\_num++;}
+\DoxyCodeLine{00231\ \}}
+\DoxyCodeLine{00232\ }
+\DoxyCodeLine{00233\ \textcolor{comment}{/*\ Loop\ over\ all\ elements\ of\ SBITMAP,\ starting\ with\ MIN.\ \ In\ each}}
+\DoxyCodeLine{00234\ \textcolor{comment}{\ \ \ iteration,\ N\ is\ set\ to\ the\ index\ of\ the\ bit\ being\ visited.\ \ ITER\ is}}
+\DoxyCodeLine{00235\ \textcolor{comment}{\ \ \ an\ instance\ of\ sbitmap\_iterator\ used\ to\ iterate\ the\ bitmap.\ \ */}}
+\DoxyCodeLine{00236\ }
+\DoxyCodeLine{00237\ \textcolor{preprocessor}{\#ifndef\ EXECUTE\_IF\_SET\_IN\_BITMAP}}
+\DoxyCodeLine{00238\ \textcolor{comment}{/*\ See\ bitmap.h\ for\ the\ other\ definition\ of\ EXECUTE\_IF\_SET\_IN\_BITMAP.\ \ */}}
+\DoxyCodeLine{00239\ \textcolor{preprocessor}{\#define\ EXECUTE\_IF\_SET\_IN\_BITMAP(BITMAP,\ MIN,\ BITNUM,\ ITER)\ \(\backslash\)}}
+\DoxyCodeLine{00240\ \textcolor{preprocessor}{\ \ for\ (bmp\_iter\_set\_init\ (\&(ITER),\ (BITMAP),\ (MIN),\ \&(BITNUM));\ \(\backslash\)}}
+\DoxyCodeLine{00241\ \textcolor{preprocessor}{\ \ \ \ \ \ \ bmp\_iter\_set\ (\&(ITER),\ \&(BITNUM));\ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00242\ \textcolor{preprocessor}{\ \ \ \ \ \ \ bmp\_iter\_next\ (\&(ITER),\ \&(BITNUM)))}}
+\DoxyCodeLine{00243\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00244\ }
+\DoxyCodeLine{00245\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{sbitmap_8h_aaae34456d720917ced3f23b9170560ad}{sbitmap\_free}}\ (\doxymbox{\hyperlink{coretypes_8h_a780cd5c6b7453aa0a01cdf1c5b379abd}{sbitmap}}\ map)}
+\DoxyCodeLine{00246\ \{}
+\DoxyCodeLine{00247\ \ \ free\ (map);}
+\DoxyCodeLine{00248\ \}}
+\DoxyCodeLine{00249\ }
+\DoxyCodeLine{00250\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{sbitmap_8h_aeac8ab58224ee3327674013d25dc8873}{sbitmap\_vector\_free}}\ (\doxymbox{\hyperlink{coretypes_8h_a780cd5c6b7453aa0a01cdf1c5b379abd}{sbitmap}}\ *\ \doxymbox{\hyperlink{structvec}{vec}})}
+\DoxyCodeLine{00251\ \{}
+\DoxyCodeLine{00252\ \ \ free\ (\doxymbox{\hyperlink{structvec}{vec}});}
+\DoxyCodeLine{00253\ \}}
+\DoxyCodeLine{00254\ }
+\DoxyCodeLine{00255\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{sbitmap_8h_a83c80e510ba35e748f55782ffbcbf2d6}{dump\_bitmap}}\ (FILE\ *,\ \doxymbox{\hyperlink{coretypes_8h_a9afe23ed29f80a4a650f5dd343566bd8}{const\_sbitmap}});}
+\DoxyCodeLine{00256\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{sbitmap_8h_a7716047be3cf1386535a66ebf4e78cdc}{debug\_raw}}\ (\textcolor{keyword}{const}\ \doxymbox{\hyperlink{structsimple__bitmap__def}{simple\_bitmap\_def}}\ \&ref);}
+\DoxyCodeLine{00257\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{sbitmap_8h_a7716047be3cf1386535a66ebf4e78cdc}{debug\_raw}}\ (\textcolor{keyword}{const}\ \doxymbox{\hyperlink{structsimple__bitmap__def}{simple\_bitmap\_def}}\ *ptr);}
+\DoxyCodeLine{00258\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{sbitmap_8h_a0508e78eed59d27ef35c3cfe65138ece}{dump\_bitmap\_file}}\ (FILE\ *,\ \doxymbox{\hyperlink{coretypes_8h_a9afe23ed29f80a4a650f5dd343566bd8}{const\_sbitmap}});}
+\DoxyCodeLine{00259\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{collect-utils_8h_a398527b3e9e358c345c5047b16871957}{debug}}\ (\textcolor{keyword}{const}\ \doxymbox{\hyperlink{structsimple__bitmap__def}{simple\_bitmap\_def}}\ \&ref);}
+\DoxyCodeLine{00260\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{collect-utils_8h_a398527b3e9e358c345c5047b16871957}{debug}}\ (\textcolor{keyword}{const}\ \doxymbox{\hyperlink{structsimple__bitmap__def}{simple\_bitmap\_def}}\ *ptr);}
+\DoxyCodeLine{00261\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{sbitmap_8h_a1612fd55656d84799678f50a235d8745}{dump\_bitmap\_vector}}\ (FILE\ *,\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *,\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *,\ \doxymbox{\hyperlink{coretypes_8h_a780cd5c6b7453aa0a01cdf1c5b379abd}{sbitmap}}\ *,}
+\DoxyCodeLine{00262\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{int});}
+\DoxyCodeLine{00263\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{coretypes_8h_a780cd5c6b7453aa0a01cdf1c5b379abd}{sbitmap}}\ \doxymbox{\hyperlink{sbitmap_8h_ac94884482369b597b2486df2e4b94b1b}{sbitmap\_alloc}}\ (\textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int});}
+\DoxyCodeLine{00264\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{coretypes_8h_a780cd5c6b7453aa0a01cdf1c5b379abd}{sbitmap}}\ *\doxymbox{\hyperlink{sbitmap_8h_ac337bb2cf4caf7363ed5330242c40755}{sbitmap\_vector\_alloc}}\ (\textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int},\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int});}
+\DoxyCodeLine{00265\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{coretypes_8h_a780cd5c6b7453aa0a01cdf1c5b379abd}{sbitmap}}\ \doxymbox{\hyperlink{sbitmap_8h_a24aa6a255cb431e19cdd0aadb17c39ee}{sbitmap\_resize}}\ (\doxymbox{\hyperlink{coretypes_8h_a780cd5c6b7453aa0a01cdf1c5b379abd}{sbitmap}},\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int},\ \textcolor{keywordtype}{int});}
+\DoxyCodeLine{00266\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{sbitmap_8h_a5665796a3a4eef2acedced84602b393d}{bitmap\_copy}}\ (\doxymbox{\hyperlink{coretypes_8h_a780cd5c6b7453aa0a01cdf1c5b379abd}{sbitmap}},\ \doxymbox{\hyperlink{coretypes_8h_a9afe23ed29f80a4a650f5dd343566bd8}{const\_sbitmap}});}
+\DoxyCodeLine{00267\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{sbitmap_8h_a4f456493c8529d2c625f9c91c4d566a1}{bitmap\_equal\_p}}\ (\doxymbox{\hyperlink{coretypes_8h_a9afe23ed29f80a4a650f5dd343566bd8}{const\_sbitmap}},\ \doxymbox{\hyperlink{coretypes_8h_a9afe23ed29f80a4a650f5dd343566bd8}{const\_sbitmap}});}
+\DoxyCodeLine{00268\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{sbitmap_8h_a2e561ee7f4e693bad653fc5725acd513}{bitmap\_count\_bits}}\ (\doxymbox{\hyperlink{coretypes_8h_a9afe23ed29f80a4a650f5dd343566bd8}{const\_sbitmap}});}
+\DoxyCodeLine{00269\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{sbitmap_8h_a0975036bda7b34942a5a333865f957a2}{bitmap\_empty\_p}}\ (\doxymbox{\hyperlink{coretypes_8h_a9afe23ed29f80a4a650f5dd343566bd8}{const\_sbitmap}});}
+\DoxyCodeLine{00270\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{sbitmap_8h_aafcd018da1184f480491e9f31dbb454d}{bitmap\_clear}}\ (\doxymbox{\hyperlink{coretypes_8h_a780cd5c6b7453aa0a01cdf1c5b379abd}{sbitmap}});}
+\DoxyCodeLine{00271\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{sbitmap_8h_ad11cc41dff47d2ed0dcfb07d0e74fde0}{bitmap\_clear\_range}}\ (\doxymbox{\hyperlink{coretypes_8h_a780cd5c6b7453aa0a01cdf1c5b379abd}{sbitmap}},\ \textcolor{keywordtype}{unsigned},\ \textcolor{keywordtype}{unsigned});}
+\DoxyCodeLine{00272\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{sbitmap_8h_a7e7a10be4ceca34a37ec019c9a7350ed}{bitmap\_set\_range}}\ (\doxymbox{\hyperlink{coretypes_8h_a780cd5c6b7453aa0a01cdf1c5b379abd}{sbitmap}},\ \textcolor{keywordtype}{unsigned},\ \textcolor{keywordtype}{unsigned});}
+\DoxyCodeLine{00273\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{sbitmap_8h_ac1b3bdefc364f45d46993de717cbd7c9}{bitmap\_ones}}\ (\doxymbox{\hyperlink{coretypes_8h_a780cd5c6b7453aa0a01cdf1c5b379abd}{sbitmap}});}
+\DoxyCodeLine{00274\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{sbitmap_8h_af31f0abc0addddda39241048268d6206}{bitmap\_vector\_clear}}\ (\doxymbox{\hyperlink{coretypes_8h_a780cd5c6b7453aa0a01cdf1c5b379abd}{sbitmap}}\ *,\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int});}
+\DoxyCodeLine{00275\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{sbitmap_8h_a6db2e7836b61c2450847d893576f5ee9}{bitmap\_vector\_ones}}\ (\doxymbox{\hyperlink{coretypes_8h_a780cd5c6b7453aa0a01cdf1c5b379abd}{sbitmap}}\ *,\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int});}
+\DoxyCodeLine{00276\ }
+\DoxyCodeLine{00277\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{sbitmap_8h_a14e8bc48f4a06a25097f827e6babd209}{bitmap\_ior\_and\_compl}}\ (\doxymbox{\hyperlink{coretypes_8h_a780cd5c6b7453aa0a01cdf1c5b379abd}{sbitmap}},\ \doxymbox{\hyperlink{coretypes_8h_a9afe23ed29f80a4a650f5dd343566bd8}{const\_sbitmap}},}
+\DoxyCodeLine{00278\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{coretypes_8h_a9afe23ed29f80a4a650f5dd343566bd8}{const\_sbitmap}},\ \doxymbox{\hyperlink{coretypes_8h_a9afe23ed29f80a4a650f5dd343566bd8}{const\_sbitmap}});}
+\DoxyCodeLine{00279\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{sbitmap_8h_a44c93a1e640548e5661582f1caf15f45}{bitmap\_and\_compl}}\ (\doxymbox{\hyperlink{coretypes_8h_a780cd5c6b7453aa0a01cdf1c5b379abd}{sbitmap}},\ \doxymbox{\hyperlink{coretypes_8h_a9afe23ed29f80a4a650f5dd343566bd8}{const\_sbitmap}},\ \doxymbox{\hyperlink{coretypes_8h_a9afe23ed29f80a4a650f5dd343566bd8}{const\_sbitmap}});}
+\DoxyCodeLine{00280\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{sbitmap_8h_ae7aefc952d82a39f37b767e0c4f6f50f}{bitmap\_not}}\ (\doxymbox{\hyperlink{coretypes_8h_a780cd5c6b7453aa0a01cdf1c5b379abd}{sbitmap}},\ \doxymbox{\hyperlink{coretypes_8h_a9afe23ed29f80a4a650f5dd343566bd8}{const\_sbitmap}});}
+\DoxyCodeLine{00281\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{sbitmap_8h_a3159486e3436138732f74753353e0783}{bitmap\_or\_and}}\ (\doxymbox{\hyperlink{coretypes_8h_a780cd5c6b7453aa0a01cdf1c5b379abd}{sbitmap}},\ \doxymbox{\hyperlink{coretypes_8h_a9afe23ed29f80a4a650f5dd343566bd8}{const\_sbitmap}},}
+\DoxyCodeLine{00282\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{coretypes_8h_a9afe23ed29f80a4a650f5dd343566bd8}{const\_sbitmap}},\ \doxymbox{\hyperlink{coretypes_8h_a9afe23ed29f80a4a650f5dd343566bd8}{const\_sbitmap}});}
+\DoxyCodeLine{00283\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{sbitmap_8h_a721126c34bc70eccf9808974096e9d04}{bitmap\_and\_or}}\ (\doxymbox{\hyperlink{coretypes_8h_a780cd5c6b7453aa0a01cdf1c5b379abd}{sbitmap}},\ \doxymbox{\hyperlink{coretypes_8h_a9afe23ed29f80a4a650f5dd343566bd8}{const\_sbitmap}},}
+\DoxyCodeLine{00284\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{coretypes_8h_a9afe23ed29f80a4a650f5dd343566bd8}{const\_sbitmap}},\ \doxymbox{\hyperlink{coretypes_8h_a9afe23ed29f80a4a650f5dd343566bd8}{const\_sbitmap}});}
+\DoxyCodeLine{00285\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{sbitmap_8h_a2bb4ab1ee8a8d8c3de63aef86c037183}{bitmap\_intersect\_p}}\ (\doxymbox{\hyperlink{coretypes_8h_a9afe23ed29f80a4a650f5dd343566bd8}{const\_sbitmap}},\ \doxymbox{\hyperlink{coretypes_8h_a9afe23ed29f80a4a650f5dd343566bd8}{const\_sbitmap}});}
+\DoxyCodeLine{00286\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{sbitmap_8h_ad2a986ec38e8137748a3748d89817e45}{bitmap\_and}}\ (\doxymbox{\hyperlink{coretypes_8h_a780cd5c6b7453aa0a01cdf1c5b379abd}{sbitmap}},\ \doxymbox{\hyperlink{coretypes_8h_a9afe23ed29f80a4a650f5dd343566bd8}{const\_sbitmap}},\ \doxymbox{\hyperlink{coretypes_8h_a9afe23ed29f80a4a650f5dd343566bd8}{const\_sbitmap}});}
+\DoxyCodeLine{00287\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{sbitmap_8h_a5a288a703f30c907597458e1274064cb}{bitmap\_ior}}\ (\doxymbox{\hyperlink{coretypes_8h_a780cd5c6b7453aa0a01cdf1c5b379abd}{sbitmap}},\ \doxymbox{\hyperlink{coretypes_8h_a9afe23ed29f80a4a650f5dd343566bd8}{const\_sbitmap}},\ \doxymbox{\hyperlink{coretypes_8h_a9afe23ed29f80a4a650f5dd343566bd8}{const\_sbitmap}});}
+\DoxyCodeLine{00288\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{sbitmap_8h_af87b313201ec67f733c095b8968b1ce2}{bitmap\_xor}}\ (\doxymbox{\hyperlink{coretypes_8h_a780cd5c6b7453aa0a01cdf1c5b379abd}{sbitmap}},\ \doxymbox{\hyperlink{coretypes_8h_a9afe23ed29f80a4a650f5dd343566bd8}{const\_sbitmap}},\ \doxymbox{\hyperlink{coretypes_8h_a9afe23ed29f80a4a650f5dd343566bd8}{const\_sbitmap}});}
+\DoxyCodeLine{00289\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{sbitmap_8h_acd1eb885d88a375362209642761b76fa}{bitmap\_subset\_p}}\ (\doxymbox{\hyperlink{coretypes_8h_a9afe23ed29f80a4a650f5dd343566bd8}{const\_sbitmap}},\ \doxymbox{\hyperlink{coretypes_8h_a9afe23ed29f80a4a650f5dd343566bd8}{const\_sbitmap}});}
+\DoxyCodeLine{00290\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{sbitmap_8h_adfd4ab986118995f88fb074eafeacae5}{bitmap\_bit\_in\_range\_p}}\ (\doxymbox{\hyperlink{coretypes_8h_a9afe23ed29f80a4a650f5dd343566bd8}{const\_sbitmap}},\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int},\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int});}
+\DoxyCodeLine{00291\ }
+\DoxyCodeLine{00292\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{sbitmap_8h_a03640f7233213f14a93da6758002d4c9}{bitmap\_first\_set\_bit}}\ (\doxymbox{\hyperlink{coretypes_8h_a9afe23ed29f80a4a650f5dd343566bd8}{const\_sbitmap}});}
+\DoxyCodeLine{00293\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{sbitmap_8h_a7dbfac1db27f60cc744b6f63a373581f}{bitmap\_last\_set\_bit}}\ (\doxymbox{\hyperlink{coretypes_8h_a9afe23ed29f80a4a650f5dd343566bd8}{const\_sbitmap}});}
+\DoxyCodeLine{00294\ }
+\DoxyCodeLine{00295\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{sbitmap_8h_aa632d57c54bda49308d11512a7b82dc9}{debug\_bitmap}}\ (\doxymbox{\hyperlink{coretypes_8h_a9afe23ed29f80a4a650f5dd343566bd8}{const\_sbitmap}});}
+\DoxyCodeLine{00296\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{coretypes_8h_a780cd5c6b7453aa0a01cdf1c5b379abd}{sbitmap}}\ \doxymbox{\hyperlink{sbitmap_8h_abb54d505a98227b7bf8acf190473f44b}{sbitmap\_realloc}}\ (\doxymbox{\hyperlink{coretypes_8h_a780cd5c6b7453aa0a01cdf1c5b379abd}{sbitmap}},\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int});}
+\DoxyCodeLine{00297\ }
+\DoxyCodeLine{00298\ \textcolor{comment}{/*\ a\ class\ that\ ties\ the\ lifetime\ of\ a\ sbitmap\ to\ its\ scope.\ \ */}}
+\DoxyCodeLine{00299\ \textcolor{keyword}{class\ }\doxymbox{\hyperlink{classauto__sbitmap_aa6c6a6d0f32f47435096cf99b33f9dbc}{auto\_sbitmap}}}
+\DoxyCodeLine{00300\ \{}
+\DoxyCodeLine{00301\ \textcolor{keyword}{public}:}
+\DoxyCodeLine{00302\ \ \ \textcolor{keyword}{explicit}\ \doxymbox{\hyperlink{classauto__sbitmap_aa6c6a6d0f32f47435096cf99b33f9dbc}{auto\_sbitmap}}\ (\textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ size)\ :}
+\DoxyCodeLine{00303\ \ \ \ \ \doxymbox{\hyperlink{classauto__sbitmap_a2e77a5fb3b8e3f35d5e3bd1c73f4c5b0}{m\_bitmap}}\ (\doxymbox{\hyperlink{sbitmap_8h_ac94884482369b597b2486df2e4b94b1b}{sbitmap\_alloc}}\ (size))\ \{\}}
+\DoxyCodeLine{00304\ \ \ \doxymbox{\hyperlink{classauto__sbitmap_a6b627b7fb3afa9ac0b9d765092ee0c15}{\string~auto\_sbitmap}}\ ()\ \{\ \doxymbox{\hyperlink{sbitmap_8h_aaae34456d720917ced3f23b9170560ad}{sbitmap\_free}}\ (\doxymbox{\hyperlink{classauto__sbitmap_a2e77a5fb3b8e3f35d5e3bd1c73f4c5b0}{m\_bitmap}});\ \}}
+\DoxyCodeLine{00305\ }
+\DoxyCodeLine{00306\ \ \ \textcolor{comment}{/*\ Allow\ calling\ sbitmap\ functions\ on\ our\ bitmap.\ \ */}}
+\DoxyCodeLine{00307\ \ \ \textcolor{keyword}{operator}\ \doxymbox{\hyperlink{coretypes_8h_a780cd5c6b7453aa0a01cdf1c5b379abd}{sbitmap}}\ ()\ \{\ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{classauto__sbitmap_a2e77a5fb3b8e3f35d5e3bd1c73f4c5b0}{m\_bitmap}};\ \}}
+\DoxyCodeLine{00308\ \ \ \textcolor{keyword}{operator}\ \doxymbox{\hyperlink{coretypes_8h_a9afe23ed29f80a4a650f5dd343566bd8}{const\_sbitmap}}\ ()\textcolor{keyword}{\ const\ }\{\ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{classauto__sbitmap_a2e77a5fb3b8e3f35d5e3bd1c73f4c5b0}{m\_bitmap}};\ \}}
+\DoxyCodeLine{00309\ }
+\DoxyCodeLine{00310\ \textcolor{keyword}{private}:}
+\DoxyCodeLine{00311\ \ \ \textcolor{comment}{/*\ Prevent\ making\ a\ copy\ that\ refers\ to\ our\ sbitmap.\ \ */}}
+\DoxyCodeLine{00312\ \ \ \doxymbox{\hyperlink{classauto__sbitmap_a4fc7c8e82e8099301cf050bab7f6ad80}{auto\_sbitmap}}\ (\textcolor{keyword}{const}\ \doxymbox{\hyperlink{classauto__sbitmap_aa6c6a6d0f32f47435096cf99b33f9dbc}{auto\_sbitmap}}\ \&);}
+\DoxyCodeLine{00313\ \ \ \doxymbox{\hyperlink{classauto__sbitmap_aa6c6a6d0f32f47435096cf99b33f9dbc}{auto\_sbitmap}}\ \&\doxymbox{\hyperlink{classauto__sbitmap_addaa244b3d3759aa71041ebda448009a}{operator\ =\ }}(\textcolor{keyword}{const}\ \doxymbox{\hyperlink{classauto__sbitmap_aa6c6a6d0f32f47435096cf99b33f9dbc}{auto\_sbitmap}}\ \&);}
+\DoxyCodeLine{00314\ \ \ \doxymbox{\hyperlink{classauto__sbitmap_a56de81bfd5048eb9bd368c071cae3e6d}{auto\_sbitmap}}\ (\doxymbox{\hyperlink{classauto__sbitmap_aa6c6a6d0f32f47435096cf99b33f9dbc}{auto\_sbitmap}}\ \&\&);}
+\DoxyCodeLine{00315\ \ \ \doxymbox{\hyperlink{classauto__sbitmap_aa6c6a6d0f32f47435096cf99b33f9dbc}{auto\_sbitmap}}\ \&\doxymbox{\hyperlink{classauto__sbitmap_addaa244b3d3759aa71041ebda448009a}{operator\ =\ }}(\doxymbox{\hyperlink{classauto__sbitmap_aa6c6a6d0f32f47435096cf99b33f9dbc}{auto\_sbitmap}}\ \&\&);}
+\DoxyCodeLine{00316\ }
+\DoxyCodeLine{00317\ \ \ \textcolor{comment}{/*\ The\ bitmap\ we\ are\ managing.\ \ */}}
+\DoxyCodeLine{00318\ \ \ \doxymbox{\hyperlink{coretypes_8h_a780cd5c6b7453aa0a01cdf1c5b379abd}{sbitmap}}\ \doxymbox{\hyperlink{classauto__sbitmap_a2e77a5fb3b8e3f35d5e3bd1c73f4c5b0}{m\_bitmap}};}
+\DoxyCodeLine{00319\ \};}
+\DoxyCodeLine{00320\ }
+\DoxyCodeLine{00321\ \textcolor{preprocessor}{\#endif\ }\textcolor{comment}{/*\ !\ GCC\_SBITMAP\_H\ */}\textcolor{preprocessor}{}}
+
+\end{DoxyCode}

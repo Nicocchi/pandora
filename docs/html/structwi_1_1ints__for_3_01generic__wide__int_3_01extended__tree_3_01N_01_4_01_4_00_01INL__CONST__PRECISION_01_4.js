@@ -1,0 +1,5 @@
+var structwi_1_1ints__for_3_01generic__wide__int_3_01extended__tree_3_01N_01_4_01_4_00_01INL__CONST__PRECISION_01_4 =
+[
+    [ "extended", "structwi_1_1ints__for_3_01generic__wide__int_3_01extended__tree_3_01N_01_4_01_4_00_01INL__CONST__PRECISION_01_4.html#a939f1e790bafa2a1dd94375c6e00225b", null ],
+    [ "zero", "structwi_1_1ints__for_3_01generic__wide__int_3_01extended__tree_3_01N_01_4_01_4_00_01INL__CONST__PRECISION_01_4.html#a3968e48a14f19811122ff8172b82db3b", null ]
+];

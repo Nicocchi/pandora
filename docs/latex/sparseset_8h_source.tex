@@ -1,0 +1,224 @@
+\doxysection{sparseset.\+h}
+\hypertarget{sparseset_8h_source}{}\label{sparseset_8h_source}\index{toolchain/x86\_64-\/elf/lib/gcc/x86\_64-\/elf/14.2.0/plugin/include/sparseset.h@{toolchain/x86\_64-\/elf/lib/gcc/x86\_64-\/elf/14.2.0/plugin/include/sparseset.h}}
+\doxymbox{\hyperlink{sparseset_8h}{Go to the documentation of this file.}}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001\ \textcolor{comment}{/*\ SparseSet\ implementation.}}
+\DoxyCodeLine{00002\ \textcolor{comment}{\ \ \ Copyright\ (C)\ 2007-\/2024\ Free\ Software\ Foundation,\ Inc.}}
+\DoxyCodeLine{00003\ \textcolor{comment}{\ \ \ Contributed\ by\ Peter\ Bergner\ <bergner@vnet.ibm.com>}}
+\DoxyCodeLine{00004\ \textcolor{comment}{}}
+\DoxyCodeLine{00005\ \textcolor{comment}{This\ file\ is\ part\ of\ GCC.}}
+\DoxyCodeLine{00006\ \textcolor{comment}{}}
+\DoxyCodeLine{00007\ \textcolor{comment}{GCC\ is\ free\ software;\ you\ can\ redistribute\ it\ and/or\ modify\ it\ under}}
+\DoxyCodeLine{00008\ \textcolor{comment}{the\ terms\ of\ the\ GNU\ General\ Public\ License\ as\ published\ by\ the\ Free}}
+\DoxyCodeLine{00009\ \textcolor{comment}{Software\ Foundation;\ either\ version\ 3,\ or\ (at\ your\ option)\ any\ later}}
+\DoxyCodeLine{00010\ \textcolor{comment}{version.}}
+\DoxyCodeLine{00011\ \textcolor{comment}{}}
+\DoxyCodeLine{00012\ \textcolor{comment}{GCC\ is\ distributed\ in\ the\ hope\ that\ it\ will\ be\ useful,\ but\ WITHOUT\ ANY}}
+\DoxyCodeLine{00013\ \textcolor{comment}{WARRANTY;\ without\ even\ the\ implied\ warranty\ of\ MERCHANTABILITY\ or}}
+\DoxyCodeLine{00014\ \textcolor{comment}{FITNESS\ FOR\ A\ PARTICULAR\ PURPOSE.\ \ See\ the\ GNU\ General\ Public\ License}}
+\DoxyCodeLine{00015\ \textcolor{comment}{for\ more\ details.}}
+\DoxyCodeLine{00016\ \textcolor{comment}{}}
+\DoxyCodeLine{00017\ \textcolor{comment}{You\ should\ have\ received\ a\ copy\ of\ the\ GNU\ General\ Public\ License}}
+\DoxyCodeLine{00018\ \textcolor{comment}{along\ with\ GCC;\ see\ the\ file\ COPYING3.\ \ If\ not\ see}}
+\DoxyCodeLine{00019\ \textcolor{comment}{<http://www.gnu.org/licenses/>.\ \ */}}
+\DoxyCodeLine{00020\ }
+\DoxyCodeLine{00021\ \textcolor{preprocessor}{\#ifndef\ GCC\_SPARSESET\_H}}
+\DoxyCodeLine{00022\ \textcolor{preprocessor}{\#define\ GCC\_SPARSESET\_H}}
+\DoxyCodeLine{00023\ }
+\DoxyCodeLine{00024\ \textcolor{comment}{/*\ Implementation\ of\ the\ Briggs\ and\ Torczon\ sparse\ set\ representation.}}
+\DoxyCodeLine{00025\ \textcolor{comment}{\ \ \ The\ sparse\ set\ representation\ was\ first\ published\ in:}}
+\DoxyCodeLine{00026\ \textcolor{comment}{}}
+\DoxyCodeLine{00027\ \textcolor{comment}{\ \ \ "{}An\ Efficient\ Representation\ for\ Sparse\ Sets"{},}}
+\DoxyCodeLine{00028\ \textcolor{comment}{\ \ \ ACM\ LOPLAS,\ Vol.\ 2,\ Nos.\ 1-\/4,\ March-\/December\ 1993,\ Pages\ 59-\/69.}}
+\DoxyCodeLine{00029\ \textcolor{comment}{}}
+\DoxyCodeLine{00030\ \textcolor{comment}{\ \ \ The\ sparse\ set\ representation\ is\ suitable\ for\ integer\ sets\ with\ a}}
+\DoxyCodeLine{00031\ \textcolor{comment}{\ \ \ fixed-\/size\ universe.\ \ Two\ vectors\ are\ used\ to\ store\ the\ members\ of}}
+\DoxyCodeLine{00032\ \textcolor{comment}{\ \ \ the\ set.\ \ If\ an\ element\ I\ is\ in\ the\ set,\ then\ sparse[I]\ is\ the}}
+\DoxyCodeLine{00033\ \textcolor{comment}{\ \ \ index\ of\ I\ in\ the\ dense\ vector,\ and\ dense[sparse[I]]\ ==\ I.\ \ The\ dense}}
+\DoxyCodeLine{00034\ \textcolor{comment}{\ \ \ vector\ works\ like\ a\ stack.\ \ The\ size\ of\ the\ stack\ is\ the\ cardinality}}
+\DoxyCodeLine{00035\ \textcolor{comment}{\ \ \ of\ the\ set.}}
+\DoxyCodeLine{00036\ \textcolor{comment}{}}
+\DoxyCodeLine{00037\ \textcolor{comment}{\ \ \ The\ following\ operations\ can\ be\ performed\ in\ O(1)\ time:}}
+\DoxyCodeLine{00038\ \textcolor{comment}{}}
+\DoxyCodeLine{00039\ \textcolor{comment}{\ \ \ \ \ *\ clear\ \ \ \ \ \ \ \ \ \ \ \ :\ sparseset\_clear}}
+\DoxyCodeLine{00040\ \textcolor{comment}{\ \ \ \ \ *\ cardinality\ \ \ \ \ \ :\ sparseset\_cardinality}}
+\DoxyCodeLine{00041\ \textcolor{comment}{\ \ \ \ \ *\ set\_size\ \ \ \ \ \ \ \ \ :\ sparseset\_size}}
+\DoxyCodeLine{00042\ \textcolor{comment}{\ \ \ \ \ *\ member\_p\ \ \ \ \ \ \ \ \ :\ sparseset\_bit\_p}}
+\DoxyCodeLine{00043\ \textcolor{comment}{\ \ \ \ \ *\ add\_member\ \ \ \ \ \ \ :\ sparseset\_set\_bit}}
+\DoxyCodeLine{00044\ \textcolor{comment}{\ \ \ \ \ *\ remove\_member\ \ \ \ \ \ \ \ :\ sparseset\_clear\_bit}}
+\DoxyCodeLine{00045\ \textcolor{comment}{\ \ \ \ \ *\ choose\_one\ \ \ \ \ \ \ :\ sparseset\_pop}}
+\DoxyCodeLine{00046\ \textcolor{comment}{}}
+\DoxyCodeLine{00047\ \textcolor{comment}{\ \ \ Additionally,\ the\ sparse\ set\ representation\ supports\ enumeration\ of}}
+\DoxyCodeLine{00048\ \textcolor{comment}{\ \ \ the\ members\ in\ O(N)\ time,\ where\ n\ is\ the\ number\ of\ members\ in\ the\ set.}}
+\DoxyCodeLine{00049\ \textcolor{comment}{\ \ \ The\ members\ of\ the\ set\ are\ stored\ cache-\/friendly\ in\ the\ dense\ vector.}}
+\DoxyCodeLine{00050\ \textcolor{comment}{\ \ \ This\ makes\ it\ a\ competitive\ choice\ for\ iterating\ over\ relatively\ sparse}}
+\DoxyCodeLine{00051\ \textcolor{comment}{\ \ \ sets\ requiring\ operations:}}
+\DoxyCodeLine{00052\ \textcolor{comment}{}}
+\DoxyCodeLine{00053\ \textcolor{comment}{\ \ \ \ \ *\ forall\ \ \ \ \ \ \ \ \ \ \ :\ EXECUTE\_IF\_SET\_IN\_SPARSESET}}
+\DoxyCodeLine{00054\ \textcolor{comment}{\ \ \ \ \ *\ set\_copy\ \ \ \ \ \ \ \ \ :\ sparseset\_copy}}
+\DoxyCodeLine{00055\ \textcolor{comment}{\ \ \ \ \ *\ set\_intersection\ \ \ \ \ :\ sparseset\_and}}
+\DoxyCodeLine{00056\ \textcolor{comment}{\ \ \ \ \ *\ set\_union\ \ \ \ \ \ \ \ :\ sparseset\_ior}}
+\DoxyCodeLine{00057\ \textcolor{comment}{\ \ \ \ \ *\ set\_difference\ \ \ \ \ \ \ :\ sparseset\_and\_compl}}
+\DoxyCodeLine{00058\ \textcolor{comment}{\ \ \ \ \ *\ set\_disjuction\ \ \ \ \ \ \ :\ (not\ implemented)}}
+\DoxyCodeLine{00059\ \textcolor{comment}{\ \ \ \ \ *\ set\_compare\ \ \ \ \ \ :\ sparseset\_equal\_p}}
+\DoxyCodeLine{00060\ \textcolor{comment}{}}
+\DoxyCodeLine{00061\ \textcolor{comment}{\ \ \ NB:\ It\ is\ OK\ to\ use\ remove\_member\ during\ EXECUTE\_IF\_SET\_IN\_SPARSESET.}}
+\DoxyCodeLine{00062\ \textcolor{comment}{\ \ \ The\ iterator\ is\ updated\ for\ it.}}
+\DoxyCodeLine{00063\ \textcolor{comment}{}}
+\DoxyCodeLine{00064\ \textcolor{comment}{\ \ \ Based\ on\ the\ efficiency\ of\ these\ operations,\ this\ representation\ of}}
+\DoxyCodeLine{00065\ \textcolor{comment}{\ \ \ sparse\ sets\ will\ often\ be\ superior\ to\ alternatives\ such\ as\ simple}}
+\DoxyCodeLine{00066\ \textcolor{comment}{\ \ \ bitmaps,\ linked-\/list\ bitmaps,\ array\ bitmaps,\ balanced\ binary\ trees,}}
+\DoxyCodeLine{00067\ \textcolor{comment}{\ \ \ hash\ tables,\ linked\ lists,\ etc.,\ if\ the\ set\ is\ sufficiently\ sparse.}}
+\DoxyCodeLine{00068\ \textcolor{comment}{\ \ \ In\ the\ LOPLAS\ paper\ the\ cut-\/off\ point\ where\ sparse\ sets\ became\ faster}}
+\DoxyCodeLine{00069\ \textcolor{comment}{\ \ \ than\ simple\ bitmaps\ (see\ sbitmap.h)\ when\ N\ /\ U\ <\ 64\ (where\ U\ is\ the}}
+\DoxyCodeLine{00070\ \textcolor{comment}{\ \ \ size\ of\ the\ universe\ of\ the\ set).}}
+\DoxyCodeLine{00071\ \textcolor{comment}{}}
+\DoxyCodeLine{00072\ \textcolor{comment}{\ \ \ Because\ the\ set\ universe\ is\ fixed,\ the\ set\ cannot\ be\ resized.\ \ For}}
+\DoxyCodeLine{00073\ \textcolor{comment}{\ \ \ sparse\ sets\ with\ initially\ unknown\ size,\ linked-\/list\ bitmaps\ are\ a}}
+\DoxyCodeLine{00074\ \textcolor{comment}{\ \ \ better\ choice,\ see\ bitmap.h.}}
+\DoxyCodeLine{00075\ \textcolor{comment}{}}
+\DoxyCodeLine{00076\ \textcolor{comment}{\ \ \ Sparse\ sets\ storage\ requirements\ are\ relatively\ large:\ O(U)\ with\ a}}
+\DoxyCodeLine{00077\ \textcolor{comment}{\ \ \ larger\ constant\ than\ sbitmaps\ (if\ the\ storage\ requirement\ for\ an}}
+\DoxyCodeLine{00078\ \textcolor{comment}{\ \ \ sbitmap\ with\ universe\ U\ is\ S,\ then\ the\ storage\ required\ for\ a\ sparse}}
+\DoxyCodeLine{00079\ \textcolor{comment}{\ \ \ set\ for\ the\ same\ universe\ are\ 2\ *\ sizeof\ (SPARSESET\_ELT\_TYPE)\ *\ 8\ *\ S).}}
+\DoxyCodeLine{00080\ \textcolor{comment}{\ \ \ Accessing\ the\ sparse\ vector\ is\ not\ very\ cache-\/friendly,\ but\ iterating}}
+\DoxyCodeLine{00081\ \textcolor{comment}{\ \ \ over\ the\ members\ in\ the\ set\ is\ cache-\/friendly\ because\ only\ the\ dense}}
+\DoxyCodeLine{00082\ \textcolor{comment}{\ \ \ vector\ is\ used.\ \ */}}
+\DoxyCodeLine{00083\ }
+\DoxyCodeLine{00084\ \textcolor{comment}{/*\ Data\ Structure\ used\ for\ the\ SparseSet\ representation.\ \ */}}
+\DoxyCodeLine{00085\ }
+\DoxyCodeLine{00086\ \textcolor{preprocessor}{\#define\ SPARSESET\_ELT\_TYPE\ unsigned\ int}}
+\DoxyCodeLine{00087\ }
+\DoxyCodeLine{00088\ \textcolor{keyword}{typedef}\ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{structsparseset__def}{sparseset\_def}}}
+\DoxyCodeLine{00089\ \{}
+\DoxyCodeLine{00090\ \ \ \doxymbox{\hyperlink{sparseset_8h_a6459ff84725ae7f5d6bac015fb5c848f}{SPARSESET\_ELT\_TYPE}}\ *\doxymbox{\hyperlink{structsparseset__def_a4174c9dcc2c8d636d458995459e477a0}{dense}};\ \ \ \ \textcolor{comment}{/*\ Dense\ array.\ \ */}}
+\DoxyCodeLine{00091\ \ \ \doxymbox{\hyperlink{sparseset_8h_a6459ff84725ae7f5d6bac015fb5c848f}{SPARSESET\_ELT\_TYPE}}\ *\doxymbox{\hyperlink{structsparseset__def_a0e0d80348105f61e06eb20c609b4a529}{sparse}};\ \ \ \textcolor{comment}{/*\ Sparse\ array.\ \ */}}
+\DoxyCodeLine{00092\ \ \ \doxymbox{\hyperlink{sparseset_8h_a6459ff84725ae7f5d6bac015fb5c848f}{SPARSESET\_ELT\_TYPE}}\ \doxymbox{\hyperlink{structsparseset__def_a27a2288136d89e7b1190e878eafc1168}{members}};\ \ \ \textcolor{comment}{/*\ Number\ of\ elements.\ \ */}}
+\DoxyCodeLine{00093\ \ \ \doxymbox{\hyperlink{sparseset_8h_a6459ff84725ae7f5d6bac015fb5c848f}{SPARSESET\_ELT\_TYPE}}\ \doxymbox{\hyperlink{structsparseset__def_a8520ad78d74478ac3a5024ed3d1f1b14}{size}};\ \ \textcolor{comment}{/*\ Maximum\ number\ of\ elements.\ \ */}}
+\DoxyCodeLine{00094\ \ \ \doxymbox{\hyperlink{sparseset_8h_a6459ff84725ae7f5d6bac015fb5c848f}{SPARSESET\_ELT\_TYPE}}\ \doxymbox{\hyperlink{structsparseset__def_ab71991e258ab45384a649ee589efb7bf}{iter}};\ \ \textcolor{comment}{/*\ Iterator\ index.\ \ */}}
+\DoxyCodeLine{00095\ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{char}\ \doxymbox{\hyperlink{structsparseset__def_addddb2fd09ede28a85e59dde93f2e7e6}{iter\_inc}};\ \ \ \textcolor{comment}{/*\ Iteration\ increment\ amount.\ \ */}}
+\DoxyCodeLine{00096\ \ \ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{structsparseset__def_a171f426e41fa762e75790c7efbb40c0c}{iterating}};}
+\DoxyCodeLine{00097\ \ \ \doxymbox{\hyperlink{sparseset_8h_a6459ff84725ae7f5d6bac015fb5c848f}{SPARSESET\_ELT\_TYPE}}\ \doxymbox{\hyperlink{structsparseset__def_ad958b60f2c9c4ea564c0c2526beccb2f}{elms}}[2];\ \ \ \textcolor{comment}{/*\ Combined\ dense\ and\ sparse\ arrays.\ \ */}}
+\DoxyCodeLine{00098\ \}\ *\doxymbox{\hyperlink{sparseset_8h_a61069e60dfc27f038e2c361bc108e7fa}{sparseset}};}
+\DoxyCodeLine{00099\ }
+\DoxyCodeLine{00100\ \textcolor{preprocessor}{\#define\ sparseset\_free(MAP)\ \ free(MAP)}}
+\DoxyCodeLine{00101\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{sparseset_8h_a61069e60dfc27f038e2c361bc108e7fa}{sparseset}}\ \doxymbox{\hyperlink{sparseset_8h_a213d57fd0a05831e1edf8fdfb760520a}{sparseset\_alloc}}\ (\doxymbox{\hyperlink{sparseset_8h_a6459ff84725ae7f5d6bac015fb5c848f}{SPARSESET\_ELT\_TYPE}}\ n\_elms);}
+\DoxyCodeLine{00102\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{sparseset_8h_a92c03152745747711cf8886acd90e19f}{sparseset\_clear\_bit}}\ (\doxymbox{\hyperlink{sparseset_8h_a61069e60dfc27f038e2c361bc108e7fa}{sparseset}},\ \doxymbox{\hyperlink{sparseset_8h_a6459ff84725ae7f5d6bac015fb5c848f}{SPARSESET\_ELT\_TYPE}});}
+\DoxyCodeLine{00103\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{sparseset_8h_aca0913bf0763a3e6c01981dc559a3169}{sparseset\_copy}}\ (\doxymbox{\hyperlink{sparseset_8h_a61069e60dfc27f038e2c361bc108e7fa}{sparseset}},\ \doxymbox{\hyperlink{sparseset_8h_a61069e60dfc27f038e2c361bc108e7fa}{sparseset}});}
+\DoxyCodeLine{00104\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{sparseset_8h_a76ee579dfd47577e8d3478217fbde694}{sparseset\_and}}\ (\doxymbox{\hyperlink{sparseset_8h_a61069e60dfc27f038e2c361bc108e7fa}{sparseset}},\ \doxymbox{\hyperlink{sparseset_8h_a61069e60dfc27f038e2c361bc108e7fa}{sparseset}},\ \doxymbox{\hyperlink{sparseset_8h_a61069e60dfc27f038e2c361bc108e7fa}{sparseset}});}
+\DoxyCodeLine{00105\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{sparseset_8h_ad7f36e403f2f21620e43668ea68cb280}{sparseset\_and\_compl}}\ (\doxymbox{\hyperlink{sparseset_8h_a61069e60dfc27f038e2c361bc108e7fa}{sparseset}},\ \doxymbox{\hyperlink{sparseset_8h_a61069e60dfc27f038e2c361bc108e7fa}{sparseset}},\ \doxymbox{\hyperlink{sparseset_8h_a61069e60dfc27f038e2c361bc108e7fa}{sparseset}});}
+\DoxyCodeLine{00106\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{sparseset_8h_a07420f5dda8c82e52bbbacffc29ba399}{sparseset\_ior}}\ (\doxymbox{\hyperlink{sparseset_8h_a61069e60dfc27f038e2c361bc108e7fa}{sparseset}},\ \doxymbox{\hyperlink{sparseset_8h_a61069e60dfc27f038e2c361bc108e7fa}{sparseset}},\ \doxymbox{\hyperlink{sparseset_8h_a61069e60dfc27f038e2c361bc108e7fa}{sparseset}});}
+\DoxyCodeLine{00107\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{sparseset_8h_a63233699fccb8c56356cfb513dd42414}{sparseset\_equal\_p}}\ (\doxymbox{\hyperlink{sparseset_8h_a61069e60dfc27f038e2c361bc108e7fa}{sparseset}},\ \doxymbox{\hyperlink{sparseset_8h_a61069e60dfc27f038e2c361bc108e7fa}{sparseset}});}
+\DoxyCodeLine{00108\ }
+\DoxyCodeLine{00109\ \textcolor{comment}{/*\ Operation:\ S\ =\ \{\}}}
+\DoxyCodeLine{00110\ \textcolor{comment}{\ \ \ Clear\ the\ set\ of\ all\ elements.\ \ */}}
+\DoxyCodeLine{00111\ }
+\DoxyCodeLine{00112\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{void}}
+\DoxyCodeLine{00113\ \doxymbox{\hyperlink{sparseset_8h_a5939446cc1af137fc6ec8c48792a5b40}{sparseset\_clear}}\ (\doxymbox{\hyperlink{sparseset_8h_a61069e60dfc27f038e2c361bc108e7fa}{sparseset}}\ s)}
+\DoxyCodeLine{00114\ \{}
+\DoxyCodeLine{00115\ \ \ s-\/>\doxymbox{\hyperlink{structsparseset__def_a27a2288136d89e7b1190e878eafc1168}{members}}\ =\ 0;}
+\DoxyCodeLine{00116\ \ \ s-\/>\doxymbox{\hyperlink{structsparseset__def_a171f426e41fa762e75790c7efbb40c0c}{iterating}}\ =\ \textcolor{keyword}{false};}
+\DoxyCodeLine{00117\ \}}
+\DoxyCodeLine{00118\ }
+\DoxyCodeLine{00119\ \textcolor{comment}{/*\ Return\ the\ number\ of\ elements\ currently\ in\ the\ set.\ \ */}}
+\DoxyCodeLine{00120\ }
+\DoxyCodeLine{00121\ \textcolor{keyword}{inline}\ \doxymbox{\hyperlink{sparseset_8h_a6459ff84725ae7f5d6bac015fb5c848f}{SPARSESET\_ELT\_TYPE}}}
+\DoxyCodeLine{00122\ \doxymbox{\hyperlink{sparseset_8h_a2acb61a260e86fb11206a60676601af1}{sparseset\_cardinality}}\ (\doxymbox{\hyperlink{sparseset_8h_a61069e60dfc27f038e2c361bc108e7fa}{sparseset}}\ s)}
+\DoxyCodeLine{00123\ \{}
+\DoxyCodeLine{00124\ \ \ \textcolor{keywordflow}{return}\ s-\/>\doxymbox{\hyperlink{structsparseset__def_a27a2288136d89e7b1190e878eafc1168}{members}};}
+\DoxyCodeLine{00125\ \}}
+\DoxyCodeLine{00126\ }
+\DoxyCodeLine{00127\ \textcolor{comment}{/*\ Return\ the\ maximum\ number\ of\ elements\ this\ set\ can\ hold.\ \ */}}
+\DoxyCodeLine{00128\ }
+\DoxyCodeLine{00129\ \textcolor{keyword}{inline}\ \doxymbox{\hyperlink{sparseset_8h_a6459ff84725ae7f5d6bac015fb5c848f}{SPARSESET\_ELT\_TYPE}}}
+\DoxyCodeLine{00130\ \doxymbox{\hyperlink{sparseset_8h_a95b6b83b2f50b28aa11a80959524792d}{sparseset\_size}}\ (\doxymbox{\hyperlink{sparseset_8h_a61069e60dfc27f038e2c361bc108e7fa}{sparseset}}\ s)}
+\DoxyCodeLine{00131\ \{}
+\DoxyCodeLine{00132\ \ \ \textcolor{keywordflow}{return}\ s-\/>\doxymbox{\hyperlink{structsparseset__def_a8520ad78d74478ac3a5024ed3d1f1b14}{size}};}
+\DoxyCodeLine{00133\ \}}
+\DoxyCodeLine{00134\ }
+\DoxyCodeLine{00135\ \textcolor{comment}{/*\ Return\ true\ if\ e\ is\ a\ member\ of\ the\ set\ S,\ otherwise\ return\ false.\ \ */}}
+\DoxyCodeLine{00136\ }
+\DoxyCodeLine{00137\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{bool}}
+\DoxyCodeLine{00138\ \doxymbox{\hyperlink{sparseset_8h_a7f1091555fcf359558a4f51833384776}{sparseset\_bit\_p}}\ (\doxymbox{\hyperlink{sparseset_8h_a61069e60dfc27f038e2c361bc108e7fa}{sparseset}}\ s,\ \doxymbox{\hyperlink{sparseset_8h_a6459ff84725ae7f5d6bac015fb5c848f}{SPARSESET\_ELT\_TYPE}}\ e)}
+\DoxyCodeLine{00139\ \{}
+\DoxyCodeLine{00140\ \ \ \doxymbox{\hyperlink{sparseset_8h_a6459ff84725ae7f5d6bac015fb5c848f}{SPARSESET\_ELT\_TYPE}}\ idx;}
+\DoxyCodeLine{00141\ }
+\DoxyCodeLine{00142\ \ \ \doxymbox{\hyperlink{system_8h_aff447899dc74d54931b2bc2d47de9423}{gcc\_checking\_assert}}\ (e\ <\ s-\/>size);}
+\DoxyCodeLine{00143\ }
+\DoxyCodeLine{00144\ \ \ idx\ =\ s-\/>\doxymbox{\hyperlink{structsparseset__def_a0e0d80348105f61e06eb20c609b4a529}{sparse}}[e];}
+\DoxyCodeLine{00145\ }
+\DoxyCodeLine{00146\ \ \ \textcolor{keywordflow}{return}\ idx\ <\ s-\/>\doxymbox{\hyperlink{structsparseset__def_a27a2288136d89e7b1190e878eafc1168}{members}}\ \&\&\ s-\/>\doxymbox{\hyperlink{structsparseset__def_a4174c9dcc2c8d636d458995459e477a0}{dense}}[idx]\ ==\ e;}
+\DoxyCodeLine{00147\ \}}
+\DoxyCodeLine{00148\ }
+\DoxyCodeLine{00149\ \textcolor{comment}{/*\ Low\ level\ insertion\ routine\ not\ meant\ for\ use\ outside\ of\ sparseset.[ch].}}
+\DoxyCodeLine{00150\ \textcolor{comment}{\ \ \ Assumes\ E\ is\ valid\ and\ not\ already\ a\ member\ of\ the\ set\ S.\ \ */}}
+\DoxyCodeLine{00151\ }
+\DoxyCodeLine{00152\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{void}}
+\DoxyCodeLine{00153\ \doxymbox{\hyperlink{sparseset_8h_ac253bea8e8571905cce79ea48815bd3e}{sparseset\_insert\_bit}}\ (\doxymbox{\hyperlink{sparseset_8h_a61069e60dfc27f038e2c361bc108e7fa}{sparseset}}\ s,\ \doxymbox{\hyperlink{sparseset_8h_a6459ff84725ae7f5d6bac015fb5c848f}{SPARSESET\_ELT\_TYPE}}\ e,\ \doxymbox{\hyperlink{sparseset_8h_a6459ff84725ae7f5d6bac015fb5c848f}{SPARSESET\_ELT\_TYPE}}\ idx)}
+\DoxyCodeLine{00154\ \{}
+\DoxyCodeLine{00155\ \ \ s-\/>\doxymbox{\hyperlink{structsparseset__def_a0e0d80348105f61e06eb20c609b4a529}{sparse}}[e]\ =\ idx;}
+\DoxyCodeLine{00156\ \ \ s-\/>\doxymbox{\hyperlink{structsparseset__def_a4174c9dcc2c8d636d458995459e477a0}{dense}}[idx]\ =\ e;}
+\DoxyCodeLine{00157\ \}}
+\DoxyCodeLine{00158\ }
+\DoxyCodeLine{00159\ \textcolor{comment}{/*\ Operation:\ S\ =\ S\ +\ \{e\}}}
+\DoxyCodeLine{00160\ \textcolor{comment}{\ \ \ Insert\ E\ into\ the\ set\ S,\ if\ it\ isn't\ already\ a\ member.\ \ */}}
+\DoxyCodeLine{00161\ }
+\DoxyCodeLine{00162\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{void}}
+\DoxyCodeLine{00163\ \doxymbox{\hyperlink{sparseset_8h_ace9f5e6f638686889a56059b9dd9179b}{sparseset\_set\_bit}}\ (\doxymbox{\hyperlink{sparseset_8h_a61069e60dfc27f038e2c361bc108e7fa}{sparseset}}\ s,\ \doxymbox{\hyperlink{sparseset_8h_a6459ff84725ae7f5d6bac015fb5c848f}{SPARSESET\_ELT\_TYPE}}\ e)}
+\DoxyCodeLine{00164\ \{}
+\DoxyCodeLine{00165\ \ \ \textcolor{keywordflow}{if}\ (!\doxymbox{\hyperlink{sparseset_8h_a7f1091555fcf359558a4f51833384776}{sparseset\_bit\_p}}\ (s,\ e))}
+\DoxyCodeLine{00166\ \ \ \ \ \doxymbox{\hyperlink{sparseset_8h_ac253bea8e8571905cce79ea48815bd3e}{sparseset\_insert\_bit}}\ (s,\ e,\ s-\/>\doxymbox{\hyperlink{structsparseset__def_a27a2288136d89e7b1190e878eafc1168}{members}}++);}
+\DoxyCodeLine{00167\ \}}
+\DoxyCodeLine{00168\ }
+\DoxyCodeLine{00169\ \textcolor{comment}{/*\ Return\ and\ remove\ the\ last\ member\ added\ to\ the\ set\ S.\ \ */}}
+\DoxyCodeLine{00170\ }
+\DoxyCodeLine{00171\ \textcolor{keyword}{inline}\ \doxymbox{\hyperlink{sparseset_8h_a6459ff84725ae7f5d6bac015fb5c848f}{SPARSESET\_ELT\_TYPE}}}
+\DoxyCodeLine{00172\ \doxymbox{\hyperlink{sparseset_8h_a4cb8516ab62105604b8eee7acd921007}{sparseset\_pop}}\ (\doxymbox{\hyperlink{sparseset_8h_a61069e60dfc27f038e2c361bc108e7fa}{sparseset}}\ s)}
+\DoxyCodeLine{00173\ \{}
+\DoxyCodeLine{00174\ \ \ \doxymbox{\hyperlink{sparseset_8h_a6459ff84725ae7f5d6bac015fb5c848f}{SPARSESET\_ELT\_TYPE}}\ mem\ =\ s-\/>\doxymbox{\hyperlink{structsparseset__def_a27a2288136d89e7b1190e878eafc1168}{members}};}
+\DoxyCodeLine{00175\ }
+\DoxyCodeLine{00176\ \ \ \doxymbox{\hyperlink{system_8h_aff447899dc74d54931b2bc2d47de9423}{gcc\_checking\_assert}}\ (mem\ !=\ 0);}
+\DoxyCodeLine{00177\ }
+\DoxyCodeLine{00178\ \ \ s-\/>\doxymbox{\hyperlink{structsparseset__def_a27a2288136d89e7b1190e878eafc1168}{members}}\ =\ mem\ -\/\ 1;}
+\DoxyCodeLine{00179\ \ \ \textcolor{keywordflow}{return}\ s-\/>\doxymbox{\hyperlink{structsparseset__def_a4174c9dcc2c8d636d458995459e477a0}{dense}}[s-\/>\doxymbox{\hyperlink{structsparseset__def_a27a2288136d89e7b1190e878eafc1168}{members}}];}
+\DoxyCodeLine{00180\ \}}
+\DoxyCodeLine{00181\ }
+\DoxyCodeLine{00182\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{void}}
+\DoxyCodeLine{00183\ \doxymbox{\hyperlink{sparseset_8h_ad793eb0643d98e7b610b977eb9f3c888}{sparseset\_iter\_init}}\ (\doxymbox{\hyperlink{sparseset_8h_a61069e60dfc27f038e2c361bc108e7fa}{sparseset}}\ s)}
+\DoxyCodeLine{00184\ \{}
+\DoxyCodeLine{00185\ \ \ s-\/>\doxymbox{\hyperlink{structsparseset__def_ab71991e258ab45384a649ee589efb7bf}{iter}}\ =\ 0;}
+\DoxyCodeLine{00186\ \ \ s-\/>\doxymbox{\hyperlink{structsparseset__def_addddb2fd09ede28a85e59dde93f2e7e6}{iter\_inc}}\ =\ 1;}
+\DoxyCodeLine{00187\ \ \ s-\/>\doxymbox{\hyperlink{structsparseset__def_a171f426e41fa762e75790c7efbb40c0c}{iterating}}\ =\ \textcolor{keyword}{true};}
+\DoxyCodeLine{00188\ \}}
+\DoxyCodeLine{00189\ }
+\DoxyCodeLine{00190\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{bool}}
+\DoxyCodeLine{00191\ \doxymbox{\hyperlink{sparseset_8h_ac9277a4709cad16c3db016a590776c3e}{sparseset\_iter\_p}}\ (\doxymbox{\hyperlink{sparseset_8h_a61069e60dfc27f038e2c361bc108e7fa}{sparseset}}\ s)}
+\DoxyCodeLine{00192\ \{}
+\DoxyCodeLine{00193\ \ \ \textcolor{keywordflow}{if}\ (s-\/>\doxymbox{\hyperlink{structsparseset__def_a171f426e41fa762e75790c7efbb40c0c}{iterating}}\ \&\&\ s-\/>\doxymbox{\hyperlink{structsparseset__def_ab71991e258ab45384a649ee589efb7bf}{iter}}\ <\ s-\/>\doxymbox{\hyperlink{structsparseset__def_a27a2288136d89e7b1190e878eafc1168}{members}})}
+\DoxyCodeLine{00194\ \ \ \ \ \textcolor{keywordflow}{return}\ \textcolor{keyword}{true};}
+\DoxyCodeLine{00195\ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00196\ \ \ \ \ \textcolor{keywordflow}{return}\ s-\/>\doxymbox{\hyperlink{structsparseset__def_a171f426e41fa762e75790c7efbb40c0c}{iterating}}\ =\ \textcolor{keyword}{false};}
+\DoxyCodeLine{00197\ \}}
+\DoxyCodeLine{00198\ }
+\DoxyCodeLine{00199\ \textcolor{keyword}{inline}\ \doxymbox{\hyperlink{sparseset_8h_a6459ff84725ae7f5d6bac015fb5c848f}{SPARSESET\_ELT\_TYPE}}}
+\DoxyCodeLine{00200\ \doxymbox{\hyperlink{sparseset_8h_a6cf5b1a03c461b00112a3cd732ea4266}{sparseset\_iter\_elm}}\ (\doxymbox{\hyperlink{sparseset_8h_a61069e60dfc27f038e2c361bc108e7fa}{sparseset}}\ s)}
+\DoxyCodeLine{00201\ \{}
+\DoxyCodeLine{00202\ \ \ \textcolor{keywordflow}{return}\ s-\/>\doxymbox{\hyperlink{structsparseset__def_a4174c9dcc2c8d636d458995459e477a0}{dense}}[s-\/>\doxymbox{\hyperlink{structsparseset__def_ab71991e258ab45384a649ee589efb7bf}{iter}}];}
+\DoxyCodeLine{00203\ \}}
+\DoxyCodeLine{00204\ }
+\DoxyCodeLine{00205\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{void}}
+\DoxyCodeLine{00206\ \doxymbox{\hyperlink{sparseset_8h_aeb63bd8da936115d393bb04cbbec05fa}{sparseset\_iter\_next}}\ (\doxymbox{\hyperlink{sparseset_8h_a61069e60dfc27f038e2c361bc108e7fa}{sparseset}}\ s)}
+\DoxyCodeLine{00207\ \{}
+\DoxyCodeLine{00208\ \ \ s-\/>\doxymbox{\hyperlink{structsparseset__def_ab71991e258ab45384a649ee589efb7bf}{iter}}\ +=\ s-\/>\doxymbox{\hyperlink{structsparseset__def_addddb2fd09ede28a85e59dde93f2e7e6}{iter\_inc}};}
+\DoxyCodeLine{00209\ \ \ s-\/>\doxymbox{\hyperlink{structsparseset__def_addddb2fd09ede28a85e59dde93f2e7e6}{iter\_inc}}\ =\ 1;}
+\DoxyCodeLine{00210\ \}}
+\DoxyCodeLine{00211\ }
+\DoxyCodeLine{00212\ \textcolor{preprocessor}{\#define\ EXECUTE\_IF\_SET\_IN\_SPARSESET(SPARSESET,\ ITER)\ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00213\ \textcolor{preprocessor}{\ \ for\ (sparseset\_iter\_init\ (SPARSESET);\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00214\ \textcolor{preprocessor}{\ \ \ \ \ \ \ sparseset\_iter\_p\ (SPARSESET)\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00215\ \textcolor{preprocessor}{\ \ \ \ \ \ \ \&\&\ (((ITER)\ =\ sparseset\_iter\_elm\ (SPARSESET))\ ||\ 1);\ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00216\ \textcolor{preprocessor}{\ \ \ \ \ \ \ sparseset\_iter\_next\ (SPARSESET))}}
+\DoxyCodeLine{00217\ }
+\DoxyCodeLine{00218\ \textcolor{preprocessor}{\#endif\ }\textcolor{comment}{/*\ GCC\_SPARSESET\_H\ */}\textcolor{preprocessor}{}}
+
+\end{DoxyCode}

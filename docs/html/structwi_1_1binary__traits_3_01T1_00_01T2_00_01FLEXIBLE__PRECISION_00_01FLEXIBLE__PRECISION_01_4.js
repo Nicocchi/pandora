@@ -1,0 +1,4 @@
+var structwi_1_1binary__traits_3_01T1_00_01T2_00_01FLEXIBLE__PRECISION_00_01FLEXIBLE__PRECISION_01_4 =
+[
+    [ "result_type", "structwi_1_1binary__traits_3_01T1_00_01T2_00_01FLEXIBLE__PRECISION_00_01FLEXIBLE__PRECISION_01_4.html#a07f280817e53eb8783af4b19afa9a73c", null ]
+];

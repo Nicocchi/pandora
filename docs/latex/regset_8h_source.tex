@@ -1,0 +1,129 @@
+\doxysection{regset.\+h}
+\hypertarget{regset_8h_source}{}\label{regset_8h_source}\index{toolchain/x86\_64-\/elf/lib/gcc/x86\_64-\/elf/14.2.0/plugin/include/regset.h@{toolchain/x86\_64-\/elf/lib/gcc/x86\_64-\/elf/14.2.0/plugin/include/regset.h}}
+\doxymbox{\hyperlink{regset_8h}{Go to the documentation of this file.}}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001\ \textcolor{comment}{/*\ Define\ regsets.}}
+\DoxyCodeLine{00002\ \textcolor{comment}{\ \ \ Copyright\ (C)\ 1987-\/2024\ Free\ Software\ Foundation,\ Inc.}}
+\DoxyCodeLine{00003\ \textcolor{comment}{}}
+\DoxyCodeLine{00004\ \textcolor{comment}{This\ file\ is\ part\ of\ GCC.}}
+\DoxyCodeLine{00005\ \textcolor{comment}{}}
+\DoxyCodeLine{00006\ \textcolor{comment}{GCC\ is\ free\ software;\ you\ can\ redistribute\ it\ and/or\ modify\ it\ under}}
+\DoxyCodeLine{00007\ \textcolor{comment}{the\ terms\ of\ the\ GNU\ General\ Public\ License\ as\ published\ by\ the\ Free}}
+\DoxyCodeLine{00008\ \textcolor{comment}{Software\ Foundation;\ either\ version\ 3,\ or\ (at\ your\ option)\ any\ later}}
+\DoxyCodeLine{00009\ \textcolor{comment}{version.}}
+\DoxyCodeLine{00010\ \textcolor{comment}{}}
+\DoxyCodeLine{00011\ \textcolor{comment}{GCC\ is\ distributed\ in\ the\ hope\ that\ it\ will\ be\ useful,\ but\ WITHOUT\ ANY}}
+\DoxyCodeLine{00012\ \textcolor{comment}{WARRANTY;\ without\ even\ the\ implied\ warranty\ of\ MERCHANTABILITY\ or}}
+\DoxyCodeLine{00013\ \textcolor{comment}{FITNESS\ FOR\ A\ PARTICULAR\ PURPOSE.\ \ See\ the\ GNU\ General\ Public\ License}}
+\DoxyCodeLine{00014\ \textcolor{comment}{for\ more\ details.}}
+\DoxyCodeLine{00015\ \textcolor{comment}{}}
+\DoxyCodeLine{00016\ \textcolor{comment}{You\ should\ have\ received\ a\ copy\ of\ the\ GNU\ General\ Public\ License}}
+\DoxyCodeLine{00017\ \textcolor{comment}{along\ with\ GCC;\ see\ the\ file\ COPYING3.\ \ If\ not\ see}}
+\DoxyCodeLine{00018\ \textcolor{comment}{<http://www.gnu.org/licenses/>.\ \ */}}
+\DoxyCodeLine{00019\ }
+\DoxyCodeLine{00020\ \textcolor{preprocessor}{\#ifndef\ GCC\_REGSET\_H}}
+\DoxyCodeLine{00021\ \textcolor{preprocessor}{\#define\ GCC\_REGSET\_H}}
+\DoxyCodeLine{00022\ }
+\DoxyCodeLine{00023\ \textcolor{comment}{/*\ TODO:\ regset\ is\ just\ a\ bitmap\ in\ its\ implementation.\ \ The\ compiler\ does}}
+\DoxyCodeLine{00024\ \textcolor{comment}{\ \ \ not\ consistently\ use\ one\ or\ the\ other,\ i.e.\ sometimes\ variables\ are}}
+\DoxyCodeLine{00025\ \textcolor{comment}{\ \ \ declared\ as\ bitmap\ but\ they\ are\ actually\ regsets\ and\ regset\ accessors}}
+\DoxyCodeLine{00026\ \textcolor{comment}{\ \ \ are\ used,\ and\ vice\ versa,\ or\ mixed\ (see\ e.g.\ spilled\_regs\ in\ IRA).}}
+\DoxyCodeLine{00027\ \textcolor{comment}{}}
+\DoxyCodeLine{00028\ \textcolor{comment}{\ \ \ This\ should\ be\ cleaned\ up,\ either\ by\ just\ dropping\ the\ regset\ type,\ or}}
+\DoxyCodeLine{00029\ \textcolor{comment}{\ \ \ by\ changing\ all\ bitmaps\ that\ are\ really\ regsets\ to\ the\ regset\ type.\ \ For}}
+\DoxyCodeLine{00030\ \textcolor{comment}{\ \ \ the\ latter\ option,\ a\ good\ start\ would\ be\ to\ change\ everything\ allocated}}
+\DoxyCodeLine{00031\ \textcolor{comment}{\ \ \ on\ the\ reg\_obstack\ to\ regset.\ \ */}}
+\DoxyCodeLine{00032\ }
+\DoxyCodeLine{00033\ }
+\DoxyCodeLine{00034\ \textcolor{comment}{/*\ Head\ of\ register\ set\ linked\ list.\ \ */}}
+\DoxyCodeLine{00035\ \textcolor{keyword}{typedef}\ bitmap\_head\ \doxymbox{\hyperlink{regset_8h_a0ea6961fdbe562c5472ff2050b84e52e}{regset\_head}};}
+\DoxyCodeLine{00036\ }
+\DoxyCodeLine{00037\ \textcolor{comment}{/*\ A\ pointer\ to\ a\ regset\_head.\ \ */}}
+\DoxyCodeLine{00038\ \textcolor{keyword}{typedef}\ \doxymbox{\hyperlink{coretypes_8h_ae7ea3a04cabf8964dc6e8e95a9cde1b8}{bitmap}}\ \doxymbox{\hyperlink{regset_8h_a1e655e49d778df881b7c96f82f84e3c7}{regset}};}
+\DoxyCodeLine{00039\ }
+\DoxyCodeLine{00040\ \textcolor{comment}{/*\ Allocate\ a\ register\ set\ with\ oballoc.\ \ */}}
+\DoxyCodeLine{00041\ \textcolor{preprocessor}{\#define\ ALLOC\_REG\_SET(OBSTACK)\ BITMAP\_ALLOC\ (OBSTACK)}}
+\DoxyCodeLine{00042\ }
+\DoxyCodeLine{00043\ \textcolor{comment}{/*\ Do\ any\ cleanup\ needed\ on\ a\ regset\ when\ it\ is\ no\ longer\ used.\ \ */}}
+\DoxyCodeLine{00044\ \textcolor{preprocessor}{\#define\ FREE\_REG\_SET(REGSET)\ BITMAP\_FREE\ (REGSET)}}
+\DoxyCodeLine{00045\ }
+\DoxyCodeLine{00046\ \textcolor{comment}{/*\ Initialize\ a\ new\ regset.\ \ */}}
+\DoxyCodeLine{00047\ \textcolor{preprocessor}{\#define\ INIT\_REG\_SET(HEAD)\ bitmap\_initialize\ (HEAD,\ \&reg\_obstack)}}
+\DoxyCodeLine{00048\ }
+\DoxyCodeLine{00049\ \textcolor{comment}{/*\ Clear\ a\ register\ set\ by\ freeing\ up\ the\ linked\ list.\ \ */}}
+\DoxyCodeLine{00050\ \textcolor{preprocessor}{\#define\ CLEAR\_REG\_SET(HEAD)\ bitmap\_clear\ (HEAD)}}
+\DoxyCodeLine{00051\ }
+\DoxyCodeLine{00052\ \textcolor{comment}{/*\ True\ if\ the\ register\ set\ is\ empty.\ \ */}}
+\DoxyCodeLine{00053\ \textcolor{preprocessor}{\#define\ REG\_SET\_EMPTY\_P(HEAD)\ bitmap\_empty\_p\ (HEAD)}}
+\DoxyCodeLine{00054\ }
+\DoxyCodeLine{00055\ \textcolor{comment}{/*\ Copy\ a\ register\ set\ to\ another\ register\ set.\ \ */}}
+\DoxyCodeLine{00056\ \textcolor{preprocessor}{\#define\ COPY\_REG\_SET(TO,\ FROM)\ bitmap\_copy\ (TO,\ FROM)}}
+\DoxyCodeLine{00057\ }
+\DoxyCodeLine{00058\ \textcolor{comment}{/*\ Compare\ two\ register\ sets.\ \ */}}
+\DoxyCodeLine{00059\ \textcolor{preprocessor}{\#define\ REG\_SET\_EQUAL\_P(A,\ B)\ bitmap\_equal\_p\ (A,\ B)}}
+\DoxyCodeLine{00060\ }
+\DoxyCodeLine{00061\ \textcolor{comment}{/*\ \`{}and'\ a\ register\ set\ with\ a\ second\ register\ set.\ \ */}}
+\DoxyCodeLine{00062\ \textcolor{preprocessor}{\#define\ AND\_REG\_SET(TO,\ FROM)\ bitmap\_and\_into\ (TO,\ FROM)}}
+\DoxyCodeLine{00063\ }
+\DoxyCodeLine{00064\ \textcolor{comment}{/*\ \`{}and'\ the\ complement\ of\ a\ register\ set\ with\ a\ register\ set.\ \ */}}
+\DoxyCodeLine{00065\ \textcolor{preprocessor}{\#define\ AND\_COMPL\_REG\_SET(TO,\ FROM)\ bitmap\_and\_compl\_into\ (TO,\ FROM)}}
+\DoxyCodeLine{00066\ }
+\DoxyCodeLine{00067\ \textcolor{comment}{/*\ Inclusive\ or\ a\ register\ set\ with\ a\ second\ register\ set.\ \ */}}
+\DoxyCodeLine{00068\ \textcolor{preprocessor}{\#define\ IOR\_REG\_SET(TO,\ FROM)\ bitmap\_ior\_into\ (TO,\ FROM)}}
+\DoxyCodeLine{00069\ }
+\DoxyCodeLine{00070\ \textcolor{comment}{/*\ Same,\ but\ with\ FROM\ being\ a\ HARD\_REG\_SET.\ \ */}}
+\DoxyCodeLine{00071\ \textcolor{preprocessor}{\#define\ IOR\_REG\_SET\_HRS(TO,\ FROM)\ \(\backslash\)}}
+\DoxyCodeLine{00072\ \textcolor{preprocessor}{\ \ bitmap\_ior\_into\ (TO,\ bitmap\_view<HARD\_REG\_SET>\ (FROM))}}
+\DoxyCodeLine{00073\ }
+\DoxyCodeLine{00074\ \textcolor{comment}{/*\ Exclusive\ or\ a\ register\ set\ with\ a\ second\ register\ set.\ \ */}}
+\DoxyCodeLine{00075\ \textcolor{preprocessor}{\#define\ XOR\_REG\_SET(TO,\ FROM)\ bitmap\_xor\_into\ (TO,\ FROM)}}
+\DoxyCodeLine{00076\ }
+\DoxyCodeLine{00077\ \textcolor{comment}{/*\ Or\ into\ TO\ the\ register\ set\ FROM1\ \`{}and'ed\ with\ the\ complement\ of\ FROM2.\ \ */}}
+\DoxyCodeLine{00078\ \textcolor{preprocessor}{\#define\ IOR\_AND\_COMPL\_REG\_SET(TO,\ FROM1,\ FROM2)\ \(\backslash\)}}
+\DoxyCodeLine{00079\ \textcolor{preprocessor}{\ \ bitmap\_ior\_and\_compl\_into\ (TO,\ FROM1,\ FROM2)}}
+\DoxyCodeLine{00080\ }
+\DoxyCodeLine{00081\ \textcolor{comment}{/*\ Clear\ a\ single\ register\ in\ a\ register\ set.\ \ */}}
+\DoxyCodeLine{00082\ \textcolor{preprocessor}{\#define\ CLEAR\_REGNO\_REG\_SET(HEAD,\ REG)\ bitmap\_clear\_bit\ (HEAD,\ REG)}}
+\DoxyCodeLine{00083\ }
+\DoxyCodeLine{00084\ \textcolor{comment}{/*\ Set\ a\ single\ register\ in\ a\ register\ set.\ \ */}}
+\DoxyCodeLine{00085\ \textcolor{preprocessor}{\#define\ SET\_REGNO\_REG\_SET(HEAD,\ REG)\ bitmap\_set\_bit\ (HEAD,\ REG)}}
+\DoxyCodeLine{00086\ }
+\DoxyCodeLine{00087\ \textcolor{comment}{/*\ Return\ true\ if\ a\ register\ is\ set\ in\ a\ register\ set.\ \ */}}
+\DoxyCodeLine{00088\ \textcolor{preprocessor}{\#define\ REGNO\_REG\_SET\_P(TO,\ REG)\ bitmap\_bit\_p\ (TO,\ REG)}}
+\DoxyCodeLine{00089\ }
+\DoxyCodeLine{00090\ \textcolor{comment}{/*\ Copy\ the\ hard\ registers\ in\ a\ register\ set\ to\ the\ hard\ register\ set.\ \ */}}
+\DoxyCodeLine{00091\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{regset_8h_adcd1712754a46b7c4479fb577249b527}{reg\_set\_to\_hard\_reg\_set}}\ (\doxymbox{\hyperlink{hard-reg-set_8h_a58a1569980de76957f391607c395d443}{HARD\_REG\_SET}}\ *,\ \doxymbox{\hyperlink{coretypes_8h_ac1b200ce036f141b63e8c4e2855c9d40}{const\_bitmap}});}
+\DoxyCodeLine{00092\ \textcolor{preprocessor}{\#define\ REG\_SET\_TO\_HARD\_REG\_SET(TO,\ FROM)\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00093\ \textcolor{preprocessor}{do\ \{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00094\ \textcolor{preprocessor}{\ \ CLEAR\_HARD\_REG\_SET\ (TO);\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00095\ \textcolor{preprocessor}{\ \ reg\_set\_to\_hard\_reg\_set\ (\&TO,\ FROM);\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00096\ \textcolor{preprocessor}{\}\ while\ (0)}}
+\DoxyCodeLine{00097\ }
+\DoxyCodeLine{00098\ \textcolor{keyword}{typedef}\ \doxymbox{\hyperlink{structbitmap__iterator}{bitmap\_iterator}}\ \doxymbox{\hyperlink{regset_8h_ab60be1cb433f0dbef5fc5a4fdc59c7d1}{reg\_set\_iterator}};}
+\DoxyCodeLine{00099\ }
+\DoxyCodeLine{00100\ \textcolor{comment}{/*\ Loop\ over\ all\ registers\ in\ REGSET,\ starting\ with\ MIN,\ setting\ REGNUM\ to\ the}}
+\DoxyCodeLine{00101\ \textcolor{comment}{\ \ \ register\ number\ and\ executing\ CODE\ for\ all\ registers\ that\ are\ set.\ \ */}}
+\DoxyCodeLine{00102\ \textcolor{preprocessor}{\#define\ EXECUTE\_IF\_SET\_IN\_REG\_SET(REGSET,\ MIN,\ REGNUM,\ RSI)\ \(\backslash\)}}
+\DoxyCodeLine{00103\ \textcolor{preprocessor}{\ \ EXECUTE\_IF\_SET\_IN\_BITMAP\ (REGSET,\ MIN,\ REGNUM,\ RSI)}}
+\DoxyCodeLine{00104\ }
+\DoxyCodeLine{00105\ \textcolor{comment}{/*\ Loop\ over\ all\ registers\ in\ REGSET1\ and\ REGSET2,\ starting\ with\ MIN,\ setting}}
+\DoxyCodeLine{00106\ \textcolor{comment}{\ \ \ REGNUM\ to\ the\ register\ number\ and\ executing\ CODE\ for\ all\ registers\ that\ are}}
+\DoxyCodeLine{00107\ \textcolor{comment}{\ \ \ set\ in\ the\ first\ regset\ and\ not\ set\ in\ the\ second.\ \ */}}
+\DoxyCodeLine{00108\ \textcolor{preprocessor}{\#define\ EXECUTE\_IF\_AND\_COMPL\_IN\_REG\_SET(REGSET1,\ REGSET2,\ MIN,\ REGNUM,\ RSI)\ \(\backslash\)}}
+\DoxyCodeLine{00109\ \textcolor{preprocessor}{\ \ EXECUTE\_IF\_AND\_COMPL\_IN\_BITMAP\ (REGSET1,\ REGSET2,\ MIN,\ REGNUM,\ RSI)}}
+\DoxyCodeLine{00110\ }
+\DoxyCodeLine{00111\ \textcolor{comment}{/*\ Loop\ over\ all\ registers\ in\ REGSET1\ and\ REGSET2,\ starting\ with\ MIN,\ setting}}
+\DoxyCodeLine{00112\ \textcolor{comment}{\ \ \ REGNUM\ to\ the\ register\ number\ and\ executing\ CODE\ for\ all\ registers\ that\ are}}
+\DoxyCodeLine{00113\ \textcolor{comment}{\ \ \ set\ in\ both\ regsets.\ \ */}}
+\DoxyCodeLine{00114\ \textcolor{preprocessor}{\#define\ EXECUTE\_IF\_AND\_IN\_REG\_SET(REGSET1,\ REGSET2,\ MIN,\ REGNUM,\ RSI)\ \(\backslash\)}}
+\DoxyCodeLine{00115\ \textcolor{preprocessor}{\ \ EXECUTE\_IF\_AND\_IN\_BITMAP\ (REGSET1,\ REGSET2,\ MIN,\ REGNUM,\ RSI)\ \(\backslash\)}}
+\DoxyCodeLine{00116\ \textcolor{preprocessor}{}}
+\DoxyCodeLine{00117\ \textcolor{comment}{/*\ An\ obstack\ for\ regsets.\ \ */}}
+\DoxyCodeLine{00118\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{structbitmap__obstack}{bitmap\_obstack}}\ \doxymbox{\hyperlink{regset_8h_a0c900e285d12a3727aa9e83cd4837dae}{reg\_obstack}};}
+\DoxyCodeLine{00119\ }
+\DoxyCodeLine{00120\ \textcolor{comment}{/*\ In\ df-\/core.cc\ (which\ should\ use\ regset\ consistently\ instead\ of\ bitmap...)\ \ */}}
+\DoxyCodeLine{00121\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{regset_8h_a86d156473180d07652af51207b7dde25}{dump\_regset}}\ (\doxymbox{\hyperlink{regset_8h_a1e655e49d778df881b7c96f82f84e3c7}{regset}},\ FILE\ *);}
+\DoxyCodeLine{00122\ }
+\DoxyCodeLine{00123\ \textcolor{preprocessor}{\#endif\ }\textcolor{comment}{/*\ GCC\_REGSET\_H\ */}\textcolor{preprocessor}{}}
+
+\end{DoxyCode}

@@ -1,0 +1,364 @@
+\doxysection{sm.\+h}
+\hypertarget{sm_8h_source}{}\label{sm_8h_source}\index{toolchain/x86\_64-\/elf/lib/gcc/x86\_64-\/elf/14.2.0/plugin/include/analyzer/sm.h@{toolchain/x86\_64-\/elf/lib/gcc/x86\_64-\/elf/14.2.0/plugin/include/analyzer/sm.h}}
+\doxymbox{\hyperlink{sm_8h}{Go to the documentation of this file.}}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001\ \textcolor{comment}{/*\ Modeling\ API\ uses\ and\ misuses\ via\ state\ machines.}}
+\DoxyCodeLine{00002\ \textcolor{comment}{\ \ \ Copyright\ (C)\ 2019-\/2024\ Free\ Software\ Foundation,\ Inc.}}
+\DoxyCodeLine{00003\ \textcolor{comment}{\ \ \ Contributed\ by\ David\ Malcolm\ <dmalcolm@redhat.com>.}}
+\DoxyCodeLine{00004\ \textcolor{comment}{}}
+\DoxyCodeLine{00005\ \textcolor{comment}{This\ file\ is\ part\ of\ GCC.}}
+\DoxyCodeLine{00006\ \textcolor{comment}{}}
+\DoxyCodeLine{00007\ \textcolor{comment}{GCC\ is\ free\ software;\ you\ can\ redistribute\ it\ and/or\ modify\ it}}
+\DoxyCodeLine{00008\ \textcolor{comment}{under\ the\ terms\ of\ the\ GNU\ General\ Public\ License\ as\ published\ by}}
+\DoxyCodeLine{00009\ \textcolor{comment}{the\ Free\ Software\ Foundation;\ either\ version\ 3,\ or\ (at\ your\ option)}}
+\DoxyCodeLine{00010\ \textcolor{comment}{any\ later\ version.}}
+\DoxyCodeLine{00011\ \textcolor{comment}{}}
+\DoxyCodeLine{00012\ \textcolor{comment}{GCC\ is\ distributed\ in\ the\ hope\ that\ it\ will\ be\ useful,\ but}}
+\DoxyCodeLine{00013\ \textcolor{comment}{WITHOUT\ ANY\ WARRANTY;\ without\ even\ the\ implied\ warranty\ of}}
+\DoxyCodeLine{00014\ \textcolor{comment}{MERCHANTABILITY\ or\ FITNESS\ FOR\ A\ PARTICULAR\ PURPOSE.\ \ See\ the\ GNU}}
+\DoxyCodeLine{00015\ \textcolor{comment}{General\ Public\ License\ for\ more\ details.}}
+\DoxyCodeLine{00016\ \textcolor{comment}{}}
+\DoxyCodeLine{00017\ \textcolor{comment}{You\ should\ have\ received\ a\ copy\ of\ the\ GNU\ General\ Public\ License}}
+\DoxyCodeLine{00018\ \textcolor{comment}{along\ with\ GCC;\ see\ the\ file\ COPYING3.\ \ If\ not\ see}}
+\DoxyCodeLine{00019\ \textcolor{comment}{<http://www.gnu.org/licenses/>.\ \ */}}
+\DoxyCodeLine{00020\ }
+\DoxyCodeLine{00021\ \textcolor{preprocessor}{\#ifndef\ GCC\_ANALYZER\_SM\_H}}
+\DoxyCodeLine{00022\ \textcolor{preprocessor}{\#define\ GCC\_ANALYZER\_SM\_H}}
+\DoxyCodeLine{00023\ }
+\DoxyCodeLine{00024\ \textcolor{comment}{/*\ Utility\ functions\ for\ use\ by\ state\ machines.\ \ */}}
+\DoxyCodeLine{00025\ }
+\DoxyCodeLine{00026\ \textcolor{keyword}{namespace\ }\doxymbox{\hyperlink{namespaceana}{ana}}\ \{}
+\DoxyCodeLine{00027\ }
+\DoxyCodeLine{00028\ \textcolor{keyword}{class\ }\doxymbox{\hyperlink{classana_1_1state__machine}{state\_machine}};}
+\DoxyCodeLine{00029\ \textcolor{keyword}{class\ }\doxymbox{\hyperlink{classana_1_1sm__context}{sm\_context}};}
+\DoxyCodeLine{00030\ \textcolor{keyword}{class\ }\doxymbox{\hyperlink{classana_1_1pending__diagnostic}{pending\_diagnostic}};}
+\DoxyCodeLine{00031\ }
+\DoxyCodeLine{00032\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{namespaceana_aef39dc46f02c8ec80543979b0641e588}{any\_pointer\_p}}\ (\doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ expr);}
+\DoxyCodeLine{00033\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{namespaceana_aef39dc46f02c8ec80543979b0641e588}{any\_pointer\_p}}\ (\textcolor{keyword}{const}\ \doxymbox{\hyperlink{classana_1_1svalue}{svalue}}\ *sval);}
+\DoxyCodeLine{00034\ }
+\DoxyCodeLine{00035\ \textcolor{comment}{/*\ An\ abstract\ base\ class\ for\ a\ state\ machine\ describing\ an\ API.}}
+\DoxyCodeLine{00036\ \textcolor{comment}{\ \ \ Manages\ a\ set\ of\ state\ objects,\ and\ has\ various\ virtual\ functions}}
+\DoxyCodeLine{00037\ \textcolor{comment}{\ \ \ for\ pattern-\/matching\ on\ statements.\ \ */}}
+\DoxyCodeLine{00038\ }
+\DoxyCodeLine{00039\ \textcolor{keyword}{class\ }\doxymbox{\hyperlink{classana_1_1state__machine_a8a8500669247de08358d386172671a2a}{state\_machine}}\ :\ \textcolor{keyword}{public}\ \doxymbox{\hyperlink{classana_1_1log__user_a9905ab7e8360046093e35152c617cca2}{log\_user}}}
+\DoxyCodeLine{00040\ \{}
+\DoxyCodeLine{00041\ \textcolor{keyword}{public}:}
+\DoxyCodeLine{00042\ \ \ \textcolor{comment}{/*\ States\ are\ represented\ by\ immutable\ objects,\ owned\ by\ the\ state}}
+\DoxyCodeLine{00043\ \textcolor{comment}{\ \ \ \ \ machine.\ \ */}}
+\DoxyCodeLine{00044\ \ \ \textcolor{keyword}{class\ }\doxymbox{\hyperlink{classana_1_1state__machine_1_1state_aada375d5e5cf325d9875545f40e1a179}{state}}}
+\DoxyCodeLine{00045\ \ \ \{}
+\DoxyCodeLine{00046\ \ \ \textcolor{keyword}{public}:}
+\DoxyCodeLine{00047\ \ \ \ \ \doxymbox{\hyperlink{classana_1_1state__machine_1_1state_aada375d5e5cf325d9875545f40e1a179}{state}}\ (\textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *\doxymbox{\hyperlink{configargs_8h_a8f8f80d37794cde9472343e4487ba3eb}{name}},\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{id})\ :\ \doxymbox{\hyperlink{classana_1_1state__machine_1_1state_af4d14159ffc510110570bd583634558c}{m\_name}}\ (\doxymbox{\hyperlink{configargs_8h_a8f8f80d37794cde9472343e4487ba3eb}{name}}),\ \doxymbox{\hyperlink{classana_1_1state__machine_1_1state_a3201cd7828be36578a11f3d038a448ee}{m\_id}}\ (id)\ \{\}}
+\DoxyCodeLine{00048\ \ \ \ \ \textcolor{keyword}{virtual}\ \doxymbox{\hyperlink{classana_1_1state__machine_1_1state_af1b63e3dc49815ae97de29f9e48e0651}{\string~state}}\ ()\ \{\}}
+\DoxyCodeLine{00049\ }
+\DoxyCodeLine{00050\ \ \ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *\doxymbox{\hyperlink{classana_1_1state__machine_1_1state_af6f82ccad403c83b3a6cbf579725a8c7}{get\_name}}\ ()\textcolor{keyword}{\ const\ }\{\ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{classana_1_1state__machine_1_1state_af4d14159ffc510110570bd583634558c}{m\_name}};\ \}}
+\DoxyCodeLine{00051\ \ \ \ \ \textcolor{keyword}{virtual}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classana_1_1state__machine_1_1state_a0126c4471a450d11b4153e2b6002bfea}{dump\_to\_pp}}\ (\doxymbox{\hyperlink{classpretty__printer}{pretty\_printer}}\ *pp)\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00052\ \ \ \ \ \textcolor{keyword}{virtual}\ \doxymbox{\hyperlink{classjson_1_1value}{json::value}}\ *\doxymbox{\hyperlink{classana_1_1state__machine_1_1state_a8df6fff181a05b702f7bbdd69437709e}{to\_json}}\ ()\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00053\ }
+\DoxyCodeLine{00054\ \ \ \ \ \textcolor{keywordtype}{unsigned}\ \doxymbox{\hyperlink{classana_1_1state__machine_1_1state_aab329491e0fee756c1232c2826d1e588}{get\_id}}\ ()\textcolor{keyword}{\ const\ }\{\ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{classana_1_1state__machine_1_1state_a3201cd7828be36578a11f3d038a448ee}{m\_id}};\ \}}
+\DoxyCodeLine{00055\ }
+\DoxyCodeLine{00056\ \ \ \textcolor{keyword}{private}:}
+\DoxyCodeLine{00057\ \ \ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *\doxymbox{\hyperlink{classana_1_1state__machine_1_1state_af4d14159ffc510110570bd583634558c}{m\_name}};}
+\DoxyCodeLine{00058\ \ \ \ \ \textcolor{keywordtype}{unsigned}\ \doxymbox{\hyperlink{classana_1_1state__machine_1_1state_a3201cd7828be36578a11f3d038a448ee}{m\_id}};}
+\DoxyCodeLine{00059\ \ \ \};}
+\DoxyCodeLine{00060\ \ \ \textcolor{keyword}{typedef}\ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classana_1_1state__machine_1_1state}{state\_machine::state}}\ *\doxymbox{\hyperlink{classana_1_1state__machine_ab5050cb93451ec1d29956daeddadcff6}{state\_t}};}
+\DoxyCodeLine{00061\ }
+\DoxyCodeLine{00062\ \ \ \doxymbox{\hyperlink{classana_1_1state__machine_a8a8500669247de08358d386172671a2a}{state\_machine}}\ (\textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *\doxymbox{\hyperlink{configargs_8h_a8f8f80d37794cde9472343e4487ba3eb}{name}},\ \doxymbox{\hyperlink{classana_1_1logger}{logger}}\ *\doxymbox{\hyperlink{classana_1_1logger}{logger}});}
+\DoxyCodeLine{00063\ \ \ \textcolor{keyword}{virtual}\ \doxymbox{\hyperlink{classana_1_1state__machine_a1e05590f99d3eca4db972839332e7d04}{\string~state\_machine}}\ ()\ \{\}}
+\DoxyCodeLine{00064\ }
+\DoxyCodeLine{00065\ \ \ \textcolor{comment}{/*\ Should\ states\ be\ inherited\ from\ a\ parent\ region\ to\ a\ child\ region,}}
+\DoxyCodeLine{00066\ \textcolor{comment}{\ \ \ \ \ when\ first\ accessing\ a\ child\ region?}}
+\DoxyCodeLine{00067\ \textcolor{comment}{\ \ \ \ \ For\ example\ we\ should\ inherit\ the\ taintedness\ of\ a\ subregion,}}
+\DoxyCodeLine{00068\ \textcolor{comment}{\ \ \ \ \ but\ we\ should\ not\ inherit\ the\ "{}malloc:non-\/null"{}\ state\ of\ a\ field}}
+\DoxyCodeLine{00069\ \textcolor{comment}{\ \ \ \ \ within\ a\ heap-\/allocated\ struct.\ \ */}}
+\DoxyCodeLine{00070\ \ \ \textcolor{keyword}{virtual}\ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{classana_1_1state__machine_a2837e2083d1839ecb3ce614e1de7f61a}{inherited\_state\_p}}\ ()\ \textcolor{keyword}{const}\ =\ 0;}
+\DoxyCodeLine{00071\ }
+\DoxyCodeLine{00072\ \ \ \textcolor{comment}{/*\ A\ vfunc\ for\ more\ general\ handling\ of\ inheritance.\ \ */}}
+\DoxyCodeLine{00073\ \ \ \textcolor{keyword}{virtual}\ \doxymbox{\hyperlink{classana_1_1state__machine_ab5050cb93451ec1d29956daeddadcff6}{state\_t}}}
+\DoxyCodeLine{00074\ \ \ \doxymbox{\hyperlink{classana_1_1state__machine_aa9a3009bc1442aae2e2d701b5d9c4256}{alt\_get\_inherited\_state}}\ (\textcolor{keyword}{const}\ \doxymbox{\hyperlink{classana_1_1sm__state__map}{sm\_state\_map}}\ \&,}
+\DoxyCodeLine{00075\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classana_1_1svalue}{svalue}}\ *,}
+\DoxyCodeLine{00076\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classana_1_1extrinsic__state}{extrinsic\_state}}\ \&)\textcolor{keyword}{\ const}}
+\DoxyCodeLine{00077\ \textcolor{keyword}{\ \ }\{}
+\DoxyCodeLine{00078\ \ \ \ \ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{stddef_8h_a070d2ce7b6bb7e5c05602aa8c308d0c4}{NULL}};}
+\DoxyCodeLine{00079\ \ \ \}}
+\DoxyCodeLine{00080\ }
+\DoxyCodeLine{00081\ \ \ \textcolor{keyword}{virtual}\ \textcolor{keywordtype}{bool}}
+\DoxyCodeLine{00082\ \ \ \doxymbox{\hyperlink{classana_1_1state__machine_a9ec57ec7241ded7f2921ee6cb8ef0ab1}{has\_alt\_get\_inherited\_state\_p}}\ ()\textcolor{keyword}{\ const}}
+\DoxyCodeLine{00083\ \textcolor{keyword}{\ \ }\{}
+\DoxyCodeLine{00084\ \ \ \ \ \textcolor{keywordflow}{return}\ \textcolor{keyword}{false};}
+\DoxyCodeLine{00085\ \ \ \}}
+\DoxyCodeLine{00086\ }
+\DoxyCodeLine{00087\ \ \ \textcolor{keyword}{virtual}\ \doxymbox{\hyperlink{classana_1_1state__machine_ab5050cb93451ec1d29956daeddadcff6}{state\_machine::state\_t}}\ \doxymbox{\hyperlink{classana_1_1state__machine_a51101bb1a5ef88ce594d2fe8bbdbe611}{get\_default\_state}}\ (\textcolor{keyword}{const}\ \doxymbox{\hyperlink{classana_1_1svalue}{svalue}}\ *)\textcolor{keyword}{\ const}}
+\DoxyCodeLine{00088\ \textcolor{keyword}{\ \ }\{}
+\DoxyCodeLine{00089\ \ \ \ \ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{classana_1_1state__machine_ae06aedd7f0119e77898bd3460fb37c85}{m\_start}};}
+\DoxyCodeLine{00090\ \ \ \}}
+\DoxyCodeLine{00091\ }
+\DoxyCodeLine{00092\ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *\doxymbox{\hyperlink{classana_1_1state__machine_a0674be5adf7d51e7996d26497aa9cc59}{get\_name}}\ ()\textcolor{keyword}{\ const\ }\{\ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{classana_1_1state__machine_a886760780c472bd059e7d8f03efc0801}{m\_name}};\ \}}
+\DoxyCodeLine{00093\ }
+\DoxyCodeLine{00094\ \ \ \doxymbox{\hyperlink{classana_1_1state__machine_ab5050cb93451ec1d29956daeddadcff6}{state\_t}}\ \doxymbox{\hyperlink{classana_1_1state__machine_adfda1fe60ced6c1433815f60ce8ad148}{get\_state\_by\_name}}\ (\textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *\doxymbox{\hyperlink{configargs_8h_a8f8f80d37794cde9472343e4487ba3eb}{name}})\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00095\ }
+\DoxyCodeLine{00096\ \ \ \textcolor{comment}{/*\ Return\ true\ if\ STMT\ is\ a\ function\ call\ recognized\ by\ this\ sm.\ \ */}}
+\DoxyCodeLine{00097\ \ \ \textcolor{keyword}{virtual}\ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{classana_1_1state__machine_a177e54feecab98a23e873846a204b5e2}{on\_stmt}}\ (\doxymbox{\hyperlink{classana_1_1sm__context}{sm\_context}}\ *sm\_ctxt,}
+\DoxyCodeLine{00098\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classana_1_1supernode}{supernode}}\ *node,}
+\DoxyCodeLine{00099\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ gimple\ *stmt)\ \textcolor{keyword}{const}\ =\ 0;}
+\DoxyCodeLine{00100\ }
+\DoxyCodeLine{00101\ \ \ \textcolor{keyword}{virtual}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classana_1_1state__machine_a3150d6fab92996732cb5e36407e684b6}{on\_phi}}\ (\doxymbox{\hyperlink{classana_1_1sm__context}{sm\_context}}\ *sm\_ctxt\ \doxymbox{\hyperlink{ansidecl_8h_a635a8d08da53567d5c3b67deb7f98ed3}{ATTRIBUTE\_UNUSED}},}
+\DoxyCodeLine{00102\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classana_1_1supernode}{supernode}}\ *node\ \doxymbox{\hyperlink{ansidecl_8h_a635a8d08da53567d5c3b67deb7f98ed3}{ATTRIBUTE\_UNUSED}},}
+\DoxyCodeLine{00103\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ gphi\ *phi\ \doxymbox{\hyperlink{ansidecl_8h_a635a8d08da53567d5c3b67deb7f98ed3}{ATTRIBUTE\_UNUSED}},}
+\DoxyCodeLine{00104\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ rhs\ \doxymbox{\hyperlink{ansidecl_8h_a635a8d08da53567d5c3b67deb7f98ed3}{ATTRIBUTE\_UNUSED}})\textcolor{keyword}{\ const}}
+\DoxyCodeLine{00105\ \textcolor{keyword}{\ \ }\{}
+\DoxyCodeLine{00106\ \ \ \}}
+\DoxyCodeLine{00107\ }
+\DoxyCodeLine{00108\ \ \ \textcolor{keyword}{virtual}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classana_1_1state__machine_a6fdd1fd3ba843227d459e9ffffa03e91}{on\_condition}}\ (\doxymbox{\hyperlink{classana_1_1sm__context}{sm\_context}}\ *sm\_ctxt\ \doxymbox{\hyperlink{ansidecl_8h_a635a8d08da53567d5c3b67deb7f98ed3}{ATTRIBUTE\_UNUSED}},}
+\DoxyCodeLine{00109\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classana_1_1supernode}{supernode}}\ *node\ \doxymbox{\hyperlink{ansidecl_8h_a635a8d08da53567d5c3b67deb7f98ed3}{ATTRIBUTE\_UNUSED}},}
+\DoxyCodeLine{00110\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ gimple\ *stmt\ \doxymbox{\hyperlink{ansidecl_8h_a635a8d08da53567d5c3b67deb7f98ed3}{ATTRIBUTE\_UNUSED}},}
+\DoxyCodeLine{00111\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classana_1_1svalue}{svalue}}\ *lhs\ \doxymbox{\hyperlink{ansidecl_8h_a635a8d08da53567d5c3b67deb7f98ed3}{ATTRIBUTE\_UNUSED}},}
+\DoxyCodeLine{00112\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{enum}\ \doxymbox{\hyperlink{tree-core_8h_aee7678415f75b79d1651bfccce10c9f5}{tree\_code}}\ op\ \doxymbox{\hyperlink{ansidecl_8h_a635a8d08da53567d5c3b67deb7f98ed3}{ATTRIBUTE\_UNUSED}},}
+\DoxyCodeLine{00113\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classana_1_1svalue}{svalue}}\ *rhs\ \doxymbox{\hyperlink{ansidecl_8h_a635a8d08da53567d5c3b67deb7f98ed3}{ATTRIBUTE\_UNUSED}})\textcolor{keyword}{\ const}}
+\DoxyCodeLine{00114\ \textcolor{keyword}{\ \ }\{}
+\DoxyCodeLine{00115\ \ \ \}}
+\DoxyCodeLine{00116\ }
+\DoxyCodeLine{00117\ \ \ \textcolor{keyword}{virtual}\ \textcolor{keywordtype}{void}}
+\DoxyCodeLine{00118\ \ \ \doxymbox{\hyperlink{classana_1_1state__machine_a6e9d437b1768e8c5572a842b41486643}{on\_bounded\_ranges}}\ (\doxymbox{\hyperlink{classana_1_1sm__context}{sm\_context}}\ *sm\_ctxt\ \doxymbox{\hyperlink{ansidecl_8h_a635a8d08da53567d5c3b67deb7f98ed3}{ATTRIBUTE\_UNUSED}},}
+\DoxyCodeLine{00119\ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classana_1_1supernode}{supernode}}\ *node\ \doxymbox{\hyperlink{ansidecl_8h_a635a8d08da53567d5c3b67deb7f98ed3}{ATTRIBUTE\_UNUSED}},}
+\DoxyCodeLine{00120\ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ gimple\ *stmt\ \doxymbox{\hyperlink{ansidecl_8h_a635a8d08da53567d5c3b67deb7f98ed3}{ATTRIBUTE\_UNUSED}},}
+\DoxyCodeLine{00121\ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classana_1_1svalue}{svalue}}\ \&sval\ \doxymbox{\hyperlink{ansidecl_8h_a635a8d08da53567d5c3b67deb7f98ed3}{ATTRIBUTE\_UNUSED}},}
+\DoxyCodeLine{00122\ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{structana_1_1bounded__ranges}{bounded\_ranges}}\ \&ranges\ \doxymbox{\hyperlink{ansidecl_8h_a635a8d08da53567d5c3b67deb7f98ed3}{ATTRIBUTE\_UNUSED}})\textcolor{keyword}{\ const}}
+\DoxyCodeLine{00123\ \textcolor{keyword}{\ \ }\{}
+\DoxyCodeLine{00124\ \ \ \}}
+\DoxyCodeLine{00125\ }
+\DoxyCodeLine{00126\ \ \ \textcolor{keyword}{virtual}\ \textcolor{keywordtype}{void}}
+\DoxyCodeLine{00127\ \ \ \doxymbox{\hyperlink{classana_1_1state__machine_ace126940261e82757ff88f7335d0a869}{on\_pop\_frame}}\ (\doxymbox{\hyperlink{classana_1_1sm__state__map}{sm\_state\_map}}\ *smap\ \doxymbox{\hyperlink{ansidecl_8h_a635a8d08da53567d5c3b67deb7f98ed3}{ATTRIBUTE\_UNUSED}},}
+\DoxyCodeLine{00128\ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classana_1_1frame__region}{frame\_region}}\ *frame\_reg\ \doxymbox{\hyperlink{ansidecl_8h_a635a8d08da53567d5c3b67deb7f98ed3}{ATTRIBUTE\_UNUSED}})\textcolor{keyword}{\ const}}
+\DoxyCodeLine{00129\ \textcolor{keyword}{\ \ }\{}
+\DoxyCodeLine{00130\ \ \ \}}
+\DoxyCodeLine{00131\ }
+\DoxyCodeLine{00132\ \ \ \textcolor{comment}{/*\ Return\ true\ if\ it\ safe\ to\ discard\ the\ given\ state\ (to\ help}}
+\DoxyCodeLine{00133\ \textcolor{comment}{\ \ \ \ \ when\ simplifying\ state\ objects).}}
+\DoxyCodeLine{00134\ \textcolor{comment}{\ \ \ \ \ States\ that\ need\ leak\ detection\ should\ return\ false.\ \ */}}
+\DoxyCodeLine{00135\ \ \ \textcolor{keyword}{virtual}\ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{classana_1_1state__machine_afc93a03b9b90b34186f9cefa73075e0c}{can\_purge\_p}}\ (\doxymbox{\hyperlink{classana_1_1state__machine_ab5050cb93451ec1d29956daeddadcff6}{state\_t}}\ s)\ \textcolor{keyword}{const}\ =\ 0;}
+\DoxyCodeLine{00136\ }
+\DoxyCodeLine{00137\ \ \ \textcolor{comment}{/*\ Called\ when\ VAR\ leaks\ (and\ !can\_purge\_p).\ \ */}}
+\DoxyCodeLine{00138\ \ \ \textcolor{keyword}{virtual}\ std::unique\_ptr<pending\_diagnostic>}
+\DoxyCodeLine{00139\ \ \ \doxymbox{\hyperlink{classana_1_1state__machine_a37bf98a9ca76e35a7e090c115519d994}{on\_leak}}\ (\doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ var\ \doxymbox{\hyperlink{ansidecl_8h_a635a8d08da53567d5c3b67deb7f98ed3}{ATTRIBUTE\_UNUSED}})\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00140\ }
+\DoxyCodeLine{00141\ \ \ \textcolor{comment}{/*\ Return\ true\ if\ S\ should\ be\ reset\ to\ "{}start"{}\ for\ values\ passed\ (or\ reachable}}
+\DoxyCodeLine{00142\ \textcolor{comment}{\ \ \ \ \ from)\ calls\ to\ unknown\ functions.\ \ IS\_MUTABLE\ is\ true\ for\ pointers\ as}}
+\DoxyCodeLine{00143\ \textcolor{comment}{\ \ \ \ \ non-\/const,\ false\ if\ only\ passed\ as\ const-\/pointers.}}
+\DoxyCodeLine{00144\ \textcolor{comment}{}}
+\DoxyCodeLine{00145\ \textcolor{comment}{\ \ \ \ \ For\ example,\ in\ sm-\/malloc.cc,\ an\ on-\/stack\ ptr\ doesn't\ stop\ being}}
+\DoxyCodeLine{00146\ \textcolor{comment}{\ \ \ \ \ stack-\/allocated\ when\ passed\ to\ an\ unknown\ fn,\ but\ a\ malloc-\/ed\ pointer}}
+\DoxyCodeLine{00147\ \textcolor{comment}{\ \ \ \ \ could\ be\ freed\ when\ passed\ to\ an\ unknown\ fn\ (unless\ passed\ as\ "{}const"{}).\ \ */}}
+\DoxyCodeLine{00148\ \ \ \textcolor{keyword}{virtual}\ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{classana_1_1state__machine_a4f5d5e039e9013ba2973a216bf67a787}{reset\_when\_passed\_to\_unknown\_fn\_p}}\ (\doxymbox{\hyperlink{classana_1_1state__machine_ab5050cb93451ec1d29956daeddadcff6}{state\_t}}\ s\ \doxymbox{\hyperlink{ansidecl_8h_a635a8d08da53567d5c3b67deb7f98ed3}{ATTRIBUTE\_UNUSED}},}
+\DoxyCodeLine{00149\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{bool}\ is\_mutable)\textcolor{keyword}{\ const}}
+\DoxyCodeLine{00150\ \textcolor{keyword}{\ \ }\{}
+\DoxyCodeLine{00151\ \ \ \ \ \textcolor{keywordflow}{return}\ is\_mutable;}
+\DoxyCodeLine{00152\ \ \ \}}
+\DoxyCodeLine{00153\ }
+\DoxyCodeLine{00154\ \ \ \textcolor{comment}{/*\ Attempt\ to\ get\ a\ state\ for\ the\ merger\ of\ STATE\_A\ and\ STATE\_B,}}
+\DoxyCodeLine{00155\ \textcolor{comment}{\ \ \ \ \ or\ return\ NULL\ if\ merging\ shouldn't\ occur,\ so\ that\ differences}}
+\DoxyCodeLine{00156\ \textcolor{comment}{\ \ \ \ \ between\ sm-\/state\ will\ lead\ to\ separate\ exploded\ nodes.}}
+\DoxyCodeLine{00157\ \textcolor{comment}{}}
+\DoxyCodeLine{00158\ \textcolor{comment}{\ \ \ \ \ Most\ state\ machines\ will\ only\ merge\ equal\ states,\ but\ can}}
+\DoxyCodeLine{00159\ \textcolor{comment}{\ \ \ \ \ override\ maybe\_get\_merged\_states\_nonequal\ to\ support\ mergers}}
+\DoxyCodeLine{00160\ \textcolor{comment}{\ \ \ \ \ of\ certain\ non-\/equal\ states.\ \ */}}
+\DoxyCodeLine{00161\ \ \ \doxymbox{\hyperlink{classana_1_1state__machine_ab5050cb93451ec1d29956daeddadcff6}{state\_t}}\ \doxymbox{\hyperlink{classana_1_1state__machine_a676e7a15209093584e23cb3c3cefe807}{maybe\_get\_merged\_state}}\ (\doxymbox{\hyperlink{classana_1_1state__machine_ab5050cb93451ec1d29956daeddadcff6}{state\_t}}\ state\_a,}
+\DoxyCodeLine{00162\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{classana_1_1state__machine_ab5050cb93451ec1d29956daeddadcff6}{state\_t}}\ state\_b)\textcolor{keyword}{\ const}}
+\DoxyCodeLine{00163\ \textcolor{keyword}{\ \ }\{}
+\DoxyCodeLine{00164\ \ \ \ \ \textcolor{keywordflow}{if}\ (state\_a\ ==\ state\_b)}
+\DoxyCodeLine{00165\ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ state\_a;}
+\DoxyCodeLine{00166\ \ \ \ \ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{classana_1_1state__machine_a0bab4a2d5de5ebb823bbf25742f3043a}{maybe\_get\_merged\_states\_nonequal}}\ (state\_a,\ state\_b);}
+\DoxyCodeLine{00167\ \ \ \}}
+\DoxyCodeLine{00168\ }
+\DoxyCodeLine{00169\ \ \ \textcolor{comment}{/*\ Base\ implementation\ of\ hook\ for\ maybe\_get\_merged\_state\ on\ non-\/equal}}
+\DoxyCodeLine{00170\ \textcolor{comment}{\ \ \ \ \ states.\ \ */}}
+\DoxyCodeLine{00171\ \ \ \textcolor{keyword}{virtual}\ \doxymbox{\hyperlink{insn-attr_8h_a917fe45c2b53fe07c80256f347773fac}{state\_t}}}
+\DoxyCodeLine{00172\ \ \ \doxymbox{\hyperlink{classana_1_1state__machine_a0bab4a2d5de5ebb823bbf25742f3043a}{maybe\_get\_merged\_states\_nonequal}}\ (\doxymbox{\hyperlink{classana_1_1state__machine_ab5050cb93451ec1d29956daeddadcff6}{state\_t}}\ state\_a\ \doxymbox{\hyperlink{ansidecl_8h_a635a8d08da53567d5c3b67deb7f98ed3}{ATTRIBUTE\_UNUSED}},}
+\DoxyCodeLine{00173\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{classana_1_1state__machine_ab5050cb93451ec1d29956daeddadcff6}{state\_t}}\ state\_b\ \doxymbox{\hyperlink{ansidecl_8h_a635a8d08da53567d5c3b67deb7f98ed3}{ATTRIBUTE\_UNUSED}})\textcolor{keyword}{\ const}}
+\DoxyCodeLine{00174\ \textcolor{keyword}{\ \ }\{}
+\DoxyCodeLine{00175\ \ \ \ \ \textcolor{comment}{/*\ By\ default,\ non-\/equal\ sm\ states\ should\ inhibit\ merger\ of\ enodes.\ \ */}}
+\DoxyCodeLine{00176\ \ \ \ \ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{stddef_8h_a070d2ce7b6bb7e5c05602aa8c308d0c4}{NULL}};}
+\DoxyCodeLine{00177\ \ \ \}}
+\DoxyCodeLine{00178\ }
+\DoxyCodeLine{00179\ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classana_1_1state__machine_a185fe3f3eb72225c003a96f413408a94}{validate}}\ (\doxymbox{\hyperlink{classana_1_1state__machine_ab5050cb93451ec1d29956daeddadcff6}{state\_t}}\ s)\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00180\ }
+\DoxyCodeLine{00181\ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classana_1_1state__machine_ab9965209e9f58cc5620b1dbcf7248045}{dump\_to\_pp}}\ (\doxymbox{\hyperlink{classpretty__printer}{pretty\_printer}}\ *pp)\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00182\ }
+\DoxyCodeLine{00183\ \ \ \doxymbox{\hyperlink{classjson_1_1object}{json::object}}\ *\doxymbox{\hyperlink{classana_1_1state__machine_af4a8ddda35e526d09151bc1cf87ed92e}{to\_json}}\ ()\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00184\ }
+\DoxyCodeLine{00185\ \ \ \doxymbox{\hyperlink{classana_1_1state__machine_ab5050cb93451ec1d29956daeddadcff6}{state\_t}}\ \doxymbox{\hyperlink{classana_1_1state__machine_a848072d3cc98cf895ad9f8b8f6f476e2}{get\_start\_state}}\ ()\textcolor{keyword}{\ const\ }\{\ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{classana_1_1state__machine_ae06aedd7f0119e77898bd3460fb37c85}{m\_start}};\ \}}
+\DoxyCodeLine{00186\ }
+\DoxyCodeLine{00187\ \textcolor{keyword}{protected}:}
+\DoxyCodeLine{00188\ \ \ \doxymbox{\hyperlink{classana_1_1state__machine_ab5050cb93451ec1d29956daeddadcff6}{state\_t}}\ \doxymbox{\hyperlink{classana_1_1state__machine_af2b77ca199fed3bd61d44c6bf239427f}{add\_state}}\ (\textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *\doxymbox{\hyperlink{configargs_8h_a8f8f80d37794cde9472343e4487ba3eb}{name}});}
+\DoxyCodeLine{00189\ \ \ \doxymbox{\hyperlink{classana_1_1state__machine_ab5050cb93451ec1d29956daeddadcff6}{state\_t}}\ \doxymbox{\hyperlink{classana_1_1state__machine_a7a5cd05813db70e2aa20b5c92ff9d13d}{add\_custom\_state}}\ (\doxymbox{\hyperlink{classana_1_1state__machine_1_1state}{state}}\ *s)}
+\DoxyCodeLine{00190\ \ \ \{}
+\DoxyCodeLine{00191\ \ \ \ \ \doxymbox{\hyperlink{classana_1_1state__machine_a568e3fcdd5811fc3433b8ca4b8971c2b}{m\_states}}.safe\_push\ (s);}
+\DoxyCodeLine{00192\ \ \ \ \ \textcolor{keywordflow}{return}\ s;}
+\DoxyCodeLine{00193\ \ \ \}}
+\DoxyCodeLine{00194\ }
+\DoxyCodeLine{00195\ \ \ \textcolor{keywordtype}{unsigned}\ \doxymbox{\hyperlink{classana_1_1state__machine_ad4ffe80519da1eed3b5ad6c207b5b035}{alloc\_state\_id}}\ ()\ \{\ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{classana_1_1state__machine_a82faacd33f11d6e583f6d609f4653f49}{m\_next\_state\_id}}++;\ \}}
+\DoxyCodeLine{00196\ }
+\DoxyCodeLine{00197\ \textcolor{keyword}{private}:}
+\DoxyCodeLine{00198\ \ \ \doxymbox{\hyperlink{classana_1_1state__machine_aeb060fd09d49f2a9f7580e7e10edbdb1}{DISABLE\_COPY\_AND\_ASSIGN}}\ (\doxymbox{\hyperlink{classana_1_1state__machine_a8a8500669247de08358d386172671a2a}{state\_machine}});}
+\DoxyCodeLine{00199\ }
+\DoxyCodeLine{00200\ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *\doxymbox{\hyperlink{classana_1_1state__machine_a886760780c472bd059e7d8f03efc0801}{m\_name}};}
+\DoxyCodeLine{00201\ }
+\DoxyCodeLine{00202\ \ \ \textcolor{comment}{/*\ States\ are\ owned\ by\ the\ state\_machine.\ \ */}}
+\DoxyCodeLine{00203\ \ \ \doxymbox{\hyperlink{classauto__delete__vec}{auto\_delete\_vec<state>}}\ \doxymbox{\hyperlink{classana_1_1state__machine_a568e3fcdd5811fc3433b8ca4b8971c2b}{m\_states}};}
+\DoxyCodeLine{00204\ }
+\DoxyCodeLine{00205\ \ \ \textcolor{keywordtype}{unsigned}\ \doxymbox{\hyperlink{classana_1_1state__machine_a82faacd33f11d6e583f6d609f4653f49}{m\_next\_state\_id}};}
+\DoxyCodeLine{00206\ }
+\DoxyCodeLine{00207\ \textcolor{keyword}{protected}:}
+\DoxyCodeLine{00208\ \ \ \textcolor{comment}{/*\ Must\ be\ inited\ after\ m\_next\_state\_id.\ \ */}}
+\DoxyCodeLine{00209\ \ \ \doxymbox{\hyperlink{classana_1_1state__machine_ab5050cb93451ec1d29956daeddadcff6}{state\_t}}\ \doxymbox{\hyperlink{classana_1_1state__machine_ae06aedd7f0119e77898bd3460fb37c85}{m\_start}};}
+\DoxyCodeLine{00210\ \};}
+\DoxyCodeLine{00211\ }
+\DoxyCodeLine{00212\ \textcolor{comment}{/*\ Abstract\ base\ class\ for\ state\ machines\ to\ pass\ to}}
+\DoxyCodeLine{00213\ \textcolor{comment}{\ \ \ sm\_context::on\_custom\_transition\ for\ handling\ non-\/standard\ transitions}}
+\DoxyCodeLine{00214\ \textcolor{comment}{\ \ \ (e.g.\ adding\ a\ node\ and\ edge\ to\ simulate\ registering\ a\ callback\ and\ having}}
+\DoxyCodeLine{00215\ \textcolor{comment}{\ \ \ the\ callback\ be\ called\ later).\ \ */}}
+\DoxyCodeLine{00216\ }
+\DoxyCodeLine{00217\ \textcolor{keyword}{class\ }\doxymbox{\hyperlink{classana_1_1custom__transition}{custom\_transition}}}
+\DoxyCodeLine{00218\ \{}
+\DoxyCodeLine{00219\ \textcolor{keyword}{public}:}
+\DoxyCodeLine{00220\ \ \ \textcolor{keyword}{virtual}\ \doxymbox{\hyperlink{classana_1_1custom__transition_ab53f5ba9d5293a42c62e4550a533727b}{\string~custom\_transition}}\ ()\ \{\}}
+\DoxyCodeLine{00221\ \ \ \textcolor{keyword}{virtual}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classana_1_1custom__transition_a877af4117cfb8dc4bd2c56df155a45bc}{impl\_transition}}\ (\doxymbox{\hyperlink{classana_1_1exploded__graph}{exploded\_graph}}\ *eg,}
+\DoxyCodeLine{00222\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{classana_1_1exploded__node}{exploded\_node}}\ *src\_enode,}
+\DoxyCodeLine{00223\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{int}\ sm\_idx)\ =\ 0;}
+\DoxyCodeLine{00224\ \};}
+\DoxyCodeLine{00225\ }
+\DoxyCodeLine{00226\ \textcolor{comment}{/*\ Abstract\ base\ class\ giving\ an\ interface\ for\ the\ state\ machine\ to\ call}}
+\DoxyCodeLine{00227\ \textcolor{comment}{\ \ \ the\ checker\ engine,\ at\ a\ particular\ stmt.\ \ */}}
+\DoxyCodeLine{00228\ }
+\DoxyCodeLine{00229\ \textcolor{keyword}{class\ }\doxymbox{\hyperlink{classana_1_1sm__context_ad3ff179919b34140320445e206f408b6}{sm\_context}}}
+\DoxyCodeLine{00230\ \{}
+\DoxyCodeLine{00231\ \textcolor{keyword}{public}:}
+\DoxyCodeLine{00232\ \ \ \textcolor{keyword}{virtual}\ \doxymbox{\hyperlink{classana_1_1sm__context_aa684409f8afd29b427b79d87bb18c679}{\string~sm\_context}}\ ()\ \{\}}
+\DoxyCodeLine{00233\ }
+\DoxyCodeLine{00234\ \ \ \textcolor{comment}{/*\ Get\ the\ fndecl\ used\ at\ call,\ or\ NULL\_TREE.}}
+\DoxyCodeLine{00235\ \textcolor{comment}{\ \ \ \ \ Use\ in\ preference\ to\ gimple\_call\_fndecl\ (and\ gimple\_call\_addr\_fndecl),}}
+\DoxyCodeLine{00236\ \textcolor{comment}{\ \ \ \ \ since\ it\ can\ look\ through\ function\ pointer\ assignments\ and}}
+\DoxyCodeLine{00237\ \textcolor{comment}{\ \ \ \ \ other\ callback\ handling.\ \ */}}
+\DoxyCodeLine{00238\ \ \ \textcolor{keyword}{virtual}\ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ \doxymbox{\hyperlink{classana_1_1sm__context_a9aacf87b10764e5f9a9b45475a2b9f86}{get\_fndecl\_for\_call}}\ (\textcolor{keyword}{const}\ gcall\ *call)\ =\ 0;}
+\DoxyCodeLine{00239\ }
+\DoxyCodeLine{00240\ \ \ \textcolor{comment}{/*\ Get\ the\ old\ state\ of\ VAR\ at\ STMT.\ \ */}}
+\DoxyCodeLine{00241\ \ \ \textcolor{keyword}{virtual}\ \doxymbox{\hyperlink{classana_1_1state__machine_ab5050cb93451ec1d29956daeddadcff6}{state\_machine::state\_t}}\ \doxymbox{\hyperlink{classana_1_1sm__context_a386e80ba3e5e9304820651437eef83b9}{get\_state}}\ (\textcolor{keyword}{const}\ gimple\ *stmt,}
+\DoxyCodeLine{00242\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ var)\ =\ 0;}
+\DoxyCodeLine{00243\ \ \ \textcolor{keyword}{virtual}\ \doxymbox{\hyperlink{classana_1_1state__machine_ab5050cb93451ec1d29956daeddadcff6}{state\_machine::state\_t}}\ \doxymbox{\hyperlink{classana_1_1sm__context_a780326750761429d15ccc048460efe92}{get\_state}}\ (\textcolor{keyword}{const}\ gimple\ *stmt,}
+\DoxyCodeLine{00244\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classana_1_1svalue}{svalue}}\ *)\ =\ 0;}
+\DoxyCodeLine{00245\ \ \ \textcolor{comment}{/*\ Set\ the\ next\ state\ of\ VAR\ to\ be\ TO,\ recording\ the\ "{}origin"{}\ of\ the}}
+\DoxyCodeLine{00246\ \textcolor{comment}{\ \ \ \ \ state\ as\ ORIGIN.}}
+\DoxyCodeLine{00247\ \textcolor{comment}{\ \ \ \ \ Use\ STMT\ for\ location\ information.\ \ */}}
+\DoxyCodeLine{00248\ \ \ \textcolor{keyword}{virtual}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classana_1_1sm__context_a8f102351e8b4f0880251aa6636ea58ab}{set\_next\_state}}\ (\textcolor{keyword}{const}\ gimple\ *stmt,}
+\DoxyCodeLine{00249\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ var,}
+\DoxyCodeLine{00250\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{classana_1_1state__machine_ab5050cb93451ec1d29956daeddadcff6}{state\_machine::state\_t}}\ to,}
+\DoxyCodeLine{00251\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ origin\ =\ \doxymbox{\hyperlink{tree_8h_aeda0ce25865d2494883f523217559d1e}{NULL\_TREE}})\ =\ 0;}
+\DoxyCodeLine{00252\ \ \ \textcolor{keyword}{virtual}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classana_1_1sm__context_a3888ed31746d73f67e70f15d69bdbee4}{set\_next\_state}}\ (\textcolor{keyword}{const}\ gimple\ *stmt,}
+\DoxyCodeLine{00253\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classana_1_1svalue}{svalue}}\ *var,}
+\DoxyCodeLine{00254\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{classana_1_1state__machine_ab5050cb93451ec1d29956daeddadcff6}{state\_machine::state\_t}}\ to,}
+\DoxyCodeLine{00255\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ origin\ =\ \doxymbox{\hyperlink{tree_8h_aeda0ce25865d2494883f523217559d1e}{NULL\_TREE}})\ =\ 0;}
+\DoxyCodeLine{00256\ }
+\DoxyCodeLine{00257\ \ \ \textcolor{comment}{/*\ Called\ by\ state\_machine\ in\ response\ to\ pattern\ matches:}}
+\DoxyCodeLine{00258\ \textcolor{comment}{\ \ \ \ \ if\ VAR\ is\ in\ state\ FROM,\ transition\ it\ to\ state\ TO,\ potentially}}
+\DoxyCodeLine{00259\ \textcolor{comment}{\ \ \ \ \ recording\ the\ "{}origin"{}\ of\ the\ state\ as\ ORIGIN.}}
+\DoxyCodeLine{00260\ \textcolor{comment}{\ \ \ \ \ Use\ NODE\ and\ STMT\ for\ location\ information.\ \ */}}
+\DoxyCodeLine{00261\ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classana_1_1sm__context_abaf97d24bdb466a4e3f7b67f2d3f3bb5}{on\_transition}}\ (\textcolor{keyword}{const}\ \doxymbox{\hyperlink{classana_1_1supernode}{supernode}}\ *node\ \doxymbox{\hyperlink{ansidecl_8h_a635a8d08da53567d5c3b67deb7f98ed3}{ATTRIBUTE\_UNUSED}},}
+\DoxyCodeLine{00262\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ gimple\ *stmt,}
+\DoxyCodeLine{00263\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ var,}
+\DoxyCodeLine{00264\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{classana_1_1state__machine_ab5050cb93451ec1d29956daeddadcff6}{state\_machine::state\_t}}\ from,}
+\DoxyCodeLine{00265\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{classana_1_1state__machine_ab5050cb93451ec1d29956daeddadcff6}{state\_machine::state\_t}}\ to,}
+\DoxyCodeLine{00266\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ origin\ =\ \doxymbox{\hyperlink{tree_8h_aeda0ce25865d2494883f523217559d1e}{NULL\_TREE}})}
+\DoxyCodeLine{00267\ \ \ \{}
+\DoxyCodeLine{00268\ \ \ \ \ \doxymbox{\hyperlink{classana_1_1state__machine_ab5050cb93451ec1d29956daeddadcff6}{state\_machine::state\_t}}\ current\ =\ \doxymbox{\hyperlink{classana_1_1sm__context_a386e80ba3e5e9304820651437eef83b9}{get\_state}}\ (stmt,\ var);}
+\DoxyCodeLine{00269\ \ \ \ \ \textcolor{keywordflow}{if}\ (current\ ==\ from)}
+\DoxyCodeLine{00270\ \ \ \ \ \ \ \doxymbox{\hyperlink{classana_1_1sm__context_a8f102351e8b4f0880251aa6636ea58ab}{set\_next\_state}}\ (stmt,\ var,\ to,\ origin);}
+\DoxyCodeLine{00271\ \ \ \}}
+\DoxyCodeLine{00272\ }
+\DoxyCodeLine{00273\ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classana_1_1sm__context_a285e700109b10cca9c908e0872b5539f}{on\_transition}}\ (\textcolor{keyword}{const}\ \doxymbox{\hyperlink{classana_1_1supernode}{supernode}}\ *node\ \doxymbox{\hyperlink{ansidecl_8h_a635a8d08da53567d5c3b67deb7f98ed3}{ATTRIBUTE\_UNUSED}},}
+\DoxyCodeLine{00274\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ gimple\ *stmt,}
+\DoxyCodeLine{00275\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classana_1_1svalue}{svalue}}\ *var,}
+\DoxyCodeLine{00276\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{classana_1_1state__machine_ab5050cb93451ec1d29956daeddadcff6}{state\_machine::state\_t}}\ from,}
+\DoxyCodeLine{00277\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{classana_1_1state__machine_ab5050cb93451ec1d29956daeddadcff6}{state\_machine::state\_t}}\ to,}
+\DoxyCodeLine{00278\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ origin\ =\ \doxymbox{\hyperlink{tree_8h_aeda0ce25865d2494883f523217559d1e}{NULL\_TREE}})}
+\DoxyCodeLine{00279\ \ \ \{}
+\DoxyCodeLine{00280\ \ \ \ \ \doxymbox{\hyperlink{classana_1_1state__machine_ab5050cb93451ec1d29956daeddadcff6}{state\_machine::state\_t}}\ current\ =\ \doxymbox{\hyperlink{classana_1_1sm__context_a386e80ba3e5e9304820651437eef83b9}{get\_state}}\ (stmt,\ var);}
+\DoxyCodeLine{00281\ \ \ \ \ \textcolor{keywordflow}{if}\ (current\ ==\ from)}
+\DoxyCodeLine{00282\ \ \ \ \ \ \ \doxymbox{\hyperlink{classana_1_1sm__context_a8f102351e8b4f0880251aa6636ea58ab}{set\_next\_state}}\ (stmt,\ var,\ to,\ origin);}
+\DoxyCodeLine{00283\ \ \ \}}
+\DoxyCodeLine{00284\ }
+\DoxyCodeLine{00285\ \ \ \textcolor{comment}{/*\ Called\ by\ state\_machine\ in\ response\ to\ pattern\ matches:}}
+\DoxyCodeLine{00286\ \textcolor{comment}{\ \ \ \ \ issue\ a\ diagnostic\ D\ using\ NODE\ and\ STMT\ for\ location\ information.\ \ */}}
+\DoxyCodeLine{00287\ \ \ \textcolor{keyword}{virtual}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classana_1_1sm__context_a9325b680d7ae7c71d942f7fd414327e0}{warn}}\ (\textcolor{keyword}{const}\ \doxymbox{\hyperlink{classana_1_1supernode}{supernode}}\ *node,\ \textcolor{keyword}{const}\ gimple\ *stmt,}
+\DoxyCodeLine{00288\ \ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ var,}
+\DoxyCodeLine{00289\ \ \ \ \ \ \ \ \ \ \ \ \ \ std::unique\_ptr<pending\_diagnostic>\ d)\ =\ 0;}
+\DoxyCodeLine{00290\ \ \ \textcolor{keyword}{virtual}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classana_1_1sm__context_a0380ed1c2ebf9674b9b16f283d0e99d2}{warn}}\ (\textcolor{keyword}{const}\ \doxymbox{\hyperlink{classana_1_1supernode}{supernode}}\ *node,\ \textcolor{keyword}{const}\ gimple\ *stmt,}
+\DoxyCodeLine{00291\ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classana_1_1svalue}{svalue}}\ *var,}
+\DoxyCodeLine{00292\ \ \ \ \ \ \ \ \ \ \ \ \ \ std::unique\_ptr<pending\_diagnostic>\ d)\ =\ 0;}
+\DoxyCodeLine{00293\ }
+\DoxyCodeLine{00294\ \ \ \textcolor{comment}{/*\ For\ use\ when\ generating\ trees\ when\ creating\ pending\_diagnostics,\ so\ that}}
+\DoxyCodeLine{00295\ \textcolor{comment}{\ \ \ \ \ rather\ than\ e.g.}}
+\DoxyCodeLine{00296\ \textcolor{comment}{\ \ \ \ \ \ \ "{}double-\/free\ of\ '<unknown>'"{}}}
+\DoxyCodeLine{00297\ \textcolor{comment}{\ \ \ \ \ we\ can\ print:}}
+\DoxyCodeLine{00298\ \textcolor{comment}{\ \ \ \ \ \ \ "{}double-\/free\ of\ 'inbuf.data'"{}.\ \ */}}
+\DoxyCodeLine{00299\ \ \ \textcolor{keyword}{virtual}\ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ \doxymbox{\hyperlink{classana_1_1sm__context_a584624a6f612926e0a5763125fb77a28}{get\_diagnostic\_tree}}\ (\doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ expr)}
+\DoxyCodeLine{00300\ \ \ \{}
+\DoxyCodeLine{00301\ \ \ \ \ \textcolor{keywordflow}{return}\ expr;}
+\DoxyCodeLine{00302\ \ \ \}}
+\DoxyCodeLine{00303\ \ \ \textcolor{keyword}{virtual}\ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ \doxymbox{\hyperlink{classana_1_1sm__context_ae29522f4ef516dea3e6e98493547bad2}{get\_diagnostic\_tree}}\ (\textcolor{keyword}{const}\ \doxymbox{\hyperlink{classana_1_1svalue}{svalue}}\ *)\ =\ 0;}
+\DoxyCodeLine{00304\ }
+\DoxyCodeLine{00305\ \ \ \textcolor{keyword}{virtual}\ \doxymbox{\hyperlink{classana_1_1state__machine_ab5050cb93451ec1d29956daeddadcff6}{state\_machine::state\_t}}\ \doxymbox{\hyperlink{classana_1_1sm__context_aa6adced8216710c3fe0c8ae9756f4f22}{get\_global\_state}}\ ()\ \textcolor{keyword}{const}\ =\ 0;}
+\DoxyCodeLine{00306\ \ \ \textcolor{keyword}{virtual}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classana_1_1sm__context_a8e30e642dc9954b7b3b6cc71a72e3b27}{set\_global\_state}}\ (\doxymbox{\hyperlink{classana_1_1state__machine_ab5050cb93451ec1d29956daeddadcff6}{state\_machine::state\_t}})\ =\ 0;}
+\DoxyCodeLine{00307\ }
+\DoxyCodeLine{00308\ \ \ \textcolor{keyword}{virtual}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classana_1_1sm__context_aa8e84b2e52c104e78538771744c71b1c}{clear\_all\_per\_svalue\_state}}\ ()\ =\ 0;}
+\DoxyCodeLine{00309\ }
+\DoxyCodeLine{00310\ \ \ \textcolor{comment}{/*\ A\ vfunc\ for\ handling\ custom\ transitions,\ such\ as\ when\ registering}}
+\DoxyCodeLine{00311\ \textcolor{comment}{\ \ \ \ \ a\ signal\ handler.\ \ */}}
+\DoxyCodeLine{00312\ \ \ \textcolor{keyword}{virtual}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classana_1_1sm__context_afb683f33fdb50ed618a28dad62000ee1}{on\_custom\_transition}}\ (\doxymbox{\hyperlink{classana_1_1custom__transition}{custom\_transition}}\ *transition)\ =\ 0;}
+\DoxyCodeLine{00313\ }
+\DoxyCodeLine{00314\ \ \ \textcolor{comment}{/*\ If\ STMT\ is\ an\ assignment\ known\ to\ assign\ zero\ to\ its\ LHS,\ return}}
+\DoxyCodeLine{00315\ \textcolor{comment}{\ \ \ \ \ the\ LHS.}}
+\DoxyCodeLine{00316\ \textcolor{comment}{\ \ \ \ \ Otherwise\ return\ NULL\_TREE.\ \ */}}
+\DoxyCodeLine{00317\ \ \ \textcolor{keyword}{virtual}\ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ \doxymbox{\hyperlink{classana_1_1sm__context_aa76c2cdd2e31f4f12df7351e13d837bc}{is\_zero\_assignment}}\ (\textcolor{keyword}{const}\ gimple\ *stmt)\ =\ 0;}
+\DoxyCodeLine{00318\ }
+\DoxyCodeLine{00319\ \ \ \textcolor{keyword}{virtual}\ \doxymbox{\hyperlink{classana_1_1path__context}{path\_context}}\ *\doxymbox{\hyperlink{classana_1_1sm__context_ac5e4396ce81d08ce98503891b47e9b79}{get\_path\_context}}\ ()\textcolor{keyword}{\ const}}
+\DoxyCodeLine{00320\ \textcolor{keyword}{\ \ }\{}
+\DoxyCodeLine{00321\ \ \ \ \ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{stddef_8h_a070d2ce7b6bb7e5c05602aa8c308d0c4}{NULL}};}
+\DoxyCodeLine{00322\ \ \ \}}
+\DoxyCodeLine{00323\ }
+\DoxyCodeLine{00324\ \ \ \textcolor{comment}{/*\ Are\ we\ handling\ an\ external\ function\ with\ unknown\ side\ effects?\ \ */}}
+\DoxyCodeLine{00325\ \ \ \textcolor{keyword}{virtual}\ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{classana_1_1sm__context_acbaebc5fb78d6aca6bbe4c4e7da898c4}{unknown\_side\_effects\_p}}\ ()\textcolor{keyword}{\ const\ }\{\ \textcolor{keywordflow}{return}\ \textcolor{keyword}{false};\ \}}
+\DoxyCodeLine{00326\ }
+\DoxyCodeLine{00327\ \ \ \textcolor{keyword}{virtual}\ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classana_1_1program__state}{program\_state}}\ *\doxymbox{\hyperlink{classana_1_1sm__context_aa3d007e4cba1bcbc95009236defd249f}{get\_old\_program\_state}}\ ()\ \textcolor{keyword}{const}\ =\ 0;}
+\DoxyCodeLine{00328\ \ \ \textcolor{keyword}{virtual}\ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classana_1_1program__state}{program\_state}}\ *\doxymbox{\hyperlink{classana_1_1sm__context_abd45aca79f92927e7994af773622e969}{get\_new\_program\_state}}\ ()\ \textcolor{keyword}{const}\ =\ 0;}
+\DoxyCodeLine{00329\ }
+\DoxyCodeLine{00330\ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classana_1_1region__model}{region\_model}}\ *\doxymbox{\hyperlink{classana_1_1sm__context_abf348464c2bf849693ad160ef75ee5b9}{get\_old\_region\_model}}\ ()\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00331\ }
+\DoxyCodeLine{00332\ \textcolor{keyword}{protected}:}
+\DoxyCodeLine{00333\ \ \ \doxymbox{\hyperlink{classana_1_1sm__context_ad3ff179919b34140320445e206f408b6}{sm\_context}}\ (\textcolor{keywordtype}{int}\ sm\_idx,\ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classana_1_1state__machine}{state\_machine}}\ \&sm)}
+\DoxyCodeLine{00334\ \ \ :\ \doxymbox{\hyperlink{classana_1_1sm__context_ac99d43a00abaa6b61f4fd0d5dd453123}{m\_sm\_idx}}\ (sm\_idx),\ \doxymbox{\hyperlink{classana_1_1sm__context_a04f187409d5c6f4db05534c6d7529550}{m\_sm}}\ (sm)\ \{\}}
+\DoxyCodeLine{00335\ }
+\DoxyCodeLine{00336\ \ \ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{classana_1_1sm__context_ac99d43a00abaa6b61f4fd0d5dd453123}{m\_sm\_idx}};}
+\DoxyCodeLine{00337\ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classana_1_1state__machine}{state\_machine}}\ \&\doxymbox{\hyperlink{classana_1_1sm__context_a04f187409d5c6f4db05534c6d7529550}{m\_sm}};}
+\DoxyCodeLine{00338\ \};}
+\DoxyCodeLine{00339\ }
+\DoxyCodeLine{00340\ }
+\DoxyCodeLine{00341\ \textcolor{comment}{/*\ The\ various\ state\_machine\ subclasses\ are\ hidden\ in\ their\ respective}}
+\DoxyCodeLine{00342\ \textcolor{comment}{\ \ \ implementation\ files.\ \ */}}
+\DoxyCodeLine{00343\ }
+\DoxyCodeLine{00344\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{namespaceana_abfa95d865e9a7bcf122ba80caa4b89f7}{make\_checkers}}\ (auto\_delete\_vec\ <state\_machine>\ \&out,}
+\DoxyCodeLine{00345\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{classana_1_1logger}{logger}}\ *\doxymbox{\hyperlink{classana_1_1logger}{logger}});}
+\DoxyCodeLine{00346\ }
+\DoxyCodeLine{00347\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{classana_1_1state__machine}{state\_machine}}\ *\doxymbox{\hyperlink{namespaceana_afe4fe43c6c9a8437e469656135416924}{make\_malloc\_state\_machine}}\ (\doxymbox{\hyperlink{classana_1_1logger}{logger}}\ *\doxymbox{\hyperlink{classana_1_1logger}{logger}});}
+\DoxyCodeLine{00348\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{classana_1_1state__machine}{state\_machine}}\ *\doxymbox{\hyperlink{namespaceana_a2d647add6e534f5313cd216021961d96}{make\_fileptr\_state\_machine}}\ (\doxymbox{\hyperlink{classana_1_1logger}{logger}}\ *\doxymbox{\hyperlink{classana_1_1logger}{logger}});}
+\DoxyCodeLine{00349\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{classana_1_1state__machine}{state\_machine}}\ *\doxymbox{\hyperlink{namespaceana_a7c4ee7ba8c9e9ce9d11e1c9750e4f855}{make\_taint\_state\_machine}}\ (\doxymbox{\hyperlink{classana_1_1logger}{logger}}\ *\doxymbox{\hyperlink{classana_1_1logger}{logger}});}
+\DoxyCodeLine{00350\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{classana_1_1state__machine}{state\_machine}}\ *\doxymbox{\hyperlink{namespaceana_ab84613cf866fbb768d656b0ba1c41b13}{make\_sensitive\_state\_machine}}\ (\doxymbox{\hyperlink{classana_1_1logger}{logger}}\ *\doxymbox{\hyperlink{classana_1_1logger}{logger}});}
+\DoxyCodeLine{00351\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{classana_1_1state__machine}{state\_machine}}\ *\doxymbox{\hyperlink{namespaceana_ab41a383e72dd1e58dc32cfc4f15005c0}{make\_signal\_state\_machine}}\ (\doxymbox{\hyperlink{classana_1_1logger}{logger}}\ *\doxymbox{\hyperlink{classana_1_1logger}{logger}});}
+\DoxyCodeLine{00352\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{classana_1_1state__machine}{state\_machine}}\ *\doxymbox{\hyperlink{namespaceana_ae3f84e3b89464075974107d1810db027}{make\_pattern\_test\_state\_machine}}\ (\doxymbox{\hyperlink{classana_1_1logger}{logger}}\ *\doxymbox{\hyperlink{classana_1_1logger}{logger}});}
+\DoxyCodeLine{00353\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{classana_1_1state__machine}{state\_machine}}\ *\doxymbox{\hyperlink{namespaceana_a4b9239fd630c9fff2a818793daeb7289}{make\_va\_list\_state\_machine}}\ (\doxymbox{\hyperlink{classana_1_1logger}{logger}}\ *\doxymbox{\hyperlink{classana_1_1logger}{logger}});}
+\DoxyCodeLine{00354\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{classana_1_1state__machine}{state\_machine}}\ *\doxymbox{\hyperlink{namespaceana_ae158e5ed18bd42cd2fe16ce0e66ac902}{make\_fd\_state\_machine}}\ (\doxymbox{\hyperlink{classana_1_1logger}{logger}}\ *\doxymbox{\hyperlink{classana_1_1logger}{logger}});}
+\DoxyCodeLine{00355\ }
+\DoxyCodeLine{00356\ \}\ \textcolor{comment}{//\ namespace\ ana}}
+\DoxyCodeLine{00357\ }
+\DoxyCodeLine{00358\ \textcolor{preprocessor}{\#endif\ }\textcolor{comment}{/*\ GCC\_ANALYZER\_SM\_H\ */}\textcolor{preprocessor}{}}
+
+\end{DoxyCode}

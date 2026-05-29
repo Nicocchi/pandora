@@ -1,0 +1,28 @@
+var structomp__for__data =
+[
+    [ "adjn1", "structomp__for__data.html#ac4ab0dc4a6d99ecd46c0adbb9fc2db20", null ],
+    [ "chunk_size", "structomp__for__data.html#a57ab3423e1fee1243a8ae807dbb615cc", null ],
+    [ "collapse", "structomp__for__data.html#a257ddd3655df8b14f05b53e633129a20", null ],
+    [ "factor", "structomp__for__data.html#ae252d074fdd5921afcacee4ff4f348dc", null ],
+    [ "first_inner_iterations", "structomp__for__data.html#a6c6c8a09eb602f6cbb96ed8355b05da2", null ],
+    [ "first_nonrect", "structomp__for__data.html#a6d3089b11507b0ef6b696e6314553388", null ],
+    [ "for_stmt", "structomp__for__data.html#a2f6defc058ed9f3d67694c195fc6c32d", null ],
+    [ "have_nonctrl_scantemp", "structomp__for__data.html#a4744f75c0043117fbac72ae930d185a5", null ],
+    [ "have_nowait", "structomp__for__data.html#a6e0985c515fc55de567143753a932940", null ],
+    [ "have_ordered", "structomp__for__data.html#ab6a1d6bca3e8ad324d52e07eb5afc018", null ],
+    [ "have_pointer_condtemp", "structomp__for__data.html#a1df3d97e0365a5b179f2ba2f1482441a", null ],
+    [ "have_reductemp", "structomp__for__data.html#a9ae6ddb90e3a742022fb2fb0ec8c71aa", null ],
+    [ "have_scantemp", "structomp__for__data.html#ab8daea991029dee9731a56b17e9f7b2a", null ],
+    [ "iter_type", "structomp__for__data.html#aec8299702db3babcb15addece493a825", null ],
+    [ "last_nonrect", "structomp__for__data.html#a46cbc2059f70a154ffda7252986ea81d", null ],
+    [ "lastprivate_conditional", "structomp__for__data.html#a2bfc940255fff1fb0dfaa2bbe1d0477e", null ],
+    [ "loop", "structomp__for__data.html#a2e649876373a63344075a462e1c0d742", null ],
+    [ "loops", "structomp__for__data.html#a6a06959348324631c60665775d28571b", null ],
+    [ "non_rect", "structomp__for__data.html#a274c6cfb5cd6a243e1488dabb144fa72", null ],
+    [ "ordered", "structomp__for__data.html#a8341dc14ab3b63ce60202d5536b9b8ea", null ],
+    [ "pre", "structomp__for__data.html#a9cfdba1d06ff62c38efd9cf3ebc98d90", null ],
+    [ "sched_kind", "structomp__for__data.html#aef385766cf6b0a80c18a3b8288386a3e", null ],
+    [ "sched_modifiers", "structomp__for__data.html#afc47a35fb8c710337779f1d7aa8fb72d", null ],
+    [ "simd_schedule", "structomp__for__data.html#a46c0636d104f6d1dd1610da9f3a9550c", null ],
+    [ "tiling", "structomp__for__data.html#a9bd113b6d6f5b3452c5d33c4715053a1", null ]
+];

@@ -1,0 +1,295 @@
+\doxysection{opt-\/problem.h}
+\hypertarget{opt-problem_8h_source}{}\label{opt-problem_8h_source}\index{toolchain/x86\_64-\/elf/lib/gcc/x86\_64-\/elf/14.2.0/plugin/include/opt-\/problem.h@{toolchain/x86\_64-\/elf/lib/gcc/x86\_64-\/elf/14.2.0/plugin/include/opt-\/problem.h}}
+\doxymbox{\hyperlink{opt-problem_8h}{Go to the documentation of this file.}}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001\ \textcolor{comment}{/*\ Rich\ information\ on\ why\ an\ optimization\ wasn't\ possible.}}
+\DoxyCodeLine{00002\ \textcolor{comment}{\ \ \ Copyright\ (C)\ 2018-\/2024\ Free\ Software\ Foundation,\ Inc.}}
+\DoxyCodeLine{00003\ \textcolor{comment}{\ \ \ Contributed\ by\ David\ Malcolm\ <dmalcolm@redhat.com>.}}
+\DoxyCodeLine{00004\ \textcolor{comment}{}}
+\DoxyCodeLine{00005\ \textcolor{comment}{This\ file\ is\ part\ of\ GCC.}}
+\DoxyCodeLine{00006\ \textcolor{comment}{}}
+\DoxyCodeLine{00007\ \textcolor{comment}{GCC\ is\ free\ software;\ you\ can\ redistribute\ it\ and/or\ modify\ it\ under}}
+\DoxyCodeLine{00008\ \textcolor{comment}{the\ terms\ of\ the\ GNU\ General\ Public\ License\ as\ published\ by\ the\ Free}}
+\DoxyCodeLine{00009\ \textcolor{comment}{Software\ Foundation;\ either\ version\ 3,\ or\ (at\ your\ option)\ any\ later}}
+\DoxyCodeLine{00010\ \textcolor{comment}{version.}}
+\DoxyCodeLine{00011\ \textcolor{comment}{}}
+\DoxyCodeLine{00012\ \textcolor{comment}{GCC\ is\ distributed\ in\ the\ hope\ that\ it\ will\ be\ useful,\ but\ WITHOUT\ ANY}}
+\DoxyCodeLine{00013\ \textcolor{comment}{WARRANTY;\ without\ even\ the\ implied\ warranty\ of\ MERCHANTABILITY\ or}}
+\DoxyCodeLine{00014\ \textcolor{comment}{FITNESS\ FOR\ A\ PARTICULAR\ PURPOSE.\ \ See\ the\ GNU\ General\ Public\ License}}
+\DoxyCodeLine{00015\ \textcolor{comment}{for\ more\ details.}}
+\DoxyCodeLine{00016\ \textcolor{comment}{}}
+\DoxyCodeLine{00017\ \textcolor{comment}{You\ should\ have\ received\ a\ copy\ of\ the\ GNU\ General\ Public\ License}}
+\DoxyCodeLine{00018\ \textcolor{comment}{along\ with\ GCC;\ see\ the\ file\ COPYING3.\ \ If\ not\ see}}
+\DoxyCodeLine{00019\ \textcolor{comment}{<http://www.gnu.org/licenses/>.\ \ */}}
+\DoxyCodeLine{00020\ }
+\DoxyCodeLine{00021\ \textcolor{preprocessor}{\#ifndef\ GCC\_OPT\_PROBLEM\_H}}
+\DoxyCodeLine{00022\ \textcolor{preprocessor}{\#define\ GCC\_OPT\_PROBLEM\_H}}
+\DoxyCodeLine{00023\ }
+\DoxyCodeLine{00024\ \textcolor{preprocessor}{\#include\ "{}\doxymbox{\hyperlink{diagnostic-core_8h}{diagnostic-\/core.h}}"{}}\ \textcolor{comment}{/*\ for\ ATTRIBUTE\_GCC\_DIAG.\ \ */}}
+\DoxyCodeLine{00025\ \textcolor{preprocessor}{\#include\ "{}\doxymbox{\hyperlink{optinfo_8h}{optinfo.h}}"{}}\ \textcolor{comment}{/*\ for\ optinfo.\ \ */}}
+\DoxyCodeLine{00026\ }
+\DoxyCodeLine{00027\ \textcolor{comment}{/*\ This\ header\ declares\ a\ family\ of\ wrapper\ classes\ for\ tracking\ a}}
+\DoxyCodeLine{00028\ \textcolor{comment}{\ \ \ success/failure\ value,\ while\ optionally\ supporting\ propagating\ an}}
+\DoxyCodeLine{00029\ \textcolor{comment}{\ \ \ opt\_problem\ *\ describing\ any\ failure\ back\ up\ the\ call\ stack.}}
+\DoxyCodeLine{00030\ \textcolor{comment}{}}
+\DoxyCodeLine{00031\ \textcolor{comment}{\ \ \ For\ instance,\ at\ the\ deepest\ point\ of\ the\ callstack\ where\ the\ failure}}
+\DoxyCodeLine{00032\ \textcolor{comment}{\ \ \ happens,\ rather\ than:}}
+\DoxyCodeLine{00033\ \textcolor{comment}{}}
+\DoxyCodeLine{00034\ \textcolor{comment}{\ \ \ \ \ if\ (!check\_something\ ())}}
+\DoxyCodeLine{00035\ \textcolor{comment}{\ \ \ \ \ \ \ \{}}
+\DoxyCodeLine{00036\ \textcolor{comment}{\ \ \ \ \ \ \ \ \ if\ (dump\_enabled\_p\ ())}}
+\DoxyCodeLine{00037\ \textcolor{comment}{\ \ \ \ \ \ \ \ \ \ \ dump\_printf\_loc\ (MSG\_MISSED\_OPTIMIZATION,\ vect\_location,}}
+\DoxyCodeLine{00038\ \textcolor{comment}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ "{}foo\ is\ unsupported.\(\backslash\)n"{});}}
+\DoxyCodeLine{00039\ \textcolor{comment}{\ \ \ \ \ \ \ \ \ return\ false;}}
+\DoxyCodeLine{00040\ \textcolor{comment}{\ \ \ \ \ \ \ \}}}
+\DoxyCodeLine{00041\ \textcolor{comment}{\ \ \ \ \ //\ [...more\ checks...]}}
+\DoxyCodeLine{00042\ \textcolor{comment}{}}
+\DoxyCodeLine{00043\ \textcolor{comment}{\ \ \ \ \ //\ All\ checks\ passed:}}
+\DoxyCodeLine{00044\ \textcolor{comment}{\ \ \ \ \ return\ true;}}
+\DoxyCodeLine{00045\ \textcolor{comment}{}}
+\DoxyCodeLine{00046\ \textcolor{comment}{\ \ \ we\ can\ capture\ the\ cause\ of\ the\ failure\ via:}}
+\DoxyCodeLine{00047\ \textcolor{comment}{}}
+\DoxyCodeLine{00048\ \textcolor{comment}{\ \ \ \ \ if\ (!check\_something\ ())}}
+\DoxyCodeLine{00049\ \textcolor{comment}{\ \ \ \ \ \ \ return\ opt\_result::failure\_at\ (stmt,\ "{}foo\ is\ unsupported"{});}}
+\DoxyCodeLine{00050\ \textcolor{comment}{\ \ \ \ \ //\ [...more\ checks...]}}
+\DoxyCodeLine{00051\ \textcolor{comment}{}}
+\DoxyCodeLine{00052\ \textcolor{comment}{\ \ \ \ \ //\ All\ checks\ passed:}}
+\DoxyCodeLine{00053\ \textcolor{comment}{\ \ \ \ \ return\ opt\_result::success\ ();}}
+\DoxyCodeLine{00054\ \textcolor{comment}{}}
+\DoxyCodeLine{00055\ \textcolor{comment}{\ \ \ which\ effectively\ returns\ true\ or\ false,\ whilst\ recording\ any\ problem.}}
+\DoxyCodeLine{00056\ \textcolor{comment}{}}
+\DoxyCodeLine{00057\ \textcolor{comment}{\ \ \ opt\_result::success\ and\ opt\_result::failure\ return\ opt\_result\ values}}
+\DoxyCodeLine{00058\ \textcolor{comment}{\ \ \ which\ "{}looks\ like"{}\ true/false\ respectively,\ via\ operator\ bool().}}
+\DoxyCodeLine{00059\ \textcolor{comment}{\ \ \ If\ dump\_enabled\_p,\ then\ opt\_result::failure\ also\ creates\ an\ opt\_problem\ *,}}
+\DoxyCodeLine{00060\ \textcolor{comment}{\ \ \ capturing\ the\ pertinent\ data\ (here,\ "{}foo\ is\ unsupported\ "{}\ and\ "{}stmt"{}).}}
+\DoxyCodeLine{00061\ \textcolor{comment}{\ \ \ If\ dumps\ are\ disabled,\ then\ opt\_problem\ instances\ aren't}}
+\DoxyCodeLine{00062\ \textcolor{comment}{\ \ \ created,\ and\ it's\ equivalent\ to\ just\ returning\ a\ bool.}}
+\DoxyCodeLine{00063\ \textcolor{comment}{}}
+\DoxyCodeLine{00064\ \textcolor{comment}{\ \ \ The\ opt\_problem\ can\ be\ propagated\ via\ opt\_result\ values\ back\ up}}
+\DoxyCodeLine{00065\ \textcolor{comment}{\ \ \ the\ call\ stack\ to\ where\ it\ makes\ most\ sense\ to\ the\ user.}}
+\DoxyCodeLine{00066\ \textcolor{comment}{\ \ \ For\ instance,\ rather\ than:}}
+\DoxyCodeLine{00067\ \textcolor{comment}{}}
+\DoxyCodeLine{00068\ \textcolor{comment}{\ \ \ \ \ bool\ ok\ =\ try\_something\_that\_might\_fail\ ();}}
+\DoxyCodeLine{00069\ \textcolor{comment}{\ \ \ \ \ if\ (!ok)}}
+\DoxyCodeLine{00070\ \textcolor{comment}{\ \ \ \ \ \ \ \{}}
+\DoxyCodeLine{00071\ \textcolor{comment}{\ \ \ \ \ \ \ \ \ if\ (dump\_enabled\_p\ ())}}
+\DoxyCodeLine{00072\ \textcolor{comment}{\ \ \ \ \ \ \ \ \ \ \ dump\_printf\_loc\ (MSG\_MISSED\_OPTIMIZATION,\ vect\_location,}}
+\DoxyCodeLine{00073\ \textcolor{comment}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ "{}some\ message.\(\backslash\)n"{});}}
+\DoxyCodeLine{00074\ \textcolor{comment}{\ \ \ \ \ \ \ \ \ return\ false;}}
+\DoxyCodeLine{00075\ \textcolor{comment}{\ \ \ \ \ \ \ \}}}
+\DoxyCodeLine{00076\ \textcolor{comment}{}}
+\DoxyCodeLine{00077\ \textcolor{comment}{\ \ \ we\ can\ replace\ the\ bool\ with\ an\ opt\_result,\ so\ if\ dump\_enabled\_p,\ we}}
+\DoxyCodeLine{00078\ \textcolor{comment}{\ \ \ assume\ that\ if\ try\_something\_that\_might\_fail,\ an\ opt\_problem\ *\ will\ be}}
+\DoxyCodeLine{00079\ \textcolor{comment}{\ \ \ created,\ and\ we\ can\ propagate\ it\ up\ the\ call\ chain:}}
+\DoxyCodeLine{00080\ \textcolor{comment}{}}
+\DoxyCodeLine{00081\ \textcolor{comment}{\ \ \ \ \ opt\_result\ ok\ =\ try\_something\_that\_might\_fail\ ();}}
+\DoxyCodeLine{00082\ \textcolor{comment}{\ \ \ \ \ if\ (!ok)}}
+\DoxyCodeLine{00083\ \textcolor{comment}{\ \ \ \ \ \ \ \{}}
+\DoxyCodeLine{00084\ \textcolor{comment}{\ \ \ \ \ \ \ \ \ if\ (dump\_enabled\_p\ ())}}
+\DoxyCodeLine{00085\ \textcolor{comment}{\ \ \ \ \ \ \ \ \ \ \ dump\_printf\_loc\ (MSG\_MISSED\_OPTIMIZATION,\ vect\_location,}}
+\DoxyCodeLine{00086\ \textcolor{comment}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ "{}some\ message.\(\backslash\)n"{});}}
+\DoxyCodeLine{00087\ \textcolor{comment}{\ \ \ \ \ \ \ \ \ return\ ok;\ //\ propagating\ the\ opt\_result}}
+\DoxyCodeLine{00088\ \textcolor{comment}{\ \ \ \ \ \ \ \}}}
+\DoxyCodeLine{00089\ \textcolor{comment}{}}
+\DoxyCodeLine{00090\ \textcolor{comment}{\ \ \ opt\_result\ is\ an\ opt\_wrapper<bool>,\ where\ opt\_wrapper<T>\ is\ a\ base}}
+\DoxyCodeLine{00091\ \textcolor{comment}{\ \ \ class\ for\ wrapping\ a\ T,\ optionally\ propagating\ an\ opt\_problem\ in}}
+\DoxyCodeLine{00092\ \textcolor{comment}{\ \ \ case\ of\ failure\_at\ (when\ dumps\ are\ enabled).\ \ Similarly,}}
+\DoxyCodeLine{00093\ \textcolor{comment}{\ \ \ opt\_pointer\_wrapper<T>\ can\ be\ used\ to\ wrap\ pointer\ types\ (where\ non-\/NULL}}
+\DoxyCodeLine{00094\ \textcolor{comment}{\ \ \ signifies\ success,\ NULL\ signifies\ failure).}}
+\DoxyCodeLine{00095\ \textcolor{comment}{}}
+\DoxyCodeLine{00096\ \textcolor{comment}{\ \ \ In\ all\ cases,\ opt\_wrapper<T>\ acts\ as\ if\ the\ opt\_problem\ were\ one\ of\ its}}
+\DoxyCodeLine{00097\ \textcolor{comment}{\ \ \ fields,\ but\ the\ opt\_problem\ is\ actually\ stored\ in\ a\ global,\ so\ that\ when}}
+\DoxyCodeLine{00098\ \textcolor{comment}{\ \ \ compiled,\ an\ opt\_wrapper<T>\ is\ effectively\ just\ a\ T,\ so\ that\ we're}}
+\DoxyCodeLine{00099\ \textcolor{comment}{\ \ \ still\ just\ passing\ e.g.\ a\ bool\ around;\ the\ opt\_wrapper<T>\ classes}}
+\DoxyCodeLine{00100\ \textcolor{comment}{\ \ \ simply\ provide\ type-\/checking\ and\ an\ API\ to\ ensure\ that\ we\ provide}}
+\DoxyCodeLine{00101\ \textcolor{comment}{\ \ \ error-\/messages\ deep\ in\ the\ callstack\ at\ the\ places\ where\ problems}}
+\DoxyCodeLine{00102\ \textcolor{comment}{\ \ \ occur,\ and\ that\ we\ propagate\ them.\ \ This\ also\ avoids\ having}}
+\DoxyCodeLine{00103\ \textcolor{comment}{\ \ \ to\ manage\ the\ ownership\ of\ the\ opt\_problem\ instances.}}
+\DoxyCodeLine{00104\ \textcolor{comment}{}}
+\DoxyCodeLine{00105\ \textcolor{comment}{\ \ \ Using\ opt\_result\ and\ opt\_wrapper<T>\ documents\ the\ intent\ of\ the\ code}}
+\DoxyCodeLine{00106\ \textcolor{comment}{\ \ \ for\ the\ places\ where\ we\ represent\ success\ values,\ and\ allows\ the\ C++\ type}}
+\DoxyCodeLine{00107\ \textcolor{comment}{\ \ \ system\ to\ track\ where\ the\ deepest\ points\ in\ the\ callstack\ are\ where\ we}}
+\DoxyCodeLine{00108\ \textcolor{comment}{\ \ \ need\ to\ emit\ the\ failure\ messages\ from.\ \ */}}
+\DoxyCodeLine{00109\ }
+\DoxyCodeLine{00110\ \textcolor{comment}{/*\ A\ bundle\ of\ information\ about\ why\ an\ optimization\ failed\ (e.g.}}
+\DoxyCodeLine{00111\ \textcolor{comment}{\ \ \ vectorization),\ and\ the\ location\ in\ both\ the\ user's\ code\ and}}
+\DoxyCodeLine{00112\ \textcolor{comment}{\ \ \ in\ GCC\ itself\ where\ the\ problem\ occurred.}}
+\DoxyCodeLine{00113\ \textcolor{comment}{}}
+\DoxyCodeLine{00114\ \textcolor{comment}{\ \ \ Instances\ are\ created\ by\ static\ member\ functions\ in\ opt\_wrapper}}
+\DoxyCodeLine{00115\ \textcolor{comment}{\ \ \ subclasses,\ such\ as\ opt\_result::failure.}}
+\DoxyCodeLine{00116\ \textcolor{comment}{}}
+\DoxyCodeLine{00117\ \textcolor{comment}{\ \ \ Instances\ are\ only\ created\ when\ dump\_enabled\_p\ ().\ \ */}}
+\DoxyCodeLine{00118\ }
+\DoxyCodeLine{00119\ \textcolor{keyword}{class\ }\doxymbox{\hyperlink{classopt__problem_acb869c360c0ccb4016c3aaeee1f93202}{opt\_problem}}}
+\DoxyCodeLine{00120\ \{}
+\DoxyCodeLine{00121\ \ \textcolor{keyword}{public}:}
+\DoxyCodeLine{00122\ \ \ \textcolor{keyword}{static}\ \doxymbox{\hyperlink{classopt__problem_acb869c360c0ccb4016c3aaeee1f93202}{opt\_problem}}\ *\doxymbox{\hyperlink{classopt__problem_a51d8f82f028691b60194ba976ab50545}{get\_singleton}}\ ()\ \{\ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{classopt__problem_a3719d8b37798818fdf488bd44f824078}{s\_the\_problem}};\ \}}
+\DoxyCodeLine{00123\ }
+\DoxyCodeLine{00124\ \ \ \doxymbox{\hyperlink{classopt__problem_acb869c360c0ccb4016c3aaeee1f93202}{opt\_problem}}\ (\textcolor{keyword}{const}\ \doxymbox{\hyperlink{classdump__location__t}{dump\_location\_t}}\ \&loc,}
+\DoxyCodeLine{00125\ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *fmt,\ \doxymbox{\hyperlink{stdarg_8h_a8c1b94dabde2c11f430bb83e37bdb0a1}{va\_list}}\ *ap)}
+\DoxyCodeLine{00126\ \ \ \ \ \doxymbox{\hyperlink{dumpfile_8h_ab91e3eb98cfa2620ef780c4e58398b58}{ATTRIBUTE\_GCC\_DUMP\_PRINTF}}\ (3,\ 0);}
+\DoxyCodeLine{00127\ }
+\DoxyCodeLine{00128\ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classdump__location__t}{dump\_location\_t}}\ \&}
+\DoxyCodeLine{00129\ \ \ \doxymbox{\hyperlink{classopt__problem_a5f1cd8243bc1adf97dfc81f93f8bd07e}{get\_dump\_location}}\ ()\textcolor{keyword}{\ const\ }\{\ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{classopt__problem_a780c47e682ca592442bbae5de8bd46b0}{m\_optinfo}}.get\_dump\_location\ ();\ \}}
+\DoxyCodeLine{00130\ }
+\DoxyCodeLine{00131\ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classoptinfo}{optinfo}}\ \&\ \doxymbox{\hyperlink{classopt__problem_a5930c64be33b63fe3514467f1a729acc}{get\_optinfo}}\ ()\textcolor{keyword}{\ const\ }\{\ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{classopt__problem_a780c47e682ca592442bbae5de8bd46b0}{m\_optinfo}};\ \}}
+\DoxyCodeLine{00132\ }
+\DoxyCodeLine{00133\ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classopt__problem_acc301d73dff02c9f9651bad1b5770401}{emit\_and\_clear}}\ ();}
+\DoxyCodeLine{00134\ }
+\DoxyCodeLine{00135\ \ \textcolor{keyword}{private}:}
+\DoxyCodeLine{00136\ \ \ \doxymbox{\hyperlink{classoptinfo}{optinfo}}\ \doxymbox{\hyperlink{classopt__problem_a780c47e682ca592442bbae5de8bd46b0}{m\_optinfo}};}
+\DoxyCodeLine{00137\ }
+\DoxyCodeLine{00138\ \ \ \textcolor{keyword}{static}\ \doxymbox{\hyperlink{classopt__problem_acb869c360c0ccb4016c3aaeee1f93202}{opt\_problem}}\ *\doxymbox{\hyperlink{classopt__problem_a3719d8b37798818fdf488bd44f824078}{s\_the\_problem}};}
+\DoxyCodeLine{00139\ \};}
+\DoxyCodeLine{00140\ }
+\DoxyCodeLine{00141\ \textcolor{comment}{/*\ A\ base\ class\ for\ wrapper\ classes\ that\ track\ a\ success/failure\ value,\ while}}
+\DoxyCodeLine{00142\ \textcolor{comment}{\ \ \ optionally\ supporting\ propagating\ an\ opt\_problem\ *\ describing\ any}}
+\DoxyCodeLine{00143\ \textcolor{comment}{\ \ \ failure\ back\ up\ the\ call\ stack.\ \ */}}
+\DoxyCodeLine{00144\ }
+\DoxyCodeLine{00145\ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ T>}
+\DoxyCodeLine{00146\ \textcolor{keyword}{class\ }\doxymbox{\hyperlink{classopt__wrapper_a46595ff255f85ab9835c6d6abfd1b79d}{opt\_wrapper}}}
+\DoxyCodeLine{00147\ \{}
+\DoxyCodeLine{00148\ \ \textcolor{keyword}{public}:}
+\DoxyCodeLine{00149\ \ \ \textcolor{keyword}{typedef}\ T\ \doxymbox{\hyperlink{classopt__wrapper_a694bf5aadb297ca87cd8d9611a567a0e}{wrapped\_t}};}
+\DoxyCodeLine{00150\ }
+\DoxyCodeLine{00151\ \ \ \textcolor{comment}{/*\ Be\ accessible\ as\ the\ wrapped\ type.\ \ */}}
+\DoxyCodeLine{00152\ \ \ \textcolor{keyword}{operator}\ \doxymbox{\hyperlink{classopt__wrapper_a694bf5aadb297ca87cd8d9611a567a0e}{wrapped\_t}}\ ()\textcolor{keyword}{\ const\ }\{\ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{classopt__wrapper_aa0e39c345064b3db862a067ddc6cf3c8}{m\_result}};\ \}}
+\DoxyCodeLine{00153\ }
+\DoxyCodeLine{00154\ \ \ \textcolor{comment}{/*\ No\ public\ ctor.\ \ */}}
+\DoxyCodeLine{00155\ }
+\DoxyCodeLine{00156\ \ \ \doxymbox{\hyperlink{classopt__wrapper_a694bf5aadb297ca87cd8d9611a567a0e}{wrapped\_t}}\ \doxymbox{\hyperlink{classopt__wrapper_ad235ee042f04a8b79256a5533df6bee2}{get\_result}}\ ()\textcolor{keyword}{\ const\ }\{\ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{classopt__wrapper_aa0e39c345064b3db862a067ddc6cf3c8}{m\_result}};\ \}}
+\DoxyCodeLine{00157\ \ \ \doxymbox{\hyperlink{classopt__problem}{opt\_problem}}\ *\doxymbox{\hyperlink{classopt__wrapper_a734be5d47b7fc1e1ced732f8a1ddca0e}{get\_problem}}\ ()\textcolor{keyword}{\ const\ }\{\ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{classopt__problem_a51d8f82f028691b60194ba976ab50545}{opt\_problem::get\_singleton}}\ ();\ \}}
+\DoxyCodeLine{00158\ }
+\DoxyCodeLine{00159\ \ \textcolor{keyword}{protected}:}
+\DoxyCodeLine{00160\ \ \ \doxymbox{\hyperlink{classopt__wrapper_a46595ff255f85ab9835c6d6abfd1b79d}{opt\_wrapper}}\ (\doxymbox{\hyperlink{classopt__wrapper_a694bf5aadb297ca87cd8d9611a567a0e}{wrapped\_t}}\ result,\ \doxymbox{\hyperlink{classopt__problem}{opt\_problem}}\ *\textcolor{comment}{/*problem*/})}
+\DoxyCodeLine{00161\ \ \ :\ \doxymbox{\hyperlink{classopt__wrapper_aa0e39c345064b3db862a067ddc6cf3c8}{m\_result}}\ (result)}
+\DoxyCodeLine{00162\ \ \ \{}
+\DoxyCodeLine{00163\ \ \ \ \ \textcolor{comment}{/*\ "{}problem"{}\ is\ ignored:\ although\ it\ looks\ like\ a\ field,\ we}}
+\DoxyCodeLine{00164\ \textcolor{comment}{\ \ \ \ \ \ \ actually\ just\ use\ the\ opt\_problem\ singleton,\ so\ that}}
+\DoxyCodeLine{00165\ \textcolor{comment}{\ \ \ \ \ \ \ opt\_wrapper<T>\ in\ memory\ is\ just\ a\ T.\ \ */}}
+\DoxyCodeLine{00166\ \ \ \}}
+\DoxyCodeLine{00167\ }
+\DoxyCodeLine{00168\ \ \textcolor{keyword}{private}:}
+\DoxyCodeLine{00169\ \ \ \doxymbox{\hyperlink{classopt__wrapper_a694bf5aadb297ca87cd8d9611a567a0e}{wrapped\_t}}\ \doxymbox{\hyperlink{classopt__wrapper_aa0e39c345064b3db862a067ddc6cf3c8}{m\_result}};}
+\DoxyCodeLine{00170\ \};}
+\DoxyCodeLine{00171\ }
+\DoxyCodeLine{00172\ \textcolor{comment}{/*\ Subclass\ of\ opt\_wrapper<T>\ for\ bool,\ where}}
+\DoxyCodeLine{00173\ \textcolor{comment}{\ \ \ -\/\ true\ signifies\ "{}success"{},\ and}}
+\DoxyCodeLine{00174\ \textcolor{comment}{\ \ \ -\/\ false\ signifies\ "{}failure"{}}}
+\DoxyCodeLine{00175\ \textcolor{comment}{\ \ \ whilst\ effectively\ propagating\ an\ opt\_problem\ *\ describing\ any\ failure}}
+\DoxyCodeLine{00176\ \textcolor{comment}{\ \ \ back\ up\ the\ call\ stack.\ \ */}}
+\DoxyCodeLine{00177\ }
+\DoxyCodeLine{00178\ \textcolor{keyword}{class\ }\doxymbox{\hyperlink{classopt__result_ac8630f53a7a8245f82ac85908d429f1a}{opt\_result}}\ :\ \textcolor{keyword}{public}\ \doxymbox{\hyperlink{classopt__wrapper_a46595ff255f85ab9835c6d6abfd1b79d}{opt\_wrapper}}\ <bool>}
+\DoxyCodeLine{00179\ \{}
+\DoxyCodeLine{00180\ \ \textcolor{keyword}{public}:}
+\DoxyCodeLine{00181\ \ \ \textcolor{comment}{/*\ Generate\ a\ "{}success"{}\ value:\ a\ wrapper\ around\ "{}true"{}.\ \ */}}
+\DoxyCodeLine{00182\ }
+\DoxyCodeLine{00183\ \ \ \textcolor{keyword}{static}\ \doxymbox{\hyperlink{classopt__result_ac8630f53a7a8245f82ac85908d429f1a}{opt\_result}}\ \doxymbox{\hyperlink{classopt__result_ad2e8883a925f16b23042c8d7b58ca3ec}{success}}\ ()\ \{\ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{classopt__result_ac8630f53a7a8245f82ac85908d429f1a}{opt\_result}}\ (\textcolor{keyword}{true},\ \doxymbox{\hyperlink{stddef_8h_a070d2ce7b6bb7e5c05602aa8c308d0c4}{NULL}});\ \}}
+\DoxyCodeLine{00184\ }
+\DoxyCodeLine{00185\ \ \ \textcolor{comment}{/*\ Generate\ a\ "{}failure"{}\ value:\ a\ wrapper\ around\ "{}false"{},\ and,}}
+\DoxyCodeLine{00186\ \textcolor{comment}{\ \ \ \ \ if\ dump\_enabled\_p,\ an\ opt\_problem.\ \ */}}
+\DoxyCodeLine{00187\ }
+\DoxyCodeLine{00188\ \ \ \textcolor{keyword}{static}\ \doxymbox{\hyperlink{classopt__result_ac8630f53a7a8245f82ac85908d429f1a}{opt\_result}}\ \doxymbox{\hyperlink{classopt__result_a331b3b17eab4a1d37c97fcc9197eb5ea}{failure\_at}}\ (\textcolor{keyword}{const}\ \doxymbox{\hyperlink{classdump__location__t}{dump\_location\_t}}\ \&loc,}
+\DoxyCodeLine{00189\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *fmt,\ ...)}
+\DoxyCodeLine{00190\ \ \ \ \ \ \ \doxymbox{\hyperlink{dumpfile_8h_ab91e3eb98cfa2620ef780c4e58398b58}{ATTRIBUTE\_GCC\_DUMP\_PRINTF}}\ (2,\ 3)}
+\DoxyCodeLine{00191\ \ \ \{}
+\DoxyCodeLine{00192\ \ \ \ \ \doxymbox{\hyperlink{classopt__problem}{opt\_problem}}\ *problem\ =\ \doxymbox{\hyperlink{stddef_8h_a070d2ce7b6bb7e5c05602aa8c308d0c4}{NULL}};}
+\DoxyCodeLine{00193\ \ \ \ \ \textcolor{keywordflow}{if}\ (\doxymbox{\hyperlink{dumpfile_8h_ae470963dc9be9be5c5cb7c9060a9c555}{dump\_enabled\_p}}\ ())}
+\DoxyCodeLine{00194\ \ \ \ \ \ \ \{}
+\DoxyCodeLine{00195\ \ \ \ \ \doxymbox{\hyperlink{stdarg_8h_a8c1b94dabde2c11f430bb83e37bdb0a1}{va\_list}}\ ap;}
+\DoxyCodeLine{00196\ \ \ \ \ \doxymbox{\hyperlink{stdarg_8h_aa0628ab596c3d7e78f5e08c2d98e24da}{va\_start}}\ (ap,\ fmt);}
+\DoxyCodeLine{00197\ \ \ \ \ problem\ =\ \textcolor{keyword}{new}\ \doxymbox{\hyperlink{classopt__problem}{opt\_problem}}\ (loc,\ fmt,\ \&ap);}
+\DoxyCodeLine{00198\ \ \ \ \ \doxymbox{\hyperlink{stdarg_8h_a823b205416e9129825841b74c3bf8484}{va\_end}}\ (ap);}
+\DoxyCodeLine{00199\ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00200\ \ \ \ \ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{classopt__result_ac8630f53a7a8245f82ac85908d429f1a}{opt\_result}}\ (\textcolor{keyword}{false},\ problem);}
+\DoxyCodeLine{00201\ \ \ \}}
+\DoxyCodeLine{00202\ }
+\DoxyCodeLine{00203\ \ \ \textcolor{comment}{/*\ Given\ a\ failure\ wrapper\ of\ some\ other\ kind,\ make\ an\ opt\_result\ failure}}
+\DoxyCodeLine{00204\ \textcolor{comment}{\ \ \ \ \ object,\ for\ propagating\ the\ opt\_problem\ up\ the\ call\ stack.\ \ */}}
+\DoxyCodeLine{00205\ }
+\DoxyCodeLine{00206\ \ \ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ S>}
+\DoxyCodeLine{00207\ \ \ \textcolor{keyword}{static}\ \doxymbox{\hyperlink{classopt__result}{opt\_result}}}
+\DoxyCodeLine{00208\ \ \ \doxymbox{\hyperlink{classopt__result_a2c04e5a42c48ab4c5b3bf97d09a5c5cd}{propagate\_failure}}\ (\doxymbox{\hyperlink{classopt__wrapper_a46595ff255f85ab9835c6d6abfd1b79d}{opt\_wrapper\ <S>}}\ other)}
+\DoxyCodeLine{00209\ \ \ \{}
+\DoxyCodeLine{00210\ \ \ \ \ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{classopt__result_ac8630f53a7a8245f82ac85908d429f1a}{opt\_result}}\ (\textcolor{keyword}{false},\ other.\doxymbox{\hyperlink{classopt__wrapper_a734be5d47b7fc1e1ced732f8a1ddca0e}{get\_problem}}\ ());}
+\DoxyCodeLine{00211\ \ \ \}}
+\DoxyCodeLine{00212\ }
+\DoxyCodeLine{00213\ \ \textcolor{keyword}{private}:}
+\DoxyCodeLine{00214\ \ \ \textcolor{comment}{/*\ Private\ ctor.\ \ Instances\ should\ be\ created\ by\ the\ success\ and\ failure}}
+\DoxyCodeLine{00215\ \textcolor{comment}{\ \ \ \ \ static\ member\ functions.\ \ */}}
+\DoxyCodeLine{00216\ \ \ \doxymbox{\hyperlink{classopt__result_aa3f166112985d5c74e727cbd1e0cfe7c}{opt\_result}}\ (\doxymbox{\hyperlink{classopt__wrapper_a694bf5aadb297ca87cd8d9611a567a0e}{wrapped\_t}}\ result,\ \doxymbox{\hyperlink{classopt__problem}{opt\_problem}}\ *problem)}
+\DoxyCodeLine{00217\ \ \ :\ \doxymbox{\hyperlink{classopt__wrapper_a46595ff255f85ab9835c6d6abfd1b79d}{opt\_wrapper}}\ <\doxymbox{\hyperlink{stdbool_8h_abb452686968e48b67397da5f97445f5b}{bool}}>\ (result,\ problem)}
+\DoxyCodeLine{00218\ \ \ \{\}}
+\DoxyCodeLine{00219\ \};}
+\DoxyCodeLine{00220\ }
+\DoxyCodeLine{00221\ \textcolor{comment}{/*\ Subclass\ of\ opt\_wrapper<T>\ where\ T\ is\ a\ pointer\ type,\ for\ tracking}}
+\DoxyCodeLine{00222\ \textcolor{comment}{\ \ \ success/failure,\ where:}}
+\DoxyCodeLine{00223\ \textcolor{comment}{\ \ \ -\/\ a\ non-\/NULL\ value\ signifies\ "{}success"{},\ and}}
+\DoxyCodeLine{00224\ \textcolor{comment}{\ \ \ -\/\ a\ NULL\ value\ signifies\ "{}failure"{},}}
+\DoxyCodeLine{00225\ \textcolor{comment}{\ \ \ whilst\ effectively\ propagating\ an\ opt\_problem\ *\ describing\ any\ failure}}
+\DoxyCodeLine{00226\ \textcolor{comment}{\ \ \ back\ up\ the\ call\ stack.\ \ */}}
+\DoxyCodeLine{00227\ }
+\DoxyCodeLine{00228\ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ PtrType\_t>}
+\DoxyCodeLine{00229\ \textcolor{keyword}{class\ }\doxymbox{\hyperlink{classopt__pointer__wrapper_a273c7bc7904e4c470457af31cfd3271c}{opt\_pointer\_wrapper}}\ :\ \textcolor{keyword}{public}\ \doxymbox{\hyperlink{classopt__wrapper_a46595ff255f85ab9835c6d6abfd1b79d}{opt\_wrapper}}\ <PtrType\_t>}
+\DoxyCodeLine{00230\ \{}
+\DoxyCodeLine{00231\ \ \textcolor{keyword}{public}:}
+\DoxyCodeLine{00232\ \ \ \textcolor{keyword}{typedef}\ PtrType\_t\ \doxymbox{\hyperlink{classopt__pointer__wrapper_aa315df1452de31a3208959ab36cf4f6b}{wrapped\_pointer\_t}};}
+\DoxyCodeLine{00233\ }
+\DoxyCodeLine{00234\ \ \ \textcolor{comment}{/*\ Given\ a\ non-\/NULL\ pointer,\ make\ a\ success\ object\ wrapping\ it.\ \ */}}
+\DoxyCodeLine{00235\ }
+\DoxyCodeLine{00236\ \ \ \textcolor{keyword}{static}\ \doxymbox{\hyperlink{classopt__pointer__wrapper_a273c7bc7904e4c470457af31cfd3271c}{opt\_pointer\_wrapper\ <wrapped\_pointer\_t>}}}
+\DoxyCodeLine{00237\ \ \ \doxymbox{\hyperlink{classopt__pointer__wrapper_a40e994a79de44185d3315d90a6b4df61}{success}}\ (\doxymbox{\hyperlink{classopt__pointer__wrapper_aa315df1452de31a3208959ab36cf4f6b}{wrapped\_pointer\_t}}\ ptr)}
+\DoxyCodeLine{00238\ \ \ \{}
+\DoxyCodeLine{00239\ \ \ \ \ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{classopt__pointer__wrapper_a273c7bc7904e4c470457af31cfd3271c}{opt\_pointer\_wrapper\ <wrapped\_pointer\_t>}}\ (ptr,\ \doxymbox{\hyperlink{stddef_8h_a070d2ce7b6bb7e5c05602aa8c308d0c4}{NULL}});}
+\DoxyCodeLine{00240\ \ \ \}}
+\DoxyCodeLine{00241\ }
+\DoxyCodeLine{00242\ \ \ \textcolor{comment}{/*\ Make\ a\ NULL\ pointer\ failure\ object,\ with\ the\ given\ message}}
+\DoxyCodeLine{00243\ \textcolor{comment}{\ \ \ \ \ (if\ dump\_enabled\_p).\ \ */}}
+\DoxyCodeLine{00244\ }
+\DoxyCodeLine{00245\ \ \ \textcolor{keyword}{static}\ \doxymbox{\hyperlink{classopt__pointer__wrapper_a273c7bc7904e4c470457af31cfd3271c}{opt\_pointer\_wrapper\ <wrapped\_pointer\_t>}}}
+\DoxyCodeLine{00246\ \ \ \doxymbox{\hyperlink{classopt__pointer__wrapper_a875412ab382c0d5b4b3111712abe29c9}{failure\_at}}\ (\textcolor{keyword}{const}\ \doxymbox{\hyperlink{classdump__location__t}{dump\_location\_t}}\ \&loc,}
+\DoxyCodeLine{00247\ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *fmt,\ ...)}
+\DoxyCodeLine{00248\ \ \ \ \ \doxymbox{\hyperlink{dumpfile_8h_ab91e3eb98cfa2620ef780c4e58398b58}{ATTRIBUTE\_GCC\_DUMP\_PRINTF}}\ (2,\ 3)}
+\DoxyCodeLine{00249\ \ \ \{}
+\DoxyCodeLine{00250\ \ \ \ \ \doxymbox{\hyperlink{classopt__problem}{opt\_problem}}\ *problem\ =\ \doxymbox{\hyperlink{stddef_8h_a070d2ce7b6bb7e5c05602aa8c308d0c4}{NULL}};}
+\DoxyCodeLine{00251\ \ \ \ \ \textcolor{keywordflow}{if}\ (\doxymbox{\hyperlink{dumpfile_8h_ae470963dc9be9be5c5cb7c9060a9c555}{dump\_enabled\_p}}\ ())}
+\DoxyCodeLine{00252\ \ \ \ \ \ \ \{}
+\DoxyCodeLine{00253\ \ \ \ \ \doxymbox{\hyperlink{stdarg_8h_a8c1b94dabde2c11f430bb83e37bdb0a1}{va\_list}}\ ap;}
+\DoxyCodeLine{00254\ \ \ \ \ \doxymbox{\hyperlink{stdarg_8h_aa0628ab596c3d7e78f5e08c2d98e24da}{va\_start}}\ (ap,\ fmt);}
+\DoxyCodeLine{00255\ \ \ \ \ problem\ =\ \textcolor{keyword}{new}\ \doxymbox{\hyperlink{classopt__problem}{opt\_problem}}\ (loc,\ fmt,\ \&ap);}
+\DoxyCodeLine{00256\ \ \ \ \ \doxymbox{\hyperlink{stdarg_8h_a823b205416e9129825841b74c3bf8484}{va\_end}}\ (ap);}
+\DoxyCodeLine{00257\ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00258\ \ \ \ \ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{classopt__pointer__wrapper_a273c7bc7904e4c470457af31cfd3271c}{opt\_pointer\_wrapper\ <wrapped\_pointer\_t>}}\ (\doxymbox{\hyperlink{stddef_8h_a070d2ce7b6bb7e5c05602aa8c308d0c4}{NULL}},\ problem);}
+\DoxyCodeLine{00259\ \ \ \}}
+\DoxyCodeLine{00260\ }
+\DoxyCodeLine{00261\ \ \ \textcolor{comment}{/*\ Given\ a\ failure\ wrapper\ of\ some\ other\ kind,\ make\ a\ NULL\ pointer}}
+\DoxyCodeLine{00262\ \textcolor{comment}{\ \ \ \ \ failure\ object,\ propagating\ the\ problem.\ \ */}}
+\DoxyCodeLine{00263\ }
+\DoxyCodeLine{00264\ \ \ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ S>}
+\DoxyCodeLine{00265\ \ \ \textcolor{keyword}{static}\ \doxymbox{\hyperlink{classopt__pointer__wrapper_a273c7bc7904e4c470457af31cfd3271c}{opt\_pointer\_wrapper\ <wrapped\_pointer\_t>}}}
+\DoxyCodeLine{00266\ \ \ \doxymbox{\hyperlink{classopt__pointer__wrapper_a75fcf7dee06e80ecc468c04b64889c7f}{propagate\_failure}}\ (\doxymbox{\hyperlink{classopt__wrapper_a46595ff255f85ab9835c6d6abfd1b79d}{opt\_wrapper\ <S>}}\ other)}
+\DoxyCodeLine{00267\ \ \ \{}
+\DoxyCodeLine{00268\ \ \ \ \ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{classopt__pointer__wrapper_a273c7bc7904e4c470457af31cfd3271c}{opt\_pointer\_wrapper\ <wrapped\_pointer\_t>}}\ (\doxymbox{\hyperlink{stddef_8h_a070d2ce7b6bb7e5c05602aa8c308d0c4}{NULL}},}
+\DoxyCodeLine{00269\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ other.\doxymbox{\hyperlink{classopt__wrapper_a734be5d47b7fc1e1ced732f8a1ddca0e}{get\_problem}}\ ());}
+\DoxyCodeLine{00270\ \ \ \}}
+\DoxyCodeLine{00271\ }
+\DoxyCodeLine{00272\ \ \ \textcolor{comment}{/*\ Support\ accessing\ the\ underlying\ pointer\ via\ -\/>.\ \ */}}
+\DoxyCodeLine{00273\ }
+\DoxyCodeLine{00274\ \ \ \doxymbox{\hyperlink{classopt__pointer__wrapper_aa315df1452de31a3208959ab36cf4f6b}{wrapped\_pointer\_t}}\ \doxymbox{\hyperlink{classopt__pointer__wrapper_aae50dc0c6ba261e4076f548b791d3f00}{operator-\/>\ }}()\textcolor{keyword}{\ const\ }\{\ \textcolor{keywordflow}{return}\ this-\/>\doxymbox{\hyperlink{classopt__wrapper_ad235ee042f04a8b79256a5533df6bee2}{get\_result}}\ ();\ \}}
+\DoxyCodeLine{00275\ }
+\DoxyCodeLine{00276\ \ \textcolor{keyword}{private}:}
+\DoxyCodeLine{00277\ \ \ \textcolor{comment}{/*\ Private\ ctor.\ \ Instances\ should\ be\ built\ using\ the\ static\ member}}
+\DoxyCodeLine{00278\ \textcolor{comment}{\ \ \ \ \ functions\ "{}success"{}\ and\ "{}failure"{}.\ \ */}}
+\DoxyCodeLine{00279\ \ \ \doxymbox{\hyperlink{classopt__pointer__wrapper_a71961bd7448eb5b399389d6d3eaab4a4}{opt\_pointer\_wrapper}}\ (wrapped\_pointer\_t\ result,\ \doxymbox{\hyperlink{classopt__problem}{opt\_problem}}\ *problem)}
+\DoxyCodeLine{00280\ \ \ :\ \doxymbox{\hyperlink{classopt__wrapper_a46595ff255f85ab9835c6d6abfd1b79d}{opt\_wrapper}}<PtrType\_t>\ (result,\ problem)}
+\DoxyCodeLine{00281\ \ \ \{\}}
+\DoxyCodeLine{00282\ \};}
+\DoxyCodeLine{00283\ }
+\DoxyCodeLine{00284\ \textcolor{comment}{/*\ A\ typedef\ for\ wrapping\ "{}tree"{}\ so\ that\ NULL\_TREE\ can\ carry\ an}}
+\DoxyCodeLine{00285\ \textcolor{comment}{\ \ \ opt\_problem\ describing\ the\ failure\ (if\ dump\_enabled\_p).\ \ */}}
+\DoxyCodeLine{00286\ }
+\DoxyCodeLine{00287\ \textcolor{keyword}{typedef}\ \doxymbox{\hyperlink{classopt__pointer__wrapper}{opt\_pointer\_wrapper<tree>}}\ \doxymbox{\hyperlink{opt-problem_8h_ab7f251011794ef5d10b515b76a5adcd8}{opt\_tree}};}
+\DoxyCodeLine{00288\ }
+\DoxyCodeLine{00289\ \textcolor{preprocessor}{\#endif\ }\textcolor{comment}{/*\ \#ifndef\ GCC\_OPT\_PROBLEM\_H\ */}\textcolor{preprocessor}{}}
+
+\end{DoxyCode}

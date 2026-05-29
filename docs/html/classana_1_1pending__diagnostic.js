@@ -1,0 +1,27 @@
+var classana_1_1pending__diagnostic =
+[
+    [ "~pending_diagnostic", "classana_1_1pending__diagnostic.html#a3d065c5ed722487fe7a38205e83c86b3", null ],
+    [ "add_call_event", "classana_1_1pending__diagnostic.html#addf1a1d97461b6995e4b1b31f285c7b8", null ],
+    [ "add_final_event", "classana_1_1pending__diagnostic.html#a6a0d24f3cd1cfdc66f5928b9d780df93", null ],
+    [ "add_function_entry_event", "classana_1_1pending__diagnostic.html#ada45ef989fb642a959fadd13736ea22e", null ],
+    [ "add_region_creation_events", "classana_1_1pending__diagnostic.html#a88a346f5ad8573b04dce5503866848c9", null ],
+    [ "check_valid_fpath_p", "classana_1_1pending__diagnostic.html#aeba70b5b36951e3480b9cdeae349f51b", null ],
+    [ "describe_call_with_state", "classana_1_1pending__diagnostic.html#aaeb81e73a305706d92482c43d75f3c06", null ],
+    [ "describe_final_event", "classana_1_1pending__diagnostic.html#af1b6c9ea9691d6ee73d00c73ed6e1030", null ],
+    [ "describe_return_of_state", "classana_1_1pending__diagnostic.html#ad2cefadaf32a1896ca1b6b30c84d5745", null ],
+    [ "describe_state_change", "classana_1_1pending__diagnostic.html#afd7c9c265805b616b52d26200dba4fb3", null ],
+    [ "emit", "classana_1_1pending__diagnostic.html#af5c690e1cbaf620ab4467ae271021914", null ],
+    [ "equal_p", "classana_1_1pending__diagnostic.html#ab7e9cd17878563d0e279b181217bbce3", null ],
+    [ "fixup_location", "classana_1_1pending__diagnostic.html#affae476319355cb752af18c7da6c6271", null ],
+    [ "get_controlling_option", "classana_1_1pending__diagnostic.html#adfc8ac8eff1a250dd501a1b24a5abbdc", null ],
+    [ "get_kind", "classana_1_1pending__diagnostic.html#a8f775af980f1ebdc4940cea7e5b9ed10", null ],
+    [ "get_meaning_for_state_change", "classana_1_1pending__diagnostic.html#ae0738b579ef6cf2acdc13829de744ffe", null ],
+    [ "mark_interesting_stuff", "classana_1_1pending__diagnostic.html#a6ff8233ce7248adff8d34fec0b554467", null ],
+    [ "maybe_add_custom_events_for_superedge", "classana_1_1pending__diagnostic.html#a7b44f21376334a59d81dd6ef5837bf7c", null ],
+    [ "maybe_add_sarif_properties", "classana_1_1pending__diagnostic.html#a7648461e44db8e429892f3024d78cbe4", null ],
+    [ "same_tree_p", "classana_1_1pending__diagnostic.html#aec27df9fb3f17070e833e98217172459", null ],
+    [ "subclass_equal_p", "classana_1_1pending__diagnostic.html#a5f727ad469a2e4bd78fcd90d8bc3cd47", null ],
+    [ "supercedes_p", "classana_1_1pending__diagnostic.html#a42e1928c9ac578cd2c874c8feedc4b0b", null ],
+    [ "terminate_path_p", "classana_1_1pending__diagnostic.html#ab23d4b72527661a356d7ccde506b21d0", null ],
+    [ "use_of_uninit_p", "classana_1_1pending__diagnostic.html#a466eb9f51270201035e35c6ac7592ea8", null ]
+];

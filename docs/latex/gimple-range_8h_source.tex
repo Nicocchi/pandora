@@ -1,0 +1,138 @@
+\doxysection{gimple-\/range.h}
+\hypertarget{gimple-range_8h_source}{}\label{gimple-range_8h_source}\index{toolchain/x86\_64-\/elf/lib/gcc/x86\_64-\/elf/14.2.0/plugin/include/gimple-\/range.h@{toolchain/x86\_64-\/elf/lib/gcc/x86\_64-\/elf/14.2.0/plugin/include/gimple-\/range.h}}
+\doxymbox{\hyperlink{gimple-range_8h}{Go to the documentation of this file.}}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001\ \textcolor{comment}{/*\ Header\ file\ for\ the\ GIMPLE\ range\ interface.}}
+\DoxyCodeLine{00002\ \textcolor{comment}{\ \ \ Copyright\ (C)\ 2019-\/2024\ Free\ Software\ Foundation,\ Inc.}}
+\DoxyCodeLine{00003\ \textcolor{comment}{\ \ \ Contributed\ by\ Andrew\ MacLeod\ <amacleod@redhat.com>}}
+\DoxyCodeLine{00004\ \textcolor{comment}{\ \ \ and\ Aldy\ Hernandez\ <aldyh@redhat.com>.}}
+\DoxyCodeLine{00005\ \textcolor{comment}{}}
+\DoxyCodeLine{00006\ \textcolor{comment}{This\ file\ is\ part\ of\ GCC.}}
+\DoxyCodeLine{00007\ \textcolor{comment}{}}
+\DoxyCodeLine{00008\ \textcolor{comment}{GCC\ is\ free\ software;\ you\ can\ redistribute\ it\ and/or\ modify\ it\ under}}
+\DoxyCodeLine{00009\ \textcolor{comment}{the\ terms\ of\ the\ GNU\ General\ Public\ License\ as\ published\ by\ the\ Free}}
+\DoxyCodeLine{00010\ \textcolor{comment}{Software\ Foundation;\ either\ version\ 3,\ or\ (at\ your\ option)\ any\ later}}
+\DoxyCodeLine{00011\ \textcolor{comment}{version.}}
+\DoxyCodeLine{00012\ \textcolor{comment}{}}
+\DoxyCodeLine{00013\ \textcolor{comment}{GCC\ is\ distributed\ in\ the\ hope\ that\ it\ will\ be\ useful,\ but\ WITHOUT\ ANY}}
+\DoxyCodeLine{00014\ \textcolor{comment}{WARRANTY;\ without\ even\ the\ implied\ warranty\ of\ MERCHANTABILITY\ or}}
+\DoxyCodeLine{00015\ \textcolor{comment}{FITNESS\ FOR\ A\ PARTICULAR\ PURPOSE.\ \ See\ the\ GNU\ General\ Public\ License}}
+\DoxyCodeLine{00016\ \textcolor{comment}{\ for\ more\ details.}}
+\DoxyCodeLine{00017\ \textcolor{comment}{}}
+\DoxyCodeLine{00018\ \textcolor{comment}{You\ should\ have\ received\ a\ copy\ of\ the\ GNU\ General\ Public\ License}}
+\DoxyCodeLine{00019\ \textcolor{comment}{along\ with\ GCC;\ see\ the\ file\ COPYING3.\ \ If\ not\ see}}
+\DoxyCodeLine{00020\ \textcolor{comment}{<http://www.gnu.org/licenses/>.\ \ */}}
+\DoxyCodeLine{00021\ }
+\DoxyCodeLine{00022\ \textcolor{preprocessor}{\#ifndef\ GCC\_GIMPLE\_RANGE\_H}}
+\DoxyCodeLine{00023\ \textcolor{preprocessor}{\#define\ GCC\_GIMPLE\_RANGE\_H}}
+\DoxyCodeLine{00024\ }
+\DoxyCodeLine{00025\ \textcolor{preprocessor}{\#include\ "{}\doxymbox{\hyperlink{ssa_8h}{ssa.h}}"{}}}
+\DoxyCodeLine{00026\ \textcolor{preprocessor}{\#include\ "{}\doxymbox{\hyperlink{range_8h}{range.h}}"{}}}
+\DoxyCodeLine{00027\ \textcolor{preprocessor}{\#include\ "{}\doxymbox{\hyperlink{value-query_8h}{value-\/query.h}}"{}}}
+\DoxyCodeLine{00028\ \textcolor{preprocessor}{\#include\ "{}\doxymbox{\hyperlink{gimple-range-op_8h}{gimple-\/range-\/op.h}}"{}}}
+\DoxyCodeLine{00029\ \textcolor{preprocessor}{\#include\ "{}\doxymbox{\hyperlink{gimple-range-trace_8h}{gimple-\/range-\/trace.h}}"{}}}
+\DoxyCodeLine{00030\ \textcolor{preprocessor}{\#include\ "{}\doxymbox{\hyperlink{gimple-range-edge_8h}{gimple-\/range-\/edge.h}}"{}}}
+\DoxyCodeLine{00031\ \textcolor{preprocessor}{\#include\ "{}\doxymbox{\hyperlink{gimple-range-fold_8h}{gimple-\/range-\/fold.h}}"{}}}
+\DoxyCodeLine{00032\ \textcolor{preprocessor}{\#include\ "{}\doxymbox{\hyperlink{gimple-range-gori_8h}{gimple-\/range-\/gori.h}}"{}}}
+\DoxyCodeLine{00033\ \textcolor{preprocessor}{\#include\ "{}\doxymbox{\hyperlink{gimple-range-cache_8h}{gimple-\/range-\/cache.h}}"{}}}
+\DoxyCodeLine{00034\ }
+\DoxyCodeLine{00035\ \textcolor{comment}{//\ This\ is\ the\ basic\ range\ generator\ interface.}}
+\DoxyCodeLine{00036\ \textcolor{comment}{//}}
+\DoxyCodeLine{00037\ \textcolor{comment}{//\ This\ base\ class\ provides\ all\ the\ API\ entry\ points,\ but\ only\ provides}}
+\DoxyCodeLine{00038\ \textcolor{comment}{//\ functionality\ at\ the\ statement\ level.\ \ Ie,\ it\ can\ calculate\ ranges\ on}}
+\DoxyCodeLine{00039\ \textcolor{comment}{//\ statements,\ but\ does\ no\ additional\ lookup.}}
+\DoxyCodeLine{00040\ \textcolor{comment}{//}}
+\DoxyCodeLine{00041\ \textcolor{comment}{//\ All\ the\ range\_of\_*\ methods\ will\ return\ a\ range\ if\ the\ types\ is}}
+\DoxyCodeLine{00042\ \textcolor{comment}{//\ supported\ by\ the\ range\ engine.\ \ It\ may\ be\ the\ full\ range\ for\ the}}
+\DoxyCodeLine{00043\ \textcolor{comment}{//\ type,\ AKA\ varying\_p\ or\ it\ may\ be\ a\ refined\ range.\ \ If\ the\ range}}
+\DoxyCodeLine{00044\ \textcolor{comment}{//\ type\ is\ not\ supported,\ then\ false\ is\ returned.\ \ Non-\/statement}}
+\DoxyCodeLine{00045\ \textcolor{comment}{//\ related\ methods\ return\ whatever\ the\ current\ global\ value\ is.}}
+\DoxyCodeLine{00046\ }
+\DoxyCodeLine{00047\ \textcolor{keyword}{class\ }\doxymbox{\hyperlink{classgimple__ranger_a92d1aaa8e34a7aa1a7c41026ae3357f6}{gimple\_ranger}}\ :\ \textcolor{keyword}{public}\ \doxymbox{\hyperlink{classrange__query_a7838aae8d14f424c3212df2ca81bb656}{range\_query}}}
+\DoxyCodeLine{00048\ \{}
+\DoxyCodeLine{00049\ \textcolor{keyword}{public}:}
+\DoxyCodeLine{00050\ \ \ \doxymbox{\hyperlink{classgimple__ranger_a92d1aaa8e34a7aa1a7c41026ae3357f6}{gimple\_ranger}}\ (\textcolor{keywordtype}{bool}\ use\_imm\_uses\ =\ \textcolor{keyword}{true});}
+\DoxyCodeLine{00051\ \ \ \doxymbox{\hyperlink{classgimple__ranger_ac34677dd482b3ae95e85f43defcc0444}{\string~gimple\_ranger}}\ ();}
+\DoxyCodeLine{00052\ \ \ \textcolor{keyword}{virtual}\ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{classgimple__ranger_ac6bb5ef2c29d4540fe5e8295580481f5}{range\_of\_stmt}}\ (vrange\ \&\doxymbox{\hyperlink{poly-int_8h_a3ecac2571dcdc8050989339124f1bd26}{r}},\ gimple\ *,\ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ \doxymbox{\hyperlink{configargs_8h_a8f8f80d37794cde9472343e4487ba3eb}{name}}\ =\ \doxymbox{\hyperlink{stddef_8h_a070d2ce7b6bb7e5c05602aa8c308d0c4}{NULL}})\ \textcolor{keyword}{override};}
+\DoxyCodeLine{00053\ \ \ \textcolor{keyword}{virtual}\ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{classgimple__ranger_a9a2c634934f08180834dfdd67b6a3cc6}{range\_of\_expr}}\ (vrange\ \&\doxymbox{\hyperlink{poly-int_8h_a3ecac2571dcdc8050989339124f1bd26}{r}},\ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ \doxymbox{\hyperlink{configargs_8h_a8f8f80d37794cde9472343e4487ba3eb}{name}},\ gimple\ *\ =\ \doxymbox{\hyperlink{stddef_8h_a070d2ce7b6bb7e5c05602aa8c308d0c4}{NULL}})\ \textcolor{keyword}{override};}
+\DoxyCodeLine{00054\ \ \ \textcolor{keyword}{virtual}\ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{classgimple__ranger_ab71befa18160eb3b0f36b87107af977d}{range\_on\_edge}}\ (vrange\ \&\doxymbox{\hyperlink{poly-int_8h_a3ecac2571dcdc8050989339124f1bd26}{r}},\ \doxymbox{\hyperlink{coretypes_8h_a44ae11f0c90646aa6208ad4bf486490b}{edge}}\ e,\ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ \doxymbox{\hyperlink{configargs_8h_a8f8f80d37794cde9472343e4487ba3eb}{name}})\ \textcolor{keyword}{override};}
+\DoxyCodeLine{00055\ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classgimple__ranger_a4dc0b08a9bdaa73dca224d85c542ce59}{range\_on\_entry}}\ (vrange\ \&\doxymbox{\hyperlink{poly-int_8h_a3ecac2571dcdc8050989339124f1bd26}{r}},\ \doxymbox{\hyperlink{coretypes_8h_a0469df20b471a4cd7c81fbdce5027487}{basic\_block}}\ bb,\ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ \doxymbox{\hyperlink{configargs_8h_a8f8f80d37794cde9472343e4487ba3eb}{name}});}
+\DoxyCodeLine{00056\ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classgimple__ranger_aa1417c2c986398daf1f143309be20d67}{range\_on\_exit}}\ (vrange\ \&\doxymbox{\hyperlink{poly-int_8h_a3ecac2571dcdc8050989339124f1bd26}{r}},\ \doxymbox{\hyperlink{coretypes_8h_a0469df20b471a4cd7c81fbdce5027487}{basic\_block}}\ bb,\ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ \doxymbox{\hyperlink{configargs_8h_a8f8f80d37794cde9472343e4487ba3eb}{name}});}
+\DoxyCodeLine{00057\ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classgimple__ranger_ab282357bd907558b717197e77a0069e5}{export\_global\_ranges}}\ ();}
+\DoxyCodeLine{00058\ \ \ \textcolor{keyword}{inline}\ \doxymbox{\hyperlink{classgori__compute}{gori\_compute}}\ \&\doxymbox{\hyperlink{classgimple__ranger_a3e7f73f9d68e0a0360d9c947228efae5}{gori}}\ ()\ \ \{\ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{classgimple__ranger_a987b18272e04854d1e980d482b5f4ce1}{m\_cache}}.m\_gori;\ \}}
+\DoxyCodeLine{00059\ \ \ \textcolor{keyword}{virtual}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classgimple__ranger_a251c17c626ef18c1892f0f46456f2656}{dump}}\ (FILE\ *f)\ \textcolor{keyword}{override};}
+\DoxyCodeLine{00060\ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classgimple__ranger_a8407a931cc8c7352e555ea17bcc2700e}{debug}}\ ();}
+\DoxyCodeLine{00061\ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classgimple__ranger_a0c01114d77d362c320aa08ca32b5ed5e}{dump\_bb}}\ (FILE\ *f,\ \doxymbox{\hyperlink{coretypes_8h_a0469df20b471a4cd7c81fbdce5027487}{basic\_block}}\ bb);}
+\DoxyCodeLine{00062\ \ \ \doxymbox{\hyperlink{classauto__edge__flag}{auto\_edge\_flag}}\ \doxymbox{\hyperlink{classgimple__ranger_a9b40b23dc7747833b75904a45bbdd148}{non\_executable\_edge\_flag}};}
+\DoxyCodeLine{00063\ \ \ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{classgimple__ranger_a94acaf606ab6589d7d8fd1b34b9736cd}{fold\_stmt}}\ (\doxymbox{\hyperlink{structgimple__stmt__iterator}{gimple\_stmt\_iterator}}\ *gsi,\ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ (*)\ (\doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}));}
+\DoxyCodeLine{00064\ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classgimple__ranger_ab09a17ffbac9f291ed45bbd7413349dd}{register\_inferred\_ranges}}\ (gimple\ *s);}
+\DoxyCodeLine{00065\ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classgimple__ranger_aead2fe6269b0bcb066fe5e3dbb721861}{register\_transitive\_inferred\_ranges}}\ (\doxymbox{\hyperlink{coretypes_8h_a0469df20b471a4cd7c81fbdce5027487}{basic\_block}}\ bb);}
+\DoxyCodeLine{00066\ \ \ \doxymbox{\hyperlink{classrange__query_a7838aae8d14f424c3212df2ca81bb656}{range\_query}}\ \&\doxymbox{\hyperlink{classgimple__ranger_a3e6b4d5393ae18b5daacd325e2d0464e}{const\_query}}\ ();}
+\DoxyCodeLine{00067\ \textcolor{keyword}{protected}:}
+\DoxyCodeLine{00068\ \ \ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{classgimple__ranger_a0af21298e5181b54742b95ef0ae99276}{fold\_range\_internal}}\ (vrange\ \&\doxymbox{\hyperlink{poly-int_8h_a3ecac2571dcdc8050989339124f1bd26}{r}},\ gimple\ *s,\ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ \doxymbox{\hyperlink{configargs_8h_a8f8f80d37794cde9472343e4487ba3eb}{name}});}
+\DoxyCodeLine{00069\ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classgimple__ranger_ac742e7e26548b7740b47fd3e993f645d}{prefill\_name}}\ (vrange\ \&\doxymbox{\hyperlink{poly-int_8h_a3ecac2571dcdc8050989339124f1bd26}{r}},\ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ \doxymbox{\hyperlink{configargs_8h_a8f8f80d37794cde9472343e4487ba3eb}{name}});}
+\DoxyCodeLine{00070\ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classgimple__ranger_a8cfb837fc9cce2f29b1ad98baba2e8d9}{prefill\_stmt\_dependencies}}\ (\doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ ssa);}
+\DoxyCodeLine{00071\ \ \ \doxymbox{\hyperlink{classranger__cache}{ranger\_cache}}\ \doxymbox{\hyperlink{classgimple__ranger_a987b18272e04854d1e980d482b5f4ce1}{m\_cache}};}
+\DoxyCodeLine{00072\ \ \ \doxymbox{\hyperlink{classrange__tracer}{range\_tracer}}\ \doxymbox{\hyperlink{classgimple__ranger_a61e00f85a3eef024ed62301aeee4884a}{tracer}};}
+\DoxyCodeLine{00073\ \ \ \doxymbox{\hyperlink{coretypes_8h_a0469df20b471a4cd7c81fbdce5027487}{basic\_block}}\ \doxymbox{\hyperlink{classgimple__ranger_a19308ae233e713d5ce9d94a115953e23}{current\_bb}};}
+\DoxyCodeLine{00074\ \ \ \doxymbox{\hyperlink{structvec}{vec<tree>}}\ \doxymbox{\hyperlink{classgimple__ranger_a3898f5d2f514678d24e75e07580d5a1e}{m\_stmt\_list}};}
+\DoxyCodeLine{00075\ \ \ \textcolor{keyword}{friend}\ \textcolor{keyword}{class\ }\doxymbox{\hyperlink{classgimple__ranger_aca99ed8682eb248d98152b9d7e90289c}{path\_range\_query}};}
+\DoxyCodeLine{00076\ \};}
+\DoxyCodeLine{00077\ }
+\DoxyCodeLine{00078\ \textcolor{comment}{/*\ Create\ a\ new\ ranger\ instance\ and\ associate\ it\ with\ a\ function.}}
+\DoxyCodeLine{00079\ \textcolor{comment}{\ \ \ Each\ call\ must\ be\ paired\ with\ a\ call\ to\ disable\_ranger\ to\ release}}
+\DoxyCodeLine{00080\ \textcolor{comment}{\ \ \ resources.\ \ If\ USE\_IMM\_USES\ is\ true,\ pre-\/calculate\ side\ effects\ like}}
+\DoxyCodeLine{00081\ \textcolor{comment}{\ \ \ non-\/null\ uses\ as\ required\ using\ the\ immediate\ use\ chains.\ \ */}}
+\DoxyCodeLine{00082\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{classgimple__ranger}{gimple\_ranger}}\ *\doxymbox{\hyperlink{gimple-range_8h_a8c7683a7a24eef6fe16640819599e5f0}{enable\_ranger}}\ (\textcolor{keyword}{struct}\ function\ *m,}
+\DoxyCodeLine{00083\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{bool}\ use\_imm\_uses\ =\ \textcolor{keyword}{true});}
+\DoxyCodeLine{00084\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{gimple-range_8h_afa3874eb8b43c346fb4dcd3b420137d3}{disable\_ranger}}\ (\textcolor{keyword}{struct}\ function\ *);}
+\DoxyCodeLine{00085\ }
+\DoxyCodeLine{00086\ \textcolor{keyword}{class\ }\doxymbox{\hyperlink{classassume__query_ac0bf368edd2dbc2a6349de40faa60d8f}{assume\_query}}\ :\ \textcolor{keyword}{public}\ \doxymbox{\hyperlink{classrange__query_a7838aae8d14f424c3212df2ca81bb656}{range\_query}}}
+\DoxyCodeLine{00087\ \{}
+\DoxyCodeLine{00088\ \textcolor{keyword}{public}:}
+\DoxyCodeLine{00089\ \ \ \doxymbox{\hyperlink{classassume__query_ac0bf368edd2dbc2a6349de40faa60d8f}{assume\_query}}\ ();}
+\DoxyCodeLine{00090\ \ \ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{classassume__query_aae6790c32142c2fa5556a5c86ba0ae0b}{assume\_range\_p}}\ (vrange\ \&\doxymbox{\hyperlink{poly-int_8h_a3ecac2571dcdc8050989339124f1bd26}{r}},\ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ \doxymbox{\hyperlink{configargs_8h_a8f8f80d37794cde9472343e4487ba3eb}{name}});}
+\DoxyCodeLine{00091\ \ \ \textcolor{keyword}{virtual}\ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{classassume__query_a57393951749bafcc21d0b2e9f52b1aff}{range\_of\_expr}}\ (vrange\ \&\doxymbox{\hyperlink{poly-int_8h_a3ecac2571dcdc8050989339124f1bd26}{r}},\ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ expr,\ gimple\ *\ =\ \doxymbox{\hyperlink{stddef_8h_a070d2ce7b6bb7e5c05602aa8c308d0c4}{NULL}});}
+\DoxyCodeLine{00092\ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classassume__query_a51c356f33dc8fa6c440712c5654843d0}{dump}}\ (FILE\ *f);}
+\DoxyCodeLine{00093\ \textcolor{keyword}{protected}:}
+\DoxyCodeLine{00094\ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classassume__query_af017b18c8f5be898ec1b38a3b944f5af}{calculate\_stmt}}\ (gimple\ *s,\ vrange\ \&lhs\_range,\ \doxymbox{\hyperlink{classfur__source}{fur\_source}}\ \&src);}
+\DoxyCodeLine{00095\ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classassume__query_af64d8d19b3cfc412de86f82b5d400ef8}{calculate\_op}}\ (\doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ op,\ gimple\ *s,\ vrange\ \&lhs,\ \doxymbox{\hyperlink{classfur__source}{fur\_source}}\ \&src);}
+\DoxyCodeLine{00096\ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classassume__query_afbc1e639b4ecc3f0d02255cb25314665}{calculate\_phi}}\ (gphi\ *phi,\ vrange\ \&lhs\_range,\ \doxymbox{\hyperlink{classfur__source}{fur\_source}}\ \&src);}
+\DoxyCodeLine{00097\ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classassume__query_a82e88b1f5151defd1cba666924055c4b}{check\_taken\_edge}}\ (\doxymbox{\hyperlink{coretypes_8h_a44ae11f0c90646aa6208ad4bf486490b}{edge}}\ e,\ \doxymbox{\hyperlink{classfur__source}{fur\_source}}\ \&src);}
+\DoxyCodeLine{00098\ }
+\DoxyCodeLine{00099\ \ \ \doxymbox{\hyperlink{classssa__lazy__cache}{ssa\_lazy\_cache}}\ \doxymbox{\hyperlink{classassume__query_a359d517bf02643bb106f80b0af489cda}{global}};}
+\DoxyCodeLine{00100\ \ \ \doxymbox{\hyperlink{classgori__compute}{gori\_compute}}\ \doxymbox{\hyperlink{classassume__query_a0eb6990835ac6225cf23c4378c57a9fe}{m\_gori}};}
+\DoxyCodeLine{00101\ \};}
+\DoxyCodeLine{00102\ }
+\DoxyCodeLine{00103\ \textcolor{comment}{//\ DOM\ based\ ranger\ for\ fast\ VRP.}}
+\DoxyCodeLine{00104\ \textcolor{comment}{//\ This\ must\ be\ processed\ in\ DOM\ order,\ and\ does\ only\ basic\ range\ operations.}}
+\DoxyCodeLine{00105\ }
+\DoxyCodeLine{00106\ \textcolor{keyword}{class\ }\doxymbox{\hyperlink{classdom__ranger_a775897a5e4f816f8e64ee806640855a1}{dom\_ranger}}\ :\ \textcolor{keyword}{public}\ \doxymbox{\hyperlink{classrange__query_a7838aae8d14f424c3212df2ca81bb656}{range\_query}}}
+\DoxyCodeLine{00107\ \{}
+\DoxyCodeLine{00108\ \textcolor{keyword}{public}:}
+\DoxyCodeLine{00109\ \ \ \doxymbox{\hyperlink{classdom__ranger_a775897a5e4f816f8e64ee806640855a1}{dom\_ranger}}\ ();}
+\DoxyCodeLine{00110\ \ \ \doxymbox{\hyperlink{classdom__ranger_a309e793c56594fea9113a65bf56531ee}{\string~dom\_ranger}}\ ();}
+\DoxyCodeLine{00111\ }
+\DoxyCodeLine{00112\ \ \ \textcolor{keyword}{virtual}\ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{classdom__ranger_a9209b5cc5000324b8fd4c4765b5a7815}{range\_of\_expr}}\ (vrange\ \&\doxymbox{\hyperlink{poly-int_8h_a3ecac2571dcdc8050989339124f1bd26}{r}},\ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ expr,\ gimple\ *s\ =\ \doxymbox{\hyperlink{stddef_8h_a070d2ce7b6bb7e5c05602aa8c308d0c4}{NULL}})\ \textcolor{keyword}{override};}
+\DoxyCodeLine{00113\ \ \ \textcolor{keyword}{virtual}\ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{classdom__ranger_ae7f2a7b206c06e0ffadd15bc51650c0b}{range\_on\_edge}}\ (vrange\ \&\doxymbox{\hyperlink{poly-int_8h_a3ecac2571dcdc8050989339124f1bd26}{r}},\ \doxymbox{\hyperlink{coretypes_8h_a44ae11f0c90646aa6208ad4bf486490b}{edge}}\ e,\ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ expr)\ \textcolor{keyword}{override};}
+\DoxyCodeLine{00114\ \ \ \textcolor{keyword}{virtual}\ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{classdom__ranger_a43247c772673acabb805a9f16d1f20fc}{range\_of\_stmt}}\ (vrange\ \&\doxymbox{\hyperlink{poly-int_8h_a3ecac2571dcdc8050989339124f1bd26}{r}},\ gimple\ *s,\ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ \doxymbox{\hyperlink{configargs_8h_a8f8f80d37794cde9472343e4487ba3eb}{name}}\ =\ \doxymbox{\hyperlink{stddef_8h_a070d2ce7b6bb7e5c05602aa8c308d0c4}{NULL}})\ \textcolor{keyword}{override};}
+\DoxyCodeLine{00115\ }
+\DoxyCodeLine{00116\ \ \ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{classdom__ranger_ac7a4cd090f22f24d3dcaaf30e3135762}{edge\_range}}\ (vrange\ \&\doxymbox{\hyperlink{poly-int_8h_a3ecac2571dcdc8050989339124f1bd26}{r}},\ \doxymbox{\hyperlink{coretypes_8h_a44ae11f0c90646aa6208ad4bf486490b}{edge}}\ e,\ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ \doxymbox{\hyperlink{configargs_8h_a8f8f80d37794cde9472343e4487ba3eb}{name}});}
+\DoxyCodeLine{00117\ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classdom__ranger_ad9a4e8aa6be7accd45fa041af086bd8a}{range\_in\_bb}}\ (vrange\ \&\doxymbox{\hyperlink{poly-int_8h_a3ecac2571dcdc8050989339124f1bd26}{r}},\ \doxymbox{\hyperlink{coretypes_8h_a0469df20b471a4cd7c81fbdce5027487}{basic\_block}}\ bb,\ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ \doxymbox{\hyperlink{configargs_8h_a8f8f80d37794cde9472343e4487ba3eb}{name}});}
+\DoxyCodeLine{00118\ }
+\DoxyCodeLine{00119\ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classdom__ranger_a58086e67be043589af092a6120082955}{pre\_bb}}\ (\doxymbox{\hyperlink{coretypes_8h_a0469df20b471a4cd7c81fbdce5027487}{basic\_block}}\ bb);}
+\DoxyCodeLine{00120\ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classdom__ranger_a0555b906eb327612b82e6c3e6bc9a7d2}{post\_bb}}\ (\doxymbox{\hyperlink{coretypes_8h_a0469df20b471a4cd7c81fbdce5027487}{basic\_block}}\ bb);}
+\DoxyCodeLine{00121\ \textcolor{keyword}{protected}:}
+\DoxyCodeLine{00122\ \ \ \doxymbox{\hyperlink{classdom__ranger_ae22700967398b4c53549dc91bdabe998}{DISABLE\_COPY\_AND\_ASSIGN}}\ (\doxymbox{\hyperlink{classdom__ranger_a775897a5e4f816f8e64ee806640855a1}{dom\_ranger}});}
+\DoxyCodeLine{00123\ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classdom__ranger_ac1cd5536a9e8b5bef6fd76fa42ca69db}{maybe\_push\_edge}}\ (\doxymbox{\hyperlink{coretypes_8h_a44ae11f0c90646aa6208ad4bf486490b}{edge}}\ e,\ \textcolor{keywordtype}{bool}\ edge\_0);}
+\DoxyCodeLine{00124\ \ \ \doxymbox{\hyperlink{classssa__cache}{ssa\_cache}}\ \doxymbox{\hyperlink{classdom__ranger_af9332351d4c0ea426ffb6ae6cb1b6719}{m\_global}};}
+\DoxyCodeLine{00125\ \ \ \doxymbox{\hyperlink{classgimple__outgoing__range}{gimple\_outgoing\_range}}\ \doxymbox{\hyperlink{classdom__ranger_abfa7913277b0fb4af3ea567fb7dcd0df}{m\_out}};}
+\DoxyCodeLine{00126\ \ \ \doxymbox{\hyperlink{structvec}{vec<ssa\_lazy\_cache\ *>}}\ \doxymbox{\hyperlink{classdom__ranger_a62a7a0f7ece62deba4142db18b202c15}{m\_freelist}};}
+\DoxyCodeLine{00127\ \ \ \doxymbox{\hyperlink{structvec}{vec<ssa\_lazy\_cache\ *>}}\ \doxymbox{\hyperlink{classdom__ranger_ae8c8c729118645f0af5407d4df4a346f}{m\_e0}};}
+\DoxyCodeLine{00128\ \ \ \doxymbox{\hyperlink{structvec}{vec<ssa\_lazy\_cache\ *>}}\ \doxymbox{\hyperlink{classdom__ranger_ab88847299e52c8b4922b769aaac9292c}{m\_e1}};}
+\DoxyCodeLine{00129\ \ \ \doxymbox{\hyperlink{coretypes_8h_ae7ea3a04cabf8964dc6e8e95a9cde1b8}{bitmap}}\ \doxymbox{\hyperlink{classdom__ranger_ad75c6de9a8adfdc2fe6b5de0516006d4}{m\_pop\_list}};}
+\DoxyCodeLine{00130\ \ \ \doxymbox{\hyperlink{classrange__tracer}{range\_tracer}}\ \doxymbox{\hyperlink{classdom__ranger_a04a1e10dc4955f0644e4f5e9ebbd4f1a}{tracer}};}
+\DoxyCodeLine{00131\ \};}
+\DoxyCodeLine{00132\ \textcolor{preprocessor}{\#endif\ }\textcolor{comment}{//\ GCC\_GIMPLE\_RANGE\_H}}
+
+\end{DoxyCode}

@@ -1,0 +1,798 @@
+\doxysection{tree-\/data-\/ref.h}
+\hypertarget{tree-data-ref_8h_source}{}\label{tree-data-ref_8h_source}\index{toolchain/x86\_64-\/elf/lib/gcc/x86\_64-\/elf/14.2.0/plugin/include/tree-\/data-\/ref.h@{toolchain/x86\_64-\/elf/lib/gcc/x86\_64-\/elf/14.2.0/plugin/include/tree-\/data-\/ref.h}}
+\doxymbox{\hyperlink{tree-data-ref_8h}{Go to the documentation of this file.}}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001\ \textcolor{comment}{/*\ Data\ references\ and\ dependences\ detectors.}}
+\DoxyCodeLine{00002\ \textcolor{comment}{\ \ \ Copyright\ (C)\ 2003-\/2024\ Free\ Software\ Foundation,\ Inc.}}
+\DoxyCodeLine{00003\ \textcolor{comment}{\ \ \ Contributed\ by\ Sebastian\ Pop\ <pop@cri.ensmp.fr>}}
+\DoxyCodeLine{00004\ \textcolor{comment}{}}
+\DoxyCodeLine{00005\ \textcolor{comment}{This\ file\ is\ part\ of\ GCC.}}
+\DoxyCodeLine{00006\ \textcolor{comment}{}}
+\DoxyCodeLine{00007\ \textcolor{comment}{GCC\ is\ free\ software;\ you\ can\ redistribute\ it\ and/or\ modify\ it\ under}}
+\DoxyCodeLine{00008\ \textcolor{comment}{the\ terms\ of\ the\ GNU\ General\ Public\ License\ as\ published\ by\ the\ Free}}
+\DoxyCodeLine{00009\ \textcolor{comment}{Software\ Foundation;\ either\ version\ 3,\ or\ (at\ your\ option)\ any\ later}}
+\DoxyCodeLine{00010\ \textcolor{comment}{version.}}
+\DoxyCodeLine{00011\ \textcolor{comment}{}}
+\DoxyCodeLine{00012\ \textcolor{comment}{GCC\ is\ distributed\ in\ the\ hope\ that\ it\ will\ be\ useful,\ but\ WITHOUT\ ANY}}
+\DoxyCodeLine{00013\ \textcolor{comment}{WARRANTY;\ without\ even\ the\ implied\ warranty\ of\ MERCHANTABILITY\ or}}
+\DoxyCodeLine{00014\ \textcolor{comment}{FITNESS\ FOR\ A\ PARTICULAR\ PURPOSE.\ \ See\ the\ GNU\ General\ Public\ License}}
+\DoxyCodeLine{00015\ \textcolor{comment}{for\ more\ details.}}
+\DoxyCodeLine{00016\ \textcolor{comment}{}}
+\DoxyCodeLine{00017\ \textcolor{comment}{You\ should\ have\ received\ a\ copy\ of\ the\ GNU\ General\ Public\ License}}
+\DoxyCodeLine{00018\ \textcolor{comment}{along\ with\ GCC;\ see\ the\ file\ COPYING3.\ \ If\ not\ see}}
+\DoxyCodeLine{00019\ \textcolor{comment}{<http://www.gnu.org/licenses/>.\ \ */}}
+\DoxyCodeLine{00020\ }
+\DoxyCodeLine{00021\ \textcolor{preprocessor}{\#ifndef\ GCC\_TREE\_DATA\_REF\_H}}
+\DoxyCodeLine{00022\ \textcolor{preprocessor}{\#define\ GCC\_TREE\_DATA\_REF\_H}}
+\DoxyCodeLine{00023\ }
+\DoxyCodeLine{00024\ \textcolor{preprocessor}{\#include\ "{}\doxymbox{\hyperlink{graphds_8h}{graphds.h}}"{}}}
+\DoxyCodeLine{00025\ \textcolor{preprocessor}{\#include\ "{}\doxymbox{\hyperlink{tree-chrec_8h}{tree-\/chrec.h}}"{}}}
+\DoxyCodeLine{00026\ \textcolor{preprocessor}{\#include\ "{}\doxymbox{\hyperlink{opt-problem_8h}{opt-\/problem.h}}"{}}}
+\DoxyCodeLine{00027\ }
+\DoxyCodeLine{00028\ \textcolor{comment}{/*}}
+\DoxyCodeLine{00029\ \textcolor{comment}{\ \ innermost\_loop\_behavior\ describes\ the\ evolution\ of\ the\ address\ of\ the\ memory}}
+\DoxyCodeLine{00030\ \textcolor{comment}{\ \ reference\ in\ the\ innermost\ enclosing\ loop.\ \ The\ address\ is\ expressed\ as}}
+\DoxyCodeLine{00031\ \textcolor{comment}{\ \ BASE\ +\ STEP\ *\ \#\ of\ iteration,\ and\ base\ is\ further\ decomposed\ as\ the\ base}}
+\DoxyCodeLine{00032\ \textcolor{comment}{\ \ pointer\ (BASE\_ADDRESS),\ \ loop\ invariant\ offset\ (OFFSET)\ and}}
+\DoxyCodeLine{00033\ \textcolor{comment}{\ \ constant\ offset\ (INIT).\ \ Examples,\ in\ loop\ nest}}
+\DoxyCodeLine{00034\ \textcolor{comment}{}}
+\DoxyCodeLine{00035\ \textcolor{comment}{\ \ for\ (i\ =\ 0;\ i\ <\ 100;\ i++)}}
+\DoxyCodeLine{00036\ \textcolor{comment}{\ \ \ \ for\ (j\ =\ 3;\ j\ <\ 100;\ j++)}}
+\DoxyCodeLine{00037\ \textcolor{comment}{}}
+\DoxyCodeLine{00038\ \textcolor{comment}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ Example\ 1\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ Example\ 2}}
+\DoxyCodeLine{00039\ \textcolor{comment}{\ \ \ \ \ \ data-\/ref\ \ \ \ \ \ \ \ \ a[j].b[i][j]\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ *(p\ +\ x\ +\ 16B\ +\ 4B\ *\ j)}}
+\DoxyCodeLine{00040\ \textcolor{comment}{}}
+\DoxyCodeLine{00041\ \textcolor{comment}{}}
+\DoxyCodeLine{00042\ \textcolor{comment}{\ \ innermost\_loop\_behavior}}
+\DoxyCodeLine{00043\ \textcolor{comment}{\ \ \ \ \ \ base\_address\ \ \ \ \ \&a\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ p}}
+\DoxyCodeLine{00044\ \textcolor{comment}{\ \ \ \ \ \ offset\ \ \ \ \ \ \ \ \ \ \ i\ *\ D\_i\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ x}}
+\DoxyCodeLine{00045\ \textcolor{comment}{\ \ \ \ \ \ init\ \ \ \ \ \ \ \ \ \ \ \ \ 3\ *\ D\_j\ +\ offsetof\ (b)\ \ \ \ \ \ \ \ \ 28}}
+\DoxyCodeLine{00046\ \textcolor{comment}{\ \ \ \ \ \ step\ \ \ \ \ \ \ \ \ \ \ \ \ D\_j\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ 4}}
+\DoxyCodeLine{00047\ \textcolor{comment}{}}
+\DoxyCodeLine{00048\ \textcolor{comment}{\ \ */}}
+\DoxyCodeLine{00049\ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{structinnermost__loop__behavior}{innermost\_loop\_behavior}}}
+\DoxyCodeLine{00050\ \{}
+\DoxyCodeLine{00051\ \ \ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ \doxymbox{\hyperlink{structinnermost__loop__behavior_a29d1f04b9760ab60b01ea7de57907381}{base\_address}};}
+\DoxyCodeLine{00052\ \ \ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ \doxymbox{\hyperlink{structinnermost__loop__behavior_aa3316c31ad6ea3cf35b754c26e5ad64a}{offset}};}
+\DoxyCodeLine{00053\ \ \ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ \doxymbox{\hyperlink{structinnermost__loop__behavior_ab0cded84af22f54330203a170e73a8e9}{init}};}
+\DoxyCodeLine{00054\ \ \ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ \doxymbox{\hyperlink{structinnermost__loop__behavior_a890dfff095e2abc3a5fdc9ec19cfecdb}{step}};}
+\DoxyCodeLine{00055\ }
+\DoxyCodeLine{00056\ \ \ \textcolor{comment}{/*\ BASE\_ADDRESS\ is\ known\ to\ be\ misaligned\ by\ BASE\_MISALIGNMENT\ bytes}}
+\DoxyCodeLine{00057\ \textcolor{comment}{\ \ \ \ \ from\ an\ alignment\ boundary\ of\ BASE\_ALIGNMENT\ bytes.\ \ For\ example,}}
+\DoxyCodeLine{00058\ \textcolor{comment}{\ \ \ \ \ if\ we\ had:}}
+\DoxyCodeLine{00059\ \textcolor{comment}{}}
+\DoxyCodeLine{00060\ \textcolor{comment}{\ \ \ \ \ \ \ struct\ S\ \_\_attribute\_\_((aligned(16)))\ \{\ ...\ \};}}
+\DoxyCodeLine{00061\ \textcolor{comment}{}}
+\DoxyCodeLine{00062\ \textcolor{comment}{\ \ \ \ \ \ \ char\ *ptr;}}
+\DoxyCodeLine{00063\ \textcolor{comment}{\ \ \ \ \ \ \ ...\ *(struct\ S\ *)\ (ptr\ -\/\ 4)\ ...;}}
+\DoxyCodeLine{00064\ \textcolor{comment}{}}
+\DoxyCodeLine{00065\ \textcolor{comment}{\ \ \ \ \ the\ information\ would\ be:}}
+\DoxyCodeLine{00066\ \textcolor{comment}{}}
+\DoxyCodeLine{00067\ \textcolor{comment}{\ \ \ \ \ \ \ base\_address:\ \ \ \ \ \ ptr}}
+\DoxyCodeLine{00068\ \textcolor{comment}{\ \ \ \ \ \ \ base\_aligment:\ \ \ \ \ \ 16}}
+\DoxyCodeLine{00069\ \textcolor{comment}{\ \ \ \ \ \ \ base\_misalignment:\ \ \ 4}}
+\DoxyCodeLine{00070\ \textcolor{comment}{\ \ \ \ \ \ \ init:\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ -\/4}}
+\DoxyCodeLine{00071\ \textcolor{comment}{}}
+\DoxyCodeLine{00072\ \textcolor{comment}{\ \ \ \ \ where\ init\ cancels\ the\ base\ misalignment.\ \ If\ instead\ we\ had\ a}}
+\DoxyCodeLine{00073\ \textcolor{comment}{\ \ \ \ \ reference\ to\ a\ particular\ field:}}
+\DoxyCodeLine{00074\ \textcolor{comment}{}}
+\DoxyCodeLine{00075\ \textcolor{comment}{\ \ \ \ \ \ \ struct\ S\ \_\_attribute\_\_((aligned(16)))\ \{\ ...\ int\ f;\ ...\ \};}}
+\DoxyCodeLine{00076\ \textcolor{comment}{}}
+\DoxyCodeLine{00077\ \textcolor{comment}{\ \ \ \ \ \ \ char\ *ptr;}}
+\DoxyCodeLine{00078\ \textcolor{comment}{\ \ \ \ \ \ \ ...\ ((struct\ S\ *)\ (ptr\ -\/\ 4))-\/>f\ ...;}}
+\DoxyCodeLine{00079\ \textcolor{comment}{}}
+\DoxyCodeLine{00080\ \textcolor{comment}{\ \ \ \ \ the\ information\ would\ be:}}
+\DoxyCodeLine{00081\ \textcolor{comment}{}}
+\DoxyCodeLine{00082\ \textcolor{comment}{\ \ \ \ \ \ \ base\_address:\ \ \ \ \ \ ptr}}
+\DoxyCodeLine{00083\ \textcolor{comment}{\ \ \ \ \ \ \ base\_aligment:\ \ \ \ \ \ 16}}
+\DoxyCodeLine{00084\ \textcolor{comment}{\ \ \ \ \ \ \ base\_misalignment:\ \ \ 4}}
+\DoxyCodeLine{00085\ \textcolor{comment}{\ \ \ \ \ \ \ init:\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ -\/4\ +\ offsetof\ (S,\ f)}}
+\DoxyCodeLine{00086\ \textcolor{comment}{}}
+\DoxyCodeLine{00087\ \textcolor{comment}{\ \ \ \ \ where\ base\_address\ +\ init\ might\ also\ be\ misaligned,\ and\ by\ a\ different}}
+\DoxyCodeLine{00088\ \textcolor{comment}{\ \ \ \ \ amount\ from\ base\_address.\ \ */}}
+\DoxyCodeLine{00089\ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{structinnermost__loop__behavior_ace84c19767b38d18a94c8a4847d6683f}{base\_alignment}};}
+\DoxyCodeLine{00090\ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{structinnermost__loop__behavior_a17102141a70305e93d456bb420ad8400}{base\_misalignment}};}
+\DoxyCodeLine{00091\ }
+\DoxyCodeLine{00092\ \ \ \textcolor{comment}{/*\ The\ largest\ power\ of\ two\ that\ divides\ OFFSET,\ capped\ to\ a\ suitably}}
+\DoxyCodeLine{00093\ \textcolor{comment}{\ \ \ \ \ high\ value\ if\ the\ offset\ is\ zero.\ \ This\ is\ a\ byte\ rather\ than\ a\ bit}}
+\DoxyCodeLine{00094\ \textcolor{comment}{\ \ \ \ \ quantity.\ \ */}}
+\DoxyCodeLine{00095\ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{structinnermost__loop__behavior_ae2e8c15c8bbea6162a0a75340eeffb70}{offset\_alignment}};}
+\DoxyCodeLine{00096\ }
+\DoxyCodeLine{00097\ \ \ \textcolor{comment}{/*\ Likewise\ for\ STEP.\ \ */}}
+\DoxyCodeLine{00098\ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{structinnermost__loop__behavior_ad277f671b969b177d3d14453fa1c4519}{step\_alignment}};}
+\DoxyCodeLine{00099\ \};}
+\DoxyCodeLine{00100\ }
+\DoxyCodeLine{00101\ \textcolor{comment}{/*\ Describes\ the\ evolutions\ of\ indices\ of\ the\ memory\ reference.\ \ The\ indices}}
+\DoxyCodeLine{00102\ \textcolor{comment}{\ \ \ are\ indices\ of\ the\ ARRAY\_REFs,\ indexes\ in\ artificial\ dimensions}}
+\DoxyCodeLine{00103\ \textcolor{comment}{\ \ \ added\ for\ member\ selection\ of\ records\ and\ the\ operands\ of\ MEM\_REFs.}}
+\DoxyCodeLine{00104\ \textcolor{comment}{\ \ \ BASE\_OBJECT\ is\ the\ part\ of\ the\ reference\ that\ is\ loop-\/invariant}}
+\DoxyCodeLine{00105\ \textcolor{comment}{\ \ \ (note\ that\ this\ reference\ does\ not\ have\ to\ cover\ the\ whole\ object}}
+\DoxyCodeLine{00106\ \textcolor{comment}{\ \ \ being\ accessed,\ in\ which\ case\ UNCONSTRAINED\_BASE\ is\ set;\ hence\ it\ is}}
+\DoxyCodeLine{00107\ \textcolor{comment}{\ \ \ not\ recommended\ to\ use\ BASE\_OBJECT\ in\ any\ code\ generation).}}
+\DoxyCodeLine{00108\ \textcolor{comment}{\ \ \ For\ the\ examples\ above,}}
+\DoxyCodeLine{00109\ \textcolor{comment}{}}
+\DoxyCodeLine{00110\ \textcolor{comment}{\ \ \ base\_object:\ \ \ \ \ \ \ \ a\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ *(p\ +\ x\ +\ 4B\ *\ j\_0)}}
+\DoxyCodeLine{00111\ \textcolor{comment}{\ \ \ indices:\ \ \ \ \ \ \ \ \ \ \ \ \{j\_0,\ +,\ 1\}\_2\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \{16,\ +,\ 4\}\_2}}
+\DoxyCodeLine{00112\ \textcolor{comment}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ 4}}
+\DoxyCodeLine{00113\ \textcolor{comment}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \{i\_0,\ +,\ 1\}\_1}}
+\DoxyCodeLine{00114\ \textcolor{comment}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \{j\_0,\ +,\ 1\}\_2}}
+\DoxyCodeLine{00115\ \textcolor{comment}{*/}}
+\DoxyCodeLine{00116\ }
+\DoxyCodeLine{00117\ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{structindices}{indices}}}
+\DoxyCodeLine{00118\ \{}
+\DoxyCodeLine{00119\ \ \ \textcolor{comment}{/*\ The\ object.\ \ */}}
+\DoxyCodeLine{00120\ \ \ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ \doxymbox{\hyperlink{structindices_ab2a0d13f59aa21d0465604e09c2562df}{base\_object}};}
+\DoxyCodeLine{00121\ }
+\DoxyCodeLine{00122\ \ \ \textcolor{comment}{/*\ A\ list\ of\ chrecs.\ \ Access\ functions\ of\ the\ indices.\ \ */}}
+\DoxyCodeLine{00123\ \ \ \doxymbox{\hyperlink{structvec}{vec<tree>}}\ \doxymbox{\hyperlink{structindices_a34dad3ec71bcc5ffe51a990d1483ce6a}{access\_fns}};}
+\DoxyCodeLine{00124\ }
+\DoxyCodeLine{00125\ \ \ \textcolor{comment}{/*\ Whether\ BASE\_OBJECT\ is\ an\ access\ representing\ the\ whole\ object}}
+\DoxyCodeLine{00126\ \textcolor{comment}{\ \ \ \ \ or\ whether\ the\ access\ could\ not\ be\ constrained.\ \ */}}
+\DoxyCodeLine{00127\ \ \ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{structindices_a407f9a32425a3553016590d280735f83}{unconstrained\_base}};}
+\DoxyCodeLine{00128\ \};}
+\DoxyCodeLine{00129\ }
+\DoxyCodeLine{00130\ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{structdr__alias}{dr\_alias}}}
+\DoxyCodeLine{00131\ \{}
+\DoxyCodeLine{00132\ \ \ \textcolor{comment}{/*\ The\ alias\ information\ that\ should\ be\ used\ for\ new\ pointers\ to\ this}}
+\DoxyCodeLine{00133\ \textcolor{comment}{\ \ \ \ \ location.\ \ */}}
+\DoxyCodeLine{00134\ \ \ \textcolor{keyword}{struct\ }ptr\_info\_def\ *\doxymbox{\hyperlink{structdr__alias_a336a20fa7902c369d86a15d73a0d8b67}{ptr\_info}};}
+\DoxyCodeLine{00135\ \};}
+\DoxyCodeLine{00136\ }
+\DoxyCodeLine{00137\ \textcolor{comment}{/*\ An\ integer\ vector.\ \ A\ vector\ formally\ consists\ of\ an\ element\ of\ a\ vector}}
+\DoxyCodeLine{00138\ \textcolor{comment}{\ \ \ space.\ A\ vector\ space\ is\ a\ set\ that\ is\ closed\ under\ vector\ addition}}
+\DoxyCodeLine{00139\ \textcolor{comment}{\ \ \ and\ scalar\ multiplication.\ \ In\ this\ vector\ space,\ an\ element\ is\ a\ list\ of}}
+\DoxyCodeLine{00140\ \textcolor{comment}{\ \ \ integers.\ \ */}}
+\DoxyCodeLine{00141\ \textcolor{keyword}{typedef}\ HOST\_WIDE\_INT\ \doxymbox{\hyperlink{tree-data-ref_8h_ae95df447789251458f37bf8ddc4e7c1e}{lambda\_int}};}
+\DoxyCodeLine{00142\ \textcolor{keyword}{typedef}\ \doxymbox{\hyperlink{tree-data-ref_8h_ae95df447789251458f37bf8ddc4e7c1e}{lambda\_int}}\ *\doxymbox{\hyperlink{tree-data-ref_8h_a4e58199ef5f79477f7180bbff3a9042c}{lambda\_vector}};}
+\DoxyCodeLine{00143\ }
+\DoxyCodeLine{00144\ \textcolor{comment}{/*\ An\ integer\ matrix.\ \ A\ matrix\ consists\ of\ m\ vectors\ of\ length\ n\ (IE}}
+\DoxyCodeLine{00145\ \textcolor{comment}{\ \ \ all\ vectors\ are\ the\ same\ length).\ \ */}}
+\DoxyCodeLine{00146\ \textcolor{keyword}{typedef}\ \doxymbox{\hyperlink{tree-data-ref_8h_a4e58199ef5f79477f7180bbff3a9042c}{lambda\_vector}}\ *\doxymbox{\hyperlink{tree-data-ref_8h_a22e6b0226725a4351444d5b02d629b97}{lambda\_matrix}};}
+\DoxyCodeLine{00147\ }
+\DoxyCodeLine{00148\ }
+\DoxyCodeLine{00149\ }
+\DoxyCodeLine{00150\ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{structdata__reference}{data\_reference}}}
+\DoxyCodeLine{00151\ \{}
+\DoxyCodeLine{00152\ \ \ \textcolor{comment}{/*\ A\ pointer\ to\ the\ statement\ that\ contains\ this\ DR.\ \ */}}
+\DoxyCodeLine{00153\ \ \ gimple\ *\doxymbox{\hyperlink{structdata__reference_adc6f5c8f18da65c989fe9a9d1ab10e1e}{stmt}};}
+\DoxyCodeLine{00154\ }
+\DoxyCodeLine{00155\ \ \ \textcolor{comment}{/*\ A\ pointer\ to\ the\ memory\ reference.\ \ */}}
+\DoxyCodeLine{00156\ \ \ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ \doxymbox{\hyperlink{structdata__reference_a077a5bef8bbd53e24e95e7b3bc097d06}{ref}};}
+\DoxyCodeLine{00157\ }
+\DoxyCodeLine{00158\ \ \ \textcolor{comment}{/*\ Auxiliary\ info\ specific\ to\ a\ pass.\ \ */}}
+\DoxyCodeLine{00159\ \ \ \textcolor{keywordtype}{void}\ *\doxymbox{\hyperlink{structdata__reference_a35be700c6ed35d1ecc182d2fa63f30ec}{aux}};}
+\DoxyCodeLine{00160\ }
+\DoxyCodeLine{00161\ \ \ \textcolor{comment}{/*\ True\ when\ the\ data\ reference\ is\ in\ RHS\ of\ a\ stmt.\ \ */}}
+\DoxyCodeLine{00162\ \ \ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{structdata__reference_abb48c5c37c81a20c7a7c50275de96130}{is\_read}};}
+\DoxyCodeLine{00163\ }
+\DoxyCodeLine{00164\ \ \ \textcolor{comment}{/*\ True\ when\ the\ data\ reference\ is\ conditional\ within\ STMT,}}
+\DoxyCodeLine{00165\ \textcolor{comment}{\ \ \ \ \ i.e.\ if\ it\ might\ not\ occur\ even\ when\ the\ statement\ is\ executed}}
+\DoxyCodeLine{00166\ \textcolor{comment}{\ \ \ \ \ and\ runs\ to\ completion.\ \ */}}
+\DoxyCodeLine{00167\ \ \ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{structdata__reference_ae24ca5f2686121bf4e2c81d8a84ae3ea}{is\_conditional\_in\_stmt}};}
+\DoxyCodeLine{00168\ }
+\DoxyCodeLine{00169\ \ \ \textcolor{comment}{/*\ Alias\ information\ for\ the\ data\ reference.\ \ */}}
+\DoxyCodeLine{00170\ \ \ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{structdr__alias}{dr\_alias}}\ \doxymbox{\hyperlink{structdata__reference_a1c12c945528461fd47fddddbf4b8759c}{alias}};}
+\DoxyCodeLine{00171\ }
+\DoxyCodeLine{00172\ \ \ \textcolor{comment}{/*\ Behavior\ of\ the\ memory\ reference\ in\ the\ innermost\ loop.\ \ */}}
+\DoxyCodeLine{00173\ \ \ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{structinnermost__loop__behavior}{innermost\_loop\_behavior}}\ \doxymbox{\hyperlink{structdata__reference_ae289616854de1965c80f6a1d68ce6f99}{innermost}};}
+\DoxyCodeLine{00174\ }
+\DoxyCodeLine{00175\ \ \ \textcolor{comment}{/*\ Subscripts\ of\ this\ data\ reference.\ \ */}}
+\DoxyCodeLine{00176\ \ \ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{structdata__reference_ab7791c0a46cacd9b6bb9f950efbc00d3}{indices}}\ \doxymbox{\hyperlink{structdata__reference_ab7791c0a46cacd9b6bb9f950efbc00d3}{indices}};}
+\DoxyCodeLine{00177\ }
+\DoxyCodeLine{00178\ \ \ \textcolor{comment}{/*\ Alternate\ subscripts\ initialized\ lazily\ and\ used\ by\ data-\/dependence}}
+\DoxyCodeLine{00179\ \textcolor{comment}{\ \ \ \ \ analysis\ only\ when\ the\ main\ indices\ of\ two\ DRs\ are\ not\ comparable.}}
+\DoxyCodeLine{00180\ \textcolor{comment}{\ \ \ \ \ Keep\ last\ to\ keep\ vec\_info\_shared::check\_datarefs\ happy.\ \ */}}
+\DoxyCodeLine{00181\ \ \ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{structdata__reference_ab7791c0a46cacd9b6bb9f950efbc00d3}{indices}}\ \doxymbox{\hyperlink{structdata__reference_ab40719317581d4df2da3464e6f804223}{alt\_indices}};}
+\DoxyCodeLine{00182\ \};}
+\DoxyCodeLine{00183\ }
+\DoxyCodeLine{00184\ \textcolor{preprocessor}{\#define\ DR\_STMT(DR)\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ (DR)-\/>stmt}}
+\DoxyCodeLine{00185\ \textcolor{preprocessor}{\#define\ DR\_REF(DR)\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ (DR)-\/>ref}}
+\DoxyCodeLine{00186\ \textcolor{preprocessor}{\#define\ DR\_BASE\_OBJECT(DR)\ \ \ \ \ \ \ \ \ (DR)-\/>indices.base\_object}}
+\DoxyCodeLine{00187\ \textcolor{preprocessor}{\#define\ DR\_UNCONSTRAINED\_BASE(DR)\ \ (DR)-\/>indices.unconstrained\_base}}
+\DoxyCodeLine{00188\ \textcolor{preprocessor}{\#define\ DR\_ACCESS\_FNS(DR)\ \ \ \ \ \ (DR)-\/>indices.access\_fns}}
+\DoxyCodeLine{00189\ \textcolor{preprocessor}{\#define\ DR\_ACCESS\_FN(DR,\ I)\ \ \ \ \ \ \ \ DR\_ACCESS\_FNS\ (DR)[I]}}
+\DoxyCodeLine{00190\ \textcolor{preprocessor}{\#define\ DR\_NUM\_DIMENSIONS(DR)\ \ \ \ \ \ DR\_ACCESS\_FNS\ (DR).length\ ()}}
+\DoxyCodeLine{00191\ \textcolor{preprocessor}{\#define\ DR\_IS\_READ(DR)\ \ \ \ \ \ \ \ \ \ \ \ \ (DR)-\/>is\_read}}
+\DoxyCodeLine{00192\ \textcolor{preprocessor}{\#define\ DR\_IS\_WRITE(DR)\ \ \ \ \ \ \ \ \ \ \ \ (!DR\_IS\_READ\ (DR))}}
+\DoxyCodeLine{00193\ \textcolor{preprocessor}{\#define\ DR\_IS\_CONDITIONAL\_IN\_STMT(DR)\ (DR)-\/>is\_conditional\_in\_stmt}}
+\DoxyCodeLine{00194\ \textcolor{preprocessor}{\#define\ DR\_BASE\_ADDRESS(DR)\ \ \ \ \ \ \ \ (DR)-\/>innermost.base\_address}}
+\DoxyCodeLine{00195\ \textcolor{preprocessor}{\#define\ DR\_OFFSET(DR)\ \ \ \ \ \ \ \ \ \ \ \ \ \ (DR)-\/>innermost.offset}}
+\DoxyCodeLine{00196\ \textcolor{preprocessor}{\#define\ DR\_INIT(DR)\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ (DR)-\/>innermost.init}}
+\DoxyCodeLine{00197\ \textcolor{preprocessor}{\#define\ DR\_STEP(DR)\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ (DR)-\/>innermost.step}}
+\DoxyCodeLine{00198\ \textcolor{preprocessor}{\#define\ DR\_PTR\_INFO(DR)\ \ \ \ \ \ \ \ \ \ \ \ (DR)-\/>alias.ptr\_info}}
+\DoxyCodeLine{00199\ \textcolor{preprocessor}{\#define\ DR\_BASE\_ALIGNMENT(DR)\ \ \ \ \ \ (DR)-\/>innermost.base\_alignment}}
+\DoxyCodeLine{00200\ \textcolor{preprocessor}{\#define\ DR\_BASE\_MISALIGNMENT(DR)\ \ \ (DR)-\/>innermost.base\_misalignment}}
+\DoxyCodeLine{00201\ \textcolor{preprocessor}{\#define\ DR\_OFFSET\_ALIGNMENT(DR)\ \ \ \ (DR)-\/>innermost.offset\_alignment}}
+\DoxyCodeLine{00202\ \textcolor{preprocessor}{\#define\ DR\_STEP\_ALIGNMENT(DR)\ \ \ \ \ \ (DR)-\/>innermost.step\_alignment}}
+\DoxyCodeLine{00203\ \textcolor{preprocessor}{\#define\ DR\_INNERMOST(DR)\ \ \ \ \ \ \ \ \ \ \ (DR)-\/>innermost}}
+\DoxyCodeLine{00204\ }
+\DoxyCodeLine{00205\ \textcolor{keyword}{typedef}\ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{structdata__reference}{data\_reference}}\ *\doxymbox{\hyperlink{tree-data-ref_8h_ad8d64ec4923029fb27ae366622a8b451}{data\_reference\_p}};}
+\DoxyCodeLine{00206\ }
+\DoxyCodeLine{00207\ \textcolor{comment}{/*\ This\ struct\ is\ used\ to\ store\ the\ information\ of\ a\ data\ reference,}}
+\DoxyCodeLine{00208\ \textcolor{comment}{\ \ \ including\ the\ data\ ref\ itself\ and\ the\ segment\ length\ for\ aliasing}}
+\DoxyCodeLine{00209\ \textcolor{comment}{\ \ \ checks.\ \ This\ is\ used\ to\ merge\ alias\ checks.\ \ */}}
+\DoxyCodeLine{00210\ }
+\DoxyCodeLine{00211\ \textcolor{keyword}{class\ }\doxymbox{\hyperlink{classdr__with__seg__len_ab230da86e266fd0efb1fd7ab4367037a}{dr\_with\_seg\_len}}}
+\DoxyCodeLine{00212\ \{}
+\DoxyCodeLine{00213\ \textcolor{keyword}{public}:}
+\DoxyCodeLine{00214\ \ \ \doxymbox{\hyperlink{classdr__with__seg__len_ab230da86e266fd0efb1fd7ab4367037a}{dr\_with\_seg\_len}}\ (\doxymbox{\hyperlink{tree-data-ref_8h_ad8d64ec4923029fb27ae366622a8b451}{data\_reference\_p}}\ d,\ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ len,\ \textcolor{keywordtype}{unsigned}\ HOST\_WIDE\_INT\ size,}
+\DoxyCodeLine{00215\ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{poly-int_8h_af77c881600a14567e276ee17dfb8764f}{a}})}
+\DoxyCodeLine{00216\ \ \ \ \ :\ \doxymbox{\hyperlink{classdr__with__seg__len_a741603d6966203b6a8f6ffe7a4c4fb56}{dr}}\ (d),\ \doxymbox{\hyperlink{classdr__with__seg__len_a816fb888de6f2942127c5f2c5bf59e54}{seg\_len}}\ (len),\ \doxymbox{\hyperlink{classdr__with__seg__len_a1b20c910e4e2dda7f1b3efe1012043fd}{access\_size}}\ (size),\ \doxymbox{\hyperlink{classdr__with__seg__len_a63eded1abeb07a5494dc41a3a95b5672}{align}}\ (\doxymbox{\hyperlink{poly-int_8h_af77c881600a14567e276ee17dfb8764f}{a}})\ \{\}}
+\DoxyCodeLine{00217\ }
+\DoxyCodeLine{00218\ \ \ \doxymbox{\hyperlink{tree-data-ref_8h_ad8d64ec4923029fb27ae366622a8b451}{data\_reference\_p}}\ \doxymbox{\hyperlink{classdr__with__seg__len_a741603d6966203b6a8f6ffe7a4c4fb56}{dr}};}
+\DoxyCodeLine{00219\ \ \ \textcolor{comment}{/*\ The\ offset\ of\ the\ last\ access\ that\ needs\ to\ be\ checked\ minus}}
+\DoxyCodeLine{00220\ \textcolor{comment}{\ \ \ \ \ the\ offset\ of\ the\ first.\ \ */}}
+\DoxyCodeLine{00221\ \ \ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ \doxymbox{\hyperlink{classdr__with__seg__len_a816fb888de6f2942127c5f2c5bf59e54}{seg\_len}};}
+\DoxyCodeLine{00222\ \ \ \textcolor{comment}{/*\ A\ value\ that,\ when\ added\ to\ abs\ (SEG\_LEN),\ gives\ the\ total\ number\ of}}
+\DoxyCodeLine{00223\ \textcolor{comment}{\ \ \ \ \ bytes\ in\ the\ segment.\ \ */}}
+\DoxyCodeLine{00224\ \ \ \doxymbox{\hyperlink{poly-int-types_8h_a6d0ddbcb345e1192ca8249c789c1cb0f}{poly\_uint64}}\ \doxymbox{\hyperlink{classdr__with__seg__len_a1b20c910e4e2dda7f1b3efe1012043fd}{access\_size}};}
+\DoxyCodeLine{00225\ \ \ \textcolor{comment}{/*\ The\ minimum\ common\ alignment\ of\ DR's\ start\ address,\ SEG\_LEN\ and}}
+\DoxyCodeLine{00226\ \textcolor{comment}{\ \ \ \ \ ACCESS\_SIZE.\ \ */}}
+\DoxyCodeLine{00227\ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{classdr__with__seg__len_a63eded1abeb07a5494dc41a3a95b5672}{align}};}
+\DoxyCodeLine{00228\ \};}
+\DoxyCodeLine{00229\ }
+\DoxyCodeLine{00230\ \textcolor{comment}{/*\ Flags\ that\ describe\ a\ potential\ alias\ between\ two\ dr\_with\_seg\_lens.}}
+\DoxyCodeLine{00231\ \textcolor{comment}{\ \ \ In\ general,\ each\ pair\ of\ dr\_with\_seg\_lens\ represents\ a\ composite\ of}}
+\DoxyCodeLine{00232\ \textcolor{comment}{\ \ \ multiple\ access\ pairs\ P,\ so\ testing\ flags\ like\ DR\_IS\_READ\ on\ the\ DRs}}
+\DoxyCodeLine{00233\ \textcolor{comment}{\ \ \ does\ not\ give\ meaningful\ information.}}
+\DoxyCodeLine{00234\ \textcolor{comment}{}}
+\DoxyCodeLine{00235\ \textcolor{comment}{\ \ \ DR\_ALIAS\_RAW:}}
+\DoxyCodeLine{00236\ \textcolor{comment}{\ \ \ \ There\ is\ a\ pair\ in\ P\ for\ which\ the\ second\ reference\ is\ a\ read}}
+\DoxyCodeLine{00237\ \textcolor{comment}{\ \ \ \ and\ the\ first\ is\ a\ write.}}
+\DoxyCodeLine{00238\ \textcolor{comment}{}}
+\DoxyCodeLine{00239\ \textcolor{comment}{\ \ \ DR\_ALIAS\_WAR:}}
+\DoxyCodeLine{00240\ \textcolor{comment}{\ \ \ \ There\ is\ a\ pair\ in\ P\ for\ which\ the\ second\ reference\ is\ a\ write}}
+\DoxyCodeLine{00241\ \textcolor{comment}{\ \ \ \ and\ the\ first\ is\ a\ read.}}
+\DoxyCodeLine{00242\ \textcolor{comment}{}}
+\DoxyCodeLine{00243\ \textcolor{comment}{\ \ \ DR\_ALIAS\_WAW:}}
+\DoxyCodeLine{00244\ \textcolor{comment}{\ \ \ \ There\ is\ a\ pair\ in\ P\ for\ which\ both\ references\ are\ writes.}}
+\DoxyCodeLine{00245\ \textcolor{comment}{}}
+\DoxyCodeLine{00246\ \textcolor{comment}{\ \ \ DR\_ALIAS\_ARBITRARY:}}
+\DoxyCodeLine{00247\ \textcolor{comment}{\ \ \ \ Either}}
+\DoxyCodeLine{00248\ \textcolor{comment}{\ \ \ \ (a)\ it\ isn't\ possible\ to\ classify\ one\ pair\ in\ P\ as\ RAW,\ WAW\ or\ WAR;\ or}}
+\DoxyCodeLine{00249\ \textcolor{comment}{\ \ \ \ (b)\ there\ is\ a\ pair\ in\ P\ that\ breaks\ the\ ordering\ assumption\ below.}}
+\DoxyCodeLine{00250\ \textcolor{comment}{}}
+\DoxyCodeLine{00251\ \textcolor{comment}{\ \ \ \ This\ flag\ overrides\ the\ RAW,\ WAR\ and\ WAW\ flags\ above.}}
+\DoxyCodeLine{00252\ \textcolor{comment}{}}
+\DoxyCodeLine{00253\ \textcolor{comment}{\ \ \ DR\_ALIAS\_UNSWAPPED:}}
+\DoxyCodeLine{00254\ \textcolor{comment}{\ \ \ DR\_ALIAS\_SWAPPED:}}
+\DoxyCodeLine{00255\ \textcolor{comment}{\ \ \ \ Temporary\ flags\ that\ indicate\ whether\ there\ is\ a\ pair\ P\ whose}}
+\DoxyCodeLine{00256\ \textcolor{comment}{\ \ \ \ DRs\ have\ or\ haven't\ been\ swapped\ around.}}
+\DoxyCodeLine{00257\ \textcolor{comment}{}}
+\DoxyCodeLine{00258\ \textcolor{comment}{\ \ \ DR\_ALIAS\_MIXED\_STEPS:}}
+\DoxyCodeLine{00259\ \textcolor{comment}{\ \ \ \ The\ DR\_STEP\ for\ one\ of\ the\ data\ references\ in\ the\ pair\ does\ not}}
+\DoxyCodeLine{00260\ \textcolor{comment}{\ \ \ \ accurately\ describe\ that\ reference\ for\ all\ members\ of\ P.\ \ (Note}}
+\DoxyCodeLine{00261\ \textcolor{comment}{\ \ \ \ that\ the\ flag\ does\ not\ say\ anything\ about\ whether\ the\ DR\_STEPs}}
+\DoxyCodeLine{00262\ \textcolor{comment}{\ \ \ \ of\ the\ two\ references\ in\ the\ pair\ are\ the\ same.)}}
+\DoxyCodeLine{00263\ \textcolor{comment}{}}
+\DoxyCodeLine{00264\ \textcolor{comment}{\ \ \ The\ ordering\ assumption\ mentioned\ above\ is\ that\ for\ every\ pair}}
+\DoxyCodeLine{00265\ \textcolor{comment}{\ \ \ (DR\_A,\ DR\_B)\ in\ P:}}
+\DoxyCodeLine{00266\ \textcolor{comment}{}}
+\DoxyCodeLine{00267\ \textcolor{comment}{\ \ \ (1)\ The\ original\ code\ accesses\ n\ elements\ for\ DR\_A\ and\ n\ elements\ for\ DR\_B,}}
+\DoxyCodeLine{00268\ \textcolor{comment}{\ \ \ \ \ \ \ interleaved\ as\ follows:}}
+\DoxyCodeLine{00269\ \textcolor{comment}{}}
+\DoxyCodeLine{00270\ \textcolor{comment}{\ \ \ \ \ one\ access\ of\ size\ DR\_A.access\_size\ at\ DR\_A.dr}}
+\DoxyCodeLine{00271\ \textcolor{comment}{\ \ \ \ \ one\ access\ of\ size\ DR\_B.access\_size\ at\ DR\_B.dr}}
+\DoxyCodeLine{00272\ \textcolor{comment}{\ \ \ \ \ one\ access\ of\ size\ DR\_A.access\_size\ at\ DR\_A.dr\ +\ STEP\_A}}
+\DoxyCodeLine{00273\ \textcolor{comment}{\ \ \ \ \ one\ access\ of\ size\ DR\_B.access\_size\ at\ DR\_B.dr\ +\ STEP\_B}}
+\DoxyCodeLine{00274\ \textcolor{comment}{\ \ \ \ \ one\ access\ of\ size\ DR\_A.access\_size\ at\ DR\_A.dr\ +\ STEP\_A\ *\ 2}}
+\DoxyCodeLine{00275\ \textcolor{comment}{\ \ \ \ \ one\ access\ of\ size\ DR\_B.access\_size\ at\ DR\_B.dr\ +\ STEP\_B\ *\ 2}}
+\DoxyCodeLine{00276\ \textcolor{comment}{\ \ \ \ \ ...}}
+\DoxyCodeLine{00277\ \textcolor{comment}{}}
+\DoxyCodeLine{00278\ \textcolor{comment}{\ \ \ (2)\ The\ new\ code\ accesses\ the\ same\ data\ in\ exactly\ two\ chunks:}}
+\DoxyCodeLine{00279\ \textcolor{comment}{}}
+\DoxyCodeLine{00280\ \textcolor{comment}{\ \ \ \ \ one\ group\ of\ accesses\ spanning\ |DR\_A.seg\_len|\ +\ DR\_A.access\_size}}
+\DoxyCodeLine{00281\ \textcolor{comment}{\ \ \ \ \ one\ group\ of\ accesses\ spanning\ |DR\_B.seg\_len|\ +\ DR\_B.access\_size}}
+\DoxyCodeLine{00282\ \textcolor{comment}{}}
+\DoxyCodeLine{00283\ \textcolor{comment}{\ \ \ A\ pair\ might\ break\ this\ assumption\ if\ the\ DR\_A\ and\ DR\_B\ accesses}}
+\DoxyCodeLine{00284\ \textcolor{comment}{\ \ \ in\ the\ original\ or\ the\ new\ code\ are\ mingled\ in\ some\ way.\ \ For\ example,}}
+\DoxyCodeLine{00285\ \textcolor{comment}{\ \ \ if\ DR\_A.access\_size\ represents\ the\ effect\ of\ two\ individual\ writes}}
+\DoxyCodeLine{00286\ \textcolor{comment}{\ \ \ to\ nearby\ locations,\ the\ pair\ breaks\ the\ assumption\ if\ those\ writes}}
+\DoxyCodeLine{00287\ \textcolor{comment}{\ \ \ occur\ either\ side\ of\ the\ access\ for\ DR\_B.}}
+\DoxyCodeLine{00288\ \textcolor{comment}{}}
+\DoxyCodeLine{00289\ \textcolor{comment}{\ \ \ Note\ that\ DR\_ALIAS\_ARBITRARY\ describes\ whether\ the\ ordering\ assumption}}
+\DoxyCodeLine{00290\ \textcolor{comment}{\ \ \ fails\ to\ hold\ for\ any\ individual\ pair\ in\ P.\ \ If\ the\ assumption\ *does*}}
+\DoxyCodeLine{00291\ \textcolor{comment}{\ \ \ hold\ for\ every\ pair\ in\ P,\ it\ doesn't\ matter\ whether\ it\ holds\ for\ the}}
+\DoxyCodeLine{00292\ \textcolor{comment}{\ \ \ composite\ pair\ or\ not.\ \ In\ other\ words,\ P\ should\ represent\ the\ complete}}
+\DoxyCodeLine{00293\ \textcolor{comment}{\ \ \ set\ of\ pairs\ that\ the\ composite\ pair\ is\ testing,\ so\ only\ the\ ordering}}
+\DoxyCodeLine{00294\ \textcolor{comment}{\ \ \ of\ two\ accesses\ in\ the\ same\ member\ of\ P\ matters.\ \ */}}
+\DoxyCodeLine{00295\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{tree-data-ref_8h_a996e0d952ff97e756101fd6be10f4bfc}{DR\_ALIAS\_RAW}}\ =\ 1U\ <<\ 0;}
+\DoxyCodeLine{00296\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{tree-data-ref_8h_ae15c7ddd48d357335697702dd0137cb9}{DR\_ALIAS\_WAR}}\ =\ 1U\ <<\ 1;}
+\DoxyCodeLine{00297\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{tree-data-ref_8h_a432ae753255b4a0ed8ddd49d098648f1}{DR\_ALIAS\_WAW}}\ =\ 1U\ <<\ 2;}
+\DoxyCodeLine{00298\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{tree-data-ref_8h_a5add3618f5b06dd62df12560097210dc}{DR\_ALIAS\_ARBITRARY}}\ =\ 1U\ <<\ 3;}
+\DoxyCodeLine{00299\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{tree-data-ref_8h_ae697687e9493b243bc227d4f0613383f}{DR\_ALIAS\_SWAPPED}}\ =\ 1U\ <<\ 4;}
+\DoxyCodeLine{00300\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{tree-data-ref_8h_a408c212102e248eb530e2112aa3b2406}{DR\_ALIAS\_UNSWAPPED}}\ =\ 1U\ <<\ 5;}
+\DoxyCodeLine{00301\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{tree-data-ref_8h_a8684a125ada60050d2cc380b02c0c95f}{DR\_ALIAS\_MIXED\_STEPS}}\ =\ 1U\ <<\ 6;}
+\DoxyCodeLine{00302\ }
+\DoxyCodeLine{00303\ \textcolor{comment}{/*\ This\ struct\ contains\ two\ dr\_with\_seg\_len\ objects\ with\ aliasing\ data}}
+\DoxyCodeLine{00304\ \textcolor{comment}{\ \ \ refs.\ \ Two\ comparisons\ are\ generated\ from\ them.\ \ */}}
+\DoxyCodeLine{00305\ }
+\DoxyCodeLine{00306\ \textcolor{keyword}{class\ }\doxymbox{\hyperlink{classdr__with__seg__len__pair__t_a6d3efaa292280741d4b0eb6255a0eb2b}{dr\_with\_seg\_len\_pair\_t}}}
+\DoxyCodeLine{00307\ \{}
+\DoxyCodeLine{00308\ \textcolor{keyword}{public}:}
+\DoxyCodeLine{00309\ \ \ \textcolor{comment}{/*\ WELL\_ORDERED\ indicates\ that\ the\ ordering\ assumption\ described\ above}}
+\DoxyCodeLine{00310\ \textcolor{comment}{\ \ \ \ \ DR\_ALIAS\_ARBITRARY\ holds.\ \ REORDERED\ indicates\ that\ it\ doesn't.\ \ */}}
+\DoxyCodeLine{00311\ \ \ \textcolor{keyword}{enum}\ \doxymbox{\hyperlink{classdr__with__seg__len__pair__t_a43cb474b7c924700ffd3e5f8407b2f79}{sequencing}}\ \{\ \doxymbox{\hyperlink{classdr__with__seg__len__pair__t_a43cb474b7c924700ffd3e5f8407b2f79a8d384ee85ec59d9ecaac29511f3d185b}{WELL\_ORDERED}},\ \doxymbox{\hyperlink{classdr__with__seg__len__pair__t_a43cb474b7c924700ffd3e5f8407b2f79a3419e6c3e5b278ecdb701e449e5a86a1}{REORDERED}}\ \};}
+\DoxyCodeLine{00312\ }
+\DoxyCodeLine{00313\ \ \ \doxymbox{\hyperlink{classdr__with__seg__len__pair__t_a6d3efaa292280741d4b0eb6255a0eb2b}{dr\_with\_seg\_len\_pair\_t}}\ (\textcolor{keyword}{const}\ \doxymbox{\hyperlink{classdr__with__seg__len}{dr\_with\_seg\_len}}\ \&,}
+\DoxyCodeLine{00314\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classdr__with__seg__len}{dr\_with\_seg\_len}}\ \&,\ \doxymbox{\hyperlink{classdr__with__seg__len__pair__t_a43cb474b7c924700ffd3e5f8407b2f79}{sequencing}});}
+\DoxyCodeLine{00315\ }
+\DoxyCodeLine{00316\ \ \ \doxymbox{\hyperlink{classdr__with__seg__len}{dr\_with\_seg\_len}}\ \doxymbox{\hyperlink{classdr__with__seg__len__pair__t_a7f8d0ab43d503b95bc42b66b575ab72b}{first}};}
+\DoxyCodeLine{00317\ \ \ \doxymbox{\hyperlink{classdr__with__seg__len}{dr\_with\_seg\_len}}\ \doxymbox{\hyperlink{classdr__with__seg__len__pair__t_a709f88b18f7533c764689870b74e1828}{second}};}
+\DoxyCodeLine{00318\ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{classdr__with__seg__len__pair__t_abbfbc10dfdc4922f2b9bee707a281f36}{flags}};}
+\DoxyCodeLine{00319\ \};}
+\DoxyCodeLine{00320\ }
+\DoxyCodeLine{00321\ \textcolor{keyword}{inline}\ \doxymbox{\hyperlink{classdr__with__seg__len__pair__t_a6d3efaa292280741d4b0eb6255a0eb2b}{dr\_with\_seg\_len\_pair\_t::}}}
+\DoxyCodeLine{00322\ \doxymbox{\hyperlink{classdr__with__seg__len__pair__t_a6d3efaa292280741d4b0eb6255a0eb2b}{dr\_with\_seg\_len\_pair\_t}}\ (\textcolor{keyword}{const}\ \doxymbox{\hyperlink{classdr__with__seg__len}{dr\_with\_seg\_len}}\ \&d1,\ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classdr__with__seg__len}{dr\_with\_seg\_len}}\ \&d2,}
+\DoxyCodeLine{00323\ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{classdr__with__seg__len__pair__t_a43cb474b7c924700ffd3e5f8407b2f79}{sequencing}}\ seq)}
+\DoxyCodeLine{00324\ \ \ :\ \doxymbox{\hyperlink{classdr__with__seg__len__pair__t_a7f8d0ab43d503b95bc42b66b575ab72b}{first}}\ (d1),\ \doxymbox{\hyperlink{classdr__with__seg__len__pair__t_a709f88b18f7533c764689870b74e1828}{second}}\ (d2),\ \doxymbox{\hyperlink{classdr__with__seg__len__pair__t_abbfbc10dfdc4922f2b9bee707a281f36}{flags}}\ (0)}
+\DoxyCodeLine{00325\ \{}
+\DoxyCodeLine{00326\ \ \ \textcolor{keywordflow}{if}\ (\doxymbox{\hyperlink{tree-data-ref_8h_a3805af9747ffb1f195708ec18b1fbf39}{DR\_IS\_READ}}\ (d1.\doxymbox{\hyperlink{classdr__with__seg__len_a741603d6966203b6a8f6ffe7a4c4fb56}{dr}})\ \&\&\ \doxymbox{\hyperlink{tree-data-ref_8h_a0ef77f5c72a63f356c736c9031a4e5e2}{DR\_IS\_WRITE}}\ (d2.\doxymbox{\hyperlink{classdr__with__seg__len_a741603d6966203b6a8f6ffe7a4c4fb56}{dr}}))}
+\DoxyCodeLine{00327\ \ \ \ \ \doxymbox{\hyperlink{classdr__with__seg__len__pair__t_abbfbc10dfdc4922f2b9bee707a281f36}{flags}}\ |=\ \doxymbox{\hyperlink{tree-data-ref_8h_ae15c7ddd48d357335697702dd0137cb9}{DR\_ALIAS\_WAR}};}
+\DoxyCodeLine{00328\ \ \ \textcolor{keywordflow}{else}\ \doxymbox{\hyperlink{poly-int_8h_a5e43f28025fba975ba97367583909344}{if}}\ (\doxymbox{\hyperlink{tree-data-ref_8h_a0ef77f5c72a63f356c736c9031a4e5e2}{DR\_IS\_WRITE}}\ (d1.\doxymbox{\hyperlink{classdr__with__seg__len_a741603d6966203b6a8f6ffe7a4c4fb56}{dr}})\ \&\&\ \doxymbox{\hyperlink{tree-data-ref_8h_a3805af9747ffb1f195708ec18b1fbf39}{DR\_IS\_READ}}\ (d2.\doxymbox{\hyperlink{classdr__with__seg__len_a741603d6966203b6a8f6ffe7a4c4fb56}{dr}}))}
+\DoxyCodeLine{00329\ \ \ \ \ \doxymbox{\hyperlink{classdr__with__seg__len__pair__t_abbfbc10dfdc4922f2b9bee707a281f36}{flags}}\ |=\ \doxymbox{\hyperlink{tree-data-ref_8h_a996e0d952ff97e756101fd6be10f4bfc}{DR\_ALIAS\_RAW}};}
+\DoxyCodeLine{00330\ \ \ \textcolor{keywordflow}{else}\ \doxymbox{\hyperlink{poly-int_8h_a5e43f28025fba975ba97367583909344}{if}}\ (\doxymbox{\hyperlink{tree-data-ref_8h_a0ef77f5c72a63f356c736c9031a4e5e2}{DR\_IS\_WRITE}}\ (d1.\doxymbox{\hyperlink{classdr__with__seg__len_a741603d6966203b6a8f6ffe7a4c4fb56}{dr}})\ \&\&\ \doxymbox{\hyperlink{tree-data-ref_8h_a0ef77f5c72a63f356c736c9031a4e5e2}{DR\_IS\_WRITE}}\ (d2.\doxymbox{\hyperlink{classdr__with__seg__len_a741603d6966203b6a8f6ffe7a4c4fb56}{dr}}))}
+\DoxyCodeLine{00331\ \ \ \ \ \doxymbox{\hyperlink{classdr__with__seg__len__pair__t_abbfbc10dfdc4922f2b9bee707a281f36}{flags}}\ |=\ \doxymbox{\hyperlink{tree-data-ref_8h_a432ae753255b4a0ed8ddd49d098648f1}{DR\_ALIAS\_WAW}};}
+\DoxyCodeLine{00332\ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00333\ \ \ \ \ \doxymbox{\hyperlink{system_8h_a32b3b26e9883686d3022c1ffe5ec3aa4}{gcc\_unreachable}}\ ();}
+\DoxyCodeLine{00334\ \ \ \textcolor{keywordflow}{if}\ (seq\ ==\ \doxymbox{\hyperlink{classdr__with__seg__len__pair__t_a43cb474b7c924700ffd3e5f8407b2f79a3419e6c3e5b278ecdb701e449e5a86a1}{REORDERED}})}
+\DoxyCodeLine{00335\ \ \ \ \ \doxymbox{\hyperlink{classdr__with__seg__len__pair__t_abbfbc10dfdc4922f2b9bee707a281f36}{flags}}\ |=\ \doxymbox{\hyperlink{tree-data-ref_8h_a5add3618f5b06dd62df12560097210dc}{DR\_ALIAS\_ARBITRARY}};}
+\DoxyCodeLine{00336\ \}}
+\DoxyCodeLine{00337\ }
+\DoxyCodeLine{00338\ \textcolor{keyword}{enum}\ \doxymbox{\hyperlink{tree-data-ref_8h_ada00d474c366ac1140c6679d132e10e0}{data\_dependence\_direction}}\ \{}
+\DoxyCodeLine{00339\ \ \ \doxymbox{\hyperlink{tree-data-ref_8h_ada00d474c366ac1140c6679d132e10e0a1222997b73d939b3be475d16e6d277e0}{dir\_positive}},}
+\DoxyCodeLine{00340\ \ \ \doxymbox{\hyperlink{tree-data-ref_8h_ada00d474c366ac1140c6679d132e10e0a8d5cb1a4be804e0e7a8b507b98d0525d}{dir\_negative}},}
+\DoxyCodeLine{00341\ \ \ \doxymbox{\hyperlink{tree-data-ref_8h_ada00d474c366ac1140c6679d132e10e0aa923d1ce5c0be5b7a5209b1222a2867f}{dir\_equal}},}
+\DoxyCodeLine{00342\ \ \ \doxymbox{\hyperlink{tree-data-ref_8h_ada00d474c366ac1140c6679d132e10e0a91102203250bf5b76a570f76e08171af}{dir\_positive\_or\_negative}},}
+\DoxyCodeLine{00343\ \ \ \doxymbox{\hyperlink{tree-data-ref_8h_ada00d474c366ac1140c6679d132e10e0a24dde6dc24ed9bf2cc72f4fdb95a3e0c}{dir\_positive\_or\_equal}},}
+\DoxyCodeLine{00344\ \ \ \doxymbox{\hyperlink{tree-data-ref_8h_ada00d474c366ac1140c6679d132e10e0aa2737b3d24d752f7b3b8b4ca933add45}{dir\_negative\_or\_equal}},}
+\DoxyCodeLine{00345\ \ \ \doxymbox{\hyperlink{tree-data-ref_8h_ada00d474c366ac1140c6679d132e10e0a4b9372cd532e95a3fe46dec861f9e276}{dir\_star}},}
+\DoxyCodeLine{00346\ \ \ \doxymbox{\hyperlink{tree-data-ref_8h_ada00d474c366ac1140c6679d132e10e0a91bf5ed75d3f2504a615669a9ca41ca3}{dir\_independent}}}
+\DoxyCodeLine{00347\ \};}
+\DoxyCodeLine{00348\ }
+\DoxyCodeLine{00349\ \textcolor{comment}{/*\ The\ description\ of\ the\ grid\ of\ iterations\ that\ overlap.\ \ At\ most}}
+\DoxyCodeLine{00350\ \textcolor{comment}{\ \ \ two\ loops\ are\ considered\ at\ the\ same\ time\ just\ now,\ hence\ at\ most}}
+\DoxyCodeLine{00351\ \textcolor{comment}{\ \ \ two\ functions\ are\ needed.\ \ For\ each\ of\ the\ functions,\ we\ store}}
+\DoxyCodeLine{00352\ \textcolor{comment}{\ \ \ the\ vector\ of\ coefficients,\ f[0]\ +\ x\ *\ f[1]\ +\ y\ *\ f[2]\ +\ ...,}}
+\DoxyCodeLine{00353\ \textcolor{comment}{\ \ \ where\ x,\ y,\ ...\ are\ variables.\ \ */}}
+\DoxyCodeLine{00354\ }
+\DoxyCodeLine{00355\ \textcolor{preprocessor}{\#define\ MAX\_DIM\ 2}}
+\DoxyCodeLine{00356\ }
+\DoxyCodeLine{00357\ \textcolor{comment}{/*\ Special\ values\ of\ N.\ \ */}}
+\DoxyCodeLine{00358\ \textcolor{preprocessor}{\#define\ NO\_DEPENDENCE\ 0}}
+\DoxyCodeLine{00359\ \textcolor{preprocessor}{\#define\ NOT\_KNOWN\ (MAX\_DIM\ +\ 1)}}
+\DoxyCodeLine{00360\ \textcolor{preprocessor}{\#define\ CF\_NONTRIVIAL\_P(CF)\ ((CF)-\/>n\ !=\ NO\_DEPENDENCE\ \&\&\ (CF)-\/>n\ !=\ NOT\_KNOWN)}}
+\DoxyCodeLine{00361\ \textcolor{preprocessor}{\#define\ CF\_NOT\_KNOWN\_P(CF)\ ((CF)-\/>n\ ==\ NOT\_KNOWN)}}
+\DoxyCodeLine{00362\ \textcolor{preprocessor}{\#define\ CF\_NO\_DEPENDENCE\_P(CF)\ ((CF)-\/>n\ ==\ NO\_DEPENDENCE)}}
+\DoxyCodeLine{00363\ }
+\DoxyCodeLine{00364\ \textcolor{keyword}{typedef}\ \doxymbox{\hyperlink{structvec}{vec<tree>}}\ \doxymbox{\hyperlink{tree-data-ref_8h_aeae28e4b2b04463411e48ec324428ba0}{affine\_fn}};}
+\DoxyCodeLine{00365\ }
+\DoxyCodeLine{00366\ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{structconflict__function}{conflict\_function}}}
+\DoxyCodeLine{00367\ \{}
+\DoxyCodeLine{00368\ \ \ \textcolor{keywordtype}{unsigned}\ \doxymbox{\hyperlink{structconflict__function_a85a85fe612324355f68362be76c79ea7}{n}};}
+\DoxyCodeLine{00369\ \ \ \doxymbox{\hyperlink{tree-data-ref_8h_aeae28e4b2b04463411e48ec324428ba0}{affine\_fn}}\ \doxymbox{\hyperlink{structconflict__function_a264940c77992bb70608826ef713f9739}{fns}}[\doxymbox{\hyperlink{tree-data-ref_8h_a7ba3949b1f197baf0354d41124bdbe88}{MAX\_DIM}}];}
+\DoxyCodeLine{00370\ \};}
+\DoxyCodeLine{00371\ }
+\DoxyCodeLine{00372\ \textcolor{comment}{/*\ What\ is\ a\ subscript?\ \ Given\ two\ array\ accesses\ a\ subscript\ is\ the}}
+\DoxyCodeLine{00373\ \textcolor{comment}{\ \ \ tuple\ composed\ of\ the\ access\ functions\ for\ a\ given\ dimension.}}
+\DoxyCodeLine{00374\ \textcolor{comment}{\ \ \ Example:\ Given\ A[f1][f2][f3]\ and\ B[g1][g2][g3],\ there\ are\ three}}
+\DoxyCodeLine{00375\ \textcolor{comment}{\ \ \ subscripts:\ (f1,\ g1),\ (f2,\ g2),\ (f3,\ g3).\ \ These\ three\ subscripts}}
+\DoxyCodeLine{00376\ \textcolor{comment}{\ \ \ are\ stored\ in\ the\ data\_dependence\_relation\ structure\ under\ the\ form}}
+\DoxyCodeLine{00377\ \textcolor{comment}{\ \ \ of\ an\ array\ of\ subscripts.\ \ */}}
+\DoxyCodeLine{00378\ }
+\DoxyCodeLine{00379\ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{structsubscript}{subscript}}}
+\DoxyCodeLine{00380\ \{}
+\DoxyCodeLine{00381\ \ \ \textcolor{comment}{/*\ The\ access\ functions\ of\ the\ two\ references.\ \ */}}
+\DoxyCodeLine{00382\ \ \ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ \doxymbox{\hyperlink{structsubscript_a669b5cee583a88c495cbe8584fcfe217}{access\_fn}}[2];}
+\DoxyCodeLine{00383\ }
+\DoxyCodeLine{00384\ \ \ \textcolor{comment}{/*\ A\ description\ of\ the\ iterations\ for\ which\ the\ elements\ are}}
+\DoxyCodeLine{00385\ \textcolor{comment}{\ \ \ \ \ accessed\ twice.\ \ */}}
+\DoxyCodeLine{00386\ \ \ \doxymbox{\hyperlink{structconflict__function}{conflict\_function}}\ *\doxymbox{\hyperlink{structsubscript_a738d712ff214dc77d229804eeb01296d}{conflicting\_iterations\_in\_a}};}
+\DoxyCodeLine{00387\ \ \ \doxymbox{\hyperlink{structconflict__function}{conflict\_function}}\ *\doxymbox{\hyperlink{structsubscript_ac23fc7f178c77213c72e781281b12865}{conflicting\_iterations\_in\_b}};}
+\DoxyCodeLine{00388\ }
+\DoxyCodeLine{00389\ \ \ \textcolor{comment}{/*\ This\ field\ stores\ the\ information\ about\ the\ iteration\ domain}}
+\DoxyCodeLine{00390\ \textcolor{comment}{\ \ \ \ \ validity\ of\ the\ dependence\ relation.\ \ */}}
+\DoxyCodeLine{00391\ \ \ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ \doxymbox{\hyperlink{structsubscript_a8cbb1edc825c3ac206c250df1dc4b6f2}{last\_conflict}};}
+\DoxyCodeLine{00392\ }
+\DoxyCodeLine{00393\ \ \ \textcolor{comment}{/*\ Distance\ from\ the\ iteration\ that\ access\ a\ conflicting\ element\ in}}
+\DoxyCodeLine{00394\ \textcolor{comment}{\ \ \ \ \ A\ to\ the\ iteration\ that\ access\ this\ same\ conflicting\ element\ in}}
+\DoxyCodeLine{00395\ \textcolor{comment}{\ \ \ \ \ B.\ \ The\ distance\ is\ a\ tree\ scalar\ expression,\ i.e.\ a\ constant\ or\ a}}
+\DoxyCodeLine{00396\ \textcolor{comment}{\ \ \ \ \ symbolic\ expression,\ but\ certainly\ not\ a\ chrec\ function.\ \ */}}
+\DoxyCodeLine{00397\ \ \ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ \doxymbox{\hyperlink{structsubscript_a669db0c4a29c08b510db5a01d9be5b4b}{distance}};}
+\DoxyCodeLine{00398\ \};}
+\DoxyCodeLine{00399\ }
+\DoxyCodeLine{00400\ \textcolor{keyword}{typedef}\ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{structsubscript}{subscript}}\ *\doxymbox{\hyperlink{tree-data-ref_8h_a6c96bdbd5d230406f37ce09cd49359bf}{subscript\_p}};}
+\DoxyCodeLine{00401\ }
+\DoxyCodeLine{00402\ \textcolor{preprocessor}{\#define\ SUB\_ACCESS\_FN(SUB,\ I)\ (SUB)-\/>access\_fn[I]}}
+\DoxyCodeLine{00403\ \textcolor{preprocessor}{\#define\ SUB\_CONFLICTS\_IN\_A(SUB)\ (SUB)-\/>conflicting\_iterations\_in\_a}}
+\DoxyCodeLine{00404\ \textcolor{preprocessor}{\#define\ SUB\_CONFLICTS\_IN\_B(SUB)\ (SUB)-\/>conflicting\_iterations\_in\_b}}
+\DoxyCodeLine{00405\ \textcolor{preprocessor}{\#define\ SUB\_LAST\_CONFLICT(SUB)\ (SUB)-\/>last\_conflict}}
+\DoxyCodeLine{00406\ \textcolor{preprocessor}{\#define\ SUB\_DISTANCE(SUB)\ (SUB)-\/>distance}}
+\DoxyCodeLine{00407\ }
+\DoxyCodeLine{00408\ \textcolor{comment}{/*\ A\ data\_dependence\_relation\ represents\ a\ relation\ between\ two}}
+\DoxyCodeLine{00409\ \textcolor{comment}{\ \ \ data\_references\ A\ and\ B.\ \ */}}
+\DoxyCodeLine{00410\ }
+\DoxyCodeLine{00411\ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{structdata__dependence__relation}{data\_dependence\_relation}}}
+\DoxyCodeLine{00412\ \{}
+\DoxyCodeLine{00413\ }
+\DoxyCodeLine{00414\ \ \ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{structdata__reference}{data\_reference}}\ *\doxymbox{\hyperlink{structdata__dependence__relation_a701df94cd11df67c33b51faf761c35ba}{a}};}
+\DoxyCodeLine{00415\ \ \ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{structdata__reference}{data\_reference}}\ *\doxymbox{\hyperlink{structdata__dependence__relation_a74ff7ce18b10c14c94852333fb660583}{b}};}
+\DoxyCodeLine{00416\ }
+\DoxyCodeLine{00417\ \ \ \textcolor{comment}{/*\ A\ "{}yes/no/maybe"{}\ field\ for\ the\ dependence\ relation:}}
+\DoxyCodeLine{00418\ \textcolor{comment}{}}
+\DoxyCodeLine{00419\ \textcolor{comment}{\ \ \ \ \ -\/\ when\ "{}ARE\_DEPENDENT\ ==\ NULL\_TREE"{},\ there\ exist\ a\ dependence}}
+\DoxyCodeLine{00420\ \textcolor{comment}{\ \ \ \ \ \ \ relation\ between\ A\ and\ B,\ and\ the\ description\ of\ this\ relation}}
+\DoxyCodeLine{00421\ \textcolor{comment}{\ \ \ \ \ \ \ is\ given\ in\ the\ SUBSCRIPTS\ array,}}
+\DoxyCodeLine{00422\ \textcolor{comment}{}}
+\DoxyCodeLine{00423\ \textcolor{comment}{\ \ \ \ \ -\/\ when\ "{}ARE\_DEPENDENT\ ==\ chrec\_known"{},\ there\ is\ no\ dependence\ and}}
+\DoxyCodeLine{00424\ \textcolor{comment}{\ \ \ \ \ \ \ SUBSCRIPTS\ is\ empty,}}
+\DoxyCodeLine{00425\ \textcolor{comment}{}}
+\DoxyCodeLine{00426\ \textcolor{comment}{\ \ \ \ \ -\/\ when\ "{}ARE\_DEPENDENT\ ==\ chrec\_dont\_know"{},\ there\ may\ be\ a\ dependence,}}
+\DoxyCodeLine{00427\ \textcolor{comment}{\ \ \ \ \ \ \ but\ the\ analyzer\ cannot\ be\ more\ specific.\ \ */}}
+\DoxyCodeLine{00428\ \ \ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ \doxymbox{\hyperlink{structdata__dependence__relation_a8eb606c6f4962fd3554f2506a4e76e87}{are\_dependent}};}
+\DoxyCodeLine{00429\ }
+\DoxyCodeLine{00430\ \ \ \textcolor{comment}{/*\ If\ nonnull,\ COULD\_BE\_INDEPENDENT\_P\ is\ true\ and\ the\ accesses\ are}}
+\DoxyCodeLine{00431\ \textcolor{comment}{\ \ \ \ \ independent\ when\ the\ runtime\ addresses\ of\ OBJECT\_A\ and\ OBJECT\_B}}
+\DoxyCodeLine{00432\ \textcolor{comment}{\ \ \ \ \ are\ different.\ \ The\ addresses\ of\ both\ objects\ are\ invariant\ in\ the}}
+\DoxyCodeLine{00433\ \textcolor{comment}{\ \ \ \ \ loop\ nest.\ \ */}}
+\DoxyCodeLine{00434\ \ \ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ \doxymbox{\hyperlink{structdata__dependence__relation_ac666b027560d04a04eca0ecd08f88668}{object\_a}};}
+\DoxyCodeLine{00435\ \ \ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ \doxymbox{\hyperlink{structdata__dependence__relation_a8ef38b4c935740dfbc04ebb0dad4ffe5}{object\_b}};}
+\DoxyCodeLine{00436\ }
+\DoxyCodeLine{00437\ \ \ \textcolor{comment}{/*\ For\ each\ subscript\ in\ the\ dependence\ test,\ there\ is\ an\ element\ in}}
+\DoxyCodeLine{00438\ \textcolor{comment}{\ \ \ \ \ this\ array.\ \ This\ is\ the\ attribute\ that\ labels\ the\ edge\ A-\/>B\ of}}
+\DoxyCodeLine{00439\ \textcolor{comment}{\ \ \ \ \ the\ data\_dependence\_relation.\ \ */}}
+\DoxyCodeLine{00440\ \ \ \doxymbox{\hyperlink{structvec}{vec<subscript\_p>}}\ \doxymbox{\hyperlink{structdata__dependence__relation_a279163a2155d4adc69a177d73cc0020d}{subscripts}};}
+\DoxyCodeLine{00441\ }
+\DoxyCodeLine{00442\ \ \ \textcolor{comment}{/*\ The\ analyzed\ loop\ nest.\ \ */}}
+\DoxyCodeLine{00443\ \ \ \doxymbox{\hyperlink{structvec}{vec<loop\_p>}}\ \doxymbox{\hyperlink{structdata__dependence__relation_a6e3eb29e97e4a1e3ce218d55671953c9}{loop\_nest}};}
+\DoxyCodeLine{00444\ }
+\DoxyCodeLine{00445\ \ \ \textcolor{comment}{/*\ The\ classic\ direction\ vector.\ \ */}}
+\DoxyCodeLine{00446\ \ \ \doxymbox{\hyperlink{structvec}{vec<lambda\_vector>}}\ \doxymbox{\hyperlink{structdata__dependence__relation_a11f50e2165c8861238dc902c4de5ecac}{dir\_vects}};}
+\DoxyCodeLine{00447\ }
+\DoxyCodeLine{00448\ \ \ \textcolor{comment}{/*\ The\ classic\ distance\ vector.\ \ */}}
+\DoxyCodeLine{00449\ \ \ \doxymbox{\hyperlink{structvec}{vec<lambda\_vector>}}\ \doxymbox{\hyperlink{structdata__dependence__relation_ad9365ed18966952aeef8d39811ffb9dc}{dist\_vects}};}
+\DoxyCodeLine{00450\ }
+\DoxyCodeLine{00451\ \ \ \textcolor{comment}{/*\ Is\ the\ dependence\ reversed\ with\ respect\ to\ the\ lexicographic\ order?\ \ */}}
+\DoxyCodeLine{00452\ \ \ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{structdata__dependence__relation_acb0090df96e76f47dd52f65d25be92da}{reversed\_p}};}
+\DoxyCodeLine{00453\ }
+\DoxyCodeLine{00454\ \ \ \textcolor{comment}{/*\ When\ the\ dependence\ relation\ is\ affine,\ it\ can\ be\ represented\ by}}
+\DoxyCodeLine{00455\ \textcolor{comment}{\ \ \ \ \ a\ distance\ vector.\ \ */}}
+\DoxyCodeLine{00456\ \ \ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{structdata__dependence__relation_a8f35ae5ced0cad98d0928b9c84663405}{affine\_p}};}
+\DoxyCodeLine{00457\ }
+\DoxyCodeLine{00458\ \ \ \textcolor{comment}{/*\ Set\ to\ true\ when\ the\ dependence\ relation\ is\ on\ the\ same\ data}}
+\DoxyCodeLine{00459\ \textcolor{comment}{\ \ \ \ \ access.\ \ */}}
+\DoxyCodeLine{00460\ \ \ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{structdata__dependence__relation_a9bc8de38c21c3cf95b569e651bc02e46}{self\_reference\_p}};}
+\DoxyCodeLine{00461\ }
+\DoxyCodeLine{00462\ \ \ \textcolor{comment}{/*\ True\ if\ the\ dependence\ described\ is\ conservatively\ correct\ rather}}
+\DoxyCodeLine{00463\ \textcolor{comment}{\ \ \ \ \ than\ exact,\ and\ if\ it\ is\ still\ possible\ for\ the\ accesses\ to\ be}}
+\DoxyCodeLine{00464\ \textcolor{comment}{\ \ \ \ \ conditionally\ independent.\ \ For\ example,\ the\ a\ and\ b\ references\ in:}}
+\DoxyCodeLine{00465\ \textcolor{comment}{}}
+\DoxyCodeLine{00466\ \textcolor{comment}{\ \ \ \ \ \ \ struct\ s\ *a,\ *b;}}
+\DoxyCodeLine{00467\ \textcolor{comment}{\ \ \ \ \ \ \ for\ (int\ i\ =\ 0;\ i\ <\ n;\ ++i)}}
+\DoxyCodeLine{00468\ \textcolor{comment}{\ \ \ \ \ \ \ \ \ a-\/>f[i]\ +=\ b-\/>f[i];}}
+\DoxyCodeLine{00469\ \textcolor{comment}{}}
+\DoxyCodeLine{00470\ \textcolor{comment}{\ \ \ \ \ conservatively\ have\ a\ distance\ vector\ of\ (0),\ for\ the\ case\ in\ which}}
+\DoxyCodeLine{00471\ \textcolor{comment}{\ \ \ \ \ a\ ==\ b,\ but\ the\ accesses\ are\ independent\ if\ a\ !=\ b.\ \ Similarly,}}
+\DoxyCodeLine{00472\ \textcolor{comment}{\ \ \ \ \ the\ a\ and\ b\ references\ in:}}
+\DoxyCodeLine{00473\ \textcolor{comment}{}}
+\DoxyCodeLine{00474\ \textcolor{comment}{\ \ \ \ \ \ \ struct\ s\ *a,\ *b;}}
+\DoxyCodeLine{00475\ \textcolor{comment}{\ \ \ \ \ \ \ for\ (int\ i\ =\ 0;\ i\ <\ n;\ ++i)}}
+\DoxyCodeLine{00476\ \textcolor{comment}{\ \ \ \ \ \ \ \ \ a[0].f[i]\ +=\ b[i].f[i];}}
+\DoxyCodeLine{00477\ \textcolor{comment}{}}
+\DoxyCodeLine{00478\ \textcolor{comment}{\ \ \ \ \ conservatively\ have\ a\ distance\ vector\ of\ (0),\ but\ they\ are\ indepenent}}
+\DoxyCodeLine{00479\ \textcolor{comment}{\ \ \ \ \ when\ a\ !=\ b\ +\ i.\ \ In\ contrast,\ the\ references\ in:}}
+\DoxyCodeLine{00480\ \textcolor{comment}{}}
+\DoxyCodeLine{00481\ \textcolor{comment}{\ \ \ \ \ \ \ struct\ s\ *a;}}
+\DoxyCodeLine{00482\ \textcolor{comment}{\ \ \ \ \ \ \ for\ (int\ i\ =\ 0;\ i\ <\ n;\ ++i)}}
+\DoxyCodeLine{00483\ \textcolor{comment}{\ \ \ \ \ \ \ \ \ a-\/>f[i]\ +=\ a-\/>f[i];}}
+\DoxyCodeLine{00484\ \textcolor{comment}{}}
+\DoxyCodeLine{00485\ \textcolor{comment}{\ \ \ \ \ have\ the\ same\ distance\ vector\ of\ (0),\ but\ the\ accesses\ can\ never\ be}}
+\DoxyCodeLine{00486\ \textcolor{comment}{\ \ \ \ \ independent.\ \ */}}
+\DoxyCodeLine{00487\ \ \ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{structdata__dependence__relation_a59a9f8a3f85ba4508b3c102c211b41f2}{could\_be\_independent\_p}};}
+\DoxyCodeLine{00488\ \};}
+\DoxyCodeLine{00489\ }
+\DoxyCodeLine{00490\ \textcolor{keyword}{typedef}\ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{structdata__dependence__relation}{data\_dependence\_relation}}\ *\doxymbox{\hyperlink{tree-data-ref_8h_abaccf2b84e647687ec6e1ca42f9b7e86}{ddr\_p}};}
+\DoxyCodeLine{00491\ }
+\DoxyCodeLine{00492\ \textcolor{preprocessor}{\#define\ DDR\_A(DDR)\ (DDR)-\/>a}}
+\DoxyCodeLine{00493\ \textcolor{preprocessor}{\#define\ DDR\_B(DDR)\ (DDR)-\/>b}}
+\DoxyCodeLine{00494\ \textcolor{preprocessor}{\#define\ DDR\_AFFINE\_P(DDR)\ (DDR)-\/>affine\_p}}
+\DoxyCodeLine{00495\ \textcolor{preprocessor}{\#define\ DDR\_ARE\_DEPENDENT(DDR)\ (DDR)-\/>are\_dependent}}
+\DoxyCodeLine{00496\ \textcolor{preprocessor}{\#define\ DDR\_OBJECT\_A(DDR)\ (DDR)-\/>object\_a}}
+\DoxyCodeLine{00497\ \textcolor{preprocessor}{\#define\ DDR\_OBJECT\_B(DDR)\ (DDR)-\/>object\_b}}
+\DoxyCodeLine{00498\ \textcolor{preprocessor}{\#define\ DDR\_SUBSCRIPTS(DDR)\ (DDR)-\/>subscripts}}
+\DoxyCodeLine{00499\ \textcolor{preprocessor}{\#define\ DDR\_SUBSCRIPT(DDR,\ I)\ DDR\_SUBSCRIPTS\ (DDR)[I]}}
+\DoxyCodeLine{00500\ \textcolor{preprocessor}{\#define\ DDR\_NUM\_SUBSCRIPTS(DDR)\ DDR\_SUBSCRIPTS\ (DDR).length\ ()}}
+\DoxyCodeLine{00501\ }
+\DoxyCodeLine{00502\ \textcolor{preprocessor}{\#define\ DDR\_LOOP\_NEST(DDR)\ (DDR)-\/>loop\_nest}}
+\DoxyCodeLine{00503\ \textcolor{comment}{/*\ The\ size\ of\ the\ direction/distance\ vectors:\ the\ number\ of\ loops\ in}}
+\DoxyCodeLine{00504\ \textcolor{comment}{\ \ \ the\ loop\ nest.\ \ */}}
+\DoxyCodeLine{00505\ \textcolor{preprocessor}{\#define\ DDR\_NB\_LOOPS(DDR)\ (DDR\_LOOP\_NEST\ (DDR).length\ ())}}
+\DoxyCodeLine{00506\ \textcolor{preprocessor}{\#define\ DDR\_SELF\_REFERENCE(DDR)\ (DDR)-\/>self\_reference\_p}}
+\DoxyCodeLine{00507\ }
+\DoxyCodeLine{00508\ \textcolor{preprocessor}{\#define\ DDR\_DIST\_VECTS(DDR)\ ((DDR)-\/>dist\_vects)}}
+\DoxyCodeLine{00509\ \textcolor{preprocessor}{\#define\ DDR\_DIR\_VECTS(DDR)\ ((DDR)-\/>dir\_vects)}}
+\DoxyCodeLine{00510\ \textcolor{preprocessor}{\#define\ DDR\_NUM\_DIST\_VECTS(DDR)\ \(\backslash\)}}
+\DoxyCodeLine{00511\ \textcolor{preprocessor}{\ \ (DDR\_DIST\_VECTS\ (DDR).length\ ())}}
+\DoxyCodeLine{00512\ \textcolor{preprocessor}{\#define\ DDR\_NUM\_DIR\_VECTS(DDR)\ \(\backslash\)}}
+\DoxyCodeLine{00513\ \textcolor{preprocessor}{\ \ (DDR\_DIR\_VECTS\ (DDR).length\ ())}}
+\DoxyCodeLine{00514\ \textcolor{preprocessor}{\#define\ DDR\_DIR\_VECT(DDR,\ I)\ \(\backslash\)}}
+\DoxyCodeLine{00515\ \textcolor{preprocessor}{\ \ DDR\_DIR\_VECTS\ (DDR)[I]}}
+\DoxyCodeLine{00516\ \textcolor{preprocessor}{\#define\ DDR\_DIST\_VECT(DDR,\ I)\ \(\backslash\)}}
+\DoxyCodeLine{00517\ \textcolor{preprocessor}{\ \ DDR\_DIST\_VECTS\ (DDR)[I]}}
+\DoxyCodeLine{00518\ \textcolor{preprocessor}{\#define\ DDR\_REVERSED\_P(DDR)\ (DDR)-\/>reversed\_p}}
+\DoxyCodeLine{00519\ \textcolor{preprocessor}{\#define\ DDR\_COULD\_BE\_INDEPENDENT\_P(DDR)\ (DDR)-\/>could\_be\_independent\_p}}
+\DoxyCodeLine{00520\ }
+\DoxyCodeLine{00521\ }
+\DoxyCodeLine{00522\ \doxymbox{\hyperlink{classopt__result}{opt\_result}}\ \doxymbox{\hyperlink{tree-data-ref_8h_a7b7cd09cc6a812a9d6e956e5e0ab41a7}{dr\_analyze\_innermost}}\ (\doxymbox{\hyperlink{structinnermost__loop__behavior}{innermost\_loop\_behavior}}\ *,\ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}},}
+\DoxyCodeLine{00523\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{class}\ loop\ *,\ \textcolor{keyword}{const}\ gimple\ *);}
+\DoxyCodeLine{00524\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{tree-data-ref_8h_a410fd4d4b78756f0d8e08ed594affdf3}{compute\_data\_dependences\_for\_loop}}\ (\textcolor{keyword}{class}\ loop\ *,\ \textcolor{keywordtype}{bool},}
+\DoxyCodeLine{00525\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{structvec}{vec<loop\_p>}}\ *,}
+\DoxyCodeLine{00526\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{structvec}{vec<data\_reference\_p>}}\ *,}
+\DoxyCodeLine{00527\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{structvec}{vec<ddr\_p>}}\ *);}
+\DoxyCodeLine{00528\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{tree-data-ref_8h_a39b690cf41bf3586b5b6dd4904f3a9ee}{debug\_ddrs}}\ (\doxymbox{\hyperlink{structvec}{vec<ddr\_p>}}\ );}
+\DoxyCodeLine{00529\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{tree-data-ref_8h_abee2f69ee58b933711b86edb455b46f5}{dump\_data\_reference}}\ (FILE\ *,\ \textcolor{keyword}{struct}\ \doxymbox{\hyperlink{structdata__reference}{data\_reference}}\ *);}
+\DoxyCodeLine{00530\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{collect-utils_8h_a398527b3e9e358c345c5047b16871957}{debug}}\ (\doxymbox{\hyperlink{structdata__reference}{data\_reference}}\ \&ref);}
+\DoxyCodeLine{00531\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{collect-utils_8h_a398527b3e9e358c345c5047b16871957}{debug}}\ (\doxymbox{\hyperlink{structdata__reference}{data\_reference}}\ *ptr);}
+\DoxyCodeLine{00532\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{tree-data-ref_8h_accf4c3f880d9598d26c445c2529a49c7}{debug\_data\_reference}}\ (\textcolor{keyword}{struct}\ \doxymbox{\hyperlink{structdata__reference}{data\_reference}}\ *);}
+\DoxyCodeLine{00533\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{tree-data-ref_8h_a3dd9429ed5c3dafc04c08dd4cbc09841}{debug\_data\_references}}\ (\doxymbox{\hyperlink{structvec}{vec<data\_reference\_p>}}\ );}
+\DoxyCodeLine{00534\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{collect-utils_8h_a398527b3e9e358c345c5047b16871957}{debug}}\ (\doxymbox{\hyperlink{structvec}{vec<data\_reference\_p>}}\ \&ref);}
+\DoxyCodeLine{00535\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{collect-utils_8h_a398527b3e9e358c345c5047b16871957}{debug}}\ (\doxymbox{\hyperlink{structvec}{vec<data\_reference\_p>}}\ *ptr);}
+\DoxyCodeLine{00536\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{tree-data-ref_8h_a4a940c3b91ef66e54106a9c587639345}{debug\_data\_dependence\_relation}}\ (\textcolor{keyword}{const}\ \doxymbox{\hyperlink{structdata__dependence__relation}{data\_dependence\_relation}}\ *);}
+\DoxyCodeLine{00537\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{tree-data-ref_8h_a65153138e928962c65a7854c9d52bc54}{dump\_data\_dependence\_relations}}\ (FILE\ *,\ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{structvec}{vec<ddr\_p>}}\ \&);}
+\DoxyCodeLine{00538\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{collect-utils_8h_a398527b3e9e358c345c5047b16871957}{debug}}\ (\doxymbox{\hyperlink{structvec}{vec<ddr\_p>}}\ \&ref);}
+\DoxyCodeLine{00539\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{collect-utils_8h_a398527b3e9e358c345c5047b16871957}{debug}}\ (\doxymbox{\hyperlink{structvec}{vec<ddr\_p>}}\ *ptr);}
+\DoxyCodeLine{00540\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{tree-data-ref_8h_a8c1a041ef8eefe78bc1b9f3e591f8b2c}{debug\_data\_dependence\_relations}}\ (\doxymbox{\hyperlink{structvec}{vec<ddr\_p>}}\ );}
+\DoxyCodeLine{00541\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{tree-data-ref_8h_a2f6ad1b2e26f4267045096f4956ce247}{free\_dependence\_relation}}\ (\textcolor{keyword}{struct}\ \doxymbox{\hyperlink{structdata__dependence__relation}{data\_dependence\_relation}}\ *);}
+\DoxyCodeLine{00542\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{tree-data-ref_8h_a5a6c40f039e51b538a6380a17a056a55}{free\_dependence\_relations}}\ (\doxymbox{\hyperlink{structvec}{vec<ddr\_p>}}\&\ );}
+\DoxyCodeLine{00543\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{tree-data-ref_8h_ab2e07aab0a0cc274cf4f8a7d9ef147ae}{free\_data\_ref}}\ (\doxymbox{\hyperlink{tree-data-ref_8h_ad8d64ec4923029fb27ae366622a8b451}{data\_reference\_p}});}
+\DoxyCodeLine{00544\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{tree-data-ref_8h_ab8bdad2b09c95ba8e81f7fb0fece1083}{free\_data\_refs}}\ (\doxymbox{\hyperlink{structvec}{vec<data\_reference\_p>}}\&\ );}
+\DoxyCodeLine{00545\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{classopt__result}{opt\_result}}\ \doxymbox{\hyperlink{tree-data-ref_8h_ad7f89249470bf0d25b1306485e6fcc49}{find\_data\_references\_in\_stmt}}\ (\textcolor{keyword}{class}\ loop\ *,\ gimple\ *,}
+\DoxyCodeLine{00546\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{structvec}{vec<data\_reference\_p>}}\ *);}
+\DoxyCodeLine{00547\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{tree-data-ref_8h_a6a4b75a525608e5377cec48bc8c063c5}{graphite\_find\_data\_references\_in\_stmt}}\ (\doxymbox{\hyperlink{coretypes_8h_a44ae11f0c90646aa6208ad4bf486490b}{edge}},\ \doxymbox{\hyperlink{cfgloop_8h_ab26ad044f9ca109a0962dd32c72afd46}{loop\_p}},\ gimple\ *,}
+\DoxyCodeLine{00548\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{structvec}{vec<data\_reference\_p>}}\ *);}
+\DoxyCodeLine{00549\ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ \doxymbox{\hyperlink{tree-data-ref_8h_a23ab43156eb1d4f653a1e6b96cfe04b6}{find\_data\_references\_in\_loop}}\ (\textcolor{keyword}{class}\ loop\ *,\ \doxymbox{\hyperlink{structvec}{vec<data\_reference\_p>}}\ *);}
+\DoxyCodeLine{00550\ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{tree-data-ref_8h_ac1c9908ddd2d9d7a5009b95d92a7ba8b}{loop\_nest\_has\_data\_refs}}\ (\doxymbox{\hyperlink{cfgloop_8h_ab26ad044f9ca109a0962dd32c72afd46}{loop\_p}}\ loop);}
+\DoxyCodeLine{00551\ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{structdata__reference}{data\_reference}}\ *\doxymbox{\hyperlink{tree-data-ref_8h_a11fb13beb616171da15a60def80593b9}{create\_data\_ref}}\ (\doxymbox{\hyperlink{coretypes_8h_a44ae11f0c90646aa6208ad4bf486490b}{edge}},\ \doxymbox{\hyperlink{cfgloop_8h_ab26ad044f9ca109a0962dd32c72afd46}{loop\_p}},\ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}},\ gimple\ *,\ \textcolor{keywordtype}{bool},}
+\DoxyCodeLine{00552\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{bool});}
+\DoxyCodeLine{00553\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{tree-data-ref_8h_ac01a19a7099cdc4aa180d1451740f39d}{find\_loop\_nest}}\ (\textcolor{keyword}{class}\ loop\ *,\ \doxymbox{\hyperlink{structvec}{vec<loop\_p>}}\ *);}
+\DoxyCodeLine{00554\ \textcolor{keyword}{extern}\ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{structdata__dependence__relation}{data\_dependence\_relation}}\ *\doxymbox{\hyperlink{tree-data-ref_8h_a486f6528ad4f065f2c3b6a03d537b053}{initialize\_data\_dependence\_relation}}}
+\DoxyCodeLine{00555\ \ \ \ \ \ (\textcolor{keyword}{struct}\ \doxymbox{\hyperlink{structdata__reference}{data\_reference}}\ *,\ \textcolor{keyword}{struct}\ \doxymbox{\hyperlink{structdata__reference}{data\_reference}}\ *,\ \doxymbox{\hyperlink{structvec}{vec<loop\_p>}});}
+\DoxyCodeLine{00556\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{tree-data-ref_8h_aa463916fb00ab0b3e9b4a5abe6437693}{compute\_affine\_dependence}}\ (\textcolor{keyword}{struct}\ \doxymbox{\hyperlink{structdata__dependence__relation}{data\_dependence\_relation}}\ *,}
+\DoxyCodeLine{00557\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{cfgloop_8h_ab26ad044f9ca109a0962dd32c72afd46}{loop\_p}});}
+\DoxyCodeLine{00558\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{tree-data-ref_8h_a4b42cab9a254cebc7236937000011cbb}{compute\_self\_dependence}}\ (\textcolor{keyword}{struct}\ \doxymbox{\hyperlink{structdata__dependence__relation}{data\_dependence\_relation}}\ *);}
+\DoxyCodeLine{00559\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{tree-data-ref_8h_a42ef90cd0235b434bce8b46b0303c23b}{compute\_all\_dependences}}\ (\textcolor{keyword}{const}\ \doxymbox{\hyperlink{structvec}{vec<data\_reference\_p>}}\ \&,}
+\DoxyCodeLine{00560\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{structvec}{vec<ddr\_p>}}\ *,}
+\DoxyCodeLine{00561\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{structvec}{vec<loop\_p>}}\ \&,\ \textcolor{keywordtype}{bool});}
+\DoxyCodeLine{00562\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ \doxymbox{\hyperlink{tree-data-ref_8h_a42f2484f7121bafbc1d14e8e42fe866a}{find\_data\_references\_in\_bb}}\ (\textcolor{keyword}{class}\ loop\ *,\ \doxymbox{\hyperlink{coretypes_8h_a0469df20b471a4cd7c81fbdce5027487}{basic\_block}},}
+\DoxyCodeLine{00563\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{structvec}{vec<data\_reference\_p>}}\ *);}
+\DoxyCodeLine{00564\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{tree-data-ref_8h_abf17c0ebf1f93d262d10e459afd90297}{dr\_alignment}}\ (\doxymbox{\hyperlink{structinnermost__loop__behavior}{innermost\_loop\_behavior}}\ *);}
+\DoxyCodeLine{00565\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ \doxymbox{\hyperlink{tree-data-ref_8h_a5c100e4d83266fe806273019e5a56932}{get\_base\_for\_alignment}}\ (\doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}},\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ *);}
+\DoxyCodeLine{00566\ }
+\DoxyCodeLine{00567\ \textcolor{comment}{/*\ Return\ the\ alignment\ in\ bytes\ that\ DR\ is\ guaranteed\ to\ have\ at\ all}}
+\DoxyCodeLine{00568\ \textcolor{comment}{\ \ \ times.\ \ */}}
+\DoxyCodeLine{00569\ }
+\DoxyCodeLine{00570\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}}
+\DoxyCodeLine{00571\ \doxymbox{\hyperlink{tree-data-ref_8h_abf17c0ebf1f93d262d10e459afd90297}{dr\_alignment}}\ (\doxymbox{\hyperlink{structdata__reference}{data\_reference}}\ *dr)}
+\DoxyCodeLine{00572\ \{}
+\DoxyCodeLine{00573\ \ \ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{tree-data-ref_8h_abf17c0ebf1f93d262d10e459afd90297}{dr\_alignment}}\ (\&\doxymbox{\hyperlink{tree-data-ref_8h_af8e1e10ca3b3befb78bd30f673566914}{DR\_INNERMOST}}\ (dr));}
+\DoxyCodeLine{00574\ \}}
+\DoxyCodeLine{00575\ }
+\DoxyCodeLine{00576\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{tree-data-ref_8h_aae1494f5a15942a880b1d9269b22996c}{dr\_may\_alias\_p}}\ (\textcolor{keyword}{const}\ \textcolor{keyword}{struct}\ \doxymbox{\hyperlink{structdata__reference}{data\_reference}}\ *,}
+\DoxyCodeLine{00577\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \textcolor{keyword}{struct}\ \doxymbox{\hyperlink{structdata__reference}{data\_reference}}\ *,\ \textcolor{keyword}{class}\ loop\ *);}
+\DoxyCodeLine{00578\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{tree-data-ref_8h_a65391945e14c478e3e2f2ce5f0253bb6}{dr\_equal\_offsets\_p}}\ (\textcolor{keyword}{struct}\ \doxymbox{\hyperlink{structdata__reference}{data\_reference}}\ *,}
+\DoxyCodeLine{00579\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{struct}\ \doxymbox{\hyperlink{structdata__reference}{data\_reference}}\ *);}
+\DoxyCodeLine{00580\ }
+\DoxyCodeLine{00581\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{classopt__result}{opt\_result}}\ \doxymbox{\hyperlink{tree-data-ref_8h_aab8cfce762fba1aed72537d26767123c}{runtime\_alias\_check\_p}}\ (\doxymbox{\hyperlink{tree-data-ref_8h_abaccf2b84e647687ec6e1ca42f9b7e86}{ddr\_p}},\ \textcolor{keyword}{class}\ loop\ *,\ \textcolor{keywordtype}{bool});}
+\DoxyCodeLine{00582\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{tree-data-ref_8h_ab0ac2fde7fe78fe81b69305ead9da392}{data\_ref\_compare\_tree}}\ (\doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}},\ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}});}
+\DoxyCodeLine{00583\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{tree-data-ref_8h_a43f50d800c383c3f6deddab28aca9190}{prune\_runtime\_alias\_test\_list}}\ (\doxymbox{\hyperlink{structvec}{vec<dr\_with\_seg\_len\_pair\_t>}}\ *,}
+\DoxyCodeLine{00584\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{poly-int-types_8h_a6d0ddbcb345e1192ca8249c789c1cb0f}{poly\_uint64}});}
+\DoxyCodeLine{00585\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{tree-data-ref_8h_aab0f14ad4313a1255649726642a5ce39}{create\_runtime\_alias\_checks}}\ (\textcolor{keyword}{class}\ loop\ *,}
+\DoxyCodeLine{00586\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{structvec}{vec<dr\_with\_seg\_len\_pair\_t>}}\ *,}
+\DoxyCodeLine{00587\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}*);}
+\DoxyCodeLine{00588\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ \doxymbox{\hyperlink{tree-data-ref_8h_aea41dee76737d89b7726e540498a2490}{dr\_direction\_indicator}}\ (\textcolor{keyword}{struct}\ \doxymbox{\hyperlink{structdata__reference}{data\_reference}}\ *);}
+\DoxyCodeLine{00589\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ \doxymbox{\hyperlink{tree-data-ref_8h_a9039dc90035ea2130add1f6920298d7b}{dr\_zero\_step\_indicator}}\ (\textcolor{keyword}{struct}\ \doxymbox{\hyperlink{structdata__reference}{data\_reference}}\ *);}
+\DoxyCodeLine{00590\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{tree-data-ref_8h_a16284be48c6043530d1e4639cbff0c9f}{dr\_known\_forward\_stride\_p}}\ (\textcolor{keyword}{struct}\ \doxymbox{\hyperlink{structdata__reference}{data\_reference}}\ *);}
+\DoxyCodeLine{00591\ }
+\DoxyCodeLine{00592\ \textcolor{comment}{/*\ Return\ true\ when\ the\ base\ objects\ of\ data\ references\ A\ and\ B\ are}}
+\DoxyCodeLine{00593\ \textcolor{comment}{\ \ \ the\ same\ memory\ object.\ \ */}}
+\DoxyCodeLine{00594\ }
+\DoxyCodeLine{00595\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{bool}}
+\DoxyCodeLine{00596\ \doxymbox{\hyperlink{tree-data-ref_8h_aa788215bc46957432c4dd9e258a74965}{same\_data\_refs\_base\_objects}}\ (\doxymbox{\hyperlink{tree-data-ref_8h_ad8d64ec4923029fb27ae366622a8b451}{data\_reference\_p}}\ \doxymbox{\hyperlink{poly-int_8h_af77c881600a14567e276ee17dfb8764f}{a}},\ \doxymbox{\hyperlink{tree-data-ref_8h_ad8d64ec4923029fb27ae366622a8b451}{data\_reference\_p}}\ \doxymbox{\hyperlink{poly-int_8h_af3bb9d9df219585072cf9e4e95572f70}{b}})}
+\DoxyCodeLine{00597\ \{}
+\DoxyCodeLine{00598\ \ \ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{tree-data-ref_8h_af813032bc51689590335bb31b31527b6}{DR\_NUM\_DIMENSIONS}}\ (\doxymbox{\hyperlink{poly-int_8h_af77c881600a14567e276ee17dfb8764f}{a}})\ ==\ \doxymbox{\hyperlink{tree-data-ref_8h_af813032bc51689590335bb31b31527b6}{DR\_NUM\_DIMENSIONS}}\ (\doxymbox{\hyperlink{poly-int_8h_af3bb9d9df219585072cf9e4e95572f70}{b}})}
+\DoxyCodeLine{00599\ \ \ \ \ \&\&\ \doxymbox{\hyperlink{fold-const_8h_a3ca19fa1bfeb8bbb4ae68824647a91dc}{operand\_equal\_p}}\ (\doxymbox{\hyperlink{tree-data-ref_8h_a949e8d520e6412d8423d0c616c851049}{DR\_BASE\_OBJECT}}\ (\doxymbox{\hyperlink{poly-int_8h_af77c881600a14567e276ee17dfb8764f}{a}}),\ \doxymbox{\hyperlink{tree-data-ref_8h_a949e8d520e6412d8423d0c616c851049}{DR\_BASE\_OBJECT}}\ (\doxymbox{\hyperlink{poly-int_8h_af3bb9d9df219585072cf9e4e95572f70}{b}}),\ 0);}
+\DoxyCodeLine{00600\ \}}
+\DoxyCodeLine{00601\ }
+\DoxyCodeLine{00602\ \textcolor{comment}{/*\ Return\ true\ when\ the\ data\ references\ A\ and\ B\ are\ accessing\ the\ same}}
+\DoxyCodeLine{00603\ \textcolor{comment}{\ \ \ memory\ object\ with\ the\ same\ access\ functions.\ \ Optionally\ skip\ the}}
+\DoxyCodeLine{00604\ \textcolor{comment}{\ \ \ last\ OFFSET\ dimensions\ in\ the\ data\ reference.\ \ */}}
+\DoxyCodeLine{00605\ }
+\DoxyCodeLine{00606\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{bool}}
+\DoxyCodeLine{00607\ \doxymbox{\hyperlink{tree-data-ref_8h_a9ec92fb5393d5031bf91eebcbffe180b}{same\_data\_refs}}\ (\doxymbox{\hyperlink{tree-data-ref_8h_ad8d64ec4923029fb27ae366622a8b451}{data\_reference\_p}}\ \doxymbox{\hyperlink{poly-int_8h_af77c881600a14567e276ee17dfb8764f}{a}},\ \doxymbox{\hyperlink{tree-data-ref_8h_ad8d64ec4923029fb27ae366622a8b451}{data\_reference\_p}}\ \doxymbox{\hyperlink{poly-int_8h_af3bb9d9df219585072cf9e4e95572f70}{b}},\ \textcolor{keywordtype}{int}\ offset\ =\ 0)}
+\DoxyCodeLine{00608\ \{}
+\DoxyCodeLine{00609\ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{poly-int_8h_a7e98b8a17c0aad30ba64d47b74e2a6c1}{i}};}
+\DoxyCodeLine{00610\ }
+\DoxyCodeLine{00611\ \ \ \textcolor{comment}{/*\ The\ references\ are\ exactly\ the\ same.\ \ */}}
+\DoxyCodeLine{00612\ \ \ \textcolor{keywordflow}{if}\ (\doxymbox{\hyperlink{fold-const_8h_a3ca19fa1bfeb8bbb4ae68824647a91dc}{operand\_equal\_p}}\ (\doxymbox{\hyperlink{tree-data-ref_8h_a85b812f033a654b971a01e0f652497bb}{DR\_REF}}\ (\doxymbox{\hyperlink{poly-int_8h_af77c881600a14567e276ee17dfb8764f}{a}}),\ \doxymbox{\hyperlink{tree-data-ref_8h_a85b812f033a654b971a01e0f652497bb}{DR\_REF}}\ (\doxymbox{\hyperlink{poly-int_8h_af3bb9d9df219585072cf9e4e95572f70}{b}}),\ 0))}
+\DoxyCodeLine{00613\ \ \ \ \ \textcolor{keywordflow}{return}\ \textcolor{keyword}{true};}
+\DoxyCodeLine{00614\ }
+\DoxyCodeLine{00615\ \ \ \textcolor{keywordflow}{if}\ (!\doxymbox{\hyperlink{tree-data-ref_8h_aa788215bc46957432c4dd9e258a74965}{same\_data\_refs\_base\_objects}}\ (\doxymbox{\hyperlink{poly-int_8h_af77c881600a14567e276ee17dfb8764f}{a}},\ \doxymbox{\hyperlink{poly-int_8h_af3bb9d9df219585072cf9e4e95572f70}{b}}))}
+\DoxyCodeLine{00616\ \ \ \ \ \textcolor{keywordflow}{return}\ \textcolor{keyword}{false};}
+\DoxyCodeLine{00617\ }
+\DoxyCodeLine{00618\ \ \ \textcolor{keywordflow}{for}\ (\doxymbox{\hyperlink{poly-int_8h_a7e98b8a17c0aad30ba64d47b74e2a6c1}{i}}\ =\ offset;\ \doxymbox{\hyperlink{poly-int_8h_a7e98b8a17c0aad30ba64d47b74e2a6c1}{i}}\ <\ \doxymbox{\hyperlink{tree-data-ref_8h_af813032bc51689590335bb31b31527b6}{DR\_NUM\_DIMENSIONS}}\ (\doxymbox{\hyperlink{poly-int_8h_af77c881600a14567e276ee17dfb8764f}{a}});\ \doxymbox{\hyperlink{poly-int_8h_a7e98b8a17c0aad30ba64d47b74e2a6c1}{i}}++)}
+\DoxyCodeLine{00619\ \ \ \ \ \textcolor{keywordflow}{if}\ (!\doxymbox{\hyperlink{tree-chrec_8h_a517cab779d3e2a5bf5d00641b461f1f4}{eq\_evolutions\_p}}\ (\doxymbox{\hyperlink{tree-data-ref_8h_a852662dfcd428b9abf776759f254c03d}{DR\_ACCESS\_FN}}\ (\doxymbox{\hyperlink{poly-int_8h_af77c881600a14567e276ee17dfb8764f}{a}},\ \doxymbox{\hyperlink{poly-int_8h_a7e98b8a17c0aad30ba64d47b74e2a6c1}{i}}),\ \doxymbox{\hyperlink{tree-data-ref_8h_a852662dfcd428b9abf776759f254c03d}{DR\_ACCESS\_FN}}\ (\doxymbox{\hyperlink{poly-int_8h_af3bb9d9df219585072cf9e4e95572f70}{b}},\ \doxymbox{\hyperlink{poly-int_8h_a7e98b8a17c0aad30ba64d47b74e2a6c1}{i}})))}
+\DoxyCodeLine{00620\ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ \textcolor{keyword}{false};}
+\DoxyCodeLine{00621\ }
+\DoxyCodeLine{00622\ \ \ \textcolor{keywordflow}{return}\ \textcolor{keyword}{true};}
+\DoxyCodeLine{00623\ \}}
+\DoxyCodeLine{00624\ }
+\DoxyCodeLine{00625\ \textcolor{comment}{/*\ Returns\ true\ when\ all\ the\ dependences\ are\ computable.\ \ */}}
+\DoxyCodeLine{00626\ }
+\DoxyCodeLine{00627\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{bool}}
+\DoxyCodeLine{00628\ \doxymbox{\hyperlink{tree-data-ref_8h_a3883632d0f0f9b3df71652bc6d1f469d}{known\_dependences\_p}}\ (\doxymbox{\hyperlink{structvec}{vec<ddr\_p>}}\ dependence\_relations)}
+\DoxyCodeLine{00629\ \{}
+\DoxyCodeLine{00630\ \ \ \doxymbox{\hyperlink{tree-data-ref_8h_abaccf2b84e647687ec6e1ca42f9b7e86}{ddr\_p}}\ ddr;}
+\DoxyCodeLine{00631\ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{poly-int_8h_a7e98b8a17c0aad30ba64d47b74e2a6c1}{i}};}
+\DoxyCodeLine{00632\ }
+\DoxyCodeLine{00633\ \ \ \doxymbox{\hyperlink{vec_8h_a04cef0e4dc670277ea774723bb2df982}{FOR\_EACH\_VEC\_ELT}}\ (dependence\_relations,\ \doxymbox{\hyperlink{poly-int_8h_a7e98b8a17c0aad30ba64d47b74e2a6c1}{i}},\ ddr)}
+\DoxyCodeLine{00634\ \ \ \ \ \textcolor{keywordflow}{if}\ (\doxymbox{\hyperlink{tree-data-ref_8h_ac7bbccaf088422ada6f24dfba315729b}{DDR\_ARE\_DEPENDENT}}\ (ddr)\ ==\ \doxymbox{\hyperlink{tree_8h_a0a92db44390f30ac0d237d55ac9f94df}{chrec\_dont\_know}})}
+\DoxyCodeLine{00635\ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ \textcolor{keyword}{false};}
+\DoxyCodeLine{00636\ }
+\DoxyCodeLine{00637\ \ \ \textcolor{keywordflow}{return}\ \textcolor{keyword}{true};}
+\DoxyCodeLine{00638\ \}}
+\DoxyCodeLine{00639\ }
+\DoxyCodeLine{00640\ \textcolor{comment}{/*\ Returns\ the\ dependence\ level\ for\ a\ vector\ DIST\ of\ size\ LENGTH.}}
+\DoxyCodeLine{00641\ \textcolor{comment}{\ \ \ LEVEL\ =\ 0\ means\ a\ lexicographic\ dependence,\ i.e.\ a\ dependence\ due}}
+\DoxyCodeLine{00642\ \textcolor{comment}{\ \ \ to\ the\ sequence\ of\ statements,\ not\ carried\ by\ any\ loop.\ \ */}}
+\DoxyCodeLine{00643\ }
+\DoxyCodeLine{00644\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{unsigned}}
+\DoxyCodeLine{00645\ \doxymbox{\hyperlink{tree-data-ref_8h_a8a7ee395671b65a302c1a5dcfc4e9955}{dependence\_level}}\ (\doxymbox{\hyperlink{tree-data-ref_8h_a4e58199ef5f79477f7180bbff3a9042c}{lambda\_vector}}\ dist\_vect,\ \textcolor{keywordtype}{int}\ length)}
+\DoxyCodeLine{00646\ \{}
+\DoxyCodeLine{00647\ \ \ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{poly-int_8h_a7e98b8a17c0aad30ba64d47b74e2a6c1}{i}};}
+\DoxyCodeLine{00648\ }
+\DoxyCodeLine{00649\ \ \ \textcolor{keywordflow}{for}\ (\doxymbox{\hyperlink{poly-int_8h_a7e98b8a17c0aad30ba64d47b74e2a6c1}{i}}\ =\ 0;\ \doxymbox{\hyperlink{poly-int_8h_a7e98b8a17c0aad30ba64d47b74e2a6c1}{i}}\ <\ length;\ \doxymbox{\hyperlink{poly-int_8h_a7e98b8a17c0aad30ba64d47b74e2a6c1}{i}}++)}
+\DoxyCodeLine{00650\ \ \ \ \ \textcolor{keywordflow}{if}\ (dist\_vect[\doxymbox{\hyperlink{poly-int_8h_a7e98b8a17c0aad30ba64d47b74e2a6c1}{i}}]\ !=\ 0)}
+\DoxyCodeLine{00651\ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{poly-int_8h_a7e98b8a17c0aad30ba64d47b74e2a6c1}{i}}\ +\ 1;}
+\DoxyCodeLine{00652\ }
+\DoxyCodeLine{00653\ \ \ \textcolor{keywordflow}{return}\ 0;}
+\DoxyCodeLine{00654\ \}}
+\DoxyCodeLine{00655\ }
+\DoxyCodeLine{00656\ \textcolor{comment}{/*\ Return\ the\ dependence\ level\ for\ the\ DDR\ relation.\ \ */}}
+\DoxyCodeLine{00657\ }
+\DoxyCodeLine{00658\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{unsigned}}
+\DoxyCodeLine{00659\ \doxymbox{\hyperlink{tree-data-ref_8h_abecc4102a65664ddf112649672d93fa9}{ddr\_dependence\_level}}\ (\doxymbox{\hyperlink{tree-data-ref_8h_abaccf2b84e647687ec6e1ca42f9b7e86}{ddr\_p}}\ ddr)}
+\DoxyCodeLine{00660\ \{}
+\DoxyCodeLine{00661\ \ \ \textcolor{keywordtype}{unsigned}\ vector;}
+\DoxyCodeLine{00662\ \ \ \textcolor{keywordtype}{unsigned}\ level\ =\ 0;}
+\DoxyCodeLine{00663\ }
+\DoxyCodeLine{00664\ \ \ \textcolor{keywordflow}{if}\ (\doxymbox{\hyperlink{tree-data-ref_8h_a39c654068653d27380b18c247bf1615d}{DDR\_DIST\_VECTS}}\ (ddr).\doxymbox{\hyperlink{symbol-summary_8h_ac11d972965576fdf867c757f114022c1}{exists}}\ ())}
+\DoxyCodeLine{00665\ \ \ \ \ level\ =\ \doxymbox{\hyperlink{tree-data-ref_8h_a8a7ee395671b65a302c1a5dcfc4e9955}{dependence\_level}}\ (\doxymbox{\hyperlink{tree-data-ref_8h_a0cf4d7d33a969c0f74eab9a324c5dba7}{DDR\_DIST\_VECT}}\ (ddr,\ 0),\ \doxymbox{\hyperlink{tree-data-ref_8h_a7872dd7710a9abc4996aece40a7b68c7}{DDR\_NB\_LOOPS}}\ (ddr));}
+\DoxyCodeLine{00666\ }
+\DoxyCodeLine{00667\ \ \ \textcolor{keywordflow}{for}\ (vector\ =\ 1;\ vector\ <\ \doxymbox{\hyperlink{tree-data-ref_8h_adfb65d6f6b72c65c249a9549a7f08761}{DDR\_NUM\_DIST\_VECTS}}\ (ddr);\ vector++)}
+\DoxyCodeLine{00668\ \ \ \ \ level\ =\ \doxymbox{\hyperlink{system_8h_ad2f3678bf5eae3684fc497130b946eae}{MIN}}\ (level,\ \doxymbox{\hyperlink{tree-data-ref_8h_a8a7ee395671b65a302c1a5dcfc4e9955}{dependence\_level}}\ (\doxymbox{\hyperlink{tree-data-ref_8h_a0cf4d7d33a969c0f74eab9a324c5dba7}{DDR\_DIST\_VECT}}\ (ddr,\ vector),}
+\DoxyCodeLine{00669\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{tree-data-ref_8h_a7872dd7710a9abc4996aece40a7b68c7}{DDR\_NB\_LOOPS}}\ (ddr)));}
+\DoxyCodeLine{00670\ \ \ \textcolor{keywordflow}{return}\ level;}
+\DoxyCodeLine{00671\ \}}
+\DoxyCodeLine{00672\ }
+\DoxyCodeLine{00673\ \textcolor{comment}{/*\ Return\ the\ index\ of\ the\ variable\ VAR\ in\ the\ LOOP\_NEST\ array.\ \ */}}
+\DoxyCodeLine{00674\ }
+\DoxyCodeLine{00675\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{int}}
+\DoxyCodeLine{00676\ \doxymbox{\hyperlink{tree-data-ref_8h_aa48ce5efd780c44c9f1a58f203055855}{index\_in\_loop\_nest}}\ (\textcolor{keywordtype}{int}\ var,\ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{structvec}{vec<loop\_p>}}\ \&\doxymbox{\hyperlink{structdata__dependence__relation_a6e3eb29e97e4a1e3ce218d55671953c9}{loop\_nest}})}
+\DoxyCodeLine{00677\ \{}
+\DoxyCodeLine{00678\ \ \ \textcolor{keyword}{class\ }loop\ *loopi;}
+\DoxyCodeLine{00679\ \ \ \textcolor{keywordtype}{int}\ var\_index;}
+\DoxyCodeLine{00680\ }
+\DoxyCodeLine{00681\ \ \ \textcolor{keywordflow}{for}\ (var\_index\ =\ 0;\ loop\_nest.iterate\ (var\_index,\ \&loopi);\ var\_index++)}
+\DoxyCodeLine{00682\ \ \ \ \ \textcolor{keywordflow}{if}\ (loopi-\/>num\ ==\ var)}
+\DoxyCodeLine{00683\ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ var\_index;}
+\DoxyCodeLine{00684\ }
+\DoxyCodeLine{00685\ \ \ \doxymbox{\hyperlink{system_8h_a32b3b26e9883686d3022c1ffe5ec3aa4}{gcc\_unreachable}}\ ();}
+\DoxyCodeLine{00686\ \}}
+\DoxyCodeLine{00687\ }
+\DoxyCodeLine{00688\ \textcolor{comment}{/*\ Returns\ true\ when\ the\ data\ reference\ DR\ the\ form\ "{}A[i]\ =\ ..."{}}}
+\DoxyCodeLine{00689\ \textcolor{comment}{\ \ \ with\ a\ stride\ equal\ to\ its\ unit\ type\ size.\ \ */}}
+\DoxyCodeLine{00690\ }
+\DoxyCodeLine{00691\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{bool}}
+\DoxyCodeLine{00692\ \doxymbox{\hyperlink{tree-data-ref_8h_ad1695869d3a417667ca32635ae555115}{adjacent\_dr\_p}}\ (\textcolor{keyword}{struct}\ \doxymbox{\hyperlink{structdata__reference}{data\_reference}}\ *dr)}
+\DoxyCodeLine{00693\ \{}
+\DoxyCodeLine{00694\ \ \ \textcolor{comment}{/*\ If\ this\ is\ a\ bitfield\ store\ bail\ out.\ \ */}}
+\DoxyCodeLine{00695\ \ \ \textcolor{keywordflow}{if}\ (\doxymbox{\hyperlink{tree_8h_a6449672126fbdb41758e25c87196efc1}{TREE\_CODE}}\ (\doxymbox{\hyperlink{tree-data-ref_8h_a85b812f033a654b971a01e0f652497bb}{DR\_REF}}\ (dr))\ ==\ COMPONENT\_REF}
+\DoxyCodeLine{00696\ \ \ \ \ \ \ \&\&\ \doxymbox{\hyperlink{tree_8h_aa44dbc0bc3eefb4c1a6d1c0ecf64624b}{DECL\_BIT\_FIELD}}\ (\doxymbox{\hyperlink{tree_8h_a2c95dfc9a59e94570c57c5b91223260d}{TREE\_OPERAND}}\ (\doxymbox{\hyperlink{tree-data-ref_8h_a85b812f033a654b971a01e0f652497bb}{DR\_REF}}\ (dr),\ 1)))}
+\DoxyCodeLine{00697\ \ \ \ \ \textcolor{keywordflow}{return}\ \textcolor{keyword}{false};}
+\DoxyCodeLine{00698\ }
+\DoxyCodeLine{00699\ \ \ \textcolor{keywordflow}{if}\ (!\doxymbox{\hyperlink{tree-data-ref_8h_abb13e6c9548cdaa941e3f8cdd07c6681}{DR\_STEP}}\ (dr)}
+\DoxyCodeLine{00700\ \ \ \ \ \ \ ||\ \doxymbox{\hyperlink{tree_8h_a6449672126fbdb41758e25c87196efc1}{TREE\_CODE}}\ (\doxymbox{\hyperlink{tree-data-ref_8h_abb13e6c9548cdaa941e3f8cdd07c6681}{DR\_STEP}}\ (dr))\ !=\ INTEGER\_CST)}
+\DoxyCodeLine{00701\ \ \ \ \ \textcolor{keywordflow}{return}\ \textcolor{keyword}{false};}
+\DoxyCodeLine{00702\ }
+\DoxyCodeLine{00703\ \ \ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{tree_8h_aff2a1da7b1b80af6dce9dbf3b97590fb}{tree\_int\_cst\_equal}}\ (\doxymbox{\hyperlink{fold-const_8h_ad463d500d339b2f3faac06dd3e3fb5b3}{fold\_unary}}\ (ABS\_EXPR,\ \doxymbox{\hyperlink{tree_8h_aac9b9df6e10564b46659fc4a617b71aa}{TREE\_TYPE}}\ (\doxymbox{\hyperlink{tree-data-ref_8h_abb13e6c9548cdaa941e3f8cdd07c6681}{DR\_STEP}}\ (dr)),}
+\DoxyCodeLine{00704\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{tree-data-ref_8h_abb13e6c9548cdaa941e3f8cdd07c6681}{DR\_STEP}}\ (dr)),}
+\DoxyCodeLine{00705\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{tree_8h_a5560e4a510929f3a887d81983b3f88a9}{TYPE\_SIZE\_UNIT}}\ (\doxymbox{\hyperlink{tree_8h_aac9b9df6e10564b46659fc4a617b71aa}{TREE\_TYPE}}\ (\doxymbox{\hyperlink{tree-data-ref_8h_a85b812f033a654b971a01e0f652497bb}{DR\_REF}}\ (dr))));}
+\DoxyCodeLine{00706\ \}}
+\DoxyCodeLine{00707\ }
+\DoxyCodeLine{00708\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{tree-data-ref_8h_abd6a8586800a2832ce358fe2e6f7afa6}{split\_constant\_offset}}\ (\doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ ,\ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ *,\ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ *);}
+\DoxyCodeLine{00709\ }
+\DoxyCodeLine{00710\ \textcolor{comment}{/*\ Compute\ the\ greatest\ common\ divisor\ of\ a\ VECTOR\ of\ SIZE\ numbers.\ \ */}}
+\DoxyCodeLine{00711\ }
+\DoxyCodeLine{00712\ \textcolor{keyword}{inline}\ \doxymbox{\hyperlink{tree-data-ref_8h_ae95df447789251458f37bf8ddc4e7c1e}{lambda\_int}}}
+\DoxyCodeLine{00713\ \doxymbox{\hyperlink{tree-data-ref_8h_a8d8cb8be3a831c810ef037e7229bac1d}{lambda\_vector\_gcd}}\ (\doxymbox{\hyperlink{tree-data-ref_8h_a4e58199ef5f79477f7180bbff3a9042c}{lambda\_vector}}\ vector,\ \textcolor{keywordtype}{int}\ size)}
+\DoxyCodeLine{00714\ \{}
+\DoxyCodeLine{00715\ \ \ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{poly-int_8h_a7e98b8a17c0aad30ba64d47b74e2a6c1}{i}};}
+\DoxyCodeLine{00716\ \ \ \doxymbox{\hyperlink{tree-data-ref_8h_ae95df447789251458f37bf8ddc4e7c1e}{lambda\_int}}\ gcd1\ =\ 0;}
+\DoxyCodeLine{00717\ }
+\DoxyCodeLine{00718\ \ \ \textcolor{keywordflow}{if}\ (size\ >\ 0)}
+\DoxyCodeLine{00719\ \ \ \ \ \{}
+\DoxyCodeLine{00720\ \ \ \ \ \ \ gcd1\ =\ vector[0];}
+\DoxyCodeLine{00721\ \ \ \ \ \ \ \textcolor{keywordflow}{for}\ (\doxymbox{\hyperlink{poly-int_8h_a7e98b8a17c0aad30ba64d47b74e2a6c1}{i}}\ =\ 1;\ \doxymbox{\hyperlink{poly-int_8h_a7e98b8a17c0aad30ba64d47b74e2a6c1}{i}}\ <\ size;\ \doxymbox{\hyperlink{poly-int_8h_a7e98b8a17c0aad30ba64d47b74e2a6c1}{i}}++)}
+\DoxyCodeLine{00722\ \ \ \ \ gcd1\ =\ \doxymbox{\hyperlink{hwint_8h_ab08270619b0cae80a4e1b28397b663e1}{gcd}}\ (gcd1,\ vector[\doxymbox{\hyperlink{poly-int_8h_a7e98b8a17c0aad30ba64d47b74e2a6c1}{i}}]);}
+\DoxyCodeLine{00723\ \ \ \ \ \}}
+\DoxyCodeLine{00724\ \ \ \textcolor{keywordflow}{return}\ gcd1;}
+\DoxyCodeLine{00725\ \}}
+\DoxyCodeLine{00726\ }
+\DoxyCodeLine{00727\ \textcolor{comment}{/*\ Allocate\ a\ new\ vector\ of\ given\ SIZE.\ \ */}}
+\DoxyCodeLine{00728\ }
+\DoxyCodeLine{00729\ \textcolor{keyword}{inline}\ \doxymbox{\hyperlink{tree-data-ref_8h_a4e58199ef5f79477f7180bbff3a9042c}{lambda\_vector}}}
+\DoxyCodeLine{00730\ \doxymbox{\hyperlink{tree-data-ref_8h_a295eefe488ea2b9bc892f5aa4f99bbe0}{lambda\_vector\_new}}\ (\textcolor{keywordtype}{int}\ size)}
+\DoxyCodeLine{00731\ \{}
+\DoxyCodeLine{00732\ \ \ \textcolor{comment}{/*\ ???\ \ We\ shouldn't\ abuse\ the\ GC\ allocator\ here.\ \ */}}
+\DoxyCodeLine{00733\ \ \ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{ggc_8h_a6c779e83080b966e7085d51e49bb2ac6}{ggc\_cleared\_vec\_alloc<lambda\_int>}}\ (size);}
+\DoxyCodeLine{00734\ \}}
+\DoxyCodeLine{00735\ }
+\DoxyCodeLine{00736\ \textcolor{comment}{/*\ Clear\ out\ vector\ VEC1\ of\ length\ SIZE.\ \ */}}
+\DoxyCodeLine{00737\ }
+\DoxyCodeLine{00738\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{void}}
+\DoxyCodeLine{00739\ \doxymbox{\hyperlink{tree-data-ref_8h_a4eb4c8ce1b64561519b2d2bcf41d56ca}{lambda\_vector\_clear}}\ (\doxymbox{\hyperlink{tree-data-ref_8h_a4e58199ef5f79477f7180bbff3a9042c}{lambda\_vector}}\ vec1,\ \textcolor{keywordtype}{int}\ size)}
+\DoxyCodeLine{00740\ \{}
+\DoxyCodeLine{00741\ \ \ \doxymbox{\hyperlink{string_8cpp_a313175102214d45434bf045db18dddf0}{memset}}\ (vec1,\ 0,\ size\ *\ \textcolor{keyword}{sizeof}\ (*vec1));}
+\DoxyCodeLine{00742\ \}}
+\DoxyCodeLine{00743\ }
+\DoxyCodeLine{00744\ \textcolor{comment}{/*\ Returns\ true\ when\ the\ vector\ V\ is\ lexicographically\ positive,\ in}}
+\DoxyCodeLine{00745\ \textcolor{comment}{\ \ \ other\ words,\ when\ the\ first\ nonzero\ element\ is\ positive.\ \ */}}
+\DoxyCodeLine{00746\ }
+\DoxyCodeLine{00747\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{bool}}
+\DoxyCodeLine{00748\ \doxymbox{\hyperlink{tree-data-ref_8h_a26173e362af96822038cbdb9b7e2fec2}{lambda\_vector\_lexico\_pos}}\ (\doxymbox{\hyperlink{tree-data-ref_8h_a4e58199ef5f79477f7180bbff3a9042c}{lambda\_vector}}\ v,}
+\DoxyCodeLine{00749\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{unsigned}\ n)}
+\DoxyCodeLine{00750\ \{}
+\DoxyCodeLine{00751\ \ \ \textcolor{keywordtype}{unsigned}\ \doxymbox{\hyperlink{poly-int_8h_a7e98b8a17c0aad30ba64d47b74e2a6c1}{i}};}
+\DoxyCodeLine{00752\ \ \ \textcolor{keywordflow}{for}\ (\doxymbox{\hyperlink{poly-int_8h_a7e98b8a17c0aad30ba64d47b74e2a6c1}{i}}\ =\ 0;\ \doxymbox{\hyperlink{poly-int_8h_a7e98b8a17c0aad30ba64d47b74e2a6c1}{i}}\ <\ n;\ \doxymbox{\hyperlink{poly-int_8h_a7e98b8a17c0aad30ba64d47b74e2a6c1}{i}}++)}
+\DoxyCodeLine{00753\ \ \ \ \ \{}
+\DoxyCodeLine{00754\ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (v[\doxymbox{\hyperlink{poly-int_8h_a7e98b8a17c0aad30ba64d47b74e2a6c1}{i}}]\ ==\ 0)}
+\DoxyCodeLine{00755\ \ \ \ \ \textcolor{keywordflow}{continue};}
+\DoxyCodeLine{00756\ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (v[\doxymbox{\hyperlink{poly-int_8h_a7e98b8a17c0aad30ba64d47b74e2a6c1}{i}}]\ <\ 0)}
+\DoxyCodeLine{00757\ \ \ \ \ \textcolor{keywordflow}{return}\ \textcolor{keyword}{false};}
+\DoxyCodeLine{00758\ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (v[\doxymbox{\hyperlink{poly-int_8h_a7e98b8a17c0aad30ba64d47b74e2a6c1}{i}}]\ >\ 0)}
+\DoxyCodeLine{00759\ \ \ \ \ \textcolor{keywordflow}{return}\ \textcolor{keyword}{true};}
+\DoxyCodeLine{00760\ \ \ \ \ \}}
+\DoxyCodeLine{00761\ \ \ \textcolor{keywordflow}{return}\ \textcolor{keyword}{true};}
+\DoxyCodeLine{00762\ \}}
+\DoxyCodeLine{00763\ }
+\DoxyCodeLine{00764\ \textcolor{comment}{/*\ Return\ true\ if\ vector\ VEC1\ of\ length\ SIZE\ is\ the\ zero\ vector.\ \ */}}
+\DoxyCodeLine{00765\ }
+\DoxyCodeLine{00766\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{bool}}
+\DoxyCodeLine{00767\ \doxymbox{\hyperlink{tree-data-ref_8h_a1d358dd162af9c94ce8689413cfebc0c}{lambda\_vector\_zerop}}\ (\doxymbox{\hyperlink{tree-data-ref_8h_a4e58199ef5f79477f7180bbff3a9042c}{lambda\_vector}}\ vec1,\ \textcolor{keywordtype}{int}\ size)}
+\DoxyCodeLine{00768\ \{}
+\DoxyCodeLine{00769\ \ \ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{poly-int_8h_a7e98b8a17c0aad30ba64d47b74e2a6c1}{i}};}
+\DoxyCodeLine{00770\ \ \ \textcolor{keywordflow}{for}\ (\doxymbox{\hyperlink{poly-int_8h_a7e98b8a17c0aad30ba64d47b74e2a6c1}{i}}\ =\ 0;\ \doxymbox{\hyperlink{poly-int_8h_a7e98b8a17c0aad30ba64d47b74e2a6c1}{i}}\ <\ size;\ \doxymbox{\hyperlink{poly-int_8h_a7e98b8a17c0aad30ba64d47b74e2a6c1}{i}}++)}
+\DoxyCodeLine{00771\ \ \ \ \ \textcolor{keywordflow}{if}\ (vec1[\doxymbox{\hyperlink{poly-int_8h_a7e98b8a17c0aad30ba64d47b74e2a6c1}{i}}]\ !=\ 0)}
+\DoxyCodeLine{00772\ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ \textcolor{keyword}{false};}
+\DoxyCodeLine{00773\ \ \ \textcolor{keywordflow}{return}\ \textcolor{keyword}{true};}
+\DoxyCodeLine{00774\ \}}
+\DoxyCodeLine{00775\ }
+\DoxyCodeLine{00776\ \textcolor{comment}{/*\ Allocate\ a\ matrix\ of\ M\ rows\ x\ \ N\ cols.\ \ */}}
+\DoxyCodeLine{00777\ }
+\DoxyCodeLine{00778\ \textcolor{keyword}{inline}\ \doxymbox{\hyperlink{tree-data-ref_8h_a22e6b0226725a4351444d5b02d629b97}{lambda\_matrix}}}
+\DoxyCodeLine{00779\ \doxymbox{\hyperlink{tree-data-ref_8h_a79fb7a8eb094025ee6f70da54a8084b5}{lambda\_matrix\_new}}\ (\textcolor{keywordtype}{int}\ m,\ \textcolor{keywordtype}{int}\ n,\ \textcolor{keyword}{struct}\ \doxymbox{\hyperlink{structobstack}{obstack}}\ *lambda\_obstack)}
+\DoxyCodeLine{00780\ \{}
+\DoxyCodeLine{00781\ \ \ \doxymbox{\hyperlink{tree-data-ref_8h_a22e6b0226725a4351444d5b02d629b97}{lambda\_matrix}}\ mat;}
+\DoxyCodeLine{00782\ \ \ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{poly-int_8h_a7e98b8a17c0aad30ba64d47b74e2a6c1}{i}};}
+\DoxyCodeLine{00783\ }
+\DoxyCodeLine{00784\ \ \ mat\ =\ \doxymbox{\hyperlink{libiberty_8h_a995d42bf07105ccef0b494cdb94ab7c3}{XOBNEWVEC}}\ (lambda\_obstack,\ \doxymbox{\hyperlink{tree-data-ref_8h_a4e58199ef5f79477f7180bbff3a9042c}{lambda\_vector}},\ m);}
+\DoxyCodeLine{00785\ }
+\DoxyCodeLine{00786\ \ \ \textcolor{keywordflow}{for}\ (\doxymbox{\hyperlink{poly-int_8h_a7e98b8a17c0aad30ba64d47b74e2a6c1}{i}}\ =\ 0;\ \doxymbox{\hyperlink{poly-int_8h_a7e98b8a17c0aad30ba64d47b74e2a6c1}{i}}\ <\ m;\ \doxymbox{\hyperlink{poly-int_8h_a7e98b8a17c0aad30ba64d47b74e2a6c1}{i}}++)}
+\DoxyCodeLine{00787\ \ \ \ \ mat[\doxymbox{\hyperlink{poly-int_8h_a7e98b8a17c0aad30ba64d47b74e2a6c1}{i}}]\ =\ \doxymbox{\hyperlink{libiberty_8h_a995d42bf07105ccef0b494cdb94ab7c3}{XOBNEWVEC}}\ (lambda\_obstack,\ \doxymbox{\hyperlink{tree-data-ref_8h_ae95df447789251458f37bf8ddc4e7c1e}{lambda\_int}},\ n);}
+\DoxyCodeLine{00788\ }
+\DoxyCodeLine{00789\ \ \ \textcolor{keywordflow}{return}\ mat;}
+\DoxyCodeLine{00790\ \}}
+\DoxyCodeLine{00791\ }
+\DoxyCodeLine{00792\ \textcolor{preprocessor}{\#endif\ \ }\textcolor{comment}{/*\ GCC\_TREE\_DATA\_REF\_H\ \ */}\textcolor{preprocessor}{}}
+
+\end{DoxyCode}

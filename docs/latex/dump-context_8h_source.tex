@@ -1,0 +1,311 @@
+\doxysection{dump-\/context.h}
+\hypertarget{dump-context_8h_source}{}\label{dump-context_8h_source}\index{toolchain/x86\_64-\/elf/lib/gcc/x86\_64-\/elf/14.2.0/plugin/include/dump-\/context.h@{toolchain/x86\_64-\/elf/lib/gcc/x86\_64-\/elf/14.2.0/plugin/include/dump-\/context.h}}
+\doxymbox{\hyperlink{dump-context_8h}{Go to the documentation of this file.}}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001\ \textcolor{comment}{/*\ Support\ code\ for\ handling\ the\ various\ dump\_*\ calls\ in\ dumpfile.h}}
+\DoxyCodeLine{00002\ \textcolor{comment}{\ \ \ Copyright\ (C)\ 2018-\/2024\ Free\ Software\ Foundation,\ Inc.}}
+\DoxyCodeLine{00003\ \textcolor{comment}{\ \ \ Contributed\ by\ David\ Malcolm\ <dmalcolm@redhat.com>.}}
+\DoxyCodeLine{00004\ \textcolor{comment}{}}
+\DoxyCodeLine{00005\ \textcolor{comment}{This\ file\ is\ part\ of\ GCC.}}
+\DoxyCodeLine{00006\ \textcolor{comment}{}}
+\DoxyCodeLine{00007\ \textcolor{comment}{GCC\ is\ free\ software;\ you\ can\ redistribute\ it\ and/or\ modify}}
+\DoxyCodeLine{00008\ \textcolor{comment}{it\ under\ the\ terms\ of\ the\ GNU\ General\ Public\ License\ as\ published\ by}}
+\DoxyCodeLine{00009\ \textcolor{comment}{the\ Free\ Software\ Foundation;\ either\ version\ 3,\ or\ (at\ your\ option)}}
+\DoxyCodeLine{00010\ \textcolor{comment}{any\ later\ version.}}
+\DoxyCodeLine{00011\ \textcolor{comment}{}}
+\DoxyCodeLine{00012\ \textcolor{comment}{GCC\ is\ distributed\ in\ the\ hope\ that\ it\ will\ be\ useful,}}
+\DoxyCodeLine{00013\ \textcolor{comment}{but\ WITHOUT\ ANY\ WARRANTY;\ without\ even\ the\ implied\ warranty\ of}}
+\DoxyCodeLine{00014\ \textcolor{comment}{MERCHANTABILITY\ or\ FITNESS\ FOR\ A\ PARTICULAR\ PURPOSE.\ \ See\ the}}
+\DoxyCodeLine{00015\ \textcolor{comment}{GNU\ General\ Public\ License\ for\ more\ details.}}
+\DoxyCodeLine{00016\ \textcolor{comment}{}}
+\DoxyCodeLine{00017\ \textcolor{comment}{You\ should\ have\ received\ a\ copy\ of\ the\ GNU\ General\ Public\ License}}
+\DoxyCodeLine{00018\ \textcolor{comment}{along\ with\ GCC;\ see\ the\ file\ COPYING3.\ \ If\ not\ see}}
+\DoxyCodeLine{00019\ \textcolor{comment}{<http://www.gnu.org/licenses/>.\ \ */}}
+\DoxyCodeLine{00020\ }
+\DoxyCodeLine{00021\ }
+\DoxyCodeLine{00022\ \textcolor{preprocessor}{\#ifndef\ GCC\_DUMP\_CONTEXT\_H}}
+\DoxyCodeLine{00023\ \textcolor{preprocessor}{\#define\ GCC\_DUMP\_CONTEXT\_H\ 1}}
+\DoxyCodeLine{00024\ }
+\DoxyCodeLine{00025\ \textcolor{preprocessor}{\#include\ "{}\doxymbox{\hyperlink{dumpfile_8h}{dumpfile.h}}"{}}}
+\DoxyCodeLine{00026\ \textcolor{preprocessor}{\#include\ "{}\doxymbox{\hyperlink{pretty-print_8h}{pretty-\/print.h}}"{}}}
+\DoxyCodeLine{00027\ \textcolor{preprocessor}{\#include\ "{}\doxymbox{\hyperlink{selftest_8h}{selftest.h}}"{}}}
+\DoxyCodeLine{00028\ \textcolor{preprocessor}{\#include\ "{}\doxymbox{\hyperlink{optinfo_8h}{optinfo.h}}"{}}}
+\DoxyCodeLine{00029\ }
+\DoxyCodeLine{00030\ \textcolor{keyword}{class\ }\doxymbox{\hyperlink{classoptrecord__json__writer}{optrecord\_json\_writer}};}
+\DoxyCodeLine{00031\ \textcolor{keyword}{namespace\ }\doxymbox{\hyperlink{namespaceselftest}{selftest}}\ \{\ \textcolor{keyword}{class\ }temp\_dump\_context;\ \}}
+\DoxyCodeLine{00032\ \textcolor{keyword}{class\ }\doxymbox{\hyperlink{classdebug__dump__context}{debug\_dump\_context}};}
+\DoxyCodeLine{00033\ }
+\DoxyCodeLine{00034\ \textcolor{comment}{/*\ A\ class\ for\ handling\ the\ various\ dump\_*\ calls.}}
+\DoxyCodeLine{00035\ \textcolor{comment}{}}
+\DoxyCodeLine{00036\ \textcolor{comment}{\ \ \ In\ particular,\ this\ class\ has\ responsibility\ for\ consolidating}}
+\DoxyCodeLine{00037\ \textcolor{comment}{\ \ \ the\ "{}dump\_*"{}\ calls\ into\ optinfo\ instances\ (delimited\ by\ "{}dump\_*\_loc"{}}}
+\DoxyCodeLine{00038\ \textcolor{comment}{\ \ \ calls),\ and\ emitting\ them.}}
+\DoxyCodeLine{00039\ \textcolor{comment}{}}
+\DoxyCodeLine{00040\ \textcolor{comment}{\ \ \ Putting\ this\ in\ a\ class\ (rather\ than\ as\ global\ state)\ allows}}
+\DoxyCodeLine{00041\ \textcolor{comment}{\ \ \ for\ selftesting\ of\ this\ code.\ \ */}}
+\DoxyCodeLine{00042\ }
+\DoxyCodeLine{00043\ \textcolor{keyword}{class\ }\doxymbox{\hyperlink{classdump__context}{dump\_context}}}
+\DoxyCodeLine{00044\ \{}
+\DoxyCodeLine{00045\ \ \ \textcolor{keyword}{friend}\ \textcolor{keyword}{class\ }\doxymbox{\hyperlink{classdump__context_a55925ffdfe872c2fac0111cd21ef6567}{selftest::temp\_dump\_context}};}
+\DoxyCodeLine{00046\ \ \ \textcolor{keyword}{friend}\ \textcolor{keyword}{class\ }\doxymbox{\hyperlink{classdump__context_ab160fed797fbcde4c250e5f95d0e53f4}{debug\_dump\_context}};}
+\DoxyCodeLine{00047\ }
+\DoxyCodeLine{00048\ \ \textcolor{keyword}{public}:}
+\DoxyCodeLine{00049\ \ \ \textcolor{keyword}{static}\ \doxymbox{\hyperlink{classdump__context}{dump\_context}}\ \&\doxymbox{\hyperlink{classdump__context_ad0ebfdc0be0e4a5b6ff01926ff9eadd6}{get}}\ ()\ \{\ \textcolor{keywordflow}{return}\ *\doxymbox{\hyperlink{classdump__context_a7130fb4da0d7cb35b3bb917e23cdc62d}{s\_current}};\ \}}
+\DoxyCodeLine{00050\ }
+\DoxyCodeLine{00051\ \ \ \doxymbox{\hyperlink{classdump__context_a9443e24ff85fb00614893bb2e53e7b56}{\string~dump\_context}}\ ();}
+\DoxyCodeLine{00052\ }
+\DoxyCodeLine{00053\ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classdump__context_a64ca8582fe5a893bf90abd3dfc4782dc}{refresh\_dumps\_are\_enabled}}\ ();}
+\DoxyCodeLine{00054\ }
+\DoxyCodeLine{00055\ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classdump__context_a8f980d2b8bb71a513f1adc83ac45859e}{dump\_loc}}\ (\textcolor{keyword}{const}\ \doxymbox{\hyperlink{classdump__metadata__t}{dump\_metadata\_t}}\ \&metadata,}
+\DoxyCodeLine{00056\ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classdump__user__location__t}{dump\_user\_location\_t}}\ \&loc);}
+\DoxyCodeLine{00057\ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classdump__context_a13d9d91bb87c43098152d748c400c9b1}{dump\_loc\_immediate}}\ (\doxymbox{\hyperlink{dumpfile_8h_ae3aeb1ff52915e32d52ac788388fbeef}{dump\_flags\_t}}\ \doxymbox{\hyperlink{dumpfile_8h_a2b085f7fec9b8bd652a602dee969238b}{dump\_kind}},}
+\DoxyCodeLine{00058\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classdump__user__location__t}{dump\_user\_location\_t}}\ \&loc);}
+\DoxyCodeLine{00059\ }
+\DoxyCodeLine{00060\ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classdump__context_a3129ef3fa79e428c90a64ac896489ded}{dump\_gimple\_stmt}}\ (\textcolor{keyword}{const}\ \doxymbox{\hyperlink{classdump__metadata__t}{dump\_metadata\_t}}\ \&metadata,}
+\DoxyCodeLine{00061\ \ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{dumpfile_8h_ae3aeb1ff52915e32d52ac788388fbeef}{dump\_flags\_t}}\ extra\_dump\_flags,}
+\DoxyCodeLine{00062\ \ \ \ \ \ \ \ \ \ \ \ \ \ gimple\ *gs,\ \textcolor{keywordtype}{int}\ spc);}
+\DoxyCodeLine{00063\ }
+\DoxyCodeLine{00064\ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classdump__context_a227298765ebb1a3b6add4123d1097a2f}{dump\_gimple\_stmt\_loc}}\ (\textcolor{keyword}{const}\ \doxymbox{\hyperlink{classdump__metadata__t}{dump\_metadata\_t}}\ \&metadata,}
+\DoxyCodeLine{00065\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classdump__user__location__t}{dump\_user\_location\_t}}\ \&loc,}
+\DoxyCodeLine{00066\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{dumpfile_8h_ae3aeb1ff52915e32d52ac788388fbeef}{dump\_flags\_t}}\ extra\_dump\_flags,}
+\DoxyCodeLine{00067\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ gimple\ *gs,\ \textcolor{keywordtype}{int}\ spc);}
+\DoxyCodeLine{00068\ }
+\DoxyCodeLine{00069\ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classdump__context_ac40b930f28159b9661cf7353a6699808}{dump\_gimple\_expr}}\ (\textcolor{keyword}{const}\ \doxymbox{\hyperlink{classdump__metadata__t}{dump\_metadata\_t}}\ \&metadata,}
+\DoxyCodeLine{00070\ \ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{dumpfile_8h_ae3aeb1ff52915e32d52ac788388fbeef}{dump\_flags\_t}}\ extra\_dump\_flags,}
+\DoxyCodeLine{00071\ \ \ \ \ \ \ \ \ \ \ \ \ \ gimple\ *gs,\ \textcolor{keywordtype}{int}\ spc);}
+\DoxyCodeLine{00072\ }
+\DoxyCodeLine{00073\ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classdump__context_a8823b0e84dffdecc5e55bf3b333e768e}{dump\_gimple\_expr\_loc}}\ (\textcolor{keyword}{const}\ \doxymbox{\hyperlink{classdump__metadata__t}{dump\_metadata\_t}}\ \&metadata,}
+\DoxyCodeLine{00074\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classdump__user__location__t}{dump\_user\_location\_t}}\ \&loc,}
+\DoxyCodeLine{00075\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{dumpfile_8h_ae3aeb1ff52915e32d52ac788388fbeef}{dump\_flags\_t}}\ extra\_dump\_flags,}
+\DoxyCodeLine{00076\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ gimple\ *gs,}
+\DoxyCodeLine{00077\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{int}\ spc);}
+\DoxyCodeLine{00078\ }
+\DoxyCodeLine{00079\ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classdump__context_afd11fc5c1d576401f12c06cb7672775b}{dump\_generic\_expr}}\ (\textcolor{keyword}{const}\ \doxymbox{\hyperlink{classdump__metadata__t}{dump\_metadata\_t}}\ \&metadata,}
+\DoxyCodeLine{00080\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{dumpfile_8h_ae3aeb1ff52915e32d52ac788388fbeef}{dump\_flags\_t}}\ extra\_dump\_flags,}
+\DoxyCodeLine{00081\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ t);}
+\DoxyCodeLine{00082\ }
+\DoxyCodeLine{00083\ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classdump__context_a9ed113308622f83a3e2e2a11dee827b6}{dump\_generic\_expr\_loc}}\ (\textcolor{keyword}{const}\ \doxymbox{\hyperlink{classdump__metadata__t}{dump\_metadata\_t}}\ \&metadata,}
+\DoxyCodeLine{00084\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classdump__user__location__t}{dump\_user\_location\_t}}\ \&loc,}
+\DoxyCodeLine{00085\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{dumpfile_8h_ae3aeb1ff52915e32d52ac788388fbeef}{dump\_flags\_t}}\ extra\_dump\_flags,}
+\DoxyCodeLine{00086\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ t);}
+\DoxyCodeLine{00087\ }
+\DoxyCodeLine{00088\ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classdump__context_a79fcce9c1df1778a74f02e3f2518ed44}{dump\_printf\_va}}\ (\textcolor{keyword}{const}\ \doxymbox{\hyperlink{classdump__metadata__t}{dump\_metadata\_t}}\ \&metadata,\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *format,}
+\DoxyCodeLine{00089\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{stdarg_8h_a8c1b94dabde2c11f430bb83e37bdb0a1}{va\_list}}\ *ap)\ \doxymbox{\hyperlink{dumpfile_8h_ab91e3eb98cfa2620ef780c4e58398b58}{ATTRIBUTE\_GCC\_DUMP\_PRINTF}}\ (3,\ 0);}
+\DoxyCodeLine{00090\ }
+\DoxyCodeLine{00091\ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classdump__context_a914c7bdcc0911a14316cb72a99815be2}{dump\_printf\_loc\_va}}\ (\textcolor{keyword}{const}\ \doxymbox{\hyperlink{classdump__metadata__t}{dump\_metadata\_t}}\ \&metadata,}
+\DoxyCodeLine{00092\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classdump__user__location__t}{dump\_user\_location\_t}}\ \&loc,}
+\DoxyCodeLine{00093\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *format,\ \doxymbox{\hyperlink{stdarg_8h_a8c1b94dabde2c11f430bb83e37bdb0a1}{va\_list}}\ *ap)}
+\DoxyCodeLine{00094\ \ \ \ \ \doxymbox{\hyperlink{dumpfile_8h_ab91e3eb98cfa2620ef780c4e58398b58}{ATTRIBUTE\_GCC\_DUMP\_PRINTF}}\ (4,\ 0);}
+\DoxyCodeLine{00095\ }
+\DoxyCodeLine{00096\ \ \ \textcolor{keyword}{template}<\textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ N,\ \textcolor{keyword}{typename}\ C>}
+\DoxyCodeLine{00097\ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classdump__context_ad4d2308a8a62d39a070b9db7929bca37}{dump\_dec}}\ (\textcolor{keyword}{const}\ \doxymbox{\hyperlink{classdump__metadata__t}{dump\_metadata\_t}}\ \&metadata,\ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classpoly__int}{poly\_int<N,\ C>}}\ \&\doxymbox{\hyperlink{configargs_8h_a92d544bd66c050551f3d87fa55eb3f5d}{value}});}
+\DoxyCodeLine{00098\ }
+\DoxyCodeLine{00099\ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classdump__context_aed307bcae52f9693b3bd0daac03898b6}{dump\_symtab\_node}}\ (\textcolor{keyword}{const}\ \doxymbox{\hyperlink{classdump__metadata__t}{dump\_metadata\_t}}\ \&metadata,\ symtab\_node\ *node);}
+\DoxyCodeLine{00100\ }
+\DoxyCodeLine{00101\ \ \ \textcolor{comment}{/*\ Managing\ nested\ scopes.\ \ */}}
+\DoxyCodeLine{00102\ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{classdump__context_aa9989eb203c012c364fc2979508b5ae5}{get\_scope\_depth}}\ ()\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00103\ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classdump__context_a191d5e255205744ea9582f1894819764}{begin\_scope}}\ (\textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *\doxymbox{\hyperlink{configargs_8h_a8f8f80d37794cde9472343e4487ba3eb}{name}},}
+\DoxyCodeLine{00104\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classdump__user__location__t}{dump\_user\_location\_t}}\ \&user\_location,}
+\DoxyCodeLine{00105\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classdump__impl__location__t}{dump\_impl\_location\_t}}\ \&impl\_location);}
+\DoxyCodeLine{00106\ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classdump__context_ac7fa361bc045a6ec8e8aae5605468639}{end\_scope}}\ ();}
+\DoxyCodeLine{00107\ }
+\DoxyCodeLine{00108\ \ \ \textcolor{comment}{/*\ Should\ optinfo\ instances\ be\ created?}}
+\DoxyCodeLine{00109\ \textcolor{comment}{\ \ \ \ \ All\ creation\ of\ optinfos\ should\ be\ guarded\ by\ this\ predicate.}}
+\DoxyCodeLine{00110\ \textcolor{comment}{\ \ \ \ \ Return\ true\ if\ any\ optinfo\ destinations\ are\ active.\ \ */}}
+\DoxyCodeLine{00111\ \ \ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{classdump__context_a39b2197f7c191864d834e322a8b7bf7a}{optinfo\_enabled\_p}}\ ()\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00112\ }
+\DoxyCodeLine{00113\ \ \ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{classdump__context_a8ff754c6d1a5a56c12d401701b46fa08}{optimization\_records\_enabled\_p}}\ ()\textcolor{keyword}{\ const}}
+\DoxyCodeLine{00114\ \textcolor{keyword}{\ \ }\{}
+\DoxyCodeLine{00115\ \ \ \ \ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{classdump__context_ac26ed5a70db1ce9364ca470299117ca0}{m\_json\_writer}}\ !=\ \doxymbox{\hyperlink{stddef_8h_a070d2ce7b6bb7e5c05602aa8c308d0c4}{NULL}};}
+\DoxyCodeLine{00116\ \ \ \}}
+\DoxyCodeLine{00117\ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classdump__context_a49dc45629e2ad1c3ce9467f9dc9c2d5e}{set\_json\_writer}}\ (\doxymbox{\hyperlink{classoptrecord__json__writer}{optrecord\_json\_writer}}\ *writer);}
+\DoxyCodeLine{00118\ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classdump__context_ae3b0b155c8de236a9370f38f5bd98b26}{finish\_any\_json\_writer}}\ ();}
+\DoxyCodeLine{00119\ }
+\DoxyCodeLine{00120\ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classdump__context_abb90a88ad2cfe0e1a8ba68c27a6f6011}{end\_any\_optinfo}}\ ();}
+\DoxyCodeLine{00121\ }
+\DoxyCodeLine{00122\ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classdump__context_a0c539df700ed55302a3f17c3d265811d}{emit\_optinfo}}\ (\textcolor{keyword}{const}\ \doxymbox{\hyperlink{classoptinfo}{optinfo}}\ *info);}
+\DoxyCodeLine{00123\ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classdump__context_a88e3ef885c7f355a1d7859d3264ee026}{emit\_item}}\ (\doxymbox{\hyperlink{classoptinfo__item}{optinfo\_item}}\ *item,\ \doxymbox{\hyperlink{dumpfile_8h_ae3aeb1ff52915e32d52ac788388fbeef}{dump\_flags\_t}}\ \doxymbox{\hyperlink{dumpfile_8h_a2b085f7fec9b8bd652a602dee969238b}{dump\_kind}});}
+\DoxyCodeLine{00124\ }
+\DoxyCodeLine{00125\ \ \ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{classdump__context_abddf0e6a5b64d87560f0f53c1a26d7c1}{apply\_dump\_filter\_p}}\ (\doxymbox{\hyperlink{dumpfile_8h_ae3aeb1ff52915e32d52ac788388fbeef}{dump\_flags\_t}}\ \doxymbox{\hyperlink{dumpfile_8h_a2b085f7fec9b8bd652a602dee969238b}{dump\_kind}},\ \doxymbox{\hyperlink{dumpfile_8h_ae3aeb1ff52915e32d52ac788388fbeef}{dump\_flags\_t}}\ filter)\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00126\ }
+\DoxyCodeLine{00127\ \ \textcolor{keyword}{private}:}
+\DoxyCodeLine{00128\ \ \ \doxymbox{\hyperlink{classoptinfo}{optinfo}}\ \&\doxymbox{\hyperlink{classdump__context_a090c5e0cf9e799d84a9611130df0ade7}{ensure\_pending\_optinfo}}\ (\textcolor{keyword}{const}\ \doxymbox{\hyperlink{classdump__metadata__t}{dump\_metadata\_t}}\ \&metadata);}
+\DoxyCodeLine{00129\ \ \ \doxymbox{\hyperlink{classoptinfo}{optinfo}}\ \&\doxymbox{\hyperlink{classdump__context_a23a3ec1aa7c363802ebe4884e69b9c26}{begin\_next\_optinfo}}\ (\textcolor{keyword}{const}\ \doxymbox{\hyperlink{classdump__metadata__t}{dump\_metadata\_t}}\ \&metadata,}
+\DoxyCodeLine{00130\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classdump__user__location__t}{dump\_user\_location\_t}}\ \&loc);}
+\DoxyCodeLine{00131\ }
+\DoxyCodeLine{00132\ \ \ \textcolor{comment}{/*\ The\ current\ nesting\ depth\ of\ dump\ scopes,\ for\ showing\ nesting}}
+\DoxyCodeLine{00133\ \textcolor{comment}{\ \ \ \ \ via\ indentation).\ \ */}}
+\DoxyCodeLine{00134\ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{classdump__context_acb910254c7fccc6633f2a8a3b21ce979}{m\_scope\_depth}};}
+\DoxyCodeLine{00135\ }
+\DoxyCodeLine{00136\ \ \ \textcolor{comment}{/*\ The\ optinfo\ currently\ being\ accumulated\ since\ the\ last\ dump\_*\_loc\ call,}}
+\DoxyCodeLine{00137\ \textcolor{comment}{\ \ \ \ \ if\ any.\ \ */}}
+\DoxyCodeLine{00138\ \ \ \doxymbox{\hyperlink{classoptinfo}{optinfo}}\ *\doxymbox{\hyperlink{classdump__context_a86dcd1c38b961be7bd34d75e99d36e0a}{m\_pending}};}
+\DoxyCodeLine{00139\ }
+\DoxyCodeLine{00140\ \ \ \textcolor{comment}{/*\ If\ -\/fsave-\/optimization-\/record\ is\ enabled,\ the\ heap-\/allocated\ JSON\ writer}}
+\DoxyCodeLine{00141\ \textcolor{comment}{\ \ \ \ \ instance,\ otherwise\ NULL.\ \ */}}
+\DoxyCodeLine{00142\ \ \ \doxymbox{\hyperlink{classoptrecord__json__writer}{optrecord\_json\_writer}}\ *\doxymbox{\hyperlink{classdump__context_ac26ed5a70db1ce9364ca470299117ca0}{m\_json\_writer}};}
+\DoxyCodeLine{00143\ }
+\DoxyCodeLine{00144\ \ \ \textcolor{comment}{/*\ For\ use\ in\ selftests:\ if\ non-\/NULL,\ then\ items\ are\ to\ be\ printed}}
+\DoxyCodeLine{00145\ \textcolor{comment}{\ \ \ \ \ to\ this,\ using\ the\ given\ flags.\ \ */}}
+\DoxyCodeLine{00146\ \ \ \doxymbox{\hyperlink{classpretty__printer}{pretty\_printer}}\ *\doxymbox{\hyperlink{classdump__context_a667a7d127e7bb37dca44567b22f70631}{m\_test\_pp}};}
+\DoxyCodeLine{00147\ \ \ \doxymbox{\hyperlink{dumpfile_8h_ae3aeb1ff52915e32d52ac788388fbeef}{dump\_flags\_t}}\ \doxymbox{\hyperlink{classdump__context_affda1ba2843f8fcdfb79d732a6679d10}{m\_test\_pp\_flags}};}
+\DoxyCodeLine{00148\ }
+\DoxyCodeLine{00149\ \ \ \textcolor{comment}{/*\ The\ currently\ active\ dump\_context,\ for\ use\ by\ the\ dump\_*\ API\ calls.\ \ */}}
+\DoxyCodeLine{00150\ \ \ \textcolor{keyword}{static}\ \doxymbox{\hyperlink{classdump__context}{dump\_context}}\ *\doxymbox{\hyperlink{classdump__context_a7130fb4da0d7cb35b3bb917e23cdc62d}{s\_current}};}
+\DoxyCodeLine{00151\ }
+\DoxyCodeLine{00152\ \ \ \textcolor{comment}{/*\ The\ default\ active\ context.\ \ */}}
+\DoxyCodeLine{00153\ \ \ \textcolor{keyword}{static}\ \doxymbox{\hyperlink{classdump__context}{dump\_context}}\ \doxymbox{\hyperlink{classdump__context_a43f57a5b49e91f27698c0ce8c0f44eb4}{s\_default}};}
+\DoxyCodeLine{00154\ \};}
+\DoxyCodeLine{00155\ }
+\DoxyCodeLine{00156\ \textcolor{comment}{/*\ A\ subclass\ of\ pretty\_printer\ for\ implementing\ dump\_context::dump\_printf\_va.}}
+\DoxyCodeLine{00157\ \textcolor{comment}{\ \ \ In\ particular,\ the\ formatted\ chunks\ are\ captured\ as\ optinfo\_item\ instances,}}
+\DoxyCodeLine{00158\ \textcolor{comment}{\ \ \ thus\ retaining\ metadata\ about\ the\ entities\ being\ dumped\ (e.g.\ source}}
+\DoxyCodeLine{00159\ \textcolor{comment}{\ \ \ locations),\ rather\ than\ just\ as\ plain\ text.\ \ */}}
+\DoxyCodeLine{00160\ }
+\DoxyCodeLine{00161\ \textcolor{keyword}{class\ }\doxymbox{\hyperlink{classdump__pretty__printer_af624cc7bb6058b07d896cd8b8482b0da}{dump\_pretty\_printer}}\ :\ \textcolor{keyword}{public}\ \doxymbox{\hyperlink{classpretty__printer_ace84c813130dc27c2bd61ea17373c770}{pretty\_printer}}}
+\DoxyCodeLine{00162\ \{}
+\DoxyCodeLine{00163\ \textcolor{keyword}{public}:}
+\DoxyCodeLine{00164\ \ \ \doxymbox{\hyperlink{classdump__pretty__printer_af624cc7bb6058b07d896cd8b8482b0da}{dump\_pretty\_printer}}\ (\doxymbox{\hyperlink{classdump__context}{dump\_context}}\ *context,\ \doxymbox{\hyperlink{dumpfile_8h_ae3aeb1ff52915e32d52ac788388fbeef}{dump\_flags\_t}}\ \doxymbox{\hyperlink{dumpfile_8h_a2b085f7fec9b8bd652a602dee969238b}{dump\_kind}});}
+\DoxyCodeLine{00165\ }
+\DoxyCodeLine{00166\ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classdump__pretty__printer_a99830da37e1fe73d5d80493493c31fc8}{emit\_items}}\ (\doxymbox{\hyperlink{classoptinfo}{optinfo}}\ *dest);}
+\DoxyCodeLine{00167\ }
+\DoxyCodeLine{00168\ \textcolor{keyword}{private}:}
+\DoxyCodeLine{00169\ \ \ \textcolor{comment}{/*\ Information\ on\ an\ optinfo\_item\ that\ was\ generated\ during\ phase\ 2\ of}}
+\DoxyCodeLine{00170\ \textcolor{comment}{\ \ \ \ \ formatting.\ \ */}}
+\DoxyCodeLine{00171\ \ \ \textcolor{keyword}{class\ }\doxymbox{\hyperlink{classdump__pretty__printer_1_1stashed__item_a0348fac1b1ec6101e928f6055d55d0e3}{stashed\_item}}}
+\DoxyCodeLine{00172\ \ \ \{}
+\DoxyCodeLine{00173\ \ \ \textcolor{keyword}{public}:}
+\DoxyCodeLine{00174\ \ \ \ \ \doxymbox{\hyperlink{classdump__pretty__printer_1_1stashed__item_a0348fac1b1ec6101e928f6055d55d0e3}{stashed\_item}}\ (\textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ **buffer\_ptr\_,\ \doxymbox{\hyperlink{classoptinfo__item}{optinfo\_item}}\ *item\_)}
+\DoxyCodeLine{00175\ \ \ \ \ \ \ :\ \doxymbox{\hyperlink{classdump__pretty__printer_1_1stashed__item_aecabe49a36563edbb768afcfa3618803}{buffer\_ptr}}\ (buffer\_ptr\_),\ \doxymbox{\hyperlink{classdump__pretty__printer_1_1stashed__item_a87d54393e50860fdba08845cb003c7c9}{item}}\ (item\_)\ \{\}}
+\DoxyCodeLine{00176\ \ \ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ **\doxymbox{\hyperlink{classdump__pretty__printer_1_1stashed__item_aecabe49a36563edbb768afcfa3618803}{buffer\_ptr}};}
+\DoxyCodeLine{00177\ \ \ \ \ \doxymbox{\hyperlink{classoptinfo__item}{optinfo\_item}}\ *\doxymbox{\hyperlink{classdump__pretty__printer_1_1stashed__item_a87d54393e50860fdba08845cb003c7c9}{item}};}
+\DoxyCodeLine{00178\ \ \ \};}
+\DoxyCodeLine{00179\ }
+\DoxyCodeLine{00180\ \ \ \textcolor{keyword}{static}\ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{classdump__pretty__printer_a60dc01dfdba3a457cf53f1c50587ed15}{format\_decoder\_cb}}\ (\doxymbox{\hyperlink{classpretty__printer_ace84c813130dc27c2bd61ea17373c770}{pretty\_printer}}\ *pp,\ \doxymbox{\hyperlink{structtext__info}{text\_info}}\ *text,}
+\DoxyCodeLine{00181\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *spec,\ \textcolor{keywordtype}{int}\ \textcolor{comment}{/*precision*/},}
+\DoxyCodeLine{00182\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{bool}\ \textcolor{comment}{/*wide*/},\ \textcolor{keywordtype}{bool}\ \textcolor{comment}{/*set\_locus*/},}
+\DoxyCodeLine{00183\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{bool}\ \textcolor{comment}{/*verbose*/},\ \textcolor{keywordtype}{bool}\ *\textcolor{comment}{/*quoted*/},}
+\DoxyCodeLine{00184\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ **buffer\_ptr);}
+\DoxyCodeLine{00185\ }
+\DoxyCodeLine{00186\ \ \ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{classdump__pretty__printer_a3ed51c84d70483d992b09dbe2dd595fd}{decode\_format}}\ (\doxymbox{\hyperlink{structtext__info}{text\_info}}\ *text,\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *spec,}
+\DoxyCodeLine{00187\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ **buffer\_ptr);}
+\DoxyCodeLine{00188\ }
+\DoxyCodeLine{00189\ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classdump__pretty__printer_a4aa10331ecef588431c802cb924b403b}{stash\_item}}\ (\textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ **buffer\_ptr,\ \doxymbox{\hyperlink{classoptinfo__item}{optinfo\_item}}\ *item);}
+\DoxyCodeLine{00190\ }
+\DoxyCodeLine{00191\ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classdump__pretty__printer_ae494b2b0eb0d8fb42719fdee92cc73e8}{emit\_any\_pending\_textual\_chunks}}\ (\doxymbox{\hyperlink{classoptinfo}{optinfo}}\ *dest);}
+\DoxyCodeLine{00192\ }
+\DoxyCodeLine{00193\ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classdump__pretty__printer_a857814323525e7813a40e3d086e81463}{emit\_item}}\ (\doxymbox{\hyperlink{classoptinfo__item}{optinfo\_item}}\ *item,\ \doxymbox{\hyperlink{classoptinfo}{optinfo}}\ *dest);}
+\DoxyCodeLine{00194\ }
+\DoxyCodeLine{00195\ \ \ \doxymbox{\hyperlink{classdump__context}{dump\_context}}\ *\doxymbox{\hyperlink{classdump__pretty__printer_a05944409a601184f9e32b23836339140}{m\_context}};}
+\DoxyCodeLine{00196\ \ \ \doxymbox{\hyperlink{dumpfile_8h_ae3aeb1ff52915e32d52ac788388fbeef}{dump\_flags\_t}}\ \doxymbox{\hyperlink{classdump__pretty__printer_a15b071927248c51b9a12fcb1c0fca615}{m\_dump\_kind}};}
+\DoxyCodeLine{00197\ \ \ \doxymbox{\hyperlink{classauto__vec}{auto\_vec<stashed\_item>}}\ \doxymbox{\hyperlink{classdump__pretty__printer_a590ec20822dfa9c73a714c72f6bf369c}{m\_stashed\_items}};}
+\DoxyCodeLine{00198\ \};}
+\DoxyCodeLine{00199\ }
+\DoxyCodeLine{00200\ \textcolor{comment}{/*\ An\ RAII-\/style\ class\ for\ use\ in\ debug\ dumpers\ for\ temporarily\ using\ a}}
+\DoxyCodeLine{00201\ \textcolor{comment}{\ \ \ different\ dump\_context.\ \ It\ enables\ full\ details\ and\ outputs\ to}}
+\DoxyCodeLine{00202\ \textcolor{comment}{\ \ \ stderr\ instead\ of\ the\ currently\ active\ dump\_file.\ \ */}}
+\DoxyCodeLine{00203\ }
+\DoxyCodeLine{00204\ \textcolor{keyword}{class\ }\doxymbox{\hyperlink{classdebug__dump__context_a26e73f50a7a84d9c92f341af47314196}{debug\_dump\_context}}}
+\DoxyCodeLine{00205\ \{}
+\DoxyCodeLine{00206\ \ \textcolor{keyword}{public}:}
+\DoxyCodeLine{00207\ \ \ \doxymbox{\hyperlink{classdebug__dump__context_a26e73f50a7a84d9c92f341af47314196}{debug\_dump\_context}}\ (FILE\ *f\ =\ stderr);}
+\DoxyCodeLine{00208\ \ \ \doxymbox{\hyperlink{classdebug__dump__context_a870b252f23b647625ddd399fd275e141}{\string~debug\_dump\_context}}\ ();}
+\DoxyCodeLine{00209\ }
+\DoxyCodeLine{00210\ \ \textcolor{keyword}{private}:}
+\DoxyCodeLine{00211\ \ \ \doxymbox{\hyperlink{classdump__context}{dump\_context}}\ \doxymbox{\hyperlink{classdebug__dump__context_a4d1042ad0e8f851c37b37925bda87fd0}{m\_context}};}
+\DoxyCodeLine{00212\ \ \ \doxymbox{\hyperlink{classdump__context}{dump\_context}}\ *\doxymbox{\hyperlink{classdebug__dump__context_ae6bf2e4b366a3fc39b33baa2289dda56}{m\_saved}};}
+\DoxyCodeLine{00213\ \ \ \doxymbox{\hyperlink{dumpfile_8h_ae3aeb1ff52915e32d52ac788388fbeef}{dump\_flags\_t}}\ \doxymbox{\hyperlink{classdebug__dump__context_ad6560ca67c0124fc7785fff0aa50f31e}{m\_saved\_flags}};}
+\DoxyCodeLine{00214\ \ \ \doxymbox{\hyperlink{dumpfile_8h_ae3aeb1ff52915e32d52ac788388fbeef}{dump\_flags\_t}}\ \doxymbox{\hyperlink{classdebug__dump__context_a19e76c32a05d2f9f71b1936664bea250}{m\_saved\_pflags}};}
+\DoxyCodeLine{00215\ \ \ FILE\ *\doxymbox{\hyperlink{classdebug__dump__context_af3db6716553bd6014266487b2928cb57}{m\_saved\_file}};}
+\DoxyCodeLine{00216\ \};}
+\DoxyCodeLine{00217\ }
+\DoxyCodeLine{00218\ }
+\DoxyCodeLine{00219\ \textcolor{preprocessor}{\#if\ CHECKING\_P}}
+\DoxyCodeLine{00220\ }
+\DoxyCodeLine{00221\ \textcolor{keyword}{namespace\ }\doxymbox{\hyperlink{namespaceselftest}{selftest}}\ \{}
+\DoxyCodeLine{00222\ }
+\DoxyCodeLine{00223\ \textcolor{comment}{/*\ An\ RAII-\/style\ class\ for\ use\ in\ selftests\ for\ temporarily\ using\ a\ different}}
+\DoxyCodeLine{00224\ \textcolor{comment}{\ \ \ dump\_context.\ \ */}}
+\DoxyCodeLine{00225\ }
+\DoxyCodeLine{00226\ \textcolor{keyword}{class\ }temp\_dump\_context}
+\DoxyCodeLine{00227\ \{}
+\DoxyCodeLine{00228\ \ \textcolor{keyword}{public}:}
+\DoxyCodeLine{00229\ \ \ temp\_dump\_context\ (\textcolor{keywordtype}{bool}\ forcibly\_enable\_optinfo,}
+\DoxyCodeLine{00230\ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{bool}\ forcibly\_enable\_dumping,}
+\DoxyCodeLine{00231\ \ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{dumpfile_8h_ae3aeb1ff52915e32d52ac788388fbeef}{dump\_flags\_t}}\ test\_pp\_flags);}
+\DoxyCodeLine{00232\ \ \ \string~temp\_dump\_context\ ();}
+\DoxyCodeLine{00233\ }
+\DoxyCodeLine{00234\ \ \ \textcolor{comment}{/*\ Support\ for\ selftests.\ \ */}}
+\DoxyCodeLine{00235\ \ \ \doxymbox{\hyperlink{classoptinfo}{optinfo}}\ *get\_pending\_optinfo\ ()\textcolor{keyword}{\ const\ }\{\ \textcolor{keywordflow}{return}\ m\_context.m\_pending;\ \}}
+\DoxyCodeLine{00236\ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *get\_dumped\_text\ ();}
+\DoxyCodeLine{00237\ }
+\DoxyCodeLine{00238\ \ \textcolor{keyword}{private}:}
+\DoxyCodeLine{00239\ \ \ \doxymbox{\hyperlink{classpretty__printer}{pretty\_printer}}\ m\_pp;}
+\DoxyCodeLine{00240\ \ \ \doxymbox{\hyperlink{classdump__context}{dump\_context}}\ m\_context;}
+\DoxyCodeLine{00241\ \ \ \doxymbox{\hyperlink{classdump__context}{dump\_context}}\ *m\_saved;}
+\DoxyCodeLine{00242\ \};}
+\DoxyCodeLine{00243\ }
+\DoxyCodeLine{00244\ \textcolor{comment}{/*\ Implementation\ detail\ of\ ASSERT\_DUMPED\_TEXT\_EQ.\ \ */}}
+\DoxyCodeLine{00245\ }
+\DoxyCodeLine{00246\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ verify\_dumped\_text\ (\textcolor{keyword}{const}\ location\ \&loc,}
+\DoxyCodeLine{00247\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ temp\_dump\_context\ *context,}
+\DoxyCodeLine{00248\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *expected\_text);}
+\DoxyCodeLine{00249\ }
+\DoxyCodeLine{00250\ \textcolor{comment}{/*\ Verify\ that\ the\ text\ dumped\ so\ far\ in\ CONTEXT\ equals}}
+\DoxyCodeLine{00251\ \textcolor{comment}{\ \ \ EXPECTED\_TEXT.}}
+\DoxyCodeLine{00252\ \textcolor{comment}{\ \ \ As\ a\ side-\/effect,\ the\ internal\ buffer\ is\ 0-\/terminated.\ \ */}}
+\DoxyCodeLine{00253\ }
+\DoxyCodeLine{00254\ \textcolor{preprocessor}{\#define\ ASSERT\_DUMPED\_TEXT\_EQ(CONTEXT,\ EXPECTED\_TEXT)\ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00255\ \textcolor{preprocessor}{\ \ SELFTEST\_BEGIN\_STMT\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00256\ \textcolor{preprocessor}{\ \ \ \ verify\_dumped\_text\ (SELFTEST\_LOCATION,\ \&(CONTEXT),\ (EXPECTED\_TEXT));\ \(\backslash\)}}
+\DoxyCodeLine{00257\ \textcolor{preprocessor}{\ \ SELFTEST\_END\_STMT}}
+\DoxyCodeLine{00258\ }
+\DoxyCodeLine{00259\ }
+\DoxyCodeLine{00260\ \textcolor{comment}{/*\ Verify\ that\ ITEM\ has\ the\ expected\ values.\ \ */}}
+\DoxyCodeLine{00261\ }
+\DoxyCodeLine{00262\ \textcolor{keywordtype}{void}}
+\DoxyCodeLine{00263\ verify\_item\ (\textcolor{keyword}{const}\ location\ \&loc,}
+\DoxyCodeLine{00264\ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ optinfo\_item\ *item,}
+\DoxyCodeLine{00265\ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{enum}\ \doxymbox{\hyperlink{optinfo_8h_ad88757a41a0fec08675121621a0aa034}{optinfo\_item\_kind}}\ expected\_kind,}
+\DoxyCodeLine{00266\ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{line-map_8h_aedf25620511d64e43327f1a229906a96}{location\_t}}\ expected\_location,}
+\DoxyCodeLine{00267\ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *expected\_text);}
+\DoxyCodeLine{00268\ }
+\DoxyCodeLine{00269\ \textcolor{comment}{/*\ Verify\ that\ ITEM\ is\ a\ text\ item,\ with\ EXPECTED\_TEXT.\ \ */}}
+\DoxyCodeLine{00270\ }
+\DoxyCodeLine{00271\ \textcolor{preprocessor}{\#define\ ASSERT\_IS\_TEXT(ITEM,\ EXPECTED\_TEXT)\ \(\backslash\)}}
+\DoxyCodeLine{00272\ \textcolor{preprocessor}{\ \ SELFTEST\_BEGIN\_STMT\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00273\ \textcolor{preprocessor}{\ \ \ \ verify\_item\ (SELFTEST\_LOCATION,\ (ITEM),\ OPTINFO\_ITEM\_KIND\_TEXT,\ \(\backslash\)}}
+\DoxyCodeLine{00274\ \textcolor{preprocessor}{\ \ \ \ \ \ \ \ \ UNKNOWN\_LOCATION,\ (EXPECTED\_TEXT));\ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00275\ \textcolor{preprocessor}{\ \ SELFTEST\_END\_STMT}}
+\DoxyCodeLine{00276\ }
+\DoxyCodeLine{00277\ \textcolor{comment}{/*\ Verify\ that\ ITEM\ is\ a\ tree\ item,\ with\ the\ expected\ values.\ \ */}}
+\DoxyCodeLine{00278\ }
+\DoxyCodeLine{00279\ \textcolor{preprocessor}{\#define\ ASSERT\_IS\_TREE(ITEM,\ EXPECTED\_LOCATION,\ EXPECTED\_TEXT)\ \(\backslash\)}}
+\DoxyCodeLine{00280\ \textcolor{preprocessor}{\ \ SELFTEST\_BEGIN\_STMT\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00281\ \textcolor{preprocessor}{\ \ \ \ verify\_item\ (SELFTEST\_LOCATION,\ (ITEM),\ OPTINFO\_ITEM\_KIND\_TREE,\ \(\backslash\)}}
+\DoxyCodeLine{00282\ \textcolor{preprocessor}{\ \ \ \ \ \ \ \ \ (EXPECTED\_LOCATION),\ (EXPECTED\_TEXT));\ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00283\ \textcolor{preprocessor}{\ \ SELFTEST\_END\_STMT}}
+\DoxyCodeLine{00284\ }
+\DoxyCodeLine{00285\ \textcolor{comment}{/*\ Verify\ that\ ITEM\ is\ a\ gimple\ item,\ with\ the\ expected\ values.\ \ */}}
+\DoxyCodeLine{00286\ }
+\DoxyCodeLine{00287\ \textcolor{preprocessor}{\#define\ ASSERT\_IS\_GIMPLE(ITEM,\ EXPECTED\_LOCATION,\ EXPECTED\_TEXT)\ \(\backslash\)}}
+\DoxyCodeLine{00288\ \textcolor{preprocessor}{\ \ SELFTEST\_BEGIN\_STMT\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00289\ \textcolor{preprocessor}{\ \ \ \ verify\_item\ (SELFTEST\_LOCATION,\ (ITEM),\ OPTINFO\_ITEM\_KIND\_GIMPLE,\ \(\backslash\)}}
+\DoxyCodeLine{00290\ \textcolor{preprocessor}{\ \ \ \ \ \ \ \ \ (EXPECTED\_LOCATION),\ (EXPECTED\_TEXT));\ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00291\ \textcolor{preprocessor}{\ \ SELFTEST\_END\_STMT}}
+\DoxyCodeLine{00292\ }
+\DoxyCodeLine{00293\ \textcolor{comment}{/*\ Verify\ that\ ITEM\ is\ a\ symtab\ node,\ with\ the\ expected\ values.\ \ */}}
+\DoxyCodeLine{00294\ }
+\DoxyCodeLine{00295\ \textcolor{preprocessor}{\#define\ ASSERT\_IS\_SYMTAB\_NODE(ITEM,\ EXPECTED\_LOCATION,\ EXPECTED\_TEXT)\ \(\backslash\)}}
+\DoxyCodeLine{00296\ \textcolor{preprocessor}{\ \ SELFTEST\_BEGIN\_STMT\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00297\ \textcolor{preprocessor}{\ \ \ \ verify\_item\ (SELFTEST\_LOCATION,\ (ITEM),\ OPTINFO\_ITEM\_KIND\_SYMTAB\_NODE,\ \(\backslash\)}}
+\DoxyCodeLine{00298\ \textcolor{preprocessor}{\ \ \ \ \ \ \ \ \ (EXPECTED\_LOCATION),\ (EXPECTED\_TEXT));\ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00299\ \textcolor{preprocessor}{\ \ SELFTEST\_END\_STMT}}
+\DoxyCodeLine{00300\ }
+\DoxyCodeLine{00301\ \}\ \textcolor{comment}{//\ namespace\ selftest}}
+\DoxyCodeLine{00302\ }
+\DoxyCodeLine{00303\ \textcolor{preprocessor}{\#endif\ }\textcolor{comment}{/*\ CHECKING\_P\ */}\textcolor{preprocessor}{}}
+\DoxyCodeLine{00304\ }
+\DoxyCodeLine{00305\ \textcolor{preprocessor}{\#endif\ }\textcolor{comment}{/*\ GCC\_DUMP\_CONTEXT\_H\ */}\textcolor{preprocessor}{}}
+
+\end{DoxyCode}

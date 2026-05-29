@@ -1,0 +1,472 @@
+\doxysection{reload.\+h}
+\hypertarget{reload_8h_source}{}\label{reload_8h_source}\index{toolchain/x86\_64-\/elf/lib/gcc/x86\_64-\/elf/14.2.0/plugin/include/reload.h@{toolchain/x86\_64-\/elf/lib/gcc/x86\_64-\/elf/14.2.0/plugin/include/reload.h}}
+\doxymbox{\hyperlink{reload_8h}{Go to the documentation of this file.}}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001\ \textcolor{comment}{/*\ Communication\ between\ reload.cc,\ reload1.cc\ and\ the\ rest\ of\ compiler.}}
+\DoxyCodeLine{00002\ \textcolor{comment}{\ \ \ Copyright\ (C)\ 1987-\/2024\ Free\ Software\ Foundation,\ Inc.}}
+\DoxyCodeLine{00003\ \textcolor{comment}{}}
+\DoxyCodeLine{00004\ \textcolor{comment}{This\ file\ is\ part\ of\ GCC.}}
+\DoxyCodeLine{00005\ \textcolor{comment}{}}
+\DoxyCodeLine{00006\ \textcolor{comment}{GCC\ is\ free\ software;\ you\ can\ redistribute\ it\ and/or\ modify\ it\ under}}
+\DoxyCodeLine{00007\ \textcolor{comment}{the\ terms\ of\ the\ GNU\ General\ Public\ License\ as\ published\ by\ the\ Free}}
+\DoxyCodeLine{00008\ \textcolor{comment}{Software\ Foundation;\ either\ version\ 3,\ or\ (at\ your\ option)\ any\ later}}
+\DoxyCodeLine{00009\ \textcolor{comment}{version.}}
+\DoxyCodeLine{00010\ \textcolor{comment}{}}
+\DoxyCodeLine{00011\ \textcolor{comment}{GCC\ is\ distributed\ in\ the\ hope\ that\ it\ will\ be\ useful,\ but\ WITHOUT\ ANY}}
+\DoxyCodeLine{00012\ \textcolor{comment}{WARRANTY;\ without\ even\ the\ implied\ warranty\ of\ MERCHANTABILITY\ or}}
+\DoxyCodeLine{00013\ \textcolor{comment}{FITNESS\ FOR\ A\ PARTICULAR\ PURPOSE.\ \ See\ the\ GNU\ General\ Public\ License}}
+\DoxyCodeLine{00014\ \textcolor{comment}{for\ more\ details.}}
+\DoxyCodeLine{00015\ \textcolor{comment}{}}
+\DoxyCodeLine{00016\ \textcolor{comment}{You\ should\ have\ received\ a\ copy\ of\ the\ GNU\ General\ Public\ License}}
+\DoxyCodeLine{00017\ \textcolor{comment}{along\ with\ GCC;\ see\ the\ file\ COPYING3.\ \ If\ not\ see}}
+\DoxyCodeLine{00018\ \textcolor{comment}{<http://www.gnu.org/licenses/>.\ \ */}}
+\DoxyCodeLine{00019\ }
+\DoxyCodeLine{00020\ \textcolor{preprocessor}{\#ifndef\ GCC\_RELOAD\_H}}
+\DoxyCodeLine{00021\ \textcolor{preprocessor}{\#define\ GCC\_RELOAD\_H}}
+\DoxyCodeLine{00022\ }
+\DoxyCodeLine{00023\ \textcolor{comment}{/*\ If\ secondary\ reloads\ are\ the\ same\ for\ inputs\ and\ outputs,\ define\ those}}
+\DoxyCodeLine{00024\ \textcolor{comment}{\ \ \ macros\ here.\ \ */}}
+\DoxyCodeLine{00025\ }
+\DoxyCodeLine{00026\ \textcolor{preprocessor}{\#ifdef\ SECONDARY\_RELOAD\_CLASS}}
+\DoxyCodeLine{00027\ \textcolor{preprocessor}{\#define\ SECONDARY\_INPUT\_RELOAD\_CLASS(CLASS,\ MODE,\ X)\ \(\backslash\)}}
+\DoxyCodeLine{00028\ \textcolor{preprocessor}{\ \ SECONDARY\_RELOAD\_CLASS\ (CLASS,\ MODE,\ X)}}
+\DoxyCodeLine{00029\ \textcolor{preprocessor}{\#define\ SECONDARY\_OUTPUT\_RELOAD\_CLASS(CLASS,\ MODE,\ X)\ \(\backslash\)}}
+\DoxyCodeLine{00030\ \textcolor{preprocessor}{\ \ SECONDARY\_RELOAD\_CLASS\ (CLASS,\ MODE,\ X)}}
+\DoxyCodeLine{00031\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00032\ }
+\DoxyCodeLine{00033\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{reload_8h_a786e574123d4a4ea4074216b7e245349}{register\_move\_cost}}\ (\doxymbox{\hyperlink{insn-modes_8h_a3c592bc51c57098d62602b12c9468e92}{machine\_mode}},\ \doxymbox{\hyperlink{coretypes_8h_ad2d01bba6f349e1e03140320d886fff2}{reg\_class\_t}},\ \doxymbox{\hyperlink{coretypes_8h_ad2d01bba6f349e1e03140320d886fff2}{reg\_class\_t}});}
+\DoxyCodeLine{00034\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{reload_8h_a3cdfa15060ff2a237c67be5d701d8e8f}{memory\_move\_cost}}\ (\doxymbox{\hyperlink{insn-modes_8h_a3c592bc51c57098d62602b12c9468e92}{machine\_mode}},\ \doxymbox{\hyperlink{coretypes_8h_ad2d01bba6f349e1e03140320d886fff2}{reg\_class\_t}},\ \textcolor{keywordtype}{bool});}
+\DoxyCodeLine{00035\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{reload_8h_a94adcd7ef037530b059e07eda920599e}{memory\_move\_secondary\_cost}}\ (\doxymbox{\hyperlink{insn-modes_8h_a3c592bc51c57098d62602b12c9468e92}{machine\_mode}},\ \doxymbox{\hyperlink{coretypes_8h_ad2d01bba6f349e1e03140320d886fff2}{reg\_class\_t}},\ \textcolor{keywordtype}{bool});}
+\DoxyCodeLine{00036\ }
+\DoxyCodeLine{00037\ \textcolor{comment}{/*\ Maximum\ number\ of\ reloads\ we\ can\ need.\ \ */}}
+\DoxyCodeLine{00038\ \textcolor{preprocessor}{\#define\ MAX\_RELOADS\ (2\ *\ MAX\_RECOG\_OPERANDS\ *\ (MAX\_REGS\_PER\_ADDRESS\ +\ 1))}}
+\DoxyCodeLine{00039\ }
+\DoxyCodeLine{00040\ \textcolor{comment}{/*\ Encode\ the\ usage\ of\ a\ reload.\ \ The\ following\ codes\ are\ supported:}}
+\DoxyCodeLine{00041\ \textcolor{comment}{}}
+\DoxyCodeLine{00042\ \textcolor{comment}{\ \ \ RELOAD\_FOR\_INPUT\ \ \ \ \ reload\ of\ an\ input\ operand}}
+\DoxyCodeLine{00043\ \textcolor{comment}{\ \ \ RELOAD\_FOR\_OUTPUT\ \ \ \ \ \ \ \ likewise,\ for\ output}}
+\DoxyCodeLine{00044\ \textcolor{comment}{\ \ \ RELOAD\_FOR\_INSN\ \ \ \ \ \ a\ reload\ that\ must\ not\ conflict\ with\ anything}}
+\DoxyCodeLine{00045\ \textcolor{comment}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ used\ in\ the\ insn,\ but\ may\ conflict\ with}}
+\DoxyCodeLine{00046\ \textcolor{comment}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ something\ used\ before\ or\ after\ the\ insn}}
+\DoxyCodeLine{00047\ \textcolor{comment}{\ \ \ RELOAD\_FOR\_INPUT\_ADDRESS\ reload\ for\ parts\ of\ the\ address\ of\ an\ object}}
+\DoxyCodeLine{00048\ \textcolor{comment}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ that\ is\ an\ input\ reload}}
+\DoxyCodeLine{00049\ \textcolor{comment}{\ \ \ RELOAD\_FOR\_INPADDR\_ADDRESS\ \ \ reload\ needed\ for\ RELOAD\_FOR\_INPUT\_ADDRESS}}
+\DoxyCodeLine{00050\ \textcolor{comment}{\ \ \ RELOAD\_FOR\_OUTPUT\_ADDRESS\ \ \ \ like\ RELOAD\_FOR\ INPUT\_ADDRESS,\ for\ output}}
+\DoxyCodeLine{00051\ \textcolor{comment}{\ \ \ RELOAD\_FOR\_OUTADDR\_ADDRESS\ \ \ reload\ needed\ for\ RELOAD\_FOR\_OUTPUT\_ADDRESS}}
+\DoxyCodeLine{00052\ \textcolor{comment}{\ \ \ RELOAD\_FOR\_OPERAND\_ADDRESS\ \ \ reload\ for\ the\ address\ of\ a\ non-\/reloaded}}
+\DoxyCodeLine{00053\ \textcolor{comment}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ operand;\ these\ don't\ conflict\ with}}
+\DoxyCodeLine{00054\ \textcolor{comment}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ any\ other\ addresses.}}
+\DoxyCodeLine{00055\ \textcolor{comment}{\ \ \ RELOAD\_FOR\_OPADDR\_ADDR\ \ \ reload\ needed\ for\ RELOAD\_FOR\_OPERAND\_ADDRESS}}
+\DoxyCodeLine{00056\ \textcolor{comment}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ reloads;\ usually\ secondary\ reloads}}
+\DoxyCodeLine{00057\ \textcolor{comment}{\ \ \ RELOAD\_OTHER\ \ \ \ \ \ \ \ \ none\ of\ the\ above,\ usually\ multiple\ uses}}
+\DoxyCodeLine{00058\ \textcolor{comment}{\ \ \ RELOAD\_FOR\_OTHER\_ADDRESS\ \ \ \ \ reload\ for\ part\ of\ the\ address\ of\ an\ input}}
+\DoxyCodeLine{00059\ \textcolor{comment}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ that\ is\ marked\ RELOAD\_OTHER.}}
+\DoxyCodeLine{00060\ \textcolor{comment}{}}
+\DoxyCodeLine{00061\ \textcolor{comment}{\ \ \ This\ used\ to\ be\ "{}enum\ reload\_when\_needed"{}\ but\ some\ debuggers\ have\ trouble}}
+\DoxyCodeLine{00062\ \textcolor{comment}{\ \ \ with\ an\ enum\ tag\ and\ variable\ of\ the\ same\ name.\ \ */}}
+\DoxyCodeLine{00063\ }
+\DoxyCodeLine{00064\ \textcolor{keyword}{enum}\ \doxymbox{\hyperlink{reload_8h_a0901b761f668dc0dca3ca74ba4216e27}{reload\_type}}}
+\DoxyCodeLine{00065\ \{}
+\DoxyCodeLine{00066\ \ \ \doxymbox{\hyperlink{reload_8h_a0901b761f668dc0dca3ca74ba4216e27af9a8a0c2056a0cf6cf2841e9123e05b6}{RELOAD\_FOR\_INPUT}},\ \doxymbox{\hyperlink{reload_8h_a0901b761f668dc0dca3ca74ba4216e27ab16a382b876d0e843ebda6f0c63d9ebb}{RELOAD\_FOR\_OUTPUT}},\ \doxymbox{\hyperlink{reload_8h_a0901b761f668dc0dca3ca74ba4216e27a653aa8dc806710361a07ed4349bd465b}{RELOAD\_FOR\_INSN}},}
+\DoxyCodeLine{00067\ \ \ \doxymbox{\hyperlink{reload_8h_a0901b761f668dc0dca3ca74ba4216e27ad3f44eab9902924f8735d1f302028d36}{RELOAD\_FOR\_INPUT\_ADDRESS}},\ \doxymbox{\hyperlink{reload_8h_a0901b761f668dc0dca3ca74ba4216e27a257a34a2fd6f6aa4b116514b28a486b6}{RELOAD\_FOR\_INPADDR\_ADDRESS}},}
+\DoxyCodeLine{00068\ \ \ \doxymbox{\hyperlink{reload_8h_a0901b761f668dc0dca3ca74ba4216e27a7c079a5901278ecbf92b23ad023af430}{RELOAD\_FOR\_OUTPUT\_ADDRESS}},\ \doxymbox{\hyperlink{reload_8h_a0901b761f668dc0dca3ca74ba4216e27a46423f0c39416023cf966287c98cd3de}{RELOAD\_FOR\_OUTADDR\_ADDRESS}},}
+\DoxyCodeLine{00069\ \ \ \doxymbox{\hyperlink{reload_8h_a0901b761f668dc0dca3ca74ba4216e27aed4de6ab5f81a5883537c55e87b3c9b2}{RELOAD\_FOR\_OPERAND\_ADDRESS}},\ \doxymbox{\hyperlink{reload_8h_a0901b761f668dc0dca3ca74ba4216e27af211a4ed9fe73a36ab6a2342f28d6df4}{RELOAD\_FOR\_OPADDR\_ADDR}},}
+\DoxyCodeLine{00070\ \ \ \doxymbox{\hyperlink{reload_8h_a0901b761f668dc0dca3ca74ba4216e27a029b533584e03657e86ef97141cb5681}{RELOAD\_OTHER}},\ \doxymbox{\hyperlink{reload_8h_a0901b761f668dc0dca3ca74ba4216e27afc45487148899b2f0affb4709841c1dd}{RELOAD\_FOR\_OTHER\_ADDRESS}}}
+\DoxyCodeLine{00071\ \};}
+\DoxyCodeLine{00072\ }
+\DoxyCodeLine{00073\ \textcolor{preprocessor}{\#ifdef\ GCC\_INSN\_CODES\_H}}
+\DoxyCodeLine{00074\ \textcolor{comment}{/*\ Each\ reload\ is\ recorded\ with\ a\ structure\ like\ this.\ \ */}}
+\DoxyCodeLine{00075\ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{reload_8h_a7d81a15d4e251f65aee41a1da1bc0c02}{reload}}}
+\DoxyCodeLine{00076\ \{}
+\DoxyCodeLine{00077\ \ \ \textcolor{comment}{/*\ The\ value\ to\ reload\ from\ */}}
+\DoxyCodeLine{00078\ \ \ \doxymbox{\hyperlink{coretypes_8h_a20e671ce9e7827268658cff844f4281c}{rtx}}\ in;}
+\DoxyCodeLine{00079\ \ \ \textcolor{comment}{/*\ Where\ to\ store\ reload-\/reg\ afterward\ if\ nec\ (often\ the\ same\ as}}
+\DoxyCodeLine{00080\ \textcolor{comment}{\ \ \ \ \ reload\_in)\ \ */}}
+\DoxyCodeLine{00081\ \ \ \doxymbox{\hyperlink{coretypes_8h_a20e671ce9e7827268658cff844f4281c}{rtx}}\ out;}
+\DoxyCodeLine{00082\ }
+\DoxyCodeLine{00083\ \ \ \textcolor{comment}{/*\ The\ class\ of\ registers\ to\ reload\ into.\ \ */}}
+\DoxyCodeLine{00084\ \ \ \textcolor{keyword}{enum}\ \doxymbox{\hyperlink{i386_8h_aa0e382e7f20d9b4107a67f134db3f4f2}{reg\_class}}\ rclass;}
+\DoxyCodeLine{00085\ }
+\DoxyCodeLine{00086\ \ \ \textcolor{comment}{/*\ The\ mode\ this\ operand\ should\ have\ when\ reloaded,\ on\ input.\ \ */}}
+\DoxyCodeLine{00087\ \ \ \doxymbox{\hyperlink{insn-modes_8h_a3c592bc51c57098d62602b12c9468e92}{machine\_mode}}\ inmode;}
+\DoxyCodeLine{00088\ \ \ \textcolor{comment}{/*\ The\ mode\ this\ operand\ should\ have\ when\ reloaded,\ on\ output.\ \ */}}
+\DoxyCodeLine{00089\ \ \ \doxymbox{\hyperlink{insn-modes_8h_a3c592bc51c57098d62602b12c9468e92}{machine\_mode}}\ outmode;}
+\DoxyCodeLine{00090\ }
+\DoxyCodeLine{00091\ \ \ \textcolor{comment}{/*\ The\ mode\ of\ the\ reload\ register.\ \ */}}
+\DoxyCodeLine{00092\ \ \ \doxymbox{\hyperlink{insn-modes_8h_a3c592bc51c57098d62602b12c9468e92}{machine\_mode}}\ mode;}
+\DoxyCodeLine{00093\ }
+\DoxyCodeLine{00094\ \ \ \textcolor{comment}{/*\ the\ largest\ number\ of\ registers\ this\ reload\ will\ require.\ \ */}}
+\DoxyCodeLine{00095\ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ nregs;}
+\DoxyCodeLine{00096\ }
+\DoxyCodeLine{00097\ \ \ \textcolor{comment}{/*\ Positive\ amount\ to\ increment\ or\ decrement\ by\ if}}
+\DoxyCodeLine{00098\ \textcolor{comment}{\ \ \ \ \ reload\_in\ is\ a\ PRE\_DEC,\ PRE\_INC,\ POST\_DEC,\ POST\_INC.}}
+\DoxyCodeLine{00099\ \textcolor{comment}{\ \ \ \ \ Ignored\ otherwise\ (don't\ assume\ it\ is\ zero).\ \ */}}
+\DoxyCodeLine{00100\ \ \ \doxymbox{\hyperlink{poly-int-types_8h_af5255601feb5e9a21f3193d378a55845}{poly\_int64}}\ inc;}
+\DoxyCodeLine{00101\ \ \ \textcolor{comment}{/*\ A\ reg\ for\ which\ reload\_in\ is\ the\ equivalent.}}
+\DoxyCodeLine{00102\ \textcolor{comment}{\ \ \ \ \ If\ reload\_in\ is\ a\ symbol\_ref\ which\ came\ from}}
+\DoxyCodeLine{00103\ \textcolor{comment}{\ \ \ \ \ reg\_equiv\_constant,\ then\ this\ is\ the\ pseudo}}
+\DoxyCodeLine{00104\ \textcolor{comment}{\ \ \ \ \ which\ has\ that\ symbol\_ref\ as\ equivalent.\ \ */}}
+\DoxyCodeLine{00105\ \ \ \doxymbox{\hyperlink{coretypes_8h_a20e671ce9e7827268658cff844f4281c}{rtx}}\ in\_reg;}
+\DoxyCodeLine{00106\ \ \ \doxymbox{\hyperlink{coretypes_8h_a20e671ce9e7827268658cff844f4281c}{rtx}}\ out\_reg;}
+\DoxyCodeLine{00107\ }
+\DoxyCodeLine{00108\ \ \ \textcolor{comment}{/*\ Used\ in\ find\_reload\_regs\ to\ record\ the\ allocated\ register.\ \ */}}
+\DoxyCodeLine{00109\ \ \ \textcolor{keywordtype}{int}\ regno;}
+\DoxyCodeLine{00110\ \ \ \textcolor{comment}{/*\ This\ is\ the\ register\ to\ reload\ into.\ \ If\ it\ is\ zero\ when\ \`{}find\_reloads'}}
+\DoxyCodeLine{00111\ \textcolor{comment}{\ \ \ \ \ returns,\ you\ must\ find\ a\ suitable\ register\ in\ the\ class\ specified\ by}}
+\DoxyCodeLine{00112\ \textcolor{comment}{\ \ \ \ \ reload\_reg\_class,\ and\ store\ here\ an\ rtx\ for\ that\ register\ with\ mode\ from}}
+\DoxyCodeLine{00113\ \textcolor{comment}{\ \ \ \ \ reload\_inmode\ or\ reload\_outmode.\ \ */}}
+\DoxyCodeLine{00114\ \ \ \doxymbox{\hyperlink{coretypes_8h_a20e671ce9e7827268658cff844f4281c}{rtx}}\ reg\_rtx;}
+\DoxyCodeLine{00115\ \ \ \textcolor{comment}{/*\ The\ operand\ number\ being\ reloaded.\ \ This\ is\ used\ to\ group\ related\ reloads}}
+\DoxyCodeLine{00116\ \textcolor{comment}{\ \ \ \ \ and\ need\ not\ always\ be\ equal\ to\ the\ actual\ operand\ number\ in\ the\ insn,}}
+\DoxyCodeLine{00117\ \textcolor{comment}{\ \ \ \ \ though\ it\ current\ will\ be;\ for\ in-\/out\ operands,\ it\ is\ one\ of\ the\ two}}
+\DoxyCodeLine{00118\ \textcolor{comment}{\ \ \ \ \ operand\ numbers.\ \ */}}
+\DoxyCodeLine{00119\ \ \ \textcolor{keywordtype}{int}\ opnum;}
+\DoxyCodeLine{00120\ }
+\DoxyCodeLine{00121\ \ \ \textcolor{comment}{/*\ Gives\ the\ reload\ number\ of\ a\ secondary\ input\ reload,\ when\ needed;}}
+\DoxyCodeLine{00122\ \textcolor{comment}{\ \ \ \ \ otherwise\ -\/1.\ \ */}}
+\DoxyCodeLine{00123\ \ \ \textcolor{keywordtype}{int}\ secondary\_in\_reload;}
+\DoxyCodeLine{00124\ \ \ \textcolor{comment}{/*\ Gives\ the\ reload\ number\ of\ a\ secondary\ output\ reload,\ when\ needed;}}
+\DoxyCodeLine{00125\ \textcolor{comment}{\ \ \ \ \ otherwise\ -\/1.\ \ */}}
+\DoxyCodeLine{00126\ \ \ \textcolor{keywordtype}{int}\ secondary\_out\_reload;}
+\DoxyCodeLine{00127\ \ \ \textcolor{comment}{/*\ If\ a\ secondary\ input\ reload\ is\ required,\ gives\ the\ INSN\_CODE\ that\ uses\ the}}
+\DoxyCodeLine{00128\ \textcolor{comment}{\ \ \ \ \ secondary\ reload\ as\ a\ scratch\ register,\ or\ CODE\_FOR\_nothing\ if\ the}}
+\DoxyCodeLine{00129\ \textcolor{comment}{\ \ \ \ \ secondary\ reload\ register\ is\ to\ be\ an\ intermediate\ register.\ \ */}}
+\DoxyCodeLine{00130\ \ \ \textcolor{keyword}{enum}\ \doxymbox{\hyperlink{insn-codes_8h_abec351c077ceca0544536b7894034f4c}{insn\_code}}\ secondary\_in\_icode;}
+\DoxyCodeLine{00131\ \ \ \textcolor{comment}{/*\ Likewise,\ for\ a\ secondary\ output\ reload.\ \ */}}
+\DoxyCodeLine{00132\ \ \ \textcolor{keyword}{enum}\ \doxymbox{\hyperlink{insn-codes_8h_abec351c077ceca0544536b7894034f4c}{insn\_code}}\ secondary\_out\_icode;}
+\DoxyCodeLine{00133\ }
+\DoxyCodeLine{00134\ \ \ \textcolor{comment}{/*\ Classifies\ reload\ as\ needed\ either\ for\ addressing\ an\ input\ reload,}}
+\DoxyCodeLine{00135\ \textcolor{comment}{\ \ \ \ \ addressing\ an\ output,\ for\ addressing\ a\ non-\/reloaded\ mem\ ref,\ or\ for}}
+\DoxyCodeLine{00136\ \textcolor{comment}{\ \ \ \ \ unspecified\ purposes\ (i.e.,\ more\ than\ one\ of\ the\ above).\ \ */}}
+\DoxyCodeLine{00137\ \ \ \textcolor{keyword}{enum}\ \doxymbox{\hyperlink{reload_8h_a0901b761f668dc0dca3ca74ba4216e27}{reload\_type}}\ when\_needed;}
+\DoxyCodeLine{00138\ }
+\DoxyCodeLine{00139\ \ \ \textcolor{comment}{/*\ Nonzero\ for\ an\ optional\ reload.\ \ Optional\ reloads\ are\ ignored\ unless\ the}}
+\DoxyCodeLine{00140\ \textcolor{comment}{\ \ \ \ \ value\ is\ already\ sitting\ in\ a\ register.\ \ */}}
+\DoxyCodeLine{00141\ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ optional:1;}
+\DoxyCodeLine{00142\ \ \ \textcolor{comment}{/*\ nonzero\ if\ this\ reload\ shouldn't\ be\ combined\ with\ another\ reload.\ \ */}}
+\DoxyCodeLine{00143\ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ nocombine:1;}
+\DoxyCodeLine{00144\ \ \ \textcolor{comment}{/*\ Nonzero\ if\ this\ is\ a\ secondary\ register\ for\ one\ or\ more\ reloads.\ \ */}}
+\DoxyCodeLine{00145\ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ secondary\_p:1;}
+\DoxyCodeLine{00146\ \ \ \textcolor{comment}{/*\ Nonzero\ if\ this\ reload\ must\ use\ a\ register\ not\ already\ allocated\ to\ a}}
+\DoxyCodeLine{00147\ \textcolor{comment}{\ \ \ \ \ group.\ \ */}}
+\DoxyCodeLine{00148\ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ nongroup:1;}
+\DoxyCodeLine{00149\ \};}
+\DoxyCodeLine{00150\ }
+\DoxyCodeLine{00151\ \textcolor{keyword}{extern}\ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{reload_8h_a7d81a15d4e251f65aee41a1da1bc0c02}{reload}}\ rld[\doxymbox{\hyperlink{reload_8h_ae0f04096b537540d295ad9d869198978}{MAX\_RELOADS}}];}
+\DoxyCodeLine{00152\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{int}\ n\_reloads;}
+\DoxyCodeLine{00153\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00154\ }
+\DoxyCodeLine{00155\ \textcolor{comment}{/*\ Target-\/dependent\ globals.\ \ */}}
+\DoxyCodeLine{00156\ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{structtarget__reload}{target\_reload}}\ \{}
+\DoxyCodeLine{00157\ \ \ \textcolor{comment}{/*\ Nonzero\ if\ indirect\ addressing\ is\ supported\ when\ the\ innermost\ MEM\ is}}
+\DoxyCodeLine{00158\ \textcolor{comment}{\ \ \ \ \ of\ the\ form\ (MEM\ (SYMBOL\_REF\ sym)).\ \ It\ is\ assumed\ that\ the\ level\ to}}
+\DoxyCodeLine{00159\ \textcolor{comment}{\ \ \ \ \ which\ these\ are\ valid\ is\ the\ same\ as\ spill\_indirect\_levels,\ above.\ \ */}}
+\DoxyCodeLine{00160\ \ \ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{structtarget__reload_a69f1115c6275336af284f4f18710bd69}{x\_indirect\_symref\_ok}};}
+\DoxyCodeLine{00161\ }
+\DoxyCodeLine{00162\ \ \ \textcolor{comment}{/*\ Nonzero\ if\ indirect\ addressing\ is\ supported\ on\ the\ machine;\ this\ means}}
+\DoxyCodeLine{00163\ \textcolor{comment}{\ \ \ \ \ that\ spilling\ (REG\ n)\ does\ not\ require\ reloading\ it\ into\ a\ register\ in}}
+\DoxyCodeLine{00164\ \textcolor{comment}{\ \ \ \ \ order\ to\ do\ (MEM\ (REG\ n))\ or\ (MEM\ (PLUS\ (REG\ n)\ (CONST\_INT\ c))).\ \ The}}
+\DoxyCodeLine{00165\ \textcolor{comment}{\ \ \ \ \ value\ indicates\ the\ level\ of\ indirect\ addressing\ supported,\ e.g.,\ two}}
+\DoxyCodeLine{00166\ \textcolor{comment}{\ \ \ \ \ means\ that\ (MEM\ (MEM\ (REG\ n)))\ is\ also\ valid\ if\ (REG\ n)\ does\ not\ get}}
+\DoxyCodeLine{00167\ \textcolor{comment}{\ \ \ \ \ a\ hard\ register.\ \ */}}
+\DoxyCodeLine{00168\ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{char}\ \doxymbox{\hyperlink{structtarget__reload_a3c9f144613efd0d4d5c7bd0a25ab8035}{x\_spill\_indirect\_levels}};}
+\DoxyCodeLine{00169\ }
+\DoxyCodeLine{00170\ \ \ \textcolor{comment}{/*\ True\ if\ caller-\/save\ has\ been\ reinitialized.\ \ */}}
+\DoxyCodeLine{00171\ \ \ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{structtarget__reload_a6e6d873ca1cf0184012c6991785315a5}{x\_caller\_save\_initialized\_p}};}
+\DoxyCodeLine{00172\ }
+\DoxyCodeLine{00173\ \ \ \textcolor{comment}{/*\ Modes\ for\ each\ hard\ register\ that\ we\ can\ save.\ \ The\ smallest\ mode\ is\ wide}}
+\DoxyCodeLine{00174\ \textcolor{comment}{\ \ \ \ \ enough\ to\ save\ the\ entire\ contents\ of\ the\ register.\ \ When\ saving\ the}}
+\DoxyCodeLine{00175\ \textcolor{comment}{\ \ \ \ \ register\ because\ it\ is\ live\ we\ first\ try\ to\ save\ in\ multi-\/register\ modes.}}
+\DoxyCodeLine{00176\ \textcolor{comment}{\ \ \ \ \ If\ that\ is\ not\ possible\ the\ save\ is\ done\ one\ register\ at\ a\ time.\ \ */}}
+\DoxyCodeLine{00177\ \ \ \doxymbox{\hyperlink{structtarget__reload_a486fda4dc1021f780969481e273070d7}{machine\_mode}}\ (x\_regno\_save\_mode}
+\DoxyCodeLine{00178\ \ \ \ \ \ \ \ \ \ \ \ \ \ [\doxymbox{\hyperlink{i386_8h_af49448c4a913325d80c30490033bda4e}{FIRST\_PSEUDO\_REGISTER}}]}
+\DoxyCodeLine{00179\ \ \ \ \ \ \ \ \ \ \ \ \ \ [\doxymbox{\hyperlink{i386_8h_a3c3a4a55a94db380ba2022e0f7b8ba9b}{MAX\_MOVE\_MAX}}\ /\ \doxymbox{\hyperlink{i386_8h_a44ea613f66e8d9cbb5abf3c20ea36829}{MIN\_UNITS\_PER\_WORD}}\ +\ 1]);}
+\DoxyCodeLine{00180\ }
+\DoxyCodeLine{00181\ \ \ \textcolor{comment}{/*\ Nonzero\ if\ an\ address\ (plus\ (reg\ frame\_pointer)\ (reg\ ...))\ is\ valid}}
+\DoxyCodeLine{00182\ \textcolor{comment}{\ \ \ \ \ in\ the\ given\ mode.\ \ */}}
+\DoxyCodeLine{00183\ \ \ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{structtarget__reload_a9ba85f4f218e8120cd79864dd9442d4f}{x\_double\_reg\_address\_ok}}[\doxymbox{\hyperlink{insn-modes_8h_a3c592bc51c57098d62602b12c9468e92a0c210ece7724e41a51f703a1def537d6}{MAX\_MACHINE\_MODE}}];}
+\DoxyCodeLine{00184\ }
+\DoxyCodeLine{00185\ \ \ \textcolor{comment}{/*\ We\ will\ only\ make\ a\ register\ eligible\ for\ caller-\/save\ if\ it\ can\ be}}
+\DoxyCodeLine{00186\ \textcolor{comment}{\ \ \ \ \ saved\ in\ its\ widest\ mode\ with\ a\ simple\ SET\ insn\ as\ long\ as\ the\ memory}}
+\DoxyCodeLine{00187\ \textcolor{comment}{\ \ \ \ \ address\ is\ valid.\ \ We\ record\ the\ INSN\_CODE\ is\ those\ insns\ here\ since}}
+\DoxyCodeLine{00188\ \textcolor{comment}{\ \ \ \ \ when\ we\ emit\ them,\ the\ addresses\ might\ not\ be\ valid,\ so\ they\ might\ not}}
+\DoxyCodeLine{00189\ \textcolor{comment}{\ \ \ \ \ be\ recognized.\ \ */}}
+\DoxyCodeLine{00190\ \ \ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{structtarget__reload_ad9cb20707638ef4b784c05bf05cc2a7f}{x\_cached\_reg\_save\_code}}[\doxymbox{\hyperlink{i386_8h_af49448c4a913325d80c30490033bda4e}{FIRST\_PSEUDO\_REGISTER}}][\doxymbox{\hyperlink{insn-modes_8h_a3c592bc51c57098d62602b12c9468e92a0c210ece7724e41a51f703a1def537d6}{MAX\_MACHINE\_MODE}}];}
+\DoxyCodeLine{00191\ \ \ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{structtarget__reload_abd0a68286f0f08e946b12eb980b79693}{x\_cached\_reg\_restore\_code}}[\doxymbox{\hyperlink{i386_8h_af49448c4a913325d80c30490033bda4e}{FIRST\_PSEUDO\_REGISTER}}][\doxymbox{\hyperlink{insn-modes_8h_a3c592bc51c57098d62602b12c9468e92a0c210ece7724e41a51f703a1def537d6}{MAX\_MACHINE\_MODE}}];}
+\DoxyCodeLine{00192\ \};}
+\DoxyCodeLine{00193\ }
+\DoxyCodeLine{00194\ \textcolor{keyword}{extern}\ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{structtarget__reload}{target\_reload}}\ \doxymbox{\hyperlink{reload_8h_a89dadffbdc2e099bd9aba0b48871de7b}{default\_target\_reload}};}
+\DoxyCodeLine{00195\ \textcolor{preprocessor}{\#if\ SWITCHABLE\_TARGET}}
+\DoxyCodeLine{00196\ \textcolor{keyword}{extern}\ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{structtarget__reload}{target\_reload}}\ *\doxymbox{\hyperlink{reload_8h_a9e46568fa2048a3d90ef5c6100bf4648}{this\_target\_reload}};}
+\DoxyCodeLine{00197\ \textcolor{preprocessor}{\#else}}
+\DoxyCodeLine{00198\ \textcolor{preprocessor}{\#define\ this\_target\_reload\ (\&default\_target\_reload)}}
+\DoxyCodeLine{00199\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00200\ }
+\DoxyCodeLine{00201\ \textcolor{preprocessor}{\#define\ indirect\_symref\_ok\ \(\backslash\)}}
+\DoxyCodeLine{00202\ \textcolor{preprocessor}{\ \ (this\_target\_reload-\/>x\_indirect\_symref\_ok)}}
+\DoxyCodeLine{00203\ \textcolor{preprocessor}{\#define\ double\_reg\_address\_ok\ \(\backslash\)}}
+\DoxyCodeLine{00204\ \textcolor{preprocessor}{\ \ (this\_target\_reload-\/>x\_double\_reg\_address\_ok)}}
+\DoxyCodeLine{00205\ \textcolor{preprocessor}{\#define\ caller\_save\_initialized\_p\ \(\backslash\)}}
+\DoxyCodeLine{00206\ \textcolor{preprocessor}{\ \ (this\_target\_reload-\/>x\_caller\_save\_initialized\_p)}}
+\DoxyCodeLine{00207\ }
+\DoxyCodeLine{00208\ \textcolor{comment}{/*\ Register\ equivalences.\ \ Indexed\ by\ register\ number.\ \ */}}
+\DoxyCodeLine{00209\ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{structreg__equivs__t}{reg\_equivs\_t}}}
+\DoxyCodeLine{00210\ \{}
+\DoxyCodeLine{00211\ \ \ \textcolor{comment}{/*\ The\ constant\ value\ to\ which\ pseudo\ reg\ N\ is\ equivalent,}}
+\DoxyCodeLine{00212\ \textcolor{comment}{\ \ \ \ \ or\ zero\ if\ pseudo\ reg\ N\ is\ not\ equivalent\ to\ a\ constant.}}
+\DoxyCodeLine{00213\ \textcolor{comment}{\ \ \ \ \ find\_reloads\ looks\ at\ this\ in\ order\ to\ replace\ pseudo\ reg\ N}}
+\DoxyCodeLine{00214\ \textcolor{comment}{\ \ \ \ \ with\ the\ constant\ it\ stands\ for.\ \ */}}
+\DoxyCodeLine{00215\ \ \ \doxymbox{\hyperlink{coretypes_8h_a20e671ce9e7827268658cff844f4281c}{rtx}}\ \doxymbox{\hyperlink{structreg__equivs__t_a8991368b23779d8bf45d702fe38b7a77}{constant}};}
+\DoxyCodeLine{00216\ }
+\DoxyCodeLine{00217\ \ \ \textcolor{comment}{/*\ An\ invariant\ value\ to\ which\ pseudo\ reg\ N\ is\ equivalent.}}
+\DoxyCodeLine{00218\ \textcolor{comment}{\ \ \ \ \ eliminate\_regs\_in\_insn\ uses\ this\ to\ replace\ pseudos\ in\ particular}}
+\DoxyCodeLine{00219\ \textcolor{comment}{\ \ \ \ \ contexts.\ \ */}}
+\DoxyCodeLine{00220\ \ \ \doxymbox{\hyperlink{coretypes_8h_a20e671ce9e7827268658cff844f4281c}{rtx}}\ \doxymbox{\hyperlink{structreg__equivs__t_a95a535c74b88ff037d396798175b7fcf}{invariant}};}
+\DoxyCodeLine{00221\ }
+\DoxyCodeLine{00222\ \ \ \textcolor{comment}{/*\ A\ memory\ location\ to\ which\ pseudo\ reg\ N\ is\ equivalent,}}
+\DoxyCodeLine{00223\ \textcolor{comment}{\ \ \ \ \ prior\ to\ any\ register\ elimination\ (such\ as\ frame\ pointer\ to\ stack}}
+\DoxyCodeLine{00224\ \textcolor{comment}{\ \ \ \ \ pointer).\ \ Depending\ on\ whether\ or\ not\ it\ is\ a\ valid\ address,\ this\ value}}
+\DoxyCodeLine{00225\ \textcolor{comment}{\ \ \ \ \ is\ transferred\ to\ either\ equiv\_address\ or\ equiv\_mem.\ \ */}}
+\DoxyCodeLine{00226\ \ \ \doxymbox{\hyperlink{coretypes_8h_a20e671ce9e7827268658cff844f4281c}{rtx}}\ \doxymbox{\hyperlink{structreg__equivs__t_a5e57e21e9185b2af4c642da49de9d395}{memory\_loc}};}
+\DoxyCodeLine{00227\ }
+\DoxyCodeLine{00228\ \ \ \textcolor{comment}{/*\ The\ address\ of\ stack\ slot\ to\ which\ pseudo\ reg\ N\ is\ equivalent.}}
+\DoxyCodeLine{00229\ \textcolor{comment}{\ \ \ \ \ This\ is\ used\ when\ the\ address\ is\ not\ valid\ as\ a\ memory\ address}}
+\DoxyCodeLine{00230\ \textcolor{comment}{\ \ \ \ \ (because\ its\ displacement\ is\ too\ big\ for\ the\ machine.)\ \ */}}
+\DoxyCodeLine{00231\ \ \ \doxymbox{\hyperlink{coretypes_8h_a20e671ce9e7827268658cff844f4281c}{rtx}}\ \doxymbox{\hyperlink{structreg__equivs__t_a032bada098e264de3515c6c1117565a8}{address}};}
+\DoxyCodeLine{00232\ }
+\DoxyCodeLine{00233\ \ \ \textcolor{comment}{/*\ The\ memory\ slot\ to\ which\ pseudo\ reg\ N\ is\ equivalent,}}
+\DoxyCodeLine{00234\ \textcolor{comment}{\ \ \ \ \ or\ zero\ if\ pseudo\ reg\ N\ is\ not\ equivalent\ to\ a\ memory\ slot.\ \ */}}
+\DoxyCodeLine{00235\ \ \ \doxymbox{\hyperlink{coretypes_8h_a20e671ce9e7827268658cff844f4281c}{rtx}}\ \doxymbox{\hyperlink{structreg__equivs__t_abc25686a53e6d7108057b3db032b14db}{mem}};}
+\DoxyCodeLine{00236\ }
+\DoxyCodeLine{00237\ \ \ \textcolor{comment}{/*\ An\ EXPR\_LIST\ of\ REG\_EQUIVs\ containing\ MEMs\ with}}
+\DoxyCodeLine{00238\ \textcolor{comment}{\ \ \ \ \ alternate\ representations\ of\ the\ location\ of\ pseudo\ reg\ N.\ \ */}}
+\DoxyCodeLine{00239\ \ \ rtx\_expr\_list\ *\doxymbox{\hyperlink{structreg__equivs__t_aadbb68a113f50548ce391930c5183817}{alt\_mem\_list}};}
+\DoxyCodeLine{00240\ }
+\DoxyCodeLine{00241\ \ \ \textcolor{comment}{/*\ The\ list\ of\ insns\ that\ initialized\ reg\ N\ from\ its\ equivalent}}
+\DoxyCodeLine{00242\ \textcolor{comment}{\ \ \ \ \ constant\ or\ memory\ slot.\ \ */}}
+\DoxyCodeLine{00243\ \ \ rtx\_insn\_list\ *\doxymbox{\hyperlink{structreg__equivs__t_a9179709ba7bbbf31a52ad45dacc91bba}{init}};}
+\DoxyCodeLine{00244\ \};}
+\DoxyCodeLine{00245\ }
+\DoxyCodeLine{00246\ \textcolor{preprocessor}{\#define\ reg\_equiv\_constant(ELT)\ \(\backslash\)}}
+\DoxyCodeLine{00247\ \textcolor{preprocessor}{\ \ (*reg\_equivs)[(ELT)].constant}}
+\DoxyCodeLine{00248\ \textcolor{preprocessor}{\#define\ reg\_equiv\_invariant(ELT)\ \(\backslash\)}}
+\DoxyCodeLine{00249\ \textcolor{preprocessor}{\ \ (*reg\_equivs)[(ELT)].invariant}}
+\DoxyCodeLine{00250\ \textcolor{preprocessor}{\#define\ reg\_equiv\_memory\_loc(ELT)\ \(\backslash\)}}
+\DoxyCodeLine{00251\ \textcolor{preprocessor}{\ \ (*reg\_equivs)[(ELT)].memory\_loc}}
+\DoxyCodeLine{00252\ \textcolor{preprocessor}{\#define\ reg\_equiv\_address(ELT)\ \(\backslash\)}}
+\DoxyCodeLine{00253\ \textcolor{preprocessor}{\ \ (*reg\_equivs)[(ELT)].address}}
+\DoxyCodeLine{00254\ \textcolor{preprocessor}{\#define\ reg\_equiv\_mem(ELT)\ \(\backslash\)}}
+\DoxyCodeLine{00255\ \textcolor{preprocessor}{\ \ (*reg\_equivs)[(ELT)].mem}}
+\DoxyCodeLine{00256\ \textcolor{preprocessor}{\#define\ reg\_equiv\_alt\_mem\_list(ELT)\ \(\backslash\)}}
+\DoxyCodeLine{00257\ \textcolor{preprocessor}{\ \ (*reg\_equivs)[(ELT)].alt\_mem\_list}}
+\DoxyCodeLine{00258\ \textcolor{preprocessor}{\#define\ reg\_equiv\_init(ELT)\ \(\backslash\)}}
+\DoxyCodeLine{00259\ \textcolor{preprocessor}{\ \ (*reg\_equivs)[(ELT)].init}}
+\DoxyCodeLine{00260\ }
+\DoxyCodeLine{00261\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{structvec}{vec<reg\_equivs\_t,\ va\_gc>}}\ *\doxymbox{\hyperlink{reload_8h_a5c70ff160e355334c3e83c5dc8fe8d65}{reg\_equivs}};}
+\DoxyCodeLine{00262\ }
+\DoxyCodeLine{00263\ \textcolor{comment}{/*\ All\ the\ "{}earlyclobber"{}\ operands\ of\ the\ current\ insn}}
+\DoxyCodeLine{00264\ \textcolor{comment}{\ \ \ are\ recorded\ here.\ \ */}}
+\DoxyCodeLine{00265\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{reload_8h_afcd53a502c35aabe237a3f908d772744}{n\_earlyclobbers}};}
+\DoxyCodeLine{00266\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{coretypes_8h_a20e671ce9e7827268658cff844f4281c}{rtx}}\ \doxymbox{\hyperlink{reload_8h_a9bf5677a69fb7408c683f05c726ebffb}{reload\_earlyclobbers}}[\doxymbox{\hyperlink{insn-config_8h_a3313ecc3e5070294bb73fe756011134f}{MAX\_RECOG\_OPERANDS}}];}
+\DoxyCodeLine{00267\ }
+\DoxyCodeLine{00268\ \textcolor{comment}{/*\ Save\ the\ number\ of\ operands.\ \ */}}
+\DoxyCodeLine{00269\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{reload_8h_a28bb7d007edc6b023a3418b023f75979}{reload\_n\_operands}};}
+\DoxyCodeLine{00270\ }
+\DoxyCodeLine{00271\ \textcolor{comment}{/*\ First\ uid\ used\ by\ insns\ created\ by\ reload\ in\ this\ function.}}
+\DoxyCodeLine{00272\ \textcolor{comment}{\ \ \ Used\ in\ find\_equiv\_reg.\ \ */}}
+\DoxyCodeLine{00273\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{reload_8h_a7a10caf4cdba4a02d6df3416e0f53eb4}{reload\_first\_uid}};}
+\DoxyCodeLine{00274\ }
+\DoxyCodeLine{00275\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{reload_8h_a7fa1aea46a27753339461d10fe8328ca}{num\_not\_at\_initial\_offset}};}
+\DoxyCodeLine{00276\ }
+\DoxyCodeLine{00277\ \textcolor{preprocessor}{\#if\ defined\ HARD\_CONST\ \&\&\ defined\ CLEAR\_REG\_SET}}
+\DoxyCodeLine{00278\ \textcolor{comment}{/*\ This\ structure\ describes\ instructions\ which\ are\ relevant\ for\ reload.}}
+\DoxyCodeLine{00279\ \textcolor{comment}{\ \ \ Apart\ from\ all\ regular\ insns,\ this\ also\ includes\ CODE\_LABELs,\ since\ they}}
+\DoxyCodeLine{00280\ \textcolor{comment}{\ \ \ must\ be\ examined\ for\ register\ elimination.\ \ */}}
+\DoxyCodeLine{00281\ \textcolor{keyword}{class\ }insn\_chain}
+\DoxyCodeLine{00282\ \{}
+\DoxyCodeLine{00283\ \textcolor{keyword}{public}:}
+\DoxyCodeLine{00284\ \ \ \textcolor{comment}{/*\ Links\ to\ the\ neighbor\ instructions.\ \ */}}
+\DoxyCodeLine{00285\ \ \ \textcolor{keyword}{class\ }insn\_chain\ *next,\ *prev;}
+\DoxyCodeLine{00286\ }
+\DoxyCodeLine{00287\ \ \ \textcolor{comment}{/*\ Link\ through\ a\ chains\ set\ up\ by\ calculate\_needs\_all\_insns,\ containing}}
+\DoxyCodeLine{00288\ \textcolor{comment}{\ \ \ \ \ all\ insns\ that\ need\ reloading.\ \ */}}
+\DoxyCodeLine{00289\ \ \ \textcolor{keyword}{class\ }insn\_chain\ *next\_need\_reload;}
+\DoxyCodeLine{00290\ }
+\DoxyCodeLine{00291\ \ \ \textcolor{comment}{/*\ The\ rtx\ of\ the\ insn.\ \ */}}
+\DoxyCodeLine{00292\ \ \ rtx\_insn\ *insn;}
+\DoxyCodeLine{00293\ }
+\DoxyCodeLine{00294\ \ \ \textcolor{comment}{/*\ The\ basic\ block\ this\ insn\ is\ in.\ \ */}}
+\DoxyCodeLine{00295\ \ \ \textcolor{keywordtype}{int}\ block;}
+\DoxyCodeLine{00296\ }
+\DoxyCodeLine{00297\ \ \ \textcolor{comment}{/*\ Nonzero\ if\ find\_reloads\ said\ the\ insn\ requires\ reloading.\ \ */}}
+\DoxyCodeLine{00298\ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ need\_reload:1;}
+\DoxyCodeLine{00299\ \ \ \textcolor{comment}{/*\ Nonzero\ if\ find\_reloads\ needs\ to\ be\ run\ during\ reload\_as\_needed\ to}}
+\DoxyCodeLine{00300\ \textcolor{comment}{\ \ \ \ \ perform\ modifications\ on\ any\ operands.\ \ */}}
+\DoxyCodeLine{00301\ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ need\_operand\_change:1;}
+\DoxyCodeLine{00302\ \ \ \textcolor{comment}{/*\ Nonzero\ if\ eliminate\_regs\_in\_insn\ said\ it\ requires\ eliminations.\ \ */}}
+\DoxyCodeLine{00303\ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ need\_elim:1;}
+\DoxyCodeLine{00304\ \ \ \textcolor{comment}{/*\ Nonzero\ if\ this\ insn\ was\ inserted\ by\ perform\_caller\_saves.\ \ */}}
+\DoxyCodeLine{00305\ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ is\_caller\_save\_insn:1;}
+\DoxyCodeLine{00306\ }
+\DoxyCodeLine{00307\ \ \ \textcolor{comment}{/*\ Register\ life\ information:\ record\ all\ live\ hard\ registers,\ and}}
+\DoxyCodeLine{00308\ \textcolor{comment}{\ \ \ \ \ all\ live\ pseudos\ that\ have\ a\ hard\ register.\ \ This\ set\ also}}
+\DoxyCodeLine{00309\ \textcolor{comment}{\ \ \ \ \ contains\ pseudos\ spilled\ by\ IRA.\ \ */}}
+\DoxyCodeLine{00310\ \ \ bitmap\_head\ live\_throughout;}
+\DoxyCodeLine{00311\ \ \ bitmap\_head\ dead\_or\_set;}
+\DoxyCodeLine{00312\ }
+\DoxyCodeLine{00313\ \ \ \textcolor{comment}{/*\ Copies\ of\ the\ global\ variables\ computed\ by\ find\_reloads.\ \ */}}
+\DoxyCodeLine{00314\ \ \ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{reload_8h_a7d81a15d4e251f65aee41a1da1bc0c02}{reload}}\ *rld;}
+\DoxyCodeLine{00315\ \ \ \textcolor{keywordtype}{int}\ n\_reloads;}
+\DoxyCodeLine{00316\ }
+\DoxyCodeLine{00317\ \ \ \textcolor{comment}{/*\ Indicates\ which\ registers\ have\ already\ been\ used\ for\ spills.\ \ */}}
+\DoxyCodeLine{00318\ \ \ \doxymbox{\hyperlink{hard-reg-set_8h_a58a1569980de76957f391607c395d443}{HARD\_REG\_SET}}\ used\_spill\_regs;}
+\DoxyCodeLine{00319\ \};}
+\DoxyCodeLine{00320\ }
+\DoxyCodeLine{00321\ \textcolor{comment}{/*\ A\ chain\ of\ insn\_chain\ structures\ to\ describe\ all\ non-\/note\ insns\ in}}
+\DoxyCodeLine{00322\ \textcolor{comment}{\ \ \ a\ function.\ \ */}}
+\DoxyCodeLine{00323\ \textcolor{keyword}{extern}\ \textcolor{keyword}{class\ }insn\_chain\ *reload\_insn\_chain;}
+\DoxyCodeLine{00324\ }
+\DoxyCodeLine{00325\ \textcolor{comment}{/*\ Allocate\ a\ new\ insn\_chain\ structure.\ \ */}}
+\DoxyCodeLine{00326\ \textcolor{keyword}{extern}\ \textcolor{keyword}{class\ }insn\_chain\ *new\_insn\_chain\ (\textcolor{keywordtype}{void});}
+\DoxyCodeLine{00327\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00328\ }
+\DoxyCodeLine{00329\ \textcolor{preprocessor}{\#if\ defined\ HARD\_CONST}}
+\DoxyCodeLine{00330\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ compute\_use\_by\_pseudos\ (\doxymbox{\hyperlink{hard-reg-set_8h_a58a1569980de76957f391607c395d443}{HARD\_REG\_SET}}\ *,\ \doxymbox{\hyperlink{coretypes_8h_ae7ea3a04cabf8964dc6e8e95a9cde1b8}{bitmap}});}
+\DoxyCodeLine{00331\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00332\ }
+\DoxyCodeLine{00333\ \textcolor{comment}{/*\ Functions\ from\ reload.cc:\ \ */}}
+\DoxyCodeLine{00334\ }
+\DoxyCodeLine{00335\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{coretypes_8h_ad2d01bba6f349e1e03140320d886fff2}{reg\_class\_t}}\ \doxymbox{\hyperlink{reload_8h_a8ece5a93421a629185ca79b601efbf5c}{secondary\_reload\_class}}\ (\textcolor{keywordtype}{bool},\ \doxymbox{\hyperlink{coretypes_8h_ad2d01bba6f349e1e03140320d886fff2}{reg\_class\_t}},}
+\DoxyCodeLine{00336\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{insn-modes_8h_a3c592bc51c57098d62602b12c9468e92}{machine\_mode}},\ \doxymbox{\hyperlink{coretypes_8h_a20e671ce9e7827268658cff844f4281c}{rtx}});}
+\DoxyCodeLine{00337\ }
+\DoxyCodeLine{00338\ \textcolor{preprocessor}{\#ifdef\ GCC\_INSN\_CODES\_H}}
+\DoxyCodeLine{00339\ \textcolor{keyword}{extern}\ \textcolor{keyword}{enum}\ \doxymbox{\hyperlink{i386_8h_aa0e382e7f20d9b4107a67f134db3f4f2}{reg\_class}}\ scratch\_reload\_class\ (\textcolor{keyword}{enum}\ \doxymbox{\hyperlink{insn-codes_8h_abec351c077ceca0544536b7894034f4c}{insn\_code}});}
+\DoxyCodeLine{00340\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00341\ }
+\DoxyCodeLine{00342\ \textcolor{comment}{/*\ Return\ a\ memory\ location\ that\ will\ be\ used\ to\ copy\ X\ in\ mode\ MODE.}}
+\DoxyCodeLine{00343\ \textcolor{comment}{\ \ \ If\ we\ haven't\ already\ made\ a\ location\ for\ this\ mode\ in\ this\ insn,}}
+\DoxyCodeLine{00344\ \textcolor{comment}{\ \ \ call\ find\_reloads\_address\ on\ the\ location\ being\ returned.\ \ */}}
+\DoxyCodeLine{00345\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{coretypes_8h_a20e671ce9e7827268658cff844f4281c}{rtx}}\ \doxymbox{\hyperlink{reload_8h_a890e971f34c5243e9b020172fd98e70f}{get\_secondary\_mem}}\ (\doxymbox{\hyperlink{coretypes_8h_a20e671ce9e7827268658cff844f4281c}{rtx}},\ \doxymbox{\hyperlink{insn-modes_8h_a3c592bc51c57098d62602b12c9468e92}{machine\_mode}},\ \textcolor{keywordtype}{int},\ \textcolor{keyword}{enum}\ \doxymbox{\hyperlink{reload_8h_a0901b761f668dc0dca3ca74ba4216e27}{reload\_type}});}
+\DoxyCodeLine{00346\ }
+\DoxyCodeLine{00347\ \textcolor{comment}{/*\ Clear\ any\ secondary\ memory\ locations\ we've\ made.\ \ */}}
+\DoxyCodeLine{00348\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{reload_8h_ac8d6136ee31da8e82c481c42de68dcb0}{clear\_secondary\_mem}}\ (\textcolor{keywordtype}{void});}
+\DoxyCodeLine{00349\ }
+\DoxyCodeLine{00350\ \textcolor{comment}{/*\ Transfer\ all\ replacements\ that\ used\ to\ be\ in\ reload\ FROM\ to\ be\ in}}
+\DoxyCodeLine{00351\ \textcolor{comment}{\ \ \ reload\ TO.\ \ */}}
+\DoxyCodeLine{00352\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{reload_8h_a18ee0c862022029708addc9951fb7e37}{transfer\_replacements}}\ (\textcolor{keywordtype}{int},\ \textcolor{keywordtype}{int});}
+\DoxyCodeLine{00353\ }
+\DoxyCodeLine{00354\ \textcolor{comment}{/*\ IN\_RTX\ is\ the\ value\ loaded\ by\ a\ reload\ that\ we\ now\ decided\ to\ inherit,}}
+\DoxyCodeLine{00355\ \textcolor{comment}{\ \ \ or\ a\ subpart\ of\ it.\ \ If\ we\ have\ any\ replacements\ registered\ for\ IN\_RTX,}}
+\DoxyCodeLine{00356\ \textcolor{comment}{\ \ \ cancel\ the\ reloads\ that\ were\ supposed\ to\ load\ them.}}
+\DoxyCodeLine{00357\ \textcolor{comment}{\ \ \ Return\ nonzero\ if\ we\ canceled\ any\ reloads.\ \ */}}
+\DoxyCodeLine{00358\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{reload_8h_a1a028195ac50ee11b85edcc82ccb04e1}{remove\_address\_replacements}}\ (\doxymbox{\hyperlink{coretypes_8h_a20e671ce9e7827268658cff844f4281c}{rtx}}\ in\_rtx);}
+\DoxyCodeLine{00359\ }
+\DoxyCodeLine{00360\ \textcolor{comment}{/*\ Like\ rtx\_equal\_p\ except\ that\ it\ allows\ a\ REG\ and\ a\ SUBREG\ to\ match}}
+\DoxyCodeLine{00361\ \textcolor{comment}{\ \ \ if\ they\ are\ the\ same\ hard\ reg,\ and\ has\ special\ hacks\ for}}
+\DoxyCodeLine{00362\ \textcolor{comment}{\ \ \ autoincrement\ and\ autodecrement.\ \ */}}
+\DoxyCodeLine{00363\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{reload_8h_a7bffc9c2c74bce547578ced0f7964229}{operands\_match\_p}}\ (\doxymbox{\hyperlink{coretypes_8h_a20e671ce9e7827268658cff844f4281c}{rtx}},\ \doxymbox{\hyperlink{coretypes_8h_a20e671ce9e7827268658cff844f4281c}{rtx}});}
+\DoxyCodeLine{00364\ }
+\DoxyCodeLine{00365\ \textcolor{comment}{/*\ Return\ 1\ if\ altering\ OP\ will\ not\ modify\ the\ value\ of\ CLOBBER.\ \ */}}
+\DoxyCodeLine{00366\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{reload_8h_ae07ba3d1516d4a36ff8f0274c99514fb}{safe\_from\_earlyclobber}}\ (\doxymbox{\hyperlink{coretypes_8h_a20e671ce9e7827268658cff844f4281c}{rtx}},\ \doxymbox{\hyperlink{coretypes_8h_a20e671ce9e7827268658cff844f4281c}{rtx}});}
+\DoxyCodeLine{00367\ }
+\DoxyCodeLine{00368\ \textcolor{comment}{/*\ Search\ the\ body\ of\ INSN\ for\ values\ that\ need\ reloading\ and\ record\ them}}
+\DoxyCodeLine{00369\ \textcolor{comment}{\ \ \ with\ push\_reload.\ \ REPLACE\ nonzero\ means\ record\ also\ where\ the\ values\ occur}}
+\DoxyCodeLine{00370\ \textcolor{comment}{\ \ \ so\ that\ subst\_reloads\ can\ be\ used.\ \ */}}
+\DoxyCodeLine{00371\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{reload_8h_a608571fda5b537e30257f0440ed9ec44}{find\_reloads}}\ (rtx\_insn\ *,\ \textcolor{keywordtype}{int},\ \textcolor{keywordtype}{int},\ \textcolor{keywordtype}{int},\ \textcolor{keywordtype}{short}\ *);}
+\DoxyCodeLine{00372\ }
+\DoxyCodeLine{00373\ \textcolor{comment}{/*\ Compute\ the\ sum\ of\ X\ and\ Y,\ making\ canonicalizations\ assumed\ in\ an}}
+\DoxyCodeLine{00374\ \textcolor{comment}{\ \ \ address,\ namely:\ sum\ constant\ integers,\ surround\ the\ sum\ of\ two}}
+\DoxyCodeLine{00375\ \textcolor{comment}{\ \ \ constants\ with\ a\ CONST,\ put\ the\ constant\ as\ the\ second\ operand,\ and}}
+\DoxyCodeLine{00376\ \textcolor{comment}{\ \ \ group\ the\ constant\ on\ the\ outermost\ sum.\ \ */}}
+\DoxyCodeLine{00377\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{coretypes_8h_a20e671ce9e7827268658cff844f4281c}{rtx}}\ \doxymbox{\hyperlink{reload_8h_a680af746da23c83608f4856260433b1f}{form\_sum}}\ (\doxymbox{\hyperlink{insn-modes_8h_a3c592bc51c57098d62602b12c9468e92}{machine\_mode}},\ \doxymbox{\hyperlink{coretypes_8h_a20e671ce9e7827268658cff844f4281c}{rtx}},\ \doxymbox{\hyperlink{coretypes_8h_a20e671ce9e7827268658cff844f4281c}{rtx}});}
+\DoxyCodeLine{00378\ }
+\DoxyCodeLine{00379\ \textcolor{comment}{/*\ Substitute\ into\ the\ current\ INSN\ the\ registers\ into\ which\ we\ have\ reloaded}}
+\DoxyCodeLine{00380\ \textcolor{comment}{\ \ \ the\ things\ that\ need\ reloading.\ \ */}}
+\DoxyCodeLine{00381\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{reload_8h_abf864d934503336d86ef192237d0306f}{subst\_reloads}}\ (rtx\_insn\ *);}
+\DoxyCodeLine{00382\ }
+\DoxyCodeLine{00383\ \textcolor{comment}{/*\ Make\ a\ copy\ of\ any\ replacements\ being\ done\ into\ X\ and\ move\ those\ copies}}
+\DoxyCodeLine{00384\ \textcolor{comment}{\ \ \ to\ locations\ in\ Y,\ a\ copy\ of\ X.\ \ We\ only\ look\ at\ the\ highest\ level\ of}}
+\DoxyCodeLine{00385\ \textcolor{comment}{\ \ \ the\ RTL.\ \ */}}
+\DoxyCodeLine{00386\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{reload_8h_ac636bd8f035ca0c155d072970da2f36d}{copy\_replacements}}\ (\doxymbox{\hyperlink{coretypes_8h_a20e671ce9e7827268658cff844f4281c}{rtx}},\ \doxymbox{\hyperlink{coretypes_8h_a20e671ce9e7827268658cff844f4281c}{rtx}});}
+\DoxyCodeLine{00387\ }
+\DoxyCodeLine{00388\ \textcolor{comment}{/*\ Change\ any\ replacements\ being\ done\ to\ *X\ to\ be\ done\ to\ *Y\ */}}
+\DoxyCodeLine{00389\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{reload_8h_a68f16d0111fe34ca41379b58ea716473}{move\_replacements}}\ (\doxymbox{\hyperlink{coretypes_8h_a20e671ce9e7827268658cff844f4281c}{rtx}}\ *x,\ \doxymbox{\hyperlink{coretypes_8h_a20e671ce9e7827268658cff844f4281c}{rtx}}\ *\doxymbox{\hyperlink{wide-int_8h_aa0ab03c091e4ca9ca82306ad42c7dbfb}{y}});}
+\DoxyCodeLine{00390\ }
+\DoxyCodeLine{00391\ \textcolor{comment}{/*\ If\ LOC\ was\ scheduled\ to\ be\ replaced\ by\ something,\ return\ the\ replacement.}}
+\DoxyCodeLine{00392\ \textcolor{comment}{\ \ \ Otherwise,\ return\ *LOC.\ \ */}}
+\DoxyCodeLine{00393\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{coretypes_8h_a20e671ce9e7827268658cff844f4281c}{rtx}}\ \doxymbox{\hyperlink{reload_8h_a9a569b3d587f35f91beaec64ef28a2ec}{find\_replacement}}\ (\doxymbox{\hyperlink{coretypes_8h_a20e671ce9e7827268658cff844f4281c}{rtx}}\ *);}
+\DoxyCodeLine{00394\ }
+\DoxyCodeLine{00395\ \textcolor{comment}{/*\ Nonzero\ if\ modifying\ X\ will\ affect\ IN.\ \ */}}
+\DoxyCodeLine{00396\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{reload_8h_a93e5c7edee313b8b243058695d644ef1}{reg\_overlap\_mentioned\_for\_reload\_p}}\ (\doxymbox{\hyperlink{coretypes_8h_a20e671ce9e7827268658cff844f4281c}{rtx}},\ \doxymbox{\hyperlink{coretypes_8h_a20e671ce9e7827268658cff844f4281c}{rtx}});}
+\DoxyCodeLine{00397\ }
+\DoxyCodeLine{00398\ \textcolor{comment}{/*\ Check\ the\ insns\ before\ INSN\ to\ see\ if\ there\ is\ a\ suitable\ register}}
+\DoxyCodeLine{00399\ \textcolor{comment}{\ \ \ containing\ the\ same\ value\ as\ GOAL.\ \ */}}
+\DoxyCodeLine{00400\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{coretypes_8h_a20e671ce9e7827268658cff844f4281c}{rtx}}\ \doxymbox{\hyperlink{reload_8h_ada92508604f7abfe352952d4264d46c1}{find\_equiv\_reg}}\ (\doxymbox{\hyperlink{coretypes_8h_a20e671ce9e7827268658cff844f4281c}{rtx}},\ rtx\_insn\ *,\ \textcolor{keyword}{enum}\ \doxymbox{\hyperlink{i386_8h_aa0e382e7f20d9b4107a67f134db3f4f2}{reg\_class}},\ \textcolor{keywordtype}{int},\ \textcolor{keywordtype}{short}\ *,}
+\DoxyCodeLine{00401\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{int},\ \doxymbox{\hyperlink{insn-modes_8h_a3c592bc51c57098d62602b12c9468e92}{machine\_mode}});}
+\DoxyCodeLine{00402\ }
+\DoxyCodeLine{00403\ \textcolor{comment}{/*\ Return\ 1\ if\ register\ REGNO\ is\ the\ subject\ of\ a\ clobber\ in\ insn\ INSN.\ \ */}}
+\DoxyCodeLine{00404\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{reload_8h_a5f9145047c2d12943357ee216c60fab5}{regno\_clobbered\_p}}\ (\textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int},\ rtx\_insn\ *,\ \doxymbox{\hyperlink{insn-modes_8h_a3c592bc51c57098d62602b12c9468e92}{machine\_mode}},\ \textcolor{keywordtype}{int});}
+\DoxyCodeLine{00405\ }
+\DoxyCodeLine{00406\ \textcolor{comment}{/*\ Return\ 1\ if\ X\ is\ an\ operand\ of\ an\ insn\ that\ is\ being\ earlyclobbered.\ \ */}}
+\DoxyCodeLine{00407\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{reload_8h_afb746b94e0fc64531e399017197f51ef}{earlyclobber\_operand\_p}}\ (\doxymbox{\hyperlink{coretypes_8h_a20e671ce9e7827268658cff844f4281c}{rtx}});}
+\DoxyCodeLine{00408\ }
+\DoxyCodeLine{00409\ \textcolor{comment}{/*\ Record\ one\ reload\ that\ needs\ to\ be\ performed.\ \ */}}
+\DoxyCodeLine{00410\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{reload_8h_adb83a823f8c20fd43e8df5afc8efd0d8}{push\_reload}}\ (\doxymbox{\hyperlink{coretypes_8h_a20e671ce9e7827268658cff844f4281c}{rtx}},\ \doxymbox{\hyperlink{coretypes_8h_a20e671ce9e7827268658cff844f4281c}{rtx}},\ \doxymbox{\hyperlink{coretypes_8h_a20e671ce9e7827268658cff844f4281c}{rtx}}\ *,\ \doxymbox{\hyperlink{coretypes_8h_a20e671ce9e7827268658cff844f4281c}{rtx}}\ *,\ \textcolor{keyword}{enum}\ \doxymbox{\hyperlink{i386_8h_aa0e382e7f20d9b4107a67f134db3f4f2}{reg\_class}},}
+\DoxyCodeLine{00411\ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{insn-modes_8h_a3c592bc51c57098d62602b12c9468e92}{machine\_mode}},\ \doxymbox{\hyperlink{insn-modes_8h_a3c592bc51c57098d62602b12c9468e92}{machine\_mode}},}
+\DoxyCodeLine{00412\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{int},\ \textcolor{keywordtype}{int},\ \textcolor{keywordtype}{int},\ \textcolor{keyword}{enum}\ \doxymbox{\hyperlink{reload_8h_a0901b761f668dc0dca3ca74ba4216e27}{reload\_type}});}
+\DoxyCodeLine{00413\ }
+\DoxyCodeLine{00414\ \textcolor{comment}{/*\ Functions\ in\ reload1.cc:\ \ */}}
+\DoxyCodeLine{00415\ }
+\DoxyCodeLine{00416\ \textcolor{comment}{/*\ Initialize\ the\ reload\ pass\ once\ per\ compilation.\ \ */}}
+\DoxyCodeLine{00417\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{reload_8h_a7aab5f6351c90f290bcd4aa282f7f991}{init\_reload}}\ (\textcolor{keywordtype}{void});}
+\DoxyCodeLine{00418\ }
+\DoxyCodeLine{00419\ \textcolor{comment}{/*\ The\ reload\ pass\ itself.\ \ */}}
+\DoxyCodeLine{00420\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{reload_8h_a7d81a15d4e251f65aee41a1da1bc0c02}{reload}}\ (rtx\_insn\ *,\ \textcolor{keywordtype}{int});}
+\DoxyCodeLine{00421\ }
+\DoxyCodeLine{00422\ \textcolor{comment}{/*\ Mark\ the\ slots\ in\ regs\_ever\_live\ for\ the\ hard\ regs}}
+\DoxyCodeLine{00423\ \textcolor{comment}{\ \ \ used\ by\ pseudo-\/reg\ number\ REGNO.\ \ */}}
+\DoxyCodeLine{00424\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{reload_8h_ae457e29f5768738e0c2e406e5f17038f}{mark\_home\_live}}\ (\textcolor{keywordtype}{int});}
+\DoxyCodeLine{00425\ }
+\DoxyCodeLine{00426\ \textcolor{comment}{/*\ Scan\ X\ and\ replace\ any\ eliminable\ registers\ (such\ as\ fp)\ with\ a}}
+\DoxyCodeLine{00427\ \textcolor{comment}{\ \ \ replacement\ (such\ as\ sp),\ plus\ an\ offset.\ \ */}}
+\DoxyCodeLine{00428\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{coretypes_8h_a20e671ce9e7827268658cff844f4281c}{rtx}}\ \doxymbox{\hyperlink{reload_8h_a0b1db454b53ba51c4d320fe31094e27f}{eliminate\_regs}}\ (\doxymbox{\hyperlink{coretypes_8h_a20e671ce9e7827268658cff844f4281c}{rtx}},\ \doxymbox{\hyperlink{insn-modes_8h_a3c592bc51c57098d62602b12c9468e92}{machine\_mode}},\ \doxymbox{\hyperlink{coretypes_8h_a20e671ce9e7827268658cff844f4281c}{rtx}});}
+\DoxyCodeLine{00429\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{reload_8h_a2eba95dbe5d43efa1917eaa925728d3a}{elimination\_target\_reg\_p}}\ (\doxymbox{\hyperlink{coretypes_8h_a20e671ce9e7827268658cff844f4281c}{rtx}});}
+\DoxyCodeLine{00430\ }
+\DoxyCodeLine{00431\ \textcolor{comment}{/*\ Called\ from\ the\ register\ allocator\ to\ estimate\ costs\ of\ eliminating}}
+\DoxyCodeLine{00432\ \textcolor{comment}{\ \ \ invariant\ registers.\ \ */}}
+\DoxyCodeLine{00433\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{reload_8h_a742df92d29ebc0e10ed21ca95b016f88}{calculate\_elim\_costs\_all\_insns}}\ (\textcolor{keywordtype}{void});}
+\DoxyCodeLine{00434\ }
+\DoxyCodeLine{00435\ \textcolor{comment}{/*\ Deallocate\ the\ reload\ register\ used\ by\ reload\ number\ R.\ \ */}}
+\DoxyCodeLine{00436\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{reload_8h_a83a15b915c72f8bfab282a510616b859}{deallocate\_reload\_reg}}\ (\textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{poly-int_8h_a3ecac2571dcdc8050989339124f1bd26}{r}});}
+\DoxyCodeLine{00437\ }
+\DoxyCodeLine{00438\ \textcolor{comment}{/*\ Functions\ in\ caller-\/save.cc:\ \ */}}
+\DoxyCodeLine{00439\ }
+\DoxyCodeLine{00440\ \textcolor{comment}{/*\ Initialize\ for\ caller-\/save.\ \ */}}
+\DoxyCodeLine{00441\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{reload_8h_ac58a302a88eabebd5df5abb4a8d21429}{init\_caller\_save}}\ (\textcolor{keywordtype}{void});}
+\DoxyCodeLine{00442\ }
+\DoxyCodeLine{00443\ \textcolor{comment}{/*\ Initialize\ save\ areas\ by\ showing\ that\ we\ haven't\ allocated\ any\ yet.\ \ */}}
+\DoxyCodeLine{00444\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{reload_8h_a7539a1a563a32105891f693a6190acfd}{init\_save\_areas}}\ (\textcolor{keywordtype}{void});}
+\DoxyCodeLine{00445\ }
+\DoxyCodeLine{00446\ \textcolor{comment}{/*\ Allocate\ save\ areas\ for\ any\ hard\ registers\ that\ might\ need\ saving.\ \ */}}
+\DoxyCodeLine{00447\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{reload_8h_a991001d466e1702b4bafc25fba3f1e1e}{setup\_save\_areas}}\ (\textcolor{keywordtype}{void});}
+\DoxyCodeLine{00448\ }
+\DoxyCodeLine{00449\ \textcolor{comment}{/*\ Find\ the\ places\ where\ hard\ regs\ are\ live\ across\ calls\ and\ save\ them.\ \ */}}
+\DoxyCodeLine{00450\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{reload_8h_a6777470c44c688dba81b945351a9d8b2}{save\_call\_clobbered\_regs}}\ (\textcolor{keywordtype}{void});}
+\DoxyCodeLine{00451\ }
+\DoxyCodeLine{00452\ \textcolor{comment}{/*\ Replace\ (subreg\ (reg))\ with\ the\ appropriate\ (reg)\ for\ any\ operands.\ \ */}}
+\DoxyCodeLine{00453\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{reload_8h_a196f6046c8116ec785de1a8b085a9fcd}{cleanup\_subreg\_operands}}\ (rtx\_insn\ *);}
+\DoxyCodeLine{00454\ }
+\DoxyCodeLine{00455\ \textcolor{comment}{/*\ Debugging\ support.\ \ */}}
+\DoxyCodeLine{00456\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{reload_8h_af97535ecac973d8707d9879829d76d79}{debug\_reload\_to\_stream}}\ (FILE\ *);}
+\DoxyCodeLine{00457\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{reload_8h_a9d203bb25789f5d464ce70e4e3a5fc2a}{debug\_reload}}\ (\textcolor{keywordtype}{void});}
+\DoxyCodeLine{00458\ }
+\DoxyCodeLine{00459\ \textcolor{comment}{/*\ Compute\ the\ actual\ register\ we\ should\ reload\ to,\ in\ case\ we're}}
+\DoxyCodeLine{00460\ \textcolor{comment}{\ \ \ reloading\ to/from\ a\ register\ that\ is\ wider\ than\ a\ word.\ \ */}}
+\DoxyCodeLine{00461\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{coretypes_8h_a20e671ce9e7827268658cff844f4281c}{rtx}}\ \doxymbox{\hyperlink{reload_8h_a897fbd391bf5e28199cb7c97acf86ca4}{reload\_adjust\_reg\_for\_mode}}\ (\doxymbox{\hyperlink{coretypes_8h_a20e671ce9e7827268658cff844f4281c}{rtx}},\ \doxymbox{\hyperlink{insn-modes_8h_a3c592bc51c57098d62602b12c9468e92}{machine\_mode}});}
+\DoxyCodeLine{00462\ }
+\DoxyCodeLine{00463\ \textcolor{comment}{/*\ Allocate\ or\ grow\ the\ reg\_equiv\ tables,\ initializing\ new\ entries\ to\ 0.\ \ */}}
+\DoxyCodeLine{00464\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{reload_8h_a13c7392fa92b0901069933a47bb406cb}{grow\_reg\_equivs}}\ (\textcolor{keywordtype}{void});}
+\DoxyCodeLine{00465\ }
+\DoxyCodeLine{00466\ \textcolor{preprocessor}{\#endif\ }\textcolor{comment}{/*\ GCC\_RELOAD\_H\ */}\textcolor{preprocessor}{}}
+
+\end{DoxyCode}

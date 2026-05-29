@@ -25,6 +25,51 @@
 var NAVTREE =
 [
   [ "Pandora", "index.html", [
+    [ "Pandora OS", "md_README.html", [
+      [ "Overview", "md_README.html#autotoc_md2", null ],
+      [ "Table of Contents", "md_README.html#autotoc_md4", null ],
+      [ "Current Status", "md_README.html#autotoc_md6", null ],
+      [ "Features", "md_README.html#autotoc_md8", [
+        [ "Implemented", "md_README.html#autotoc_md9", null ],
+        [ "In Progress", "md_README.html#autotoc_md10", null ],
+        [ "Planned", "md_README.html#autotoc_md11", null ]
+      ] ],
+      [ "Why Pandora OS?", "md_README.html#autotoc_md13", [
+        [ "Roadmap", "md_README.html#autotoc_md15", [
+          [ "Boot Phase", "md_README.html#autotoc_md16", null ],
+          [ "Core Kernel", "md_README.html#autotoc_md17", null ],
+          [ "Multitasking", "md_README.html#autotoc_md18", null ],
+          [ "Userspace", "md_README.html#autotoc_md19", null ],
+          [ "Graphics", "md_README.html#autotoc_md20", null ]
+        ] ]
+      ] ],
+      [ "Building Pandora OS", "md_README.html#autotoc_md22", [
+        [ "Requirements", "md_README.html#autotoc_md23", [
+          [ "Toolchain Dependencies", "md_README.html#autotoc_md24", null ]
+        ] ],
+        [ "Building the Cross Compiler", "md_README.html#autotoc_md26", [
+          [ "Toolchain Script Options", "md_README.html#autotoc_md27", null ]
+        ] ]
+      ] ],
+      [ "Kernel Development", "md_README.html#autotoc_md29", [
+        [ "Required Software", "md_README.html#autotoc_md30", [
+          [ "Build Tools", "md_README.html#autotoc_md31", null ],
+          [ "Virtualization / Testing", "md_README.html#autotoc_md32", null ]
+        ] ],
+        [ "Building the Kernel", "md_README.html#autotoc_md34", null ],
+        [ "Make Targets", "md_README.html#autotoc_md36", null ],
+        [ "Build Flags", "md_README.html#autotoc_md38", null ]
+      ] ],
+      [ "Running Pandora OS", "md_README.html#autotoc_md40", [
+        [ "QEMU", "md_README.html#autotoc_md41", null ],
+        [ "VirtualBox", "md_README.html#autotoc_md42", null ]
+      ] ],
+      [ "Documentation", "md_README.html#autotoc_md44", null ],
+      [ "Project Structure", "md_README.html#autotoc_md46", null ],
+      [ "Contributing", "md_README.html#autotoc_md48", null ],
+      [ "Console Font", "md_README.html#autotoc_md50", null ],
+      [ "License", "md_README.html#autotoc_md52", null ]
+    ] ],
     [ "Topics", "topics.html", "topics" ],
     [ "Data Structures", "annotated.html", [
       [ "Data Structures", "annotated.html", "annotated_dup" ],
@@ -32,7 +77,7 @@ var NAVTREE =
       [ "Data Fields", "functions.html", [
         [ "All", "functions.html", "functions_dup" ],
         [ "Functions", "functions_func.html", null ],
-        [ "Variables", "functions_vars.html", null ]
+        [ "Variables", "functions_vars.html", "functions_vars" ]
       ] ]
     ] ],
     [ "Files", "files.html", [
@@ -51,7 +96,8 @@ var NAVTREE =
 var NAVTREEINDEX =
 [
 "annotated.html",
-"structlimine__dtb__request.html#a087c707522e67aa0f27f711c240f2e38"
+"pages.html",
+"structlimine__memmap__entry.html#ac553330b3a732a61e4639940dbb085f1"
 ];
 
 var SYNCONMSG = 'click to disable panel synchronization';

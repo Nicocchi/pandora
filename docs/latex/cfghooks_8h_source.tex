@@ -1,0 +1,295 @@
+\doxysection{cfghooks.\+h}
+\hypertarget{cfghooks_8h_source}{}\label{cfghooks_8h_source}\index{toolchain/x86\_64-\/elf/lib/gcc/x86\_64-\/elf/14.2.0/plugin/include/cfghooks.h@{toolchain/x86\_64-\/elf/lib/gcc/x86\_64-\/elf/14.2.0/plugin/include/cfghooks.h}}
+\doxymbox{\hyperlink{cfghooks_8h}{Go to the documentation of this file.}}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001\ \textcolor{comment}{/*\ Hooks\ for\ cfg\ representation\ specific\ functions.}}
+\DoxyCodeLine{00002\ \textcolor{comment}{\ \ \ Copyright\ (C)\ 2003-\/2024\ Free\ Software\ Foundation,\ Inc.}}
+\DoxyCodeLine{00003\ \textcolor{comment}{\ \ \ Contributed\ by\ Sebastian\ Pop\ <s.pop@laposte.net>}}
+\DoxyCodeLine{00004\ \textcolor{comment}{}}
+\DoxyCodeLine{00005\ \textcolor{comment}{This\ file\ is\ part\ of\ GCC.}}
+\DoxyCodeLine{00006\ \textcolor{comment}{}}
+\DoxyCodeLine{00007\ \textcolor{comment}{GCC\ is\ free\ software;\ you\ can\ redistribute\ it\ and/or\ modify}}
+\DoxyCodeLine{00008\ \textcolor{comment}{it\ under\ the\ terms\ of\ the\ GNU\ General\ Public\ License\ as\ published\ by}}
+\DoxyCodeLine{00009\ \textcolor{comment}{the\ Free\ Software\ Foundation;\ either\ version\ 3,\ or\ (at\ your\ option)}}
+\DoxyCodeLine{00010\ \textcolor{comment}{any\ later\ version.}}
+\DoxyCodeLine{00011\ \textcolor{comment}{}}
+\DoxyCodeLine{00012\ \textcolor{comment}{GCC\ is\ distributed\ in\ the\ hope\ that\ it\ will\ be\ useful,}}
+\DoxyCodeLine{00013\ \textcolor{comment}{but\ WITHOUT\ ANY\ WARRANTY;\ without\ even\ the\ implied\ warranty\ of}}
+\DoxyCodeLine{00014\ \textcolor{comment}{MERCHANTABILITY\ or\ FITNESS\ FOR\ A\ PARTICULAR\ PURPOSE.\ \ See\ the}}
+\DoxyCodeLine{00015\ \textcolor{comment}{GNU\ General\ Public\ License\ for\ more\ details.}}
+\DoxyCodeLine{00016\ \textcolor{comment}{}}
+\DoxyCodeLine{00017\ \textcolor{comment}{You\ should\ have\ received\ a\ copy\ of\ the\ GNU\ General\ Public\ License}}
+\DoxyCodeLine{00018\ \textcolor{comment}{along\ with\ GCC;\ see\ the\ file\ COPYING3.\ \ If\ not\ see}}
+\DoxyCodeLine{00019\ \textcolor{comment}{<http://www.gnu.org/licenses/>.\ \ */}}
+\DoxyCodeLine{00020\ }
+\DoxyCodeLine{00021\ \textcolor{preprocessor}{\#ifndef\ GCC\_CFGHOOKS\_H}}
+\DoxyCodeLine{00022\ \textcolor{preprocessor}{\#define\ GCC\_CFGHOOKS\_H}}
+\DoxyCodeLine{00023\ }
+\DoxyCodeLine{00024\ \textcolor{preprocessor}{\#include\ "{}\doxymbox{\hyperlink{predict_8h}{predict.h}}"{}}}
+\DoxyCodeLine{00025\ }
+\DoxyCodeLine{00026\ \textcolor{comment}{/*\ Structure\ to\ gather\ statistic\ about\ profile\ consistency,\ per\ pass.}}
+\DoxyCodeLine{00027\ \textcolor{comment}{\ \ \ An\ array\ of\ this\ structure,\ indexed\ by\ pass\ static\ number,\ is\ allocated}}
+\DoxyCodeLine{00028\ \textcolor{comment}{\ \ \ in\ passes.cc.\ \ The\ structure\ is\ defined\ here\ so\ that\ different\ CFG\ modes}}
+\DoxyCodeLine{00029\ \textcolor{comment}{\ \ \ can\ do\ their\ book-\/keeping\ via\ CFG\ hooks.}}
+\DoxyCodeLine{00030\ \textcolor{comment}{}}
+\DoxyCodeLine{00031\ \textcolor{comment}{\ \ \ For\ every\ field[2],\ field[0]\ is\ the\ count\ before\ the\ pass\ runs,\ and}}
+\DoxyCodeLine{00032\ \textcolor{comment}{\ \ \ field[1]\ is\ the\ post-\/pass\ count.\ \ This\ allows\ us\ to\ monitor\ the\ effect}}
+\DoxyCodeLine{00033\ \textcolor{comment}{\ \ \ of\ each\ individual\ pass\ on\ the\ profile\ consistency.}}
+\DoxyCodeLine{00034\ \textcolor{comment}{\ \ \ }}
+\DoxyCodeLine{00035\ \textcolor{comment}{\ \ \ This\ structure\ is\ not\ supposed\ to\ be\ used\ by\ anything\ other\ than\ passes.cc}}
+\DoxyCodeLine{00036\ \textcolor{comment}{\ \ \ and\ one\ CFG\ hook\ per\ CFG\ mode.\ \ */}}
+\DoxyCodeLine{00037\ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{structprofile__record}{profile\_record}}}
+\DoxyCodeLine{00038\ \{}
+\DoxyCodeLine{00039\ \ \ \textcolor{comment}{/*\ A\ weighted\ cost\ of\ the\ run-\/time\ of\ the\ function\ body.\ \ */}}
+\DoxyCodeLine{00040\ \ \ \textcolor{keywordtype}{double}\ \doxymbox{\hyperlink{structprofile__record_ad83ec8d9e708fcb3cfa8f8c62c83af4e}{time}};}
+\DoxyCodeLine{00041\ \ \ \textcolor{comment}{/*\ Frequency\ of\ execution\ of\ basic\ blocks\ where\ sum(prob)\ of\ the\ block's}}
+\DoxyCodeLine{00042\ \textcolor{comment}{\ \ \ \ \ predecessors\ doesn't\ match\ reasonably\ probability\ 1.\ \ */}}
+\DoxyCodeLine{00043\ \ \ \textcolor{keywordtype}{double}\ \doxymbox{\hyperlink{structprofile__record_a6bc7eeafe9b6bbe2ebd5389174f3c6f0}{dyn\_mismatched\_prob\_out}};}
+\DoxyCodeLine{00044\ \ \ \textcolor{comment}{/*\ Frequency\ of\ execution\ basic\ blocks\ where\ sum(count)\ of\ the\ block's}}
+\DoxyCodeLine{00045\ \textcolor{comment}{\ \ \ \ \ predecessors\ doesn't\ match\ reasonably\ well\ with\ the\ incoming\ frequency.\ \ */}}
+\DoxyCodeLine{00046\ \ \ \textcolor{keywordtype}{double}\ \doxymbox{\hyperlink{structprofile__record_a63450af2faf116dd4968b686113ec8d4}{dyn\_mismatched\_count\_in}};}
+\DoxyCodeLine{00047\ \ \ \textcolor{comment}{/*\ The\ number\ of\ basic\ blocks\ where\ sum(prob)\ of\ the\ block's\ predecessors}}
+\DoxyCodeLine{00048\ \textcolor{comment}{\ \ \ \ \ doesn't\ match\ reasonably\ probability\ 1.\ \ */}}
+\DoxyCodeLine{00049\ \ \ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{structprofile__record_af214de73b2a558f283f64701de39da6a}{num\_mismatched\_prob\_out}};}
+\DoxyCodeLine{00050\ \ \ \textcolor{comment}{/*\ The\ number\ of\ basic\ blocks\ where\ sum(count)\ of\ the\ block's\ predecessors}}
+\DoxyCodeLine{00051\ \textcolor{comment}{\ \ \ \ \ doesn't\ match\ reasonably\ well\ with\ the\ incoming\ frequency.\ \ */}}
+\DoxyCodeLine{00052\ \ \ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{structprofile__record_a96e96b86ef6438cce2659c0fdb60d256}{num\_mismatched\_count\_in}};}
+\DoxyCodeLine{00053\ \ \ \textcolor{comment}{/*\ A\ weighted\ cost\ of\ the\ size\ of\ the\ function\ body.\ \ */}}
+\DoxyCodeLine{00054\ \ \ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{structprofile__record_a0b18f457aba431265d793be15a197ef9}{size}};}
+\DoxyCodeLine{00055\ \ \ \textcolor{comment}{/*\ True\ iff\ this\ pass\ actually\ was\ run.\ \ */}}
+\DoxyCodeLine{00056\ \ \ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{structprofile__record_a965f032bdf9c553e978efe57c91b751a}{run}};}
+\DoxyCodeLine{00057\ \ \ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{structprofile__record_a32370475ae5b5c69be81b830f308ff13}{fdo}};}
+\DoxyCodeLine{00058\ \};}
+\DoxyCodeLine{00059\ }
+\DoxyCodeLine{00060\ \textcolor{keyword}{typedef}\ int\_hash\ <unsigned\ short,\ 0>\ \doxymbox{\hyperlink{cfghooks_8h_a52c1a5d7772585676e38d76f37206fe7}{dependence\_hash}};}
+\DoxyCodeLine{00061\ }
+\DoxyCodeLine{00062\ \textcolor{comment}{/*\ Optional\ data\ for\ duplicate\_block.\ \ \ */}}
+\DoxyCodeLine{00063\ }
+\DoxyCodeLine{00064\ \textcolor{keyword}{class\ }\doxymbox{\hyperlink{classcopy__bb__data_a8ac087d05ab0edaf6745cca54b5ffd65}{copy\_bb\_data}}}
+\DoxyCodeLine{00065\ \{}
+\DoxyCodeLine{00066\ \textcolor{keyword}{public}:}
+\DoxyCodeLine{00067\ \ \ \doxymbox{\hyperlink{classcopy__bb__data_a8ac087d05ab0edaf6745cca54b5ffd65}{copy\_bb\_data}}()\ :\ \doxymbox{\hyperlink{classcopy__bb__data_aebfdf0d5997f8a5520e2c811061cb9db}{dependence\_map}}\ (\doxymbox{\hyperlink{stddef_8h_a070d2ce7b6bb7e5c05602aa8c308d0c4}{NULL}})\ \{\}}
+\DoxyCodeLine{00068\ \ \ \doxymbox{\hyperlink{classcopy__bb__data_aa193b6b6af8fe1335b6759d3547cc8f9}{\string~copy\_bb\_data}}\ ()\ \{\ \textcolor{keyword}{delete}\ \doxymbox{\hyperlink{classcopy__bb__data_aebfdf0d5997f8a5520e2c811061cb9db}{dependence\_map}};\ \}}
+\DoxyCodeLine{00069\ }
+\DoxyCodeLine{00070\ \ \ \textcolor{comment}{/*\ A\ map\ from\ the\ copied\ BBs\ dependence\ info\ cliques\ to}}
+\DoxyCodeLine{00071\ \textcolor{comment}{\ \ \ \ \ equivalents\ in\ the\ BBs\ duplicated\ to.\ \ */}}
+\DoxyCodeLine{00072\ \ \ \doxymbox{\hyperlink{classhash__map}{hash\_map<dependence\_hash,\ unsigned\ short>}}\ *\doxymbox{\hyperlink{classcopy__bb__data_aebfdf0d5997f8a5520e2c811061cb9db}{dependence\_map}};}
+\DoxyCodeLine{00073\ \};}
+\DoxyCodeLine{00074\ }
+\DoxyCodeLine{00075\ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{structcfg__hooks}{cfg\_hooks}}}
+\DoxyCodeLine{00076\ \{}
+\DoxyCodeLine{00077\ \ \ \textcolor{comment}{/*\ Name\ of\ the\ corresponding\ ir.\ \ */}}
+\DoxyCodeLine{00078\ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *\doxymbox{\hyperlink{structcfg__hooks_a4b1b08a315a5acacb9d2cc9f5d061664}{name}};}
+\DoxyCodeLine{00079\ }
+\DoxyCodeLine{00080\ \ \ \textcolor{comment}{/*\ Debugging.\ \ */}}
+\DoxyCodeLine{00081\ \ \ \doxymbox{\hyperlink{stdbool_8h_abb452686968e48b67397da5f97445f5b}{bool}}\ (*\doxymbox{\hyperlink{structcfg__hooks_a8fe8f2619d7e3d81c0c4794cb98c3e72}{verify\_flow\_info}})\ (void);}
+\DoxyCodeLine{00082\ \ \ void\ (*\doxymbox{\hyperlink{structcfg__hooks_a811e636a8a3e7226057ee1fd46f1b714}{dump\_bb}})\ (FILE\ *,\ \doxymbox{\hyperlink{coretypes_8h_a0469df20b471a4cd7c81fbdce5027487}{basic\_block}},\ int,\ \doxymbox{\hyperlink{dumpfile_8h_ae3aeb1ff52915e32d52ac788388fbeef}{dump\_flags\_t}});}
+\DoxyCodeLine{00083\ \ \ void\ (*\doxymbox{\hyperlink{structcfg__hooks_aac824f048981cfd3b2f818175812991d}{dump\_bb\_for\_graph}})\ (\doxymbox{\hyperlink{classpretty__printer}{pretty\_printer}}\ *,\ \doxymbox{\hyperlink{coretypes_8h_a0469df20b471a4cd7c81fbdce5027487}{basic\_block}});}
+\DoxyCodeLine{00084\ }
+\DoxyCodeLine{00085\ \ \ \textcolor{comment}{/*\ Basic\ CFG\ manipulation.\ \ */}}
+\DoxyCodeLine{00086\ }
+\DoxyCodeLine{00087\ \ \ \textcolor{comment}{/*\ Return\ new\ basic\ block.\ \ */}}
+\DoxyCodeLine{00088\ \ \ \doxymbox{\hyperlink{coretypes_8h_a0469df20b471a4cd7c81fbdce5027487}{basic\_block}}\ (*\doxymbox{\hyperlink{structcfg__hooks_a80983739d8fbd2d5900d092b0b8304d4}{create\_basic\_block}})\ (\textcolor{keywordtype}{void}\ *head,\ \textcolor{keywordtype}{void}\ *\doxymbox{\hyperlink{vec_8h_a17e1ff659cc80fc1b1a1c325dfe1a3aa}{end}},\ \doxymbox{\hyperlink{coretypes_8h_a0469df20b471a4cd7c81fbdce5027487}{basic\_block}}\ after);}
+\DoxyCodeLine{00089\ }
+\DoxyCodeLine{00090\ \ \ \textcolor{comment}{/*\ Redirect\ edge\ E\ to\ the\ given\ basic\ block\ B\ and\ update\ underlying\ program}}
+\DoxyCodeLine{00091\ \textcolor{comment}{\ \ \ \ \ representation.\ \ Returns\ edge\ representing\ redirected\ branch\ (that\ may\ not}}
+\DoxyCodeLine{00092\ \textcolor{comment}{\ \ \ \ \ be\ equivalent\ to\ E\ in\ the\ case\ of\ duplicate\ edges\ being\ removed)\ or\ NULL}}
+\DoxyCodeLine{00093\ \textcolor{comment}{\ \ \ \ \ if\ edge\ is\ not\ easily\ redirectable\ for\ whatever\ reason.\ \ */}}
+\DoxyCodeLine{00094\ \ \ \doxymbox{\hyperlink{coretypes_8h_a44ae11f0c90646aa6208ad4bf486490b}{edge}}\ (*\doxymbox{\hyperlink{structcfg__hooks_ab8cf5fee070acd093d8f6552324a474e}{redirect\_edge\_and\_branch}})\ (\doxymbox{\hyperlink{coretypes_8h_a44ae11f0c90646aa6208ad4bf486490b}{edge}}\ e,\ \doxymbox{\hyperlink{coretypes_8h_a0469df20b471a4cd7c81fbdce5027487}{basic\_block}}\ \doxymbox{\hyperlink{poly-int_8h_af3bb9d9df219585072cf9e4e95572f70}{b}});}
+\DoxyCodeLine{00095\ }
+\DoxyCodeLine{00096\ \ \ \textcolor{comment}{/*\ Same\ as\ the\ above\ but\ allows\ redirecting\ of\ fallthru\ edges.\ \ In\ that\ case}}
+\DoxyCodeLine{00097\ \textcolor{comment}{\ \ \ \ \ newly\ created\ forwarder\ basic\ block\ is\ returned.\ \ The\ edge\ must}}
+\DoxyCodeLine{00098\ \textcolor{comment}{\ \ \ \ \ not\ be\ abnormal.\ \ */}}
+\DoxyCodeLine{00099\ \ \ \doxymbox{\hyperlink{coretypes_8h_a0469df20b471a4cd7c81fbdce5027487}{basic\_block}}\ (*\doxymbox{\hyperlink{structcfg__hooks_acec8656b3ad930e1d5469ebd4bab5a11}{redirect\_edge\_and\_branch\_force}})\ (\doxymbox{\hyperlink{coretypes_8h_a44ae11f0c90646aa6208ad4bf486490b}{edge}},\ \doxymbox{\hyperlink{coretypes_8h_a0469df20b471a4cd7c81fbdce5027487}{basic\_block}});}
+\DoxyCodeLine{00100\ }
+\DoxyCodeLine{00101\ \ \ \textcolor{comment}{/*\ Returns\ true\ if\ it\ is\ possible\ to\ remove\ the\ edge\ by\ redirecting\ it}}
+\DoxyCodeLine{00102\ \textcolor{comment}{\ \ \ \ \ to\ the\ destination\ of\ the\ other\ edge\ going\ from\ its\ source.\ \ */}}
+\DoxyCodeLine{00103\ \ \ \doxymbox{\hyperlink{stdbool_8h_abb452686968e48b67397da5f97445f5b}{bool}}\ (*\doxymbox{\hyperlink{structcfg__hooks_a6ec4838c4bf7903024a42b3722c17f35}{can\_remove\_branch\_p}})\ (\doxymbox{\hyperlink{coretypes_8h_a7fe7211b200cb0052b6038fb1d96eda2}{const\_edge}});}
+\DoxyCodeLine{00104\ }
+\DoxyCodeLine{00105\ \ \ \textcolor{comment}{/*\ Remove\ statements\ corresponding\ to\ a\ given\ basic\ block.\ \ */}}
+\DoxyCodeLine{00106\ \ \ void\ (*\doxymbox{\hyperlink{structcfg__hooks_ad5371c7b4ea4c2b00ba68bd296f5b03b}{delete\_basic\_block}})\ (\doxymbox{\hyperlink{coretypes_8h_a0469df20b471a4cd7c81fbdce5027487}{basic\_block}});}
+\DoxyCodeLine{00107\ }
+\DoxyCodeLine{00108\ \ \ \textcolor{comment}{/*\ Creates\ a\ new\ basic\ block\ just\ after\ basic\ block\ B\ by\ splitting}}
+\DoxyCodeLine{00109\ \textcolor{comment}{\ \ \ \ \ everything\ after\ specified\ instruction\ I.\ \ */}}
+\DoxyCodeLine{00110\ \ \ \doxymbox{\hyperlink{coretypes_8h_a0469df20b471a4cd7c81fbdce5027487}{basic\_block}}\ (*\doxymbox{\hyperlink{structcfg__hooks_aefbad645c95dc22455c27dcb3463afcf}{split\_block}})\ (\doxymbox{\hyperlink{coretypes_8h_a0469df20b471a4cd7c81fbdce5027487}{basic\_block}}\ \doxymbox{\hyperlink{poly-int_8h_af3bb9d9df219585072cf9e4e95572f70}{b}},\ \textcolor{keywordtype}{void}\ *\ \doxymbox{\hyperlink{poly-int_8h_a7e98b8a17c0aad30ba64d47b74e2a6c1}{i}});}
+\DoxyCodeLine{00111\ }
+\DoxyCodeLine{00112\ \ \ \textcolor{comment}{/*\ Move\ block\ B\ immediately\ after\ block\ A.\ \ */}}
+\DoxyCodeLine{00113\ \ \ \doxymbox{\hyperlink{stdbool_8h_abb452686968e48b67397da5f97445f5b}{bool}}\ (*\doxymbox{\hyperlink{structcfg__hooks_aff05ee1c1876e78c47f4975bf9132fae}{move\_block\_after}})\ (\doxymbox{\hyperlink{coretypes_8h_a0469df20b471a4cd7c81fbdce5027487}{basic\_block}}\ \doxymbox{\hyperlink{poly-int_8h_af3bb9d9df219585072cf9e4e95572f70}{b}},\ \doxymbox{\hyperlink{coretypes_8h_a0469df20b471a4cd7c81fbdce5027487}{basic\_block}}\ \doxymbox{\hyperlink{poly-int_8h_af77c881600a14567e276ee17dfb8764f}{a}});}
+\DoxyCodeLine{00114\ }
+\DoxyCodeLine{00115\ \ \ \textcolor{comment}{/*\ Return\ true\ when\ blocks\ A\ and\ B\ can\ be\ merged\ into\ single\ basic\ block.\ \ */}}
+\DoxyCodeLine{00116\ \ \ \doxymbox{\hyperlink{stdbool_8h_abb452686968e48b67397da5f97445f5b}{bool}}\ (*\doxymbox{\hyperlink{structcfg__hooks_a2f7e30b1e0b69967e4c2e622ed37cf49}{can\_merge\_blocks\_p}})\ (\doxymbox{\hyperlink{coretypes_8h_a0469df20b471a4cd7c81fbdce5027487}{basic\_block}}\ \doxymbox{\hyperlink{poly-int_8h_af77c881600a14567e276ee17dfb8764f}{a}},\ \doxymbox{\hyperlink{coretypes_8h_a0469df20b471a4cd7c81fbdce5027487}{basic\_block}}\ \doxymbox{\hyperlink{poly-int_8h_af3bb9d9df219585072cf9e4e95572f70}{b}});}
+\DoxyCodeLine{00117\ }
+\DoxyCodeLine{00118\ \ \ \textcolor{comment}{/*\ Merge\ blocks\ A\ and\ B.\ \ */}}
+\DoxyCodeLine{00119\ \ \ void\ (*\doxymbox{\hyperlink{structcfg__hooks_a010c909b22c020d7a31fb0d1351d05c2}{merge\_blocks}})\ (\doxymbox{\hyperlink{coretypes_8h_a0469df20b471a4cd7c81fbdce5027487}{basic\_block}}\ \doxymbox{\hyperlink{poly-int_8h_af77c881600a14567e276ee17dfb8764f}{a}},\ \doxymbox{\hyperlink{coretypes_8h_a0469df20b471a4cd7c81fbdce5027487}{basic\_block}}\ \doxymbox{\hyperlink{poly-int_8h_af3bb9d9df219585072cf9e4e95572f70}{b}});}
+\DoxyCodeLine{00120\ }
+\DoxyCodeLine{00121\ \ \ \textcolor{comment}{/*\ Predict\ edge\ E\ using\ PREDICTOR\ to\ given\ PROBABILITY.\ \ */}}
+\DoxyCodeLine{00122\ \ \ void\ (*\doxymbox{\hyperlink{structcfg__hooks_aff2ce56c9e8fc782e829057b9bc4dbf7}{predict\_edge}})\ (\doxymbox{\hyperlink{coretypes_8h_a44ae11f0c90646aa6208ad4bf486490b}{edge}}\ e,\ \textcolor{keyword}{enum}\ \doxymbox{\hyperlink{predict_8h_aae275070a004ff48142ebd85f0b879cf}{br\_predictor}}\ predictor,\ \textcolor{keywordtype}{int}\ probability);}
+\DoxyCodeLine{00123\ }
+\DoxyCodeLine{00124\ \ \ \textcolor{comment}{/*\ Return\ true\ if\ the\ one\ of\ outgoing\ edges\ is\ already\ predicted\ by}}
+\DoxyCodeLine{00125\ \textcolor{comment}{\ \ \ \ \ PREDICTOR.\ \ */}}
+\DoxyCodeLine{00126\ \ \ \doxymbox{\hyperlink{stdbool_8h_abb452686968e48b67397da5f97445f5b}{bool}}\ (*\doxymbox{\hyperlink{structcfg__hooks_a486916dfe41779a38e19589e6ed5d157}{predicted\_by\_p}})\ (\doxymbox{\hyperlink{coretypes_8h_ad2eb53ef6dbf4de6a2be968b15699dbc}{const\_basic\_block}}\ bb,\ \textcolor{keyword}{enum}\ \doxymbox{\hyperlink{predict_8h_aae275070a004ff48142ebd85f0b879cf}{br\_predictor}}\ predictor);}
+\DoxyCodeLine{00127\ }
+\DoxyCodeLine{00128\ \ \ \textcolor{comment}{/*\ Return\ true\ when\ block\ A\ can\ be\ duplicated.\ \ */}}
+\DoxyCodeLine{00129\ \ \ \doxymbox{\hyperlink{stdbool_8h_abb452686968e48b67397da5f97445f5b}{bool}}\ (*\doxymbox{\hyperlink{structcfg__hooks_a30fa2ab42f3908889e79765405efca7e}{can\_duplicate\_block\_p}})\ (\doxymbox{\hyperlink{coretypes_8h_ad2eb53ef6dbf4de6a2be968b15699dbc}{const\_basic\_block}}\ \doxymbox{\hyperlink{poly-int_8h_af77c881600a14567e276ee17dfb8764f}{a}});}
+\DoxyCodeLine{00130\ }
+\DoxyCodeLine{00131\ \ \ \textcolor{comment}{/*\ Duplicate\ block\ A.\ \ */}}
+\DoxyCodeLine{00132\ \ \ \doxymbox{\hyperlink{coretypes_8h_a0469df20b471a4cd7c81fbdce5027487}{basic\_block}}\ (*\doxymbox{\hyperlink{structcfg__hooks_aac028d2f722a15cf07d7b525965ec1ec}{duplicate\_block}})\ (\doxymbox{\hyperlink{coretypes_8h_a0469df20b471a4cd7c81fbdce5027487}{basic\_block}}\ \doxymbox{\hyperlink{poly-int_8h_af77c881600a14567e276ee17dfb8764f}{a}},\ \doxymbox{\hyperlink{classcopy__bb__data}{copy\_bb\_data}}\ *);}
+\DoxyCodeLine{00133\ }
+\DoxyCodeLine{00134\ \ \ \textcolor{comment}{/*\ Higher\ level\ functions\ representable\ by\ primitive\ operations\ above\ if}}
+\DoxyCodeLine{00135\ \textcolor{comment}{\ \ \ \ \ we\ didn't\ have\ some\ oddities\ in\ RTL\ and\ Tree\ representations.\ \ */}}
+\DoxyCodeLine{00136\ \ \ \doxymbox{\hyperlink{coretypes_8h_a0469df20b471a4cd7c81fbdce5027487}{basic\_block}}\ (*\doxymbox{\hyperlink{structcfg__hooks_a60060d7100c5b9a7cdfcc3c0f1a6c677}{split\_edge}})\ (\doxymbox{\hyperlink{coretypes_8h_a44ae11f0c90646aa6208ad4bf486490b}{edge}});}
+\DoxyCodeLine{00137\ \ \ void\ (*\doxymbox{\hyperlink{structcfg__hooks_a2ef7fa5fe6cee2682992bd4010c3149d}{make\_forwarder\_block}})\ (\doxymbox{\hyperlink{coretypes_8h_a44ae11f0c90646aa6208ad4bf486490b}{edge}});}
+\DoxyCodeLine{00138\ }
+\DoxyCodeLine{00139\ \ \ \textcolor{comment}{/*\ Try\ to\ make\ the\ edge\ fallthru.\ \ */}}
+\DoxyCodeLine{00140\ \ \ void\ (*\doxymbox{\hyperlink{structcfg__hooks_af839276348643dd4f009c4e859d11fb5}{tidy\_fallthru\_edge}})\ (\doxymbox{\hyperlink{coretypes_8h_a44ae11f0c90646aa6208ad4bf486490b}{edge}});}
+\DoxyCodeLine{00141\ }
+\DoxyCodeLine{00142\ \ \ \textcolor{comment}{/*\ Make\ the\ edge\ non-\/fallthru.\ \ */}}
+\DoxyCodeLine{00143\ \ \ \doxymbox{\hyperlink{coretypes_8h_a0469df20b471a4cd7c81fbdce5027487}{basic\_block}}\ (*\doxymbox{\hyperlink{structcfg__hooks_afdcb7496b8defa4995e63cf00e5548a3}{force\_nonfallthru}})\ (\doxymbox{\hyperlink{coretypes_8h_a44ae11f0c90646aa6208ad4bf486490b}{edge}});}
+\DoxyCodeLine{00144\ }
+\DoxyCodeLine{00145\ \ \ \textcolor{comment}{/*\ Say\ whether\ a\ block\ ends\ with\ a\ call,\ possibly\ followed\ by\ some}}
+\DoxyCodeLine{00146\ \textcolor{comment}{\ \ \ \ \ other\ code\ that\ must\ stay\ with\ the\ call.\ \ */}}
+\DoxyCodeLine{00147\ \ \ \doxymbox{\hyperlink{stdbool_8h_abb452686968e48b67397da5f97445f5b}{bool}}\ (*\doxymbox{\hyperlink{structcfg__hooks_af48200529e66e9f92cadd055f4a86fd6}{block\_ends\_with\_call\_p}})\ (\doxymbox{\hyperlink{coretypes_8h_a0469df20b471a4cd7c81fbdce5027487}{basic\_block}});}
+\DoxyCodeLine{00148\ }
+\DoxyCodeLine{00149\ \ \ \textcolor{comment}{/*\ Say\ whether\ a\ block\ ends\ with\ a\ conditional\ branch.\ \ Switches}}
+\DoxyCodeLine{00150\ \textcolor{comment}{\ \ \ \ \ and\ unconditional\ branches\ do\ not\ qualify.\ \ */}}
+\DoxyCodeLine{00151\ \ \ \doxymbox{\hyperlink{stdbool_8h_abb452686968e48b67397da5f97445f5b}{bool}}\ (*\doxymbox{\hyperlink{structcfg__hooks_a9943d89602165895a90bbb77584f49b5}{block\_ends\_with\_condjump\_p}})\ (\doxymbox{\hyperlink{coretypes_8h_ad2eb53ef6dbf4de6a2be968b15699dbc}{const\_basic\_block}});}
+\DoxyCodeLine{00152\ }
+\DoxyCodeLine{00153\ \ \ \textcolor{comment}{/*\ Add\ fake\ edges\ to\ the\ function\ exit\ for\ any\ non\ constant\ and\ non\ noreturn}}
+\DoxyCodeLine{00154\ \textcolor{comment}{\ \ \ \ \ calls,\ volatile\ inline\ assembly\ in\ the\ bitmap\ of\ blocks\ specified\ by}}
+\DoxyCodeLine{00155\ \textcolor{comment}{\ \ \ \ \ BLOCKS\ or\ to\ the\ whole\ CFG\ if\ BLOCKS\ is\ zero.\ \ Return\ the\ number\ of\ blocks}}
+\DoxyCodeLine{00156\ \textcolor{comment}{\ \ \ \ \ that\ were\ split.}}
+\DoxyCodeLine{00157\ \textcolor{comment}{}}
+\DoxyCodeLine{00158\ \textcolor{comment}{\ \ \ \ \ The\ goal\ is\ to\ expose\ cases\ in\ which\ entering\ a\ basic\ block\ does\ not\ imply}}
+\DoxyCodeLine{00159\ \textcolor{comment}{\ \ \ \ \ that\ all\ subsequent\ instructions\ must\ be\ executed.\ \ */}}
+\DoxyCodeLine{00160\ \ \ int\ (*\doxymbox{\hyperlink{structcfg__hooks_aacc5faa7ae424a75ca62a69ec18b0b8c}{flow\_call\_edges\_add}})\ (\doxymbox{\hyperlink{coretypes_8h_a780cd5c6b7453aa0a01cdf1c5b379abd}{sbitmap}});}
+\DoxyCodeLine{00161\ }
+\DoxyCodeLine{00162\ \ \ \textcolor{comment}{/*\ This\ function\ is\ called\ immediately\ after\ edge\ E\ is\ added\ to\ the}}
+\DoxyCodeLine{00163\ \textcolor{comment}{\ \ \ \ \ edge\ vector\ E-\/>dest-\/>preds.\ \ */}}
+\DoxyCodeLine{00164\ \ \ void\ (*\doxymbox{\hyperlink{structcfg__hooks_a170a3b67b3aeb7e7883ceff59cff636e}{execute\_on\_growing\_pred}})\ (\doxymbox{\hyperlink{coretypes_8h_a44ae11f0c90646aa6208ad4bf486490b}{edge}});}
+\DoxyCodeLine{00165\ }
+\DoxyCodeLine{00166\ \ \ \textcolor{comment}{/*\ This\ function\ is\ called\ immediately\ before\ edge\ E\ is\ removed\ from}}
+\DoxyCodeLine{00167\ \textcolor{comment}{\ \ \ \ \ the\ edge\ vector\ E-\/>dest-\/>preds.\ \ */}}
+\DoxyCodeLine{00168\ \ \ void\ (*\doxymbox{\hyperlink{structcfg__hooks_a9ac1f82a041cc63efbf73b5216605f50}{execute\_on\_shrinking\_pred}})\ (\doxymbox{\hyperlink{coretypes_8h_a44ae11f0c90646aa6208ad4bf486490b}{edge}});}
+\DoxyCodeLine{00169\ }
+\DoxyCodeLine{00170\ \ \ \textcolor{comment}{/*\ A\ hook\ for\ duplicating\ loop\ in\ CFG,\ currently\ this\ is\ used}}
+\DoxyCodeLine{00171\ \textcolor{comment}{\ \ \ \ \ in\ loop\ versioning.\ \ */}}
+\DoxyCodeLine{00172\ \ \ \doxymbox{\hyperlink{stdbool_8h_abb452686968e48b67397da5f97445f5b}{bool}}\ (*\doxymbox{\hyperlink{structcfg__hooks_a0b0ad7c75921f643204bda3bfb542644}{cfg\_hook\_duplicate\_loop\_body\_to\_header\_edge}})\ (\textcolor{keyword}{class\ }loop\ *,\ \doxymbox{\hyperlink{coretypes_8h_a44ae11f0c90646aa6208ad4bf486490b}{edge}},}
+\DoxyCodeLine{00173\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ unsigned,\ \doxymbox{\hyperlink{coretypes_8h_a780cd5c6b7453aa0a01cdf1c5b379abd}{sbitmap}},\ \doxymbox{\hyperlink{coretypes_8h_a44ae11f0c90646aa6208ad4bf486490b}{edge}},}
+\DoxyCodeLine{00174\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{structvec}{vec<edge>}}\ *,\ int);}
+\DoxyCodeLine{00175\ }
+\DoxyCodeLine{00176\ \ \ \textcolor{comment}{/*\ Add\ condition\ to\ new\ basic\ block\ and\ update\ CFG\ used\ in\ loop}}
+\DoxyCodeLine{00177\ \textcolor{comment}{\ \ \ \ \ versioning.\ \ */}}
+\DoxyCodeLine{00178\ \ \ void\ (*\doxymbox{\hyperlink{structcfg__hooks_acdcce733e4bae8bc0f8ff6cb221c0855}{lv\_add\_condition\_to\_bb}})\ (\doxymbox{\hyperlink{coretypes_8h_a0469df20b471a4cd7c81fbdce5027487}{basic\_block}},\ \doxymbox{\hyperlink{coretypes_8h_a0469df20b471a4cd7c81fbdce5027487}{basic\_block}},\ \doxymbox{\hyperlink{coretypes_8h_a0469df20b471a4cd7c81fbdce5027487}{basic\_block}},}
+\DoxyCodeLine{00179\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{void}\ *);}
+\DoxyCodeLine{00180\ \ \ \textcolor{comment}{/*\ Update\ the\ PHI\ nodes\ in\ case\ of\ loop\ versioning.\ \ */}}
+\DoxyCodeLine{00181\ \ \ void\ (*\doxymbox{\hyperlink{structcfg__hooks_a1f42a1bc5ee32a0babd0b55c5c29c45a}{lv\_adjust\_loop\_header\_phi}})\ (\doxymbox{\hyperlink{coretypes_8h_a0469df20b471a4cd7c81fbdce5027487}{basic\_block}},\ \doxymbox{\hyperlink{coretypes_8h_a0469df20b471a4cd7c81fbdce5027487}{basic\_block}},}
+\DoxyCodeLine{00182\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{coretypes_8h_a0469df20b471a4cd7c81fbdce5027487}{basic\_block}},\ \doxymbox{\hyperlink{coretypes_8h_a44ae11f0c90646aa6208ad4bf486490b}{edge}});}
+\DoxyCodeLine{00183\ }
+\DoxyCodeLine{00184\ \ \ \textcolor{comment}{/*\ Given\ a\ condition\ BB\ extract\ the\ true/false\ taken/not\ taken\ edges}}
+\DoxyCodeLine{00185\ \textcolor{comment}{\ \ \ \ \ (depending\ if\ we\ are\ on\ tree's\ or\ RTL).\ */}}
+\DoxyCodeLine{00186\ \ \ void\ (*\doxymbox{\hyperlink{structcfg__hooks_a1cb0fc908e754ad20df16519dd1c4723}{extract\_cond\_bb\_edges}})\ (\doxymbox{\hyperlink{coretypes_8h_a0469df20b471a4cd7c81fbdce5027487}{basic\_block}},\ \doxymbox{\hyperlink{coretypes_8h_a44ae11f0c90646aa6208ad4bf486490b}{edge}}\ *,\ \doxymbox{\hyperlink{coretypes_8h_a44ae11f0c90646aa6208ad4bf486490b}{edge}}\ *);}
+\DoxyCodeLine{00187\ }
+\DoxyCodeLine{00188\ }
+\DoxyCodeLine{00189\ \ \ \textcolor{comment}{/*\ Add\ PHI\ arguments\ queued\ in\ PENDINT\_STMT\ list\ on\ edge\ E\ to\ edge}}
+\DoxyCodeLine{00190\ \textcolor{comment}{\ \ \ \ \ E-\/>dest\ (only\ in\ tree-\/ssa\ loop\ versioning.\ \ */}}
+\DoxyCodeLine{00191\ \ \ void\ (*\doxymbox{\hyperlink{structcfg__hooks_ab1866020fc1272eb08bb629e0b133a0f}{flush\_pending\_stmts}})\ (\doxymbox{\hyperlink{coretypes_8h_a44ae11f0c90646aa6208ad4bf486490b}{edge}});}
+\DoxyCodeLine{00192\ \ \ }
+\DoxyCodeLine{00193\ \ \ \textcolor{comment}{/*\ True\ if\ a\ block\ contains\ no\ executable\ instructions.\ \ */}}
+\DoxyCodeLine{00194\ \ \ \doxymbox{\hyperlink{stdbool_8h_abb452686968e48b67397da5f97445f5b}{bool}}\ (*\doxymbox{\hyperlink{structcfg__hooks_a11e759d7757be8d0848796105d2ce60d}{empty\_block\_p}})\ (\doxymbox{\hyperlink{coretypes_8h_a0469df20b471a4cd7c81fbdce5027487}{basic\_block}});}
+\DoxyCodeLine{00195\ }
+\DoxyCodeLine{00196\ \ \ \textcolor{comment}{/*\ Split\ a\ basic\ block\ if\ it\ ends\ with\ a\ conditional\ branch\ and\ if}}
+\DoxyCodeLine{00197\ \textcolor{comment}{\ \ \ \ \ the\ other\ part\ of\ the\ block\ is\ not\ empty.\ \ */}}
+\DoxyCodeLine{00198\ \ \ \doxymbox{\hyperlink{coretypes_8h_a0469df20b471a4cd7c81fbdce5027487}{basic\_block}}\ (*\doxymbox{\hyperlink{structcfg__hooks_a9adbc54561ab2e943b44789b19aeebcc}{split\_block\_before\_cond\_jump}})\ (\doxymbox{\hyperlink{coretypes_8h_a0469df20b471a4cd7c81fbdce5027487}{basic\_block}});}
+\DoxyCodeLine{00199\ }
+\DoxyCodeLine{00200\ \ \ \textcolor{comment}{/*\ Do\ book-\/keeping\ of\ a\ basic\ block\ for\ the\ profile\ consistency\ checker.\ \ */}}
+\DoxyCodeLine{00201\ \ \ void\ (*\doxymbox{\hyperlink{structcfg__hooks_a99f4be09aa3e100f2677b5fd2b432669}{account\_profile\_record}})\ (\doxymbox{\hyperlink{coretypes_8h_a0469df20b471a4cd7c81fbdce5027487}{basic\_block}},\ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{structprofile__record}{profile\_record}}\ *);}
+\DoxyCodeLine{00202\ \};}
+\DoxyCodeLine{00203\ }
+\DoxyCodeLine{00204\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{cfghooks_8h_a19422e3240a82441d4bbfc376cdb4d14}{verify\_flow\_info}}\ (\textcolor{keywordtype}{void});}
+\DoxyCodeLine{00205\ }
+\DoxyCodeLine{00206\ \textcolor{comment}{/*\ Check\ control\ flow\ invariants,\ if\ internal\ consistency\ checks\ are}}
+\DoxyCodeLine{00207\ \textcolor{comment}{\ \ \ enabled.\ \ */}}
+\DoxyCodeLine{00208\ }
+\DoxyCodeLine{00209\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{void}}
+\DoxyCodeLine{00210\ \doxymbox{\hyperlink{cfghooks_8h_a89da40d061fbf9f3925376323ddead2d}{checking\_verify\_flow\_info}}\ (\textcolor{keywordtype}{void})}
+\DoxyCodeLine{00211\ \{}
+\DoxyCodeLine{00212\ \ \ \textcolor{comment}{/*\ TODO:\ Add\ a\ separate\ option\ for\ -\/fchecking=cfg.\ \ */}}
+\DoxyCodeLine{00213\ \ \ \textcolor{keywordflow}{if}\ (\doxymbox{\hyperlink{options_8h_a84596fb150478c4f5173d2c5fff82710}{flag\_checking}})}
+\DoxyCodeLine{00214\ \ \ \ \ \doxymbox{\hyperlink{cfghooks_8h_a19422e3240a82441d4bbfc376cdb4d14}{verify\_flow\_info}}\ ();}
+\DoxyCodeLine{00215\ \}}
+\DoxyCodeLine{00216\ }
+\DoxyCodeLine{00217\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{cfghooks_8h_ae2571b9715730ee716201cbf2db05203}{dump\_bb}}\ (FILE\ *,\ \doxymbox{\hyperlink{coretypes_8h_a0469df20b471a4cd7c81fbdce5027487}{basic\_block}},\ \textcolor{keywordtype}{int},\ \doxymbox{\hyperlink{dumpfile_8h_ae3aeb1ff52915e32d52ac788388fbeef}{dump\_flags\_t}});}
+\DoxyCodeLine{00218\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{cfghooks_8h_a2c2bd8e3c8348a5770efda062f0d3dfc}{dump\_bb\_for\_graph}}\ (\doxymbox{\hyperlink{classpretty__printer}{pretty\_printer}}\ *,\ \doxymbox{\hyperlink{coretypes_8h_a0469df20b471a4cd7c81fbdce5027487}{basic\_block}});}
+\DoxyCodeLine{00219\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{cfghooks_8h_aaf6f602055fc3419b5fb0c3d8560ade5}{dump\_flow\_info}}\ (FILE\ *,\ \doxymbox{\hyperlink{dumpfile_8h_ae3aeb1ff52915e32d52ac788388fbeef}{dump\_flags\_t}});}
+\DoxyCodeLine{00220\ }
+\DoxyCodeLine{00221\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{coretypes_8h_a44ae11f0c90646aa6208ad4bf486490b}{edge}}\ \doxymbox{\hyperlink{cfghooks_8h_a28885a77f6abdd00f7ec9e62235239ab}{redirect\_edge\_and\_branch}}\ (\doxymbox{\hyperlink{coretypes_8h_a44ae11f0c90646aa6208ad4bf486490b}{edge}},\ \doxymbox{\hyperlink{coretypes_8h_a0469df20b471a4cd7c81fbdce5027487}{basic\_block}});}
+\DoxyCodeLine{00222\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{coretypes_8h_a0469df20b471a4cd7c81fbdce5027487}{basic\_block}}\ \doxymbox{\hyperlink{cfghooks_8h_a5eb2acd0bbb5bec03d8de56e8011857a}{redirect\_edge\_and\_branch\_force}}\ (\doxymbox{\hyperlink{coretypes_8h_a44ae11f0c90646aa6208ad4bf486490b}{edge}},\ \doxymbox{\hyperlink{coretypes_8h_a0469df20b471a4cd7c81fbdce5027487}{basic\_block}});}
+\DoxyCodeLine{00223\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{coretypes_8h_a44ae11f0c90646aa6208ad4bf486490b}{edge}}\ \doxymbox{\hyperlink{cfghooks_8h_ae3566d265b6aaba8b550592dfca15549}{redirect\_edge\_succ\_nodup}}\ (\doxymbox{\hyperlink{coretypes_8h_a44ae11f0c90646aa6208ad4bf486490b}{edge}},\ \doxymbox{\hyperlink{coretypes_8h_a0469df20b471a4cd7c81fbdce5027487}{basic\_block}});}
+\DoxyCodeLine{00224\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{cfghooks_8h_aa7ecb875c805754021cf9e85ce8bf3b7}{can\_remove\_branch\_p}}\ (\doxymbox{\hyperlink{coretypes_8h_a7fe7211b200cb0052b6038fb1d96eda2}{const\_edge}});}
+\DoxyCodeLine{00225\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{cfghooks_8h_a81ece80732c302d4fc2c54119b4f2590}{remove\_branch}}\ (\doxymbox{\hyperlink{coretypes_8h_a44ae11f0c90646aa6208ad4bf486490b}{edge}});}
+\DoxyCodeLine{00226\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{cfghooks_8h_a85351687cb3475de2f566de6d4ba068a}{remove\_edge}}\ (\doxymbox{\hyperlink{coretypes_8h_a44ae11f0c90646aa6208ad4bf486490b}{edge}});}
+\DoxyCodeLine{00227\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{coretypes_8h_a44ae11f0c90646aa6208ad4bf486490b}{edge}}\ \doxymbox{\hyperlink{cfghooks_8h_ac8c9d8071c6c6ff165f212eacb080c4c}{split\_block}}\ (\doxymbox{\hyperlink{coretypes_8h_a0469df20b471a4cd7c81fbdce5027487}{basic\_block}},\ \doxymbox{\hyperlink{coretypes_8h_a20e671ce9e7827268658cff844f4281c}{rtx}});}
+\DoxyCodeLine{00228\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{coretypes_8h_a44ae11f0c90646aa6208ad4bf486490b}{edge}}\ \doxymbox{\hyperlink{cfghooks_8h_ac8c9d8071c6c6ff165f212eacb080c4c}{split\_block}}\ (\doxymbox{\hyperlink{coretypes_8h_a0469df20b471a4cd7c81fbdce5027487}{basic\_block}},\ gimple\ *);}
+\DoxyCodeLine{00229\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{coretypes_8h_a44ae11f0c90646aa6208ad4bf486490b}{edge}}\ \doxymbox{\hyperlink{cfghooks_8h_adb52630be0dfcf4abc074a78eb6379b3}{split\_block\_after\_labels}}\ (\doxymbox{\hyperlink{coretypes_8h_a0469df20b471a4cd7c81fbdce5027487}{basic\_block}});}
+\DoxyCodeLine{00230\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{cfghooks_8h_aca1fa223ee95fc825bdf185f9e02ed41}{move\_block\_after}}\ (\doxymbox{\hyperlink{coretypes_8h_a0469df20b471a4cd7c81fbdce5027487}{basic\_block}},\ \doxymbox{\hyperlink{coretypes_8h_a0469df20b471a4cd7c81fbdce5027487}{basic\_block}});}
+\DoxyCodeLine{00231\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{cfghooks_8h_a18239bb411a10cd99104e383de73a87a}{delete\_basic\_block}}\ (\doxymbox{\hyperlink{coretypes_8h_a0469df20b471a4cd7c81fbdce5027487}{basic\_block}});}
+\DoxyCodeLine{00232\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{coretypes_8h_a0469df20b471a4cd7c81fbdce5027487}{basic\_block}}\ \doxymbox{\hyperlink{cfghooks_8h_a5f1ab23f6b30a08c2b772a95ac1d0e59}{split\_edge}}\ (\doxymbox{\hyperlink{coretypes_8h_a44ae11f0c90646aa6208ad4bf486490b}{edge}});}
+\DoxyCodeLine{00233\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{coretypes_8h_a0469df20b471a4cd7c81fbdce5027487}{basic\_block}}\ \doxymbox{\hyperlink{cfghooks_8h_a268206fbd45a6642262777d300193cb7}{create\_basic\_block}}\ (\doxymbox{\hyperlink{coretypes_8h_a20e671ce9e7827268658cff844f4281c}{rtx}},\ \doxymbox{\hyperlink{coretypes_8h_a20e671ce9e7827268658cff844f4281c}{rtx}},\ \doxymbox{\hyperlink{coretypes_8h_a0469df20b471a4cd7c81fbdce5027487}{basic\_block}});}
+\DoxyCodeLine{00234\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{coretypes_8h_a0469df20b471a4cd7c81fbdce5027487}{basic\_block}}\ \doxymbox{\hyperlink{cfghooks_8h_a268206fbd45a6642262777d300193cb7}{create\_basic\_block}}\ (\doxymbox{\hyperlink{coretypes_8h_a4b4e58d1e0dada604ccfc7965bb9a3df}{gimple\_seq}},\ \doxymbox{\hyperlink{coretypes_8h_a0469df20b471a4cd7c81fbdce5027487}{basic\_block}});}
+\DoxyCodeLine{00235\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{coretypes_8h_a0469df20b471a4cd7c81fbdce5027487}{basic\_block}}\ \doxymbox{\hyperlink{cfghooks_8h_a3ebb8df472e62704db1ece8de897b75f}{create\_empty\_bb}}\ (\doxymbox{\hyperlink{coretypes_8h_a0469df20b471a4cd7c81fbdce5027487}{basic\_block}});}
+\DoxyCodeLine{00236\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{cfghooks_8h_a1d792e60454afa65411a8d47ff3498b2}{can\_merge\_blocks\_p}}\ (\doxymbox{\hyperlink{coretypes_8h_a0469df20b471a4cd7c81fbdce5027487}{basic\_block}},\ \doxymbox{\hyperlink{coretypes_8h_a0469df20b471a4cd7c81fbdce5027487}{basic\_block}});}
+\DoxyCodeLine{00237\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{cfghooks_8h_a54963ade6eef2004cde23b127e1231c1}{merge\_blocks}}\ (\doxymbox{\hyperlink{coretypes_8h_a0469df20b471a4cd7c81fbdce5027487}{basic\_block}},\ \doxymbox{\hyperlink{coretypes_8h_a0469df20b471a4cd7c81fbdce5027487}{basic\_block}});}
+\DoxyCodeLine{00238\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{coretypes_8h_a44ae11f0c90646aa6208ad4bf486490b}{edge}}\ \doxymbox{\hyperlink{cfghooks_8h_a550d172debef8464bd669a8683f6d872}{make\_forwarder\_block}}\ (\doxymbox{\hyperlink{coretypes_8h_a0469df20b471a4cd7c81fbdce5027487}{basic\_block}},\ \textcolor{keywordtype}{bool}\ (*)(\doxymbox{\hyperlink{coretypes_8h_a44ae11f0c90646aa6208ad4bf486490b}{edge}}),}
+\DoxyCodeLine{00239\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{void}\ (*)\ (\doxymbox{\hyperlink{coretypes_8h_a0469df20b471a4cd7c81fbdce5027487}{basic\_block}}));}
+\DoxyCodeLine{00240\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{coretypes_8h_a0469df20b471a4cd7c81fbdce5027487}{basic\_block}}\ \doxymbox{\hyperlink{cfghooks_8h_afbe2c834d2b32ddf0e7959efca947406}{force\_nonfallthru}}\ (\doxymbox{\hyperlink{coretypes_8h_a44ae11f0c90646aa6208ad4bf486490b}{edge}});}
+\DoxyCodeLine{00241\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{cfghooks_8h_a6b9c5518ad9b25967b0dde1ede737da4}{tidy\_fallthru\_edge}}\ (\doxymbox{\hyperlink{coretypes_8h_a44ae11f0c90646aa6208ad4bf486490b}{edge}});}
+\DoxyCodeLine{00242\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{cfghooks_8h_ae0c4dca8ae76e40357f501258480a89a}{tidy\_fallthru\_edges}}\ (\textcolor{keywordtype}{void});}
+\DoxyCodeLine{00243\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{cfghooks_8h_a6bc9cffd73534a3b3dd5b8219054d495}{predict\_edge}}\ (\doxymbox{\hyperlink{coretypes_8h_a44ae11f0c90646aa6208ad4bf486490b}{edge}}\ e,\ \textcolor{keyword}{enum}\ \doxymbox{\hyperlink{predict_8h_aae275070a004ff48142ebd85f0b879cf}{br\_predictor}}\ predictor,\ \textcolor{keywordtype}{int}\ probability);}
+\DoxyCodeLine{00244\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{cfghooks_8h_a876e5e1f31d424891eb8b0c5e967288b}{predicted\_by\_p}}\ (\doxymbox{\hyperlink{coretypes_8h_ad2eb53ef6dbf4de6a2be968b15699dbc}{const\_basic\_block}}\ bb,\ \textcolor{keyword}{enum}\ \doxymbox{\hyperlink{predict_8h_aae275070a004ff48142ebd85f0b879cf}{br\_predictor}}\ predictor);}
+\DoxyCodeLine{00245\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{cfghooks_8h_ac00fb1d72841cc5265bd1d57c9ed22de}{can\_duplicate\_block\_p}}\ (\doxymbox{\hyperlink{coretypes_8h_ad2eb53ef6dbf4de6a2be968b15699dbc}{const\_basic\_block}});}
+\DoxyCodeLine{00246\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{coretypes_8h_a0469df20b471a4cd7c81fbdce5027487}{basic\_block}}\ \doxymbox{\hyperlink{cfghooks_8h_abf3e6d501ef9f30023663f71d7d213b1}{duplicate\_block}}\ (\doxymbox{\hyperlink{coretypes_8h_a0469df20b471a4cd7c81fbdce5027487}{basic\_block}},\ \doxymbox{\hyperlink{coretypes_8h_a44ae11f0c90646aa6208ad4bf486490b}{edge}},\ \doxymbox{\hyperlink{coretypes_8h_a0469df20b471a4cd7c81fbdce5027487}{basic\_block}},}
+\DoxyCodeLine{00247\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{classcopy__bb__data}{copy\_bb\_data}}\ *\ =\ \doxymbox{\hyperlink{stddef_8h_a070d2ce7b6bb7e5c05602aa8c308d0c4}{NULL}});}
+\DoxyCodeLine{00248\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{cfghooks_8h_a4bc6a0ee857194c06973fdf1fb62f541}{block\_ends\_with\_call\_p}}\ (\doxymbox{\hyperlink{coretypes_8h_a0469df20b471a4cd7c81fbdce5027487}{basic\_block}}\ bb);}
+\DoxyCodeLine{00249\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{cfghooks_8h_a021ae40dd6570e1287548b31d5ab12f0}{empty\_block\_p}}\ (\doxymbox{\hyperlink{coretypes_8h_a0469df20b471a4cd7c81fbdce5027487}{basic\_block}});}
+\DoxyCodeLine{00250\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{coretypes_8h_a0469df20b471a4cd7c81fbdce5027487}{basic\_block}}\ \doxymbox{\hyperlink{cfghooks_8h_a6db4edaceffd5ce6d983dba27fc6b6b9}{split\_block\_before\_cond\_jump}}\ (\doxymbox{\hyperlink{coretypes_8h_a0469df20b471a4cd7c81fbdce5027487}{basic\_block}});}
+\DoxyCodeLine{00251\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{cfghooks_8h_ae77a6415b1e9dfc88576cecad560e334}{block\_ends\_with\_condjump\_p}}\ (\doxymbox{\hyperlink{coretypes_8h_ad2eb53ef6dbf4de6a2be968b15699dbc}{const\_basic\_block}}\ bb);}
+\DoxyCodeLine{00252\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{cfghooks_8h_a705fd0777998559c35bcf900f89976fa}{flow\_call\_edges\_add}}\ (\doxymbox{\hyperlink{coretypes_8h_a780cd5c6b7453aa0a01cdf1c5b379abd}{sbitmap}});}
+\DoxyCodeLine{00253\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{cfghooks_8h_ac721a92fc8c1efb72f3ebd0e80c8646a}{execute\_on\_growing\_pred}}\ (\doxymbox{\hyperlink{coretypes_8h_a44ae11f0c90646aa6208ad4bf486490b}{edge}});}
+\DoxyCodeLine{00254\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{cfghooks_8h_a7c5515cc89f6e7d0e7315280a100869c}{execute\_on\_shrinking\_pred}}\ (\doxymbox{\hyperlink{coretypes_8h_a44ae11f0c90646aa6208ad4bf486490b}{edge}});}
+\DoxyCodeLine{00255\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{bool}}
+\DoxyCodeLine{00256\ \doxymbox{\hyperlink{cfghooks_8h_a93d05aac731ad4cb014ac695cbf3d427}{cfg\_hook\_duplicate\_loop\_body\_to\_header\_edge}}\ (\textcolor{keyword}{class}\ loop\ *loop,\ \doxymbox{\hyperlink{coretypes_8h_a44ae11f0c90646aa6208ad4bf486490b}{edge}},}
+\DoxyCodeLine{00257\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ ndupl,}
+\DoxyCodeLine{00258\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{coretypes_8h_a780cd5c6b7453aa0a01cdf1c5b379abd}{sbitmap}}\ wont\_exit,\ \doxymbox{\hyperlink{coretypes_8h_a44ae11f0c90646aa6208ad4bf486490b}{edge}}\ orig,}
+\DoxyCodeLine{00259\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{structvec}{vec<edge>}}\ *to\_remove,\ \textcolor{keywordtype}{int}\ flags);}
+\DoxyCodeLine{00260\ }
+\DoxyCodeLine{00261\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{cfghooks_8h_acc58fb7ce11cc38f4d65c156d1858436}{lv\_flush\_pending\_stmts}}\ (\doxymbox{\hyperlink{coretypes_8h_a44ae11f0c90646aa6208ad4bf486490b}{edge}});}
+\DoxyCodeLine{00262\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{cfghooks_8h_afe89fcdaa6acad3249f06b90778b5463}{extract\_cond\_bb\_edges}}\ (\doxymbox{\hyperlink{coretypes_8h_a0469df20b471a4cd7c81fbdce5027487}{basic\_block}},\ \doxymbox{\hyperlink{coretypes_8h_a44ae11f0c90646aa6208ad4bf486490b}{edge}}\ *,\ \doxymbox{\hyperlink{coretypes_8h_a44ae11f0c90646aa6208ad4bf486490b}{edge}}*);}
+\DoxyCodeLine{00263\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{cfghooks_8h_a70e4012dd3619695f5adb33cc25a7f8f}{lv\_adjust\_loop\_header\_phi}}\ (\doxymbox{\hyperlink{coretypes_8h_a0469df20b471a4cd7c81fbdce5027487}{basic\_block}},\ \doxymbox{\hyperlink{coretypes_8h_a0469df20b471a4cd7c81fbdce5027487}{basic\_block}},\ \doxymbox{\hyperlink{coretypes_8h_a0469df20b471a4cd7c81fbdce5027487}{basic\_block}},}
+\DoxyCodeLine{00264\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{coretypes_8h_a44ae11f0c90646aa6208ad4bf486490b}{edge}});}
+\DoxyCodeLine{00265\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{cfghooks_8h_a6604b295b549381fd0871f9e7d17f70c}{lv\_add\_condition\_to\_bb}}\ (\doxymbox{\hyperlink{coretypes_8h_a0469df20b471a4cd7c81fbdce5027487}{basic\_block}},\ \doxymbox{\hyperlink{coretypes_8h_a0469df20b471a4cd7c81fbdce5027487}{basic\_block}},\ \doxymbox{\hyperlink{coretypes_8h_a0469df20b471a4cd7c81fbdce5027487}{basic\_block}},}
+\DoxyCodeLine{00266\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{void}\ *);}
+\DoxyCodeLine{00267\ }
+\DoxyCodeLine{00268\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{cfghooks_8h_ab9b7fb6625f2b343b7f439d0468ef67e}{can\_copy\_bbs\_p}}\ (\doxymbox{\hyperlink{coretypes_8h_a0469df20b471a4cd7c81fbdce5027487}{basic\_block}}\ *,\ \textcolor{keywordtype}{unsigned});}
+\DoxyCodeLine{00269\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{cfghooks_8h_af09bde1526dd711e0758ec0b2ffa117f}{copy\_bbs}}\ (\doxymbox{\hyperlink{coretypes_8h_a0469df20b471a4cd7c81fbdce5027487}{basic\_block}}\ *,\ \textcolor{keywordtype}{unsigned},\ \doxymbox{\hyperlink{coretypes_8h_a0469df20b471a4cd7c81fbdce5027487}{basic\_block}}\ *,}
+\DoxyCodeLine{00270\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{coretypes_8h_a44ae11f0c90646aa6208ad4bf486490b}{edge}}\ *,\ \textcolor{keywordtype}{unsigned},\ \doxymbox{\hyperlink{coretypes_8h_a44ae11f0c90646aa6208ad4bf486490b}{edge}}\ *,\ \textcolor{keyword}{class}\ loop\ *,}
+\DoxyCodeLine{00271\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{coretypes_8h_a0469df20b471a4cd7c81fbdce5027487}{basic\_block}},\ \textcolor{keywordtype}{bool});}
+\DoxyCodeLine{00272\ }
+\DoxyCodeLine{00273\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{cfghooks_8h_afb5027a0ffe312d0046bd3426a4f06ec}{profile\_record\_check\_consistency}}\ (\doxymbox{\hyperlink{structprofile__record}{profile\_record}}\ *);}
+\DoxyCodeLine{00274\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{cfghooks_8h_ae5038ee89abb29de2e00d07a23bab1df}{profile\_record\_account\_profile}}\ (\doxymbox{\hyperlink{structprofile__record}{profile\_record}}\ *);}
+\DoxyCodeLine{00275\ }
+\DoxyCodeLine{00276\ \textcolor{comment}{/*\ Hooks\ containers.\ \ */}}
+\DoxyCodeLine{00277\ \textcolor{keyword}{extern}\ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{structcfg__hooks}{cfg\_hooks}}\ \doxymbox{\hyperlink{cfghooks_8h_aee4c1a17039a59d54c536d1f3efece9b}{gimple\_cfg\_hooks}};}
+\DoxyCodeLine{00278\ \textcolor{keyword}{extern}\ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{structcfg__hooks}{cfg\_hooks}}\ \doxymbox{\hyperlink{cfghooks_8h_a7aa9da3fa8f2262ae02633471600db7d}{rtl\_cfg\_hooks}};}
+\DoxyCodeLine{00279\ \textcolor{keyword}{extern}\ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{structcfg__hooks}{cfg\_hooks}}\ \doxymbox{\hyperlink{cfghooks_8h_a528ba558ecaf8aec6bc5239a5896bfd6}{cfg\_layout\_rtl\_cfg\_hooks}};}
+\DoxyCodeLine{00280\ }
+\DoxyCodeLine{00281\ \textcolor{comment}{/*\ Declarations.\ \ */}}
+\DoxyCodeLine{00282\ \textcolor{keyword}{extern}\ \textcolor{keyword}{enum}\ \doxymbox{\hyperlink{coretypes_8h_a5303f85376d881c05e2286d8aa495861}{ir\_type}}\ \doxymbox{\hyperlink{cfghooks_8h_ab153255feb2e54e3c38be6bfe6de9a14}{current\_ir\_type}}\ (\textcolor{keywordtype}{void});}
+\DoxyCodeLine{00283\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{cfghooks_8h_aeb1d180ff180fd4d56716d8e26415c64}{rtl\_register\_cfg\_hooks}}\ (\textcolor{keywordtype}{void});}
+\DoxyCodeLine{00284\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{cfghooks_8h_aeb3480fb589ff5cf932969520ceace19}{cfg\_layout\_rtl\_register\_cfg\_hooks}}\ (\textcolor{keywordtype}{void});}
+\DoxyCodeLine{00285\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{cfghooks_8h_aa70084ace2121a07758f185e3d05be6c}{gimple\_register\_cfg\_hooks}}\ (\textcolor{keywordtype}{void});}
+\DoxyCodeLine{00286\ \textcolor{keyword}{extern}\ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{structcfg__hooks}{cfg\_hooks}}\ \doxymbox{\hyperlink{cfghooks_8h_ad0d69c6e498fcf9a2d0119bdb1523048}{get\_cfg\_hooks}}\ (void);}
+\DoxyCodeLine{00287\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{cfghooks_8h_a4660b096d64f712ca839ddde9787082a}{set\_cfg\_hooks}}\ (\textcolor{keyword}{struct}\ \doxymbox{\hyperlink{structcfg__hooks}{cfg\_hooks}});}
+\DoxyCodeLine{00288\ }
+\DoxyCodeLine{00289\ \textcolor{preprocessor}{\#endif\ }\textcolor{comment}{/*\ GCC\_CFGHOOKS\_H\ */}\textcolor{preprocessor}{}}
+
+\end{DoxyCode}

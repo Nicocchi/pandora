@@ -1,0 +1,25 @@
+var structnoce__if__info =
+[
+    [ "a", "structnoce__if__info.html#afe6d16a61dbb8e1dd7bbce179d9fe7da", null ],
+    [ "b", "structnoce__if__info.html#a4f980af798bb21cbaba8c7432e2c1795", null ],
+    [ "cond", "structnoce__if__info.html#ac06d0bd097a7ce48efee5b39555e2b07", null ],
+    [ "cond_earliest", "structnoce__if__info.html#a4ae210999579b6ca8c615ced060369bf", null ],
+    [ "cond_inverted", "structnoce__if__info.html#ab3a923e040758180b2ee81e25cb9d7d0", null ],
+    [ "else_bb", "structnoce__if__info.html#a3acce373cd8933a1155626d7f3b69d15", null ],
+    [ "else_simple", "structnoce__if__info.html#aa7e6d86f0381f874076e9cd781acb6f3", null ],
+    [ "insn_a", "structnoce__if__info.html#a43faf69431653cf2274e80c59a4f4822", null ],
+    [ "insn_b", "structnoce__if__info.html#ae2737cc41c3347e93508eb4fe6bf74d3", null ],
+    [ "join_bb", "structnoce__if__info.html#add725a33cdf85543a01e3eeac1c3d983", null ],
+    [ "jump", "structnoce__if__info.html#ada067b67c4d088ffefd829cd5ec6cf95", null ],
+    [ "max_seq_cost", "structnoce__if__info.html#a0372bced2350c48862f5c07feb65aad3", null ],
+    [ "orig_x", "structnoce__if__info.html#a4f72b825ddbc01bcb7e1e8faab33a224", null ],
+    [ "original_cost", "structnoce__if__info.html#ae5e6234e4b4ed9832c87441706f0a9c4", null ],
+    [ "rev_cond", "structnoce__if__info.html#a2c5aa5181f1cab57af36153c126fcdd5", null ],
+    [ "speed_p", "structnoce__if__info.html#a2a9d20b46437cfac7aa0121c106c245f", null ],
+    [ "test_bb", "structnoce__if__info.html#a333c547516f33ae5b44ff5f8c9426fd3", null ],
+    [ "then_bb", "structnoce__if__info.html#a82f2fb90fda40e38bdb19948786cd4d6", null ],
+    [ "then_else_reversed", "structnoce__if__info.html#a2ae220c358b4ed333bc695dd861217fb", null ],
+    [ "then_simple", "structnoce__if__info.html#ada0bb749629ac3d5b1507036b9dfe0c8", null ],
+    [ "transform_name", "structnoce__if__info.html#afedb7ee3ce4c65ac2d87651c5f10665b", null ],
+    [ "x", "structnoce__if__info.html#a5fcffdfdebbf61ab79317b0d89450a4a", null ]
+];

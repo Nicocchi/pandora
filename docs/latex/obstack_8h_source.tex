@@ -1,0 +1,541 @@
+\doxysection{obstack.\+h}
+\hypertarget{obstack_8h_source}{}\label{obstack_8h_source}\index{toolchain/x86\_64-\/elf/lib/gcc/x86\_64-\/elf/14.2.0/plugin/include/obstack.h@{toolchain/x86\_64-\/elf/lib/gcc/x86\_64-\/elf/14.2.0/plugin/include/obstack.h}}
+\doxymbox{\hyperlink{obstack_8h}{Go to the documentation of this file.}}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001\ \textcolor{comment}{/*\ obstack.h\ -\/\ object\ stack\ macros}}
+\DoxyCodeLine{00002\ \textcolor{comment}{\ \ \ Copyright\ (C)\ 1988-\/2024\ Free\ Software\ Foundation,\ Inc.}}
+\DoxyCodeLine{00003\ \textcolor{comment}{\ \ \ This\ file\ is\ part\ of\ the\ GNU\ C\ Library.}}
+\DoxyCodeLine{00004\ \textcolor{comment}{}}
+\DoxyCodeLine{00005\ \textcolor{comment}{\ \ \ The\ GNU\ C\ Library\ is\ free\ software;\ you\ can\ redistribute\ it\ and/or}}
+\DoxyCodeLine{00006\ \textcolor{comment}{\ \ \ modify\ it\ under\ the\ terms\ of\ the\ GNU\ Lesser\ General\ Public}}
+\DoxyCodeLine{00007\ \textcolor{comment}{\ \ \ License\ as\ published\ by\ the\ Free\ Software\ Foundation;\ either}}
+\DoxyCodeLine{00008\ \textcolor{comment}{\ \ \ version\ 2.1\ of\ the\ License,\ or\ (at\ your\ option)\ any\ later\ version.}}
+\DoxyCodeLine{00009\ \textcolor{comment}{}}
+\DoxyCodeLine{00010\ \textcolor{comment}{\ \ \ The\ GNU\ C\ Library\ is\ distributed\ in\ the\ hope\ that\ it\ will\ be\ useful,}}
+\DoxyCodeLine{00011\ \textcolor{comment}{\ \ \ but\ WITHOUT\ ANY\ WARRANTY;\ without\ even\ the\ implied\ warranty\ of}}
+\DoxyCodeLine{00012\ \textcolor{comment}{\ \ \ MERCHANTABILITY\ or\ FITNESS\ FOR\ A\ PARTICULAR\ PURPOSE.\ \ See\ the\ GNU}}
+\DoxyCodeLine{00013\ \textcolor{comment}{\ \ \ Lesser\ General\ Public\ License\ for\ more\ details.}}
+\DoxyCodeLine{00014\ \textcolor{comment}{}}
+\DoxyCodeLine{00015\ \textcolor{comment}{\ \ \ You\ should\ have\ received\ a\ copy\ of\ the\ GNU\ Lesser\ General\ Public}}
+\DoxyCodeLine{00016\ \textcolor{comment}{\ \ \ License\ along\ with\ the\ GNU\ C\ Library;\ if\ not,\ see}}
+\DoxyCodeLine{00017\ \textcolor{comment}{\ \ \ <http://www.gnu.org/licenses/>.\ \ */}}
+\DoxyCodeLine{00018\ }
+\DoxyCodeLine{00019\ \textcolor{comment}{/*\ Summary:}}
+\DoxyCodeLine{00020\ \textcolor{comment}{}}
+\DoxyCodeLine{00021\ \textcolor{comment}{\ \ \ All\ the\ apparent\ functions\ defined\ here\ are\ macros.\ The\ idea}}
+\DoxyCodeLine{00022\ \textcolor{comment}{\ \ \ is\ that\ you\ would\ use\ these\ pre-\/tested\ macros\ to\ solve\ a}}
+\DoxyCodeLine{00023\ \textcolor{comment}{\ \ \ very\ specific\ set\ of\ problems,\ and\ they\ would\ run\ fast.}}
+\DoxyCodeLine{00024\ \textcolor{comment}{\ \ \ Caution:\ no\ side-\/effects\ in\ arguments\ please!!\ They\ may\ be}}
+\DoxyCodeLine{00025\ \textcolor{comment}{\ \ \ evaluated\ MANY\ times!!}}
+\DoxyCodeLine{00026\ \textcolor{comment}{}}
+\DoxyCodeLine{00027\ \textcolor{comment}{\ \ \ These\ macros\ operate\ a\ stack\ of\ objects.\ \ Each\ object\ starts\ life}}
+\DoxyCodeLine{00028\ \textcolor{comment}{\ \ \ small,\ and\ may\ grow\ to\ maturity.\ \ (Consider\ building\ a\ word\ syllable}}
+\DoxyCodeLine{00029\ \textcolor{comment}{\ \ \ by\ syllable.)\ \ An\ object\ can\ move\ while\ it\ is\ growing.\ \ Once\ it\ has}}
+\DoxyCodeLine{00030\ \textcolor{comment}{\ \ \ been\ "{}finished"{}\ it\ never\ changes\ address\ again.\ \ So\ the\ "{}top\ of\ the}}
+\DoxyCodeLine{00031\ \textcolor{comment}{\ \ \ stack"{}\ is\ typically\ an\ immature\ growing\ object,\ while\ the\ rest\ of\ the}}
+\DoxyCodeLine{00032\ \textcolor{comment}{\ \ \ stack\ is\ of\ mature,\ fixed\ size\ and\ fixed\ address\ objects.}}
+\DoxyCodeLine{00033\ \textcolor{comment}{}}
+\DoxyCodeLine{00034\ \textcolor{comment}{\ \ \ These\ routines\ grab\ large\ chunks\ of\ memory,\ using\ a\ function\ you}}
+\DoxyCodeLine{00035\ \textcolor{comment}{\ \ \ supply,\ called\ 'obstack\_chunk\_alloc'.\ \ On\ occasion,\ they\ free\ chunks,}}
+\DoxyCodeLine{00036\ \textcolor{comment}{\ \ \ by\ calling\ 'obstack\_chunk\_free'.\ \ You\ must\ define\ them\ and\ declare}}
+\DoxyCodeLine{00037\ \textcolor{comment}{\ \ \ them\ before\ using\ any\ obstack\ macros.}}
+\DoxyCodeLine{00038\ \textcolor{comment}{}}
+\DoxyCodeLine{00039\ \textcolor{comment}{\ \ \ Each\ independent\ stack\ is\ represented\ by\ a\ 'struct\ obstack'.}}
+\DoxyCodeLine{00040\ \textcolor{comment}{\ \ \ Each\ of\ the\ obstack\ macros\ expects\ a\ pointer\ to\ such\ a\ structure}}
+\DoxyCodeLine{00041\ \textcolor{comment}{\ \ \ as\ the\ first\ argument.}}
+\DoxyCodeLine{00042\ \textcolor{comment}{}}
+\DoxyCodeLine{00043\ \textcolor{comment}{\ \ \ One\ motivation\ for\ this\ package\ is\ the\ problem\ of\ growing\ char\ strings}}
+\DoxyCodeLine{00044\ \textcolor{comment}{\ \ \ in\ symbol\ tables.\ \ Unless\ you\ are\ "{}fascist\ pig\ with\ a\ read-\/only\ mind"{}}}
+\DoxyCodeLine{00045\ \textcolor{comment}{\ \ \ -\/-\/Gosper's\ immortal\ quote\ from\ HAKMEM\ item\ 154,\ out\ of\ context-\/-\/you}}
+\DoxyCodeLine{00046\ \textcolor{comment}{\ \ \ would\ not\ like\ to\ put\ any\ arbitrary\ upper\ limit\ on\ the\ length\ of\ your}}
+\DoxyCodeLine{00047\ \textcolor{comment}{\ \ \ symbols.}}
+\DoxyCodeLine{00048\ \textcolor{comment}{}}
+\DoxyCodeLine{00049\ \textcolor{comment}{\ \ \ In\ practice\ this\ often\ means\ you\ will\ build\ many\ short\ symbols\ and\ a}}
+\DoxyCodeLine{00050\ \textcolor{comment}{\ \ \ few\ long\ symbols.\ \ At\ the\ time\ you\ are\ reading\ a\ symbol\ you\ don't\ know}}
+\DoxyCodeLine{00051\ \textcolor{comment}{\ \ \ how\ long\ it\ is.\ \ One\ traditional\ method\ is\ to\ read\ a\ symbol\ into\ a}}
+\DoxyCodeLine{00052\ \textcolor{comment}{\ \ \ buffer,\ realloc()ating\ the\ buffer\ every\ time\ you\ try\ to\ read\ a\ symbol}}
+\DoxyCodeLine{00053\ \textcolor{comment}{\ \ \ that\ is\ longer\ than\ the\ buffer.\ \ This\ is\ beaut,\ but\ you\ still\ will}}
+\DoxyCodeLine{00054\ \textcolor{comment}{\ \ \ want\ to\ copy\ the\ symbol\ from\ the\ buffer\ to\ a\ more\ permanent}}
+\DoxyCodeLine{00055\ \textcolor{comment}{\ \ \ symbol-\/table\ entry\ say\ about\ half\ the\ time.}}
+\DoxyCodeLine{00056\ \textcolor{comment}{}}
+\DoxyCodeLine{00057\ \textcolor{comment}{\ \ \ With\ obstacks,\ you\ can\ work\ differently.\ \ Use\ one\ obstack\ for\ all\ symbol}}
+\DoxyCodeLine{00058\ \textcolor{comment}{\ \ \ names.\ \ As\ you\ read\ a\ symbol,\ grow\ the\ name\ in\ the\ obstack\ gradually.}}
+\DoxyCodeLine{00059\ \textcolor{comment}{\ \ \ When\ the\ name\ is\ complete,\ finalize\ it.\ \ Then,\ if\ the\ symbol\ exists\ already,}}
+\DoxyCodeLine{00060\ \textcolor{comment}{\ \ \ free\ the\ newly\ read\ name.}}
+\DoxyCodeLine{00061\ \textcolor{comment}{}}
+\DoxyCodeLine{00062\ \textcolor{comment}{\ \ \ The\ way\ we\ do\ this\ is\ to\ take\ a\ large\ chunk,\ allocating\ memory\ from}}
+\DoxyCodeLine{00063\ \textcolor{comment}{\ \ \ low\ addresses.\ \ When\ you\ want\ to\ build\ a\ symbol\ in\ the\ chunk\ you\ just}}
+\DoxyCodeLine{00064\ \textcolor{comment}{\ \ \ add\ chars\ above\ the\ current\ "{}high\ water\ mark"{}\ in\ the\ chunk.\ \ When\ you}}
+\DoxyCodeLine{00065\ \textcolor{comment}{\ \ \ have\ finished\ adding\ chars,\ because\ you\ got\ to\ the\ end\ of\ the\ symbol,}}
+\DoxyCodeLine{00066\ \textcolor{comment}{\ \ \ you\ know\ how\ long\ the\ chars\ are,\ and\ you\ can\ create\ a\ new\ object.}}
+\DoxyCodeLine{00067\ \textcolor{comment}{\ \ \ Mostly\ the\ chars\ will\ not\ burst\ over\ the\ highest\ address\ of\ the\ chunk,}}
+\DoxyCodeLine{00068\ \textcolor{comment}{\ \ \ because\ you\ would\ typically\ expect\ a\ chunk\ to\ be\ (say)\ 100\ times\ as}}
+\DoxyCodeLine{00069\ \textcolor{comment}{\ \ \ long\ as\ an\ average\ object.}}
+\DoxyCodeLine{00070\ \textcolor{comment}{}}
+\DoxyCodeLine{00071\ \textcolor{comment}{\ \ \ In\ case\ that\ isn't\ clear,\ when\ we\ have\ enough\ chars\ to\ make\ up}}
+\DoxyCodeLine{00072\ \textcolor{comment}{\ \ \ the\ object,\ THEY\ ARE\ ALREADY\ CONTIGUOUS\ IN\ THE\ CHUNK\ (guaranteed)}}
+\DoxyCodeLine{00073\ \textcolor{comment}{\ \ \ so\ we\ just\ point\ to\ it\ where\ it\ lies.\ \ No\ moving\ of\ chars\ is}}
+\DoxyCodeLine{00074\ \textcolor{comment}{\ \ \ needed\ and\ this\ is\ the\ second\ win:\ potentially\ long\ strings\ need}}
+\DoxyCodeLine{00075\ \textcolor{comment}{\ \ \ never\ be\ explicitly\ shuffled.\ Once\ an\ object\ is\ formed,\ it\ does\ not}}
+\DoxyCodeLine{00076\ \textcolor{comment}{\ \ \ change\ its\ address\ during\ its\ lifetime.}}
+\DoxyCodeLine{00077\ \textcolor{comment}{}}
+\DoxyCodeLine{00078\ \textcolor{comment}{\ \ \ When\ the\ chars\ burst\ over\ a\ chunk\ boundary,\ we\ allocate\ a\ larger}}
+\DoxyCodeLine{00079\ \textcolor{comment}{\ \ \ chunk,\ and\ then\ copy\ the\ partly\ formed\ object\ from\ the\ end\ of\ the\ old}}
+\DoxyCodeLine{00080\ \textcolor{comment}{\ \ \ chunk\ to\ the\ beginning\ of\ the\ new\ larger\ chunk.\ \ We\ then\ carry\ on}}
+\DoxyCodeLine{00081\ \textcolor{comment}{\ \ \ accreting\ characters\ to\ the\ end\ of\ the\ object\ as\ we\ normally\ would.}}
+\DoxyCodeLine{00082\ \textcolor{comment}{}}
+\DoxyCodeLine{00083\ \textcolor{comment}{\ \ \ A\ special\ macro\ is\ provided\ to\ add\ a\ single\ char\ at\ a\ time\ to\ a}}
+\DoxyCodeLine{00084\ \textcolor{comment}{\ \ \ growing\ object.\ \ This\ allows\ the\ use\ of\ register\ variables,\ which}}
+\DoxyCodeLine{00085\ \textcolor{comment}{\ \ \ break\ the\ ordinary\ 'growth'\ macro.}}
+\DoxyCodeLine{00086\ \textcolor{comment}{}}
+\DoxyCodeLine{00087\ \textcolor{comment}{\ \ \ Summary:}}
+\DoxyCodeLine{00088\ \textcolor{comment}{\ \ \ \ \ \ \ \ We\ allocate\ large\ chunks.}}
+\DoxyCodeLine{00089\ \textcolor{comment}{\ \ \ \ \ \ \ \ We\ carve\ out\ one\ object\ at\ a\ time\ from\ the\ current\ chunk.}}
+\DoxyCodeLine{00090\ \textcolor{comment}{\ \ \ \ \ \ \ \ Once\ carved,\ an\ object\ never\ moves.}}
+\DoxyCodeLine{00091\ \textcolor{comment}{\ \ \ \ \ \ \ \ We\ are\ free\ to\ append\ data\ of\ any\ size\ to\ the\ currently}}
+\DoxyCodeLine{00092\ \textcolor{comment}{\ \ \ \ \ \ \ \ \ \ growing\ object.}}
+\DoxyCodeLine{00093\ \textcolor{comment}{\ \ \ \ \ \ \ \ Exactly\ one\ object\ is\ growing\ in\ an\ obstack\ at\ any\ one\ time.}}
+\DoxyCodeLine{00094\ \textcolor{comment}{\ \ \ \ \ \ \ \ You\ can\ run\ one\ obstack\ per\ control\ block.}}
+\DoxyCodeLine{00095\ \textcolor{comment}{\ \ \ \ \ \ \ \ You\ may\ have\ as\ many\ control\ blocks\ as\ you\ dare.}}
+\DoxyCodeLine{00096\ \textcolor{comment}{\ \ \ \ \ \ \ \ Because\ of\ the\ way\ we\ do\ it,\ you\ can\ "{}unwind"{}\ an\ obstack}}
+\DoxyCodeLine{00097\ \textcolor{comment}{\ \ \ \ \ \ \ \ \ \ back\ to\ a\ previous\ state.\ (You\ may\ remove\ objects\ much}}
+\DoxyCodeLine{00098\ \textcolor{comment}{\ \ \ \ \ \ \ \ \ \ as\ you\ would\ with\ a\ stack.)}}
+\DoxyCodeLine{00099\ \textcolor{comment}{\ */}}
+\DoxyCodeLine{00100\ }
+\DoxyCodeLine{00101\ }
+\DoxyCodeLine{00102\ \textcolor{comment}{/*\ Don't\ do\ the\ contents\ of\ this\ file\ more\ than\ once.\ \ */}}
+\DoxyCodeLine{00103\ }
+\DoxyCodeLine{00104\ \textcolor{preprocessor}{\#ifndef\ \_OBSTACK\_H}}
+\DoxyCodeLine{00105\ \textcolor{preprocessor}{\#define\ \_OBSTACK\_H\ 1}}
+\DoxyCodeLine{00106\ }
+\DoxyCodeLine{00107\ \textcolor{preprocessor}{\#ifndef\ \_OBSTACK\_INTERFACE\_VERSION}}
+\DoxyCodeLine{00108\ \textcolor{preprocessor}{\#\ define\ \_OBSTACK\_INTERFACE\_VERSION\ 2}}
+\DoxyCodeLine{00109\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00110\ }
+\DoxyCodeLine{00111\ \textcolor{preprocessor}{\#include\ <\doxymbox{\hyperlink{stddef_8h}{stddef.h}}>}\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{/*\ For\ size\_t\ and\ ptrdiff\_t.\ \ */}}
+\DoxyCodeLine{00112\ \textcolor{preprocessor}{\#include\ <\doxymbox{\hyperlink{string_8h}{string.h}}>}\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{/*\ For\ \_\_GNU\_LIBRARY\_\_,\ and\ memcpy.\ \ */}}
+\DoxyCodeLine{00113\ }
+\DoxyCodeLine{00114\ \textcolor{preprocessor}{\#if\ \_OBSTACK\_INTERFACE\_VERSION\ ==\ 1}}
+\DoxyCodeLine{00115\ \textcolor{comment}{/*\ For\ binary\ compatibility\ with\ obstack\ version\ 1,\ which\ used\ "{}int"{}}}
+\DoxyCodeLine{00116\ \textcolor{comment}{\ \ \ and\ "{}long"{}\ for\ these\ two\ types.\ \ */}}
+\DoxyCodeLine{00117\ \textcolor{preprocessor}{\#\ define\ \_OBSTACK\_SIZE\_T\ unsigned\ int}}
+\DoxyCodeLine{00118\ \textcolor{preprocessor}{\#\ define\ \_CHUNK\_SIZE\_T\ unsigned\ long}}
+\DoxyCodeLine{00119\ \textcolor{preprocessor}{\#\ define\ \_OBSTACK\_CAST(type,\ expr)\ ((type)\ (expr))}}
+\DoxyCodeLine{00120\ \textcolor{preprocessor}{\#else}}
+\DoxyCodeLine{00121\ \textcolor{comment}{/*\ Version\ 2\ with\ sane\ types,\ especially\ for\ 64-\/bit\ hosts.\ \ */}}
+\DoxyCodeLine{00122\ \textcolor{preprocessor}{\#\ define\ \_OBSTACK\_SIZE\_T\ size\_t}}
+\DoxyCodeLine{00123\ \textcolor{preprocessor}{\#\ define\ \_CHUNK\_SIZE\_T\ size\_t}}
+\DoxyCodeLine{00124\ \textcolor{preprocessor}{\#\ define\ \_OBSTACK\_CAST(type,\ expr)\ (expr)}}
+\DoxyCodeLine{00125\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00126\ }
+\DoxyCodeLine{00127\ \textcolor{comment}{/*\ If\ B\ is\ the\ base\ of\ an\ object\ addressed\ by\ P,\ return\ the\ result\ of}}
+\DoxyCodeLine{00128\ \textcolor{comment}{\ \ \ aligning\ P\ to\ the\ next\ multiple\ of\ A\ +\ 1.\ \ B\ and\ P\ must\ be\ of\ type}}
+\DoxyCodeLine{00129\ \textcolor{comment}{\ \ \ char\ *.\ \ A\ +\ 1\ must\ be\ a\ power\ of\ 2.\ \ */}}
+\DoxyCodeLine{00130\ }
+\DoxyCodeLine{00131\ \textcolor{preprocessor}{\#define\ \_\_BPTR\_ALIGN(B,\ P,\ A)\ ((B)\ +\ (((P)\ -\/\ (B)\ +\ (A))\ \&\ \string~(A)))}}
+\DoxyCodeLine{00132\ }
+\DoxyCodeLine{00133\ \textcolor{comment}{/*\ Similar\ to\ \_\_BPTR\_ALIGN\ (B,\ P,\ A),\ except\ optimize\ the\ common\ case}}
+\DoxyCodeLine{00134\ \textcolor{comment}{\ \ \ where\ pointers\ can\ be\ converted\ to\ integers,\ aligned\ as\ integers,}}
+\DoxyCodeLine{00135\ \textcolor{comment}{\ \ \ and\ converted\ back\ again.\ \ If\ ptrdiff\_t\ is\ narrower\ than\ a}}
+\DoxyCodeLine{00136\ \textcolor{comment}{\ \ \ pointer\ (e.g.,\ the\ AS/400),\ play\ it\ safe\ and\ compute\ the\ alignment}}
+\DoxyCodeLine{00137\ \textcolor{comment}{\ \ \ relative\ to\ B.\ \ Otherwise,\ use\ the\ faster\ strategy\ of\ computing\ the}}
+\DoxyCodeLine{00138\ \textcolor{comment}{\ \ \ alignment\ relative\ to\ 0.\ \ */}}
+\DoxyCodeLine{00139\ }
+\DoxyCodeLine{00140\ \textcolor{preprocessor}{\#define\ \_\_PTR\_ALIGN(B,\ P,\ A)\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00141\ \textcolor{preprocessor}{\ \ (sizeof\ (ptrdiff\_t)\ <\ sizeof\ (void\ *)\ ?\ \_\_BPTR\_ALIGN\ (B,\ P,\ A)\ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00142\ \textcolor{preprocessor}{\ \ \ :\ (char\ *)\ (((ptrdiff\_t)\ (P)\ +\ (A))\ \&\ \string~(A)))}}
+\DoxyCodeLine{00143\ }
+\DoxyCodeLine{00144\ \textcolor{preprocessor}{\#ifndef\ \_\_attribute\_pure\_\_}}
+\DoxyCodeLine{00145\ \textcolor{preprocessor}{\#\ if\ defined\ \_\_GNUC\_MINOR\_\_\ \&\&\ \_\_GNUC\_\_\ *\ 1000\ +\ \_\_GNUC\_MINOR\_\_\ >=\ 2096}}
+\DoxyCodeLine{00146\ \textcolor{preprocessor}{\#\ \ define\ \_\_attribute\_pure\_\_\ \_\_attribute\_\_\ ((\_\_pure\_\_))}}
+\DoxyCodeLine{00147\ \textcolor{preprocessor}{\#\ else}}
+\DoxyCodeLine{00148\ \textcolor{preprocessor}{\#\ \ define\ \_\_attribute\_pure\_\_}}
+\DoxyCodeLine{00149\ \textcolor{preprocessor}{\#\ endif}}
+\DoxyCodeLine{00150\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00151\ }
+\DoxyCodeLine{00152\ \textcolor{preprocessor}{\#ifdef\ \_\_cplusplus}}
+\DoxyCodeLine{00153\ \textcolor{keyword}{extern}\ \textcolor{stringliteral}{"{}C"{}}\ \{}
+\DoxyCodeLine{00154\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00155\ }
+\DoxyCodeLine{00156\ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{struct__obstack__chunk}{\_obstack\_chunk}}\ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{/*\ Lives\ at\ front\ of\ each\ chunk.\ */}}
+\DoxyCodeLine{00157\ \{}
+\DoxyCodeLine{00158\ \ \ \textcolor{keywordtype}{char}\ *\doxymbox{\hyperlink{struct__obstack__chunk_a642008beabd4d3b0c95c4e56adc94f1f}{limit}};\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{/*\ 1\ past\ end\ of\ this\ chunk\ */}}
+\DoxyCodeLine{00159\ \ \ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{struct__obstack__chunk}{\_obstack\_chunk}}\ *\doxymbox{\hyperlink{struct__obstack__chunk_a420884c5fffef9122fc7f0de93b380e0}{prev}};\ \ \textcolor{comment}{/*\ address\ of\ prior\ chunk\ or\ NULL\ */}}
+\DoxyCodeLine{00160\ \ \ \textcolor{keywordtype}{char}\ \doxymbox{\hyperlink{struct__obstack__chunk_ac02b203c79de8a2d148d0ac69738b4ba}{contents}}[4];\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{/*\ objects\ begin\ here\ */}}
+\DoxyCodeLine{00161\ \};}
+\DoxyCodeLine{00162\ }
+\DoxyCodeLine{00163\ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{structobstack}{obstack}}\ \ \ \ \ \ \ \ \ \ \textcolor{comment}{/*\ control\ current\ object\ in\ current\ chunk\ */}}
+\DoxyCodeLine{00164\ \{}
+\DoxyCodeLine{00165\ \ \ \doxymbox{\hyperlink{obstack_8h_af4af42a5dcd82b003234294b921510a6}{\_CHUNK\_SIZE\_T}}\ \doxymbox{\hyperlink{structobstack_a9c4e5c8769ba0c757e70a6b801f1de1c}{chunk\_size}};\ \ \ \ \ \textcolor{comment}{/*\ preferred\ size\ to\ allocate\ chunks\ in\ */}}
+\DoxyCodeLine{00166\ \ \ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{struct__obstack__chunk}{\_obstack\_chunk}}\ *\doxymbox{\hyperlink{structobstack_ad11260c09c506e85a86d3f2e6f730d3c}{chunk}};\ \textcolor{comment}{/*\ address\ of\ current\ struct\ obstack\_chunk\ */}}
+\DoxyCodeLine{00167\ \ \ \textcolor{keywordtype}{char}\ *\doxymbox{\hyperlink{structobstack_a39dc40bc7eccec4f2810d025a480f260}{object\_base}};\ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{/*\ address\ of\ object\ we\ are\ building\ */}}
+\DoxyCodeLine{00168\ \ \ \textcolor{keywordtype}{char}\ *\doxymbox{\hyperlink{structobstack_a1134d5cfda84e15f946dba23a36a31b0}{next\_free}};\ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{/*\ where\ to\ add\ next\ char\ to\ current\ object\ */}}
+\DoxyCodeLine{00169\ \ \ \textcolor{keywordtype}{char}\ *\doxymbox{\hyperlink{structobstack_adda2258fb1ef558a3cc061e478247528}{chunk\_limit}};\ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{/*\ address\ of\ char\ after\ current\ chunk\ */}}
+\DoxyCodeLine{00170\ \ \ \textcolor{keyword}{union}}
+\DoxyCodeLine{00171\ \ \ \{}
+\DoxyCodeLine{00172\ \ \ \ \ \doxymbox{\hyperlink{obstack_8h_a5ae5405e24cf996d3cf569c098b7bd35}{\_OBSTACK\_SIZE\_T}}\ \doxymbox{\hyperlink{structobstack_af8991030b2235c8cef61d6399156c68a}{i}};}
+\DoxyCodeLine{00173\ \ \ \ \ \textcolor{keywordtype}{void}\ *\doxymbox{\hyperlink{structobstack_a763e4adacf7a391b18e6853e0fda7222}{p}};}
+\DoxyCodeLine{00174\ \ \ \}\ \doxymbox{\hyperlink{structobstack_a3f7c840567685c4edd442c6ecdca64d6}{temp}};\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{/*\ Temporary\ for\ some\ macros.\ \ */}}
+\DoxyCodeLine{00175\ \ \ \doxymbox{\hyperlink{obstack_8h_a5ae5405e24cf996d3cf569c098b7bd35}{\_OBSTACK\_SIZE\_T}}\ \doxymbox{\hyperlink{structobstack_a3ee7353e02a7308f8fb7ee8567799512}{alignment\_mask}};\ \ \textcolor{comment}{/*\ Mask\ of\ alignment\ for\ each\ object.\ */}}
+\DoxyCodeLine{00176\ }
+\DoxyCodeLine{00177\ \ \ \textcolor{comment}{/*\ These\ prototypes\ vary\ based\ on\ 'use\_extra\_arg'.\ \ */}}
+\DoxyCodeLine{00178\ \ \ \textcolor{keyword}{union}}
+\DoxyCodeLine{00179\ \ \ \{}
+\DoxyCodeLine{00180\ \ \ \ \ \textcolor{keywordtype}{void}\ *(*plain)\ (\doxymbox{\hyperlink{stddef_8h_aa9d55e2f20e580b7445617d0d12fff6e}{size\_t}});}
+\DoxyCodeLine{00181\ \ \ \ \ \textcolor{keywordtype}{void}\ *(*extra)\ (\textcolor{keywordtype}{void}\ *,\ \doxymbox{\hyperlink{stddef_8h_aa9d55e2f20e580b7445617d0d12fff6e}{size\_t}});}
+\DoxyCodeLine{00182\ \ \ \}\ \doxymbox{\hyperlink{structobstack_abce9d0dea448eeff259e0224853f258c}{chunkfun}};}
+\DoxyCodeLine{00183\ \ \ \textcolor{keyword}{union}}
+\DoxyCodeLine{00184\ \ \ \{}
+\DoxyCodeLine{00185\ \ \ \ \ void\ (*\doxymbox{\hyperlink{structobstack_a934307d53893a792d28f5fff0fb21a26}{plain}})\ (\textcolor{keywordtype}{void}\ *);}
+\DoxyCodeLine{00186\ \ \ \ \ void\ (*\doxymbox{\hyperlink{structobstack_a16626c7c09c89d89d32b6005568d5af8}{extra}})\ (\textcolor{keywordtype}{void}\ *,\ \textcolor{keywordtype}{void}\ *);}
+\DoxyCodeLine{00187\ \ \ \}\ \doxymbox{\hyperlink{structobstack_af030b1a2d3a72e9c20556754ccf08c5a}{freefun}};}
+\DoxyCodeLine{00188\ }
+\DoxyCodeLine{00189\ \ \ \textcolor{keywordtype}{void}\ *\doxymbox{\hyperlink{structobstack_a704fa8dd8d9289c8b4e10abf42ea4451}{extra\_arg}};\ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{/*\ first\ arg\ for\ chunk\ alloc/dealloc\ funcs\ */}}
+\DoxyCodeLine{00190\ \ \ \textcolor{keywordtype}{unsigned}\ \doxymbox{\hyperlink{structobstack_a55cda74d7c4902e288a16a5ffabf9d90}{use\_extra\_arg}}\ :\ 1;\ \ \ \ \ \textcolor{comment}{/*\ chunk\ alloc/dealloc\ funcs\ take\ extra\ arg\ */}}
+\DoxyCodeLine{00191\ \ \ \textcolor{keywordtype}{unsigned}\ \doxymbox{\hyperlink{structobstack_ad95e854a072cbf8dee2ad33b3815bb52}{maybe\_empty\_object}}\ :\ 1;\ \textcolor{comment}{/*\ There\ is\ a\ possibility\ that\ the\ current}}
+\DoxyCodeLine{00192\ \textcolor{comment}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ chunk\ contains\ a\ zero-\/length\ object.\ \ This}}
+\DoxyCodeLine{00193\ \textcolor{comment}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ prevents\ freeing\ the\ chunk\ if\ we\ allocate}}
+\DoxyCodeLine{00194\ \textcolor{comment}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ a\ bigger\ chunk\ to\ replace\ it.\ */}}
+\DoxyCodeLine{00195\ \ \ \textcolor{keywordtype}{unsigned}\ \doxymbox{\hyperlink{structobstack_a5594d29faa2e5fe4a099eeef480060f5}{alloc\_failed}}\ :\ 1;\ \ \ \ \ \ \textcolor{comment}{/*\ No\ longer\ used,\ as\ we\ now\ call\ the\ failed}}
+\DoxyCodeLine{00196\ \textcolor{comment}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ handler\ on\ error,\ but\ retained\ for\ binary}}
+\DoxyCodeLine{00197\ \textcolor{comment}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ compatibility.\ \ */}}
+\DoxyCodeLine{00198\ \};}
+\DoxyCodeLine{00199\ }
+\DoxyCodeLine{00200\ \textcolor{comment}{/*\ Declare\ the\ external\ functions\ we\ use;\ they\ are\ in\ obstack.c.\ \ */}}
+\DoxyCodeLine{00201\ }
+\DoxyCodeLine{00202\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{obstack_8h_ab09cc95b6d8bb803f57be9ff5deae331}{\_obstack\_newchunk}}\ (\textcolor{keyword}{struct}\ \doxymbox{\hyperlink{structobstack}{obstack}}\ *,\ \doxymbox{\hyperlink{obstack_8h_a5ae5405e24cf996d3cf569c098b7bd35}{\_OBSTACK\_SIZE\_T}});}
+\DoxyCodeLine{00203\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{obstack_8h_ae7b3676d420b1144414b2f7516ae9ece}{\_obstack\_free}}\ (\textcolor{keyword}{struct}\ \doxymbox{\hyperlink{structobstack}{obstack}}\ *,\ \textcolor{keywordtype}{void}\ *);}
+\DoxyCodeLine{00204\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{obstack_8h_a655764312098faf27c2c35bda9cd17ab}{\_obstack\_begin}}\ (\textcolor{keyword}{struct}\ \doxymbox{\hyperlink{structobstack}{obstack}}\ *,}
+\DoxyCodeLine{00205\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{obstack_8h_a5ae5405e24cf996d3cf569c098b7bd35}{\_OBSTACK\_SIZE\_T}},\ \doxymbox{\hyperlink{obstack_8h_a5ae5405e24cf996d3cf569c098b7bd35}{\_OBSTACK\_SIZE\_T}},}
+\DoxyCodeLine{00206\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{void}\ *(*)\ (\textcolor{keywordtype}{size\_t}),\ \textcolor{keywordtype}{void}\ (*)\ (\textcolor{keywordtype}{void}\ *));}
+\DoxyCodeLine{00207\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{obstack_8h_a00702177dae8c2a706f1fed0e7b462ab}{\_obstack\_begin\_1}}\ (\textcolor{keyword}{struct}\ \doxymbox{\hyperlink{structobstack}{obstack}}\ *,}
+\DoxyCodeLine{00208\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{obstack_8h_a5ae5405e24cf996d3cf569c098b7bd35}{\_OBSTACK\_SIZE\_T}},\ \doxymbox{\hyperlink{obstack_8h_a5ae5405e24cf996d3cf569c098b7bd35}{\_OBSTACK\_SIZE\_T}},}
+\DoxyCodeLine{00209\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{void}\ *(*)\ (\textcolor{keywordtype}{void}\ *,\ \textcolor{keywordtype}{size\_t}),}
+\DoxyCodeLine{00210\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{void}\ (*)\ (\textcolor{keywordtype}{void}\ *,\ \textcolor{keywordtype}{void}\ *),\ \textcolor{keywordtype}{void}\ *);}
+\DoxyCodeLine{00211\ \textcolor{keyword}{extern}\ \doxymbox{\hyperlink{obstack_8h_a5ae5405e24cf996d3cf569c098b7bd35}{\_OBSTACK\_SIZE\_T}}\ \doxymbox{\hyperlink{obstack_8h_ab8d072ad560e859c8c55d74df29e20dd}{\_obstack\_memory\_used}}\ (\textcolor{keyword}{struct}\ \doxymbox{\hyperlink{structobstack}{obstack}}\ *)}
+\DoxyCodeLine{00212\ \ \ \doxymbox{\hyperlink{obstack_8h_ac21bef1fe443764943251a0b5e8a6745}{\_\_attribute\_pure\_\_}};}
+\DoxyCodeLine{00213\ }
+\DoxyCodeLine{00214\ }
+\DoxyCodeLine{00215\ \textcolor{comment}{/*\ Error\ handler\ called\ when\ 'obstack\_chunk\_alloc'\ failed\ to\ allocate}}
+\DoxyCodeLine{00216\ \textcolor{comment}{\ \ \ more\ memory.\ \ This\ can\ be\ set\ to\ a\ user\ defined\ function\ which}}
+\DoxyCodeLine{00217\ \textcolor{comment}{\ \ \ should\ either\ abort\ gracefully\ or\ use\ longjump\ -\/\ but\ shouldn't}}
+\DoxyCodeLine{00218\ \textcolor{comment}{\ \ \ return.\ \ The\ default\ action\ is\ to\ print\ a\ message\ and\ abort.\ \ */}}
+\DoxyCodeLine{00219\ \textcolor{keyword}{extern}\ void\ (*\doxymbox{\hyperlink{obstack_8h_aabd47037ed93e99f730d4c8597652230}{obstack\_alloc\_failed\_handler}})\ (void);}
+\DoxyCodeLine{00220\ }
+\DoxyCodeLine{00221\ \textcolor{comment}{/*\ Exit\ value\ used\ when\ 'print\_and\_abort'\ is\ used.\ \ */}}
+\DoxyCodeLine{00222\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{obstack_8h_a076a305f5edb11270833acd0e47f7bd8}{obstack\_exit\_failure}};}
+\DoxyCodeLine{00223\ }
+\DoxyCodeLine{00224\ \textcolor{comment}{/*\ Pointer\ to\ beginning\ of\ object\ being\ allocated\ or\ to\ be\ allocated\ next.}}
+\DoxyCodeLine{00225\ \textcolor{comment}{\ \ \ Note\ that\ this\ might\ not\ be\ the\ final\ address\ of\ the\ object}}
+\DoxyCodeLine{00226\ \textcolor{comment}{\ \ \ because\ a\ new\ chunk\ might\ be\ needed\ to\ hold\ the\ final\ size.\ \ */}}
+\DoxyCodeLine{00227\ }
+\DoxyCodeLine{00228\ \textcolor{preprocessor}{\#define\ obstack\_base(h)\ ((void\ *)\ (h)-\/>object\_base)}}
+\DoxyCodeLine{00229\ }
+\DoxyCodeLine{00230\ \textcolor{comment}{/*\ Size\ for\ allocating\ ordinary\ chunks.\ \ */}}
+\DoxyCodeLine{00231\ }
+\DoxyCodeLine{00232\ \textcolor{preprocessor}{\#define\ obstack\_chunk\_size(h)\ ((h)-\/>chunk\_size)}}
+\DoxyCodeLine{00233\ }
+\DoxyCodeLine{00234\ \textcolor{comment}{/*\ Pointer\ to\ next\ byte\ not\ yet\ allocated\ in\ current\ chunk.\ \ */}}
+\DoxyCodeLine{00235\ }
+\DoxyCodeLine{00236\ \textcolor{preprocessor}{\#define\ obstack\_next\_free(h)\ ((void\ *)\ (h)-\/>next\_free)}}
+\DoxyCodeLine{00237\ }
+\DoxyCodeLine{00238\ \textcolor{comment}{/*\ Mask\ specifying\ low\ bits\ that\ should\ be\ clear\ in\ address\ of\ an\ object.\ \ */}}
+\DoxyCodeLine{00239\ }
+\DoxyCodeLine{00240\ \textcolor{preprocessor}{\#define\ obstack\_alignment\_mask(h)\ ((h)-\/>alignment\_mask)}}
+\DoxyCodeLine{00241\ }
+\DoxyCodeLine{00242\ \textcolor{comment}{/*\ To\ prevent\ prototype\ warnings\ provide\ complete\ argument\ list.\ \ */}}
+\DoxyCodeLine{00243\ \textcolor{preprocessor}{\#define\ obstack\_init(h)\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00244\ \textcolor{preprocessor}{\ \ \_obstack\_begin\ ((h),\ 0,\ 0,\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00245\ \textcolor{preprocessor}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \_OBSTACK\_CAST\ (void\ *(*)\ (size\_t),\ obstack\_chunk\_alloc),\ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00246\ \textcolor{preprocessor}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \_OBSTACK\_CAST\ (void\ (*)\ (void\ *),\ obstack\_chunk\_free))}}
+\DoxyCodeLine{00247\ }
+\DoxyCodeLine{00248\ \textcolor{preprocessor}{\#define\ obstack\_begin(h,\ size)\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00249\ \textcolor{preprocessor}{\ \ \_obstack\_begin\ ((h),\ (size),\ 0,\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00250\ \textcolor{preprocessor}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \_OBSTACK\_CAST\ (void\ *(*)\ (size\_t),\ obstack\_chunk\_alloc),\ \(\backslash\)}}
+\DoxyCodeLine{00251\ \textcolor{preprocessor}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \_OBSTACK\_CAST\ (void\ (*)\ (void\ *),\ obstack\_chunk\_free))}}
+\DoxyCodeLine{00252\ }
+\DoxyCodeLine{00253\ \textcolor{preprocessor}{\#define\ obstack\_specify\_allocation(h,\ size,\ alignment,\ chunkfun,\ freefun)\ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00254\ \textcolor{preprocessor}{\ \ \_obstack\_begin\ ((h),\ (size),\ (alignment),\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00255\ \textcolor{preprocessor}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \_OBSTACK\_CAST\ (void\ *(*)\ (size\_t),\ chunkfun),\ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00256\ \textcolor{preprocessor}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \_OBSTACK\_CAST\ (void\ (*)\ (void\ *),\ freefun))}}
+\DoxyCodeLine{00257\ }
+\DoxyCodeLine{00258\ \textcolor{preprocessor}{\#define\ obstack\_specify\_allocation\_with\_arg(h,\ size,\ alignment,\ chunkfun,\ freefun,\ arg)\ \(\backslash\)}}
+\DoxyCodeLine{00259\ \textcolor{preprocessor}{\ \ \_obstack\_begin\_1\ ((h),\ (size),\ (alignment),\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00260\ \textcolor{preprocessor}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \_OBSTACK\_CAST\ (void\ *(*)\ (void\ *,\ size\_t),\ chunkfun),\ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00261\ \textcolor{preprocessor}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \_OBSTACK\_CAST\ (void\ (*)\ (void\ *,\ void\ *),\ freefun),\ arg)}}
+\DoxyCodeLine{00262\ }
+\DoxyCodeLine{00263\ \textcolor{preprocessor}{\#define\ obstack\_chunkfun(h,\ newchunkfun)\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00264\ \textcolor{preprocessor}{\ \ ((void)\ ((h)-\/>chunkfun.extra\ =\ (void\ *(*)\ (void\ *,\ size\_t))\ (newchunkfun)))}}
+\DoxyCodeLine{00265\ }
+\DoxyCodeLine{00266\ \textcolor{preprocessor}{\#define\ obstack\_freefun(h,\ newfreefun)\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00267\ \textcolor{preprocessor}{\ \ ((void)\ ((h)-\/>freefun.extra\ =\ (void\ *(*)\ (void\ *,\ void\ *))\ (newfreefun)))}}
+\DoxyCodeLine{00268\ }
+\DoxyCodeLine{00269\ \textcolor{preprocessor}{\#define\ obstack\_1grow\_fast(h,\ achar)\ ((void)\ (*((h)-\/>next\_free)++\ =\ (achar)))}}
+\DoxyCodeLine{00270\ }
+\DoxyCodeLine{00271\ \textcolor{preprocessor}{\#define\ obstack\_blank\_fast(h,\ n)\ ((void)\ ((h)-\/>next\_free\ +=\ (n)))}}
+\DoxyCodeLine{00272\ }
+\DoxyCodeLine{00273\ \textcolor{preprocessor}{\#define\ obstack\_memory\_used(h)\ \_obstack\_memory\_used\ (h)}}
+\DoxyCodeLine{00274\ }
+\DoxyCodeLine{00275\ \textcolor{preprocessor}{\#if\ defined\ \_\_GNUC\_\_}}
+\DoxyCodeLine{00276\ \textcolor{preprocessor}{\#\ if\ !defined\ \_\_GNUC\_MINOR\_\_\ ||\ \_\_GNUC\_\_\ *\ 1000\ +\ \_\_GNUC\_MINOR\_\_\ <\ 2008}}
+\DoxyCodeLine{00277\ \textcolor{preprocessor}{\#\ \ define\ \_\_extension\_\_}}
+\DoxyCodeLine{00278\ \textcolor{preprocessor}{\#\ endif}}
+\DoxyCodeLine{00279\ }
+\DoxyCodeLine{00280\ \textcolor{comment}{/*\ For\ GNU\ C,\ if\ not\ -\/traditional,}}
+\DoxyCodeLine{00281\ \textcolor{comment}{\ \ \ we\ can\ define\ these\ macros\ to\ compute\ all\ args\ only\ once}}
+\DoxyCodeLine{00282\ \textcolor{comment}{\ \ \ without\ using\ a\ global\ variable.}}
+\DoxyCodeLine{00283\ \textcolor{comment}{\ \ \ Also,\ we\ can\ avoid\ using\ the\ 'temp'\ slot,\ to\ make\ faster\ code.\ \ */}}
+\DoxyCodeLine{00284\ }
+\DoxyCodeLine{00285\ \textcolor{preprocessor}{\#\ define\ obstack\_object\_size(OBSTACK)\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00286\ \textcolor{preprocessor}{\ \ \_\_extension\_\_\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00287\ \textcolor{preprocessor}{\ \ \ \ (\{\ struct\ obstack\ const\ *\_\_o\ =\ (OBSTACK);\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00288\ \textcolor{preprocessor}{\ \ \ \ \ \ \ (\_OBSTACK\_SIZE\_T)\ (\_\_o-\/>next\_free\ -\/\ \_\_o-\/>object\_base);\ \})}}
+\DoxyCodeLine{00289\ }
+\DoxyCodeLine{00290\ \textcolor{comment}{/*\ The\ local\ variable\ is\ named\ \_\_o1\ to\ avoid\ a\ shadowed\ variable}}
+\DoxyCodeLine{00291\ \textcolor{comment}{\ \ \ warning\ when\ invoked\ from\ other\ obstack\ macros.\ \ */}}
+\DoxyCodeLine{00292\ \textcolor{preprocessor}{\#\ define\ obstack\_room(OBSTACK)\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00293\ \textcolor{preprocessor}{\ \ \_\_extension\_\_\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00294\ \textcolor{preprocessor}{\ \ \ \ (\{\ struct\ obstack\ const\ *\_\_o1\ =\ (OBSTACK);\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00295\ \textcolor{preprocessor}{\ \ \ \ \ \ \ (\_OBSTACK\_SIZE\_T)\ (\_\_o1-\/>chunk\_limit\ -\/\ \_\_o1-\/>next\_free);\ \})}}
+\DoxyCodeLine{00296\ }
+\DoxyCodeLine{00297\ \textcolor{preprocessor}{\#\ define\ obstack\_make\_room(OBSTACK,\ length)\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00298\ \textcolor{preprocessor}{\ \ \_\_extension\_\_\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00299\ \textcolor{preprocessor}{\ \ \ \ (\{\ struct\ obstack\ *\_\_o\ =\ (OBSTACK);\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00300\ \textcolor{preprocessor}{\ \ \ \ \ \ \ \_OBSTACK\_SIZE\_T\ \_\_len\ =\ (length);\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00301\ \textcolor{preprocessor}{\ \ \ \ \ \ \ if\ (obstack\_room\ (\_\_o)\ <\ \_\_len)\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00302\ \textcolor{preprocessor}{\ \ \ \ \ \ \ \ \ \_obstack\_newchunk\ (\_\_o,\ \_\_len);\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00303\ \textcolor{preprocessor}{\ \ \ \ \ \ \ (void)\ 0;\ \})}}
+\DoxyCodeLine{00304\ }
+\DoxyCodeLine{00305\ \textcolor{preprocessor}{\#\ define\ obstack\_empty\_p(OBSTACK)\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00306\ \textcolor{preprocessor}{\ \ \_\_extension\_\_\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00307\ \textcolor{preprocessor}{\ \ \ \ (\{\ struct\ obstack\ const\ *\_\_o\ =\ (OBSTACK);\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00308\ \textcolor{preprocessor}{\ \ \ \ \ \ \ (\_\_o-\/>chunk-\/>prev\ ==\ 0\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00309\ \textcolor{preprocessor}{\ \ \ \ \ \ \ \ \&\&\ \_\_o-\/>next\_free\ ==\ \_\_PTR\_ALIGN\ ((char\ *)\ \_\_o-\/>chunk,\ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00310\ \textcolor{preprocessor}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \_\_o-\/>chunk-\/>contents,\ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00311\ \textcolor{preprocessor}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \_\_o-\/>alignment\_mask));\ \})}}
+\DoxyCodeLine{00312\ }
+\DoxyCodeLine{00313\ \textcolor{preprocessor}{\#\ define\ obstack\_grow(OBSTACK,\ where,\ length)\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00314\ \textcolor{preprocessor}{\ \ \_\_extension\_\_\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00315\ \textcolor{preprocessor}{\ \ \ \ (\{\ struct\ obstack\ *\_\_o\ =\ (OBSTACK);\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00316\ \textcolor{preprocessor}{\ \ \ \ \ \ \ \_OBSTACK\_SIZE\_T\ \_\_len\ =\ (length);\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00317\ \textcolor{preprocessor}{\ \ \ \ \ \ \ if\ (obstack\_room\ (\_\_o)\ <\ \_\_len)\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00318\ \textcolor{preprocessor}{\ \ \ \ \ \ \ \ \ \_obstack\_newchunk\ (\_\_o,\ \_\_len);\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00319\ \textcolor{preprocessor}{\ \ \ \ \ \ \ memcpy\ (\_\_o-\/>next\_free,\ where,\ \_\_len);\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00320\ \textcolor{preprocessor}{\ \ \ \ \ \ \ \_\_o-\/>next\_free\ +=\ \_\_len;\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00321\ \textcolor{preprocessor}{\ \ \ \ \ \ \ (void)\ 0;\ \})}}
+\DoxyCodeLine{00322\ }
+\DoxyCodeLine{00323\ \textcolor{preprocessor}{\#\ define\ obstack\_grow0(OBSTACK,\ where,\ length)\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00324\ \textcolor{preprocessor}{\ \ \_\_extension\_\_\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00325\ \textcolor{preprocessor}{\ \ \ \ (\{\ struct\ obstack\ *\_\_o\ =\ (OBSTACK);\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00326\ \textcolor{preprocessor}{\ \ \ \ \ \ \ \_OBSTACK\_SIZE\_T\ \_\_len\ =\ (length);\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00327\ \textcolor{preprocessor}{\ \ \ \ \ \ \ if\ (obstack\_room\ (\_\_o)\ <\ \_\_len\ +\ 1)\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00328\ \textcolor{preprocessor}{\ \ \ \ \ \ \ \ \ \_obstack\_newchunk\ (\_\_o,\ \_\_len\ +\ 1);\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00329\ \textcolor{preprocessor}{\ \ \ \ \ \ \ memcpy\ (\_\_o-\/>next\_free,\ where,\ \_\_len);\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00330\ \textcolor{preprocessor}{\ \ \ \ \ \ \ \_\_o-\/>next\_free\ +=\ \_\_len;\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00331\ \textcolor{preprocessor}{\ \ \ \ \ \ \ *(\_\_o-\/>next\_free)++\ =\ 0;\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00332\ \textcolor{preprocessor}{\ \ \ \ \ \ \ (void)\ 0;\ \})}}
+\DoxyCodeLine{00333\ }
+\DoxyCodeLine{00334\ \textcolor{preprocessor}{\#\ define\ obstack\_1grow(OBSTACK,\ datum)\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00335\ \textcolor{preprocessor}{\ \ \_\_extension\_\_\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00336\ \textcolor{preprocessor}{\ \ \ \ (\{\ struct\ obstack\ *\_\_o\ =\ (OBSTACK);\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00337\ \textcolor{preprocessor}{\ \ \ \ \ \ \ if\ (obstack\_room\ (\_\_o)\ <\ 1)\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00338\ \textcolor{preprocessor}{\ \ \ \ \ \ \ \ \ \_obstack\_newchunk\ (\_\_o,\ 1);\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00339\ \textcolor{preprocessor}{\ \ \ \ \ \ \ obstack\_1grow\_fast\ (\_\_o,\ datum);\ \})}}
+\DoxyCodeLine{00340\ }
+\DoxyCodeLine{00341\ \textcolor{comment}{/*\ These\ assume\ that\ the\ obstack\ alignment\ is\ good\ enough\ for\ pointers}}
+\DoxyCodeLine{00342\ \textcolor{comment}{\ \ \ or\ ints,\ and\ that\ the\ data\ added\ so\ far\ to\ the\ current\ object}}
+\DoxyCodeLine{00343\ \textcolor{comment}{\ \ \ shares\ that\ much\ alignment.\ \ */}}
+\DoxyCodeLine{00344\ }
+\DoxyCodeLine{00345\ \textcolor{preprocessor}{\#\ define\ obstack\_ptr\_grow(OBSTACK,\ datum)\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00346\ \textcolor{preprocessor}{\ \ \_\_extension\_\_\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00347\ \textcolor{preprocessor}{\ \ \ \ (\{\ struct\ obstack\ *\_\_o\ =\ (OBSTACK);\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00348\ \textcolor{preprocessor}{\ \ \ \ \ \ \ if\ (obstack\_room\ (\_\_o)\ <\ sizeof\ (void\ *))\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00349\ \textcolor{preprocessor}{\ \ \ \ \ \ \ \ \ \_obstack\_newchunk\ (\_\_o,\ sizeof\ (void\ *));\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00350\ \textcolor{preprocessor}{\ \ \ \ \ \ \ obstack\_ptr\_grow\_fast\ (\_\_o,\ datum);\ \})}}
+\DoxyCodeLine{00351\ }
+\DoxyCodeLine{00352\ \textcolor{preprocessor}{\#\ define\ obstack\_int\_grow(OBSTACK,\ datum)\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00353\ \textcolor{preprocessor}{\ \ \_\_extension\_\_\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00354\ \textcolor{preprocessor}{\ \ \ \ (\{\ struct\ obstack\ *\_\_o\ =\ (OBSTACK);\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00355\ \textcolor{preprocessor}{\ \ \ \ \ \ \ if\ (obstack\_room\ (\_\_o)\ <\ sizeof\ (int))\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00356\ \textcolor{preprocessor}{\ \ \ \ \ \ \ \ \ \_obstack\_newchunk\ (\_\_o,\ sizeof\ (int));\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00357\ \textcolor{preprocessor}{\ \ \ \ \ \ \ obstack\_int\_grow\_fast\ (\_\_o,\ datum);\ \})}}
+\DoxyCodeLine{00358\ }
+\DoxyCodeLine{00359\ \textcolor{preprocessor}{\#\ define\ obstack\_ptr\_grow\_fast(OBSTACK,\ aptr)\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00360\ \textcolor{preprocessor}{\ \ \_\_extension\_\_\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00361\ \textcolor{preprocessor}{\ \ \ \ (\{\ struct\ obstack\ *\_\_o1\ =\ (OBSTACK);\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00362\ \textcolor{preprocessor}{\ \ \ \ \ \ \ void\ *\_\_p1\ =\ \_\_o1-\/>next\_free;\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00363\ \textcolor{preprocessor}{\ \ \ \ \ \ \ *(const\ void\ **)\ \_\_p1\ =\ (aptr);\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00364\ \textcolor{preprocessor}{\ \ \ \ \ \ \ \_\_o1-\/>next\_free\ +=\ sizeof\ (const\ void\ *);\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00365\ \textcolor{preprocessor}{\ \ \ \ \ \ \ (void)\ 0;\ \})}}
+\DoxyCodeLine{00366\ }
+\DoxyCodeLine{00367\ \textcolor{preprocessor}{\#\ define\ obstack\_int\_grow\_fast(OBSTACK,\ aint)\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00368\ \textcolor{preprocessor}{\ \ \_\_extension\_\_\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00369\ \textcolor{preprocessor}{\ \ \ \ (\{\ struct\ obstack\ *\_\_o1\ =\ (OBSTACK);\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00370\ \textcolor{preprocessor}{\ \ \ \ \ \ \ void\ *\_\_p1\ =\ \_\_o1-\/>next\_free;\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00371\ \textcolor{preprocessor}{\ \ \ \ \ \ \ *(int\ *)\ \_\_p1\ =\ (aint);\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00372\ \textcolor{preprocessor}{\ \ \ \ \ \ \ \_\_o1-\/>next\_free\ +=\ sizeof\ (int);\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00373\ \textcolor{preprocessor}{\ \ \ \ \ \ \ (void)\ 0;\ \})}}
+\DoxyCodeLine{00374\ }
+\DoxyCodeLine{00375\ \textcolor{preprocessor}{\#\ define\ obstack\_blank(OBSTACK,\ length)\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00376\ \textcolor{preprocessor}{\ \ \_\_extension\_\_\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00377\ \textcolor{preprocessor}{\ \ \ \ (\{\ struct\ obstack\ *\_\_o\ =\ (OBSTACK);\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00378\ \textcolor{preprocessor}{\ \ \ \ \ \ \ \_OBSTACK\_SIZE\_T\ \_\_len\ =\ (length);\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00379\ \textcolor{preprocessor}{\ \ \ \ \ \ \ if\ (obstack\_room\ (\_\_o)\ <\ \_\_len)\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00380\ \textcolor{preprocessor}{\ \ \ \ \ \ \ \ \ \_obstack\_newchunk\ (\_\_o,\ \_\_len);\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00381\ \textcolor{preprocessor}{\ \ \ \ \ \ \ obstack\_blank\_fast\ (\_\_o,\ \_\_len);\ \})}}
+\DoxyCodeLine{00382\ }
+\DoxyCodeLine{00383\ \textcolor{preprocessor}{\#\ define\ obstack\_alloc(OBSTACK,\ length)\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00384\ \textcolor{preprocessor}{\ \ \_\_extension\_\_\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00385\ \textcolor{preprocessor}{\ \ \ \ (\{\ struct\ obstack\ *\_\_h\ =\ (OBSTACK);\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00386\ \textcolor{preprocessor}{\ \ \ \ \ \ \ obstack\_blank\ (\_\_h,\ (length));\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00387\ \textcolor{preprocessor}{\ \ \ \ \ \ \ obstack\_finish\ (\_\_h);\ \})}}
+\DoxyCodeLine{00388\ }
+\DoxyCodeLine{00389\ \textcolor{preprocessor}{\#\ define\ obstack\_copy(OBSTACK,\ where,\ length)\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00390\ \textcolor{preprocessor}{\ \ \_\_extension\_\_\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00391\ \textcolor{preprocessor}{\ \ \ \ (\{\ struct\ obstack\ *\_\_h\ =\ (OBSTACK);\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00392\ \textcolor{preprocessor}{\ \ \ \ \ \ \ obstack\_grow\ (\_\_h,\ (where),\ (length));\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00393\ \textcolor{preprocessor}{\ \ \ \ \ \ \ obstack\_finish\ (\_\_h);\ \})}}
+\DoxyCodeLine{00394\ }
+\DoxyCodeLine{00395\ \textcolor{preprocessor}{\#\ define\ obstack\_copy0(OBSTACK,\ where,\ length)\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00396\ \textcolor{preprocessor}{\ \ \_\_extension\_\_\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00397\ \textcolor{preprocessor}{\ \ \ \ (\{\ struct\ obstack\ *\_\_h\ =\ (OBSTACK);\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00398\ \textcolor{preprocessor}{\ \ \ \ \ \ \ obstack\_grow0\ (\_\_h,\ (where),\ (length));\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00399\ \textcolor{preprocessor}{\ \ \ \ \ \ \ obstack\_finish\ (\_\_h);\ \})}}
+\DoxyCodeLine{00400\ }
+\DoxyCodeLine{00401\ \textcolor{comment}{/*\ The\ local\ variable\ is\ named\ \_\_o1\ to\ avoid\ a\ shadowed\ variable}}
+\DoxyCodeLine{00402\ \textcolor{comment}{\ \ \ warning\ when\ invoked\ from\ other\ obstack\ macros,\ typically\ obstack\_free.\ \ */}}
+\DoxyCodeLine{00403\ \textcolor{preprocessor}{\#\ define\ obstack\_finish(OBSTACK)\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00404\ \textcolor{preprocessor}{\ \ \_\_extension\_\_\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00405\ \textcolor{preprocessor}{\ \ \ \ (\{\ struct\ obstack\ *\_\_o1\ =\ (OBSTACK);\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00406\ \textcolor{preprocessor}{\ \ \ \ \ \ \ void\ *\_\_value\ =\ (void\ *)\ \_\_o1-\/>object\_base;\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00407\ \textcolor{preprocessor}{\ \ \ \ \ \ \ if\ (\_\_o1-\/>next\_free\ ==\ \_\_value)\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00408\ \textcolor{preprocessor}{\ \ \ \ \ \ \ \ \ \_\_o1-\/>maybe\_empty\_object\ =\ 1;\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00409\ \textcolor{preprocessor}{\ \ \ \ \ \ \ \_\_o1-\/>next\_free\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00410\ \textcolor{preprocessor}{\ \ \ \ \ \ \ \ \ =\ \_\_PTR\_ALIGN\ (\_\_o1-\/>object\_base,\ \_\_o1-\/>next\_free,\ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00411\ \textcolor{preprocessor}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \_\_o1-\/>alignment\_mask);\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00412\ \textcolor{preprocessor}{\ \ \ \ \ \ \ if\ ((size\_t)\ (\_\_o1-\/>next\_free\ -\/\ (char\ *)\ \_\_o1-\/>chunk)\ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00413\ \textcolor{preprocessor}{\ \ \ \ \ \ \ \ \ \ \ >\ (size\_t)\ (\_\_o1-\/>chunk\_limit\ -\/\ (char\ *)\ \_\_o1-\/>chunk))\ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00414\ \textcolor{preprocessor}{\ \ \ \ \ \ \ \ \ \_\_o1-\/>next\_free\ =\ \_\_o1-\/>chunk\_limit;\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00415\ \textcolor{preprocessor}{\ \ \ \ \ \ \ \_\_o1-\/>object\_base\ =\ \_\_o1-\/>next\_free;\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00416\ \textcolor{preprocessor}{\ \ \ \ \ \ \ \_\_value;\ \})}}
+\DoxyCodeLine{00417\ }
+\DoxyCodeLine{00418\ \textcolor{preprocessor}{\#\ define\ obstack\_free(OBSTACK,\ OBJ)\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00419\ \textcolor{preprocessor}{\ \ \_\_extension\_\_\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00420\ \textcolor{preprocessor}{\ \ \ \ (\{\ struct\ obstack\ *\_\_o\ =\ (OBSTACK);\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00421\ \textcolor{preprocessor}{\ \ \ \ \ \ \ void\ *\_\_obj\ =\ (void\ *)\ (OBJ);\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00422\ \textcolor{preprocessor}{\ \ \ \ \ \ \ if\ (\_\_obj\ >\ (void\ *)\ \_\_o-\/>chunk\ \&\&\ \_\_obj\ <\ (void\ *)\ \_\_o-\/>chunk\_limit)\ \ \(\backslash\)}}
+\DoxyCodeLine{00423\ \textcolor{preprocessor}{\ \ \ \ \ \ \ \ \ \_\_o-\/>next\_free\ =\ \_\_o-\/>object\_base\ =\ (char\ *)\ \_\_obj;\ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00424\ \textcolor{preprocessor}{\ \ \ \ \ \ \ else\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00425\ \textcolor{preprocessor}{\ \ \ \ \ \ \ \ \ \_obstack\_free\ (\_\_o,\ \_\_obj);\ \})}}
+\DoxyCodeLine{00426\ }
+\DoxyCodeLine{00427\ \textcolor{preprocessor}{\#else\ }\textcolor{comment}{/*\ not\ \_\_GNUC\_\_\ */}\textcolor{preprocessor}{}}
+\DoxyCodeLine{00428\ }
+\DoxyCodeLine{00429\ \textcolor{preprocessor}{\#\ define\ obstack\_object\_size(h)\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00430\ \textcolor{preprocessor}{\ \ ((\_OBSTACK\_SIZE\_T)\ ((h)-\/>next\_free\ -\/\ (h)-\/>object\_base))}}
+\DoxyCodeLine{00431\ }
+\DoxyCodeLine{00432\ \textcolor{preprocessor}{\#\ define\ obstack\_room(h)\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00433\ \textcolor{preprocessor}{\ \ ((\_OBSTACK\_SIZE\_T)\ ((h)-\/>chunk\_limit\ -\/\ (h)-\/>next\_free))}}
+\DoxyCodeLine{00434\ }
+\DoxyCodeLine{00435\ \textcolor{preprocessor}{\#\ define\ obstack\_empty\_p(h)\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00436\ \textcolor{preprocessor}{\ \ ((h)-\/>chunk-\/>prev\ ==\ 0\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00437\ \textcolor{preprocessor}{\ \ \ \&\&\ (h)-\/>next\_free\ ==\ \_\_PTR\_ALIGN\ ((char\ *)\ (h)-\/>chunk,\ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00438\ \textcolor{preprocessor}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ (h)-\/>chunk-\/>contents,\ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00439\ \textcolor{preprocessor}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ (h)-\/>alignment\_mask))}}
+\DoxyCodeLine{00440\ }
+\DoxyCodeLine{00441\ \textcolor{comment}{/*\ Note\ that\ the\ call\ to\ \_obstack\_newchunk\ is\ enclosed\ in\ (...,\ 0)}}
+\DoxyCodeLine{00442\ \textcolor{comment}{\ \ \ so\ that\ we\ can\ avoid\ having\ void\ expressions}}
+\DoxyCodeLine{00443\ \textcolor{comment}{\ \ \ in\ the\ arms\ of\ the\ conditional\ expression.}}
+\DoxyCodeLine{00444\ \textcolor{comment}{\ \ \ Casting\ the\ third\ operand\ to\ void\ was\ tried\ before,}}
+\DoxyCodeLine{00445\ \textcolor{comment}{\ \ \ but\ some\ compilers\ won't\ accept\ it.\ \ */}}
+\DoxyCodeLine{00446\ }
+\DoxyCodeLine{00447\ \textcolor{preprocessor}{\#\ define\ obstack\_make\_room(h,\ length)\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00448\ \textcolor{preprocessor}{\ \ ((h)-\/>temp.i\ =\ (length),\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00449\ \textcolor{preprocessor}{\ \ \ ((obstack\_room\ (h)\ <\ (h)-\/>temp.i)\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00450\ \textcolor{preprocessor}{\ \ \ \ ?\ (\_obstack\_newchunk\ (h,\ (h)-\/>temp.i),\ 0)\ :\ 0),\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00451\ \textcolor{preprocessor}{\ \ \ (void)\ 0)}}
+\DoxyCodeLine{00452\ }
+\DoxyCodeLine{00453\ \textcolor{preprocessor}{\#\ define\ obstack\_grow(h,\ where,\ length)\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00454\ \textcolor{preprocessor}{\ \ ((h)-\/>temp.i\ =\ (length),\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00455\ \textcolor{preprocessor}{\ \ \ ((obstack\_room\ (h)\ <\ (h)-\/>temp.i)\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00456\ \textcolor{preprocessor}{\ \ \ ?\ (\_obstack\_newchunk\ ((h),\ (h)-\/>temp.i),\ 0)\ :\ 0),\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00457\ \textcolor{preprocessor}{\ \ \ memcpy\ ((h)-\/>next\_free,\ where,\ (h)-\/>temp.i),\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00458\ \textcolor{preprocessor}{\ \ \ (h)-\/>next\_free\ +=\ (h)-\/>temp.i,\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00459\ \textcolor{preprocessor}{\ \ \ (void)\ 0)}}
+\DoxyCodeLine{00460\ }
+\DoxyCodeLine{00461\ \textcolor{preprocessor}{\#\ define\ obstack\_grow0(h,\ where,\ length)\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00462\ \textcolor{preprocessor}{\ \ ((h)-\/>temp.i\ =\ (length),\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00463\ \textcolor{preprocessor}{\ \ \ ((obstack\_room\ (h)\ <\ (h)-\/>temp.i\ +\ 1)\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00464\ \textcolor{preprocessor}{\ \ \ ?\ (\_obstack\_newchunk\ ((h),\ (h)-\/>temp.i\ +\ 1),\ 0)\ :\ 0),\ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00465\ \textcolor{preprocessor}{\ \ \ memcpy\ ((h)-\/>next\_free,\ where,\ (h)-\/>temp.i),\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00466\ \textcolor{preprocessor}{\ \ \ (h)-\/>next\_free\ +=\ (h)-\/>temp.i,\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00467\ \textcolor{preprocessor}{\ \ \ *((h)-\/>next\_free)++\ =\ 0,\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00468\ \textcolor{preprocessor}{\ \ \ (void)\ 0)}}
+\DoxyCodeLine{00469\ }
+\DoxyCodeLine{00470\ \textcolor{preprocessor}{\#\ define\ obstack\_1grow(h,\ datum)\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00471\ \textcolor{preprocessor}{\ \ (((obstack\_room\ (h)\ <\ 1)\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00472\ \textcolor{preprocessor}{\ \ \ \ ?\ (\_obstack\_newchunk\ ((h),\ 1),\ 0)\ :\ 0),\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00473\ \textcolor{preprocessor}{\ \ \ obstack\_1grow\_fast\ (h,\ datum))}}
+\DoxyCodeLine{00474\ }
+\DoxyCodeLine{00475\ \textcolor{preprocessor}{\#\ define\ obstack\_ptr\_grow(h,\ datum)\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00476\ \textcolor{preprocessor}{\ \ (((obstack\_room\ (h)\ <\ sizeof\ (char\ *))\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00477\ \textcolor{preprocessor}{\ \ \ \ ?\ (\_obstack\_newchunk\ ((h),\ sizeof\ (char\ *)),\ 0)\ :\ 0),\ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00478\ \textcolor{preprocessor}{\ \ \ obstack\_ptr\_grow\_fast\ (h,\ datum))}}
+\DoxyCodeLine{00479\ }
+\DoxyCodeLine{00480\ \textcolor{preprocessor}{\#\ define\ obstack\_int\_grow(h,\ datum)\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00481\ \textcolor{preprocessor}{\ \ (((obstack\_room\ (h)\ <\ sizeof\ (int))\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00482\ \textcolor{preprocessor}{\ \ \ \ ?\ (\_obstack\_newchunk\ ((h),\ sizeof\ (int)),\ 0)\ :\ 0),\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00483\ \textcolor{preprocessor}{\ \ \ obstack\_int\_grow\_fast\ (h,\ datum))}}
+\DoxyCodeLine{00484\ }
+\DoxyCodeLine{00485\ \textcolor{preprocessor}{\#\ define\ obstack\_ptr\_grow\_fast(h,\ aptr)\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00486\ \textcolor{preprocessor}{\ \ (((const\ void\ **)\ ((h)-\/>next\_free\ +=\ sizeof\ (void\ *)))[-\/1]\ =\ (aptr),\ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00487\ \textcolor{preprocessor}{\ \ \ (void)\ 0)}}
+\DoxyCodeLine{00488\ }
+\DoxyCodeLine{00489\ \textcolor{preprocessor}{\#\ define\ obstack\_int\_grow\_fast(h,\ aint)\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00490\ \textcolor{preprocessor}{\ \ (((int\ *)\ ((h)-\/>next\_free\ +=\ sizeof\ (int)))[-\/1]\ =\ (aint),\ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00491\ \textcolor{preprocessor}{\ \ \ (void)\ 0)}}
+\DoxyCodeLine{00492\ }
+\DoxyCodeLine{00493\ \textcolor{preprocessor}{\#\ define\ obstack\_blank(h,\ length)\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00494\ \textcolor{preprocessor}{\ \ ((h)-\/>temp.i\ =\ (length),\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00495\ \textcolor{preprocessor}{\ \ \ ((obstack\_room\ (h)\ <\ (h)-\/>temp.i)\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00496\ \textcolor{preprocessor}{\ \ \ ?\ (\_obstack\_newchunk\ ((h),\ (h)-\/>temp.i),\ 0)\ :\ 0),\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00497\ \textcolor{preprocessor}{\ \ \ obstack\_blank\_fast\ (h,\ (h)-\/>temp.i))}}
+\DoxyCodeLine{00498\ }
+\DoxyCodeLine{00499\ \textcolor{preprocessor}{\#\ define\ obstack\_alloc(h,\ length)\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00500\ \textcolor{preprocessor}{\ \ (obstack\_blank\ ((h),\ (length)),\ obstack\_finish\ ((h)))}}
+\DoxyCodeLine{00501\ }
+\DoxyCodeLine{00502\ \textcolor{preprocessor}{\#\ define\ obstack\_copy(h,\ where,\ length)\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00503\ \textcolor{preprocessor}{\ \ (obstack\_grow\ ((h),\ (where),\ (length)),\ obstack\_finish\ ((h)))}}
+\DoxyCodeLine{00504\ }
+\DoxyCodeLine{00505\ \textcolor{preprocessor}{\#\ define\ obstack\_copy0(h,\ where,\ length)\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00506\ \textcolor{preprocessor}{\ \ (obstack\_grow0\ ((h),\ (where),\ (length)),\ obstack\_finish\ ((h)))}}
+\DoxyCodeLine{00507\ }
+\DoxyCodeLine{00508\ \textcolor{preprocessor}{\#\ define\ obstack\_finish(h)\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00509\ \textcolor{preprocessor}{\ \ (((h)-\/>next\_free\ ==\ (h)-\/>object\_base\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00510\ \textcolor{preprocessor}{\ \ \ \ ?\ (((h)-\/>maybe\_empty\_object\ =\ 1),\ 0)\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00511\ \textcolor{preprocessor}{\ \ \ \ :\ 0),\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00512\ \textcolor{preprocessor}{\ \ \ (h)-\/>temp.p\ =\ (h)-\/>object\_base,\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00513\ \textcolor{preprocessor}{\ \ \ (h)-\/>next\_free\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00514\ \textcolor{preprocessor}{\ \ \ \ \ =\ \_\_PTR\_ALIGN\ ((h)-\/>object\_base,\ (h)-\/>next\_free,\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00515\ \textcolor{preprocessor}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ (h)-\/>alignment\_mask),\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00516\ \textcolor{preprocessor}{\ \ \ (((size\_t)\ ((h)-\/>next\_free\ -\/\ (char\ *)\ (h)-\/>chunk)\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00517\ \textcolor{preprocessor}{\ \ \ \ \ >\ (size\_t)\ ((h)-\/>chunk\_limit\ -\/\ (char\ *)\ (h)-\/>chunk))\ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00518\ \textcolor{preprocessor}{\ \ \ ?\ ((h)-\/>next\_free\ =\ (h)-\/>chunk\_limit)\ :\ 0),\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00519\ \textcolor{preprocessor}{\ \ \ (h)-\/>object\_base\ =\ (h)-\/>next\_free,\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00520\ \textcolor{preprocessor}{\ \ \ (h)-\/>temp.p)}}
+\DoxyCodeLine{00521\ }
+\DoxyCodeLine{00522\ \textcolor{preprocessor}{\#\ define\ obstack\_free(h,\ obj)\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00523\ \textcolor{preprocessor}{\ \ ((h)-\/>temp.p\ =\ (void\ *)\ (obj),\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00524\ \textcolor{preprocessor}{\ \ \ (((h)-\/>temp.p\ >\ (void\ *)\ (h)-\/>chunk\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00525\ \textcolor{preprocessor}{\ \ \ \ \ \&\&\ (h)-\/>temp.p\ <\ (void\ *)\ (h)-\/>chunk\_limit)\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00526\ \textcolor{preprocessor}{\ \ \ \ ?\ (void)\ ((h)-\/>next\_free\ =\ (h)-\/>object\_base\ =\ (char\ *)\ (h)-\/>temp.p)\ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00527\ \textcolor{preprocessor}{\ \ \ \ :\ \_obstack\_free\ ((h),\ (h)-\/>temp.p)))}}
+\DoxyCodeLine{00528\ }
+\DoxyCodeLine{00529\ \textcolor{preprocessor}{\#endif\ }\textcolor{comment}{/*\ not\ \_\_GNUC\_\_\ */}\textcolor{preprocessor}{}}
+\DoxyCodeLine{00530\ }
+\DoxyCodeLine{00531\ \textcolor{preprocessor}{\#ifdef\ \_\_cplusplus}}
+\DoxyCodeLine{00532\ \}\ \ \ \ \ \ \ \textcolor{comment}{/*\ C++\ */}}
+\DoxyCodeLine{00533\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00534\ }
+\DoxyCodeLine{00535\ \textcolor{preprocessor}{\#endif\ }\textcolor{comment}{/*\ \_OBSTACK\_H\ */}\textcolor{preprocessor}{}}
+
+\end{DoxyCode}

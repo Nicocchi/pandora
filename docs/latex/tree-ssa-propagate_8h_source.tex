@@ -1,0 +1,135 @@
+\doxysection{tree-\/ssa-\/propagate.h}
+\hypertarget{tree-ssa-propagate_8h_source}{}\label{tree-ssa-propagate_8h_source}\index{toolchain/x86\_64-\/elf/lib/gcc/x86\_64-\/elf/14.2.0/plugin/include/tree-\/ssa-\/propagate.h@{toolchain/x86\_64-\/elf/lib/gcc/x86\_64-\/elf/14.2.0/plugin/include/tree-\/ssa-\/propagate.h}}
+\doxymbox{\hyperlink{tree-ssa-propagate_8h}{Go to the documentation of this file.}}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001\ \textcolor{comment}{/*\ Data\ structures\ and\ function\ declarations\ for\ the\ SSA\ value\ propagation}}
+\DoxyCodeLine{00002\ \textcolor{comment}{\ \ \ engine.}}
+\DoxyCodeLine{00003\ \textcolor{comment}{\ \ \ Copyright\ (C)\ 2004-\/2024\ Free\ Software\ Foundation,\ Inc.}}
+\DoxyCodeLine{00004\ \textcolor{comment}{\ \ \ Contributed\ by\ Diego\ Novillo\ <dnovillo@redhat.com>}}
+\DoxyCodeLine{00005\ \textcolor{comment}{}}
+\DoxyCodeLine{00006\ \textcolor{comment}{This\ file\ is\ part\ of\ GCC.}}
+\DoxyCodeLine{00007\ \textcolor{comment}{}}
+\DoxyCodeLine{00008\ \textcolor{comment}{GCC\ is\ free\ software;\ you\ can\ redistribute\ it\ and/or\ modify}}
+\DoxyCodeLine{00009\ \textcolor{comment}{it\ under\ the\ terms\ of\ the\ GNU\ General\ Public\ License\ as\ published\ by}}
+\DoxyCodeLine{00010\ \textcolor{comment}{the\ Free\ Software\ Foundation;\ either\ version\ 3,\ or\ (at\ your\ option)}}
+\DoxyCodeLine{00011\ \textcolor{comment}{any\ later\ version.}}
+\DoxyCodeLine{00012\ \textcolor{comment}{}}
+\DoxyCodeLine{00013\ \textcolor{comment}{GCC\ is\ distributed\ in\ the\ hope\ that\ it\ will\ be\ useful,}}
+\DoxyCodeLine{00014\ \textcolor{comment}{but\ WITHOUT\ ANY\ WARRANTY;\ without\ even\ the\ implied\ warranty\ of}}
+\DoxyCodeLine{00015\ \textcolor{comment}{MERCHANTABILITY\ or\ FITNESS\ FOR\ A\ PARTICULAR\ PURPOSE.\ \ See\ the}}
+\DoxyCodeLine{00016\ \textcolor{comment}{GNU\ General\ Public\ License\ for\ more\ details.}}
+\DoxyCodeLine{00017\ \textcolor{comment}{}}
+\DoxyCodeLine{00018\ \textcolor{comment}{You\ should\ have\ received\ a\ copy\ of\ the\ GNU\ General\ Public\ License}}
+\DoxyCodeLine{00019\ \textcolor{comment}{along\ with\ GCC;\ see\ the\ file\ COPYING3.\ \ If\ not\ see}}
+\DoxyCodeLine{00020\ \textcolor{comment}{<http://www.gnu.org/licenses/>.\ \ */}}
+\DoxyCodeLine{00021\ }
+\DoxyCodeLine{00022\ \textcolor{preprocessor}{\#ifndef\ \_TREE\_SSA\_PROPAGATE\_H}}
+\DoxyCodeLine{00023\ \textcolor{preprocessor}{\#define\ \_TREE\_SSA\_PROPAGATE\_H\ 1}}
+\DoxyCodeLine{00024\ }
+\DoxyCodeLine{00025\ \textcolor{preprocessor}{\#include\ "{}\doxymbox{\hyperlink{value-query_8h}{value-\/query.h}}"{}}}
+\DoxyCodeLine{00026\ }
+\DoxyCodeLine{00027\ \textcolor{comment}{/*\ If\ SIM\_P\ is\ true,\ statement\ S\ will\ be\ simulated\ again.\ \ */}}
+\DoxyCodeLine{00028\ }
+\DoxyCodeLine{00029\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{void}}
+\DoxyCodeLine{00030\ \doxymbox{\hyperlink{tree-ssa-propagate_8h_af8b0fcb8dfa0031cb39f5bb7f9f2679c}{prop\_set\_simulate\_again}}\ (gimple\ *s,\ \textcolor{keywordtype}{bool}\ visit\_p)}
+\DoxyCodeLine{00031\ \{}
+\DoxyCodeLine{00032\ \ \ \doxymbox{\hyperlink{gimple_8h_a39878be1e209fe0d009d81ed6230309c}{gimple\_set\_visited}}\ (s,\ visit\_p);}
+\DoxyCodeLine{00033\ \}}
+\DoxyCodeLine{00034\ }
+\DoxyCodeLine{00035\ \textcolor{comment}{/*\ Return\ true\ if\ statement\ T\ should\ be\ simulated\ again.\ \ */}}
+\DoxyCodeLine{00036\ }
+\DoxyCodeLine{00037\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{bool}}
+\DoxyCodeLine{00038\ \doxymbox{\hyperlink{tree-ssa-propagate_8h_a27f1678281c03bdf7219de43fbcf43e4}{prop\_simulate\_again\_p}}\ (gimple\ *s)}
+\DoxyCodeLine{00039\ \{}
+\DoxyCodeLine{00040\ \ \ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{gimple_8h_ad270ebf56a22e3bab0b647d813454115}{gimple\_visited\_p}}\ (s);}
+\DoxyCodeLine{00041\ \}}
+\DoxyCodeLine{00042\ }
+\DoxyCodeLine{00043\ \textcolor{comment}{/*\ Lattice\ values\ used\ for\ propagation\ purposes.\ \ Specific\ instances}}
+\DoxyCodeLine{00044\ \textcolor{comment}{\ \ \ of\ a\ propagation\ engine\ must\ return\ these\ values\ from\ the\ statement}}
+\DoxyCodeLine{00045\ \textcolor{comment}{\ \ \ and\ PHI\ visit\ functions\ to\ direct\ the\ engine.\ \ */}}
+\DoxyCodeLine{00046\ \textcolor{keyword}{enum}\ \doxymbox{\hyperlink{tree-ssa-propagate_8h_af6d767b6899680f38d5f204dad3b1b2d}{ssa\_prop\_result}}\ \{}
+\DoxyCodeLine{00047\ \ \ \ \ \textcolor{comment}{/*\ The\ statement\ produces\ nothing\ of\ interest.\ \ No\ edges\ will\ be}}
+\DoxyCodeLine{00048\ \textcolor{comment}{\ \ \ \ \ \ \ added\ to\ the\ work\ lists.\ \ */}}
+\DoxyCodeLine{00049\ \ \ \ \ \doxymbox{\hyperlink{tree-ssa-propagate_8h_af6d767b6899680f38d5f204dad3b1b2dae7bd0c7e1e75fd70b20f7f5ea5efc152}{SSA\_PROP\_NOT\_INTERESTING}},}
+\DoxyCodeLine{00050\ }
+\DoxyCodeLine{00051\ \ \ \ \ \textcolor{comment}{/*\ The\ statement\ produces\ an\ interesting\ value.\ \ The\ set\ SSA\_NAMEs}}
+\DoxyCodeLine{00052\ \textcolor{comment}{\ \ \ \ \ \ \ returned\ by\ SSA\_PROP\_VISIT\_STMT\ should\ be\ added\ to}}
+\DoxyCodeLine{00053\ \textcolor{comment}{\ \ \ \ \ \ \ INTERESTING\_SSA\_EDGES.\ \ If\ the\ statement\ being\ visited\ is\ a}}
+\DoxyCodeLine{00054\ \textcolor{comment}{\ \ \ \ \ \ \ conditional\ jump,\ SSA\_PROP\_VISIT\_STMT\ should\ indicate\ which\ edge}}
+\DoxyCodeLine{00055\ \textcolor{comment}{\ \ \ \ \ \ \ out\ of\ the\ basic\ block\ should\ be\ marked\ executable.\ \ */}}
+\DoxyCodeLine{00056\ \ \ \ \ \doxymbox{\hyperlink{tree-ssa-propagate_8h_af6d767b6899680f38d5f204dad3b1b2da0bf41b2ad6141f18a41c929c3708e32c}{SSA\_PROP\_INTERESTING}},}
+\DoxyCodeLine{00057\ }
+\DoxyCodeLine{00058\ \ \ \ \ \textcolor{comment}{/*\ The\ statement\ produces\ a\ varying\ (i.e.,\ useless)\ value\ and}}
+\DoxyCodeLine{00059\ \textcolor{comment}{\ \ \ \ \ \ \ should\ not\ be\ simulated\ again.\ \ If\ the\ statement\ being\ visited}}
+\DoxyCodeLine{00060\ \textcolor{comment}{\ \ \ \ \ \ \ is\ a\ conditional\ jump,\ all\ the\ edges\ coming\ out\ of\ the\ block}}
+\DoxyCodeLine{00061\ \textcolor{comment}{\ \ \ \ \ \ \ will\ be\ considered\ executable.\ \ */}}
+\DoxyCodeLine{00062\ \ \ \ \ \doxymbox{\hyperlink{tree-ssa-propagate_8h_af6d767b6899680f38d5f204dad3b1b2da500a5c7b9902c75b3923b70268985862}{SSA\_PROP\_VARYING}}}
+\DoxyCodeLine{00063\ \};}
+\DoxyCodeLine{00064\ }
+\DoxyCodeLine{00065\ }
+\DoxyCodeLine{00066\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{tree-ssa-propagate_8h_a54b7db094257350f7c8abff8bc83bc15}{move\_ssa\_defining\_stmt\_for\_defs}}\ (gimple\ *,\ gimple\ *);}
+\DoxyCodeLine{00067\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{tree-ssa-propagate_8h_ac5a13936aa043205eb9c145e8bba9d20}{stmt\_makes\_single\_store}}\ (gimple\ *);}
+\DoxyCodeLine{00068\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{tree-ssa-propagate_8h_a81b1ed27dd3d1a6d30cacf5b8a135bac}{may\_propagate\_copy}}\ (\doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}},\ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}},\ \textcolor{keywordtype}{bool}\ =\ \textcolor{keyword}{false});}
+\DoxyCodeLine{00069\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{tree-ssa-propagate_8h_a5abcd6e3371dfdab7dbd300b88ab16ef}{may\_propagate\_copy\_into\_stmt}}\ (gimple\ *,\ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}});}
+\DoxyCodeLine{00070\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{tree-ssa-propagate_8h_a3c8f35ddd146fde5dfa6568898b74b0b}{may\_propagate\_copy\_into\_asm}}\ (\doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}});}
+\DoxyCodeLine{00071\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{tree-ssa-propagate_8h_abc2cbc8662eb039fda2fa16c3d5e56c5}{propagate\_value}}\ (\doxymbox{\hyperlink{tree-ssa-operands_8h_a6c4644d017fc5af6b02dd63b38fa35c1}{use\_operand\_p}},\ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}});}
+\DoxyCodeLine{00072\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{tree-ssa-propagate_8h_adf2821a74b181cf94276e9153d4ab59c}{replace\_exp}}\ (\doxymbox{\hyperlink{tree-ssa-operands_8h_a6c4644d017fc5af6b02dd63b38fa35c1}{use\_operand\_p}},\ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}});}
+\DoxyCodeLine{00073\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{tree-ssa-propagate_8h_a6651ab25f01268bc4a99d071b7f51160}{propagate\_tree\_value}}\ (\doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ *,\ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}});}
+\DoxyCodeLine{00074\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{tree-ssa-propagate_8h_ac47cd228a19646a55193c1f76d7e656e}{propagate\_tree\_value\_into\_stmt}}\ (\doxymbox{\hyperlink{structgimple__stmt__iterator}{gimple\_stmt\_iterator}}\ *,\ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}});}
+\DoxyCodeLine{00075\ }
+\DoxyCodeLine{00076\ \textcolor{comment}{/*\ Public\ interface\ into\ the\ SSA\ propagation\ engine.\ \ Clients\ should\ inherit}}
+\DoxyCodeLine{00077\ \textcolor{comment}{\ \ \ from\ this\ class\ and\ provide\ their\ own\ visitors.\ \ */}}
+\DoxyCodeLine{00078\ }
+\DoxyCodeLine{00079\ \textcolor{keyword}{class\ }\doxymbox{\hyperlink{classssa__propagation__engine}{ssa\_propagation\_engine}}}
+\DoxyCodeLine{00080\ \{}
+\DoxyCodeLine{00081\ \ \textcolor{keyword}{public}:}
+\DoxyCodeLine{00082\ }
+\DoxyCodeLine{00083\ \ \ \textcolor{keyword}{virtual}\ \doxymbox{\hyperlink{classssa__propagation__engine_ae1e2da2020dc4d56f3898f80075d1ae4}{\string~ssa\_propagation\_engine}}\ (\textcolor{keywordtype}{void})\ \{\ \}}
+\DoxyCodeLine{00084\ }
+\DoxyCodeLine{00085\ \ \ \textcolor{comment}{/*\ Virtual\ functions\ the\ clients\ must\ provide\ to\ visit\ statements}}
+\DoxyCodeLine{00086\ \textcolor{comment}{\ \ \ \ \ and\ phi\ nodes\ respectively.\ \ */}}
+\DoxyCodeLine{00087\ \ \ \textcolor{keyword}{virtual}\ \textcolor{keyword}{enum}\ \doxymbox{\hyperlink{tree-ssa-propagate_8h_af6d767b6899680f38d5f204dad3b1b2d}{ssa\_prop\_result}}\ \doxymbox{\hyperlink{classssa__propagation__engine_a8759e3133d64152151715ea6d0b1f0fa}{visit\_stmt}}\ (gimple\ *,\ \doxymbox{\hyperlink{coretypes_8h_a44ae11f0c90646aa6208ad4bf486490b}{edge}}\ *,\ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ *)\ =\ 0;}
+\DoxyCodeLine{00088\ \ \ \textcolor{keyword}{virtual}\ \textcolor{keyword}{enum}\ \doxymbox{\hyperlink{tree-ssa-propagate_8h_af6d767b6899680f38d5f204dad3b1b2d}{ssa\_prop\_result}}\ \doxymbox{\hyperlink{classssa__propagation__engine_a0c68ceebc7018d8173f7c3797c99e474}{visit\_phi}}\ (gphi\ *)\ =\ 0;}
+\DoxyCodeLine{00089\ }
+\DoxyCodeLine{00090\ \ \ \textcolor{comment}{/*\ Main\ interface\ into\ the\ propagation\ engine.\ \ */}}
+\DoxyCodeLine{00091\ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classssa__propagation__engine_a7d6cac8dec6edffc03bc2ee928ef727f}{ssa\_propagate}}\ (\textcolor{keywordtype}{void});}
+\DoxyCodeLine{00092\ }
+\DoxyCodeLine{00093\ \ \textcolor{keyword}{private}:}
+\DoxyCodeLine{00094\ \ \ \textcolor{comment}{/*\ Internal\ implementation\ details.\ \ */}}
+\DoxyCodeLine{00095\ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classssa__propagation__engine_a75463be606c4f5a3c3b12ba981e3db98}{simulate\_stmt}}\ (gimple\ *stmt);}
+\DoxyCodeLine{00096\ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classssa__propagation__engine_a46e1ba6d20d1a220ab47b45457072dc5}{simulate\_block}}\ (\doxymbox{\hyperlink{coretypes_8h_a0469df20b471a4cd7c81fbdce5027487}{basic\_block}});}
+\DoxyCodeLine{00097\ \};}
+\DoxyCodeLine{00098\ }
+\DoxyCodeLine{00099\ \textcolor{keyword}{class\ }\doxymbox{\hyperlink{classsubstitute__and__fold__engine_ab4676e63df8e9f37c468e4ec69fc5486}{substitute\_and\_fold\_engine}}\ :\ \textcolor{keyword}{public}\ \doxymbox{\hyperlink{classrange__query_a7838aae8d14f424c3212df2ca81bb656}{range\_query}}}
+\DoxyCodeLine{00100\ \{}
+\DoxyCodeLine{00101\ \ \textcolor{keyword}{public}:}
+\DoxyCodeLine{00102\ \ \ \doxymbox{\hyperlink{classsubstitute__and__fold__engine_ab4676e63df8e9f37c468e4ec69fc5486}{substitute\_and\_fold\_engine}}\ (\textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{classsubstitute__and__fold__engine_a1066ec829310e9df650efed21296357f}{fold\_all\_stmts}}\ =\ \textcolor{keyword}{false})}
+\DoxyCodeLine{00103\ \ \ \ \ :\ \doxymbox{\hyperlink{classsubstitute__and__fold__engine_a1066ec829310e9df650efed21296357f}{fold\_all\_stmts}}\ (\doxymbox{\hyperlink{classsubstitute__and__fold__engine_a1066ec829310e9df650efed21296357f}{fold\_all\_stmts}})\ \{\ \}}
+\DoxyCodeLine{00104\ }
+\DoxyCodeLine{00105\ \ \ \textcolor{keyword}{virtual}\ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ \doxymbox{\hyperlink{classsubstitute__and__fold__engine_a350cbfb68a674a67e8bfffce50457253}{value\_of\_expr}}\ (\doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ expr,\ gimple\ *\ =\ \doxymbox{\hyperlink{stddef_8h_a070d2ce7b6bb7e5c05602aa8c308d0c4}{NULL}})\ =\ 0;}
+\DoxyCodeLine{00106\ \ \ \textcolor{keyword}{virtual}\ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ \doxymbox{\hyperlink{classsubstitute__and__fold__engine_a8739d26f9c468e36fae845a67cb10c5e}{value\_on\_edge}}\ (\doxymbox{\hyperlink{coretypes_8h_a44ae11f0c90646aa6208ad4bf486490b}{edge}},\ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ expr)\ \textcolor{keyword}{override};}
+\DoxyCodeLine{00107\ \ \ \textcolor{keyword}{virtual}\ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ \doxymbox{\hyperlink{classsubstitute__and__fold__engine_a75aa6e494d2994470de304b96ce9a925}{value\_of\_stmt}}\ (gimple\ *,\ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ \doxymbox{\hyperlink{configargs_8h_a8f8f80d37794cde9472343e4487ba3eb}{name}}\ =\ \doxymbox{\hyperlink{stddef_8h_a070d2ce7b6bb7e5c05602aa8c308d0c4}{NULL}})\ \textcolor{keyword}{override};}
+\DoxyCodeLine{00108\ \ \ \textcolor{keyword}{virtual}\ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{classsubstitute__and__fold__engine_aa4481eee834a528b54725e0302b026ac}{range\_of\_expr}}\ (vrange\ \&\doxymbox{\hyperlink{poly-int_8h_a3ecac2571dcdc8050989339124f1bd26}{r}},\ \doxymbox{\hyperlink{coretypes_8h_af2d59148bc266326069e483acf7b2791}{tree}}\ expr,\ gimple\ *\ =\ \doxymbox{\hyperlink{stddef_8h_a070d2ce7b6bb7e5c05602aa8c308d0c4}{NULL}});}
+\DoxyCodeLine{00109\ }
+\DoxyCodeLine{00110\ \ \ \textcolor{keyword}{virtual}\ \doxymbox{\hyperlink{classsubstitute__and__fold__engine_a38039df32a1d849883adcbdc0b995feb}{\string~substitute\_and\_fold\_engine}}\ (\textcolor{keywordtype}{void})\ \{\ \}}
+\DoxyCodeLine{00111\ \ \ \textcolor{keyword}{virtual}\ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{classsubstitute__and__fold__engine_aea2ae1ce8c22dcc510ab0f0e8e953ff5}{fold\_stmt}}\ (\doxymbox{\hyperlink{structgimple__stmt__iterator}{gimple\_stmt\_iterator}}\ *)\ \{\ \textcolor{keywordflow}{return}\ \textcolor{keyword}{false};\ \}}
+\DoxyCodeLine{00112\ }
+\DoxyCodeLine{00113\ \ \ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{classsubstitute__and__fold__engine_a7454777043f0de2493a36a41b76808d3}{substitute\_and\_fold}}\ (\doxymbox{\hyperlink{coretypes_8h_a0469df20b471a4cd7c81fbdce5027487}{basic\_block}}\ =\ \doxymbox{\hyperlink{stddef_8h_a070d2ce7b6bb7e5c05602aa8c308d0c4}{NULL}});}
+\DoxyCodeLine{00114\ \ \ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{classsubstitute__and__fold__engine_a1bcdd09a9be04402f52cefe9bd7cd4bc}{replace\_uses\_in}}\ (gimple\ *);}
+\DoxyCodeLine{00115\ \ \ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{classsubstitute__and__fold__engine_a828b84aa69ac97007de883a4ca5d9b38}{replace\_phi\_args\_in}}\ (gphi\ *);}
+\DoxyCodeLine{00116\ }
+\DoxyCodeLine{00117\ \ \ \textcolor{keyword}{virtual}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classsubstitute__and__fold__engine_a103eb7866f78e37b7d31a2acf86725a0}{pre\_fold\_bb}}\ (\doxymbox{\hyperlink{coretypes_8h_a0469df20b471a4cd7c81fbdce5027487}{basic\_block}})\ \{\ \}}
+\DoxyCodeLine{00118\ \ \ \textcolor{keyword}{virtual}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classsubstitute__and__fold__engine_a2fdad7c7fb80b75d0325d12f7b8fe95e}{post\_fold\_bb}}\ (\doxymbox{\hyperlink{coretypes_8h_a0469df20b471a4cd7c81fbdce5027487}{basic\_block}})\ \{\ \}}
+\DoxyCodeLine{00119\ \ \ \textcolor{keyword}{virtual}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classsubstitute__and__fold__engine_a26cea6e521367c5dee126214ebb687b6}{pre\_fold\_stmt}}\ (gimple\ *)\ \{\ \}}
+\DoxyCodeLine{00120\ \ \ \textcolor{keyword}{virtual}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classsubstitute__and__fold__engine_a750c0b15500153b99bac90b6dc95a5a2}{post\_new\_stmt}}\ (gimple\ *)\ \{\ \}}
+\DoxyCodeLine{00121\ }
+\DoxyCodeLine{00122\ \ \ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{classsubstitute__and__fold__engine_aa9237990c51e799aab488af95024aa35}{propagate\_into\_phi\_args}}\ (\doxymbox{\hyperlink{coretypes_8h_a0469df20b471a4cd7c81fbdce5027487}{basic\_block}});}
+\DoxyCodeLine{00123\ }
+\DoxyCodeLine{00124\ \ \ \textcolor{comment}{/*\ Users\ like\ VRP\ can\ set\ this\ when\ they\ want\ to\ perform}}
+\DoxyCodeLine{00125\ \textcolor{comment}{\ \ \ \ \ folding\ for\ every\ propagation.\ \ */}}
+\DoxyCodeLine{00126\ \ \ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{classsubstitute__and__fold__engine_a1066ec829310e9df650efed21296357f}{fold\_all\_stmts}};}
+\DoxyCodeLine{00127\ \};}
+\DoxyCodeLine{00128\ }
+\DoxyCodeLine{00129\ \textcolor{preprocessor}{\#endif\ }\textcolor{comment}{/*\ \_TREE\_SSA\_PROPAGATE\_H\ \ */}\textcolor{preprocessor}{}}
+
+\end{DoxyCode}
