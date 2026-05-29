@@ -6,5 +6,6 @@ var searchData=
   ['default_5ffg_3',['default_fg',['../structlimine__flanterm__fb__init__params.html#aea0b9f2ec1b3576f0a965cdaa1f5d494',1,'limine_flanterm_fb_init_params']]],
   ['default_5ffg_5fbright_4',['default_fg_bright',['../structlimine__flanterm__fb__init__params.html#a13519065281d65de24fa06c680cd3667',1,'limine_flanterm_fb_init_params']]],
   ['desc_5fsize_5',['desc_size',['../structlimine__efi__memmap__response.html#a4b89d9e20562d1397680361db2ce0d43',1,'limine_efi_memmap_response']]],
-  ['desc_5fversion_6',['desc_version',['../structlimine__efi__memmap__response.html#a3d02ffb03acc9efbf922475f61dff068',1,'limine_efi_memmap_response']]]
+  ['desc_5fversion_6',['desc_version',['../structlimine__efi__memmap__response.html#a3d02ffb03acc9efbf922475f61dff068',1,'limine_efi_memmap_response']]],
+  ['ds_7',['ds',['../structInterruptRegisters.html#a7c2aece1400004186e77287222d27e83',1,'InterruptRegisters']]]
 ];

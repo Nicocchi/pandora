@@ -22,21 +22,8 @@
 #include <boot/limine_vga.h>
 #include <drivers/serial_port.h>
 #include "gdt.h"
-
-
-/**
- * @brief       Halts the CPU infinitely.
- * @details     Issues the x86 `hlt` instruction to suspend execution until the next 
- *              non-maskable or external hardware interrupt occurs. Wrapped inside an 
- *              infinite fallback loop to prevent processor runaways.
- */
-static void hcf(void)
-{
-    
-    for (;;) {
-        asm ("hlt");
-    }
-}
+#include "interrupts/idt.h"
+#include "common.h"
 
 /**
  * @brief       Triggers a critical system breakdown state, piping messages across diagnostic outputs.
@@ -155,6 +142,29 @@ extern "C" void kmain(void)
     SerialWriteString(COM1_PORT, "kernel renderer set\n");
 
     InitGDT();
+    InitIDT();
+
+    uint64_t a = 1;
+    uint64_t b = 0;
+
+    asm volatile (
+        "xor %%rdx, %%rdx\n"
+        "mov %0, %%rax\n"
+        "div %1\n"
+        :
+        : "r"(a), "r"(b)
+        : "rax", "rdx"
+    );
+
+    // asm volatile("xor rax, rax\n" "div rax\n");
+
+    // asm volatile ("int3");
+    // asm volatile ("div %0" : : "r"(0));
+
+    // IDTPtr test;
+    // asm volatile("sidt %0" : "=m"(test));
+
+    // kprintf("IDT base: %llx\n", test.base);
 
     ClearScreen(BLACK, true);
 

@@ -1,6 +1,10 @@
 var annotated_dup =
 [
     [ "GDTDescriptor", "structGDTDescriptor.html", "structGDTDescriptor" ],
+    [ "IDTEntry", "structIDTEntry.html", "structIDTEntry" ],
+    [ "IDTPtr", "structIDTPtr.html", "structIDTPtr" ],
+    [ "InterruptFrame", "structInterruptFrame.html", "structInterruptFrame" ],
+    [ "InterruptRegisters", "structInterruptRegisters.html", "structInterruptRegisters" ],
     [ "KFramebuffer", "structKFramebuffer.html", "structKFramebuffer" ],
     [ "KRenderer", "structKRenderer.html", "structKRenderer" ],
     [ "limine_bootloader_info_request", "structlimine__bootloader__info__request.html", "structlimine__bootloader__info__request" ],

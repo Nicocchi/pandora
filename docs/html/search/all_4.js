@@ -20,7 +20,10 @@ var searchData=
   ['contributing_17',['Contributing',['../md_README.html#autotoc_md48',1,'']]],
   ['core_20kernel_18',['Core Kernel',['../md_README.html#autotoc_md17',1,'']]],
   ['cpu_20segmentation_20task_20state_20management_19',['CPU Segmentation &amp;amp; Task State Management',['../group__CPU__SEGMENTATION.html',1,'']]],
-  ['cross_20compiler_20',['Building the Cross Compiler',['../md_README.html#autotoc_md26',1,'']]],
-  ['current_20status_21',['Current Status',['../md_README.html#autotoc_md6',1,'']]],
-  ['cyan_22',['CYAN',['../group__VGA__Colors.html#gad243f93c16bc4c1d3e0a13b84421d760',1,'limine_vga.h']]]
+  ['cr2_20',['cr2',['../structInterruptRegisters.html#ad70a716266c204b465e24348338f6352',1,'InterruptRegisters']]],
+  ['cross_20compiler_21',['Building the Cross Compiler',['../md_README.html#autotoc_md26',1,'']]],
+  ['cs_22',['cs',['../structInterruptFrame.html#aea70c57d0f9a5c7a00418de4cb0e745c',1,'InterruptFrame']]],
+  ['csm_23',['csm',['../structInterruptRegisters.html#a153aff09dd10962934f496d69fe8c3dd',1,'InterruptRegisters']]],
+  ['current_20status_24',['Current Status',['../md_README.html#autotoc_md6',1,'']]],
+  ['cyan_25',['CYAN',['../group__VGA__Colors.html#gad243f93c16bc4c1d3e0a13b84421d760',1,'limine_vga.h']]]
 ];

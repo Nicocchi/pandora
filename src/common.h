@@ -25,6 +25,9 @@
 
 #pragma once
 
+#include <stdint.h>
+#include <stddef.h>
+
 /**
  * @brief Kernel-mode GDT segment selectors.
  *
@@ -52,3 +55,31 @@ constexpr uint16_t GDT_USER_CODE = 0x20;
  */
 constexpr uint16_t GDT_USER_DATA_RING3 = 0x1B;
 constexpr uint16_t GDT_USER_CODE_RING3 = 0x23;
+
+struct InterruptRegisters
+{
+    uint32_t cr2;
+    uint32_t ds;
+    uint32_t edi, esi, ebp, esp, ebx, edx, ecx, eax;
+    uint32_t int_no, err_code;
+    uint32_t eip, csm, eflags, useresp, ss;
+};
+
+static void OutPortB(uint16_t port, uint8_t value)
+{
+    asm volatile ("outb %1, %0" : : "dN" (port), "a" (value));
+}
+
+/**
+ * @brief       Halts the CPU infinitely.
+ * @details     Issues the x86 `hlt` instruction to suspend execution until the next 
+ *              non-maskable or external hardware interrupt occurs. Wrapped inside an 
+ *              infinite fallback loop to prevent processor runaways.
+ */
+static void hcf(void)
+{
+    
+    for (;;) {
+        asm ("hlt");
+    }
+}

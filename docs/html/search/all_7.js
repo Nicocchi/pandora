@@ -3,7 +3,7 @@ var searchData=
   ['features_0',['Features',['../md_README.html#autotoc_md8',1,'']]],
   ['firmware_5ftype_1',['firmware_type',['../structlimine__firmware__type__response.html#aa90333981ef1f0a5b7c3141be9189c1a',1,'limine_firmware_type_response']]],
   ['flags_2',['Build Flags',['../md_README.html#autotoc_md38',1,'']]],
-  ['flags_3',['flags',['../structlimine__mp__request.html#acc63f4d342d0cd57062f403d0d8b041b',1,'limine_mp_request::flags'],['../structlimine__internal__module.html#a6c46ee94297d0f14cdcd512cd84d3252',1,'limine_internal_module::flags']]],
+  ['flags_3',['flags',['../structlimine__mp__request.html#acc63f4d342d0cd57062f403d0d8b041b',1,'limine_mp_request::flags'],['../structlimine__internal__module.html#a6c46ee94297d0f14cdcd512cd84d3252',1,'limine_internal_module::flags'],['../structIDTEntry.html#af49b6eed9e508bac9bb0fe560e0cd2ec',1,'IDTEntry::flags']]],
   ['font_4',['Console Font',['../md_README.html#autotoc_md50',1,'']]],
   ['font_5',['font',['../structKRenderer.html#af5fe086135fd66e3e18d26ea4ad8fddc',1,'KRenderer']]],
   ['font_20v1_20constants_6',['PC Screen Font v1 Constants',['../group__PSF1__Macros.html',1,'']]],

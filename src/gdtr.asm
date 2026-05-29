@@ -1,8 +1,7 @@
 ; ------------------------------------------------------------
-; @file        gdt.asm
-; @brief       x86_64 GDT and TSS descriptor loading routines.
+; gdt.asm
+; x86_64 GDT and TSS descriptor loading routines.
 ;
-; @details
 ; Provides low-level assembly interfaces required to install
 ; the Global Descriptor Table and Task State Segment into the
 ; processor.

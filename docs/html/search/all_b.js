@@ -2,7 +2,7 @@ var searchData=
 [
   ['kernel_0',['Kernel',['../md_README.html#autotoc_md34',1,'Building the Kernel'],['../md_README.html#autotoc_md17',1,'Core Kernel']]],
   ['kernel_20development_1',['Kernel Development',['../md_README.html#autotoc_md29',1,'']]],
-  ['kernel_5fstack_2',['kernel_stack',['../common_8h.html#a987b72079529eca7be20984e799a5205',1,'common.h']]],
+  ['kernel_5fstack_2',['kernel_stack',['../gdt_8cpp.html#a987b72079529eca7be20984e799a5205',1,'gdt.cpp']]],
   ['kernelpanic_3',['KernelPanic',['../main_8cpp.html#a6e587ce4fcbc05633f6cdcc21d36e941',1,'main.cpp']]],
   ['kframebuffer_4',['KFramebuffer',['../structKFramebuffer.html',1,'KFramebuffer'],['../limine__vga_8h.html#a2b8e61acf64c4907eec6d98d07a9dedb',1,'KFramebuffer:&#160;limine_vga.h']]],
   ['kmain_5',['kmain',['../main_8cpp.html#a406c20548822065e144564476378f8a1',1,'main.cpp']]],

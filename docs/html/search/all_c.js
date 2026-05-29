@@ -143,6 +143,6 @@ var searchData=
   ['limine_5fx86_5f64_5fkeep_5fiommu_5frequest_140',['limine_x86_64_keep_iommu_request',['../structlimine__x86__64__keep__iommu__request.html',1,'']]],
   ['limine_5fx86_5f64_5fkeep_5fiommu_5frequest_5fid_141',['LIMINE_X86_64_KEEP_IOMMU_REQUEST_ID',['../limine_8h.html#a3e7361b7a55ccc9ad78837eb2ec9ba58',1,'limine.h']]],
   ['limine_5fx86_5f64_5fkeep_5fiommu_5fresponse_142',['limine_x86_64_keep_iommu_response',['../structlimine__x86__64__keep__iommu__response.html',1,'']]],
-  ['limit_143',['limit',['../structGDTDescriptor.html#a6119b5c04a7ffecf8f685a7e636b4712',1,'GDTDescriptor']]],
+  ['limit_143',['limit',['../structGDTDescriptor.html#a6119b5c04a7ffecf8f685a7e636b4712',1,'GDTDescriptor::limit'],['../structIDTPtr.html#a9015227fb53a20387db68dbd103c9c13',1,'IDTPtr::limit']]],
   ['limit_5flow_144',['limit_low',['../structSegmentDescriptor.html#a7e26f571f8069a9238e57681f6c4a852',1,'SegmentDescriptor::limit_low'],['../structTSSDescriptor.html#a37a1ea78cc098b0a230c935078cfa3fd',1,'TSSDescriptor::limit_low']]]
 ];

@@ -143,6 +143,32 @@ static void itoa(uint64_t value, char *str, int base)
     }
 }
 
+// void itoa(uint64_t value, char* buf, int base)
+// {
+//     char* p = buf;
+//     char* p1, *p2;
+//     uint64_t tmp;
+
+//     do {
+//         tmp = value % base;
+//         *p++ = "0123456789abcdef"[tmp];
+//         value /= base;
+//     } while (value);
+
+//     *p = '\0';
+
+//     // reverse string
+//     p1 = buf;
+//     p2 = p - 1;
+
+//     while (p1 < p2)
+//     {
+//         char c = *p1;
+//         *p1++ = *p2;
+//         *p2-- = c;
+//     }
+// }
+
 void kprintf(const char *fmt, ...)
 {
     va_list args;
@@ -181,10 +207,39 @@ void kprintf(const char *fmt, ...)
 
                 case 'x':
                 {
-                    uint64_t x = va_arg(args, unsigned int);
+                    // 32-bit hex
+                    uint32_t x = va_arg(args, uint32_t);
                     char buf[32];
                     itoa(x, buf, 16);
                     for (size_t j = 0; buf[j] != '\0'; j++) DrawChar(buf[j]);
+                } break;
+                case 'l':
+                {
+                    // look ahead for llx
+                    if (fmt[i+1] == 'l' && fmt[i+2] == 'x')
+                    {
+                        i += 2;
+
+                        uint64_t val = va_arg(args, uint64_t);
+
+                        char buf[32];
+                        itoa(val, buf, 16);
+
+                        for (size_t j = 0; buf[j]; j++) DrawChar(buf[j]);
+                    }
+                } break;
+
+                case 'p':
+                {
+                    uint64_t ptr = (uint64_t)va_arg(args, void*);
+
+                    DrawChar('0');
+                    DrawChar('x');
+
+                    char buf[32];
+                    itoa(ptr, buf, 16);
+
+                    for (size_t j = 0; buf[j]; j++) DrawChar(buf[j]);
                 } break;
 
                 case 'c':

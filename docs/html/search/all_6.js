@@ -1,6 +1,19 @@
 var searchData=
 [
-  ['edid_5fsize_0',['edid_size',['../structlimine__framebuffer.html#a4537b7ec9e3c3c837b327f49b9ceaf04',1,'limine_framebuffer']]],
-  ['entry_5fcount_1',['entry_count',['../structlimine__flanterm__fb__init__params__response.html#adf731ca0246477f29bfac7d6e96804a9',1,'limine_flanterm_fb_init_params_response::entry_count'],['../structlimine__memmap__response.html#a4b7e339a67682337dcc5bbcdd47a1d0e',1,'limine_memmap_response::entry_count']]],
-  ['exec_5fusec_2',['exec_usec',['../structlimine__bootloader__performance__response.html#af75b1107ea12375465310dc9c126b187',1,'limine_bootloader_performance_response']]]
+  ['eax_0',['eax',['../structInterruptRegisters.html#a15f453e68798776ef0d15e48aaf03e2b',1,'InterruptRegisters']]],
+  ['ebp_1',['ebp',['../structInterruptRegisters.html#a315562e1cde81ddd0df494205790ffe4',1,'InterruptRegisters']]],
+  ['ebx_2',['ebx',['../structInterruptRegisters.html#a0cb11b2c2ff80ba7c25060fea1dd8374',1,'InterruptRegisters']]],
+  ['ecx_3',['ecx',['../structInterruptRegisters.html#aecd3c8336257773ecf02b87e02aaec6c',1,'InterruptRegisters']]],
+  ['edi_4',['edi',['../structInterruptRegisters.html#a8f34bdd08611639a0d558a6b0e773202',1,'InterruptRegisters']]],
+  ['edid_5fsize_5',['edid_size',['../structlimine__framebuffer.html#a4537b7ec9e3c3c837b327f49b9ceaf04',1,'limine_framebuffer']]],
+  ['edx_6',['edx',['../structInterruptRegisters.html#a19d6988632966437573238693e73cf3c',1,'InterruptRegisters']]],
+  ['eflags_7',['eflags',['../structInterruptRegisters.html#a961861784d2e33d5bbde901c51dcff42',1,'InterruptRegisters']]],
+  ['eip_8',['eip',['../structInterruptRegisters.html#a00949017445ef047148fd5322dcde4df',1,'InterruptRegisters']]],
+  ['entry_5fcount_9',['entry_count',['../structlimine__flanterm__fb__init__params__response.html#adf731ca0246477f29bfac7d6e96804a9',1,'limine_flanterm_fb_init_params_response::entry_count'],['../structlimine__memmap__response.html#a4b7e339a67682337dcc5bbcdd47a1d0e',1,'limine_memmap_response::entry_count']]],
+  ['err_5fcode_10',['err_code',['../structInterruptRegisters.html#a3fdfbd55247ca53d4144eccfb982a0ee',1,'InterruptRegisters']]],
+  ['error_5fcode_11',['error_code',['../structInterruptFrame.html#a9fa49fecc4cbdc4cf6f0ab33b0f68864',1,'InterruptFrame']]],
+  ['esi_12',['esi',['../structInterruptRegisters.html#a3923de077566d93f6e714434e99155f9',1,'InterruptRegisters']]],
+  ['esp_13',['esp',['../structInterruptRegisters.html#a8c28d69fde9437e8185631629305b73a',1,'InterruptRegisters']]],
+  ['exception_5fmessages_14',['exception_messages',['../idt_8cpp.html#a7b12de8b0bf38c0d059f86f78da12a5b',1,'idt.cpp']]],
+  ['exec_5fusec_15',['exec_usec',['../structlimine__bootloader__performance__response.html#af75b1107ea12375465310dc9c126b187',1,'limine_bootloader_performance_response']]]
 ];

@@ -7,5 +7,6 @@ var gdt_8cpp =
     [ "WriteTSS", "gdt_8cpp.html#a87a38e7e8e68ded083db52ac23aeb775", null ],
     [ "gdt", "gdt_8cpp.html#a74f86f5471a31c4c8e2ab64d719be3fc", null ],
     [ "gdtr", "gdt_8cpp.html#a95050a9596fe3d61160f658d4be1957e", null ],
+    [ "kernel_stack", "gdt_8cpp.html#a987b72079529eca7be20984e799a5205", null ],
     [ "tss", "gdt_8cpp.html#a594f88532241dc310816a489607655a0", null ]
 ];

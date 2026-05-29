@@ -1,7 +1,7 @@
 var searchData=
 [
   ['b_0',['b',['../structlimine__uuid.html#a3e2198ef1488deb36a087a866a45280b',1,'limine_uuid']]],
-  ['base_1',['base',['../structlimine__memmap__entry.html#a27ffe8338bdc73b6ae4f491914117af7',1,'limine_memmap_entry::base'],['../structGDTDescriptor.html#adc3acea2975f801b5aab86e2fcba4862',1,'GDTDescriptor::base']]],
+  ['base_1',['base',['../structlimine__memmap__entry.html#a27ffe8338bdc73b6ae4f491914117af7',1,'limine_memmap_entry::base'],['../structGDTDescriptor.html#adc3acea2975f801b5aab86e2fcba4862',1,'GDTDescriptor::base'],['../structIDTPtr.html#ae2aa82efb0162102a81096152d8538e0',1,'IDTPtr::base']]],
   ['base_5fhigh_2',['base_high',['../structSegmentDescriptor.html#aa4b42280eadee5c9e44fa766a2340d87',1,'SegmentDescriptor::base_high'],['../structTSSDescriptor.html#a3acbbd54e0a2ba28b9ea4308acf9016c',1,'TSSDescriptor::base_high']]],
   ['base_5flow_3',['base_low',['../structSegmentDescriptor.html#ae635c5fcbdc73fa727f8531da017fd75',1,'SegmentDescriptor::base_low'],['../structTSSDescriptor.html#a525e2a784895614d788ae3a1b4375959',1,'TSSDescriptor::base_low']]],
   ['base_5fmiddle_4',['base_middle',['../structSegmentDescriptor.html#a221213f50af2e9c52049d27455aaf2a0',1,'SegmentDescriptor']]],
