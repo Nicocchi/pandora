@@ -9,13 +9,14 @@ var searchData=
   ['tftp_5fport_6',['tftp_port',['../structlimine__file.html#a949f13c2f063dee81d733bbf380c16fb',1,'limine_file']]],
   ['the_20cross_20compiler_7',['Building the Cross Compiler',['../md_README.html#autotoc_md26',1,'']]],
   ['the_20kernel_8',['Building the Kernel',['../md_README.html#autotoc_md34',1,'']]],
-  ['timestamp_9',['timestamp',['../structlimine__date__at__boot__response.html#a2b646c0b681b837d34e8f64a55ccf996',1,'limine_date_at_boot_response']]],
-  ['toolchain_20dependencies_10',['Toolchain Dependencies',['../md_README.html#autotoc_md24',1,'']]],
-  ['toolchain_20script_20options_11',['Toolchain Script Options',['../md_README.html#autotoc_md27',1,'']]],
-  ['tools_12',['Build Tools',['../md_README.html#autotoc_md31',1,'']]],
-  ['tss_13',['tss',['../gdt_8cpp.html#a594f88532241dc310816a489607655a0',1,'gdt.cpp']]],
-  ['tss_5fflush_14',['tss_flush',['../gdt_8cpp.html#a01b6312c9386ac6c52c7b5c5d91e81cf',1,'gdt.cpp']]],
-  ['tssdescriptor_15',['TSSDescriptor',['../structTSSDescriptor.html',1,'TSSDescriptor'],['../group__CPU__SEGMENTATION.html#gacbe48610c5e872e75b3b50de9c9cf38a',1,'TSSDescriptor:&#160;gdt.h']]],
-  ['tssentry_16',['TSSEntry',['../structTSSEntry.html',1,'TSSEntry'],['../group__CPU__SEGMENTATION.html#ga93e93abf00bffe42a08dd8900623b501',1,'TSSEntry:&#160;gdt.h']]],
-  ['type_17',['type',['../structlimine__memmap__entry.html#ac553330b3a732a61e4639940dbb085f1',1,'limine_memmap_entry']]]
+  ['ticks_9',['ticks',['../pit_8cpp.html#aba60f4e3e1311b8cdc6a5276a367e9a2',1,'pit.cpp']]],
+  ['timestamp_10',['timestamp',['../structlimine__date__at__boot__response.html#a2b646c0b681b837d34e8f64a55ccf996',1,'limine_date_at_boot_response']]],
+  ['toolchain_20dependencies_11',['Toolchain Dependencies',['../md_README.html#autotoc_md24',1,'']]],
+  ['toolchain_20script_20options_12',['Toolchain Script Options',['../md_README.html#autotoc_md27',1,'']]],
+  ['tools_13',['Build Tools',['../md_README.html#autotoc_md31',1,'']]],
+  ['tss_14',['tss',['../gdt_8cpp.html#a594f88532241dc310816a489607655a0',1,'gdt.cpp']]],
+  ['tss_5fflush_15',['tss_flush',['../gdt_8cpp.html#a01b6312c9386ac6c52c7b5c5d91e81cf',1,'gdt.cpp']]],
+  ['tssdescriptor_16',['TSSDescriptor',['../structTSSDescriptor.html',1,'TSSDescriptor'],['../group__CPU__SEGMENTATION.html#gacbe48610c5e872e75b3b50de9c9cf38a',1,'TSSDescriptor:&#160;gdt.h']]],
+  ['tssentry_17',['TSSEntry',['../structTSSEntry.html',1,'TSSEntry'],['../group__CPU__SEGMENTATION.html#ga93e93abf00bffe42a08dd8900623b501',1,'TSSEntry:&#160;gdt.h']]],
+  ['type_18',['type',['../structlimine__memmap__entry.html#ac553330b3a732a61e4639940dbb085f1',1,'limine_memmap_entry::type'],['../structMADTEntry.html#a65976ea2b553e16b5c7981c1afe060f8',1,'MADTEntry::type']]]
 ];

@@ -11,7 +11,8 @@ var searchData=
   ['desc_5fversion_8',['desc_version',['../structlimine__efi__memmap__response.html#a3d02ffb03acc9efbf922475f61dff068',1,'limine_efi_memmap_response']]],
   ['development_9',['Kernel Development',['../md_README.html#autotoc_md29',1,'']]],
   ['dgray_10',['DGRAY',['../group__VGA__Colors.html#ga50a516ba1f26bb6d7d615ce6126e62f4',1,'limine_vga.h']]],
-  ['documentation_11',['Documentation',['../md_README.html#autotoc_md44',1,'']]],
-  ['drawchar_12',['DrawChar',['../limine__vga_8cpp.html#a0616cca4445e0ab61ad1e9d6b7a4e28e',1,'DrawChar(char c):&#160;limine_vga.cpp'],['../limine__vga_8h.html#a0616cca4445e0ab61ad1e9d6b7a4e28e',1,'DrawChar(char c):&#160;limine_vga.cpp']]],
-  ['ds_13',['ds',['../structInterruptRegisters.html#a7c2aece1400004186e77287222d27e83',1,'InterruptRegisters']]]
+  ['disablepic_11',['DisablePIC',['../idt_8cpp.html#a1f7ab111305cf00cb8285c8241dd6692',1,'DisablePIC():&#160;idt.cpp'],['../idt_8h.html#a1f7ab111305cf00cb8285c8241dd6692',1,'DisablePIC():&#160;idt.cpp']]],
+  ['documentation_12',['Documentation',['../md_README.html#autotoc_md45',1,'']]],
+  ['drawchar_13',['DrawChar',['../limine__vga_8cpp.html#a0616cca4445e0ab61ad1e9d6b7a4e28e',1,'DrawChar(char c):&#160;limine_vga.cpp'],['../limine__vga_8h.html#a0616cca4445e0ab61ad1e9d6b7a4e28e',1,'DrawChar(char c):&#160;limine_vga.cpp']]],
+  ['ds_14',['ds',['../structInterruptRegisters.html#a7c2aece1400004186e77287222d27e83',1,'InterruptRegisters']]]
 ];

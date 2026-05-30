@@ -1,4 +1,4 @@
 var searchData=
 [
-  ['limine_20protocol_20anchors_0',['Limine Protocol Anchors',['../group__Limine__Anchors.html',1,'']]]
+  ['internal_20kernel_20structures_0',['Internal Kernel Structures',['../group__Kernel__structs.html',1,'']]]
 ];

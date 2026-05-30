@@ -1,4 +1,4 @@
 var searchData=
 [
-  ['management_0',['CPU Segmentation &amp;amp; Task State Management',['../group__CPU__SEGMENTATION.html',1,'']]]
+  ['kernel_20structures_0',['Internal Kernel Structures',['../group__Kernel__structs.html',1,'']]]
 ];

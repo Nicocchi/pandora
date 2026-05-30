@@ -97,7 +97,7 @@ $(function(){initNavTree('structIDTEntry.html','',''); });
 </div><!--header-->
 <div class="contents">
 
-<p>A single Interrupt Descriptor Table entry.  
+<p>A single Interrupt Descriptor Table (IDT) gate descriptor.  
  <a href="#details">More...</a></p>
 
 <p><code>#include &quot;<a class="el" href="idt_8h_source.html">idt.h</a>&quot;</code></p>
@@ -105,7 +105,9 @@ $(function(){initNavTree('structIDTEntry.html','',''); });
 <tr class="heading"><td colspan="2"><h2 id="header-pub-attribs" class="groupheader"><a id="pub-attribs" name="pub-attribs"></a>
 Data Fields</h2></td></tr>
 <tr class="memitem:af49b6eed9e508bac9bb0fe560e0cd2ec" id="r_af49b6eed9e508bac9bb0fe560e0cd2ec"><td class="memItemLeft">uint8_t&#160;</td><td class="memItemRight"><a class="el" href="#af49b6eed9e508bac9bb0fe560e0cd2ec">flags</a></td></tr>
+<tr class="memdesc:af49b6eed9e508bac9bb0fe560e0cd2ec"><td class="mdescLeft">&#160;</td><td class="mdescRight">Gate type and attribute flags.  <br /></td></tr>
 <tr class="memitem:a3b7c8d509563099375ebfee08c77fe90" id="r_a3b7c8d509563099375ebfee08c77fe90"><td class="memItemLeft">uint8_t&#160;</td><td class="memItemRight"><a class="el" href="#a3b7c8d509563099375ebfee08c77fe90">ist</a></td></tr>
+<tr class="memdesc:a3b7c8d509563099375ebfee08c77fe90"><td class="mdescLeft">&#160;</td><td class="mdescRight">Interrupt Stack Table (IST) index.  <br /></td></tr>
 <tr class="memitem:a2fea347286de01c4820b6f2103de62e7" id="r_a2fea347286de01c4820b6f2103de62e7"><td class="memItemLeft">uint32_t&#160;</td><td class="memItemRight"><a class="el" href="#a2fea347286de01c4820b6f2103de62e7">offset_high</a></td></tr>
 <tr class="memitem:afed296e62f646aa82515e2108f6dea55" id="r_afed296e62f646aa82515e2108f6dea55"><td class="memItemLeft">uint16_t&#160;</td><td class="memItemRight"><a class="el" href="#afed296e62f646aa82515e2108f6dea55">offset_low</a></td></tr>
 <tr class="memitem:a1fa838e652e1648211189515b9767264" id="r_a1fa838e652e1648211189515b9767264"><td class="memItemLeft">uint16_t&#160;</td><td class="memItemRight"><a class="el" href="#a1fa838e652e1648211189515b9767264">offset_mid</a></td></tr>
@@ -113,8 +115,16 @@ Data Fields</h2></td></tr>
 <tr class="memitem:a48672773dc5cdd2328ee45c076b57db6" id="r_a48672773dc5cdd2328ee45c076b57db6"><td class="memItemLeft">uint16_t&#160;</td><td class="memItemRight"><a class="el" href="#a48672773dc5cdd2328ee45c076b57db6">selector</a></td></tr>
 </table>
 <a name="details" id="details"></a><h2 id="header-details" class="groupheader">Detailed Description</h2>
-<div class="textblock"><p>A single Interrupt Descriptor Table entry. </p>
-<p>Represents a 64-bit interrupt gate in the IDT. </p>
+<div class="textblock"><p>A single Interrupt Descriptor Table (IDT) gate descriptor. </p>
+<p>Represents a 16-byte interrupt gate entry in the x86_64 IDT.</p>
+<p>Each descriptor defines:</p><ul>
+<li>the target interrupt service routine address</li>
+<li>the target code segment selector</li>
+<li>gate privilege attributes</li>
+<li>optional Interrupt Stack Table (IST) switching</li>
+</ul>
+<p>The processor indexes this structure using the interrupt vector number during interrupt or exception dispatch.</p>
+<p>Structure layout follows the Intel-defined 64-bit interrupt gate format. </p>
 </div><a name="doc-variable-members" id="doc-variable-members"></a><h2 id="header-doc-variable-members" class="groupheader">Field Documentation</h2>
 <a id="af49b6eed9e508bac9bb0fe560e0cd2ec" name="af49b6eed9e508bac9bb0fe560e0cd2ec"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#af49b6eed9e508bac9bb0fe560e0cd2ec">&#9670;&#160;</a></span>flags</h2>
@@ -127,7 +137,11 @@ Data Fields</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
-<p>Gate type and attributes </p>
+
+<p>Gate type and attribute flags. </p>
+<p>Common value:</p><ul>
+<li>0x8E = Present | Ring 0 | 64-bit Interrupt Gate </li>
+</ul>
 
 </div>
 </div>
@@ -142,7 +156,9 @@ Data Fields</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
-<p>Interrupt Stack Table offest </p>
+
+<p>Interrupt Stack Table (IST) index. </p>
+<p>Bits 0-2 select an IST entry from the Task State Segment (TSS). A value of 0 disables IST switching. </p>
 
 </div>
 </div>
@@ -202,7 +218,7 @@ Data Fields</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
-<p>Reserved, must be zero </p>
+<p>Reserved field </p>
 
 </div>
 </div>
@@ -217,7 +233,7 @@ Data Fields</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
-<p>Code segment selector </p>
+<p>Kernel code segment from the GDT </p>
 
 </div>
 </div>

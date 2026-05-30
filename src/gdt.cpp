@@ -49,6 +49,7 @@
  */
 
 #include "gdt.h"
+#include "drivers/serial_port.h"
 
 
 extern "C" void gdt_flush(struct GDTDescriptor* gdtr);
@@ -95,7 +96,6 @@ void WriteTSS(int index, TSSEntry* tss)
     uint64_t base = (uint64_t)tss;
     uint32_t limit = sizeof(TSSEntry) - 1;
     
-
     TSSDescriptor* desc = (TSSDescriptor*)&gdt[index];
 
     desc->limit_low = limit & 0xFFFF;
@@ -124,11 +124,13 @@ void InitGDT()
     SetGDTEntry(4, 0, 0, 0xFA, 0x20); // User Code:   P=1, DPL=3, S=1, Type=0xA | Flags: L=1
 
     memset(&tss, 0, sizeof(TSSEntry));
-    tss.rsp0 = (uint64_t)&kernel_stack[sizeof(kernel_stack)];
+    tss.rsp0 = (uint64_t)kernel_stack + sizeof(kernel_stack);
     tss.iomap_base = sizeof(TSSEntry);
     WriteTSS(5, &tss);
     
     gdt_flush(&gdtr);
     tss_flush();
+
+    uint64_t* gdt_raw = (uint64_t*)&gdt;
 
 }

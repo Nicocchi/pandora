@@ -1,10 +1,12 @@
 var annotated_dup =
 [
+    [ "ACPISDTHeader", "structACPISDTHeader.html", "structACPISDTHeader" ],
     [ "GDTDescriptor", "structGDTDescriptor.html", "structGDTDescriptor" ],
     [ "IDTEntry", "structIDTEntry.html", "structIDTEntry" ],
     [ "IDTPtr", "structIDTPtr.html", "structIDTPtr" ],
     [ "InterruptFrame", "structInterruptFrame.html", "structInterruptFrame" ],
     [ "InterruptRegisters", "structInterruptRegisters.html", "structInterruptRegisters" ],
+    [ "ISOEntry", "structISOEntry.html", "structISOEntry" ],
     [ "KFramebuffer", "structKFramebuffer.html", "structKFramebuffer" ],
     [ "KRenderer", "structKRenderer.html", "structKRenderer" ],
     [ "limine_bootloader_info_request", "structlimine__bootloader__info__request.html", "structlimine__bootloader__info__request" ],
@@ -63,8 +65,14 @@ var annotated_dup =
     [ "limine_video_mode", "structlimine__video__mode.html", "structlimine__video__mode" ],
     [ "limine_x86_64_keep_iommu_request", "structlimine__x86__64__keep__iommu__request.html", "structlimine__x86__64__keep__iommu__request" ],
     [ "limine_x86_64_keep_iommu_response", "structlimine__x86__64__keep__iommu__response.html", "structlimine__x86__64__keep__iommu__response" ],
+    [ "MADTEntry", "structMADTEntry.html", "structMADTEntry" ],
+    [ "MADTHeader", "structMADTHeader.html", "structMADTHeader" ],
+    [ "MADTIOApic", "structMADTIOApic.html", "structMADTIOApic" ],
+    [ "MADTIso", "structMADTIso.html", "structMADTIso" ],
+    [ "MADTLocalAPIC", "structMADTLocalAPIC.html", "structMADTLocalAPIC" ],
     [ "PSF1_Font", "structPSF1__Font.html", "structPSF1__Font" ],
     [ "PSF1_Header", "structPSF1__Header.html", "structPSF1__Header" ],
+    [ "RSDP2", "structRSDP2.html", "structRSDP2" ],
     [ "SegmentDescriptor", "structSegmentDescriptor.html", "structSegmentDescriptor" ],
     [ "TSSDescriptor", "structTSSDescriptor.html", "structTSSDescriptor" ],
     [ "TSSEntry", "structTSSEntry.html", "structTSSEntry" ]

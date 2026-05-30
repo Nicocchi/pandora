@@ -1,10 +1,10 @@
 var searchData=
 [
-  ['features_0',['Features',['../md_README.html#autotoc_md8',1,'']]],
+  ['features_0',['Features',['../md_README.html#autotoc_md10',1,'']]],
   ['firmware_5ftype_1',['firmware_type',['../structlimine__firmware__type__response.html#aa90333981ef1f0a5b7c3141be9189c1a',1,'limine_firmware_type_response']]],
   ['flags_2',['Build Flags',['../md_README.html#autotoc_md38',1,'']]],
-  ['flags_3',['flags',['../structlimine__mp__request.html#acc63f4d342d0cd57062f403d0d8b041b',1,'limine_mp_request::flags'],['../structlimine__internal__module.html#a6c46ee94297d0f14cdcd512cd84d3252',1,'limine_internal_module::flags'],['../structIDTEntry.html#af49b6eed9e508bac9bb0fe560e0cd2ec',1,'IDTEntry::flags']]],
-  ['font_4',['Console Font',['../md_README.html#autotoc_md50',1,'']]],
+  ['flags_3',['flags',['../structlimine__mp__request.html#acc63f4d342d0cd57062f403d0d8b041b',1,'limine_mp_request::flags'],['../structlimine__internal__module.html#a6c46ee94297d0f14cdcd512cd84d3252',1,'limine_internal_module::flags'],['../structMADTHeader.html#a3cdc988e1f7a716253b957bb1993926e',1,'MADTHeader::flags'],['../structMADTLocalAPIC.html#acfa796bc59a2c4df8b097f9699d51f01',1,'MADTLocalAPIC::flags'],['../structMADTIso.html#a425c6a98761c80aec311eb993997607c',1,'MADTIso::flags'],['../structISOEntry.html#a6ae3f5a90accb5bf129e038b98404c4f',1,'ISOEntry::flags'],['../structIDTEntry.html#af49b6eed9e508bac9bb0fe560e0cd2ec',1,'IDTEntry::flags']]],
+  ['font_4',['Console Font',['../md_README.html#autotoc_md51',1,'']]],
   ['font_5',['font',['../structKRenderer.html#af5fe086135fd66e3e18d26ea4ad8fddc',1,'KRenderer']]],
   ['font_20v1_20constants_6',['PC Screen Font v1 Constants',['../group__PSF1__Macros.html',1,'']]],
   ['font_5fheight_7',['font_height',['../structlimine__flanterm__fb__init__params.html#ad11e762bc6c88da54016b08a68f6058a',1,'limine_flanterm_fb_init_params']]],

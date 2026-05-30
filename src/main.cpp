@@ -23,22 +23,9 @@
 #include <drivers/serial_port.h>
 #include "gdt.h"
 #include "interrupts/idt.h"
+#include "interrupts/pit.h"
+#include "interrupts/apic.h"
 #include "common.h"
-
-/**
- * @brief       Triggers a critical system breakdown state, piping messages across diagnostic outputs.
- * @details     Simultaneously dumps failure summaries across the serial COM1 port interface 
- *              and onto the active linear graphical display before hanging the CPU execution chain.
- * @param[in]   str Null-terminated ASCII error diagnostic summary string describing the system failure.
- */
-void KernelPanic(const char *str)
-{
-    SerialWriteString(COM1_PORT, "Kernel Panic: ");
-    SerialWriteString(COM1_PORT, str);
-    kprintf("Kernel Panic: ");
-    kprintf(str);
-    hcf();
-}
 
 /**
  * @name        C++ Initialization Pointers
@@ -140,36 +127,26 @@ extern "C" void kmain(void)
     kRenderer.framebuffer.pitch = framebuffer->pitch;
     kRenderer.framebuffer.pixelsPerScanLine = framebuffer->pitch / 4;
     SerialWriteString(COM1_PORT, "kernel renderer set\n");
+    SerialWriteString(COM1_PORT, "kernel renderer set2\n");
 
-    InitGDT();
-    InitIDT();
-
-    uint64_t a = 1;
-    uint64_t b = 0;
-
-    asm volatile (
-        "xor %%rdx, %%rdx\n"
-        "mov %0, %%rax\n"
-        "div %1\n"
-        :
-        : "r"(a), "r"(b)
-        : "rax", "rdx"
-    );
-
-    // asm volatile("xor rax, rax\n" "div rax\n");
-
-    // asm volatile ("int3");
-    // asm volatile ("div %0" : : "r"(0));
-
-    // IDTPtr test;
-    // asm volatile("sidt %0" : "=m"(test));
-
-    // kprintf("IDT base: %llx\n", test.base);
+    SerialWriteString(COM1_PORT, " \n");
 
     ClearScreen(BLACK, true);
 
-    kprintf("I really love Nanahira!\n");
-    kprintf("Like a lot, a whole lot!\n");
+    InitGDT();
+    InitIDT();
+    InitAPIC();
+    DisablePIC();
+    InitLAPIC();
+    InitIOAPIC();
 
+    kprintf("APIC initialized\n");
+
+    InitPit(100); // IRQ0 -> vector 32
+
+
+    kprintf("I really love Nanahira!\n");
+
+    EnableInterrupts();
     hcf();
 }

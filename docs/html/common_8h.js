@@ -2,6 +2,9 @@ var common_8h =
 [
     [ "InterruptRegisters", "structInterruptRegisters.html", "structInterruptRegisters" ],
     [ "hcf", "common_8h.html#aedf4780efccd3a32bf75b0d9f08b2f47", null ],
+    [ "InPortB", "common_8h.html#a6ac04cddfda513b061145d858d2d0dda", null ],
+    [ "IOWait", "common_8h.html#a8d7bdfa05173a579497be191e980aa98", null ],
+    [ "KernelPanic", "common_8h.html#ad7b50e0ae8664ed813fb4267b6a06fa4", null ],
     [ "OutPortB", "common_8h.html#a07bda16dea6de68bfb16089407285fc3", null ],
     [ "GDT_KERNEL_CODE", "common_8h.html#a150f7baacab741982d7ec9865d6888b1", null ],
     [ "GDT_KERNEL_DATA", "common_8h.html#a7541c82c7335086040eb550dc1e5ea7c", null ],

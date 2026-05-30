@@ -97,7 +97,7 @@ $(function(){initNavTree('structInterruptFrame.html','',''); });
 </div><!--header-->
 <div class="contents">
 
-<p>CPU register state captured during an interrupt.  
+<p>CPU register state captured during interrupt dispatch.  
  <a href="#details">More...</a></p>
 
 <p><code>#include &quot;<a class="el" href="idt_8h_source.html">idt.h</a>&quot;</code></p>
@@ -124,12 +124,23 @@ Data Fields</h2></td></tr>
 <tr class="memitem:a57b4354106affd96671a202b3a43080b" id="r_a57b4354106affd96671a202b3a43080b"><td class="memItemLeft">uint64_t&#160;</td><td class="memItemRight"><a class="el" href="#a57b4354106affd96671a202b3a43080b">rflags</a></td></tr>
 <tr class="memitem:a365f76f37ffc860a1afc2bdc2240da7f" id="r_a365f76f37ffc860a1afc2bdc2240da7f"><td class="memItemLeft">uint64_t&#160;</td><td class="memItemRight"><a class="el" href="#a365f76f37ffc860a1afc2bdc2240da7f">rip</a></td></tr>
 <tr class="memitem:a0b7555afec76605b1d372a894861e2e9" id="r_a0b7555afec76605b1d372a894861e2e9"><td class="memItemLeft">uint64_t&#160;</td><td class="memItemRight"><a class="el" href="#a0b7555afec76605b1d372a894861e2e9">rsi</a></td></tr>
-<tr class="memitem:a465b8ccdc5b7dc8b01fe441d8d6ea5b3" id="r_a465b8ccdc5b7dc8b01fe441d8d6ea5b3"><td class="memItemLeft">uint64_t&#160;</td><td class="memItemRight"><a class="el" href="#a465b8ccdc5b7dc8b01fe441d8d6ea5b3">rsp</a></td></tr>
-<tr class="memitem:a3d5c43962252a0604c31c0c835f782ec" id="r_a3d5c43962252a0604c31c0c835f782ec"><td class="memItemLeft">uint64_t&#160;</td><td class="memItemRight"><a class="el" href="#a3d5c43962252a0604c31c0c835f782ec">ss</a></td></tr>
 </table>
 <a name="details" id="details"></a><h2 id="header-details" class="groupheader">Detailed Description</h2>
-<div class="textblock"><p>CPU register state captured during an interrupt. </p>
-<p>This structure MUST exactly match the stack layout created by the ISR assembly stubs in <a class="el" href="idt_8asm.html">idt.asm</a>. </p>
+<div class="textblock"><p>CPU register state captured during interrupt dispatch. </p>
+<p>This structure represents the complete processor state preserved by the low-level ISR assembly stubs before control is transferred into the C++ interrupt dispatcher.</p>
+<p>The layout MUST exactly match the push order implemented in <span class="tt"><a class="el" href="idt_8asm.html">idt.asm</a></span>. Any modification to this structure requires corresponding assembly updates.</p>
+<p>The frame contains:</p><ul>
+<li>General-purpose registers</li>
+<li>Interrupt vector number</li>
+<li>CPU-generated error code</li>
+<li>Automatically-pushed processor state</li>
+</ul>
+<p>The final fields (<span class="tt"><a class="el" href="#a365f76f37ffc860a1afc2bdc2240da7f">rip</a></span>, <span class="tt"><a class="el" href="#aea70c57d0f9a5c7a00418de4cb0e745c">cs</a></span>, and <span class="tt"><a class="el" href="#a57b4354106affd96671a202b3a43080b">rflags</a></span>) are automatically pushed by the processor during interrupt or exception entry.</p>
+<p>For privilege-level transitions, the CPU may additionally push:</p><ul>
+<li>RSP</li>
+<li>SS</li>
+</ul>
+<p>Those fields are currently omitted because interrupts originate only from ring 0 kernel execution. </p>
 </div><a name="doc-variable-members" id="doc-variable-members"></a><h2 id="header-doc-variable-members" class="groupheader">Field Documentation</h2>
 <a id="aea70c57d0f9a5c7a00418de4cb0e745c" name="aea70c57d0f9a5c7a00418de4cb0e745c"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#aea70c57d0f9a5c7a00418de4cb0e745c">&#9670;&#160;</a></span>cs</h2>
@@ -142,6 +153,7 @@ Data Fields</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
+<p>Code segment selector </p>
 
 </div>
 </div>
@@ -156,6 +168,7 @@ Data Fields</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
+<p>CPU-generated or synthetic error code </p>
 
 </div>
 </div>
@@ -170,6 +183,7 @@ Data Fields</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
+<p>Interrupt vector number </p>
 
 </div>
 </div>
@@ -184,6 +198,7 @@ Data Fields</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
+<p>General-purpose register R10 </p>
 
 </div>
 </div>
@@ -198,6 +213,7 @@ Data Fields</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
+<p>General-purpose register R11 </p>
 
 </div>
 </div>
@@ -212,6 +228,7 @@ Data Fields</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
+<p>General-purpose register R12 </p>
 
 </div>
 </div>
@@ -226,6 +243,7 @@ Data Fields</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
+<p>General-purpose register R13 </p>
 
 </div>
 </div>
@@ -240,6 +258,7 @@ Data Fields</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
+<p>General-purpose register R14 </p>
 
 </div>
 </div>
@@ -254,6 +273,7 @@ Data Fields</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
+<p>General-purpose register R15 </p>
 
 </div>
 </div>
@@ -268,6 +288,7 @@ Data Fields</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
+<p>General-purpose register R8 </p>
 
 </div>
 </div>
@@ -282,6 +303,7 @@ Data Fields</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
+<p>General-purpose register R9 </p>
 
 </div>
 </div>
@@ -296,6 +318,7 @@ Data Fields</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
+<p>Return value register </p>
 
 </div>
 </div>
@@ -310,6 +333,7 @@ Data Fields</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
+<p>Base pointer register </p>
 
 </div>
 </div>
@@ -324,6 +348,7 @@ Data Fields</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
+<p>General-purpose register RBX </p>
 
 </div>
 </div>
@@ -338,6 +363,7 @@ Data Fields</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
+<p>Fourth function argument register </p>
 
 </div>
 </div>
@@ -352,6 +378,7 @@ Data Fields</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
+<p>First function argument register </p>
 
 </div>
 </div>
@@ -366,6 +393,7 @@ Data Fields</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
+<p>Third function argument register </p>
 
 </div>
 </div>
@@ -380,6 +408,7 @@ Data Fields</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
+<p>Processor flags register </p>
 
 </div>
 </div>
@@ -394,6 +423,7 @@ Data Fields</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
+<p>Instruction pointer at interrupt </p>
 
 </div>
 </div>
@@ -408,34 +438,7 @@ Data Fields</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
-
-</div>
-</div>
-<a id="a465b8ccdc5b7dc8b01fe441d8d6ea5b3" name="a465b8ccdc5b7dc8b01fe441d8d6ea5b3"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a465b8ccdc5b7dc8b01fe441d8d6ea5b3">&#9670;&#160;</a></span>rsp</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">uint64_t InterruptFrame::rsp</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-</div>
-</div>
-<a id="a3d5c43962252a0604c31c0c835f782ec" name="a3d5c43962252a0604c31c0c835f782ec"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a3d5c43962252a0604c31c0c835f782ec">&#9670;&#160;</a></span>ss</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">uint64_t InterruptFrame::ss</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
+<p>Second function argument register </p>
 
 </div>
 </div>

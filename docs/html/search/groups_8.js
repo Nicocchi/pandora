@@ -1,6 +1,5 @@
 var searchData=
 [
-  ['screen_20font_20v1_20constants_0',['PC Screen Font v1 Constants',['../group__PSF1__Macros.html',1,'']]],
-  ['segmentation_20task_20state_20management_1',['CPU Segmentation &amp;amp; Task State Management',['../group__CPU__SEGMENTATION.html',1,'']]],
-  ['state_20management_2',['CPU Segmentation &amp;amp; Task State Management',['../group__CPU__SEGMENTATION.html',1,'']]]
+  ['madt_20structures_0',['MADT Structures',['../group__MADT__structs.html',1,'']]],
+  ['management_1',['CPU Segmentation &amp;amp; Task State Management',['../group__CPU__SEGMENTATION.html',1,'']]]
 ];

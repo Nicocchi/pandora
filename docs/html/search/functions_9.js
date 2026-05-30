@@ -1,4 +1,8 @@
 var searchData=
 [
-  ['remappic_0',['RemapPIC',['../idt_8cpp.html#a4e8240380bc281a34ca197d3fa77f6f9',1,'idt.cpp']]]
+  ['mapmmio_0',['MapMMIO',['../apic_8cpp.html#a7b5ee3756b84299d57c23108a0c7f055',1,'apic.cpp']]],
+  ['memcmp_1',['memcmp',['../string_8cpp.html#a9e6df54ee04e18a3772335580e2ed872',1,'memcmp(const void *s1, const void *s2, size_t n):&#160;string.cpp'],['../string_8h.html#a9e6df54ee04e18a3772335580e2ed872',1,'memcmp(const void *s1, const void *s2, size_t n):&#160;string.cpp']]],
+  ['memcpy_2',['memcpy',['../string_8cpp.html#a2608ce0c6e7fd7f19fadeee9b01642e2',1,'memcpy(void *__restrict dest, const void *__restrict src, size_t n):&#160;string.cpp'],['../string_8h.html#a2608ce0c6e7fd7f19fadeee9b01642e2',1,'memcpy(void *__restrict dest, const void *__restrict src, size_t n):&#160;string.cpp']]],
+  ['memmove_3',['memmove',['../string_8cpp.html#a340d11725e5c81a874f508fbcdf1c5ef',1,'memmove(void *dest, const void *src, size_t n):&#160;string.cpp'],['../string_8h.html#a340d11725e5c81a874f508fbcdf1c5ef',1,'memmove(void *dest, const void *src, size_t n):&#160;string.cpp']]],
+  ['memset_4',['memset',['../string_8cpp.html#a313175102214d45434bf045db18dddf0',1,'memset(void *s, int c, size_t n):&#160;string.cpp'],['../string_8h.html#a313175102214d45434bf045db18dddf0',1,'memset(void *s, int c, size_t n):&#160;string.cpp']]]
 ];

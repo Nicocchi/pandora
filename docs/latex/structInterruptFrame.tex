@@ -2,7 +2,7 @@
 \hypertarget{structInterruptFrame}{}\label{structInterruptFrame}\index{InterruptFrame@{InterruptFrame}}
 
 
-CPU register state captured during an interrupt.  
+CPU register state captured during interrupt dispatch.  
 
 
 
@@ -51,17 +51,33 @@ uint64\+\_\+t \doxymbox{\hyperlink{structInterruptFrame_a57b4354106affd96671a202
 uint64\+\_\+t \doxymbox{\hyperlink{structInterruptFrame_a365f76f37ffc860a1afc2bdc2240da7f}{rip}}
 \item 
 uint64\+\_\+t \doxymbox{\hyperlink{structInterruptFrame_a0b7555afec76605b1d372a894861e2e9}{rsi}}
-\item 
-uint64\+\_\+t \doxymbox{\hyperlink{structInterruptFrame_a465b8ccdc5b7dc8b01fe441d8d6ea5b3}{rsp}}
-\item 
-uint64\+\_\+t \doxymbox{\hyperlink{structInterruptFrame_a3d5c43962252a0604c31c0c835f782ec}{ss}}
 \end{DoxyCompactItemize}
 
 
 \doxysubsection{Detailed Description}
-CPU register state captured during an interrupt. 
+CPU register state captured during interrupt dispatch. 
 
-This structure MUST exactly match the stack layout created by the ISR assembly stubs in \doxylink{idt_8asm}{idt.\+asm}. 
+This structure represents the complete processor state preserved by the low-\/level ISR assembly stubs before control is transferred into the C++ interrupt dispatcher.
+
+The layout MUST exactly match the push order implemented in {\ttfamily \doxylink{idt_8asm}{idt.\+asm}}. Any modification to this structure requires corresponding assembly updates.
+
+The frame contains:\+
+\begin{DoxyItemize}
+\item General-\/purpose registers
+\item Interrupt vector number
+\item CPU-\/generated error code
+\item Automatically-\/pushed processor state
+\end{DoxyItemize}
+
+The final fields ({\ttfamily \doxylink{structInterruptFrame_a365f76f37ffc860a1afc2bdc2240da7f}{rip}}, {\ttfamily \doxylink{structInterruptFrame_aea70c57d0f9a5c7a00418de4cb0e745c}{cs}}, and {\ttfamily \doxylink{structInterruptFrame_a57b4354106affd96671a202b3a43080b}{rflags}}) are automatically pushed by the processor during interrupt or exception entry.
+
+For privilege-\/level transitions, the CPU may additionally push:\+
+\begin{DoxyItemize}
+\item RSP
+\item SS
+\end{DoxyItemize}
+
+Those fields are currently omitted because interrupts originate only from ring 0 kernel execution. 
 
 \label{doc-variable-members}
 \Hypertarget{structInterruptFrame_doc-variable-members}
@@ -72,133 +88,121 @@ This structure MUST exactly match the stack layout created by the ISR assembly s
 {\footnotesize\ttfamily \label{structInterruptFrame_aea70c57d0f9a5c7a00418de4cb0e745c} 
 uint64\+\_\+t Interrupt\+Frame::\+cs}
 
-\Hypertarget{structInterruptFrame_a9fa49fecc4cbdc4cf6f0ab33b0f68864}\index{InterruptFrame@{InterruptFrame}!error\_code@{error\_code}}
+Code segment selector \Hypertarget{structInterruptFrame_a9fa49fecc4cbdc4cf6f0ab33b0f68864}\index{InterruptFrame@{InterruptFrame}!error\_code@{error\_code}}
 \index{error\_code@{error\_code}!InterruptFrame@{InterruptFrame}}
 \doxysubsubsection{\texorpdfstring{error\_code}{error\_code}}
 {\footnotesize\ttfamily \label{structInterruptFrame_a9fa49fecc4cbdc4cf6f0ab33b0f68864} 
 uint64\+\_\+t Interrupt\+Frame::\+error\+\_\+code}
 
-\Hypertarget{structInterruptFrame_a52508bbe6286c1553f1f09d531cccf1d}\index{InterruptFrame@{InterruptFrame}!interrupt\_number@{interrupt\_number}}
+CPU-\/generated or synthetic error code \Hypertarget{structInterruptFrame_a52508bbe6286c1553f1f09d531cccf1d}\index{InterruptFrame@{InterruptFrame}!interrupt\_number@{interrupt\_number}}
 \index{interrupt\_number@{interrupt\_number}!InterruptFrame@{InterruptFrame}}
 \doxysubsubsection{\texorpdfstring{interrupt\_number}{interrupt\_number}}
 {\footnotesize\ttfamily \label{structInterruptFrame_a52508bbe6286c1553f1f09d531cccf1d} 
 uint64\+\_\+t Interrupt\+Frame::\+interrupt\+\_\+number}
 
-\Hypertarget{structInterruptFrame_a1c03f2fc47df5724693962a5a5cec331}\index{InterruptFrame@{InterruptFrame}!r10@{r10}}
+Interrupt vector number \Hypertarget{structInterruptFrame_a1c03f2fc47df5724693962a5a5cec331}\index{InterruptFrame@{InterruptFrame}!r10@{r10}}
 \index{r10@{r10}!InterruptFrame@{InterruptFrame}}
 \doxysubsubsection{\texorpdfstring{r10}{r10}}
 {\footnotesize\ttfamily \label{structInterruptFrame_a1c03f2fc47df5724693962a5a5cec331} 
 uint64\+\_\+t Interrupt\+Frame::\+r10}
 
-\Hypertarget{structInterruptFrame_a6b308b5ac528cc6aff28a3fe0e487a5b}\index{InterruptFrame@{InterruptFrame}!r11@{r11}}
+General-\/purpose register R10 \Hypertarget{structInterruptFrame_a6b308b5ac528cc6aff28a3fe0e487a5b}\index{InterruptFrame@{InterruptFrame}!r11@{r11}}
 \index{r11@{r11}!InterruptFrame@{InterruptFrame}}
 \doxysubsubsection{\texorpdfstring{r11}{r11}}
 {\footnotesize\ttfamily \label{structInterruptFrame_a6b308b5ac528cc6aff28a3fe0e487a5b} 
 uint64\+\_\+t Interrupt\+Frame::\+r11}
 
-\Hypertarget{structInterruptFrame_ad6b2f30163382eff3857cce271623f10}\index{InterruptFrame@{InterruptFrame}!r12@{r12}}
+General-\/purpose register R11 \Hypertarget{structInterruptFrame_ad6b2f30163382eff3857cce271623f10}\index{InterruptFrame@{InterruptFrame}!r12@{r12}}
 \index{r12@{r12}!InterruptFrame@{InterruptFrame}}
 \doxysubsubsection{\texorpdfstring{r12}{r12}}
 {\footnotesize\ttfamily \label{structInterruptFrame_ad6b2f30163382eff3857cce271623f10} 
 uint64\+\_\+t Interrupt\+Frame::\+r12}
 
-\Hypertarget{structInterruptFrame_a72e3c975caaafce58f070987b9ee4510}\index{InterruptFrame@{InterruptFrame}!r13@{r13}}
+General-\/purpose register R12 \Hypertarget{structInterruptFrame_a72e3c975caaafce58f070987b9ee4510}\index{InterruptFrame@{InterruptFrame}!r13@{r13}}
 \index{r13@{r13}!InterruptFrame@{InterruptFrame}}
 \doxysubsubsection{\texorpdfstring{r13}{r13}}
 {\footnotesize\ttfamily \label{structInterruptFrame_a72e3c975caaafce58f070987b9ee4510} 
 uint64\+\_\+t Interrupt\+Frame::\+r13}
 
-\Hypertarget{structInterruptFrame_a0a45c6a4d7aaad83848615b5f82ec724}\index{InterruptFrame@{InterruptFrame}!r14@{r14}}
+General-\/purpose register R13 \Hypertarget{structInterruptFrame_a0a45c6a4d7aaad83848615b5f82ec724}\index{InterruptFrame@{InterruptFrame}!r14@{r14}}
 \index{r14@{r14}!InterruptFrame@{InterruptFrame}}
 \doxysubsubsection{\texorpdfstring{r14}{r14}}
 {\footnotesize\ttfamily \label{structInterruptFrame_a0a45c6a4d7aaad83848615b5f82ec724} 
 uint64\+\_\+t Interrupt\+Frame::\+r14}
 
-\Hypertarget{structInterruptFrame_ab0abb6dc10c27e498b4bd6909119a622}\index{InterruptFrame@{InterruptFrame}!r15@{r15}}
+General-\/purpose register R14 \Hypertarget{structInterruptFrame_ab0abb6dc10c27e498b4bd6909119a622}\index{InterruptFrame@{InterruptFrame}!r15@{r15}}
 \index{r15@{r15}!InterruptFrame@{InterruptFrame}}
 \doxysubsubsection{\texorpdfstring{r15}{r15}}
 {\footnotesize\ttfamily \label{structInterruptFrame_ab0abb6dc10c27e498b4bd6909119a622} 
 uint64\+\_\+t Interrupt\+Frame::\+r15}
 
-\Hypertarget{structInterruptFrame_ae080f0548477aa657ab8ac6777bf7cf1}\index{InterruptFrame@{InterruptFrame}!r8@{r8}}
+General-\/purpose register R15 \Hypertarget{structInterruptFrame_ae080f0548477aa657ab8ac6777bf7cf1}\index{InterruptFrame@{InterruptFrame}!r8@{r8}}
 \index{r8@{r8}!InterruptFrame@{InterruptFrame}}
 \doxysubsubsection{\texorpdfstring{r8}{r8}}
 {\footnotesize\ttfamily \label{structInterruptFrame_ae080f0548477aa657ab8ac6777bf7cf1} 
 uint64\+\_\+t Interrupt\+Frame::\+r8}
 
-\Hypertarget{structInterruptFrame_adb28141ed8104ed0faf804a0d5439ad3}\index{InterruptFrame@{InterruptFrame}!r9@{r9}}
+General-\/purpose register R8 \Hypertarget{structInterruptFrame_adb28141ed8104ed0faf804a0d5439ad3}\index{InterruptFrame@{InterruptFrame}!r9@{r9}}
 \index{r9@{r9}!InterruptFrame@{InterruptFrame}}
 \doxysubsubsection{\texorpdfstring{r9}{r9}}
 {\footnotesize\ttfamily \label{structInterruptFrame_adb28141ed8104ed0faf804a0d5439ad3} 
 uint64\+\_\+t Interrupt\+Frame::\+r9}
 
-\Hypertarget{structInterruptFrame_a4bbef31a7276c67e35487a6764811872}\index{InterruptFrame@{InterruptFrame}!rax@{rax}}
+General-\/purpose register R9 \Hypertarget{structInterruptFrame_a4bbef31a7276c67e35487a6764811872}\index{InterruptFrame@{InterruptFrame}!rax@{rax}}
 \index{rax@{rax}!InterruptFrame@{InterruptFrame}}
 \doxysubsubsection{\texorpdfstring{rax}{rax}}
 {\footnotesize\ttfamily \label{structInterruptFrame_a4bbef31a7276c67e35487a6764811872} 
 uint64\+\_\+t Interrupt\+Frame::\+rax}
 
-\Hypertarget{structInterruptFrame_ab699a90c3fc30a818743d031fd270940}\index{InterruptFrame@{InterruptFrame}!rbp@{rbp}}
+Return value register \Hypertarget{structInterruptFrame_ab699a90c3fc30a818743d031fd270940}\index{InterruptFrame@{InterruptFrame}!rbp@{rbp}}
 \index{rbp@{rbp}!InterruptFrame@{InterruptFrame}}
 \doxysubsubsection{\texorpdfstring{rbp}{rbp}}
 {\footnotesize\ttfamily \label{structInterruptFrame_ab699a90c3fc30a818743d031fd270940} 
 uint64\+\_\+t Interrupt\+Frame::\+rbp}
 
-\Hypertarget{structInterruptFrame_a98b97ff068a6343d239c0b2c850ad39a}\index{InterruptFrame@{InterruptFrame}!rbx@{rbx}}
+Base pointer register \Hypertarget{structInterruptFrame_a98b97ff068a6343d239c0b2c850ad39a}\index{InterruptFrame@{InterruptFrame}!rbx@{rbx}}
 \index{rbx@{rbx}!InterruptFrame@{InterruptFrame}}
 \doxysubsubsection{\texorpdfstring{rbx}{rbx}}
 {\footnotesize\ttfamily \label{structInterruptFrame_a98b97ff068a6343d239c0b2c850ad39a} 
 uint64\+\_\+t Interrupt\+Frame::\+rbx}
 
-\Hypertarget{structInterruptFrame_aacbd315e64c83fd62b33710b105c1925}\index{InterruptFrame@{InterruptFrame}!rcx@{rcx}}
+General-\/purpose register RBX \Hypertarget{structInterruptFrame_aacbd315e64c83fd62b33710b105c1925}\index{InterruptFrame@{InterruptFrame}!rcx@{rcx}}
 \index{rcx@{rcx}!InterruptFrame@{InterruptFrame}}
 \doxysubsubsection{\texorpdfstring{rcx}{rcx}}
 {\footnotesize\ttfamily \label{structInterruptFrame_aacbd315e64c83fd62b33710b105c1925} 
 uint64\+\_\+t Interrupt\+Frame::\+rcx}
 
-\Hypertarget{structInterruptFrame_ab4cf37850dacb09f6f85ebfe78839174}\index{InterruptFrame@{InterruptFrame}!rdi@{rdi}}
+Fourth function argument register \Hypertarget{structInterruptFrame_ab4cf37850dacb09f6f85ebfe78839174}\index{InterruptFrame@{InterruptFrame}!rdi@{rdi}}
 \index{rdi@{rdi}!InterruptFrame@{InterruptFrame}}
 \doxysubsubsection{\texorpdfstring{rdi}{rdi}}
 {\footnotesize\ttfamily \label{structInterruptFrame_ab4cf37850dacb09f6f85ebfe78839174} 
 uint64\+\_\+t Interrupt\+Frame::\+rdi}
 
-\Hypertarget{structInterruptFrame_a590c1f482360308efd9b59249356338a}\index{InterruptFrame@{InterruptFrame}!rdx@{rdx}}
+First function argument register \Hypertarget{structInterruptFrame_a590c1f482360308efd9b59249356338a}\index{InterruptFrame@{InterruptFrame}!rdx@{rdx}}
 \index{rdx@{rdx}!InterruptFrame@{InterruptFrame}}
 \doxysubsubsection{\texorpdfstring{rdx}{rdx}}
 {\footnotesize\ttfamily \label{structInterruptFrame_a590c1f482360308efd9b59249356338a} 
 uint64\+\_\+t Interrupt\+Frame::\+rdx}
 
-\Hypertarget{structInterruptFrame_a57b4354106affd96671a202b3a43080b}\index{InterruptFrame@{InterruptFrame}!rflags@{rflags}}
+Third function argument register \Hypertarget{structInterruptFrame_a57b4354106affd96671a202b3a43080b}\index{InterruptFrame@{InterruptFrame}!rflags@{rflags}}
 \index{rflags@{rflags}!InterruptFrame@{InterruptFrame}}
 \doxysubsubsection{\texorpdfstring{rflags}{rflags}}
 {\footnotesize\ttfamily \label{structInterruptFrame_a57b4354106affd96671a202b3a43080b} 
 uint64\+\_\+t Interrupt\+Frame::\+rflags}
 
-\Hypertarget{structInterruptFrame_a365f76f37ffc860a1afc2bdc2240da7f}\index{InterruptFrame@{InterruptFrame}!rip@{rip}}
+Processor flags register \Hypertarget{structInterruptFrame_a365f76f37ffc860a1afc2bdc2240da7f}\index{InterruptFrame@{InterruptFrame}!rip@{rip}}
 \index{rip@{rip}!InterruptFrame@{InterruptFrame}}
 \doxysubsubsection{\texorpdfstring{rip}{rip}}
 {\footnotesize\ttfamily \label{structInterruptFrame_a365f76f37ffc860a1afc2bdc2240da7f} 
 uint64\+\_\+t Interrupt\+Frame::\+rip}
 
-\Hypertarget{structInterruptFrame_a0b7555afec76605b1d372a894861e2e9}\index{InterruptFrame@{InterruptFrame}!rsi@{rsi}}
+Instruction pointer at interrupt \Hypertarget{structInterruptFrame_a0b7555afec76605b1d372a894861e2e9}\index{InterruptFrame@{InterruptFrame}!rsi@{rsi}}
 \index{rsi@{rsi}!InterruptFrame@{InterruptFrame}}
 \doxysubsubsection{\texorpdfstring{rsi}{rsi}}
 {\footnotesize\ttfamily \label{structInterruptFrame_a0b7555afec76605b1d372a894861e2e9} 
 uint64\+\_\+t Interrupt\+Frame::\+rsi}
 
-\Hypertarget{structInterruptFrame_a465b8ccdc5b7dc8b01fe441d8d6ea5b3}\index{InterruptFrame@{InterruptFrame}!rsp@{rsp}}
-\index{rsp@{rsp}!InterruptFrame@{InterruptFrame}}
-\doxysubsubsection{\texorpdfstring{rsp}{rsp}}
-{\footnotesize\ttfamily \label{structInterruptFrame_a465b8ccdc5b7dc8b01fe441d8d6ea5b3} 
-uint64\+\_\+t Interrupt\+Frame::\+rsp}
-
-\Hypertarget{structInterruptFrame_a3d5c43962252a0604c31c0c835f782ec}\index{InterruptFrame@{InterruptFrame}!ss@{ss}}
-\index{ss@{ss}!InterruptFrame@{InterruptFrame}}
-\doxysubsubsection{\texorpdfstring{ss}{ss}}
-{\footnotesize\ttfamily \label{structInterruptFrame_a3d5c43962252a0604c31c0c835f782ec} 
-uint64\+\_\+t Interrupt\+Frame::\+ss}
-
-
+Second function argument register 
 
 The documentation for this struct was generated from the following file:\+\begin{DoxyCompactItemize}
 \item 

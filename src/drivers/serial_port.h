@@ -43,4 +43,4 @@ void SerialWrite(uint16_t port, char c);
  * @param port The base I/O port address
  * @param str Pointer to the null-terminated string
  */
-void SerialWriteString(uint16_t port, const char* str);
+void SerialWriteString(uint16_t port, const char *fmt, ...);

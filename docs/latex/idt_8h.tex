@@ -2,7 +2,7 @@
 \hypertarget{idt_8h}{}\label{idt_8h}\index{src/interrupts/idt.h@{src/interrupts/idt.h}}
 
 
-Interrupt Descriptor Table (IDT) structures and interrupt handling definitions.  
+Interrupt Descriptor Table (IDT) structures and interrupt subsystem interfaces.  
 
 
 {\ttfamily \+\#include $<$stdint.\+h$>$}\newline
@@ -11,31 +11,41 @@ Interrupt Descriptor Table (IDT) structures and interrupt handling definitions.
 \begin{DoxyCompactItemize}
 \item 
 struct \doxymbox{\hyperlink{structIDTEntry}{IDTEntry}}
-\begin{DoxyCompactList}\small\item\em A single Interrupt Descriptor Table entry. \end{DoxyCompactList}\item 
+\begin{DoxyCompactList}\small\item\em A single Interrupt Descriptor Table (IDT) gate descriptor. \end{DoxyCompactList}\item 
 struct \doxymbox{\hyperlink{structIDTPtr}{IDTPtr}}
 \begin{DoxyCompactList}\small\item\em Structure used by the lidt instruction. \end{DoxyCompactList}\item 
 struct \doxymbox{\hyperlink{structInterruptFrame}{Interrupt\+Frame}}
-\begin{DoxyCompactList}\small\item\em CPU register state captured during an interrupt. \end{DoxyCompactList}\end{DoxyCompactItemize}
+\begin{DoxyCompactList}\small\item\em CPU register state captured during interrupt dispatch. \end{DoxyCompactList}\end{DoxyCompactItemize}
 \doxysubsubsection*{Typedefs}
 \begin{DoxyCompactItemize}
 \item 
 typedef struct IDTEntry \doxymbox{\hyperlink{idt_8h_a7d48e9120780d3cf6a3d7ef1d9488260}{IDTEntry}}
-\begin{DoxyCompactList}\small\item\em A single Interrupt Descriptor Table entry. \end{DoxyCompactList}\item 
+\begin{DoxyCompactList}\small\item\em A single Interrupt Descriptor Table (IDT) gate descriptor. \end{DoxyCompactList}\item 
 typedef struct IDTPtr \doxymbox{\hyperlink{idt_8h_a7191695ad6f126dd6d33f792fd6b7547}{IDTPtr}}
 \begin{DoxyCompactList}\small\item\em Structure used by the lidt instruction. \end{DoxyCompactList}\item 
 typedef struct Interrupt\+Frame \doxymbox{\hyperlink{idt_8h_a4f3bc549e17be026d2f1bc1a045b7227}{Interrupt\+Frame}}
-\begin{DoxyCompactList}\small\item\em CPU register state captured during an interrupt. \end{DoxyCompactList}\end{DoxyCompactItemize}
+\begin{DoxyCompactList}\small\item\em CPU register state captured during interrupt dispatch. \end{DoxyCompactList}\item 
+typedef void(\texorpdfstring{$\ast$}{*} \doxymbox{\hyperlink{idt_8h_adccf2dbfed381ac42b105efacb4fe4df}{Interrupt\+Handler}}) (\doxymbox{\hyperlink{structInterruptFrame}{Interrupt\+Frame}} \texorpdfstring{$\ast$}{*}frame)
+\end{DoxyCompactItemize}
 \doxysubsubsection*{Functions}
 \begin{DoxyCompactItemize}
 \item 
+void \doxymbox{\hyperlink{idt_8h_a1f7ab111305cf00cb8285c8241dd6692}{Disable\+PIC}} ()
+\begin{DoxyCompactList}\small\item\em Disables the legacy 8259 PIC controller. \end{DoxyCompactList}\item 
+void \doxymbox{\hyperlink{idt_8h_a360f67c504ebee80bc6a785f411dcb7e}{Enable\+Interrupts}} ()
+\begin{DoxyCompactList}\small\item\em Enables interrupts. \end{DoxyCompactList}\item 
 void \doxymbox{\hyperlink{idt_8h_a810b1f38b62bba4da2b7120b37999553}{Init\+IDT}} ()
 \begin{DoxyCompactList}\small\item\em Initializes the Interrupt Descriptor Table. \end{DoxyCompactList}\item 
+void \doxymbox{\hyperlink{idt_8h_a9b6109f21b077238333cd8f6ceec5158}{Register\+Interrupt\+Handler}} (uint8\+\_\+t interrupt, \doxymbox{\hyperlink{idt_8h_adccf2dbfed381ac42b105efacb4fe4df}{Interrupt\+Handler}} handler)
+\begin{DoxyCompactList}\small\item\em Registers a high-\/level interrupt handler. \end{DoxyCompactList}\item 
 void \doxymbox{\hyperlink{idt_8h_aef9ffb9783707c4b50a24b0e1f41b678}{Set\+IDTEntry}} (uint8\+\_\+t index, uint64\+\_\+t base, uint16\+\_\+t sel, uint8\+\_\+t flags)
-\begin{DoxyCompactList}\small\item\em Configures a single IDT entry. \end{DoxyCompactList}\end{DoxyCompactItemize}
+\begin{DoxyCompactList}\small\item\em Configures a single IDT entry. \end{DoxyCompactList}\item 
+void \doxymbox{\hyperlink{idt_8h_a99d7c2a12a6af11df6827eb1a660e856}{Unregister\+Interrupt\+Handler}} (uint8\+\_\+t interrupt)
+\begin{DoxyCompactList}\small\item\em Unregisters a high-\/level interrupt handler. \end{DoxyCompactList}\end{DoxyCompactItemize}
 
 
 \doxysubsection{Detailed Description}
-Interrupt Descriptor Table (IDT) structures and interrupt handling definitions. 
+Interrupt Descriptor Table (IDT) structures and interrupt subsystem interfaces. 
 
 \begin{DoxyCopyright}{Copyright}
 Copyright (c) 2026, Nicocchi @license Licensed under the GPL2 License
@@ -46,16 +56,45 @@ Nicocchi
 \begin{DoxyDate}{Date}
 May 29, 2026
 \end{DoxyDate}
-~\newline
- Defines the core data structures used for x86\+\_\+64 interrupt handling, including IDT gate descriptors, the IDTR register structure, and the interrupt stack frame passed from low-\/level assembly interrupt stubs into the higher-\/level C++ interrupt dispatcher.
+Defines the core x86\+\_\+64 interrupt management structures and interfaces used by the Pandora OS kernel.
 
-The IDT is responsible for routing CPU exceptions, hardware IRQs, and software interrupts to their respective interrupt service routines (ISRs).
+This module provides:\+
+\begin{DoxyItemize}
+\item Interrupt Descriptor Table (IDT) gate definitions
+\item IDTR register layout definitions
+\item CPU interrupt stack frame structures
+\item Interrupt handler registration interfaces
+\item CPU interrupt control helpers
+\item Legacy PIC compatibility interfaces
+\end{DoxyItemize}
+
+The IDT is responsible for routing:\+
+\begin{DoxyItemize}
+\item CPU exceptions (vectors 0-\/31)
+\item Hardware interrupts (IRQs)
+\item Software interrupts
+\item APIC-\/routed interrupt vectors
+\end{DoxyItemize}
+
+Interrupts originate from low-\/level assembly ISR stubs which preserve processor state before transferring execution into the higher-\/level C++ interrupt dispatcher.
+
+In APIC mode, hardware interrupt acknowledgement is performed through the Local APIC End Of Interrupt (EOI) register instead of the legacy 8259 PIC controller.
+
+The structures defined in this file must remain ABI-\/compatible with:\+
+\begin{DoxyItemize}
+\item x86\+\_\+64 interrupt frame layouts
+\item ISR assembly stubs
+\item the {\ttfamily lidt} instruction requirements
+\end{DoxyItemize}
 
 References:\+
 \begin{DoxyItemize}
-\item IDT:\+ \href{https://wiki.osdev.org/Interrupt_Descriptor_Table}{\texttt{https:\+/\+/\+wiki.\+osdev.\+org/\+\+Interrupt\+\_\+\+Descriptor\+\_\+\+Table}}
-\item Exceptions:\+ \href{https://wiki.osdev.org/Exceptions}{\texttt{https:\+/\+/\+wiki.\+osdev.\+org/\+\+Exceptions}}
-\item Interrupts Tutorial:\+ \href{https://wiki.osdev.org/Interrupts_Tutorial}{\texttt{https:\+/\+/\+wiki.\+osdev.\+org/\+\+Interrupts\+\_\+\+Tutorial}} 
+\item Intel® 64 and IA-\/32 Architectures SDM Vol. 3A:\+
+\item Chapter 6 — Interrupt and Exception Handling
+\item \href{https://wiki.osdev.org/Interrupt_Descriptor_Table}{\texttt{https:\+/\+/\+wiki.\+osdev.\+org/\+\+Interrupt\+\_\+\+Descriptor\+\_\+\+Table}}
+\item \href{https://wiki.osdev.org/Exceptions}{\texttt{https:\+/\+/\+wiki.\+osdev.\+org/\+\+Exceptions}}
+\item \href{https://wiki.osdev.org/APIC}{\texttt{https:\+/\+/\+wiki.\+osdev.\+org/\+\+APIC}}
+\item \href{https://wiki.osdev.org/8259_PIC}{\texttt{https:\+/\+/\+wiki.\+osdev.\+org/\+8259\+\_\+\+PIC}} 
 \end{DoxyItemize}
 
 \label{doc-typedef-members}
@@ -69,9 +108,21 @@ typedef struct IDTEntry IDTEntry}
 
 
 
-A single Interrupt Descriptor Table entry. 
+A single Interrupt Descriptor Table (IDT) gate descriptor. 
 
-Represents a 64-\/bit interrupt gate in the IDT. \Hypertarget{idt_8h_a7191695ad6f126dd6d33f792fd6b7547}\index{idt.h@{idt.h}!IDTPtr@{IDTPtr}}
+Represents a 16-\/byte interrupt gate entry in the x86\+\_\+64 IDT.
+
+Each descriptor defines:\+
+\begin{DoxyItemize}
+\item the target interrupt service routine address
+\item the target code segment selector
+\item gate privilege attributes
+\item optional Interrupt Stack Table (IST) switching
+\end{DoxyItemize}
+
+The processor indexes this structure using the interrupt vector number during interrupt or exception dispatch.
+
+Structure layout follows the Intel-\/defined 64-\/bit interrupt gate format. \Hypertarget{idt_8h_a7191695ad6f126dd6d33f792fd6b7547}\index{idt.h@{idt.h}!IDTPtr@{IDTPtr}}
 \index{IDTPtr@{IDTPtr}!idt.h@{idt.h}}
 \doxysubsubsection{\texorpdfstring{IDTPtr}{IDTPtr}}
 {\footnotesize\ttfamily \label{idt_8h_a7191695ad6f126dd6d33f792fd6b7547} 
@@ -89,13 +140,61 @@ typedef struct Interrupt\+Frame Interrupt\+Frame}
 
 
 
-CPU register state captured during an interrupt. 
+CPU register state captured during interrupt dispatch. 
 
-This structure MUST exactly match the stack layout created by the ISR assembly stubs in \doxylink{idt_8asm}{idt.\+asm}. 
+This structure represents the complete processor state preserved by the low-\/level ISR assembly stubs before control is transferred into the C++ interrupt dispatcher.
+
+The layout MUST exactly match the push order implemented in {\ttfamily \doxylink{idt_8asm}{idt.\+asm}}. Any modification to this structure requires corresponding assembly updates.
+
+The frame contains:\+
+\begin{DoxyItemize}
+\item General-\/purpose registers
+\item Interrupt vector number
+\item CPU-\/generated error code
+\item Automatically-\/pushed processor state
+\end{DoxyItemize}
+
+The final fields ({\ttfamily rip}, {\ttfamily cs}, and {\ttfamily rflags}) are automatically pushed by the processor during interrupt or exception entry.
+
+For privilege-\/level transitions, the CPU may additionally push:\+
+\begin{DoxyItemize}
+\item RSP
+\item SS
+\end{DoxyItemize}
+
+Those fields are currently omitted because interrupts originate only from ring 0 kernel execution. \Hypertarget{idt_8h_adccf2dbfed381ac42b105efacb4fe4df}\index{idt.h@{idt.h}!InterruptHandler@{InterruptHandler}}
+\index{InterruptHandler@{InterruptHandler}!idt.h@{idt.h}}
+\doxysubsubsection{\texorpdfstring{InterruptHandler}{InterruptHandler}}
+{\footnotesize\ttfamily \label{idt_8h_adccf2dbfed381ac42b105efacb4fe4df} 
+typedef void(\texorpdfstring{$\ast$}{*} Interrupt\+Handler) (\doxymbox{\hyperlink{structInterruptFrame}{Interrupt\+Frame}} \texorpdfstring{$\ast$}{*}frame)}
+
+
 
 \label{doc-func-members}
 \Hypertarget{idt_8h_doc-func-members}
 \doxysubsection{Function Documentation}
+\Hypertarget{idt_8h_a1f7ab111305cf00cb8285c8241dd6692}\index{idt.h@{idt.h}!DisablePIC@{DisablePIC}}
+\index{DisablePIC@{DisablePIC}!idt.h@{idt.h}}
+\doxysubsubsection{\texorpdfstring{DisablePIC()}{DisablePIC()}}
+{\footnotesize\ttfamily \label{idt_8h_a1f7ab111305cf00cb8285c8241dd6692} 
+void Disable\+PIC (\begin{DoxyParamCaption}{}{}\end{DoxyParamCaption})}
+
+
+
+Disables the legacy 8259 PIC controller. 
+
+Masks all IRQ lines on both the master and slave PICs.
+
+This is required when transitioning to APIC mode in order to prevent duplicate interrupt delivery from the legacy PIC hardware. \Hypertarget{idt_8h_a360f67c504ebee80bc6a785f411dcb7e}\index{idt.h@{idt.h}!EnableInterrupts@{EnableInterrupts}}
+\index{EnableInterrupts@{EnableInterrupts}!idt.h@{idt.h}}
+\doxysubsubsection{\texorpdfstring{EnableInterrupts()}{EnableInterrupts()}}
+{\footnotesize\ttfamily \label{idt_8h_a360f67c504ebee80bc6a785f411dcb7e} 
+void Enable\+Interrupts (\begin{DoxyParamCaption}{}{}\end{DoxyParamCaption})}
+
+
+
+Enables interrupts. 
+
 \Hypertarget{idt_8h_a810b1f38b62bba4da2b7120b37999553}\index{idt.h@{idt.h}!InitIDT@{InitIDT}}
 \index{InitIDT@{InitIDT}!idt.h@{idt.h}}
 \doxysubsubsection{\texorpdfstring{InitIDT()}{InitIDT()}}
@@ -106,11 +205,32 @@ void Init\+IDT (\begin{DoxyParamCaption}{}{}\end{DoxyParamCaption})}
 
 Initializes the Interrupt Descriptor Table. 
 
+\Hypertarget{idt_8h_a9b6109f21b077238333cd8f6ceec5158}\index{idt.h@{idt.h}!RegisterInterruptHandler@{RegisterInterruptHandler}}
+\index{RegisterInterruptHandler@{RegisterInterruptHandler}!idt.h@{idt.h}}
+\doxysubsubsection{\texorpdfstring{RegisterInterruptHandler()}{RegisterInterruptHandler()}}
+{\footnotesize\ttfamily \label{idt_8h_a9b6109f21b077238333cd8f6ceec5158} 
+void Register\+Interrupt\+Handler (\begin{DoxyParamCaption}\item[{uint8\+\_\+t}]{interrupt}{, }\item[{\doxymbox{\hyperlink{idt_8h_adccf2dbfed381ac42b105efacb4fe4df}{Interrupt\+Handler}}}]{handler}{}\end{DoxyParamCaption})}
+
+
+
+Registers a high-\/level interrupt handler. 
+
+Associates a C++ callback with a specific interrupt vector.
+
+The handler will be invoked by the interrupt dispatcher after low-\/level CPU state preservation has completed.
+
+
+\begin{DoxyParams}{Parameters}
+{\em interrupt} & Interrupt vector number \\
+\hline
+{\em handler} & Callback function to invoke \\
+\hline
+\end{DoxyParams}
 \Hypertarget{idt_8h_aef9ffb9783707c4b50a24b0e1f41b678}\index{idt.h@{idt.h}!SetIDTEntry@{SetIDTEntry}}
 \index{SetIDTEntry@{SetIDTEntry}!idt.h@{idt.h}}
 \doxysubsubsection{\texorpdfstring{SetIDTEntry()}{SetIDTEntry()}}
 {\footnotesize\ttfamily \label{idt_8h_aef9ffb9783707c4b50a24b0e1f41b678} 
-void Set\+IDTEntry (\begin{DoxyParamCaption}\item[{uint8\+\_\+t}]{index}{, }\item[{uint64\+\_\+t}]{base}{, }\item[{uint16\+\_\+t}]{sel}{, }\item[{uint8\+\_\+t}]{flags}{}\end{DoxyParamCaption})}
+void Set\+IDTEntry (\begin{DoxyParamCaption}\item[{uint8\+\_\+t}]{index}{, }\item[{uint64\+\_\+t}]{base}{, }\item[{uint16\+\_\+t}]{selector}{, }\item[{uint8\+\_\+t}]{flags}{}\end{DoxyParamCaption})}
 
 
 
@@ -124,6 +244,46 @@ Configures a single IDT entry.
 \hline
 {\em sel} & Code segment selector \\
 \hline
-{\em flags} & Gate flags and attributes \\
+{\em flags} & Gate flags and attributes\\
+\hline
+\end{DoxyParams}
+Configures a single IDT entry.
+
+Installs an interrupt or exception handler into the IDT.
+
+The descriptor defines:\+
+\begin{DoxyItemize}
+\item ISR entry address
+\item target code segment
+\item gate privilege attributes
+\item interrupt gate behavior
+\end{DoxyItemize}
+
+
+\begin{DoxyParams}{Parameters}
+{\em index} & Interrupt vector index \\
+\hline
+{\em base} & ISR function address \\
+\hline
+{\em selector} & GDT code segment selector \\
+\hline
+{\em flags} & Descriptor attribute flags \\
+\hline
+\end{DoxyParams}
+\Hypertarget{idt_8h_a99d7c2a12a6af11df6827eb1a660e856}\index{idt.h@{idt.h}!UnregisterInterruptHandler@{UnregisterInterruptHandler}}
+\index{UnregisterInterruptHandler@{UnregisterInterruptHandler}!idt.h@{idt.h}}
+\doxysubsubsection{\texorpdfstring{UnregisterInterruptHandler()}{UnregisterInterruptHandler()}}
+{\footnotesize\ttfamily \label{idt_8h_a99d7c2a12a6af11df6827eb1a660e856} 
+void Unregister\+Interrupt\+Handler (\begin{DoxyParamCaption}\item[{uint8\+\_\+t}]{interrupt}{}\end{DoxyParamCaption})}
+
+
+
+Unregisters a high-\/level interrupt handler. 
+
+The handler will be invoked by the interrupt dispatcher after low-\/level CPU state preservation has completed.
+
+
+\begin{DoxyParams}{Parameters}
+{\em interrupt} & Interrupt vector number \\
 \hline
 \end{DoxyParams}

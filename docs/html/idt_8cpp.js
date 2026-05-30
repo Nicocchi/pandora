@@ -1,5 +1,7 @@
 var idt_8cpp =
 [
+    [ "DisablePIC", "idt_8cpp.html#a1f7ab111305cf00cb8285c8241dd6692", null ],
+    [ "EnableInterrupts", "idt_8cpp.html#a360f67c504ebee80bc6a785f411dcb7e", null ],
     [ "idt_flush", "idt_8cpp.html#aa38cfd5a8b03a28306a8e3151d3a45da", null ],
     [ "InitIDT", "idt_8cpp.html#a810b1f38b62bba4da2b7120b37999553", null ],
     [ "interrupt_dispatch", "idt_8cpp.html#a430543ad3fa2ae183d56755001428c21", null ],
@@ -51,9 +53,12 @@ var idt_8cpp =
     [ "isr7", "idt_8cpp.html#a7eb6ec30db7077fb1c9c9d926a0fc407", null ],
     [ "isr8", "idt_8cpp.html#a86bc69345a3bb409665dbadb77a9d393", null ],
     [ "isr9", "idt_8cpp.html#aacb7c8490cbd623a3a2bf933ffedd131", null ],
+    [ "RegisterInterruptHandler", "idt_8cpp.html#a9b6109f21b077238333cd8f6ceec5158", null ],
     [ "RemapPIC", "idt_8cpp.html#a4e8240380bc281a34ca197d3fa77f6f9", null ],
     [ "SetIDTEntry", "idt_8cpp.html#a36f4a1553602cc4f96378f1b4d5c93b2", null ],
+    [ "UnregisterInterruptHandler", "idt_8cpp.html#a99d7c2a12a6af11df6827eb1a660e856", null ],
     [ "exception_messages", "idt_8cpp.html#a7b12de8b0bf38c0d059f86f78da12a5b", null ],
     [ "idt", "idt_8cpp.html#a0803646f6e6a139849288dc1a7821154", null ],
-    [ "idtr", "idt_8cpp.html#aaecee0b6b4dcd97cda03fc807f8cce5f", null ]
+    [ "idtr", "idt_8cpp.html#aaecee0b6b4dcd97cda03fc807f8cce5f", null ],
+    [ "interrupt_handlers", "idt_8cpp.html#a5130379f3cad0fed42ae16dcd96be7b7", null ]
 ];

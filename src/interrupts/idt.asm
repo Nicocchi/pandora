@@ -82,7 +82,6 @@ idt_flush:
 %macro IRQ 2
     global irq%1
     irq%1:
-        mov byte [0xB8000], '0'
         push qword 0          ; Fake error code
         push qword %2         ; IRQ vector number
         jmp isr_common
@@ -186,7 +185,10 @@ isr_common:
     push rax
 
     mov rdi, rsp
+
+    sub rsp, 8
     call interrupt_dispatch
+    add rsp, 8
 
     pop rax
     pop rbx
@@ -204,5 +206,5 @@ isr_common:
     pop r14
     pop r15
 
-    ; add rsp, 16
+    add rsp, 16
     iretq

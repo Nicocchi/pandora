@@ -1,0 +1,205 @@
+\doxysection{src/\+interrupts/\+apic.h File Reference}
+\hypertarget{apic_8h}{}\label{apic_8h}\index{src/interrupts/apic.h@{src/interrupts/apic.h}}
+
+
+Advanced Programmable Interrupt Controller (APIC) structures and definitions.  
+
+
+{\ttfamily \+\#include "{}boot/\+limine.\+h"{}}\newline
+\doxysubsubsection*{Data Structures}
+\begin{DoxyCompactItemize}
+\item 
+struct \doxymbox{\hyperlink{structACPISDTHeader}{ACPISDTHeader}}
+\begin{DoxyCompactList}\small\item\em Common header shared by all ACPI System Description Tables. \end{DoxyCompactList}\item 
+struct \doxymbox{\hyperlink{structISOEntry}{ISOEntry}}
+\begin{DoxyCompactList}\small\item\em Kernel-\/internal representation of a parsed Interrupt Source Override. \end{DoxyCompactList}\item 
+struct \doxymbox{\hyperlink{structMADTEntry}{MADTEntry}}
+\begin{DoxyCompactList}\small\item\em Common header for all variable-\/length MADT entries. \end{DoxyCompactList}\item 
+struct \doxymbox{\hyperlink{structMADTHeader}{MADTHeader}}
+\begin{DoxyCompactList}\small\item\em Multiple APIC Description Table (MADT) header. \end{DoxyCompactList}\item 
+struct \doxymbox{\hyperlink{structMADTIOApic}{MADTIOApic}}
+\begin{DoxyCompactList}\small\item\em MADT entry describing an I/\+O APIC (type 1). \end{DoxyCompactList}\item 
+struct \doxymbox{\hyperlink{structMADTIso}{MADTIso}}
+\begin{DoxyCompactList}\small\item\em MADT entry describing an Interrupt Source Override (type 2). \end{DoxyCompactList}\item 
+struct \doxymbox{\hyperlink{structMADTLocalAPIC}{MADTLocal\+APIC}}
+\begin{DoxyCompactList}\small\item\em MADT entry describing a Processor Local APIC (type 0). \end{DoxyCompactList}\item 
+struct \doxymbox{\hyperlink{structRSDP2}{RSDP2}}
+\begin{DoxyCompactList}\small\item\em ACPI Root System Description Pointer (RSDP) version 2.\+0+. \end{DoxyCompactList}\end{DoxyCompactItemize}
+\doxysubsubsection*{Macros}
+\begin{DoxyCompactItemize}
+\item 
+\+\#define \doxymbox{\hyperlink{apic_8h_a30d47e1e526a57d28aeeaf71a4006054}{MADT\+\_\+\+IO\+\_\+\+APIC}}~1
+\begin{DoxyCompactList}\small\item\em MADT entry type:\+ I/\+O APIC. \end{DoxyCompactList}\item 
+\+\#define \doxymbox{\hyperlink{apic_8h_a6d5c68d54550345222306f8aa7d1004d}{MADT\+\_\+\+ISO}}~2
+\begin{DoxyCompactList}\small\item\em MADT entry type:\+ Interrupt Source Override. \end{DoxyCompactList}\item 
+\+\#define \doxymbox{\hyperlink{apic_8h_a1795027fa8ac91336d11071de3a78ec4}{MADT\+\_\+\+LOCAL\+\_\+\+APIC}}~0
+\begin{DoxyCompactList}\small\item\em MADT entry type:\+ Processor Local APIC. \end{DoxyCompactList}\end{DoxyCompactItemize}
+\doxysubsubsection*{Functions}
+\begin{DoxyCompactItemize}
+\item 
+void \doxymbox{\hyperlink{apic_8h_a409b2660b7120cd593269c657db55902}{Init\+APIC}} ()
+\begin{DoxyCompactList}\small\item\em Parses ACPI tables and initializes the APIC subsystem. \end{DoxyCompactList}\item 
+void \doxymbox{\hyperlink{apic_8h_adc9bb3dd155adce97361c2fbac6e2732}{Init\+IOAPIC}} ()
+\begin{DoxyCompactList}\small\item\em Initializes the I/\+O APIC and configures interrupt routing. \end{DoxyCompactList}\item 
+void \doxymbox{\hyperlink{apic_8h_a7784208db7a116e5e2250ef1a14a1d9a}{Init\+LAPIC}} ()
+\begin{DoxyCompactList}\small\item\em Initializes the Local APIC for the current processor. \end{DoxyCompactList}\item 
+void \doxymbox{\hyperlink{apic_8h_a56d0aaa69ca198f94fcc3cae476b03c4}{IOAPICSet\+Redirect}} (uint8\+\_\+t irq, uint8\+\_\+t vector, uint8\+\_\+t apic\+\_\+id, bool mask)
+\begin{DoxyCompactList}\small\item\em Configures a single I/\+O APIC redirection table entry. \end{DoxyCompactList}\item 
+void \doxymbox{\hyperlink{apic_8h_a19e26a923cf664d50995477a88512543}{LAPICEoi}} ()
+\begin{DoxyCompactList}\small\item\em Signals End Of Interrupt to the Local APIC. \end{DoxyCompactList}\end{DoxyCompactItemize}
+
+
+\doxysubsection{Detailed Description}
+Advanced Programmable Interrupt Controller (APIC) structures and definitions. 
+
+\begin{DoxyCopyright}{Copyright}
+Copyright (c) 2026, Nicocchi @license Licensed under the GPL2 License
+\end{DoxyCopyright}
+\begin{DoxyAuthor}{Author}
+Nicocchi 
+\end{DoxyAuthor}
+\begin{DoxyDate}{Date}
+May 29, 2026
+\end{DoxyDate}
+Defines the data structures and function declarations required to initialize and operate the x86\+\_\+64 Local APIC and I/\+O APIC subsystems.
+
+This header covers:\+
+
+
+\begin{DoxyItemize}
+\item ACPI Root System Description Pointer (RSDP) parsing structures
+\item ACPI System Description Table (SDT) header layout
+\item Multiple APIC Description Table (MADT) header and entry structures
+\item Interrupt Source Override (ISO) storage for GSI remapping
+\item Local APIC and I/\+O APIC initialization and EOI signaling
+\end{DoxyItemize}
+
+The APIC subsystem replaces the legacy 8259 Programmable Interrupt Controller (PIC) and is required for symmetric multiprocessing (SMP) support.
+
+Interrupt routing through the I/\+O APIC is configured using the MADT entries provided by ACPI firmware, including any Interrupt Source Overrides that remap legacy ISA IRQs to different Global System Interrupt (GSI) lines.
+
+References:\+
+\begin{DoxyItemize}
+\item ACPI Specification:\+ \href{https://uefi.org/specifications}{\texttt{https:\+/\+/\+uefi.\+org/\+specifications}}
+\item Local APIC:\+ \href{https://wiki.osdev.org/APIC}{\texttt{https:\+/\+/\+wiki.\+osdev.\+org/\+\+APIC}}
+\item I/\+O APIC:\+ \href{https://wiki.osdev.org/IOAPIC}{\texttt{https:\+/\+/\+wiki.\+osdev.\+org/\+\+IOAPIC}}
+\item MADT:\+ \href{https://wiki.osdev.org/MADT}{\texttt{https:\+/\+/\+wiki.\+osdev.\+org/\+\+MADT}}
+\item SMP:\+ \href{https://wiki.osdev.org/SMP}{\texttt{https:\+/\+/\+wiki.\+osdev.\+org/\+\+SMP}} 
+\end{DoxyItemize}
+
+\label{doc-define-members}
+\Hypertarget{apic_8h_doc-define-members}
+\doxysubsection{Macro Definition Documentation}
+\Hypertarget{apic_8h_a30d47e1e526a57d28aeeaf71a4006054}\index{apic.h@{apic.h}!MADT\_IO\_APIC@{MADT\_IO\_APIC}}
+\index{MADT\_IO\_APIC@{MADT\_IO\_APIC}!apic.h@{apic.h}}
+\doxysubsubsection{\texorpdfstring{MADT\_IO\_APIC}{MADT\_IO\_APIC}}
+{\footnotesize\ttfamily \label{apic_8h_a30d47e1e526a57d28aeeaf71a4006054} 
+\+\#define MADT\+\_\+\+IO\+\_\+\+APIC~1}
+
+
+
+MADT entry type:\+ I/\+O APIC. 
+
+\Hypertarget{apic_8h_a6d5c68d54550345222306f8aa7d1004d}\index{apic.h@{apic.h}!MADT\_ISO@{MADT\_ISO}}
+\index{MADT\_ISO@{MADT\_ISO}!apic.h@{apic.h}}
+\doxysubsubsection{\texorpdfstring{MADT\_ISO}{MADT\_ISO}}
+{\footnotesize\ttfamily \label{apic_8h_a6d5c68d54550345222306f8aa7d1004d} 
+\+\#define MADT\+\_\+\+ISO~2}
+
+
+
+MADT entry type:\+ Interrupt Source Override. 
+
+\Hypertarget{apic_8h_a1795027fa8ac91336d11071de3a78ec4}\index{apic.h@{apic.h}!MADT\_LOCAL\_APIC@{MADT\_LOCAL\_APIC}}
+\index{MADT\_LOCAL\_APIC@{MADT\_LOCAL\_APIC}!apic.h@{apic.h}}
+\doxysubsubsection{\texorpdfstring{MADT\_LOCAL\_APIC}{MADT\_LOCAL\_APIC}}
+{\footnotesize\ttfamily \label{apic_8h_a1795027fa8ac91336d11071de3a78ec4} 
+\+\#define MADT\+\_\+\+LOCAL\+\_\+\+APIC~0}
+
+
+
+MADT entry type:\+ Processor Local APIC. 
+
+
+
+\label{doc-func-members}
+\Hypertarget{apic_8h_doc-func-members}
+\doxysubsection{Function Documentation}
+\Hypertarget{apic_8h_a409b2660b7120cd593269c657db55902}\index{apic.h@{apic.h}!InitAPIC@{InitAPIC}}
+\index{InitAPIC@{InitAPIC}!apic.h@{apic.h}}
+\doxysubsubsection{\texorpdfstring{InitAPIC()}{InitAPIC()}}
+{\footnotesize\ttfamily \label{apic_8h_a409b2660b7120cd593269c657db55902} 
+void Init\+APIC (\begin{DoxyParamCaption}{}{}\end{DoxyParamCaption})}
+
+
+
+Parses ACPI tables and initializes the APIC subsystem. 
+
+Performs the following steps:\+
+
+
+\begin{DoxyEnumerate}
+\item Retrieves the RSDP address from the Limine bootloader response.
+\item Walks the XSDT (ACPI 2.\+0+) or RSDT (ACPI 1.\+0) to locate the MADT.
+\item Parses all MADT entries to discover Local APIC and I/\+O APIC addresses and records any Interrupt Source Overrides.
+\item Maps the Local APIC and I/\+O APIC MMIO regions into virtual memory by splitting existing huge page mappings in the kernel page tables.
+\end{DoxyEnumerate}
+
+Must be called before \doxylink{apic_8h_a7784208db7a116e5e2250ef1a14a1d9a}{Init\+LAPIC()}, \doxylink{apic_8h_adc9bb3dd155adce97361c2fbac6e2732}{Init\+IOAPIC()}, or \doxylink{idt_8cpp_a1f7ab111305cf00cb8285c8241dd6692}{Disable\+PIC()}. Panics if the RSDP, HHDM, MADT, or I/\+O APIC cannot be found. \Hypertarget{apic_8h_adc9bb3dd155adce97361c2fbac6e2732}\index{apic.h@{apic.h}!InitIOAPIC@{InitIOAPIC}}
+\index{InitIOAPIC@{InitIOAPIC}!apic.h@{apic.h}}
+\doxysubsubsection{\texorpdfstring{InitIOAPIC()}{InitIOAPIC()}}
+{\footnotesize\ttfamily \label{apic_8h_adc9bb3dd155adce97361c2fbac6e2732} 
+void Init\+IOAPIC (\begin{DoxyParamCaption}{}{}\end{DoxyParamCaption})}
+
+
+
+Initializes the I/\+O APIC and configures interrupt routing. 
+
+Routes the PIT timer IRQ (IRQ 0) to IDT vector 32 on CPU 0, taking into account any Interrupt Source Override present in the MADT that remaps IRQ 0 to a different GSI. Must be called after \doxylink{apic_8h_a409b2660b7120cd593269c657db55902}{Init\+APIC()} has mapped the I/\+O APIC MMIO region and populated the ISO table. \Hypertarget{apic_8h_a7784208db7a116e5e2250ef1a14a1d9a}\index{apic.h@{apic.h}!InitLAPIC@{InitLAPIC}}
+\index{InitLAPIC@{InitLAPIC}!apic.h@{apic.h}}
+\doxysubsubsection{\texorpdfstring{InitLAPIC()}{InitLAPIC()}}
+{\footnotesize\ttfamily \label{apic_8h_a7784208db7a116e5e2250ef1a14a1d9a} 
+void Init\+LAPIC (\begin{DoxyParamCaption}{}{}\end{DoxyParamCaption})}
+
+
+
+Initializes the Local APIC for the current processor. 
+
+Enables the Local APIC by setting the Software Enable bit (bit 8) in the Spurious Interrupt Vector Register and configures vector 0x\+FF as the spurious interrupt vector. Must be called after \doxylink{apic_8h_a409b2660b7120cd593269c657db55902}{Init\+APIC()} has mapped the Local APIC MMIO region into virtual memory. \Hypertarget{apic_8h_a56d0aaa69ca198f94fcc3cae476b03c4}\index{apic.h@{apic.h}!IOAPICSetRedirect@{IOAPICSetRedirect}}
+\index{IOAPICSetRedirect@{IOAPICSetRedirect}!apic.h@{apic.h}}
+\doxysubsubsection{\texorpdfstring{IOAPICSetRedirect()}{IOAPICSetRedirect()}}
+{\footnotesize\ttfamily \label{apic_8h_a56d0aaa69ca198f94fcc3cae476b03c4} 
+void IOAPICSet\+Redirect (\begin{DoxyParamCaption}\item[{uint8\+\_\+t}]{irq}{, }\item[{uint8\+\_\+t}]{vector}{, }\item[{uint8\+\_\+t}]{apic\+\_\+id}{, }\item[{bool}]{mask}{}\end{DoxyParamCaption})}
+
+
+
+Configures a single I/\+O APIC redirection table entry. 
+
+Each redirection entry maps a GSI input pin on the I/\+O APIC to a specific IDT vector, destination CPU (by APIC ID), and delivery/\+trigger settings.
+
+
+\begin{DoxyParams}{Parameters}
+{\em irq} & I/\+O APIC GSI input pin number to configure \\
+\hline
+{\em vector} & IDT vector number to deliver the interrupt to (32-\/255) \\
+\hline
+{\em apic\+\_\+id} & Local APIC ID of the destination CPU \\
+\hline
+{\em mask} & If true, the interrupt is masked (disabled); false to enable \\
+\hline
+\end{DoxyParams}
+\Hypertarget{apic_8h_a19e26a923cf664d50995477a88512543}\index{apic.h@{apic.h}!LAPICEoi@{LAPICEoi}}
+\index{LAPICEoi@{LAPICEoi}!apic.h@{apic.h}}
+\doxysubsubsection{\texorpdfstring{LAPICEoi()}{LAPICEoi()}}
+{\footnotesize\ttfamily \label{apic_8h_a19e26a923cf664d50995477a88512543} 
+void LAPICEoi (\begin{DoxyParamCaption}{}{}\end{DoxyParamCaption})}
+
+
+
+Signals End Of Interrupt to the Local APIC. 
+
+Must be called at the end of every hardware interrupt handler to allow the Local APIC to accept further interrupts. Writing any value to the EOI register acknowledges the current interrupt.
+
+\begin{DoxyNote}{Note}
+Do NOT call this for NMIs, SMIs, INIT, or spurious interrupts. 
+\end{DoxyNote}

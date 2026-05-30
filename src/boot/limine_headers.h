@@ -45,12 +45,12 @@ volatile struct limine_framebuffer_request framebuffer_request = {
     .revision = 0
 };
 
-/** @brief Requests the physical memory map array topology from the BIOS/UEFI firmware */
-__attribute__((used, section(".limine_requests")))
-volatile struct limine_memmap_request memmap_request = {
-    .id = LIMINE_MEMMAP_REQUEST_ID,
-    .revision = 0
-};
+// /** @brief Requests the physical memory map array topology from the BIOS/UEFI firmware */
+// __attribute__((used, section(".limine_requests")))
+// volatile struct limine_memmap_request memmap_request = {
+//     .id = LIMINE_MEMMAP_REQUEST_ID,
+//     .revision = 0
+// };
 
 /** @brief Requests external boot modules (e.g., ramdisks, fonts, assets) defined in limine.conf */
 __attribute__((used, section(".limine_requests")))

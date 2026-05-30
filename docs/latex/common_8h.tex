@@ -7,6 +7,8 @@ Shared kernel constants and low-\/level architecture resources.
 
 {\ttfamily \+\#include $<$stdint.\+h$>$}\newline
 {\ttfamily \+\#include $<$stddef.\+h$>$}\newline
+{\ttfamily \+\#include "{}drivers/\+serial\+\_\+port.\+h"{}}\newline
+{\ttfamily \+\#include "{}boot/\+limine\+\_\+vga.\+h"{}}\newline
 \doxysubsubsection*{Data Structures}
 \begin{DoxyCompactItemize}
 \item 
@@ -17,6 +19,12 @@ struct \doxymbox{\hyperlink{structInterruptRegisters}{Interrupt\+Registers}}
 \item 
 static void \doxymbox{\hyperlink{common_8h_aedf4780efccd3a32bf75b0d9f08b2f47}{hcf}} (void)
 \begin{DoxyCompactList}\small\item\em Halts the CPU infinitely. \end{DoxyCompactList}\item 
+static uint8\+\_\+t \doxymbox{\hyperlink{common_8h_a6ac04cddfda513b061145d858d2d0dda}{In\+PortB}} (uint16\+\_\+t port)
+\item 
+static void \doxymbox{\hyperlink{common_8h_a8d7bdfa05173a579497be191e980aa98}{IOWait}} ()
+\item 
+static void \doxymbox{\hyperlink{common_8h_ad7b50e0ae8664ed813fb4267b6a06fa4}{Kernel\+Panic}} (const char \texorpdfstring{$\ast$}{*}str)
+\begin{DoxyCompactList}\small\item\em Triggers a critical system breakdown state, piping messages across diagnostic outputs. \end{DoxyCompactList}\item 
 static void \doxymbox{\hyperlink{common_8h_a07bda16dea6de68bfb16089407285fc3}{Out\+PortB}} (uint16\+\_\+t port, uint8\+\_\+t value)
 \end{DoxyCompactItemize}
 \doxysubsubsection*{Variables}
@@ -73,7 +81,34 @@ void hcf (\begin{DoxyParamCaption}\item[{void}]{}{}\end{DoxyParamCaption})\hspac
 
 Halts the CPU infinitely. 
 
-Issues the x86 {\ttfamily hlt} instruction to suspend execution until the next non-\/maskable or external hardware interrupt occurs. Wrapped inside an infinite fallback loop to prevent processor runaways. \Hypertarget{common_8h_a07bda16dea6de68bfb16089407285fc3}\index{common.h@{common.h}!OutPortB@{OutPortB}}
+Issues the x86 {\ttfamily hlt} instruction to suspend execution until the next non-\/maskable or external hardware interrupt occurs. Wrapped inside an infinite fallback loop to prevent processor runaways. \Hypertarget{common_8h_a6ac04cddfda513b061145d858d2d0dda}\index{common.h@{common.h}!InPortB@{InPortB}}
+\index{InPortB@{InPortB}!common.h@{common.h}}
+\doxysubsubsection{\texorpdfstring{InPortB()}{InPortB()}}
+{\footnotesize\ttfamily \label{common_8h_a6ac04cddfda513b061145d858d2d0dda} 
+uint8\+\_\+t In\+PortB (\begin{DoxyParamCaption}\item[{uint16\+\_\+t}]{port}{}\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}, {\ttfamily [static]}}
+
+\Hypertarget{common_8h_a8d7bdfa05173a579497be191e980aa98}\index{common.h@{common.h}!IOWait@{IOWait}}
+\index{IOWait@{IOWait}!common.h@{common.h}}
+\doxysubsubsection{\texorpdfstring{IOWait()}{IOWait()}}
+{\footnotesize\ttfamily \label{common_8h_a8d7bdfa05173a579497be191e980aa98} 
+void IOWait (\begin{DoxyParamCaption}{}{}\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [static]}}
+
+\Hypertarget{common_8h_ad7b50e0ae8664ed813fb4267b6a06fa4}\index{common.h@{common.h}!KernelPanic@{KernelPanic}}
+\index{KernelPanic@{KernelPanic}!common.h@{common.h}}
+\doxysubsubsection{\texorpdfstring{KernelPanic()}{KernelPanic()}}
+{\footnotesize\ttfamily \label{common_8h_ad7b50e0ae8664ed813fb4267b6a06fa4} 
+void Kernel\+Panic (\begin{DoxyParamCaption}\item[{const char \texorpdfstring{$\ast$}{*}}]{str}{}\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [static]}}
+
+
+
+Triggers a critical system breakdown state, piping messages across diagnostic outputs. 
+
+Simultaneously dumps failure summaries across the serial COM1 port interface and onto the active linear graphical display before hanging the CPU execution chain. 
+\begin{DoxyParams}[1]{Parameters}
+\doxymbox{\texttt{in}}  & {\em str} & Null-\/terminated ASCII error diagnostic summary string describing the system failure. \\
+\hline
+\end{DoxyParams}
+\Hypertarget{common_8h_a07bda16dea6de68bfb16089407285fc3}\index{common.h@{common.h}!OutPortB@{OutPortB}}
 \index{OutPortB@{OutPortB}!common.h@{common.h}}
 \doxysubsubsection{\texorpdfstring{OutPortB()}{OutPortB()}}
 {\footnotesize\ttfamily \label{common_8h_a07bda16dea6de68bfb16089407285fc3} 

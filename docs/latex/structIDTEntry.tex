@@ -2,7 +2,7 @@
 \hypertarget{structIDTEntry}{}\label{structIDTEntry}\index{IDTEntry@{IDTEntry}}
 
 
-A single Interrupt Descriptor Table entry.  
+A single Interrupt Descriptor Table (IDT) gate descriptor.  
 
 
 
@@ -13,9 +13,9 @@ A single Interrupt Descriptor Table entry.
 \begin{DoxyCompactItemize}
 \item 
 uint8\+\_\+t \doxymbox{\hyperlink{structIDTEntry_af49b6eed9e508bac9bb0fe560e0cd2ec}{flags}}
-\item 
+\begin{DoxyCompactList}\small\item\em Gate type and attribute flags. \end{DoxyCompactList}\item 
 uint8\+\_\+t \doxymbox{\hyperlink{structIDTEntry_a3b7c8d509563099375ebfee08c77fe90}{ist}}
-\item 
+\begin{DoxyCompactList}\small\item\em Interrupt Stack Table (IST) index. \end{DoxyCompactList}\item 
 uint32\+\_\+t \doxymbox{\hyperlink{structIDTEntry_a2fea347286de01c4820b6f2103de62e7}{offset\+\_\+high}}
 \item 
 uint16\+\_\+t \doxymbox{\hyperlink{structIDTEntry_afed296e62f646aa82515e2108f6dea55}{offset\+\_\+low}}
@@ -29,9 +29,21 @@ uint16\+\_\+t \doxymbox{\hyperlink{structIDTEntry_a48672773dc5cdd2328ee45c076b57
 
 
 \doxysubsection{Detailed Description}
-A single Interrupt Descriptor Table entry. 
+A single Interrupt Descriptor Table (IDT) gate descriptor. 
 
-Represents a 64-\/bit interrupt gate in the IDT. 
+Represents a 16-\/byte interrupt gate entry in the x86\+\_\+64 IDT.
+
+Each descriptor defines:\+
+\begin{DoxyItemize}
+\item the target interrupt service routine address
+\item the target code segment selector
+\item gate privilege attributes
+\item optional Interrupt Stack Table (IST) switching
+\end{DoxyItemize}
+
+The processor indexes this structure using the interrupt vector number during interrupt or exception dispatch.
+
+Structure layout follows the Intel-\/defined 64-\/bit interrupt gate format. 
 
 \label{doc-variable-members}
 \Hypertarget{structIDTEntry_doc-variable-members}
@@ -42,13 +54,24 @@ Represents a 64-\/bit interrupt gate in the IDT.
 {\footnotesize\ttfamily \label{structIDTEntry_af49b6eed9e508bac9bb0fe560e0cd2ec} 
 uint8\+\_\+t IDTEntry::\+flags}
 
-Gate type and attributes \Hypertarget{structIDTEntry_a3b7c8d509563099375ebfee08c77fe90}\index{IDTEntry@{IDTEntry}!ist@{ist}}
+
+
+Gate type and attribute flags. 
+
+Common value:\+
+\begin{DoxyItemize}
+\item 0x8E = Present \texorpdfstring{$\vert$}{|} Ring 0 \texorpdfstring{$\vert$}{|} 64-\/bit Interrupt Gate 
+\end{DoxyItemize}\Hypertarget{structIDTEntry_a3b7c8d509563099375ebfee08c77fe90}\index{IDTEntry@{IDTEntry}!ist@{ist}}
 \index{ist@{ist}!IDTEntry@{IDTEntry}}
 \doxysubsubsection{\texorpdfstring{ist}{ist}}
 {\footnotesize\ttfamily \label{structIDTEntry_a3b7c8d509563099375ebfee08c77fe90} 
 uint8\+\_\+t IDTEntry::\+ist}
 
-Interrupt Stack Table offest \Hypertarget{structIDTEntry_a2fea347286de01c4820b6f2103de62e7}\index{IDTEntry@{IDTEntry}!offset\_high@{offset\_high}}
+
+
+Interrupt Stack Table (IST) index. 
+
+Bits 0-\/2 select an IST entry from the Task State Segment (TSS). A value of 0 disables IST switching. \Hypertarget{structIDTEntry_a2fea347286de01c4820b6f2103de62e7}\index{IDTEntry@{IDTEntry}!offset\_high@{offset\_high}}
 \index{offset\_high@{offset\_high}!IDTEntry@{IDTEntry}}
 \doxysubsubsection{\texorpdfstring{offset\_high}{offset\_high}}
 {\footnotesize\ttfamily \label{structIDTEntry_a2fea347286de01c4820b6f2103de62e7} 
@@ -72,13 +95,13 @@ ISR address bits 16-\/31 \Hypertarget{structIDTEntry_a616e99e617eaad027c3c9d92d3
 {\footnotesize\ttfamily \label{structIDTEntry_a616e99e617eaad027c3c9d92d3edf254} 
 uint32\+\_\+t IDTEntry::\+reserved}
 
-Reserved, must be zero \Hypertarget{structIDTEntry_a48672773dc5cdd2328ee45c076b57db6}\index{IDTEntry@{IDTEntry}!selector@{selector}}
+Reserved field \Hypertarget{structIDTEntry_a48672773dc5cdd2328ee45c076b57db6}\index{IDTEntry@{IDTEntry}!selector@{selector}}
 \index{selector@{selector}!IDTEntry@{IDTEntry}}
 \doxysubsubsection{\texorpdfstring{selector}{selector}}
 {\footnotesize\ttfamily \label{structIDTEntry_a48672773dc5cdd2328ee45c076b57db6} 
 uint16\+\_\+t IDTEntry::\+selector}
 
-Code segment selector 
+Kernel code segment from the GDT 
 
 The documentation for this struct was generated from the following file:\+\begin{DoxyCompactItemize}
 \item 

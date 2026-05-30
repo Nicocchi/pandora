@@ -143,32 +143,6 @@ static void itoa(uint64_t value, char *str, int base)
     }
 }
 
-// void itoa(uint64_t value, char* buf, int base)
-// {
-//     char* p = buf;
-//     char* p1, *p2;
-//     uint64_t tmp;
-
-//     do {
-//         tmp = value % base;
-//         *p++ = "0123456789abcdef"[tmp];
-//         value /= base;
-//     } while (value);
-
-//     *p = '\0';
-
-//     // reverse string
-//     p1 = buf;
-//     p2 = p - 1;
-
-//     while (p1 < p2)
-//     {
-//         char c = *p1;
-//         *p1++ = *p2;
-//         *p2-- = c;
-//     }
-// }
-
 void kprintf(const char *fmt, ...)
 {
     va_list args;

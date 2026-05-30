@@ -1,4 +1,4 @@
 var searchData=
 [
-  ['gdtdescriptor_0',['GDTDescriptor',['../structGDTDescriptor.html',1,'']]]
+  ['acpisdtheader_0',['ACPISDTHeader',['../structACPISDTHeader.html',1,'']]]
 ];

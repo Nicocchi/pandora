@@ -15,5 +15,7 @@ var searchData=
   ['esi_12',['esi',['../structInterruptRegisters.html#a3923de077566d93f6e714434e99155f9',1,'InterruptRegisters']]],
   ['esp_13',['esp',['../structInterruptRegisters.html#a8c28d69fde9437e8185631629305b73a',1,'InterruptRegisters']]],
   ['exception_5fmessages_14',['exception_messages',['../idt_8cpp.html#a7b12de8b0bf38c0d059f86f78da12a5b',1,'idt.cpp']]],
-  ['exec_5fusec_15',['exec_usec',['../structlimine__bootloader__performance__response.html#af75b1107ea12375465310dc9c126b187',1,'limine_bootloader_performance_response']]]
+  ['exe_5faddr_5frequest_15',['exe_addr_request',['../apic_8cpp.html#a467ba9259df296b1d6db2071edcb8941',1,'apic.cpp']]],
+  ['exec_5fusec_16',['exec_usec',['../structlimine__bootloader__performance__response.html#af75b1107ea12375465310dc9c126b187',1,'limine_bootloader_performance_response']]],
+  ['extended_5fchecksum_17',['extended_checksum',['../structRSDP2.html#a84830d49cdcaff467fa002c6532b9346',1,'RSDP2']]]
 ];

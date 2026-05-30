@@ -27,6 +27,8 @@
 
 #include <stdint.h>
 #include <stddef.h>
+#include "drivers/serial_port.h"
+#include "boot/limine_vga.h"
 
 /**
  * @brief Kernel-mode GDT segment selectors.
@@ -65,6 +67,13 @@ struct InterruptRegisters
     uint32_t eip, csm, eflags, useresp, ss;
 };
 
+static inline uint8_t InPortB(uint16_t port)
+{
+    uint8_t value;
+    asm volatile("inb %1, %0" : "=a"(value) : "Nd"(port));
+    return value;
+}
+
 static void OutPortB(uint16_t port, uint8_t value)
 {
     asm volatile ("outb %1, %0" : : "dN" (port), "a" (value));
@@ -82,4 +91,24 @@ static void hcf(void)
     for (;;) {
         asm ("hlt");
     }
+}
+
+static void IOWait()
+{
+    OutPortB(0x80, 0);
+}
+
+/**
+ * @brief       Triggers a critical system breakdown state, piping messages across diagnostic outputs.
+ * @details     Simultaneously dumps failure summaries across the serial COM1 port interface 
+ *              and onto the active linear graphical display before hanging the CPU execution chain.
+ * @param[in]   str Null-terminated ASCII error diagnostic summary string describing the system failure.
+ */
+static void KernelPanic(const char *str)
+{
+    SerialWriteString(COM1_PORT, "Kernel Panic: ");
+    SerialWriteString(COM1_PORT, str);
+    kprintf("Kernel Panic: ");
+    kprintf(str);
+    hcf();
 }

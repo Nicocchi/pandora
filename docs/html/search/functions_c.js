@@ -1,4 +1,5 @@
 var searchData=
 [
-  ['writetss_0',['WriteTSS',['../gdt_8cpp.html#a87a38e7e8e68ded083db52ac23aeb775',1,'gdt.cpp']]]
+  ['registerinterrupthandler_0',['RegisterInterruptHandler',['../idt_8cpp.html#a9b6109f21b077238333cd8f6ceec5158',1,'RegisterInterruptHandler(uint8_t interrupt, InterruptHandler handler):&#160;idt.cpp'],['../idt_8h.html#a9b6109f21b077238333cd8f6ceec5158',1,'RegisterInterruptHandler(uint8_t interrupt, InterruptHandler handler):&#160;idt.cpp']]],
+  ['remappic_1',['RemapPIC',['../idt_8cpp.html#a4e8240380bc281a34ca197d3fa77f6f9',1,'idt.cpp']]]
 ];

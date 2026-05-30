@@ -13,5 +13,7 @@ var searchData=
   ['gpt_5fpart_5fuuid_10',['gpt_part_uuid',['../structlimine__file.html#ab067ccacc13594ccbbb0d2284223b35c',1,'limine_file']]],
   ['granularity_11',['granularity',['../structSegmentDescriptor.html#a60ca82472879440ecd39be82db1e886d',1,'SegmentDescriptor::granularity'],['../structTSSDescriptor.html#ab13a9873419708c7b802a3785d9a7738',1,'TSSDescriptor::granularity']]],
   ['green_5fmask_5fshift_12',['green_mask_shift',['../structlimine__video__mode.html#a66657c92b2db37ecc6fca5d6e9473c73',1,'limine_video_mode::green_mask_shift'],['../structlimine__framebuffer.html#a3acea0b874c92b46cb2de5b8c8fa9cf1',1,'limine_framebuffer::green_mask_shift']]],
-  ['green_5fmask_5fsize_13',['green_mask_size',['../structlimine__video__mode.html#a990e483dcb9201cceba89df19a611962',1,'limine_video_mode::green_mask_size'],['../structlimine__framebuffer.html#ad2844bcfc736a1a8ea33892d273048e7',1,'limine_framebuffer::green_mask_size']]]
+  ['green_5fmask_5fsize_13',['green_mask_size',['../structlimine__video__mode.html#a990e483dcb9201cceba89df19a611962',1,'limine_video_mode::green_mask_size'],['../structlimine__framebuffer.html#ad2844bcfc736a1a8ea33892d273048e7',1,'limine_framebuffer::green_mask_size']]],
+  ['gsi_14',['gsi',['../structMADTIso.html#adccff4bc8cd5ca7083b243b6ecb7128f',1,'MADTIso::gsi'],['../structISOEntry.html#a16b9c19c4cd34838d10454f0ccfe260a',1,'ISOEntry::gsi']]],
+  ['gsi_5fbase_15',['gsi_base',['../structMADTIOApic.html#ac9522033bd3f836c350d5e772c364c03',1,'MADTIOApic']]]
 ];

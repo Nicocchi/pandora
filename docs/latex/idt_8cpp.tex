@@ -2,22 +2,28 @@
 \hypertarget{idt_8cpp}{}\label{idt_8cpp}\index{src/interrupts/idt.cpp@{src/interrupts/idt.cpp}}
 
 
-Interrupt Descriptor Table (IDT) initialization and interrupt dispatching.  
+Interrupt Descriptor Table initialization and interrupt dispatch subsystem.  
 
 
 {\ttfamily \+\#include "{}idt.\+h"{}}\newline
 {\ttfamily \+\#include "{}lib/\+string.\+h"{}}\newline
 {\ttfamily \+\#include "{}boot/\+limine\+\_\+vga.\+h"{}}\newline
+{\ttfamily \+\#include "{}drivers/\+serial\+\_\+port.\+h"{}}\newline
 {\ttfamily \+\#include "{}common.\+h"{}}\newline
+{\ttfamily \+\#include "{}apic.\+h"{}}\newline
 \doxysubsubsection*{Functions}
 \begin{DoxyCompactItemize}
 \item 
+void \doxymbox{\hyperlink{idt_8cpp_a1f7ab111305cf00cb8285c8241dd6692}{Disable\+PIC}} ()
+\begin{DoxyCompactList}\small\item\em Disables the legacy 8259 PIC controller. \end{DoxyCompactList}\item 
+void \doxymbox{\hyperlink{idt_8cpp_a360f67c504ebee80bc6a785f411dcb7e}{Enable\+Interrupts}} ()
+\begin{DoxyCompactList}\small\item\em Enables interrupts. \end{DoxyCompactList}\item 
 void \doxymbox{\hyperlink{idt_8cpp_aa38cfd5a8b03a28306a8e3151d3a45da}{idt\+\_\+flush}} (\doxymbox{\hyperlink{structIDTPtr}{IDTPtr}} \texorpdfstring{$\ast$}{*}\doxymbox{\hyperlink{idt_8cpp_aaecee0b6b4dcd97cda03fc807f8cce5f}{idtr}})
 \begin{DoxyCompactList}\small\item\em External assembly routine that loads the IDT. \end{DoxyCompactList}\item 
 void \doxymbox{\hyperlink{idt_8cpp_a810b1f38b62bba4da2b7120b37999553}{Init\+IDT}} ()
 \begin{DoxyCompactList}\small\item\em Initializes the Interrupt Descriptor Table. \end{DoxyCompactList}\item 
 void \doxymbox{\hyperlink{idt_8cpp_a430543ad3fa2ae183d56755001428c21}{interrupt\+\_\+dispatch}} (\doxymbox{\hyperlink{structInterruptFrame}{Interrupt\+Frame}} \texorpdfstring{$\ast$}{*}frame)
-\begin{DoxyCompactList}\small\item\em Main interrupt dispatcher called from assembly. \end{DoxyCompactList}\item 
+\begin{DoxyCompactList}\small\item\em Central interrupt and exception dispatcher. \end{DoxyCompactList}\item 
 void \doxymbox{\hyperlink{idt_8cpp_adbe0f253d11eeb032b3612c8732fb76e}{irq0}} ()
 \item 
 void \doxymbox{\hyperlink{idt_8cpp_ab67ffa95ff39e0b264f4534d43025c30}{irq1}} ()
@@ -114,23 +120,29 @@ void \doxymbox{\hyperlink{idt_8cpp_a86bc69345a3bb409665dbadb77a9d393}{isr8}} ()
 \item 
 void \doxymbox{\hyperlink{idt_8cpp_aacb7c8490cbd623a3a2bf933ffedd131}{isr9}} ()
 \item 
+void \doxymbox{\hyperlink{idt_8cpp_a9b6109f21b077238333cd8f6ceec5158}{Register\+Interrupt\+Handler}} (uint8\+\_\+t interrupt, \doxymbox{\hyperlink{idt_8h_adccf2dbfed381ac42b105efacb4fe4df}{Interrupt\+Handler}} handler)
+\begin{DoxyCompactList}\small\item\em Registers a high-\/level interrupt handler. \end{DoxyCompactList}\item 
 static void \doxymbox{\hyperlink{idt_8cpp_a4e8240380bc281a34ca197d3fa77f6f9}{Remap\+PIC}} ()
-\begin{DoxyCompactList}\small\item\em Remaps the legacy PIC IRQ vectors. \end{DoxyCompactList}\item 
+\begin{DoxyCompactList}\small\item\em Remaps legacy PIC IRQ vectors. \end{DoxyCompactList}\item 
 void \doxymbox{\hyperlink{idt_8cpp_a36f4a1553602cc4f96378f1b4d5c93b2}{Set\+IDTEntry}} (uint8\+\_\+t index, uint64\+\_\+t base, uint16\+\_\+t selector, uint8\+\_\+t flags)
-\begin{DoxyCompactList}\small\item\em Configures a single IDT entry. \end{DoxyCompactList}\end{DoxyCompactItemize}
+\begin{DoxyCompactList}\small\item\em Configures a single IDT gate descriptor. \end{DoxyCompactList}\item 
+void \doxymbox{\hyperlink{idt_8cpp_a99d7c2a12a6af11df6827eb1a660e856}{Unregister\+Interrupt\+Handler}} (uint8\+\_\+t interrupt)
+\begin{DoxyCompactList}\small\item\em Unregisters a high-\/level interrupt handler. \end{DoxyCompactList}\end{DoxyCompactItemize}
 \doxysubsubsection*{Variables}
 \begin{DoxyCompactItemize}
 \item 
 const char \texorpdfstring{$\ast$}{*} \doxymbox{\hyperlink{idt_8cpp_a7b12de8b0bf38c0d059f86f78da12a5b}{exception\+\_\+messages}} \+[$\,$]\+
 \begin{DoxyCompactList}\small\item\em Exception message lookup table. \end{DoxyCompactList}\item 
 struct \doxymbox{\hyperlink{structIDTEntry}{IDTEntry}} \doxymbox{\hyperlink{idt_8cpp_a0803646f6e6a139849288dc1a7821154}{idt}} \+[256]\+
-\begin{DoxyCompactList}\small\item\em Global Interrupt Descriptor Table. \end{DoxyCompactList}\item 
+\begin{DoxyCompactList}\small\item\em Global Interrupt Descriptor Table storage. \end{DoxyCompactList}\item 
 struct \doxymbox{\hyperlink{structIDTPtr}{IDTPtr}} \doxymbox{\hyperlink{idt_8cpp_aaecee0b6b4dcd97cda03fc807f8cce5f}{idtr}}
-\begin{DoxyCompactList}\small\item\em IDTR structure used by lidt. \end{DoxyCompactList}\end{DoxyCompactItemize}
+\begin{DoxyCompactList}\small\item\em IDTR structure used by lidt. \end{DoxyCompactList}\item 
+static \doxymbox{\hyperlink{idt_8h_adccf2dbfed381ac42b105efacb4fe4df}{Interrupt\+Handler}} \doxymbox{\hyperlink{idt_8cpp_a5130379f3cad0fed42ae16dcd96be7b7}{interrupt\+\_\+handlers}} \+[256]\+
+\begin{DoxyCompactList}\small\item\em High-\/level interrupt callback table. \end{DoxyCompactList}\end{DoxyCompactItemize}
 
 
 \doxysubsection{Detailed Description}
-Interrupt Descriptor Table (IDT) initialization and interrupt dispatching. 
+Interrupt Descriptor Table initialization and interrupt dispatch subsystem. 
 
 \begin{DoxyCopyright}{Copyright}
 Copyright (c) 2026, Nicocchi @license Licensed under the GPL2 License
@@ -141,33 +153,70 @@ Nicocchi
 \begin{DoxyDate}{Date}
 May 29, 2026
 \end{DoxyDate}
-~\newline
- Implements the x86\+\_\+64 Interrupt Descriptor Table subsystem, including:\+
+Implements the x86\+\_\+64 interrupt handling subsystem for Pandora OS.
 
-
+Responsibilities include:\+
 \begin{DoxyItemize}
-\item IDT entry creation and initialization
-\item PIC remapping for hardware IRQ support
-\item CPU exception handling and diagnostics
-\item IRQ acknowledgement through End Of Interrupt (EOI) signaling
-\item Interrupt dispatch bridging between assembly ISR stubs and C++ handlers
+\item IDT construction and initialization
+\item Exception vector installation
+\item Hardware IRQ vector installation
+\item Interrupt dispatch bridging
+\item Interrupt handler registration
+\item CPU exception diagnostics
+\item APIC End Of Interrupt (EOI) signaling
+\item Legacy PIC remapping and disabling
 \end{DoxyItemize}
 
-The IDT is loaded through the {\ttfamily lidt} instruction and used by the processor to dispatch exceptions and interrupts into kernel-\/defined handlers.
+Interrupt handling flow:\+
+\begin{DoxyEnumerate}
+\item Hardware or CPU exception occurs
+\item CPU indexes the IDT using the interrupt vector
+\item Assembly ISR stub preserves CPU state
+\item Control transfers into {\ttfamily \doxylink{idt_8cpp_a430543ad3fa2ae183d56755001428c21}{interrupt\+\_\+dispatch()}}
+\item Registered C++ handlers are invoked
+\item APIC EOI signaling completes interrupt servicing
+\end{DoxyEnumerate}
 
-Hardware IRQs are remapped away from CPU exception vectors using the legacy Programmable Interrupt Controller (PIC).
+In modern APIC mode:\+
+\begin{DoxyItemize}
+\item The Local APIC replaces the legacy PIC
+\item IRQs are routed through the I/\+O APIC
+\item EOIs are sent through the LAPIC EOI register
+\end{DoxyItemize}
 
 References:\+
 \begin{DoxyItemize}
-\item IDT:\+ \href{https://wiki.osdev.org/Interrupt_Descriptor_Table}{\texttt{https:\+/\+/\+wiki.\+osdev.\+org/\+\+Interrupt\+\_\+\+Descriptor\+\_\+\+Table}}
-\item PIC:\+ \href{https://wiki.osdev.org/8259_PIC}{\texttt{https:\+/\+/\+wiki.\+osdev.\+org/\+8259\+\_\+\+PIC}}
-\item Exceptions:\+ \href{https://wiki.osdev.org/Exceptions}{\texttt{https:\+/\+/\+wiki.\+osdev.\+org/\+\+Exceptions}}
-\item Interrupts Tutorial:\+ \href{https://wiki.osdev.org/Interrupts_Tutorial}{\texttt{https:\+/\+/\+wiki.\+osdev.\+org/\+\+Interrupts\+\_\+\+Tutorial}} 
+\item Intel® SDM Vol. 3A Chapter 6
+\item \href{https://wiki.osdev.org/Interrupt_Descriptor_Table}{\texttt{https:\+/\+/\+wiki.\+osdev.\+org/\+\+Interrupt\+\_\+\+Descriptor\+\_\+\+Table}}
+\item \href{https://wiki.osdev.org/APIC}{\texttt{https:\+/\+/\+wiki.\+osdev.\+org/\+\+APIC}}
+\item \href{https://wiki.osdev.org/8259_PIC}{\texttt{https:\+/\+/\+wiki.\+osdev.\+org/\+8259\+\_\+\+PIC}} 
 \end{DoxyItemize}
 
 \label{doc-func-members}
 \Hypertarget{idt_8cpp_doc-func-members}
 \doxysubsection{Function Documentation}
+\Hypertarget{idt_8cpp_a1f7ab111305cf00cb8285c8241dd6692}\index{idt.cpp@{idt.cpp}!DisablePIC@{DisablePIC}}
+\index{DisablePIC@{DisablePIC}!idt.cpp@{idt.cpp}}
+\doxysubsubsection{\texorpdfstring{DisablePIC()}{DisablePIC()}}
+{\footnotesize\ttfamily \label{idt_8cpp_a1f7ab111305cf00cb8285c8241dd6692} 
+void Disable\+PIC (\begin{DoxyParamCaption}{}{}\end{DoxyParamCaption})}
+
+
+
+Disables the legacy 8259 PIC controller. 
+
+Masks all IRQ lines on both the master and slave PICs.
+
+This is required when transitioning to APIC mode in order to prevent duplicate interrupt delivery from the legacy PIC hardware. \Hypertarget{idt_8cpp_a360f67c504ebee80bc6a785f411dcb7e}\index{idt.cpp@{idt.cpp}!EnableInterrupts@{EnableInterrupts}}
+\index{EnableInterrupts@{EnableInterrupts}!idt.cpp@{idt.cpp}}
+\doxysubsubsection{\texorpdfstring{EnableInterrupts()}{EnableInterrupts()}}
+{\footnotesize\ttfamily \label{idt_8cpp_a360f67c504ebee80bc6a785f411dcb7e} 
+void Enable\+Interrupts (\begin{DoxyParamCaption}{}{}\end{DoxyParamCaption})}
+
+
+
+Enables interrupts. 
+
 \Hypertarget{idt_8cpp_aa38cfd5a8b03a28306a8e3151d3a45da}\index{idt.cpp@{idt.cpp}!idt\_flush@{idt\_flush}}
 \index{idt\_flush@{idt\_flush}!idt.cpp@{idt.cpp}}
 \doxysubsubsection{\texorpdfstring{idt\_flush()}{idt\_flush()}}
@@ -196,14 +245,30 @@ void interrupt\+\_\+dispatch (\begin{DoxyParamCaption}\item[{\doxymbox{\hyperlin
 
 
 
-Main interrupt dispatcher called from assembly. 
+Central interrupt and exception dispatcher. 
+
+Invoked directly from low-\/level ISR assembly stubs after CPU state preservation has completed.
+
+Responsibilities:\+
+\begin{DoxyItemize}
+\item Exception diagnostics and panic handling
+\item Registered interrupt callback dispatch
+\item Hardware interrupt acknowledgement
+\item APIC End Of Interrupt signaling
+\end{DoxyItemize}
+
+Exception vectors (\texorpdfstring{$<$}{<} 32) are treated as fatal kernel faults unless explicitly handled elsewhere.
+
+Hardware interrupts routed through the APIC subsystem require an explicit LAPIC EOI signal after servicing completes.
 
 
 \begin{DoxyParams}{Parameters}
-{\em frame} & Pointer to interrupt register state \\
+{\em frame} & Pointer to the preserved interrupt frame. \\
 \hline
 \end{DoxyParams}
-\Hypertarget{idt_8cpp_adbe0f253d11eeb032b3612c8732fb76e}\index{idt.cpp@{idt.cpp}!irq0@{irq0}}
+Hardware interrupts routed through the APIC subsystem require an explicit End Of Interrupt (EOI) signal to the Local APIC.
+
+Without an EOI, the APIC will not deliver additional interrupts of the same class.\Hypertarget{idt_8cpp_adbe0f253d11eeb032b3612c8732fb76e}\index{idt.cpp@{idt.cpp}!irq0@{irq0}}
 \index{irq0@{irq0}!idt.cpp@{idt.cpp}}
 \doxysubsubsection{\texorpdfstring{irq0()}{irq0()}}
 {\footnotesize\ttfamily \label{idt_8cpp_adbe0f253d11eeb032b3612c8732fb76e} 
@@ -491,6 +556,27 @@ void isr8 (\begin{DoxyParamCaption}{}{}\end{DoxyParamCaption})}
 {\footnotesize\ttfamily \label{idt_8cpp_aacb7c8490cbd623a3a2bf933ffedd131} 
 void isr9 (\begin{DoxyParamCaption}{}{}\end{DoxyParamCaption})}
 
+\Hypertarget{idt_8cpp_a9b6109f21b077238333cd8f6ceec5158}\index{idt.cpp@{idt.cpp}!RegisterInterruptHandler@{RegisterInterruptHandler}}
+\index{RegisterInterruptHandler@{RegisterInterruptHandler}!idt.cpp@{idt.cpp}}
+\doxysubsubsection{\texorpdfstring{RegisterInterruptHandler()}{RegisterInterruptHandler()}}
+{\footnotesize\ttfamily \label{idt_8cpp_a9b6109f21b077238333cd8f6ceec5158} 
+void Register\+Interrupt\+Handler (\begin{DoxyParamCaption}\item[{uint8\+\_\+t}]{interrupt}{, }\item[{\doxymbox{\hyperlink{idt_8h_adccf2dbfed381ac42b105efacb4fe4df}{Interrupt\+Handler}}}]{handler}{}\end{DoxyParamCaption})}
+
+
+
+Registers a high-\/level interrupt handler. 
+
+Associates a C++ callback with a specific interrupt vector.
+
+The handler will be invoked by the interrupt dispatcher after low-\/level CPU state preservation has completed.
+
+
+\begin{DoxyParams}{Parameters}
+{\em interrupt} & Interrupt vector number \\
+\hline
+{\em handler} & Callback function to invoke \\
+\hline
+\end{DoxyParams}
 \Hypertarget{idt_8cpp_a4e8240380bc281a34ca197d3fa77f6f9}\index{idt.cpp@{idt.cpp}!RemapPIC@{RemapPIC}}
 \index{RemapPIC@{RemapPIC}!idt.cpp@{idt.cpp}}
 \doxysubsubsection{\texorpdfstring{RemapPIC()}{RemapPIC()}}
@@ -499,27 +585,70 @@ void Remap\+PIC (\begin{DoxyParamCaption}{}{}\end{DoxyParamCaption})\hspace{0.3c
 
 
 
-Remaps the legacy PIC IRQ vectors. 
+Remaps legacy PIC IRQ vectors. 
 
-Master PIC:\+ IRQs 0-\/7 -\/\texorpdfstring{$>$}{>} vectors 32-\/39 Slave PIC:\+ IRQs 8-\/15 -\/\texorpdfstring{$>$}{>} vectors 40-\/47 \Hypertarget{idt_8cpp_a36f4a1553602cc4f96378f1b4d5c93b2}\index{idt.cpp@{idt.cpp}!SetIDTEntry@{SetIDTEntry}}
+Reconfigures the master and slave 8259 PIC controllers so hardware IRQs do not overlap with reserved CPU exception vectors.
+
+Original PIC mappings:\+
+\begin{DoxyItemize}
+\item IRQ0-\/7 -\/\texorpdfstring{$>$}{>} vectors 0x08-\/0x0F
+\item IRQ8-\/15 -\/\texorpdfstring{$>$}{>} vectors 0x70-\/0x77
+\end{DoxyItemize}
+
+Remapped PIC mappings:\+
+\begin{DoxyItemize}
+\item IRQ0-\/7 -\/\texorpdfstring{$>$}{>} vectors 32-\/39
+\item IRQ8-\/15 -\/\texorpdfstring{$>$}{>} vectors 40-\/47
+\end{DoxyItemize}
+
+Although the kernel primarily operates in APIC mode, PIC remapping remains useful during early initialization and compatibility stages. \Hypertarget{idt_8cpp_a36f4a1553602cc4f96378f1b4d5c93b2}\index{idt.cpp@{idt.cpp}!SetIDTEntry@{SetIDTEntry}}
 \index{SetIDTEntry@{SetIDTEntry}!idt.cpp@{idt.cpp}}
 \doxysubsubsection{\texorpdfstring{SetIDTEntry()}{SetIDTEntry()}}
 {\footnotesize\ttfamily \label{idt_8cpp_a36f4a1553602cc4f96378f1b4d5c93b2} 
-void Set\+IDTEntry (\begin{DoxyParamCaption}\item[{uint8\+\_\+t}]{index}{, }\item[{uint64\+\_\+t}]{base}{, }\item[{uint16\+\_\+t}]{sel}{, }\item[{uint8\+\_\+t}]{flags}{}\end{DoxyParamCaption})}
+void Set\+IDTEntry (\begin{DoxyParamCaption}\item[{uint8\+\_\+t}]{index}{, }\item[{uint64\+\_\+t}]{base}{, }\item[{uint16\+\_\+t}]{selector}{, }\item[{uint8\+\_\+t}]{flags}{}\end{DoxyParamCaption})}
 
 
 
-Configures a single IDT entry. 
+Configures a single IDT gate descriptor. 
+
+Configures a single IDT entry.
+
+Installs an interrupt or exception handler into the IDT.
+
+The descriptor defines:\+
+\begin{DoxyItemize}
+\item ISR entry address
+\item target code segment
+\item gate privilege attributes
+\item interrupt gate behavior
+\end{DoxyItemize}
 
 
 \begin{DoxyParams}{Parameters}
-{\em index} & IDT vector index \\
+{\em index} & Interrupt vector index \\
 \hline
-{\em base} & Address of ISR handler \\
+{\em base} & ISR function address \\
 \hline
-{\em sel} & Code segment selector \\
+{\em selector} & GDT code segment selector \\
 \hline
-{\em flags} & Gate flags and attributes \\
+{\em flags} & Descriptor attribute flags \\
+\hline
+\end{DoxyParams}
+\Hypertarget{idt_8cpp_a99d7c2a12a6af11df6827eb1a660e856}\index{idt.cpp@{idt.cpp}!UnregisterInterruptHandler@{UnregisterInterruptHandler}}
+\index{UnregisterInterruptHandler@{UnregisterInterruptHandler}!idt.cpp@{idt.cpp}}
+\doxysubsubsection{\texorpdfstring{UnregisterInterruptHandler()}{UnregisterInterruptHandler()}}
+{\footnotesize\ttfamily \label{idt_8cpp_a99d7c2a12a6af11df6827eb1a660e856} 
+void Unregister\+Interrupt\+Handler (\begin{DoxyParamCaption}\item[{uint8\+\_\+t}]{interrupt}{}\end{DoxyParamCaption})}
+
+
+
+Unregisters a high-\/level interrupt handler. 
+
+The handler will be invoked by the interrupt dispatcher after low-\/level CPU state preservation has completed.
+
+
+\begin{DoxyParams}{Parameters}
+{\em interrupt} & Interrupt vector number \\
 \hline
 \end{DoxyParams}
 
@@ -551,7 +680,7 @@ const char\texorpdfstring{$\ast$}{*} exception\+\_\+messages\+[$\,$]\+}
 \DoxyCodeLine{\ \ \ \ \textcolor{stringliteral}{"{}Segment\ not\ present"{}},}
 \DoxyCodeLine{\ \ \ \ \textcolor{stringliteral}{"{}Stack-\/Segment\ fault"{}},}
 \DoxyCodeLine{\ \ \ \ \textcolor{stringliteral}{"{}General\ protection\ fault"{}},}
-\DoxyCodeLine{\ \ \ \ \textcolor{stringliteral}{"{}Page\ falt"{}},}
+\DoxyCodeLine{\ \ \ \ \textcolor{stringliteral}{"{}Page\ fault"{}},}
 \DoxyCodeLine{\ \ \ \ \textcolor{stringliteral}{"{}Reserved"{}},}
 \DoxyCodeLine{\ \ \ \ \textcolor{stringliteral}{"{}x87\ Floating\ Point\ Exception"{}},}
 \DoxyCodeLine{\ \ \ \ \textcolor{stringliteral}{"{}Alignment\ Fault"{}},}
@@ -574,9 +703,9 @@ struct \doxymbox{\hyperlink{structIDTEntry}{IDTEntry}} idt\+[256]\+}
 
 
 
-Global Interrupt Descriptor Table. 
+Global Interrupt Descriptor Table storage. 
 
-\Hypertarget{idt_8cpp_aaecee0b6b4dcd97cda03fc807f8cce5f}\index{idt.cpp@{idt.cpp}!idtr@{idtr}}
+Contains all 256 interrupt vector descriptors used by the processor. \Hypertarget{idt_8cpp_aaecee0b6b4dcd97cda03fc807f8cce5f}\index{idt.cpp@{idt.cpp}!idtr@{idtr}}
 \index{idtr@{idtr}!idt.cpp@{idt.cpp}}
 \doxysubsubsection{\texorpdfstring{idtr}{idtr}}
 {\footnotesize\ttfamily \label{idt_8cpp_aaecee0b6b4dcd97cda03fc807f8cce5f} 
@@ -586,3 +715,16 @@ struct \doxymbox{\hyperlink{structIDTPtr}{IDTPtr}} idtr}
 
 IDTR structure used by lidt. 
 
+\Hypertarget{idt_8cpp_a5130379f3cad0fed42ae16dcd96be7b7}\index{idt.cpp@{idt.cpp}!interrupt\_handlers@{interrupt\_handlers}}
+\index{interrupt\_handlers@{interrupt\_handlers}!idt.cpp@{idt.cpp}}
+\doxysubsubsection{\texorpdfstring{interrupt\_handlers}{interrupt\_handlers}}
+{\footnotesize\ttfamily \label{idt_8cpp_a5130379f3cad0fed42ae16dcd96be7b7} 
+\doxymbox{\hyperlink{idt_8h_adccf2dbfed381ac42b105efacb4fe4df}{Interrupt\+Handler}} interrupt\+\_\+handlers\+[256]\+\hspace{0.3cm}{\ttfamily [static]}}
+
+
+
+High-\/level interrupt callback table. 
+
+Stores optional C++ interrupt handlers indexed by interrupt vector.
+
+A nullptr entry indicates no registered handler. 

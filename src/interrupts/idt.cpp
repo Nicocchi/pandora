@@ -1,49 +1,73 @@
 /**
  * @file        idt.cpp
- * @brief       Interrupt Descriptor Table (IDT) initialization and interrupt dispatching.
- * 
+ * @brief       Interrupt Descriptor Table initialization and interrupt dispatch subsystem.
+ *
  * @copyright   Copyright (c) 2026, Nicocchi
  * @license     Licensed under the GPL2 License
- * 
+ *
  * @author      Nicocchi
  * @date        May 29, 2026
- * 
- * @details     
- * Implements the x86_64 Interrupt Descriptor Table subsystem, including:
- * 
- * - IDT entry creation and initialization
- * - PIC remapping for hardware IRQ support
- * - CPU exception handling and diagnostics
- * - IRQ acknowledgement through End Of Interrupt (EOI) signaling
- * - Interrupt dispatch bridging between assembly ISR stubs and C++ handlers
- * 
- * The IDT is loaded through the `lidt` instruction and used by the processor
- * to dispatch exceptions and interrupts into kernel-defined handlers.
- * 
- * Hardware IRQs are remapped away from CPU exception vectors using the
- * legacy Programmable Interrupt Controller (PIC).
- * 
+ *
+ * @details
+ * Implements the x86_64 interrupt handling subsystem for Pandora OS.
+ *
+ * Responsibilities include:
+ * - IDT construction and initialization
+ * - Exception vector installation
+ * - Hardware IRQ vector installation
+ * - Interrupt dispatch bridging
+ * - Interrupt handler registration
+ * - CPU exception diagnostics
+ * - APIC End Of Interrupt (EOI) signaling
+ * - Legacy PIC remapping and disabling
+ *
+ * Interrupt handling flow:
+ * 1. Hardware or CPU exception occurs
+ * 2. CPU indexes the IDT using the interrupt vector
+ * 3. Assembly ISR stub preserves CPU state
+ * 4. Control transfers into `interrupt_dispatch()`
+ * 5. Registered C++ handlers are invoked
+ * 6. APIC EOI signaling completes interrupt servicing
+ *
+ * In modern APIC mode:
+ * - The Local APIC replaces the legacy PIC
+ * - IRQs are routed through the I/O APIC
+ * - EOIs are sent through the LAPIC EOI register
+ *
  * References:
- * - IDT: https://wiki.osdev.org/Interrupt_Descriptor_Table
- * - PIC: https://wiki.osdev.org/8259_PIC
- * - Exceptions: https://wiki.osdev.org/Exceptions
- * - Interrupts Tutorial: https://wiki.osdev.org/Interrupts_Tutorial
+ * - Intel® SDM Vol. 3A Chapter 6
+ * - https://wiki.osdev.org/Interrupt_Descriptor_Table
+ * - https://wiki.osdev.org/APIC
+ * - https://wiki.osdev.org/8259_PIC
  */
 
 #include "idt.h"
 #include "lib/string.h"
 #include "boot/limine_vga.h"
+#include "drivers/serial_port.h"
 #include "common.h"
+#include "apic.h"
 
 /**
- * @brief Global Interrupt Descriptor Table.
- */
+ * @brief Global Interrupt Descriptor Table storage.
+ *
+ * Contains all 256 interrupt vector descriptors used by the processor.
+*/
 struct IDTEntry idt[256];
 
 /**
  * @brief IDTR structure used by lidt.
  */
 struct IDTPtr idtr;
+
+/**
+ * @brief High-level interrupt callback table.
+ *
+ * Stores optional C++ interrupt handlers indexed by interrupt vector.
+ *
+ * A nullptr entry indicates no registered handler.
+ */
+static InterruptHandler interrupt_handlers[256];
 
 /**
  * @brief External assembly routine that loads the IDT.
@@ -122,7 +146,7 @@ const char* exception_messages[] =
     "Segment not present",
     "Stack-Segment fault",
     "General protection fault",
-    "Page falt",
+    "Page fault",
     "Reserved",
     "x87 Floating Point Exception",
     "Alignment Fault",
@@ -132,7 +156,33 @@ const char* exception_messages[] =
     "Control Protection Exception"
 };
 
+void RegisterInterruptHandler(uint8_t interrupt, InterruptHandler handler)
+{
+    interrupt_handlers[interrupt] = handler;
+}
 
+void UnregisterInterruptHandler(uint8_t interrupt)
+{
+    interrupt_handlers[interrupt] = nullptr;
+}
+
+
+/**
+ * @brief Configures a single IDT gate descriptor.
+ *
+ * Installs an interrupt or exception handler into the IDT.
+ *
+ * The descriptor defines:
+ * - ISR entry address
+ * - target code segment
+ * - gate privilege attributes
+ * - interrupt gate behavior
+ *
+ * @param index       Interrupt vector index
+ * @param base        ISR function address
+ * @param selector    GDT code segment selector
+ * @param flags       Descriptor attribute flags
+ */
 
 void SetIDTEntry(uint8_t index, uint64_t base, uint16_t selector, uint8_t flags)
 {
@@ -151,61 +201,149 @@ void SetIDTEntry(uint8_t index, uint64_t base, uint16_t selector, uint8_t flags)
 }
 
 /**
- * @brief Remaps the legacy PIC IRQ vectors.
+ * @brief Remaps legacy PIC IRQ vectors.
  *
- * Master PIC: IRQs 0-7  -> vectors 32-39
- * Slave PIC:  IRQs 8-15 -> vectors 40-47
+ * Reconfigures the master and slave 8259 PIC controllers so hardware
+ * IRQs do not overlap with reserved CPU exception vectors.
+ *
+ * Original PIC mappings:
+ * - IRQ0-7  -> vectors 0x08-0x0F
+ * - IRQ8-15 -> vectors 0x70-0x77
+ *
+ * Remapped PIC mappings:
+ * - IRQ0-7  -> vectors 32-39
+ * - IRQ8-15 -> vectors 40-47
+ *
+ * Although the kernel primarily operates in APIC mode, PIC remapping
+ * remains useful during early initialization and compatibility stages.
  */
 static void RemapPIC()
 {
     // 0x20 commands and 0x21 data
     // 0xA0 commands and 0xA1 data
     // Start PIC chips into initialization mode
+    uint8_t mask1 = InPortB(0x21);
+    uint8_t mask2 = InPortB(0xA1);
+
     OutPortB(0x20, 0x11);
+    IOWait();
     OutPortB(0xA0, 0x11);
+    IOWait();
 
     OutPortB(0x21, 0x20);
+    IOWait();
     OutPortB(0xA1, 0x28);
+    IOWait();
 
     OutPortB(0x21, 0x04);
+    IOWait();
     OutPortB(0xA1, 0x02);
+    IOWait();
 
     OutPortB(0x21, 0x01);
+    IOWait();
     OutPortB(0xA1, 0x01);
+    IOWait();
 
     OutPortB(0x21, 0x0);
+    IOWait();
     OutPortB(0xA1, 0x0);
+    IOWait();
+}
+
+void DisablePIC()
+{
+    // Remap first to avoid conflicts with CPU exceptions
+    // then mask everything
+    OutPortB(0x20, 0x11); OutPortB(0x80, 0);
+    OutPortB(0xA0, 0x11); OutPortB(0x80, 0);
+    OutPortB(0x21, 0x20); OutPortB(0x80, 0);
+    OutPortB(0xA1, 0x28); OutPortB(0x80, 0);
+    OutPortB(0x21, 0x04); OutPortB(0x80, 0);
+    OutPortB(0xa1, 0x02); OutPortB(0x80, 0);
+    OutPortB(0x21, 0x01); OutPortB(0x80, 0);
+    OutPortB(0xA1, 0x01); OutPortB(0x80, 0);
+
+    // Mask all IRQs
+    OutPortB(0x21, 0xFF);
+    OutPortB(0xA1, 0xFF);
 }
 
 /**
- * @brief Main interrupt dispatcher called from assembly.
+ * @brief Central interrupt and exception dispatcher.
  *
- * @param frame Pointer to interrupt register state
+ * Invoked directly from low-level ISR assembly stubs after CPU state
+ * preservation has completed.
+ *
+ * Responsibilities:
+ * - Exception diagnostics and panic handling
+ * - Registered interrupt callback dispatch
+ * - Hardware interrupt acknowledgement
+ * - APIC End Of Interrupt signaling
+ *
+ * Exception vectors (< 32) are treated as fatal kernel faults unless
+ * explicitly handled elsewhere.
+ *
+ * Hardware interrupts routed through the APIC subsystem require an
+ * explicit LAPIC EOI signal after servicing completes.
+ *
+ * @param frame Pointer to the preserved interrupt frame.
  */
 extern "C" void interrupt_dispatch(InterruptFrame* frame)
 {
+    uint64_t interrupt = frame->interrupt_number;
+
     // CPU Exceptions
-    if (frame->interrupt_number < 32)
+    if (interrupt < 32)
     {
-        kprintf("Exception: %s\n", exception_messages[frame->interrupt_number]);
-        kprintf("Interrupt #: %llx\n", frame->interrupt_number);
-        kprintf("Error Code: %llx\n", frame->error_code);
+        kprintf("Exception: %s\n", exception_messages[interrupt]);
+        kprintf("Interrupt #: %d\n", interrupt);
+        kprintf("Error Code: %d\n", frame->error_code);
         kprintf("RIP: %llx\n", frame->rip);
-        kprintf("RSP: %p\n", (void*)frame->rsp);
+        // kprintf("RSP: %p\n", (void*)frame->rsp);
         kprintf("CS: %llx\n", frame->cs);
         kprintf("RFLAGS: %llx\n", frame->rflags);
+
+        SerialWriteString(COM1_PORT, "Exception: %s\n", exception_messages[interrupt]);
+        SerialWriteString(COM1_PORT, "Interrupt #: %d\n", interrupt);
+        SerialWriteString(COM1_PORT, "Error Code: %d\n", frame->error_code);
+        SerialWriteString(COM1_PORT, "RIP: %llx\n", frame->rip);
+        // SerialWriteString(COM1_PORT, "RSP: %p\n", (void*)frame->rsp);
+        SerialWriteString(COM1_PORT, "CS: %llx\n", frame->cs);
+        SerialWriteString(COM1_PORT, "RFLAGS: %llx\n", frame->rflags);
         hcf();
     }
 
-    // Hardware IRQs
-    if (frame->interrupt_number >= 32 && frame->interrupt_number <= 47)
+    // Register handler
+    if (interrupt_handlers[interrupt] != nullptr)
     {
-        // Send EOI to slave PIC
-        if (frame->interrupt_number >= 40) OutPortB(0xA0, 0x20);
-
-        // Send EOI to master PIC
-        OutPortB(0x20, 0x20);
+        interrupt_handlers[interrupt](frame);
     }
+
+    // Hardware IRQs
+    if (interrupt >= 32)
+    {
+        /**
+         * Hardware interrupts routed through the APIC subsystem require an
+         * explicit End Of Interrupt (EOI) signal to the Local APIC.
+         *
+         * Without an EOI, the APIC will not deliver additional interrupts
+         * of the same class.
+         */
+        LAPICEoi();
+    }
+    // if (interrupt >= 32 && interrupt <= 47)
+    // {
+    //     // Send EOI to slave PIC
+    //     if (interrupt >= 40) OutPortB(0xA0, 0x20);
+
+    //     // Send EOI to master PIC
+    //     OutPortB(0x20, 0x20);
+    // }
+
+    
+
+    
 }
 
 void InitIDT()
@@ -272,8 +410,11 @@ void InitIDT()
     SetIDTEntry(47, (uint64_t)irq15, GDT_KERNEL_CODE, 0x8E);
 
     RemapPIC();
-
     idt_flush(&idtr);
     
+}
+
+void EnableInterrupts()
+{
     asm volatile("sti");
 }

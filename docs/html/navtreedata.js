@@ -29,12 +29,12 @@ var NAVTREE =
       [ "Overview", "md_README.html#autotoc_md2", null ],
       [ "Table of Contents", "md_README.html#autotoc_md4", null ],
       [ "Current Status", "md_README.html#autotoc_md6", null ],
-      [ "Features", "md_README.html#autotoc_md8", [
-        [ "Implemented", "md_README.html#autotoc_md9", null ],
-        [ "In Progress", "md_README.html#autotoc_md10", null ],
-        [ "Planned", "md_README.html#autotoc_md11", null ]
-      ] ],
-      [ "Why Pandora OS?", "md_README.html#autotoc_md13", [
+      [ "Why Pandora OS?", "md_README.html#autotoc_md8", [
+        [ "Features", "md_README.html#autotoc_md10", [
+          [ "Implemented", "md_README.html#autotoc_md11", null ],
+          [ "In Progress", "md_README.html#autotoc_md12", null ],
+          [ "Planned", "md_README.html#autotoc_md13", null ]
+        ] ],
         [ "Roadmap", "md_README.html#autotoc_md15", [
           [ "Boot Phase", "md_README.html#autotoc_md16", null ],
           [ "Core Kernel", "md_README.html#autotoc_md17", null ],
@@ -62,13 +62,14 @@ var NAVTREE =
       ] ],
       [ "Running Pandora OS", "md_README.html#autotoc_md40", [
         [ "QEMU", "md_README.html#autotoc_md41", null ],
-        [ "VirtualBox", "md_README.html#autotoc_md42", null ]
+        [ "VirtualBox", "md_README.html#autotoc_md42", null ],
+        [ "Bochs", "md_README.html#autotoc_md43", null ]
       ] ],
-      [ "Documentation", "md_README.html#autotoc_md44", null ],
-      [ "Project Structure", "md_README.html#autotoc_md46", null ],
-      [ "Contributing", "md_README.html#autotoc_md48", null ],
-      [ "Console Font", "md_README.html#autotoc_md50", null ],
-      [ "License", "md_README.html#autotoc_md52", null ]
+      [ "Documentation", "md_README.html#autotoc_md45", null ],
+      [ "Project Structure", "md_README.html#autotoc_md47", null ],
+      [ "Contributing", "md_README.html#autotoc_md49", null ],
+      [ "Console Font", "md_README.html#autotoc_md51", null ],
+      [ "License", "md_README.html#autotoc_md53", null ]
     ] ],
     [ "Topics", "topics.html", "topics" ],
     [ "Data Structures", "annotated.html", [
@@ -96,8 +97,9 @@ var NAVTREE =
 var NAVTREEINDEX =
 [
 "annotated.html",
-"limine_8h.html#ab2050864f34b88d8b97e3593619ca203",
-"structlimine__dtb__request.html#ad7a49dcd6ecbfb39a7414f96378b53f9"
+"idt_8h.html#a7191695ad6f126dd6d33f792fd6b7547",
+"structInterruptRegisters.html#a8c28d69fde9437e8185631629305b73a",
+"structlimine__hhdm__request.html#a161b252e13e9c8de8559f2e4fad63362"
 ];
 
 var SYNCONMSG = 'click to disable panel synchronization';

@@ -29,12 +29,12 @@ The operating system currently boots using the **Limine Bootloader** and is bein
 
 * [Overview](#overview)
 * [Current Status](#current-status)
+* [Why Pandora OS?](#why-pandora-os)
 * [Features](#features)
 
   * [Implemented](#implemented)
   * [In Progress](#in-progress)
   * [Planned](#planned)
-* [Why Pandora OS?](#why-pandora-os)
 * [Roadmap](#roadmap)
 
   * [Boot Phase](#boot-phase)
@@ -74,6 +74,26 @@ The operating system currently boots using the **Limine Bootloader** and is bein
 
 ---
 
+# Why Pandora OS?
+
+Pandora OS was created as a hobby and educational operating system project focused on learning low-level systems programming and kernel development.
+
+The project serves as a hands-on environment for exploring:
+
+* x86_64 architecture
+* Boot protocols and early kernel initialization
+* Memory management
+* Hardware drivers
+* Interrupts and multitasking
+* Filesystems and executable formats
+* Graphics and rendering systems
+
+Rather than aiming to compete with existing operating systems, Pandora OS is designed as a long-term learning platform and experimental kernel architecture project.
+
+The goal is to better understand how modern operating systems function internally by building components from the ground up.
+
+---
+
 ## Features
 
 ### Implemented
@@ -87,6 +107,8 @@ The operating system currently boots using the **Limine Bootloader** and is bein
 * [x] Serial port driver
 * [x] GDT
 * [x] TSS
+* [x] IDT
+* [x] PIC/APIC
 
 ### In Progress
 
@@ -108,26 +130,6 @@ The operating system currently boots using the **Limine Bootloader** and is bein
 
 ---
 
-# Why Pandora OS?
-
-Pandora OS was created as a hobby and educational operating system project focused on learning low-level systems programming and kernel development.
-
-The project serves as a hands-on environment for exploring:
-
-* x86_64 architecture
-* Boot protocols and early kernel initialization
-* Memory management
-* Hardware drivers
-* Interrupts and multitasking
-* Filesystems and executable formats
-* Graphics and rendering systems
-
-Rather than aiming to compete with existing operating systems, Pandora OS is designed as a long-term learning platform and experimental kernel architecture project.
-
-The goal is to better understand how modern operating systems function internally by building components from the ground up.
-
----
-
 ## Roadmap
 
 ### Boot Phase
@@ -136,8 +138,8 @@ The goal is to better understand how modern operating systems function internall
 - [ ] Memory map parsing
 
 ### Core Kernel
-- [ ] GDT/IDT
-- [ ] Interrupt handling
+- [x] GDT/IDT
+- [x] Interrupt handling
 - [ ] Paging
 - [ ] Heap allocator
 
@@ -268,6 +270,8 @@ build/bin/
 | ------------------------ | ----------------------------------- |
 | `-DSERIAL_LOOPBACK_TEST` | Enable serial port loopback testing |
 
+> There are known issues with VirtualBox and Serial Loopback Testing not working if enabled.
+
 ---
 
 # Running Pandora OS
@@ -288,11 +292,24 @@ Create a virtual machine named:
 PandoraOS
 ```
 
+And set the storage to either the `build/bin/pandora.hdd` or `build/bin/pandora.iso`.
+
 Then use:
 
 ```bash
 make run_vb
 ```
+
+## Bochs
+
+A bochsrc file is included. You will need to modify the locations to your locations of `BIOS-bochs-latest` and `VGABIOS-lgpl-latest`.
+
+Example:
+
+```text
+bochs -q
+```
+
 
 ---
 
@@ -304,28 +321,18 @@ Doxygen documentation can be generated using:
 make doxygen
 ```
 
-Generated documentation will be placed inside the documentation output directory.
+Generated documentation will be placed inside the `docs` directory.
 
 ---
 
 # Project Structure
 ```text
-pandora_os/
+pandora/
 ├── src/
 │   ├── boot/              # Bootloader interfaces and VGA initialization
-│   │   ├── limine_headers.h
-│   │   ├── limine_vga.cpp
-│   │   ├── limine_vga.h
-│   │   ├── limine.h
-│   │
 │   ├── drivers/           # Hardware drivers
-│   │   ├── serial_port.cpp
-│   │   ├── serial_port.h
-│   │
+│   ├── interrupts/        # Interrupt interfaces and initialization
 │   ├── lib/               # Minimal standard library replacements
-│   │   ├── string.cpp
-│   │   ├── string.h
-│   │
 │   └── main.cpp           # Kernel entry point
 │
 ├── toolchain/             # Cross-compiler installation output

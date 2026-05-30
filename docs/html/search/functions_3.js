@@ -1,4 +1,4 @@
 var searchData=
 [
-  ['hcf_0',['hcf',['../common_8h.html#aedf4780efccd3a32bf75b0d9f08b2f47',1,'common.h']]]
+  ['enableinterrupts_0',['EnableInterrupts',['../idt_8cpp.html#a360f67c504ebee80bc6a785f411dcb7e',1,'EnableInterrupts():&#160;idt.cpp'],['../idt_8h.html#a360f67c504ebee80bc6a785f411dcb7e',1,'EnableInterrupts():&#160;idt.cpp']]]
 ];
