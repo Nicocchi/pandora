@@ -109,22 +109,22 @@ extern "C"
     void isr30();
     void isr31();
 
-    void irq0();
-    void irq1();
-    void irq2();
-    void irq3();
-    void irq4();
-    void irq5();
-    void irq6();
-    void irq7();
-    void irq8();
-    void irq9();
-    void irq10();
-    void irq11();
-    void irq12();
-    void irq13();
-    void irq14();
-    void irq15();
+    void irq0();    /** @brief Programmable Interrupt Timer Interrupt */
+    void irq1();    /** @brief Keyboard Interrupt */
+    void irq2();    /** @brief Cascade (used internally by the two PICs. Never raised) */
+    void irq3();    /** @brief COM2 (if enabled) */
+    void irq4();    /** @brief COM1 (if enabled) */
+    void irq5();    /** @brief LPT2 (if enabled) */
+    void irq6();    /** @brief Floppy Disk */
+    void irq7();    /** @brief LPT1 / Unreliable "spurious" interrupt (usually) */
+    void irq8();    /** @brief CMOS real-time clock (if enabled) */
+    void irq9();    /** @brief Free for peripherals / legacy SCSI / NIC */
+    void irq10();   /** @brief Free for peripherals / SCSI / NIC */
+    void irq11();   /** @brief Free for peripherals / SCSI / NIC */
+    void irq12();   /** @brief PS2 Mouse */
+    void irq13();   /** @brief FPU / Coprocessor / Inter-processor */
+    void irq14();   /** @brief Primary ATA Hard Disk */
+    void irq15();   /** @brief Secondary ATA Hard Disk */
 }
 
 /**
@@ -323,6 +323,7 @@ extern "C" void interrupt_dispatch(InterruptFrame* frame)
     // Hardware IRQs
     if (interrupt >= 32)
     {
+        // kprintf("Interrupt Hit #: \n", interrupt);
         /**
          * Hardware interrupts routed through the APIC subsystem require an
          * explicit End Of Interrupt (EOI) signal to the Local APIC.

@@ -34,6 +34,34 @@ void DrawChar(char c)
     uint64_t font_height = kRenderer.font.psf1_Header->characterSize;
     uint64_t font_width = 8;
 
+    if (c == '\b')
+    {
+        if (kRenderer.x >= font_width)
+        {
+            kRenderer.x -= font_width;  // Step the horizontal cursor backward
+        } else if (kRenderer.y >= font_height)
+        {
+            // Wrap backward to the previous screen line if at the left margin
+            kRenderer.x = (kRenderer.framebuffer.width / font_width) * font_width - font_width;
+            kRenderer.y -= font_height;
+        }
+
+        // Wipe the previous character with a blank block of the background color
+        uintptr_t base_address = (uintptr_t)(kRenderer.framebuffer.address);
+        for (uint64_t py = 0; py < font_height; py++)
+        {
+            for (uint64_t px = 0; px < font_width; px++)
+            {
+                uint32_t *pixel_address = (uint32_t*)(base_address
+                                            + (kRenderer.y + py) * kRenderer.framebuffer.pitch
+                                            + (kRenderer.x + px) * 4);
+                *pixel_address = BLACK;
+            }
+        }
+
+        return;
+    }
+
     if (c == '\n')
     {
         kRenderer.x = 0;

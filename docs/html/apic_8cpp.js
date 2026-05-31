@@ -15,6 +15,7 @@ var apic_8cpp =
     [ "InitIOAPIC", "apic_8cpp.html#adc9bb3dd155adce97361c2fbac6e2732", null ],
     [ "InitLAPIC", "apic_8cpp.html#a7784208db7a116e5e2250ef1a14a1d9a", null ],
     [ "IOAPICRead", "apic_8cpp.html#ac5a959727a1c7d9a705e07700d67f9fd", null ],
+    [ "IOAPICRouteIRQ", "apic_8cpp.html#a2fa283f4e6693fdb0f54ea38b629a39d", null ],
     [ "IOAPICSetRedirect", "apic_8cpp.html#a56d0aaa69ca198f94fcc3cae476b03c4", null ],
     [ "IOAPICWrite", "apic_8cpp.html#a393450f167b86a8ecc83ab720db973a2", null ],
     [ "LAPICEoi", "apic_8cpp.html#a19e26a923cf664d50995477a88512543", null ],

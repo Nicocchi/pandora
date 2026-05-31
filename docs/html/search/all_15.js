@@ -1,8 +1,8 @@
 var searchData=
 [
-  ['v1_20constants_0',['PC Screen Font v1 Constants',['../group__PSF1__Macros.html',1,'']]],
-  ['virttophys_1',['VirtToPhys',['../apic_8cpp.html#a56d24318d113aa52320a3a06bafbb9dc',1,'apic.cpp']]],
-  ['virtual_5fbase_2',['virtual_base',['../structlimine__executable__address__response.html#a4b276cc8fbccb545ff221814f0d7a51e',1,'limine_executable_address_response']]],
-  ['virtualbox_3',['VirtualBox',['../md_README.html#autotoc_md42',1,'']]],
-  ['virtualization_20testing_4',['Virtualization / Testing',['../md_README.html#autotoc_md32',1,'']]]
+  ['unknown_0',['Unknown',['../ps2__keyboard_8h.html#a082e96007c3cdcb9c2c65c38a7882677a88183b946cc5f0e8c96b2e66e1c74a7e',1,'ps2_keyboard.h']]],
+  ['unregisterinterrupthandler_1',['UnregisterInterruptHandler',['../idt_8cpp.html#a99d7c2a12a6af11df6827eb1a660e856',1,'UnregisterInterruptHandler(uint8_t interrupt):&#160;idt.cpp'],['../idt_8h.html#a99d7c2a12a6af11df6827eb1a660e856',1,'UnregisterInterruptHandler(uint8_t interrupt):&#160;idt.cpp']]],
+  ['unused_2',['unused',['../structlimine__file.html#ab12af7e4d780036c111ba07311ee8cf5',1,'limine_file::unused'],['../structlimine__framebuffer.html#a58a024c31ecddb2a783336b3d83921b6',1,'limine_framebuffer::unused']]],
+  ['useresp_3',['useresp',['../structInterruptRegisters.html#a778512fbc5e9d935374fa22aa12b2124',1,'InterruptRegisters']]],
+  ['userspace_4',['Userspace',['../md_README.html#autotoc_md19',1,'']]]
 ];

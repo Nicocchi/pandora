@@ -1,10 +1,9 @@
 #include "pit.h"
 #include "idt.h"
 #include "common.h"
-#include "boot/limine_vga.h"
-#include "drivers/serial_port.h"
 
 static uint64_t ticks = 0;
+static uint32_t frequency = 100;
 
 static void PITHandler(InterruptFrame* frame)
 {
@@ -12,7 +11,7 @@ static void PITHandler(InterruptFrame* frame)
     ticks++;
 }
 
-void InitPit(uint32_t frequency)
+void InitPit()
 {
     uint16_t divisor = 1193180 / frequency;
     

@@ -7,6 +7,7 @@ var annotated_dup =
     [ "InterruptFrame", "structInterruptFrame.html", "structInterruptFrame" ],
     [ "InterruptRegisters", "structInterruptRegisters.html", "structInterruptRegisters" ],
     [ "ISOEntry", "structISOEntry.html", "structISOEntry" ],
+    [ "KeyEvent", "structKeyEvent.html", "structKeyEvent" ],
     [ "KFramebuffer", "structKFramebuffer.html", "structKFramebuffer" ],
     [ "KRenderer", "structKRenderer.html", "structKRenderer" ],
     [ "limine_bootloader_info_request", "structlimine__bootloader__info__request.html", "structlimine__bootloader__info__request" ],

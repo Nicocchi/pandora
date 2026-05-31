@@ -11,5 +11,7 @@ var searchData=
   ['blue_5fmask_5fsize_8',['blue_mask_size',['../structlimine__video__mode.html#a1f535c15dd6dfd6eaf57c863c54770bc',1,'limine_video_mode::blue_mask_size'],['../structlimine__framebuffer.html#a64962e7919b48842f912724327309fc1',1,'limine_framebuffer::blue_mask_size']]],
   ['bpp_9',['bpp',['../structlimine__video__mode.html#aacc8a3b0ec70b824036cb796d9c0709d',1,'limine_video_mode::bpp'],['../structlimine__framebuffer.html#aa32c271905e117417a6ab1107190d4ae',1,'limine_framebuffer::bpp']]],
   ['bsp_5fhartid_10',['bsp_hartid',['../structlimine__riscv__bsp__hartid__response.html#a3ddc72ccb6f3bcd85554e36f4d7379b4',1,'limine_riscv_bsp_hartid_response']]],
-  ['bus_11',['bus',['../structMADTIso.html#ad9eba8f4fd5a66f55962046d3e57e29b',1,'MADTIso']]]
+  ['buf_5fhead_11',['buf_head',['../ps2__keyboard_8cpp.html#a3753e7f20347fe36f192d805ddb16384',1,'ps2_keyboard.cpp']]],
+  ['buf_5ftail_12',['buf_tail',['../ps2__keyboard_8cpp.html#a9ffbdabf8ef4a2daca717269b352bd98',1,'ps2_keyboard.cpp']]],
+  ['bus_13',['bus',['../structMADTIso.html#ad9eba8f4fd5a66f55962046d3e57e29b',1,'MADTIso']]]
 ];

@@ -1,0 +1,243 @@
+\doxysection{src/\+drivers/\+ps2\+\_\+keyboard.cpp File Reference}
+\hypertarget{ps2__keyboard_8cpp}{}\label{ps2__keyboard_8cpp}\index{src/drivers/ps2\_keyboard.cpp@{src/drivers/ps2\_keyboard.cpp}}
+{\ttfamily \+\#include $<$stdint.\+h$>$}\newline
+{\ttfamily \+\#include $<$stddef.\+h$>$}\newline
+{\ttfamily \+\#include "{}ps2\+\_\+keyboard.\+h"{}}\newline
+{\ttfamily \+\#include "{}common.\+h"{}}\newline
+{\ttfamily \+\#include "{}boot/\+limine\+\_\+vga.\+h"{}}\newline
+{\ttfamily \+\#include "{}drivers/\+serial\+\_\+port.\+h"{}}\newline
+\doxysubsubsection*{Macros}
+\begin{DoxyCompactItemize}
+\item 
+\+\#define \doxymbox{\hyperlink{ps2__keyboard_8cpp_a5c28e05d04961202172037075ea93d40}{KEYBOARD\+\_\+\+BUFFER\+\_\+\+SIZE}}~64
+\end{DoxyCompactItemize}
+\doxysubsubsection*{Functions}
+\begin{DoxyCompactItemize}
+\item 
+void \doxymbox{\hyperlink{ps2__keyboard_8cpp_a76b51f3fb6a339a55ac945dad1272684}{Init\+Keyboard}} ()
+\begin{DoxyCompactList}\small\item\em Initializes the keyboard driver hardware and driver states. \end{DoxyCompactList}\item 
+void \doxymbox{\hyperlink{ps2__keyboard_8cpp_acee28f20e3589f5f8fa403a5ed8291af}{Keyboard\+Handler}} (\doxymbox{\hyperlink{structInterruptFrame}{Interrupt\+Frame}} \texorpdfstring{$\ast$}{*}frame)
+\begin{DoxyCompactList}\small\item\em Top-\/half interrupt service routine wrapper for keyboard inputs. \end{DoxyCompactList}\item 
+bool \doxymbox{\hyperlink{ps2__keyboard_8cpp_a04553a3018d8bfa1569068e32363d670}{Pop\+Key\+Event}} (\doxymbox{\hyperlink{structKeyEvent}{Key\+Event}} \texorpdfstring{$\ast$}{*}out)
+\begin{DoxyCompactList}\small\item\em Polls and pops the oldest event from the keyboard input queue. \end{DoxyCompactList}\item 
+static void \doxymbox{\hyperlink{ps2__keyboard_8cpp_ac1411d8a045e122f23ae1ca7da7050c1}{Push\+Key\+Event}} (\doxymbox{\hyperlink{structKeyEvent}{Key\+Event}} event)
+\end{DoxyCompactItemize}
+\doxysubsubsection*{Variables}
+\begin{DoxyCompactItemize}
+\item 
+static bool \doxymbox{\hyperlink{ps2__keyboard_8cpp_ab7d48793e66665f8befc7a2f807ac242}{alt\+\_\+held}} = false
+\item 
+static uint32\+\_\+t \doxymbox{\hyperlink{ps2__keyboard_8cpp_a3753e7f20347fe36f192d805ddb16384}{buf\+\_\+head}} = 0
+\item 
+static uint32\+\_\+t \doxymbox{\hyperlink{ps2__keyboard_8cpp_a9ffbdabf8ef4a2daca717269b352bd98}{buf\+\_\+tail}} = 0
+\item 
+static bool \doxymbox{\hyperlink{ps2__keyboard_8cpp_a4e5d2afb28e9a000f65653cbadaf9a46}{caps\+\_\+lock}} = false
+\item 
+static bool \doxymbox{\hyperlink{ps2__keyboard_8cpp_a38407e1040e9e33d310f946559a39487}{ctrl\+\_\+held}} = false
+\item 
+static \doxymbox{\hyperlink{structKeyEvent}{Key\+Event}} \doxymbox{\hyperlink{ps2__keyboard_8cpp_a50092297eca96a48570a8cbf27f0ca4a}{key\+\_\+buffer}} \+[\doxymbox{\hyperlink{ps2__keyboard_8cpp_a5c28e05d04961202172037075ea93d40}{KEYBOARD\+\_\+\+BUFFER\+\_\+\+SIZE}}]\+
+\item 
+static const char \doxymbox{\hyperlink{ps2__keyboard_8cpp_accf9ec44a8cf9d52c84a87d378575468}{scancode\+\_\+ascii\+\_\+lower}} \+[128]\+
+\begin{DoxyCompactList}\small\item\em Maps scancode -\/\texorpdfstring{$>$}{>} ASCII character when unshifted. \textquotesingle{}\textbackslash{}0\textquotesingle{} means not a printable character. \end{DoxyCompactList}\item 
+static const char \doxymbox{\hyperlink{ps2__keyboard_8cpp_aefe29237a2fced481a98af762c2cc835}{scancode\+\_\+ascii\+\_\+upper}} \+[128]\+
+\begin{DoxyCompactList}\small\item\em Maps scancode -\/\texorpdfstring{$>$}{>} ASCII character when shifted. \textquotesingle{}\textbackslash{}0\textquotesingle{} means not a printable character. \end{DoxyCompactList}\item 
+static const \doxymbox{\hyperlink{ps2__keyboard_8h_a082e96007c3cdcb9c2c65c38a7882677}{Key\+Code}} \doxymbox{\hyperlink{ps2__keyboard_8cpp_ad178586abe9324d99afbdb986e08c141}{scancode\+\_\+to\+\_\+keycode}} \+[128]\+
+\begin{DoxyCompactList}\small\item\em Scancode-\/to-\/\+Key\+Code translation lookup table. \end{DoxyCompactList}\item 
+static bool \doxymbox{\hyperlink{ps2__keyboard_8cpp_abf2f7e2a70dbb5043fd1fa8dc248438d}{shift\+\_\+held}} = false
+\end{DoxyCompactItemize}
+
+
+\label{doc-define-members}
+\Hypertarget{ps2__keyboard_8cpp_doc-define-members}
+\doxysubsection{Macro Definition Documentation}
+\Hypertarget{ps2__keyboard_8cpp_a5c28e05d04961202172037075ea93d40}\index{ps2\_keyboard.cpp@{ps2\_keyboard.cpp}!KEYBOARD\_BUFFER\_SIZE@{KEYBOARD\_BUFFER\_SIZE}}
+\index{KEYBOARD\_BUFFER\_SIZE@{KEYBOARD\_BUFFER\_SIZE}!ps2\_keyboard.cpp@{ps2\_keyboard.cpp}}
+\doxysubsubsection{\texorpdfstring{KEYBOARD\_BUFFER\_SIZE}{KEYBOARD\_BUFFER\_SIZE}}
+{\footnotesize\ttfamily \label{ps2__keyboard_8cpp_a5c28e05d04961202172037075ea93d40} 
+\+\#define KEYBOARD\+\_\+\+BUFFER\+\_\+\+SIZE~64}
+
+
+
+\label{doc-func-members}
+\Hypertarget{ps2__keyboard_8cpp_doc-func-members}
+\doxysubsection{Function Documentation}
+\Hypertarget{ps2__keyboard_8cpp_a76b51f3fb6a339a55ac945dad1272684}\index{ps2\_keyboard.cpp@{ps2\_keyboard.cpp}!InitKeyboard@{InitKeyboard}}
+\index{InitKeyboard@{InitKeyboard}!ps2\_keyboard.cpp@{ps2\_keyboard.cpp}}
+\doxysubsubsection{\texorpdfstring{InitKeyboard()}{InitKeyboard()}}
+{\footnotesize\ttfamily \label{ps2__keyboard_8cpp_a76b51f3fb6a339a55ac945dad1272684} 
+void Init\+Keyboard (\begin{DoxyParamCaption}{}{}\end{DoxyParamCaption})}
+
+
+
+Initializes the keyboard driver hardware and driver states. 
+
+Configures the keyboard controller, clears internal input buffers, and readies modifier toggle registers. \Hypertarget{ps2__keyboard_8cpp_acee28f20e3589f5f8fa403a5ed8291af}\index{ps2\_keyboard.cpp@{ps2\_keyboard.cpp}!KeyboardHandler@{KeyboardHandler}}
+\index{KeyboardHandler@{KeyboardHandler}!ps2\_keyboard.cpp@{ps2\_keyboard.cpp}}
+\doxysubsubsection{\texorpdfstring{KeyboardHandler()}{KeyboardHandler()}}
+{\footnotesize\ttfamily \label{ps2__keyboard_8cpp_acee28f20e3589f5f8fa403a5ed8291af} 
+void Keyboard\+Handler (\begin{DoxyParamCaption}\item[{\doxymbox{\hyperlink{structInterruptFrame}{Interrupt\+Frame}} \texorpdfstring{$\ast$}{*}}]{frame}{}\end{DoxyParamCaption})}
+
+
+
+Top-\/half interrupt service routine wrapper for keyboard inputs. 
+
+Reads scancodes directly from the hardware I/\+O ports, processes state transitions, and posts events to the internal OS queue.
+
+
+\begin{DoxyParams}{Parameters}
+{\em frame} & Pointer to the processor context at the time of the interrupt. \\
+\hline
+\end{DoxyParams}
+\Hypertarget{ps2__keyboard_8cpp_a04553a3018d8bfa1569068e32363d670}\index{ps2\_keyboard.cpp@{ps2\_keyboard.cpp}!PopKeyEvent@{PopKeyEvent}}
+\index{PopKeyEvent@{PopKeyEvent}!ps2\_keyboard.cpp@{ps2\_keyboard.cpp}}
+\doxysubsubsection{\texorpdfstring{PopKeyEvent()}{PopKeyEvent()}}
+{\footnotesize\ttfamily \label{ps2__keyboard_8cpp_a04553a3018d8bfa1569068e32363d670} 
+bool Pop\+Key\+Event (\begin{DoxyParamCaption}\item[{\doxymbox{\hyperlink{structKeyEvent}{Key\+Event}} \texorpdfstring{$\ast$}{*}}]{out}{}\end{DoxyParamCaption})}
+
+
+
+Polls and pops the oldest event from the keyboard input queue. 
+
+Thread-\/safe context function to fetch driver events.
+
+
+\begin{DoxyParams}[1]{Parameters}
+\doxymbox{\texttt{out}}  & {\em out} & Pointer to a \doxylink{structKeyEvent}{Key\+Event} structure where data will be copied. \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+true If an event was successfully popped. 
+
+false If the queue was empty. 
+\end{DoxyReturn}
+\Hypertarget{ps2__keyboard_8cpp_ac1411d8a045e122f23ae1ca7da7050c1}\index{ps2\_keyboard.cpp@{ps2\_keyboard.cpp}!PushKeyEvent@{PushKeyEvent}}
+\index{PushKeyEvent@{PushKeyEvent}!ps2\_keyboard.cpp@{ps2\_keyboard.cpp}}
+\doxysubsubsection{\texorpdfstring{PushKeyEvent()}{PushKeyEvent()}}
+{\footnotesize\ttfamily \label{ps2__keyboard_8cpp_ac1411d8a045e122f23ae1ca7da7050c1} 
+void Push\+Key\+Event (\begin{DoxyParamCaption}\item[{\doxymbox{\hyperlink{structKeyEvent}{Key\+Event}}}]{event}{}\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [static]}}
+
+
+
+\label{doc-var-members}
+\Hypertarget{ps2__keyboard_8cpp_doc-var-members}
+\doxysubsection{Variable Documentation}
+\Hypertarget{ps2__keyboard_8cpp_ab7d48793e66665f8befc7a2f807ac242}\index{ps2\_keyboard.cpp@{ps2\_keyboard.cpp}!alt\_held@{alt\_held}}
+\index{alt\_held@{alt\_held}!ps2\_keyboard.cpp@{ps2\_keyboard.cpp}}
+\doxysubsubsection{\texorpdfstring{alt\_held}{alt\_held}}
+{\footnotesize\ttfamily \label{ps2__keyboard_8cpp_ab7d48793e66665f8befc7a2f807ac242} 
+bool alt\+\_\+held = false\hspace{0.3cm}{\ttfamily [static]}}
+
+\Hypertarget{ps2__keyboard_8cpp_a3753e7f20347fe36f192d805ddb16384}\index{ps2\_keyboard.cpp@{ps2\_keyboard.cpp}!buf\_head@{buf\_head}}
+\index{buf\_head@{buf\_head}!ps2\_keyboard.cpp@{ps2\_keyboard.cpp}}
+\doxysubsubsection{\texorpdfstring{buf\_head}{buf\_head}}
+{\footnotesize\ttfamily \label{ps2__keyboard_8cpp_a3753e7f20347fe36f192d805ddb16384} 
+uint32\+\_\+t buf\+\_\+head = 0\hspace{0.3cm}{\ttfamily [static]}}
+
+\Hypertarget{ps2__keyboard_8cpp_a9ffbdabf8ef4a2daca717269b352bd98}\index{ps2\_keyboard.cpp@{ps2\_keyboard.cpp}!buf\_tail@{buf\_tail}}
+\index{buf\_tail@{buf\_tail}!ps2\_keyboard.cpp@{ps2\_keyboard.cpp}}
+\doxysubsubsection{\texorpdfstring{buf\_tail}{buf\_tail}}
+{\footnotesize\ttfamily \label{ps2__keyboard_8cpp_a9ffbdabf8ef4a2daca717269b352bd98} 
+uint32\+\_\+t buf\+\_\+tail = 0\hspace{0.3cm}{\ttfamily [static]}}
+
+\Hypertarget{ps2__keyboard_8cpp_a4e5d2afb28e9a000f65653cbadaf9a46}\index{ps2\_keyboard.cpp@{ps2\_keyboard.cpp}!caps\_lock@{caps\_lock}}
+\index{caps\_lock@{caps\_lock}!ps2\_keyboard.cpp@{ps2\_keyboard.cpp}}
+\doxysubsubsection{\texorpdfstring{caps\_lock}{caps\_lock}}
+{\footnotesize\ttfamily \label{ps2__keyboard_8cpp_a4e5d2afb28e9a000f65653cbadaf9a46} 
+bool caps\+\_\+lock = false\hspace{0.3cm}{\ttfamily [static]}}
+
+\Hypertarget{ps2__keyboard_8cpp_a38407e1040e9e33d310f946559a39487}\index{ps2\_keyboard.cpp@{ps2\_keyboard.cpp}!ctrl\_held@{ctrl\_held}}
+\index{ctrl\_held@{ctrl\_held}!ps2\_keyboard.cpp@{ps2\_keyboard.cpp}}
+\doxysubsubsection{\texorpdfstring{ctrl\_held}{ctrl\_held}}
+{\footnotesize\ttfamily \label{ps2__keyboard_8cpp_a38407e1040e9e33d310f946559a39487} 
+bool ctrl\+\_\+held = false\hspace{0.3cm}{\ttfamily [static]}}
+
+\Hypertarget{ps2__keyboard_8cpp_a50092297eca96a48570a8cbf27f0ca4a}\index{ps2\_keyboard.cpp@{ps2\_keyboard.cpp}!key\_buffer@{key\_buffer}}
+\index{key\_buffer@{key\_buffer}!ps2\_keyboard.cpp@{ps2\_keyboard.cpp}}
+\doxysubsubsection{\texorpdfstring{key\_buffer}{key\_buffer}}
+{\footnotesize\ttfamily \label{ps2__keyboard_8cpp_a50092297eca96a48570a8cbf27f0ca4a} 
+\doxymbox{\hyperlink{structKeyEvent}{Key\+Event}} key\+\_\+buffer\+[\doxymbox{\hyperlink{ps2__keyboard_8cpp_a5c28e05d04961202172037075ea93d40}{KEYBOARD\+\_\+\+BUFFER\+\_\+\+SIZE}}]\+\hspace{0.3cm}{\ttfamily [static]}}
+
+\Hypertarget{ps2__keyboard_8cpp_accf9ec44a8cf9d52c84a87d378575468}\index{ps2\_keyboard.cpp@{ps2\_keyboard.cpp}!scancode\_ascii\_lower@{scancode\_ascii\_lower}}
+\index{scancode\_ascii\_lower@{scancode\_ascii\_lower}!ps2\_keyboard.cpp@{ps2\_keyboard.cpp}}
+\doxysubsubsection{\texorpdfstring{scancode\_ascii\_lower}{scancode\_ascii\_lower}}
+{\footnotesize\ttfamily \label{ps2__keyboard_8cpp_accf9ec44a8cf9d52c84a87d378575468} 
+const char scancode\+\_\+ascii\+\_\+lower\+[128]\+\hspace{0.3cm}{\ttfamily [static]}}
+
+{\bfseries Initial value:\+}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ =}
+\DoxyCodeLine{\{}
+\DoxyCodeLine{\ \ \ \ \textcolor{charliteral}{'\(\backslash\)0'},\ \textcolor{charliteral}{'\(\backslash\)0'},\ \textcolor{charliteral}{'1'},\ \ \textcolor{charliteral}{'2'},\ \ \textcolor{charliteral}{'3'},\ \ \textcolor{charliteral}{'4'},}
+\DoxyCodeLine{\ \ \ \ \textcolor{charliteral}{'5'},\ \ \textcolor{charliteral}{'6'},\ \ \textcolor{charliteral}{'7'},\ \ \textcolor{charliteral}{'8'},\ \ \textcolor{charliteral}{'9'},\ \ \textcolor{charliteral}{'0'},}
+\DoxyCodeLine{\ \ \ \ \textcolor{charliteral}{'-\/'},\ \ \textcolor{charliteral}{'='},\ \ \textcolor{charliteral}{'\(\backslash\)b'},\ \textcolor{charliteral}{'\(\backslash\)t'},\ \textcolor{charliteral}{'q'},\ \ \textcolor{charliteral}{'w'},}
+\DoxyCodeLine{\ \ \ \ \textcolor{charliteral}{'e'},\ \ \textcolor{charliteral}{'r'},\ \ \textcolor{charliteral}{'t'},\ \ \textcolor{charliteral}{'y'},\ \ \textcolor{charliteral}{'u'},\ \ \textcolor{charliteral}{'i'},}
+\DoxyCodeLine{\ \ \ \ \textcolor{charliteral}{'o'},\ \ \textcolor{charliteral}{'p'},\ \ \textcolor{charliteral}{'['},\ \ \textcolor{charliteral}{']'},\ \ \textcolor{charliteral}{'\(\backslash\)n'},\ \textcolor{charliteral}{'\(\backslash\)0'},}
+\DoxyCodeLine{\ \ \ \ \textcolor{charliteral}{'a'},\ \ \textcolor{charliteral}{'s'},\ \ \textcolor{charliteral}{'d'},\ \ \textcolor{charliteral}{'f'},\ \ \textcolor{charliteral}{'g'},\ \ \textcolor{charliteral}{'h'},}
+\DoxyCodeLine{\ \ \ \ \textcolor{charliteral}{'j'},\ \ \textcolor{charliteral}{'k'},\ \ \textcolor{charliteral}{'l'},\ \ \textcolor{charliteral}{';'},\ \ \textcolor{charliteral}{'\(\backslash\)''},\ \textcolor{charliteral}{'`'},}
+\DoxyCodeLine{\ \ \ \ \textcolor{charliteral}{'\(\backslash\)0'},\ \textcolor{charliteral}{'\(\backslash\)\(\backslash\)'},\ \textcolor{charliteral}{'z'},\ \ \textcolor{charliteral}{'x'},\ \ \textcolor{charliteral}{'c'},\ \ \textcolor{charliteral}{'v'},}
+\DoxyCodeLine{\ \ \ \ \textcolor{charliteral}{'b'},\ \ \textcolor{charliteral}{'n'},\ \ \textcolor{charliteral}{'m'},\ \ \textcolor{charliteral}{','},\ \ \textcolor{charliteral}{'.'},\ \ \textcolor{charliteral}{'/'},}
+\DoxyCodeLine{\ \ \ \ \textcolor{charliteral}{'\(\backslash\)0'},\ \textcolor{charliteral}{'*'},\ \ \textcolor{charliteral}{'\(\backslash\)0'},\ \textcolor{charliteral}{'\ '},\ \ \textcolor{charliteral}{'\(\backslash\)0'},}
+\DoxyCodeLine{\ \ \ \ }
+\DoxyCodeLine{\ \ \ \ }
+\DoxyCodeLine{\ \ \ \ \textcolor{charliteral}{'\(\backslash\)0'},\textcolor{charliteral}{'\(\backslash\)0'},\textcolor{charliteral}{'\(\backslash\)0'},\textcolor{charliteral}{'\(\backslash\)0'},\textcolor{charliteral}{'\(\backslash\)0'},\textcolor{charliteral}{'\(\backslash\)0'},\textcolor{charliteral}{'\(\backslash\)0'},\textcolor{charliteral}{'\(\backslash\)0'},\textcolor{charliteral}{'\(\backslash\)0'},\textcolor{charliteral}{'\(\backslash\)0'},\textcolor{charliteral}{'\(\backslash\)0'},\textcolor{charliteral}{'\(\backslash\)0'},\textcolor{charliteral}{'\(\backslash\)0'},\textcolor{charliteral}{'\(\backslash\)0'},}
+\DoxyCodeLine{\ \ \ \ \textcolor{charliteral}{'\(\backslash\)0'},\textcolor{charliteral}{'\(\backslash\)0'},\textcolor{charliteral}{'\(\backslash\)0'},\textcolor{charliteral}{'\(\backslash\)0'},\textcolor{charliteral}{'\(\backslash\)0'},\textcolor{charliteral}{'\(\backslash\)0'},\textcolor{charliteral}{'\(\backslash\)0'},\textcolor{charliteral}{'\(\backslash\)0'},\textcolor{charliteral}{'\(\backslash\)0'},\textcolor{charliteral}{'\(\backslash\)0'},\textcolor{charliteral}{'\(\backslash\)0'},\textcolor{charliteral}{'\(\backslash\)0'},\textcolor{charliteral}{'\(\backslash\)0'},\textcolor{charliteral}{'\(\backslash\)0'},}
+\DoxyCodeLine{\ \ \ \ \textcolor{charliteral}{'\(\backslash\)0'},\textcolor{charliteral}{'\(\backslash\)0'},\textcolor{charliteral}{'\(\backslash\)0'},\textcolor{charliteral}{'\(\backslash\)0'},\textcolor{charliteral}{'\(\backslash\)0'},\textcolor{charliteral}{'\(\backslash\)0'},\textcolor{charliteral}{'\(\backslash\)0'},\textcolor{charliteral}{'\(\backslash\)0'},\textcolor{charliteral}{'\(\backslash\)0'},\textcolor{charliteral}{'\(\backslash\)0'},\textcolor{charliteral}{'\(\backslash\)0'},\textcolor{charliteral}{'\(\backslash\)0'},\textcolor{charliteral}{'\(\backslash\)0'},\textcolor{charliteral}{'\(\backslash\)0'},}
+\DoxyCodeLine{\ \ \ \ \textcolor{charliteral}{'\(\backslash\)0'},\textcolor{charliteral}{'\(\backslash\)0'},\textcolor{charliteral}{'\(\backslash\)0'},\textcolor{charliteral}{'\(\backslash\)0'},\textcolor{charliteral}{'\(\backslash\)0'},\textcolor{charliteral}{'\(\backslash\)0'},\textcolor{charliteral}{'\(\backslash\)0'},\textcolor{charliteral}{'\(\backslash\)0'},\textcolor{charliteral}{'\(\backslash\)0'},\textcolor{charliteral}{'\(\backslash\)0'},\textcolor{charliteral}{'\(\backslash\)0'},\textcolor{charliteral}{'\(\backslash\)0'},\textcolor{charliteral}{'\(\backslash\)0'},\textcolor{charliteral}{'\(\backslash\)0'},}
+\DoxyCodeLine{\ \ \ \ \textcolor{charliteral}{'\(\backslash\)0'},\textcolor{charliteral}{'\(\backslash\)0'},\textcolor{charliteral}{'\(\backslash\)0'},\textcolor{charliteral}{'\(\backslash\)0'},\textcolor{charliteral}{'\(\backslash\)0'},\textcolor{charliteral}{'\(\backslash\)0'},\textcolor{charliteral}{'\(\backslash\)0'},\textcolor{charliteral}{'\(\backslash\)0'},\textcolor{charliteral}{'\(\backslash\)0'},\textcolor{charliteral}{'\(\backslash\)0'},\textcolor{charliteral}{'\(\backslash\)0'},\textcolor{charliteral}{'\(\backslash\)0'},\textcolor{charliteral}{'\(\backslash\)0'},}
+\DoxyCodeLine{\}}
+
+\end{DoxyCode}
+
+
+Maps scancode -\/\texorpdfstring{$>$}{>} ASCII character when unshifted. \textquotesingle{}\textbackslash{}0\textquotesingle{} means not a printable character. 
+
+\Hypertarget{ps2__keyboard_8cpp_aefe29237a2fced481a98af762c2cc835}\index{ps2\_keyboard.cpp@{ps2\_keyboard.cpp}!scancode\_ascii\_upper@{scancode\_ascii\_upper}}
+\index{scancode\_ascii\_upper@{scancode\_ascii\_upper}!ps2\_keyboard.cpp@{ps2\_keyboard.cpp}}
+\doxysubsubsection{\texorpdfstring{scancode\_ascii\_upper}{scancode\_ascii\_upper}}
+{\footnotesize\ttfamily \label{ps2__keyboard_8cpp_aefe29237a2fced481a98af762c2cc835} 
+const char scancode\+\_\+ascii\+\_\+upper\+[128]\+\hspace{0.3cm}{\ttfamily [static]}}
+
+{\bfseries Initial value:\+}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ =}
+\DoxyCodeLine{\{}
+\DoxyCodeLine{\ \ \ \ \textcolor{charliteral}{'\(\backslash\)0'},\ \textcolor{charliteral}{'\(\backslash\)0'},\ \textcolor{charliteral}{'!'},\ \ \textcolor{charliteral}{'@'},\ \ \textcolor{charliteral}{'\#'},\ \ \textcolor{charliteral}{'\$'},}
+\DoxyCodeLine{\ \ \ \ \textcolor{charliteral}{'\%'},\ \ \textcolor{charliteral}{'\string^'},\ \ \textcolor{charliteral}{'\&'},\ \ \textcolor{charliteral}{'*'},\ \ \textcolor{charliteral}{'('},\ \ \textcolor{charliteral}{')'},}
+\DoxyCodeLine{\ \ \ \ \textcolor{charliteral}{'\_'},\ \ \textcolor{charliteral}{'+'},\ \ \textcolor{charliteral}{'\(\backslash\)b'},\ \textcolor{charliteral}{'\(\backslash\)t'},\ \textcolor{charliteral}{'Q'},\ \ \textcolor{charliteral}{'W'},}
+\DoxyCodeLine{\ \ \ \ \textcolor{charliteral}{'E'},\ \ \textcolor{charliteral}{'R'},\ \ \textcolor{charliteral}{'T'},\ \ \textcolor{charliteral}{'Y'},\ \ \textcolor{charliteral}{'U'},\ \ \textcolor{charliteral}{'I'},}
+\DoxyCodeLine{\ \ \ \ \textcolor{charliteral}{'O'},\ \ \textcolor{charliteral}{'P'},\ \ \textcolor{charliteral}{'\{'},\ \ \textcolor{charliteral}{'\}'},\ \ \textcolor{charliteral}{'\(\backslash\)n'},\ \textcolor{charliteral}{'\(\backslash\)0'},}
+\DoxyCodeLine{\ \ \ \ \textcolor{charliteral}{'A'},\ \ \textcolor{charliteral}{'S'},\ \ \textcolor{charliteral}{'D'},\ \ \textcolor{charliteral}{'F'},\ \ \textcolor{charliteral}{'G'},\ \ \textcolor{charliteral}{'H'},}
+\DoxyCodeLine{\ \ \ \ \textcolor{charliteral}{'J'},\ \ \textcolor{charliteral}{'K'},\ \ \textcolor{charliteral}{'L'},\ \ \textcolor{charliteral}{':'},\ \ \textcolor{charliteral}{'"{}'},\ \ \textcolor{charliteral}{'\string~'},}
+\DoxyCodeLine{\ \ \ \ \textcolor{charliteral}{'\(\backslash\)0'},\ \textcolor{charliteral}{'|'},\ \ \textcolor{charliteral}{'Z'},\ \ \textcolor{charliteral}{'X'},\ \ \textcolor{charliteral}{'C'},\ \ \textcolor{charliteral}{'V'},}
+\DoxyCodeLine{\ \ \ \ \textcolor{charliteral}{'B'},\ \ \textcolor{charliteral}{'N'},\ \ \textcolor{charliteral}{'M'},\ \ \textcolor{charliteral}{'<'},\ \ \textcolor{charliteral}{'>'},\ \ \textcolor{charliteral}{'?'},}
+\DoxyCodeLine{\ \ \ \ \textcolor{charliteral}{'\(\backslash\)0'},\ \textcolor{charliteral}{'*'},\ \ \textcolor{charliteral}{'\(\backslash\)0'},\ \textcolor{charliteral}{'\ '},\ \ \textcolor{charliteral}{'\(\backslash\)0'},}
+\DoxyCodeLine{\ \ \ \ }
+\DoxyCodeLine{\ \ \ \ }
+\DoxyCodeLine{\ \ \ \ \textcolor{charliteral}{'\(\backslash\)0'},\textcolor{charliteral}{'\(\backslash\)0'},\textcolor{charliteral}{'\(\backslash\)0'},\textcolor{charliteral}{'\(\backslash\)0'},\textcolor{charliteral}{'\(\backslash\)0'},\textcolor{charliteral}{'\(\backslash\)0'},\textcolor{charliteral}{'\(\backslash\)0'},\textcolor{charliteral}{'\(\backslash\)0'},\textcolor{charliteral}{'\(\backslash\)0'},\textcolor{charliteral}{'\(\backslash\)0'},\textcolor{charliteral}{'\(\backslash\)0'},\textcolor{charliteral}{'\(\backslash\)0'},\textcolor{charliteral}{'\(\backslash\)0'},\textcolor{charliteral}{'\(\backslash\)0'},}
+\DoxyCodeLine{\ \ \ \ \textcolor{charliteral}{'\(\backslash\)0'},\textcolor{charliteral}{'\(\backslash\)0'},\textcolor{charliteral}{'\(\backslash\)0'},\textcolor{charliteral}{'\(\backslash\)0'},\textcolor{charliteral}{'\(\backslash\)0'},\textcolor{charliteral}{'\(\backslash\)0'},\textcolor{charliteral}{'\(\backslash\)0'},\textcolor{charliteral}{'\(\backslash\)0'},\textcolor{charliteral}{'\(\backslash\)0'},\textcolor{charliteral}{'\(\backslash\)0'},\textcolor{charliteral}{'\(\backslash\)0'},\textcolor{charliteral}{'\(\backslash\)0'},\textcolor{charliteral}{'\(\backslash\)0'},\textcolor{charliteral}{'\(\backslash\)0'},}
+\DoxyCodeLine{\ \ \ \ \textcolor{charliteral}{'\(\backslash\)0'},\textcolor{charliteral}{'\(\backslash\)0'},\textcolor{charliteral}{'\(\backslash\)0'},\textcolor{charliteral}{'\(\backslash\)0'},\textcolor{charliteral}{'\(\backslash\)0'},\textcolor{charliteral}{'\(\backslash\)0'},\textcolor{charliteral}{'\(\backslash\)0'},\textcolor{charliteral}{'\(\backslash\)0'},\textcolor{charliteral}{'\(\backslash\)0'},\textcolor{charliteral}{'\(\backslash\)0'},\textcolor{charliteral}{'\(\backslash\)0'},\textcolor{charliteral}{'\(\backslash\)0'},\textcolor{charliteral}{'\(\backslash\)0'},\textcolor{charliteral}{'\(\backslash\)0'},}
+\DoxyCodeLine{\ \ \ \ \textcolor{charliteral}{'\(\backslash\)0'},\textcolor{charliteral}{'\(\backslash\)0'},\textcolor{charliteral}{'\(\backslash\)0'},\textcolor{charliteral}{'\(\backslash\)0'},\textcolor{charliteral}{'\(\backslash\)0'},\textcolor{charliteral}{'\(\backslash\)0'},\textcolor{charliteral}{'\(\backslash\)0'},\textcolor{charliteral}{'\(\backslash\)0'},\textcolor{charliteral}{'\(\backslash\)0'},\textcolor{charliteral}{'\(\backslash\)0'},\textcolor{charliteral}{'\(\backslash\)0'},\textcolor{charliteral}{'\(\backslash\)0'},\textcolor{charliteral}{'\(\backslash\)0'},\textcolor{charliteral}{'\(\backslash\)0'},}
+\DoxyCodeLine{\ \ \ \ \textcolor{charliteral}{'\(\backslash\)0'},\textcolor{charliteral}{'\(\backslash\)0'},\textcolor{charliteral}{'\(\backslash\)0'},\textcolor{charliteral}{'\(\backslash\)0'},\textcolor{charliteral}{'\(\backslash\)0'},\textcolor{charliteral}{'\(\backslash\)0'},\textcolor{charliteral}{'\(\backslash\)0'},\textcolor{charliteral}{'\(\backslash\)0'},\textcolor{charliteral}{'\(\backslash\)0'},\textcolor{charliteral}{'\(\backslash\)0'},\textcolor{charliteral}{'\(\backslash\)0'},\textcolor{charliteral}{'\(\backslash\)0'},\textcolor{charliteral}{'\(\backslash\)0'},}
+\DoxyCodeLine{\}}
+
+\end{DoxyCode}
+
+
+Maps scancode -\/\texorpdfstring{$>$}{>} ASCII character when shifted. \textquotesingle{}\textbackslash{}0\textquotesingle{} means not a printable character. 
+
+\Hypertarget{ps2__keyboard_8cpp_ad178586abe9324d99afbdb986e08c141}\index{ps2\_keyboard.cpp@{ps2\_keyboard.cpp}!scancode\_to\_keycode@{scancode\_to\_keycode}}
+\index{scancode\_to\_keycode@{scancode\_to\_keycode}!ps2\_keyboard.cpp@{ps2\_keyboard.cpp}}
+\doxysubsubsection{\texorpdfstring{scancode\_to\_keycode}{scancode\_to\_keycode}}
+{\footnotesize\ttfamily \label{ps2__keyboard_8cpp_ad178586abe9324d99afbdb986e08c141} 
+const \doxymbox{\hyperlink{ps2__keyboard_8h_a082e96007c3cdcb9c2c65c38a7882677}{Key\+Code}} scancode\+\_\+to\+\_\+keycode\+[128]\+\hspace{0.3cm}{\ttfamily [static]}}
+
+
+
+Scancode-\/to-\/\+Key\+Code translation lookup table. 
+
+Maps IBM Set 1 standard single-\/byte make codes to non-\/printable \doxylink{ps2__keyboard_8h_a082e96007c3cdcb9c2c65c38a7882677}{Key\+Code} symbols. Printable character entries remain \doxylink{ps2__keyboard_8h_a082e96007c3cdcb9c2c65c38a7882677a88183b946cc5f0e8c96b2e66e1c74a7e}{Key\+Code::\+\+Unknown} to enforce handling via ASCII map utilities. \Hypertarget{ps2__keyboard_8cpp_abf2f7e2a70dbb5043fd1fa8dc248438d}\index{ps2\_keyboard.cpp@{ps2\_keyboard.cpp}!shift\_held@{shift\_held}}
+\index{shift\_held@{shift\_held}!ps2\_keyboard.cpp@{ps2\_keyboard.cpp}}
+\doxysubsubsection{\texorpdfstring{shift\_held}{shift\_held}}
+{\footnotesize\ttfamily \label{ps2__keyboard_8cpp_abf2f7e2a70dbb5043fd1fa8dc248438d} 
+bool shift\+\_\+held = false\hspace{0.3cm}{\ttfamily [static]}}
+

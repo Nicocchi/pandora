@@ -100,21 +100,26 @@ void IOAPICSetRedirect(uint8_t irq, uint8_t vector, uint8_t apic_id, bool mask)
 static ISOEntry isos[16];
 static uint8_t iso_count = 0;
 
-void InitIOAPIC()
+static void IOAPICRouteIRQ(uint8_t irq, uint8_t vector, uint8_t apic_id)
 {
-    // Check if IRQ0 has an override
-    uint32_t gsi = 0; // Default GSI for IRQ0
+    // Check for ISO override
+    uint32_t gsi = irq;
     for (uint8_t i = 0; i < iso_count; i++)
     {
-        if (isos[i].irq == 0)
+        if (isos[i].irq == irq)
         {
             gsi = isos[i].gsi;
             break;
         }
     }
 
-    // Route IRQ0 (PIT) to vector 32 on CPU 0
-    IOAPICSetRedirect(gsi, 32, 0, false);
+    IOAPICSetRedirect(gsi, vector, apic_id, false);
+}
+
+void InitIOAPIC()
+{
+    IOAPICRouteIRQ(0, 32, 0);
+    IOAPICRouteIRQ(1, 33, 0);
 }
 
 __attribute__((used, section(".limine_requests")))
@@ -223,16 +228,10 @@ void InitAPIC()
         KernelPanic("HHDM not found\n");
     }
     hhdm_offset = hhdm_request.response->offset;
-    kprintf("HHDM offset: %llx\n", hhdm_offset);
 
     void* rsdp_addr = rsdp_request.response->address;
 
     RSDP2* rsdp = (RSDP2*)rsdp_addr;
-
-    kprintf("RSDP addr: %llx\n", (uint64_t)rsdp);
-    kprintf("RSDP revision: %d\n", rsdp->revision);
-    kprintf("RSDP xsdt_address: %llx\n", rsdp->xsdt_address);
-    kprintf("RSDP rsdt_address: %llx\n", (uint64_t)rsdp->rsdt_address);
 
     // Walk XSDT if available, otherwise RSDT
     bool use_xsdt = (rsdp->revision >= 2 && rsdp->xsdt_address != 0);
@@ -241,42 +240,17 @@ void InitAPIC()
 
     if (use_xsdt)
     {
-        kprintf("xsdt with offset: %llx\n", rsdp->xsdt_address + hhdm_offset);
         ACPISDTHeader* xsdt = (ACPISDTHeader*)(rsdp->xsdt_address + hhdm_offset);
 
         // Print raw bytes to verify
         uint8_t* raw = (uint8_t*)xsdt;
-        kprintf("XSDT raw bytes: %x %x %x %x %x %x %x %x\n",
-            raw[0], raw[1], raw[2], raw[3],
-            raw[4], raw[5], raw[6], raw[7]);
-
-        kprintf("XSDT sig: %c%c%c%c\n",
-            xsdt->signature[0], xsdt->signature[1],
-            xsdt->signature[2], xsdt->signature[3]);
-        kprintf("XSDT length: %d\n", xsdt->length);
-        kprintf("sizeof ACPISDTHeader: %d\n", sizeof(ACPISDTHeader));
-
-        kprintf("XSDT ptr: %llx\n", (uint64_t)xsdt);
-        kprintf("XSDT signature: %.4s\n", xsdt->signature);
-        kprintf("XSDT length: %d\n", xsdt->length);
 
         uint64_t entries = (xsdt->length - sizeof(ACPISDTHeader)) / 8;
-        kprintf("XSDT entries: %d\n", (int)entries);
         uint64_t* table_ptrs = (uint64_t*)((uint8_t*)xsdt + sizeof(ACPISDTHeader));
 
         for (uint64_t i = 0; i < entries; i++)
         {
-            kprintf("table_ptrs[%d] raw: %llx\n", i, table_ptrs[i]);
-            kprintf("table_ptrs[%d] virt: %llx\n", i, table_ptrs[i] + hhdm_offset);
-            // Check if offset needed before applying
-            uint64_t phys = table_ptrs[i];
-            uint64_t virt = phys + hhdm_offset;
-            kprintf("table_ptrs[%llu] virt: %llx\n", i, virt);
-            ACPISDTHeader* header1 = (ACPISDTHeader*)virt;
-            kprintf("header sig: %.4s\n", header1->signature);
-
             ACPISDTHeader* header = (ACPISDTHeader*)(table_ptrs[i] + hhdm_offset);
-            kprintf("sizeof ACPISDTHeader: %d\n", sizeof(ACPISDTHeader));
             if (memcmp(header->signature, "APIC", 4) == 0)
             {
                 madt = header;
@@ -310,7 +284,7 @@ void InitAPIC()
     MADTHeader* madt_header = (MADTHeader*)madt;
     lapic_base = madt_header->local_apic_addr + hhdm_offset;
 
-    kprintf("MADT found, Local APIC base: %llx\n", lapic_base);
+    kprintf("[OK] MADT found, Local APIC base: %llx\n", lapic_base);
     
     uint8_t* entry_ptr = (uint8_t*)madt + sizeof(MADTHeader);
     uint8_t* madt_end = (uint8_t*)madt + madt_header->length;
@@ -327,7 +301,7 @@ void InitAPIC()
                 MADTLocalAPIC* local = (MADTLocalAPIC*)entry;
                 if (local->flags & 1)
                 {
-                    kprintf("CPU found: processor_id=%d apic_id=%d\n", 
+                    kprintf("[OK] CPU found: processor_id=%d apic_id=%d\n", 
                         local->processor_id, local->apic_id);
                 }
             } break;
@@ -338,7 +312,7 @@ void InitAPIC()
                 ioapic_phys = io->io_apic_addr;
                 ioapic_base = ioapic_phys + hhdm_offset;
                 // ioapic_base = io->io_apic_addr + hhdm_offset;
-                kprintf("I/O APIC found: base=%llx gsi_base=%d\n",
+                kprintf("[OK] I/O APIC found: base=%llx gsi_base=%d\n",
                         ioapic_base, io->gsi_base);
             } break;
 
@@ -349,8 +323,6 @@ void InitAPIC()
                 {
                     isos[iso_count++] = { iso->irq, iso->gsi, iso->flags };
                 }
-                kprintf("ISO: irq=%d -> gsi=%d flags-%x\n",
-                    iso->irq, iso->gsi, iso->flags);
             } break;
         }
 
@@ -369,35 +341,7 @@ void InitAPIC()
     kernel_virt_base = exe_addr_request.response->virtual_base;
     kernel_phys_base = exe_addr_request.response->physical_base;
 
-    kprintf("kernel virt base: %llx\n", kernel_virt_base);
-    kprintf("kernel phys base: %llx\n", kernel_phys_base);
-
-    kprintf("lapic_phys: %llx\n", lapic_phys);
-    kprintf("lapic_virt: %llx\n", lapic_phys + hhdm_offset);
-    kprintf("lapic_base before map: %llx\n", lapic_base);
-
     MapMMIO(lapic_phys, lapic_phys + hhdm_offset);
     MapMMIO(ioapic_phys, ioapic_phys + hhdm_offset);
 
-    kprintf("lapic_base after map: %llx\n", lapic_base);
-
-    // Verify the PT entry was written correctly
-    uint64_t cr3;
-    asm volatile("mov %%cr3, %0" : "=r"(cr3));
-    kprintf("CR3: %llx\n", cr3);
-
-    // Walk the page table manually for lapic_virt and print each entry
-    uint64_t target = lapic_phys + hhdm_offset;
-    uint64_t* pml4 = (uint64_t*)((cr3 & ~0xFFFULL) + hhdm_offset);
-    uint64_t pml4e = pml4[(target >> 39) & 0x1FF];
-    kprintf("PML4E: %llx\n", pml4e);
-    uint64_t* pdpt = (uint64_t*)((pml4e & ~0xFFFULL) + hhdm_offset);
-    uint64_t pdpte = pdpt[(target >> 30) & 0x1FF];
-    kprintf("PDPTE: %llx\n", pdpte);
-    uint64_t* pd = (uint64_t*)((pdpte & ~0xFFFULL) + hhdm_offset);
-    uint64_t pde = pd[(target >> 21) & 0x1FF];
-    kprintf("PDE: %llx\n", pde);
-    uint64_t* pt = (uint64_t*)((pde & ~0xFFFULL) + hhdm_offset);
-    uint64_t pte = pt[(target >> 12) & 0x1FF];
-    kprintf("PTE: %llx\n", pte);
 }

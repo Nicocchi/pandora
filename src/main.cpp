@@ -26,6 +26,7 @@
 #include "interrupts/pit.h"
 #include "interrupts/apic.h"
 #include "common.h"
+#include "drivers/ps2_keyboard.h"
 
 /**
  * @name        C++ Initialization Pointers
@@ -134,19 +135,38 @@ extern "C" void kmain(void)
     ClearScreen(BLACK, true);
 
     InitGDT();
+    kprintf("[OK] GDT initialized\n");
     InitIDT();
+    kprintf("[OK] IDT initialized\n");
     InitAPIC();
     DisablePIC();
     InitLAPIC();
     InitIOAPIC();
 
-    kprintf("APIC initialized\n");
+    kprintf("[OK] APIC initialized\n");
 
-    InitPit(100); // IRQ0 -> vector 32
+    // Init IRQs
+    kprintf("[OK] Initializing IRQs\n");
+    InitPit();
+    kprintf("[OK] Pit initialized\n");
+    InitKeyboard();
 
-
-    kprintf("I really love Nanahira!\n");
+    kprintf("[OK] Keyboard initialized\n");
 
     EnableInterrupts();
+    kprintf("\n");
+    while (true)
+    {
+        KeyEvent event;
+        if (PopKeyEvent(&event))
+        {
+            if (event.pressed && event.ascii != '\0')
+            {
+                kprintf("%c", event.ascii);
+            }
+        }
+    }
+
+
     hcf();
 }

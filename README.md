@@ -109,6 +109,7 @@ The goal is to better understand how modern operating systems function internall
 * [x] TSS
 * [x] IDT
 * [x] PIC/APIC
+* [x] PS/2 Keyboard driver
 
 ### In Progress
 
