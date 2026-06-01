@@ -1,6 +1,8 @@
 #include "pit.h"
 #include "idt.h"
 #include "common.h"
+#include "processes/scheduler.h"
+#include "drivers/serial_port.h"
 
 static uint64_t ticks = 0;
 static uint32_t frequency = 100;
@@ -9,6 +11,7 @@ static void PITHandler(InterruptFrame* frame)
 {
     (void)frame;
     ticks++;
+    scheduler.Tick();
 }
 
 void InitPit()

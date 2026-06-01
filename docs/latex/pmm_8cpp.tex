@@ -1,0 +1,230 @@
+\doxysection{src/\+memory/\+pmm.cpp File Reference}
+\hypertarget{pmm_8cpp}{}\label{pmm_8cpp}\index{src/memory/pmm.cpp@{src/memory/pmm.cpp}}
+
+
+Physical Memory Manager (Buddy Allocator) implementation.  
+
+
+{\ttfamily \+\#include "{}pmm.\+h"{}}\newline
+{\ttfamily \+\#include "{}common.\+h"{}}\newline
+\doxysubsubsection*{Functions}
+\begin{DoxyCompactItemize}
+\item 
+void \doxymbox{\hyperlink{pmm_8cpp_a1c52370727603d37619d2040ca2c6d3f}{Add\+Region}} (\doxymbox{\hyperlink{structBuddyAllocator}{Buddy\+Allocator}} \texorpdfstring{$\ast$}{*}ba, uint64\+\_\+t base, uint64\+\_\+t len)
+\begin{DoxyCompactList}\small\item\em Breaks down and distributes an arbitrary physical memory segment into the free lists. \end{DoxyCompactList}\item 
+uint64\+\_\+t \doxymbox{\hyperlink{pmm_8cpp_a34aaa6c7969576783091249c429be4b9}{Addr\+To\+PFN}} (\doxymbox{\hyperlink{structBuddyAllocator}{Buddy\+Allocator}} \texorpdfstring{$\ast$}{*}ba, uint64\+\_\+t addr)
+\begin{DoxyCompactList}\small\item\em Translates a system raw physical memory address into a relative page frame index. \end{DoxyCompactList}\item 
+void \doxymbox{\hyperlink{pmm_8cpp_a8a7ae7d2cd6a311fc9875fa7fc9850d2}{Bitmap\+Clear}} (\doxymbox{\hyperlink{structBuddyAllocator}{Buddy\+Allocator}} \texorpdfstring{$\ast$}{*}ba, uint64\+\_\+t pfn)
+\item 
+void \doxymbox{\hyperlink{pmm_8cpp_a7052303f6cd656c2345eb1e2678f22de}{Bitmap\+Set}} (\doxymbox{\hyperlink{structBuddyAllocator}{Buddy\+Allocator}} \texorpdfstring{$\ast$}{*}ba, uint64\+\_\+t pfn)
+\item 
+bool \doxymbox{\hyperlink{pmm_8cpp_a7b3dca1dac3f86640505cecc8200fc84}{Bitmap\+Test}} (\doxymbox{\hyperlink{structBuddyAllocator}{Buddy\+Allocator}} \texorpdfstring{$\ast$}{*}ba, uint64\+\_\+t pfn)
+\item 
+static uint8\+\_\+t \texorpdfstring{$\ast$}{*} \doxymbox{\hyperlink{pmm_8cpp_afcf4998360ece1cf4adb94a00a8b919e}{Bitmap\+Virt}} (\doxymbox{\hyperlink{structBuddyAllocator}{Buddy\+Allocator}} \texorpdfstring{$\ast$}{*}ba)
+\begin{DoxyCompactList}\small\item\em Internal helper to convert the raw physical bitmap pointer to a virtual address. \end{DoxyCompactList}\item 
+uint64\+\_\+t \doxymbox{\hyperlink{pmm_8cpp_a344464a52cd6853f666c6f3a76590927}{Buddy\+Addr}} (uint64\+\_\+t addr, uint8\+\_\+t order)
+\begin{DoxyCompactList}\small\item\em Computes the sister buddy address block in the binary allocation pairing trees. \end{DoxyCompactList}\item 
+void \doxymbox{\hyperlink{pmm_8cpp_a7ffb6badeb16fd100c5b64d8456a7b1a}{Buddy\+Bit\+Flip}} (\doxymbox{\hyperlink{structBuddyAllocator}{Buddy\+Allocator}} \texorpdfstring{$\ast$}{*}ba, uint64\+\_\+t pfn, uint8\+\_\+t order)
+\begin{DoxyCompactList}\small\item\em Toggles the allocation state bit shared between two adjacent buddy pages. \end{DoxyCompactList}\item 
+bool \doxymbox{\hyperlink{pmm_8cpp_af943ff9a9aa20ea3429b077cc2dbd1ef}{Buddy\+Bit\+Test}} (\doxymbox{\hyperlink{structBuddyAllocator}{Buddy\+Allocator}} \texorpdfstring{$\ast$}{*}ba, uint64\+\_\+t pfn, uint8\+\_\+t order)
+\begin{DoxyCompactList}\small\item\em Reads the current bit state shared between a buddy block pair. \end{DoxyCompactList}\item 
+uint64\+\_\+t \doxymbox{\hyperlink{pmm_8cpp_a6168f1d7808f7b2065bb27a17e8359a8}{PFNTo\+Addr}} (\doxymbox{\hyperlink{structBuddyAllocator}{Buddy\+Allocator}} \texorpdfstring{$\ast$}{*}ba, uint64\+\_\+t pfn)
+\begin{DoxyCompactList}\small\item\em Translates a relative page frame index back into a system raw physical address. \end{DoxyCompactList}\end{DoxyCompactItemize}
+\doxysubsubsection*{Variables}
+\begin{DoxyCompactItemize}
+\item 
+\doxymbox{\hyperlink{structBuddyAllocator}{Buddy\+Allocator}} \doxymbox{\hyperlink{pmm_8cpp_a9e8ff12b13bb716698a3b05838418b6f}{g\+\_\+pmm}}
+\begin{DoxyCompactList}\small\item\em Global singleton instance of the Physical Memory Manager. \end{DoxyCompactList}\end{DoxyCompactItemize}
+
+
+\doxysubsection{Detailed Description}
+Physical Memory Manager (Buddy Allocator) implementation. 
+
+\begin{DoxyCopyright}{Copyright}
+Copyright (c) 2026, Nicocchi @license Licensed under the GPL2 License
+\end{DoxyCopyright}
+\begin{DoxyAuthor}{Author}
+Nicocchi 
+\end{DoxyAuthor}
+\begin{DoxyDate}{Date}
+May 31, 2026
+\end{DoxyDate}
+Implements the core logic for the binary buddy allocator. This file contains private page-\/frame-\/number (PFN) helpers, bit-\/togglign routines for tracking buddy pairings, region feeding algorithms, and the primary allocation and coalescing code blocks. 
+
+\label{doc-func-members}
+\Hypertarget{pmm_8cpp_doc-func-members}
+\doxysubsection{Function Documentation}
+\Hypertarget{pmm_8cpp_a1c52370727603d37619d2040ca2c6d3f}\index{pmm.cpp@{pmm.cpp}!AddRegion@{AddRegion}}
+\index{AddRegion@{AddRegion}!pmm.cpp@{pmm.cpp}}
+\doxysubsubsection{\texorpdfstring{AddRegion()}{AddRegion()}}
+{\footnotesize\ttfamily \label{pmm_8cpp_a1c52370727603d37619d2040ca2c6d3f} 
+void Add\+Region (\begin{DoxyParamCaption}\item[{\doxymbox{\hyperlink{structBuddyAllocator}{Buddy\+Allocator}} \texorpdfstring{$\ast$}{*}}]{ba}{, }\item[{uint64\+\_\+t}]{base}{, }\item[{uint64\+\_\+t}]{len}{}\end{DoxyParamCaption})}
+
+
+
+Breaks down and distributes an arbitrary physical memory segment into the free lists. 
+
+Iteratively discovers the largest naturally aligned binary block sizes that fit within the segment boundaries, initializing individual list blocks dynamically inside the free pools. 
+\begin{DoxyParams}{Parameters}
+{\em ba} & Pointer to the active allocator state context. \\
+\hline
+{\em base} & Starting raw physical address of the discovered memory segment. \\
+\hline
+{\em len} & Total cumulative span distance size of the segment region in bytes. \\
+\hline
+\end{DoxyParams}
+\Hypertarget{pmm_8cpp_a34aaa6c7969576783091249c429be4b9}\index{pmm.cpp@{pmm.cpp}!AddrToPFN@{AddrToPFN}}
+\index{AddrToPFN@{AddrToPFN}!pmm.cpp@{pmm.cpp}}
+\doxysubsubsection{\texorpdfstring{AddrToPFN()}{AddrToPFN()}}
+{\footnotesize\ttfamily \label{pmm_8cpp_a34aaa6c7969576783091249c429be4b9} 
+uint64\+\_\+t Addr\+To\+PFN (\begin{DoxyParamCaption}\item[{\doxymbox{\hyperlink{structBuddyAllocator}{Buddy\+Allocator}} \texorpdfstring{$\ast$}{*}}]{ba}{, }\item[{uint64\+\_\+t}]{addr}{}\end{DoxyParamCaption})}
+
+
+
+Translates a system raw physical memory address into a relative page frame index. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em ba} & Pointer to the active allocator state context. \\
+\hline
+{\em addr} & Target raw physical base memory address to convert. \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+Evaluated absolute page frame number tracking index. 
+\end{DoxyReturn}
+\Hypertarget{pmm_8cpp_a8a7ae7d2cd6a311fc9875fa7fc9850d2}\index{pmm.cpp@{pmm.cpp}!BitmapClear@{BitmapClear}}
+\index{BitmapClear@{BitmapClear}!pmm.cpp@{pmm.cpp}}
+\doxysubsubsection{\texorpdfstring{BitmapClear()}{BitmapClear()}}
+{\footnotesize\ttfamily \label{pmm_8cpp_a8a7ae7d2cd6a311fc9875fa7fc9850d2} 
+void Bitmap\+Clear (\begin{DoxyParamCaption}\item[{\doxymbox{\hyperlink{structBuddyAllocator}{Buddy\+Allocator}} \texorpdfstring{$\ast$}{*}}]{ba}{, }\item[{uint64\+\_\+t}]{pfn}{}\end{DoxyParamCaption})}
+
+\Hypertarget{pmm_8cpp_a7052303f6cd656c2345eb1e2678f22de}\index{pmm.cpp@{pmm.cpp}!BitmapSet@{BitmapSet}}
+\index{BitmapSet@{BitmapSet}!pmm.cpp@{pmm.cpp}}
+\doxysubsubsection{\texorpdfstring{BitmapSet()}{BitmapSet()}}
+{\footnotesize\ttfamily \label{pmm_8cpp_a7052303f6cd656c2345eb1e2678f22de} 
+void Bitmap\+Set (\begin{DoxyParamCaption}\item[{\doxymbox{\hyperlink{structBuddyAllocator}{Buddy\+Allocator}} \texorpdfstring{$\ast$}{*}}]{ba}{, }\item[{uint64\+\_\+t}]{pfn}{}\end{DoxyParamCaption})}
+
+\Hypertarget{pmm_8cpp_a7b3dca1dac3f86640505cecc8200fc84}\index{pmm.cpp@{pmm.cpp}!BitmapTest@{BitmapTest}}
+\index{BitmapTest@{BitmapTest}!pmm.cpp@{pmm.cpp}}
+\doxysubsubsection{\texorpdfstring{BitmapTest()}{BitmapTest()}}
+{\footnotesize\ttfamily \label{pmm_8cpp_a7b3dca1dac3f86640505cecc8200fc84} 
+bool Bitmap\+Test (\begin{DoxyParamCaption}\item[{\doxymbox{\hyperlink{structBuddyAllocator}{Buddy\+Allocator}} \texorpdfstring{$\ast$}{*}}]{ba}{, }\item[{uint64\+\_\+t}]{pfn}{}\end{DoxyParamCaption})}
+
+\Hypertarget{pmm_8cpp_afcf4998360ece1cf4adb94a00a8b919e}\index{pmm.cpp@{pmm.cpp}!BitmapVirt@{BitmapVirt}}
+\index{BitmapVirt@{BitmapVirt}!pmm.cpp@{pmm.cpp}}
+\doxysubsubsection{\texorpdfstring{BitmapVirt()}{BitmapVirt()}}
+{\footnotesize\ttfamily \label{pmm_8cpp_afcf4998360ece1cf4adb94a00a8b919e} 
+uint8\+\_\+t \texorpdfstring{$\ast$}{*} Bitmap\+Virt (\begin{DoxyParamCaption}\item[{\doxymbox{\hyperlink{structBuddyAllocator}{Buddy\+Allocator}} \texorpdfstring{$\ast$}{*}}]{ba}{}\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}, {\ttfamily [static]}}
+
+
+
+Internal helper to convert the raw physical bitmap pointer to a virtual address. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em ba} & Pointer to the active allocator state context. \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+Virtual pointer to the base tracking bitmap memory zone. 
+\end{DoxyReturn}
+\Hypertarget{pmm_8cpp_a344464a52cd6853f666c6f3a76590927}\index{pmm.cpp@{pmm.cpp}!BuddyAddr@{BuddyAddr}}
+\index{BuddyAddr@{BuddyAddr}!pmm.cpp@{pmm.cpp}}
+\doxysubsubsection{\texorpdfstring{BuddyAddr()}{BuddyAddr()}}
+{\footnotesize\ttfamily \label{pmm_8cpp_a344464a52cd6853f666c6f3a76590927} 
+uint64\+\_\+t Buddy\+Addr (\begin{DoxyParamCaption}\item[{uint64\+\_\+t}]{addr}{, }\item[{uint8\+\_\+t}]{order}{}\end{DoxyParamCaption})}
+
+
+
+Computes the sister buddy address block in the binary allocation pairing trees. 
+
+Performs a target bit toggle calculations using XOR operations against size scaling factors:\+ $\text{Address} \oplus (\text{PAGE\_SIZE} \times 2^{\text{order}})$. 
+\begin{DoxyParams}{Parameters}
+{\em addr} & Starting raw physical base tracking reference address. \\
+\hline
+{\em order} & Block size exponent calculation index matching current tree layers. \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+Calculated sister buddy target physical base memory address. 
+\end{DoxyReturn}
+\Hypertarget{pmm_8cpp_a7ffb6badeb16fd100c5b64d8456a7b1a}\index{pmm.cpp@{pmm.cpp}!BuddyBitFlip@{BuddyBitFlip}}
+\index{BuddyBitFlip@{BuddyBitFlip}!pmm.cpp@{pmm.cpp}}
+\doxysubsubsection{\texorpdfstring{BuddyBitFlip()}{BuddyBitFlip()}}
+{\footnotesize\ttfamily \label{pmm_8cpp_a7ffb6badeb16fd100c5b64d8456a7b1a} 
+void Buddy\+Bit\+Flip (\begin{DoxyParamCaption}\item[{\doxymbox{\hyperlink{structBuddyAllocator}{Buddy\+Allocator}} \texorpdfstring{$\ast$}{*}}]{ba}{, }\item[{uint64\+\_\+t}]{pfn}{, }\item[{uint8\+\_\+t}]{order}{}\end{DoxyParamCaption})}
+
+
+
+Toggles the allocation state bit shared between two adjacent buddy pages. 
+
+Uses an XOR bit-\/mask toggle strategy where a value of {\ttfamily 0} indicates both buddies share an identical state (either both allocated or both free), enabling coalescing. 
+\begin{DoxyParams}{Parameters}
+{\em ba} & Pointer to the active allocator state context. \\
+\hline
+{\em pfn} & Page frame number index relative to the allocator base layout. \\
+\hline
+{\em order} & Size order layer scaling factor index. \\
+\hline
+\end{DoxyParams}
+\Hypertarget{pmm_8cpp_af943ff9a9aa20ea3429b077cc2dbd1ef}\index{pmm.cpp@{pmm.cpp}!BuddyBitTest@{BuddyBitTest}}
+\index{BuddyBitTest@{BuddyBitTest}!pmm.cpp@{pmm.cpp}}
+\doxysubsubsection{\texorpdfstring{BuddyBitTest()}{BuddyBitTest()}}
+{\footnotesize\ttfamily \label{pmm_8cpp_af943ff9a9aa20ea3429b077cc2dbd1ef} 
+bool Buddy\+Bit\+Test (\begin{DoxyParamCaption}\item[{\doxymbox{\hyperlink{structBuddyAllocator}{Buddy\+Allocator}} \texorpdfstring{$\ast$}{*}}]{ba}{, }\item[{uint64\+\_\+t}]{pfn}{, }\item[{uint8\+\_\+t}]{order}{}\end{DoxyParamCaption})}
+
+
+
+Reads the current bit state shared between a buddy block pair. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em ba} & Pointer to the active allocator state context. \\
+\hline
+{\em pfn} & Page frame number index relative to the allocator base layout. \\
+\hline
+{\em order} & Size order layer scaling factor index. \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+{\ttfamily true} if the buddy tracking bit status is active (set to 1); otherwise, {\ttfamily false}. 
+\end{DoxyReturn}
+\Hypertarget{pmm_8cpp_a6168f1d7808f7b2065bb27a17e8359a8}\index{pmm.cpp@{pmm.cpp}!PFNToAddr@{PFNToAddr}}
+\index{PFNToAddr@{PFNToAddr}!pmm.cpp@{pmm.cpp}}
+\doxysubsubsection{\texorpdfstring{PFNToAddr()}{PFNToAddr()}}
+{\footnotesize\ttfamily \label{pmm_8cpp_a6168f1d7808f7b2065bb27a17e8359a8} 
+uint64\+\_\+t PFNTo\+Addr (\begin{DoxyParamCaption}\item[{\doxymbox{\hyperlink{structBuddyAllocator}{Buddy\+Allocator}} \texorpdfstring{$\ast$}{*}}]{ba}{, }\item[{uint64\+\_\+t}]{pfn}{}\end{DoxyParamCaption})}
+
+
+
+Translates a relative page frame index back into a system raw physical address. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em ba} & Pointer to the active allocator state context. \\
+\hline
+{\em pfn} & Relative page frame number index to reconstruct. \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+Reconstructed raw physical base memory address. 
+\end{DoxyReturn}
+
+
+\label{doc-var-members}
+\Hypertarget{pmm_8cpp_doc-var-members}
+\doxysubsection{Variable Documentation}
+\Hypertarget{pmm_8cpp_a9e8ff12b13bb716698a3b05838418b6f}\index{pmm.cpp@{pmm.cpp}!g\_pmm@{g\_pmm}}
+\index{g\_pmm@{g\_pmm}!pmm.cpp@{pmm.cpp}}
+\doxysubsubsection{\texorpdfstring{g\_pmm}{g\_pmm}}
+{\footnotesize\ttfamily \label{pmm_8cpp_a9e8ff12b13bb716698a3b05838418b6f} 
+\doxymbox{\hyperlink{structBuddyAllocator}{Buddy\+Allocator}} g\+\_\+pmm}
+
+
+
+Global singleton instance of the Physical Memory Manager. 
+
+\begin{DoxyNote}{Note}
+Initialized by the kernel early bootstrap sequence via \doxylink{structBuddyAllocator_ace68ea4979d90113d27f41a8f85b1133}{Buddy\+Allocator::\+\+Init}. 
+\end{DoxyNote}

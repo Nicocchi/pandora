@@ -186,9 +186,9 @@ isr_common:
 
     mov rdi, rsp
 
-    sub rsp, 8
+    ; sub rsp, 8
     call interrupt_dispatch
-    add rsp, 8
+    ; add rsp, 8
 
     pop rax
     pop rbx

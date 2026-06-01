@@ -191,8 +191,15 @@ void BuddyAllocator::Init(limine_memmap_response *mmap)
     // Align base down, top up to page boundaries
     base = phys_min & ~(PAGE_SIZE - 1);
     uintptr_t top = (phys_max + PAGE_SIZE - 1) & ~(PAGE_SIZE - 1);
-    total_pages = (top - base) >> PAGE_SHIFT;
     free_pages = 0;
+
+    total_pages = 0;
+    for (uint64_t i = 0; i < mmap->entry_count; ++i)
+    {
+        limine_memmap_entry *e = mmap->entries[i];
+        if (e->type != LIMINE_MEMMAP_USABLE) continue;
+        total_pages += e->length >> PAGE_SHIFT;
+    }
 
     // Carve bitmap storage from the first large-enough usable region
     // Bitmap size: (total_pages / 2) bitgs, one per buddy pair, rounded up

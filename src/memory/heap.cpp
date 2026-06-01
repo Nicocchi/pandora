@@ -5,6 +5,26 @@
 
 KernelHeap kernelHeap;
 
+// kmalloc must not be preempted mid-allocation (slab freelist / VMM walk).
+static int heap_lock_depth = 0;
+static uint64_t heap_lock_flags = 0;
+
+static void HeapLock()
+{
+    if (heap_lock_depth++ == 0)
+    {
+        asm volatile("pushfq; pop %0; cli" : "=r"(heap_lock_flags) : : "memory");
+    }
+}
+
+static void HeapUnlock()
+{
+    if (heap_lock_depth > 0 && --heap_lock_depth == 0)
+    {
+        asm volatile("push %0; popfq" :: "r"(heap_lock_flags) : "memory", "cc");
+    }
+}
+
 static void kmemset_zero(void *ptr, size_t n)
 {
     uint8_t *p = (uint8_t*)ptr;
@@ -31,8 +51,6 @@ uint64_t KernelHeap::MapHeapPages(uint32_t pages, uint64_t *phys_out, uint8_t pm
 {
     // Sanity: don't overrun the heap VA ceiling
     uint64_t virt = heap_virt_next;
-    SerialWriteString(COM1_PORT, "[HEAP] MapHeapPages virt=0x%llx pages=%u order=%u\n", virt, pages, pmm_order);
-    kprintf("[HEAP] MapHeapPages virt=0x%llx pages=%u order=%u\n", virt, pages, pmm_order);
     if (virt + (uint64_t)pages * PAGE_SIZE > HEAP_END)
     {
         KernelPanic("KernelHeap: virtual address space exhausted\n");
@@ -41,8 +59,6 @@ uint64_t KernelHeap::MapHeapPages(uint32_t pages, uint64_t *phys_out, uint8_t pm
 
     // Allocate physical pages from PMM
     uint64_t phys = PMMAlloc(&g_pmm, pmm_order);
-    SerialWriteString(COM1_PORT, "[HEAP] MapHeapPages phys=0x%llx\n", phys);
-    kprintf("[HEAP] MapHeapPages phys=0x%llx\n", phys);
     if (!phys) return 0; // OOM - caller handles gracefully
 
     // Map each page into the VMM
@@ -88,56 +104,63 @@ void *KernelHeap::Alloc(size_t size)
 {
     if (size == 0) return nullptr;
 
+    HeapLock();
+
+    void *result = nullptr;
     size_t idx = CacheIndexFor(size);
 
-    // Small allocation: delegate to slab cache
     if (idx < SLAB_CLASS_COUNT)
     {
-        void *ptr = caches[idx].Alloc();
-        if (ptr) total_allocated += SLAB_SIZES[idx];
-        return ptr;
+        result = caches[idx].Alloc();
+        if (result) total_allocated += SLAB_SIZES[idx];
+    }
+    else
+    {
+        size_t total_size = sizeof(LargeAllocHeader) + size;
+        uint32_t pages = (uint32_t)((total_size + PAGE_SIZE - 1) / PAGE_SIZE);
+
+        uint8_t order = 0;
+        while ((1u << order) < pages) order++;
+
+        if (order < MAX_ORDER)
+        {
+            uint64_t phys = 0;
+            uint64_t virt = MapHeapPages(1u << order, &phys, order);
+            if (virt)
+            {
+                LargeAllocHeader *hdr = (LargeAllocHeader*)virt;
+                hdr->magic = LARGE_ALLOC_MAGIC;
+                hdr->virt_base = virt;
+                hdr->phys_base = phys;
+                hdr->requested_size = size;
+                hdr->page_count = 1u << order;
+                hdr->order = order;
+                total_allocated += size;
+                result = (void*)(virt + sizeof(LargeAllocHeader));
+            }
+        }
     }
 
-    // Large allocation: serve directly from PMM
-    // Prepend a LargeAllocHeader before the usable region
-    size_t total_size = sizeof(LargeAllocHeader) + size;
-    uint32_t pages = (uint32_t)((total_size + PAGE_SIZE - 1) / PAGE_SIZE);
-
-    // Find the PMM order that covers `pages` pages
-    uint8_t order = 0;
-    while ((1u << order) < pages) order++;
-    if (order >= MAX_ORDER) return nullptr; // absurdly large
-
-    uint64_t phys = 0;
-    uint64_t virt = MapHeapPages(1u << order, &phys, order);
-    if (!virt) return nullptr;
-
-    LargeAllocHeader *hdr = (LargeAllocHeader*)virt;
-    hdr->magic = LARGE_ALLOC_MAGIC;
-    hdr->virt_base = virt;
-    hdr->phys_base = phys;
-    hdr->requested_size = size;
-    hdr->page_count = 1u << order;
-    hdr->order = order;
-
-    total_allocated += size;
-    return (void*)(virt + sizeof(LargeAllocHeader));
+    HeapUnlock();
+    return result;
 }
 
 void KernelHeap::Free(void *ptr)
 {
     if (!ptr) return;
 
+    HeapLock();
+
     uintptr_t addr = (uintptr_t)ptr;
 
     if (addr < HEAP_BASE || addr >= HEAP_END)
     {
+        HeapUnlock();
         KernelPanic("KernelHeap::Free: pointer outside heap range\n");
         return;
     }
 
     uintptr_t page_base = addr & ~(PAGE_SIZE - 1);
-
     LargeAllocHeader *hdr = (LargeAllocHeader*)page_base;
 
     if (hdr->magic == LARGE_ALLOC_MAGIC)
@@ -158,20 +181,23 @@ void KernelHeap::Free(void *ptr)
 
         PMMFree(&g_pmm, phys_base, order);
         total_allocated -= requested_size;
-        return;
     }
-
-    SlabHeader *slab = (SlabHeader*)page_base;
-
-    size_t idx = CacheIndexFor(slab->obj_size);
-    if (idx >= SLAB_CLASS_COUNT)
+    else
     {
-        KernelPanic("KernelHeap::Free: corrupted slab header or double-free\n");
-        return;
+        SlabHeader *slab = (SlabHeader*)page_base;
+        size_t idx = CacheIndexFor(slab->obj_size);
+        if (idx >= SLAB_CLASS_COUNT)
+        {
+            HeapUnlock();
+            KernelPanic("KernelHeap::Free: corrupted slab header or double-free\n");
+            return;
+        }
+
+        total_allocated -= slab->obj_size;
+        caches[idx].Free(ptr);
     }
 
-    total_allocated -= slab->obj_size;
-    caches[idx].Free(ptr);
+    HeapUnlock();
 }
 
 void *KernelHeap::AllocZeroed(size_t size)

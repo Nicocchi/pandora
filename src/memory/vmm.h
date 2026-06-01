@@ -94,16 +94,9 @@ struct VirtualMemoryManager
 {
     AddressSpace kernel_space;
 
-    // Initialize using the Limine-provided page tables as a reference
-    // Builds a fresh kernel PML4, maps the kernel image + full HHDM,
-    // then switches CR3 to the new tables
-    // Enables NXE bit in EFER so PTE_NX is honoured.
-    // Builds a fresh kernel PML4.
-    // Maps the full HHDM window (all physical RAM) as kernel RW + NX.
-    // Maps the kernel image (text RX, rodata RO, data RW).
-    // Switches CR3 to the new tables - Limine's tables are abandoned.
-    void Init(uint64_t hhdm_base, uint64_t hhdm_size, uint64_t kernel_phys,
-                uint64_t kernel_virt, uint64_t kernel_size);
+    // Builds a fresh PML4, copies Limine's upper-half (HHDM) entries, remaps
+    // the kernel image, enables EFER.NXE, then switches CR3.
+    void Init(uint64_t kernel_phys, uint64_t kernel_virt, uint64_t kernel_size);
     
     // Global kernel map/unmap (delegates to kernel_space)
     bool MapPage(uint64_t virt, uint64_t phys, uint64_t flags);

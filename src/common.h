@@ -106,10 +106,8 @@ static void IOWait()
  */
 static void KernelPanic(const char *str)
 {
-    SerialWriteString(COM1_PORT, "Kernel Panic: ");
-    SerialWriteString(COM1_PORT, str);
-    kprintf("Kernel Panic: ");
-    kprintf(str);
+    SerialWriteString(COM1_PORT, "Kernel Panic: %s", str);
+    kprintf("Kernel Panic: %s\n", str);
     hcf();
 }
 

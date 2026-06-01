@@ -47,6 +47,7 @@
 #include "drivers/serial_port.h"
 #include "common.h"
 #include "apic.h"
+#include "processes/scheduler.h"
 
 /**
  * @brief Global Interrupt Descriptor Table storage.
@@ -303,14 +304,6 @@ extern "C" void interrupt_dispatch(InterruptFrame* frame)
         // kprintf("RSP: %p\n", (void*)frame->rsp);
         kprintf("CS: %llx\n", frame->cs);
         kprintf("RFLAGS: %llx\n", frame->rflags);
-
-        SerialWriteString(COM1_PORT, "Exception: %s\n", exception_messages[interrupt]);
-        SerialWriteString(COM1_PORT, "Interrupt #: %d\n", interrupt);
-        SerialWriteString(COM1_PORT, "Error Code: %d\n", frame->error_code);
-        SerialWriteString(COM1_PORT, "RIP: %llx\n", frame->rip);
-        // SerialWriteString(COM1_PORT, "RSP: %p\n", (void*)frame->rsp);
-        SerialWriteString(COM1_PORT, "CS: %llx\n", frame->cs);
-        SerialWriteString(COM1_PORT, "RFLAGS: %llx\n", frame->rflags);
         hcf();
     }
 
@@ -332,19 +325,8 @@ extern "C" void interrupt_dispatch(InterruptFrame* frame)
          * of the same class.
          */
         LAPICEoi();
+        scheduler.Schedule();
     }
-    // if (interrupt >= 32 && interrupt <= 47)
-    // {
-    //     // Send EOI to slave PIC
-    //     if (interrupt >= 40) OutPortB(0xA0, 0x20);
-
-    //     // Send EOI to master PIC
-    //     OutPortB(0x20, 0x20);
-    // }
-
-    
-
-    
 }
 
 void InitIDT()

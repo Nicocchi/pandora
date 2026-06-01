@@ -31,6 +31,12 @@ static uint64_t AllocZeroedPage()
     uint64_t phys = PMMAlloc(&g_pmm, 0);
     if (!phys) KernelPanic("VMM: PMM exhausted allocating page table\n");
 
+    // Sanity check: phys must be within HHDM range
+    if (phys + g_hhdm_offset < 0xFFFF800000000000ULL)
+    {
+        KernelPanic("VMM: bad physical address from PMM\n");
+    }
+
     // Zero through HHDM before handing off
     uint64_t *virt = (uint64_t*)PhysToVirt(phys);
     for (int i = 0; i < 512; i++) virt[i] = 0;
@@ -98,6 +104,54 @@ uint64_t *WalkOrAlloc(AddressSpace *as, uint64_t virt, bool alloc)
     return &pt[PTIndex(virt)];
 }
 
+// Walk to the page-directory level and return a pointer to the PDE for `virt`.
+static uint64_t *WalkToPD(AddressSpace *as, uint64_t virt, bool alloc)
+{
+    uint64_t *pml4 = PhysToTable(as->pml4_phys);
+
+    uint64_t &pml4e = pml4[PML4Index(virt)];
+    if (!(pml4e & PTE_PRESENT))
+    {
+        if (!alloc) return nullptr;
+        uint64_t pdpt_phys = AllocZeroedPage();
+        uint64_t flags = PTE_PRESENT | PTE_WRITABLE;
+        if (virt <= USER_SPACE_END) flags |= PTE_USER;
+        pml4e = pdpt_phys | flags;
+    }
+    uint64_t *pdpt = PhysToTable(pml4e & PTE_ADDR_MASK);
+
+    uint64_t &pdpte = pdpt[PDPTIndex(virt)];
+    if (!(pdpte & PTE_PRESENT))
+    {
+        if (!alloc) return nullptr;
+        uint64_t pd_phys = AllocZeroedPage();
+        uint64_t flags = PTE_PRESENT | PTE_WRITABLE;
+        if (virt <= USER_SPACE_END) flags |= PTE_USER;
+        pdpte = pd_phys | flags;
+    }
+    if (pdpte & PTE_HUGE) return nullptr;
+
+    uint64_t *pd = PhysToTable(pdpte & PTE_ADDR_MASK);
+    return &pd[PDIndex(virt)];
+}
+
+static bool MapHuge2M(AddressSpace *as, uint64_t virt, uint64_t phys, uint64_t flags)
+{
+    if ((virt | phys) & ((2ULL << 20) - 1)) return false;
+
+    uint64_t *pde = WalkToPD(as, virt, true);
+    if (!pde) return false;
+
+    if (*pde & PTE_PRESENT)
+    {
+        if (!(*pde & PTE_HUGE)) return false;
+    }
+
+    *pde = (phys & PTE_ADDR_MASK) | flags | PTE_HUGE | PTE_PRESENT;
+    asm volatile("invlpg (%0)" :: "r"(virt) : "memory");
+    return true;
+}
+
 bool AddressSpace::MapPage(uint64_t virt, uint64_t phys, uint64_t flags)
 {
     uint64_t *pte = WalkOrAlloc(this, virt, true);
@@ -137,13 +191,32 @@ uint64_t AddressSpace::Translate(uint64_t virt) const
 
 bool AddressSpace::MapRange(uint64_t virt, uint64_t phys, uint64_t size, uint64_t flags)
 {
-    uint64_t pages = (size + PAGE_SIZE - 1) / PAGE_SIZE;
-    for (uint64_t i = 0; i < pages; i++)
+    static constexpr uint64_t HUGE_2M = 2ULL << 20;
+    static constexpr uint64_t HUGE_2M_MASK = HUGE_2M - 1;
+
+    uint64_t pos = phys;
+    uint64_t v = virt;
+    uint64_t end = phys + size;
+
+    while (pos < end && (pos & (PAGE_SIZE - 1)))
     {
-        if (!MapPage(virt + i * PAGE_SIZE, phys + i * PAGE_SIZE, flags))
-        {
-            return false;
-        }
+        if (!MapPage(v, pos, flags)) return false;
+        pos += PAGE_SIZE;
+        v += PAGE_SIZE;
+    }
+
+    while (pos + HUGE_2M <= end)
+    {
+        if (!MapHuge2M(this, v, pos, flags)) return false;
+        pos += HUGE_2M;
+        v += HUGE_2M;
+    }
+
+    while (pos < end)
+    {
+        if (!MapPage(v, pos, flags)) return false;
+        pos += PAGE_SIZE;
+        v += PAGE_SIZE;
     }
 
     return true;
@@ -260,29 +333,40 @@ bool AddressSpace::Fork(AddressSpace *dst) const
     return true;
 }
 
-void VirtualMemoryManager::Init(uint64_t hhdm_base, uint64_t hhdm_size, uint64_t kernel_phys,
-                uint64_t kernel_virt, uint64_t kernel_size)
+void VirtualMemoryManager::Init(uint64_t kernel_phys, uint64_t kernel_virt, uint64_t kernel_size)
 {
-    // Enable NXE in EFER
-    uint64_t efer;
+    // Enable NXE in EFER (preserve EDX — rdmsr returns 64 bits across EAX:EDX)
+    uint32_t efer_lo, efer_hi;
     asm volatile(
         "mov $0xC0000080, %%ecx\n"
         "rdmsr\n"
-        "or $0x800, %%eax\n"    // bit 11 = NXE
+        : "=a"(efer_lo), "=d"(efer_hi)
+        :
+        : "rcx"
+    );
+    efer_lo |= 0x800; // bit 11 = NXE
+    asm volatile(
+        "mov $0xC0000080, %%ecx\n"
         "wrmsr\n"
-        : "=A"(efer) :: "ecx"
+        :
+        : "a"(efer_lo), "d"(efer_hi), "c"(0xC0000080U)
     );
 
     // Fresh kernel PML4
     kernel_space.Init(nullptr);
 
-    // Map full HHDM (kernel-only, RW, NX)
-    uint64_t hhdm_pages = (hhdm_size + PAGE_SIZE - 1) / PAGE_SIZE;
-    for (uint64_t i = 0; i < hhdm_pages; i++)
+    // Inherit Limine's upper-half page-table subtree (HHDM + firmware mappings).
+    // Re-walking the memmap with 4 KiB pages is slow and can exhaust the PMM on
+    // machines with large RAM or MMIO windows (common under VirtualBox).
+    uint64_t limine_cr3;
+    asm volatile("mov %%cr3, %0" : "=r"(limine_cr3));
+    limine_cr3 &= PTE_ADDR_MASK;
+
+    uint64_t *dst_pml4 = PhysToTable(kernel_space.pml4_phys);
+    uint64_t *src_pml4 = PhysToTable(limine_cr3);
+    for (int i = 256; i < 512; i++)
     {
-        uint64_t phys = i * PAGE_SIZE;
-        uint64_t virt = hhdm_base + phys;
-        kernel_space.MapPage(virt, phys, VMM_FLAGS_KERNEL_RW | PTE_NX);
+        dst_pml4[i] = src_pml4[i];
     }
 
     // Map kernel image
@@ -296,6 +380,8 @@ void VirtualMemoryManager::Init(uint64_t hhdm_base, uint64_t hhdm_size, uint64_t
 
     // Switch off from Limine page tables
     kernel_space.Load();
+
+    kprintf("VMM Init finished\n");
 }
 
 bool VirtualMemoryManager::MapPage(uint64_t virt, uint64_t phys, uint64_t flags)

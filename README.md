@@ -113,19 +113,19 @@ The goal is to better understand how modern operating systems function internall
 * [x] PS/2 Keyboard driver
 * [x] Physical memory manager
 * [x] Paging and virtual memory
+* [x] Kernel heap allocator
+* [x] Preemptive multitasking
 
 ### In Progress
+* [ ] User mode support
+* [ ] ELF executable loading
+* [ ] Syscall interface
+* [ ] Basic terminal / console
 
-* [ ] Kernel heap allocator
 
 ### Planned
 
-* [ ] Preemptive multitasking
-* [ ] ELF executable loading
 * [ ] Filesystem support
-* [ ] Basic terminal / console
-* [ ] User mode support
-* [ ] Syscall interface
 * [ ] Graphics subsystem
 * [ ] Networking
 
@@ -136,13 +136,13 @@ The goal is to better understand how modern operating systems function internall
 ### Boot Phase
 - [x] Limine boot support
 - [x] VGA initialization
-- [ ] Memory map parsing
+- [x] Memory map parsing
 
 ### Core Kernel
 - [x] GDT/IDT
 - [x] Interrupt handling
-- [ ] Paging
-- [ ] Heap allocator
+- [x] Paging
+- [x] Heap allocator
 
 ### Multitasking
 - [ ] Scheduler

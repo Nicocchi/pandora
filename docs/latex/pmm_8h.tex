@@ -1,0 +1,128 @@
+\doxysection{src/\+memory/\+pmm.h File Reference}
+\hypertarget{pmm_8h}{}\label{pmm_8h}\index{src/memory/pmm.h@{src/memory/pmm.h}}
+
+
+Physical Memory Manager (Buddy Allocator) declarations.  
+
+
+{\ttfamily \+\#include $<$stdint.\+h$>$}\newline
+{\ttfamily \+\#include $<$stddef.\+h$>$}\newline
+{\ttfamily \+\#include "{}boot/\+limine.\+h"{}}\newline
+\doxysubsubsection*{Data Structures}
+\begin{DoxyCompactItemize}
+\item 
+struct \doxymbox{\hyperlink{structBuddyAllocator}{Buddy\+Allocator}}
+\begin{DoxyCompactList}\small\item\em Core Buddy Allocator control structure. \end{DoxyCompactList}\item 
+struct \doxymbox{\hyperlink{structBuddyBlock}{Buddy\+Block}}
+\begin{DoxyCompactList}\small\item\em Free-\/list node structure. \end{DoxyCompactList}\item 
+struct \doxymbox{\hyperlink{structFreeList}{Free\+List}}
+\begin{DoxyCompactList}\small\item\em Per-\/order free list manager. \end{DoxyCompactList}\end{DoxyCompactItemize}
+\doxysubsubsection*{Functions}
+\begin{DoxyCompactItemize}
+\item 
+uint64\+\_\+t \doxymbox{\hyperlink{pmm_8h_a00ab6a0a826bdc1baf8cd7ddaee6139f}{PMMAlloc}} (\doxymbox{\hyperlink{structBuddyAllocator}{Buddy\+Allocator}} \texorpdfstring{$\ast$}{*}ba, uint8\+\_\+t order=0)
+\begin{DoxyCompactList}\small\item\em Convenience C-\/style wrapper function for allocating physical memory. \end{DoxyCompactList}\item 
+void \doxymbox{\hyperlink{pmm_8h_aeb3c03a1e9d2362d0a77bc0fd9a926e4}{PMMFree}} (\doxymbox{\hyperlink{structBuddyAllocator}{Buddy\+Allocator}} \texorpdfstring{$\ast$}{*}ba, uint64\+\_\+t addr, uint8\+\_\+t order=0)
+\begin{DoxyCompactList}\small\item\em Convenience C-\/style wrapper function for freeing physical memory blocks. \end{DoxyCompactList}\end{DoxyCompactItemize}
+\doxysubsubsection*{Variables}
+\begin{DoxyCompactItemize}
+\item 
+static constexpr uint8\+\_\+t \doxymbox{\hyperlink{pmm_8h_af34b1207627b78b4ce5015662d692000}{MAX\+\_\+\+ORDER}} = 11
+\begin{DoxyCompactList}\small\item\em Maximum allocation order supported by the allocator. \end{DoxyCompactList}\item 
+static constexpr uint64\+\_\+t \doxymbox{\hyperlink{pmm_8h_a13f35b9cff87d34ad2cca696f6c76020}{PAGE\+\_\+\+SHIFT}} = 12
+\begin{DoxyCompactList}\small\item\em Bit-\/shift count to convert bytes to pages and vice versa ( $2^{12} = 4096$). \end{DoxyCompactList}\item 
+static constexpr uint64\+\_\+t \doxymbox{\hyperlink{pmm_8h_ac5a9e05347e4b0576b23d3e925a7cfa3}{PAGE\+\_\+\+SIZE}} = 0x1000
+\begin{DoxyCompactList}\small\item\em Standard physical page frame size (4 Kibibytes). \end{DoxyCompactList}\end{DoxyCompactItemize}
+
+
+\doxysubsection{Detailed Description}
+Physical Memory Manager (Buddy Allocator) declarations. 
+
+\begin{DoxyCopyright}{Copyright}
+Copyright (c) 2026, Nicocchi @license Licensed under the GPL2 License
+\end{DoxyCopyright}
+\begin{DoxyAuthor}{Author}
+Nicocchi 
+\end{DoxyAuthor}
+\begin{DoxyDate}{Date}
+May 31, 2026
+\end{DoxyDate}
+This header defines a binary buddy memory allocator for managing physical page frames. It tracks free memory blocks using an intrusive circular doubly linked list per allocation order, supplemented by a bitmap tracking allocation states to prevent fragmentation and facilitate coalescing. 
+
+\label{doc-func-members}
+\Hypertarget{pmm_8h_doc-func-members}
+\doxysubsection{Function Documentation}
+\Hypertarget{pmm_8h_a00ab6a0a826bdc1baf8cd7ddaee6139f}\index{pmm.h@{pmm.h}!PMMAlloc@{PMMAlloc}}
+\index{PMMAlloc@{PMMAlloc}!pmm.h@{pmm.h}}
+\doxysubsubsection{\texorpdfstring{PMMAlloc()}{PMMAlloc()}}
+{\footnotesize\ttfamily \label{pmm_8h_a00ab6a0a826bdc1baf8cd7ddaee6139f} 
+uint64\+\_\+t PMMAlloc (\begin{DoxyParamCaption}\item[{\doxymbox{\hyperlink{structBuddyAllocator}{Buddy\+Allocator}} \texorpdfstring{$\ast$}{*}}]{ba}{, }\item[{uint8\+\_\+t}]{order}{ = {\ttfamily 0}}\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+
+
+Convenience C-\/style wrapper function for allocating physical memory. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em ba} & Pointer to the active allocator instance context. \\
+\hline
+{\em order} & Requested allocation block size order (defaults to {\ttfamily 0} for single page). \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+Physical base address of allocated memory block, or {\ttfamily 0} on failure. 
+\end{DoxyReturn}
+\Hypertarget{pmm_8h_aeb3c03a1e9d2362d0a77bc0fd9a926e4}\index{pmm.h@{pmm.h}!PMMFree@{PMMFree}}
+\index{PMMFree@{PMMFree}!pmm.h@{pmm.h}}
+\doxysubsubsection{\texorpdfstring{PMMFree()}{PMMFree()}}
+{\footnotesize\ttfamily \label{pmm_8h_aeb3c03a1e9d2362d0a77bc0fd9a926e4} 
+void PMMFree (\begin{DoxyParamCaption}\item[{\doxymbox{\hyperlink{structBuddyAllocator}{Buddy\+Allocator}} \texorpdfstring{$\ast$}{*}}]{ba}{, }\item[{uint64\+\_\+t}]{addr}{, }\item[{uint8\+\_\+t}]{order}{ = {\ttfamily 0}}\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+
+
+Convenience C-\/style wrapper function for freeing physical memory blocks. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em ba} & Pointer to the active allocator instance context. \\
+\hline
+{\em addr} & Physical base address of the block returning to the system pool. \\
+\hline
+{\em order} & Block size allocation order index matching original allocation parameters. \\
+\hline
+\end{DoxyParams}
+
+
+\label{doc-var-members}
+\Hypertarget{pmm_8h_doc-var-members}
+\doxysubsection{Variable Documentation}
+\Hypertarget{pmm_8h_af34b1207627b78b4ce5015662d692000}\index{pmm.h@{pmm.h}!MAX\_ORDER@{MAX\_ORDER}}
+\index{MAX\_ORDER@{MAX\_ORDER}!pmm.h@{pmm.h}}
+\doxysubsubsection{\texorpdfstring{MAX\_ORDER}{MAX\_ORDER}}
+{\footnotesize\ttfamily \label{pmm_8h_af34b1207627b78b4ce5015662d692000} 
+uint8\+\_\+t MAX\+\_\+\+ORDER = 11\hspace{0.3cm}{\ttfamily [static]}, {\ttfamily [constexpr]}}
+
+
+
+Maximum allocation order supported by the allocator. 
+
+Represents block orders from 0 to 10. The maximum contiguous block size is $2^{10} \times 4\text{ KiB} = 4\text{ MiB}$. \Hypertarget{pmm_8h_a13f35b9cff87d34ad2cca696f6c76020}\index{pmm.h@{pmm.h}!PAGE\_SHIFT@{PAGE\_SHIFT}}
+\index{PAGE\_SHIFT@{PAGE\_SHIFT}!pmm.h@{pmm.h}}
+\doxysubsubsection{\texorpdfstring{PAGE\_SHIFT}{PAGE\_SHIFT}}
+{\footnotesize\ttfamily \label{pmm_8h_a13f35b9cff87d34ad2cca696f6c76020} 
+uint64\+\_\+t PAGE\+\_\+\+SHIFT = 12\hspace{0.3cm}{\ttfamily [static]}, {\ttfamily [constexpr]}}
+
+
+
+Bit-\/shift count to convert bytes to pages and vice versa ( $2^{12} = 4096$). 
+
+\Hypertarget{pmm_8h_ac5a9e05347e4b0576b23d3e925a7cfa3}\index{pmm.h@{pmm.h}!PAGE\_SIZE@{PAGE\_SIZE}}
+\index{PAGE\_SIZE@{PAGE\_SIZE}!pmm.h@{pmm.h}}
+\doxysubsubsection{\texorpdfstring{PAGE\_SIZE}{PAGE\_SIZE}}
+{\footnotesize\ttfamily \label{pmm_8h_ac5a9e05347e4b0576b23d3e925a7cfa3} 
+uint64\+\_\+t PAGE\+\_\+\+SIZE = 0x1000\hspace{0.3cm}{\ttfamily [static]}, {\ttfamily [constexpr]}}
+
+
+
+Standard physical page frame size (4 Kibibytes). 
+

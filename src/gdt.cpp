@@ -58,7 +58,7 @@ extern "C" void tss_flush();
 // Entries: 0=Null, 1=KCode, 2=KData, 3=UData, 4=UCode, 5=TSS_Low, 6=TSS_High
 static uint64_t gdt[7];
 static struct GDTDescriptor gdtr;
-static TSSEntry tss;
+TSSEntry tss;
 
 /**
  * @brief Primary kernel privilege-transition stack.

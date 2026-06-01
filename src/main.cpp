@@ -31,6 +31,7 @@
 #include "drivers/ps2_keyboard.h"
 #include "lib/stdio.h"
 #include "common.h"
+#include "processes/scheduler.h"
 
 extern BuddyAllocator g_pmm;
 extern VirtualMemoryManager virtualMemoryManager;
@@ -62,6 +63,36 @@ static void CallGlobalConstructors()
 
 uint64_t g_hhdm_offset = 0;
 
+// Test task functions
+static void TaskA(void*)
+{
+    for (int i = 0; i < 5; i++)
+    {
+        kprintf("[TaskA] tick %d\n", i);
+        KSleep(100); // sleep ~1 second (100 ticks at 100Hz)
+    }
+    kprintf("[TaskA] done\n");
+}
+static void TaskB(void*)
+{
+    for (int i = 0; i < 5; i++)
+    {
+        kprintf("[TaskB] tick %d\n", i);
+        KSleep(150); // sleep ~1.5 second
+    }
+    kprintf("[TaskB] done\n");
+}
+static void TaskC(void*)
+{
+    // High priority - should preempt A and B regularly
+    for (int i = 0; i < 8; i++)
+    {
+        kprintf("[TaskC-HIGH] tick %d\n", i);
+        KSleep(50);
+    }
+    kprintf("[TaskC] done\n");
+}
+
 
 /**
  * @brief       Main entry threshold for kernel runtime operations (called natively by Limine).
@@ -80,19 +111,16 @@ extern "C" void kmain(void)
     }
     
     CallGlobalConstructors();
-    SerialWriteString(COM1_PORT, "CallGlobalConstructors set\n");
     
     if (LIMINE_BASE_REVISION_SUPPORTED(limine_base_revision) == false)
     {
         KernelPanic("revision not supported\n");
     }
-    SerialWriteString(COM1_PORT, "revision OK\n");
 
     if (module_request.response == NULL)
     {
         KernelPanic("module NULL\n");
     }
-    SerialWriteString(COM1_PORT, "module OK\n");
 
     // Ensure there is a framebuffer
     if (framebuffer_request.response == NULL || 
@@ -100,7 +128,6 @@ extern "C" void kmain(void)
     {
         KernelPanic("framebuffer NULL");
     }
-    SerialWriteString(COM1_PORT, "framebuffer OK\n");
 
     // Fetch the first framebuffer
     struct limine_framebuffer *framebuffer = framebuffer_request.response->framebuffers[0];
@@ -115,17 +142,14 @@ extern "C" void kmain(void)
         {
             KernelPanic("font file NULL\n");
         }
-        SerialWriteString(COM1_PORT, "font file OK\n");
 
         font.psf1_Header = (struct PSF1_Header*)file->address;
         if (font.psf1_Header->magic[0] != 0x36 || font.psf1_Header->magic[1] != 0x04)
         {
             KernelPanic("invalid font magic\n");
         }
-        SerialWriteString(COM1_PORT, "font magic OK\n");
 
         font.glyphBuffer = (void*)((uint64_t)file->address + sizeof(PSF1_Header));
-        SerialWriteString(COM1_PORT, "glyph buffer assigned\n");
     }
 
     // Setup kernel renderer
@@ -139,9 +163,7 @@ extern "C" void kmain(void)
     kRenderer.framebuffer.pitch = framebuffer->pitch;
     kRenderer.framebuffer.pixelsPerScanLine = framebuffer->pitch / 4;
 
-    SerialWriteString(COM1_PORT, " \n");
-
-    ClearScreen(BLACK, true);
+    ClearScreen(BLUE, true);
 
     struct limine_memmap_response *memmap_response = memmap_request.response;
     if (memmap_response == NULL)
@@ -164,27 +186,22 @@ extern "C" void kmain(void)
 
     g_pmm.Init(memmap_response);
     kprintf("[OK] PMM Initialized\n");
-    SerialWriteString(COM1_PORT, "[OK] PMM Initialized\n");
-    {
-        kprintf("[OK] PMM Memory testing...\n");
-        SerialWriteString(COM1_PORT, "[OK] Memory testing...\n");
+    // {
+    //     kprintf("[OK] PMM Memory testing...\n");
     
-        // Allocate a single page
-        uintptr_t page = PMMAlloc(&g_pmm, 0);
-        kprintf("[PMM] Allocated a single page...\n");
-        SerialWriteString(COM1_PORT, "[PMM] Allocated a single page...\n");
+    //     // Allocate a single page
+    //     uintptr_t page = PMMAlloc(&g_pmm, 0);
+    //     kprintf("[PMM] Allocated a single page...\n");
     
-        // Allocate 8 contiguous pages (order 3 = 2^3)
-        uintptr_t block = PMMAlloc(&g_pmm, 3);
-        kprintf("[PMM] Allocated 8 contiguous pages...\n");
-        SerialWriteString(COM1_PORT, "[PMM] Allocated 8 contiguous pages...\n");
+    //     // Allocate 8 contiguous pages (order 3 = 2^3)
+    //     uintptr_t block = PMMAlloc(&g_pmm, 3);
+    //     kprintf("[PMM] Allocated 8 contiguous pages...\n");
     
-        // Free them
-        PMMFree(&g_pmm, page, 0);
-        PMMFree(&g_pmm, block, 3);
-        kprintf("[PMM] Free memory...\n");
-        SerialWriteString(COM1_PORT, "[PMM] Free memory...\n");
-    }
+    //     // Free them
+    //     PMMFree(&g_pmm, page, 0);
+    //     PMMFree(&g_pmm, block, 3);
+    //     kprintf("[PMM] Free memory...\n");
+    // }
 
     uint64_t kernel_phys = exe_addr_request.response->physical_base;
     uint64_t kernel_virt = exe_addr_request.response->virtual_base;
@@ -193,53 +210,42 @@ extern "C" void kmain(void)
     extern char _kernel_start[], _kernel_end[];
     uint64_t kernel_size = (uint64_t)_kernel_end - (uint64_t)_kernel_start;
 
-    uint64_t top_address = 0;
-    for (uint64_t i = 0; i < memmap_response->entry_count; i++)
-    {
-        struct limine_memmap_entry *entry = memmap_response->entries[i];
-        uint64_t entry_end = entry->base + entry->length;
-        if (entry_end > top_address)
-        {
-            top_address = entry_end;
-        }
-    }
-    // Total usable physical RAM for HHDM size
-    uint64_t hhdm_size = (top_address + PAGE_SIZE - 1) & ~(PAGE_SIZE - 1);
-
-    kprintf("[VMM] hhdm_size = %llu MiB\n", hhdm_size >> 20);
-    virtualMemoryManager.Init(g_hhdm_offset, hhdm_size, kernel_phys, kernel_virt, kernel_size);
+    kprintf("[VMM] initializing (inherit Limine HHDM)\n");
+    uint64_t rsp_val;
+    asm volatile("mov %%rsp, %0" : "=r"(rsp_val));
+    
+    virtualMemoryManager.Init(kernel_phys, kernel_virt, kernel_size);
     kprintf("[OK] Virtual Memory allocated\n");
-    {
-        kprintf("[OK] VMM Memory testing...\n");
-        // Allocate a physical page and map it to an arbitrary kernel virtual addr
-        uint64_t test_phys = PMMAlloc(&g_pmm, 0);
-        uint64_t test_virt = 0xFFFF900000000000ULL;  // arbitrary kernel virtual
+    // {
+    //     kprintf("[OK] VMM Memory testing...\n");
+    //     // Allocate a physical page and map it to an arbitrary kernel virtual addr
+    //     uint64_t test_phys = PMMAlloc(&g_pmm, 0);
+    //     uint64_t test_virt = 0xFFFF900000000000ULL;  // arbitrary kernel virtual
 
-        bool mapped = virtualMemoryManager.MapPage(test_virt, test_phys, VMM_FLAGS_KERNEL_RW);
-        kprintf("[VMM] MapPage: %s\n", mapped ? "OK" : "FAILED");
+    //     bool mapped = virtualMemoryManager.MapPage(test_virt, test_phys, VMM_FLAGS_KERNEL_RW);
+    //     kprintf("[VMM] MapPage: %s\n", mapped ? "OK" : "FAILED");
 
-        // Write a known value through the virtual address and read it back
-        volatile uint64_t *ptr = (volatile uint64_t *)test_virt;
-        *ptr = 0xDEADBEEFCAFEBABEULL;
-        uint64_t readback = *ptr;
-        kprintf("[VMM] Write/read test: %s (0x%llx)\n",
-            readback == 0xDEADBEEFCAFEBABEULL ? "OK" : "FAILED", readback);
+    //     // Write a known value through the virtual address and read it back
+    //     volatile uint64_t *ptr = (volatile uint64_t *)test_virt;
+    //     *ptr = 0xDEADBEEFCAFEBABEULL;
+    //     uint64_t readback = *ptr;
+    //     kprintf("[VMM] Write/read test: %s (0x%llx)\n",
+    //         readback == 0xDEADBEEFCAFEBABEULL ? "OK" : "FAILED", readback);
 
-        // Verify Translate returns the right physical address
-        uint64_t translated = virtualMemoryManager.Translate(test_virt);
-        kprintf("[VMM] Translate: 0x%llx -> 0x%llx %s\n",
-            test_virt, translated,
-            (translated & PTE_ADDR_MASK) == test_phys ? "OK" : "FAILED");
+    //     // Verify Translate returns the right physical address
+    //     uint64_t translated = virtualMemoryManager.Translate(test_virt);
+    //     kprintf("[VMM] Translate: 0x%llx -> 0x%llx %s\n",
+    //         test_virt, translated,
+    //         (translated & PTE_ADDR_MASK) == test_phys ? "OK" : "FAILED");
 
-        // Unmap and free
-        virtualMemoryManager.UnmapPage(test_virt);
-        PMMFree(&g_pmm, test_phys, 0);
-        kprintf("[VMM] Unmap: OK\n");
-    }
+    //     // Unmap and free
+    //     virtualMemoryManager.UnmapPage(test_virt);
+    //     PMMFree(&g_pmm, test_phys, 0);
+    //     kprintf("[VMM] Unmap: OK\n");
+    // }
 
     
     // kprintf("[OK] Memory test done\n");
-    // SerialWriteString(COM1_PORT, "[OK] Memory test done\n");
 
 
     uint64_t total_bytes = g_pmm.total_pages * PAGE_SIZE;
@@ -249,51 +255,60 @@ extern "C" void kmain(void)
     kprintf("[PMM] Total : %llu MiB (*%llu pages)\n", total_bytes >> 20, g_pmm.total_pages);
     kprintf("[PMM] Used : %llu MiB (*%llu pages)\n", used_bytes >> 20, total_bytes / PAGE_SIZE - g_pmm.free_pages);
     kprintf("[PMM] Free : %llu MiB (*%llu pages)\n", free_bytes >> 20, g_pmm.free_pages);
+    SerialWriteString(COM1_PORT, "[PMM] Total : %llu MiB (*%llu pages)\n", total_bytes >> 20, g_pmm.total_pages);
+    SerialWriteString(COM1_PORT, "[PMM] Used : %llu MiB (*%llu pages)\n", used_bytes >> 20, total_bytes / PAGE_SIZE - g_pmm.free_pages);
+    SerialWriteString(COM1_PORT, "[PMM] Free : %llu MiB (*%llu pages)\n", free_bytes >> 20, g_pmm.free_pages);
     kernelHeap.Init();
+
+    
 
     InitGDT();
     kprintf("[OK] GDT initialized\n");
-    SerialWriteString(COM1_PORT, "[OK] GDT initialized\n");
     InitIDT();
     kprintf("[OK] IDT initialized\n");
-    SerialWriteString(COM1_PORT, "[OK] IDT initialized\n");
     InitAPIC();
     DisablePIC();
     InitLAPIC();
     InitIOAPIC();
-
     kprintf("[OK] APIC initialized\n");
-    SerialWriteString(COM1_PORT, "[OK] APIC initialized\n");
 
-    // Init IRQs
+    scheduler.Init();
+    kprintf("[OK] Scheduler initialized\n");
+
+    // // Test tasks
+    KThreadCreate("TaskA", TaskA, nullptr, TaskPriority::Normal);
+    KThreadCreate("TaskB", TaskB, nullptr, TaskPriority::Normal);
+    KThreadCreate("TaskC", TaskC, nullptr, TaskPriority::High);
+    kprintf("[OK] Tasks created\n");
+    
+    // // Init IRQs
     kprintf("Initializing IRQs...\n");
-    SerialWriteString(COM1_PORT, "Initializing IRQs...\n");
     InitPit();
     kprintf("[OK] Pit initialized\n");
-    SerialWriteString(COM1_PORT, "[OK] PIT initialized\n");
-    InitKeyboard();
-
-    kprintf("[OK] Keyboard initialized\n");
-    SerialWriteString(COM1_PORT, "[OK] Keyboard initialized\n");
-
-    EnableInterrupts();
-
+    // InitKeyboard();
     
-    SerialWriteString(COM1_PORT, "\n");
-    kprintf("\n");
+    // kprintf("[OK] Keyboard initialized\n");
+    
+    EnableInterrupts();
+    kprintf("[OK] Interrupts enabled, scheduler running\n");
+    
+    // kprintf("\n");
+
+    // while (true)
+    // {
+    //     KeyEvent event;
+    //     if (PopKeyEvent(&event))
+    //     {
+    //         if (event.pressed && event.ascii != '\0')
+    //         {
+    //             kprintf("%c", event.ascii);
+    //         }
+    //     }
+    // }
+
 
     while (true)
     {
-        KeyEvent event;
-        if (PopKeyEvent(&event))
-        {
-            if (event.pressed && event.ascii != '\0')
-            {
-                kprintf("%c", event.ascii);
-            }
-        }
+        asm volatile("hlt");
     }
-
-
-    hcf();
 }

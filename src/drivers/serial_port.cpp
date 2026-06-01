@@ -76,15 +76,6 @@ static void SerialITOA(uint64_t value, char* buf, int base)
     }
 }
 
-// void SerialWriteString(uint16_t port, const char* str)
-// {
-//     if (!str) return;
-//     for (size_t i = 0; str[i] != '\0'; i++)
-//     {
-//         SerialWriteChar(port, str[i]);
-//     }
-// }
-
 void SerialWriteString(uint16_t port, const char *fmt, ...)
 {
     va_list args;

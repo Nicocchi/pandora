@@ -3,6 +3,25 @@
 
 KRenderer kRenderer = {0};
 
+static int console_lock_depth = 0;
+static uint64_t console_lock_flags = 0;
+
+void ConsoleLock()
+{
+    if (console_lock_depth++ == 0)
+    {
+        asm volatile("pushfq; pop %0; cli" : "=r"(console_lock_flags) : : "memory");
+    }
+}
+
+void ConsoleUnlock()
+{
+    if (console_lock_depth > 0 && --console_lock_depth == 0)
+    {
+        asm volatile("push %0; popfq" :: "r"(console_lock_flags) : "memory", "cc");
+    }
+}
+
 static void ScrollScreen()
 {
     uint64_t font_height = kRenderer.font.psf1_Header->characterSize;
@@ -115,14 +134,15 @@ void DrawChar(char c)
 
 void ClearScreen(uint32_t color, bool reset)
 {
+    uint64_t ppl = kRenderer.framebuffer.pitch / sizeof(uint32_t);
 
     for (uint64_t y = 0; y < kRenderer.framebuffer.height; y++)
     {
-        for (uint64_t x = 0; x < kRenderer.framebuffer.width; x++)
+        uint32_t *row = (uint32_t*)((uintptr_t)kRenderer.framebuffer.address
+                                    + y * kRenderer.framebuffer.pitch);
+        for (uint64_t x = 0; x < ppl; x++)
         {
-            uint32_t *pixel_address = (uint32_t*)((uintptr_t)kRenderer.framebuffer.address
-                                        + y * kRenderer.framebuffer.pitch
-                                        + x * 4);
+            row[x] = color;
         }
     }
 

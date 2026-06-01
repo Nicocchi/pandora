@@ -43,6 +43,8 @@ static void itoa(uint64_t value, char *str, int base)
 
 void kprintf(const char *fmt, ...)
 {
+    ConsoleLock();
+
     va_list args;
     va_start(args, fmt);
 
@@ -352,4 +354,5 @@ void kprintf(const char *fmt, ...)
     }
 
     va_end(args);
+    ConsoleUnlock();
 }

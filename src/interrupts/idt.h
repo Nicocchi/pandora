@@ -157,6 +157,8 @@ typedef struct InterruptFrame
     uint64_t rip;                   /**< Instruction pointer at interrupt */
     uint64_t cs;                    /**< Code segment selector */
     uint64_t rflags;                /**< Processor flags register */
+    uint64_t rsp;
+    uint64_t ss;
 } __attribute__((packed)) InterruptFrame;
 
 /**

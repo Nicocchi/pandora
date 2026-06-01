@@ -126,6 +126,9 @@ extern KRenderer kRenderer;
  * 
  * @param[in] c Target ASCII character intended for terminal pixel transformations
  */
+void ConsoleLock();
+void ConsoleUnlock();
+
 void DrawChar(char c);
 
 /**
