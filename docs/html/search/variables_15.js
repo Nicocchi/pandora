@@ -1,5 +1,4 @@
 var searchData=
 [
-  ['x_0',['x',['../structKRenderer.html#a9dadeccb1322bf2c2b56ce29f7980ebf',1,'KRenderer']]],
-  ['xsdt_5faddress_1',['xsdt_address',['../structRSDP2.html#abf3ab05c61fa1f5191dc0e28489e3f6b',1,'RSDP2']]]
+  ['width_0',['width',['../structlimine__video__mode.html#a03f512edc6d8bad161f40e6d7f69d3a1',1,'limine_video_mode::width'],['../structlimine__framebuffer.html#ad7e3e9a8a701f5bf814053d4d3628351',1,'limine_framebuffer::width'],['../structKFramebuffer.html#af42e1a3accba035e646696a69996e0cb',1,'KFramebuffer::width']]]
 ];

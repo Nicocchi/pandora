@@ -20,13 +20,22 @@
 
 #include <boot/limine_headers.h>
 #include <boot/limine_vga.h>
-#include <drivers/serial_port.h>
+#include "memory/pmm.h"
+#include "memory/vmm.h"
+#include "memory/heap.h"
 #include "gdt.h"
 #include "interrupts/idt.h"
 #include "interrupts/pit.h"
 #include "interrupts/apic.h"
-#include "common.h"
+#include <drivers/serial_port.h>
 #include "drivers/ps2_keyboard.h"
+#include "lib/stdio.h"
+#include "common.h"
+
+extern BuddyAllocator g_pmm;
+extern VirtualMemoryManager virtualMemoryManager;
+
+extern volatile struct limine_executable_address_request exe_addr_request;
 
 /**
  * @name        C++ Initialization Pointers
@@ -50,6 +59,8 @@ static void CallGlobalConstructors()
     for (auto ctor = __init_array_start; ctor < __init_array_end; ctor++)
         (*ctor)();
 }
+
+uint64_t g_hhdm_offset = 0;
 
 
 /**
@@ -127,34 +138,150 @@ extern "C" void kmain(void)
     kRenderer.framebuffer.height = framebuffer->height;
     kRenderer.framebuffer.pitch = framebuffer->pitch;
     kRenderer.framebuffer.pixelsPerScanLine = framebuffer->pitch / 4;
-    SerialWriteString(COM1_PORT, "kernel renderer set\n");
-    SerialWriteString(COM1_PORT, "kernel renderer set2\n");
 
     SerialWriteString(COM1_PORT, " \n");
 
     ClearScreen(BLACK, true);
 
+    struct limine_memmap_response *memmap_response = memmap_request.response;
+    if (memmap_response == NULL)
+    {
+        KernelPanic("LIMINE_MEMMAP_REQUEST NULL\n");
+    }
+
+    if (hhdm_request.response == nullptr)
+    {
+        KernelPanic("HHDM not found\n");
+    }
+
+    g_hhdm_offset = hhdm_request.response->offset;
+
+    if (exe_addr_request.response == nullptr)
+    {
+        KernelPanic("EXE_ADDR_REQUEST not found\n");
+    }
+
+
+    g_pmm.Init(memmap_response);
+    kprintf("[OK] PMM Initialized\n");
+    SerialWriteString(COM1_PORT, "[OK] PMM Initialized\n");
+    {
+        kprintf("[OK] PMM Memory testing...\n");
+        SerialWriteString(COM1_PORT, "[OK] Memory testing...\n");
+    
+        // Allocate a single page
+        uintptr_t page = PMMAlloc(&g_pmm, 0);
+        kprintf("[PMM] Allocated a single page...\n");
+        SerialWriteString(COM1_PORT, "[PMM] Allocated a single page...\n");
+    
+        // Allocate 8 contiguous pages (order 3 = 2^3)
+        uintptr_t block = PMMAlloc(&g_pmm, 3);
+        kprintf("[PMM] Allocated 8 contiguous pages...\n");
+        SerialWriteString(COM1_PORT, "[PMM] Allocated 8 contiguous pages...\n");
+    
+        // Free them
+        PMMFree(&g_pmm, page, 0);
+        PMMFree(&g_pmm, block, 3);
+        kprintf("[PMM] Free memory...\n");
+        SerialWriteString(COM1_PORT, "[PMM] Free memory...\n");
+    }
+
+    uint64_t kernel_phys = exe_addr_request.response->physical_base;
+    uint64_t kernel_virt = exe_addr_request.response->virtual_base;
+
+    // Calculate kernel size from linker symbols
+    extern char _kernel_start[], _kernel_end[];
+    uint64_t kernel_size = (uint64_t)_kernel_end - (uint64_t)_kernel_start;
+
+    uint64_t top_address = 0;
+    for (uint64_t i = 0; i < memmap_response->entry_count; i++)
+    {
+        struct limine_memmap_entry *entry = memmap_response->entries[i];
+        uint64_t entry_end = entry->base + entry->length;
+        if (entry_end > top_address)
+        {
+            top_address = entry_end;
+        }
+    }
+    // Total usable physical RAM for HHDM size
+    uint64_t hhdm_size = (top_address + PAGE_SIZE - 1) & ~(PAGE_SIZE - 1);
+
+    kprintf("[VMM] hhdm_size = %llu MiB\n", hhdm_size >> 20);
+    virtualMemoryManager.Init(g_hhdm_offset, hhdm_size, kernel_phys, kernel_virt, kernel_size);
+    kprintf("[OK] Virtual Memory allocated\n");
+    {
+        kprintf("[OK] VMM Memory testing...\n");
+        // Allocate a physical page and map it to an arbitrary kernel virtual addr
+        uint64_t test_phys = PMMAlloc(&g_pmm, 0);
+        uint64_t test_virt = 0xFFFF900000000000ULL;  // arbitrary kernel virtual
+
+        bool mapped = virtualMemoryManager.MapPage(test_virt, test_phys, VMM_FLAGS_KERNEL_RW);
+        kprintf("[VMM] MapPage: %s\n", mapped ? "OK" : "FAILED");
+
+        // Write a known value through the virtual address and read it back
+        volatile uint64_t *ptr = (volatile uint64_t *)test_virt;
+        *ptr = 0xDEADBEEFCAFEBABEULL;
+        uint64_t readback = *ptr;
+        kprintf("[VMM] Write/read test: %s (0x%llx)\n",
+            readback == 0xDEADBEEFCAFEBABEULL ? "OK" : "FAILED", readback);
+
+        // Verify Translate returns the right physical address
+        uint64_t translated = virtualMemoryManager.Translate(test_virt);
+        kprintf("[VMM] Translate: 0x%llx -> 0x%llx %s\n",
+            test_virt, translated,
+            (translated & PTE_ADDR_MASK) == test_phys ? "OK" : "FAILED");
+
+        // Unmap and free
+        virtualMemoryManager.UnmapPage(test_virt);
+        PMMFree(&g_pmm, test_phys, 0);
+        kprintf("[VMM] Unmap: OK\n");
+    }
+
+    
+    // kprintf("[OK] Memory test done\n");
+    // SerialWriteString(COM1_PORT, "[OK] Memory test done\n");
+
+
+    uint64_t total_bytes = g_pmm.total_pages * PAGE_SIZE;
+    uint64_t free_bytes = g_pmm.free_pages * PAGE_SIZE;
+    uint64_t used_bytes = total_bytes - free_bytes;
+
+    kprintf("[PMM] Total : %llu MiB (*%llu pages)\n", total_bytes >> 20, g_pmm.total_pages);
+    kprintf("[PMM] Used : %llu MiB (*%llu pages)\n", used_bytes >> 20, total_bytes / PAGE_SIZE - g_pmm.free_pages);
+    kprintf("[PMM] Free : %llu MiB (*%llu pages)\n", free_bytes >> 20, g_pmm.free_pages);
+    kernelHeap.Init();
+
     InitGDT();
     kprintf("[OK] GDT initialized\n");
+    SerialWriteString(COM1_PORT, "[OK] GDT initialized\n");
     InitIDT();
     kprintf("[OK] IDT initialized\n");
+    SerialWriteString(COM1_PORT, "[OK] IDT initialized\n");
     InitAPIC();
     DisablePIC();
     InitLAPIC();
     InitIOAPIC();
 
     kprintf("[OK] APIC initialized\n");
+    SerialWriteString(COM1_PORT, "[OK] APIC initialized\n");
 
     // Init IRQs
-    kprintf("[OK] Initializing IRQs\n");
+    kprintf("Initializing IRQs...\n");
+    SerialWriteString(COM1_PORT, "Initializing IRQs...\n");
     InitPit();
     kprintf("[OK] Pit initialized\n");
+    SerialWriteString(COM1_PORT, "[OK] PIT initialized\n");
     InitKeyboard();
 
     kprintf("[OK] Keyboard initialized\n");
+    SerialWriteString(COM1_PORT, "[OK] Keyboard initialized\n");
 
     EnableInterrupts();
+
+    
+    SerialWriteString(COM1_PORT, "\n");
     kprintf("\n");
+
     while (true)
     {
         KeyEvent event;

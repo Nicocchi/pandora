@@ -15,9 +15,10 @@ var searchData=
   ['toolchain_20dependencies_12',['Toolchain Dependencies',['../md_README.html#autotoc_md24',1,'']]],
   ['toolchain_20script_20options_13',['Toolchain Script Options',['../md_README.html#autotoc_md27',1,'']]],
   ['tools_14',['Build Tools',['../md_README.html#autotoc_md31',1,'']]],
-  ['tss_15',['tss',['../gdt_8cpp.html#a594f88532241dc310816a489607655a0',1,'gdt.cpp']]],
-  ['tss_5fflush_16',['tss_flush',['../gdt_8cpp.html#a01b6312c9386ac6c52c7b5c5d91e81cf',1,'gdt.cpp']]],
-  ['tssdescriptor_17',['TSSDescriptor',['../structTSSDescriptor.html',1,'TSSDescriptor'],['../group__CPU__SEGMENTATION.html#gacbe48610c5e872e75b3b50de9c9cf38a',1,'TSSDescriptor:&#160;gdt.h']]],
-  ['tssentry_18',['TSSEntry',['../structTSSEntry.html',1,'TSSEntry'],['../group__CPU__SEGMENTATION.html#ga93e93abf00bffe42a08dd8900623b501',1,'TSSEntry:&#160;gdt.h']]],
-  ['type_19',['type',['../structlimine__memmap__entry.html#ac553330b3a732a61e4639940dbb085f1',1,'limine_memmap_entry::type'],['../structMADTEntry.html#a65976ea2b553e16b5c7981c1afe060f8',1,'MADTEntry::type']]]
+  ['total_5fpages_15',['total_pages',['../structBuddyAllocator.html#af1a76f386cd71621fd3877fd275ce6cd',1,'BuddyAllocator']]],
+  ['tss_16',['tss',['../gdt_8cpp.html#a594f88532241dc310816a489607655a0',1,'gdt.cpp']]],
+  ['tss_5fflush_17',['tss_flush',['../gdt_8cpp.html#a01b6312c9386ac6c52c7b5c5d91e81cf',1,'gdt.cpp']]],
+  ['tssdescriptor_18',['TSSDescriptor',['../structTSSDescriptor.html',1,'TSSDescriptor'],['../group__CPU__SEGMENTATION.html#gacbe48610c5e872e75b3b50de9c9cf38a',1,'TSSDescriptor:&#160;gdt.h']]],
+  ['tssentry_19',['TSSEntry',['../structTSSEntry.html',1,'TSSEntry'],['../group__CPU__SEGMENTATION.html#ga93e93abf00bffe42a08dd8900623b501',1,'TSSEntry:&#160;gdt.h']]],
+  ['type_20',['type',['../structlimine__memmap__entry.html#ac553330b3a732a61e4639940dbb085f1',1,'limine_memmap_entry::type'],['../structMADTEntry.html#a65976ea2b553e16b5c7981c1afe060f8',1,'MADTEntry::type']]]
 ];

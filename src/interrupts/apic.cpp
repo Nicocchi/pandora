@@ -15,6 +15,9 @@
 #include "common.h"
 #include "lib/string.h"
 #include "boot/limine_vga.h"
+#include "memory/vmm.h"
+
+
 
 __attribute__((used, section(".limine_requests")))
 volatile limine_rsdp_request rsdp_request = {
@@ -22,18 +25,6 @@ volatile limine_rsdp_request rsdp_request = {
     .revision = 0
 };
 
-__attribute__((used, section(".limine_requests")))
-volatile limine_hhdm_request hhdm_request = {
-    .id = LIMINE_HHDM_REQUEST_ID,
-    .revision = 0
-};
-
-/** @brief Requests the physical memory map array topology from the BIOS/UEFI firmware */
-__attribute__((used, section(".limine_requests")))
-volatile struct limine_memmap_request memmap_request = {
-    .id = LIMINE_MEMMAP_REQUEST_ID,
-    .revision = 0
-};
 
 // Key Local APIC registers (offsets from base)
 #define LAPIC_ID          0x020
@@ -133,16 +124,25 @@ static uint64_t kernel_phys_base = 0;
 
 alignas(4096) static uint8_t mmio_page_tables[4096 * 4]; // 4 pages for PT allocation
 static uint64_t mmio_pt_alloc_offset = 0;
-static uint64_t hhdm_offset = 0;
+// static uint64_t hhdm_offset = 0;
 
-static uint64_t VirtToPhys(uint64_t virt)
+// static uint64_t VirtToPhys(uint64_t virt)
+// {
+//     // For addresses in the kernel image
+//     if (virt >= kernel_virt_base)
+//         return virt - kernel_virt_base + kernel_phys_base;
+    
+//     // For addresses in the HHDM region
+//     return virt - hhdm_offset;
+// }
+static uint64_t APICVirtToPhys(uint64_t virt)
 {
     // For addresses in the kernel image
     if (virt >= kernel_virt_base)
         return virt - kernel_virt_base + kernel_phys_base;
     
     // For addresses in the HHDM region
-    return virt - hhdm_offset;
+    return virt - g_hhdm_offset;
 }
 
 static uint64_t AllocPageTable()
@@ -158,61 +158,62 @@ static uint64_t AllocPageTable()
     return virt;
 }
 
-static void MapMMIO(uint64_t phys, uint64_t virt)
-{
-    uint64_t cr3;
-    asm volatile("mov %%cr3, %0" : "=r"(cr3));
+// static void MapMMIO(uint64_t phys, uint64_t virt)
+// {
+//     uint64_t cr3;
+//     asm volatile("mov %%cr3, %0" : "=r"(cr3));
 
-    uint64_t* pml4 = (uint64_t*)((cr3 & ~0xFFFULL) + hhdm_offset);
+//     uint64_t* pml4 = (uint64_t*)((cr3 & ~0xFFFULL) + g_hhdm_offset);
 
-    uint64_t pml4_idx = (virt >> 39) & 0x1FF;
-    uint64_t pdpt_idx = (virt >> 30) & 0x1FF;
-    uint64_t pd_idx   = (virt >> 21) & 0x1FF;
-    uint64_t pt_idx   = (virt >> 12) & 0x1FF;
+//     uint64_t pml4_idx = (virt >> 39) & 0x1FF;
+//     uint64_t pdpt_idx = (virt >> 30) & 0x1FF;
+//     uint64_t pd_idx   = (virt >> 21) & 0x1FF;
+//     uint64_t pt_idx   = (virt >> 12) & 0x1FF;
 
-    if (!(pml4[pml4_idx] & 1))
-    {
-        uint64_t pt_virt = AllocPageTable();
-        pml4[pml4_idx] = VirtToPhys(pt_virt) | 0x03;
-    }
-    uint64_t* pdpt = (uint64_t*)((pml4[pml4_idx] & ~0xFFFULL) + hhdm_offset);
+//     if (!(pml4[pml4_idx] & 1))
+//     {
+//         uint64_t pt_virt = AllocPageTable();
+//         pml4[pml4_idx] = APICVirtToPhys(pt_virt) | 0x03;
+//     }
+//     uint64_t* pdpt = (uint64_t*)((pml4[pml4_idx] & ~0xFFFULL) + g_hhdm_offset);
 
-    if (!(pdpt[pdpt_idx] & 1))
-    {
-        uint64_t pt_virt = AllocPageTable();
-        pdpt[pdpt_idx] = VirtToPhys(pt_virt) | 0x03;
-    }
-    uint64_t* pd = (uint64_t*)((pdpt[pdpt_idx] & ~0xFFFULL) + hhdm_offset);
+//     if (!(pdpt[pdpt_idx] & 1))
+//     {
+//         uint64_t pt_virt = AllocPageTable();
+//         pdpt[pdpt_idx] = APICVirtToPhys(pt_virt) | 0x03;
+//     }
+//     uint64_t* pd = (uint64_t*)((pdpt[pdpt_idx] & ~0xFFFULL) + g_hhdm_offset);
 
-    if (pd[pd_idx] & (1 << 7))
-    {
-        // Split 2MB huge page into 512 x 4KB pages
-        uint64_t huge_phys  = pd[pd_idx] & ~0x1FFFFFULL;
-        uint64_t huge_flags = pd[pd_idx] & 0xFFF & ~(1 << 7);
+//     if (pd[pd_idx] & (1 << 7))
+//     {
+//         // Split 2MB huge page into 512 x 4KB pages
+//         uint64_t huge_phys  = pd[pd_idx] & ~0x1FFFFFULL;
+//         uint64_t huge_flags = pd[pd_idx] & 0xFFF & ~(1 << 7);
 
-        uint64_t new_pt_virt = AllocPageTable();
-        uint64_t* new_pt = (uint64_t*)new_pt_virt;
+//         uint64_t new_pt_virt = AllocPageTable();
+//         uint64_t* new_pt = (uint64_t*)new_pt_virt;
 
-        for (int i = 0; i < 512; i++)
-            new_pt[i] = (huge_phys + i * 4096) | huge_flags;
+//         for (int i = 0; i < 512; i++)
+//             new_pt[i] = (huge_phys + i * 4096) | huge_flags;
 
-        pd[pd_idx] = VirtToPhys(new_pt_virt) | 0x03;
+//         pd[pd_idx] = APICVirtToPhys(new_pt_virt) | 0x03;
 
-        uint64_t base = virt & ~0x1FFFFFULL;
-        for (int i = 0; i < 512; i++)
-            asm volatile("invlpg (%0)" : : "r"(base + i * 4096) : "memory");
-    }
-    else if (!(pd[pd_idx] & 1))
-    {
-        uint64_t pt_virt = AllocPageTable();
-        pd[pd_idx] = VirtToPhys(pt_virt) | 0x03;
-    }
+//         uint64_t base = virt & ~0x1FFFFFULL;
+//         for (int i = 0; i < 512; i++)
+//             asm volatile("invlpg (%0)" : : "r"(base + i * 4096) : "memory");
+//     }
+//     else if (!(pd[pd_idx] & 1))
+//     {
+//         uint64_t pt_virt = AllocPageTable();
+//         pd[pd_idx] = APICVirtToPhys(pt_virt) | 0x03;
+//     }
 
-    uint64_t* pt = (uint64_t*)((pd[pd_idx] & ~0xFFFULL) + hhdm_offset);
-    pt[pt_idx] = phys | 0x13;
+//     uint64_t* pt = (uint64_t*)((pd[pd_idx] & ~0xFFFULL) + g_hhdm_offset);
+//     pt[pt_idx] = phys | 0x13;
 
-    asm volatile("invlpg (%0)" : : "r"(virt) : "memory");
-}
+//     asm volatile("invlpg (%0)" : : "r"(virt) : "memory");
+// }
+
 
 void InitAPIC()
 {
@@ -223,11 +224,11 @@ void InitAPIC()
         KernelPanic("RSDP not found\n");
     }
 
-    if (hhdm_request.response == nullptr)
-    {
-        KernelPanic("HHDM not found\n");
-    }
-    hhdm_offset = hhdm_request.response->offset;
+    // if (hhdm_request.response == nullptr)
+    // {
+    //     KernelPanic("HHDM not found\n");
+    // }
+    // hhdm_offset = hhdm_request.response->offset;
 
     void* rsdp_addr = rsdp_request.response->address;
 
@@ -240,7 +241,7 @@ void InitAPIC()
 
     if (use_xsdt)
     {
-        ACPISDTHeader* xsdt = (ACPISDTHeader*)(rsdp->xsdt_address + hhdm_offset);
+        ACPISDTHeader* xsdt = (ACPISDTHeader*)(rsdp->xsdt_address + g_hhdm_offset);
 
         // Print raw bytes to verify
         uint8_t* raw = (uint8_t*)xsdt;
@@ -250,7 +251,7 @@ void InitAPIC()
 
         for (uint64_t i = 0; i < entries; i++)
         {
-            ACPISDTHeader* header = (ACPISDTHeader*)(table_ptrs[i] + hhdm_offset);
+            ACPISDTHeader* header = (ACPISDTHeader*)(table_ptrs[i] + g_hhdm_offset);
             if (memcmp(header->signature, "APIC", 4) == 0)
             {
                 madt = header;
@@ -260,13 +261,13 @@ void InitAPIC()
     }
     else
     {
-        ACPISDTHeader* rsdt = (ACPISDTHeader*)(uint64_t)(rsdp->rsdt_address + hhdm_offset);
+        ACPISDTHeader* rsdt = (ACPISDTHeader*)(uint64_t)(rsdp->rsdt_address + g_hhdm_offset);
         uint64_t entries = (rsdt->length - sizeof(ACPISDTHeader)) / 4;
         uint32_t* table_ptrs = (uint32_t*)((uint8_t*)rsdt + sizeof(ACPISDTHeader));
 
         for (uint64_t i = 0; i < entries; i++)
         {
-            ACPISDTHeader* header = (ACPISDTHeader*)(table_ptrs[i] + hhdm_offset);
+            ACPISDTHeader* header = (ACPISDTHeader*)(table_ptrs[i] + g_hhdm_offset);
             if (memcmp(header->signature, "APIC", 4) == 0)
             {
                 madt = header;
@@ -282,9 +283,9 @@ void InitAPIC()
 
     // Parse MADT
     MADTHeader* madt_header = (MADTHeader*)madt;
-    lapic_base = madt_header->local_apic_addr + hhdm_offset;
+    lapic_base = madt_header->local_apic_addr + g_hhdm_offset;
 
-    kprintf("[OK] MADT found, Local APIC base: %llx\n", lapic_base);
+    kprintf("[OK] MADT found\n");
     
     uint8_t* entry_ptr = (uint8_t*)madt + sizeof(MADTHeader);
     uint8_t* madt_end = (uint8_t*)madt + madt_header->length;
@@ -301,8 +302,7 @@ void InitAPIC()
                 MADTLocalAPIC* local = (MADTLocalAPIC*)entry;
                 if (local->flags & 1)
                 {
-                    kprintf("[OK] CPU found: processor_id=%d apic_id=%d\n", 
-                        local->processor_id, local->apic_id);
+                    kprintf("[OK] CPU found\n");
                 }
             } break;
 
@@ -310,10 +310,9 @@ void InitAPIC()
             {
                 MADTIOApic* io = (MADTIOApic*)entry;
                 ioapic_phys = io->io_apic_addr;
-                ioapic_base = ioapic_phys + hhdm_offset;
+                ioapic_base = ioapic_phys + g_hhdm_offset;
                 // ioapic_base = io->io_apic_addr + hhdm_offset;
-                kprintf("[OK] I/O APIC found: base=%llx gsi_base=%d\n",
-                        ioapic_base, io->gsi_base);
+                kprintf("[OK] I/O APIC found\n");
             } break;
 
             case MADT_ISO:
@@ -341,7 +340,10 @@ void InitAPIC()
     kernel_virt_base = exe_addr_request.response->virtual_base;
     kernel_phys_base = exe_addr_request.response->physical_base;
 
-    MapMMIO(lapic_phys, lapic_phys + hhdm_offset);
-    MapMMIO(ioapic_phys, ioapic_phys + hhdm_offset);
+    // MapMMIO(lapic_phys, lapic_phys + g_hhdm_offset);
+    // MapMMIO(ioapic_phys, ioapic_phys + g_hhdm_offset);
+
+    virtualMemoryManager.MapPage(lapic_phys + g_hhdm_offset, lapic_phys, VMM_FLAGS_MMIO);
+    virtualMemoryManager.MapPage(ioapic_phys + g_hhdm_offset, ioapic_phys, VMM_FLAGS_MMIO);
 
 }

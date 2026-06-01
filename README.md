@@ -109,21 +109,21 @@ The goal is to better understand how modern operating systems function internall
 * [x] TSS
 * [x] IDT
 * [x] PIC/APIC
+* [x] Interrupt handling
 * [x] PS/2 Keyboard driver
+* [x] Physical memory manager
+* [x] Paging and virtual memory
 
 ### In Progress
 
-* [ ] Physical memory manager
-* [ ] Interrupt handling
-* [ ] Paging and virtual memory
 * [ ] Kernel heap allocator
-* [ ] Basic terminal / console
 
 ### Planned
 
 * [ ] Preemptive multitasking
 * [ ] ELF executable loading
 * [ ] Filesystem support
+* [ ] Basic terminal / console
 * [ ] User mode support
 * [ ] Syscall interface
 * [ ] Graphics subsystem

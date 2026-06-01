@@ -159,5 +159,6 @@ var searchData=
   ['limine_5fx86_5f64_5fkeep_5fiommu_5fresponse_156',['limine_x86_64_keep_iommu_response',['../structlimine__x86__64__keep__iommu__response.html',1,'']]],
   ['limit_157',['limit',['../structGDTDescriptor.html#a6119b5c04a7ffecf8f685a7e636b4712',1,'GDTDescriptor::limit'],['../structIDTPtr.html#a9015227fb53a20387db68dbd103c9c13',1,'IDTPtr::limit']]],
   ['limit_5flow_158',['limit_low',['../structSegmentDescriptor.html#a7e26f571f8069a9238e57681f6c4a852',1,'SegmentDescriptor::limit_low'],['../structTSSDescriptor.html#a37a1ea78cc098b0a230c935078cfa3fd',1,'TSSDescriptor::limit_low']]],
-  ['local_5fapic_5faddr_159',['local_apic_addr',['../structMADTHeader.html#a3aae0120b64bf2f4a4a43496944a0eb0',1,'MADTHeader']]]
+  ['lists_159',['lists',['../structBuddyAllocator.html#ae13593c807908a671d13f657416d59a4',1,'BuddyAllocator']]],
+  ['local_5fapic_5faddr_160',['local_apic_addr',['../structMADTHeader.html#a3aae0120b64bf2f4a4a43496944a0eb0',1,'MADTHeader']]]
 ];

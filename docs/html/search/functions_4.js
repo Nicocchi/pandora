@@ -1,5 +1,5 @@
 var searchData=
 [
-  ['gdt_5fflush_0',['gdt_flush',['../gdt_8cpp.html#aa6cd40714ebfaeee842114dd0c4b8eda',1,'gdt.cpp']]],
-  ['getfilelimine_1',['GetFileLimine',['../limine__headers_8h.html#a6dd8ad5d6d7feda43cb7529673bb33b5',1,'limine_headers.h']]]
+  ['empty_0',['empty',['../structFreeList.html#a55a9c250949b28ef10e27f4e4d63f9de',1,'FreeList']]],
+  ['enableinterrupts_1',['EnableInterrupts',['../idt_8cpp.html#a360f67c504ebee80bc6a785f411dcb7e',1,'EnableInterrupts():&#160;idt.cpp'],['../idt_8h.html#a360f67c504ebee80bc6a785f411dcb7e',1,'EnableInterrupts():&#160;idt.cpp']]]
 ];

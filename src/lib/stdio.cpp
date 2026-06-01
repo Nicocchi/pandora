@@ -1,91 +1,47 @@
 #include <stdint.h>
 #include <stddef.h>
-#include "serial_port.h"
+#include <stdbool.h>
 #include <stdarg.h>
+#include "stdio.h"
+#include "boot/limine_vga.h"
 
-// Inline Assembly Wrappers for x86 port I/O
-static inline void outb(uint16_t port, uint8_t val)
+// Internal helper function to convert numbers to ASCII strings without an allocator
+static void itoa(uint64_t value, char *str, int base)
 {
-    __asm__ volatile ("outb %0, %1" : : "a"(val), "Nd"(port));
-}
+    char *rc = str;
+    char *ptr = str;
+    char *low;
 
-static inline uint8_t inb(uint16_t port)
-{
-    uint8_t ret;
-    __asm__ volatile ("inb %1, %0" : "=a"(ret) : "Nd"(port));
-    return ret;
-}
+    // Check for supported bases
+    if (base < 2 || base > 16)
+    {
+        *str = '\0';
+        return;
+    }
 
-
-int SerialInit(uint16_t port)
-{
-    outb(port + 1, 0x00);   // Disable all interrupts
-    outb(port + 3, 0x80);   // Enable DLAB (set baud rate divisor)
-    outb(port + 0, 0x03);   // Set divisor to 3 (lo byte) -> 38400 baud
-    outb(port + 1, 0x00);   //                  (hi byte)
-    outb(port + 3, 0x03);   // Disable DLAB, set 8 bits, no parity, 1 stop bit (8N1)
-    outb(port + 2, 0xC7);   // Enable FIFO, clear them, with 14-byte threshold
-
-#ifdef SERIAL_LOOPBACK_TEST
-    // Perform Hardware Loopback Test to verify the UART is functional
-    outb(port + 4, 0x1E);   // Set loopback mode, test latch IRQs
-    outb(port + 0, 0xAE);   // Write a test byte (0xAE)
-    if (inb(port + 0) != 0xAE) return 1; // Hardware error: loopback mismatch
-    outb(port + 4, 0x0F);
-#else
-    // Cleanup up loopback mode and set normal operation mode
-    outb(port + 4, 0x0F);   // IRQs enabled, turn on DTR, RTS, and OUT1/OUT2 (Normal Operation Mode)
-#endif
-    return 0;
-}
-
-static inline int IsTransmitEmpty(uint16_t port)
-{
-    return inb(port + 5) & 0x20; // Check Line Status Register Empty bit
-}
-
-void SerialWriteChar(uint16_t port, char c)
-{
-    while (IsTransmitEmpty(port) == 0); // Wait until the transmit buffer is clear
-    outb(port, c);
-}
-
-static void SerialITOA(uint64_t value, char* buf, int base)
-{
-    char* p = buf;
-    char* p1, *p2;
-    uint64_t tmp;
-
+    // Set up digits map
+    const char* digits = "0123456789abcdef";
+    
+    // Extract digits in reverse order
     do {
-        tmp = value % base;
-        *p++ = "0123456789abcdef"[tmp];
+        *ptr++ = digits[value % base];
         value /= base;
     } while (value);
 
-    *p = '\0';
+    *ptr = '\0';
 
-    // reverse string
-    p1 = buf;
-    p2 = p - 1;
-
-    while (p1 < p2)
+    // Terminate string and reverse the characters in-place
+    low = rc;
+    ptr--;
+    while (low < ptr)
     {
-        char c = *p1;
-        *p1++ = *p2;
-        *p2-- = c;
+        char tmp = *low;
+        *low++ = *ptr;
+        *ptr-- = tmp;
     }
 }
 
-// void SerialWriteString(uint16_t port, const char* str)
-// {
-//     if (!str) return;
-//     for (size_t i = 0; str[i] != '\0'; i++)
-//     {
-//         SerialWriteChar(port, str[i]);
-//     }
-// }
-
-void SerialWriteString(uint16_t port, const char *fmt, ...)
+void kprintf(const char *fmt, ...)
 {
     va_list args;
     va_start(args, fmt);
@@ -94,7 +50,7 @@ void SerialWriteString(uint16_t port, const char *fmt, ...)
     {
         if (fmt[i] != '%')
         {
-            SerialWriteChar(port, fmt[i]);
+            DrawChar(fmt[i]);
             continue;
         }
 
@@ -187,14 +143,14 @@ void SerialWriteString(uint16_t port, const char *fmt, ...)
 
             if (!flag_left)
             {
-                for (int p = 0; p < pad; p++) SerialWriteChar(port, pc);
+                for (int p = 0; p < pad; p++) DrawChar(pc);
             }
 
-            for (int p = 0; p < slen; p++) SerialWriteChar(port, s[p]);
+            for (int p = 0; p < slen; p++) DrawChar(s[p]);
 
             if (flag_left)
             {
-                for (int p = 0; p < pad; p++) SerialWriteChar(port, ' ');
+                for (int p = 0; p < pad; p++) DrawChar(' ');
             }
         };
 
@@ -217,7 +173,7 @@ void SerialWriteString(uint16_t port, const char *fmt, ...)
                 char buf[32];
                 bool negative = (val < 0);
                 if (negative) val = -val;
-                SerialITOA((uint64_t)val, buf, 10);
+                itoa((uint64_t)val, buf, 10);
 
                 int numlen = 0;
                 while (buf[numlen]) numlen++;
@@ -232,10 +188,10 @@ void SerialWriteString(uint16_t port, const char *fmt, ...)
                 int pad = (width > total) ? (width - total) : 0;
                 char pc = (flag_zero && !flag_left) ? '0' : ' ';
 
-                if (!flag_left) for (int p = 0; p < pad; p++) SerialWriteChar(port, pc);
-                if (sign) SerialWriteChar(port, sign);
-                for (int p = 0; buf[p]; p++) SerialWriteChar(port, buf[p]);
-                if (flag_left) for (int p = 0; p < pad; p++) SerialWriteChar(port, ' ');
+                if (!flag_left) for (int p = 0; p < pad; p++) DrawChar(pc);
+                if (sign) DrawChar(sign);
+                for (int p = 0; buf[p]; p++) DrawChar(buf[p]);
+                if (flag_left) for (int p = 0; p < pad; p++) DrawChar(' ');
             } break;
 
             // Unsigned decimal: %u / %lu / %llu
@@ -252,7 +208,7 @@ void SerialWriteString(uint16_t port, const char *fmt, ...)
                     default: val = va_arg(args, unsigned int); break;
                 }
                 char buf[32];
-                SerialITOA(val, buf, 10);
+                itoa(val, buf, 10);
                 int len2 = 0; while (buf[len2]) len2++;
                 emit_padded(buf, len2);
             } break;
@@ -271,7 +227,7 @@ void SerialWriteString(uint16_t port, const char *fmt, ...)
                     default: val = va_arg(args, unsigned int); break;
                 }
                 char buf[32];
-                SerialITOA(val, buf, 16);
+                itoa(val, buf, 16);
 
                 // Uppercase if %X
                 if (spec == 'X')
@@ -291,10 +247,10 @@ void SerialWriteString(uint16_t port, const char *fmt, ...)
                 int pad = (width > total) ? (width - total) : 0;
                 char pc = (flag_zero && !flag_left) ? '0' : ' ';
 
-                if (!flag_left) for (int p = 0; p < pad; p++) SerialWriteChar(port, pc);
-                if (flag_hash && val != 0) { SerialWriteChar(port, '0'); SerialWriteChar(port, spec == 'X' ? 'X' : 'x'); }
-                for (int p = 0; buf[p]; p++) SerialWriteChar(port, buf[p]);
-                if (flag_left)  for (int p = 0; p < pad; p++) SerialWriteChar(port, ' ');
+                if (!flag_left) for (int p = 0; p < pad; p++) DrawChar(pc);
+                if (flag_hash && val != 0) { DrawChar('0'); DrawChar(spec == 'X' ? 'X' : 'x'); }
+                for (int p = 0; buf[p]; p++) DrawChar(buf[p]);
+                if (flag_left)  for (int p = 0; p < pad; p++) DrawChar(' ');
             } break;
 
             // Octal: %o
@@ -308,7 +264,7 @@ void SerialWriteString(uint16_t port, const char *fmt, ...)
                     default: val = va_arg(args, unsigned int); break;
                 }
                 char buf[32];
-                SerialITOA(val, buf, 8);
+                itoa(val, buf, 8);
                 int len2 = 0; while (buf[len2]) len2++;
                 if (flag_hash && buf[0] != '0')
                 {
@@ -347,10 +303,10 @@ void SerialWriteString(uint16_t port, const char *fmt, ...)
             case 'p':
             {
                 uint64_t val = (uint64_t)va_arg(args, void*);
-                SerialWriteChar(port, '0'); SerialWriteChar(port, 'x');
+                DrawChar('0'); DrawChar('x');
                 char buf[32];
-                SerialITOA(val, buf, 16);
-                for (int p = 0; buf[p]; p++) SerialWriteChar(port, buf[p]);
+                itoa(val, buf, 16);
+                for (int p = 0; buf[p]; p++) DrawChar(buf[p]);
             } break;
 
             // String: %s
@@ -370,26 +326,26 @@ void SerialWriteString(uint16_t port, const char *fmt, ...)
                 char c = (char)va_arg(args, int);
                 if (width > 1 && !flag_left)
                 {
-                    for (int p = 0; p < width - 1; p++) SerialWriteChar(port, ' ');
+                    for (int p = 0; p < width - 1; p++) DrawChar(' ');
                 }
-                SerialWriteChar(port, c);
+                DrawChar(c);
                 if (width > 1 && flag_left)
                 {
-                    for (int p = 0; p < width - 1; p++) SerialWriteChar(port, ' ');
+                    for (int p = 0; p < width - 1; p++) DrawChar(' ');
                 }
             } break;
 
             // %%
             case '%':
             {
-                SerialWriteChar(port, '%');
+                DrawChar('%');
             } break;
 
             // Unknwon: pass through
             default:
             {
-                SerialWriteChar(port, '%');
-                SerialWriteChar(port, spec);
+                DrawChar('%');
+                DrawChar(spec);
                 break;
             }
         }

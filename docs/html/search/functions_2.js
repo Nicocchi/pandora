@@ -1,5 +1,7 @@
 var searchData=
 [
-  ['disablepic_0',['DisablePIC',['../idt_8cpp.html#a1f7ab111305cf00cb8285c8241dd6692',1,'DisablePIC():&#160;idt.cpp'],['../idt_8h.html#a1f7ab111305cf00cb8285c8241dd6692',1,'DisablePIC():&#160;idt.cpp']]],
-  ['drawchar_1',['DrawChar',['../limine__vga_8cpp.html#a0616cca4445e0ab61ad1e9d6b7a4e28e',1,'DrawChar(char c):&#160;limine_vga.cpp'],['../limine__vga_8h.html#a0616cca4445e0ab61ad1e9d6b7a4e28e',1,'DrawChar(char c):&#160;limine_vga.cpp']]]
+  ['callglobalconstructors_0',['CallGlobalConstructors',['../main_8cpp.html#a5ea6f67f659b71a427d3cb59a0e6984d',1,'main.cpp']]],
+  ['checkstringendswith_1',['CheckStringEndsWith',['../string_8cpp.html#a692d23395cc9774584dbd2fff35fa8d0',1,'CheckStringEndsWith(const char *str, const char *end):&#160;string.cpp'],['../string_8h.html#a692d23395cc9774584dbd2fff35fa8d0',1,'CheckStringEndsWith(const char *str, const char *end):&#160;string.cpp']]],
+  ['clearscreen_2',['ClearScreen',['../limine__vga_8cpp.html#adce9bc1567446ea14458312f71638b9b',1,'ClearScreen(uint32_t color, bool reset):&#160;limine_vga.cpp'],['../limine__vga_8h.html#adce9bc1567446ea14458312f71638b9b',1,'ClearScreen(uint32_t color, bool reset):&#160;limine_vga.cpp']]],
+  ['contains_3',['contains',['../structFreeList.html#a77d88ca66e66af54209b5140671a80da',1,'FreeList']]]
 ];

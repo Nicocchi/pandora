@@ -1,8 +1,4 @@
 var searchData=
 [
-  ['idtentry_0',['IDTEntry',['../structIDTEntry.html',1,'']]],
-  ['idtptr_1',['IDTPtr',['../structIDTPtr.html',1,'']]],
-  ['interruptframe_2',['InterruptFrame',['../structInterruptFrame.html',1,'']]],
-  ['interruptregisters_3',['InterruptRegisters',['../structInterruptRegisters.html',1,'']]],
-  ['isoentry_4',['ISOEntry',['../structISOEntry.html',1,'']]]
+  ['freelist_0',['FreeList',['../structFreeList.html',1,'']]]
 ];

@@ -1,5 +1,4 @@
 var searchData=
 [
-  ['tssdescriptor_0',['TSSDescriptor',['../structTSSDescriptor.html',1,'']]],
-  ['tssentry_1',['TSSEntry',['../structTSSEntry.html',1,'']]]
+  ['rsdp2_0',['RSDP2',['../structRSDP2.html',1,'']]]
 ];

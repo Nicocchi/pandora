@@ -12,5 +12,6 @@ var searchData=
   ['framebuffer_9',['framebuffer',['../structKRenderer.html#a112c6929c80173fbe5f4c268f309a805',1,'KRenderer']]],
   ['framebuffer_5fcount_10',['framebuffer_count',['../structlimine__framebuffer__response.html#a13bb5cf3dc1eebe8500f1ebfee5694e9',1,'limine_framebuffer_response']]],
   ['framebuffer_5frequest_11',['framebuffer_request',['../group__Limine__Anchors.html#gaf4cd2863ab76bfaf5ff461d7245aa4ca',1,'limine_headers.h']]],
-  ['frequency_12',['frequency',['../structlimine__tsc__frequency__response.html#ab98334ba617d03eb83f60b82b8e0a37a',1,'limine_tsc_frequency_response::frequency'],['../pit_8cpp.html#ab632fb0b4d5156ea4df0b1e15410e913',1,'frequency:&#160;pit.cpp']]]
+  ['free_5fpages_12',['free_pages',['../structBuddyAllocator.html#a71599eb47ef0b32305f43ea839223ba3',1,'BuddyAllocator']]],
+  ['frequency_13',['frequency',['../structlimine__tsc__frequency__response.html#ab98334ba617d03eb83f60b82b8e0a37a',1,'limine_tsc_frequency_response::frequency'],['../pit_8cpp.html#ab632fb0b4d5156ea4df0b1e15410e913',1,'frequency:&#160;pit.cpp']]]
 ];

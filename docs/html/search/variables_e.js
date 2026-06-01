@@ -1,11 +1,10 @@
 var searchData=
 [
-  ['part_5fuuid_0',['part_uuid',['../structlimine__file.html#a76f0d8f40ecbfb3fad45d035baf4cdc6',1,'limine_file']]],
-  ['partition_5findex_1',['partition_index',['../structlimine__file.html#a88f3e551b32e49b182f9e47b215fe20b',1,'limine_file']]],
-  ['physical_5fbase_2',['physical_base',['../structlimine__executable__address__response.html#afacba797dd456dea4f53e9fadafea3e8',1,'limine_executable_address_response']]],
-  ['pitch_3',['pitch',['../structlimine__video__mode.html#a5b1d4b9e9edbcab07e054da87a5bafd3',1,'limine_video_mode::pitch'],['../structlimine__framebuffer.html#aeb59aad798c9422e1ff1eac95f5b1af4',1,'limine_framebuffer::pitch'],['../structKFramebuffer.html#af1060ea9b619dd0ea8e4acefc4cd72dd',1,'KFramebuffer::pitch']]],
-  ['pixelsperscanline_4',['pixelsPerScanLine',['../structKFramebuffer.html#a62d9cf1a20c25e28457e58e004187884',1,'KFramebuffer']]],
-  ['pressed_5',['pressed',['../structKeyEvent.html#aa530438d9fba2bbc2acd6d614567a4f2',1,'KeyEvent']]],
-  ['processor_5fid_6',['processor_id',['../structMADTLocalAPIC.html#a5d97f1e66456d55a858603d52434f679',1,'MADTLocalAPIC']]],
-  ['psf1_5fheader_7',['psf1_Header',['../structPSF1__Font.html#aa31299f67bf8796ed0b5fcdc412979cc',1,'PSF1_Font']]]
+  ['oem_5fid_0',['oem_id',['../structRSDP2.html#afa4f133c12356b600bb37373eba5eec9',1,'RSDP2::oem_id'],['../structACPISDTHeader.html#a867b20bf8bb4f6df0256b6352ad456c6',1,'ACPISDTHeader::oem_id'],['../structMADTHeader.html#a259c558c3f10708761f51b67a56d362d',1,'MADTHeader::oem_id']]],
+  ['oem_5frevision_1',['oem_revision',['../structACPISDTHeader.html#aae27c2dc0f8ef166e46dea39a631d1ff',1,'ACPISDTHeader::oem_revision'],['../structMADTHeader.html#aa820a2d7ebce9e7522b4d2854ffbe387',1,'MADTHeader::oem_revision']]],
+  ['oem_5ftable_5fid_2',['oem_table_id',['../structACPISDTHeader.html#a9b87b612e608d739e78973944dd0687c',1,'ACPISDTHeader::oem_table_id'],['../structMADTHeader.html#a6e6caf847fb5043c51c2b52e5c017a1b',1,'MADTHeader::oem_table_id']]],
+  ['offset_3',['offset',['../structlimine__hhdm__response.html#a9689f75278eabb364187affbf923a79e',1,'limine_hhdm_response']]],
+  ['offset_5fhigh_4',['offset_high',['../structIDTEntry.html#a2fea347286de01c4820b6f2103de62e7',1,'IDTEntry']]],
+  ['offset_5flow_5',['offset_low',['../structIDTEntry.html#afed296e62f646aa82515e2108f6dea55',1,'IDTEntry']]],
+  ['offset_5fmid_6',['offset_mid',['../structIDTEntry.html#a1fa838e652e1648211189515b9767264',1,'IDTEntry']]]
 ];

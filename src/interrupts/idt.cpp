@@ -43,7 +43,7 @@
 
 #include "idt.h"
 #include "lib/string.h"
-#include "boot/limine_vga.h"
+#include "lib/stdio.h"
 #include "drivers/serial_port.h"
 #include "common.h"
 #include "apic.h"

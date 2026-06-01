@@ -1,10 +1,4 @@
 var searchData=
 [
-  ['oem_5fid_0',['oem_id',['../structRSDP2.html#afa4f133c12356b600bb37373eba5eec9',1,'RSDP2::oem_id'],['../structACPISDTHeader.html#a867b20bf8bb4f6df0256b6352ad456c6',1,'ACPISDTHeader::oem_id'],['../structMADTHeader.html#a259c558c3f10708761f51b67a56d362d',1,'MADTHeader::oem_id']]],
-  ['oem_5frevision_1',['oem_revision',['../structACPISDTHeader.html#aae27c2dc0f8ef166e46dea39a631d1ff',1,'ACPISDTHeader::oem_revision'],['../structMADTHeader.html#aa820a2d7ebce9e7522b4d2854ffbe387',1,'MADTHeader::oem_revision']]],
-  ['oem_5ftable_5fid_2',['oem_table_id',['../structACPISDTHeader.html#a9b87b612e608d739e78973944dd0687c',1,'ACPISDTHeader::oem_table_id'],['../structMADTHeader.html#a6e6caf847fb5043c51c2b52e5c017a1b',1,'MADTHeader::oem_table_id']]],
-  ['offset_3',['offset',['../structlimine__hhdm__response.html#a9689f75278eabb364187affbf923a79e',1,'limine_hhdm_response']]],
-  ['offset_5fhigh_4',['offset_high',['../structIDTEntry.html#a2fea347286de01c4820b6f2103de62e7',1,'IDTEntry']]],
-  ['offset_5flow_5',['offset_low',['../structIDTEntry.html#afed296e62f646aa82515e2108f6dea55',1,'IDTEntry']]],
-  ['offset_5fmid_6',['offset_mid',['../structIDTEntry.html#a1fa838e652e1648211189515b9767264',1,'IDTEntry']]]
+  ['next_0',['next',['../structBuddyBlock.html#a54bbaeb90f0dd89e8ef6781c5fc218d2',1,'BuddyBlock']]]
 ];

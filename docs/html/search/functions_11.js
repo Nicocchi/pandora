@@ -1,4 +1,4 @@
 var searchData=
 [
-  ['writetss_0',['WriteTSS',['../gdt_8cpp.html#a87a38e7e8e68ded083db52ac23aeb775',1,'gdt.cpp']]]
+  ['unregisterinterrupthandler_0',['UnregisterInterruptHandler',['../idt_8cpp.html#a99d7c2a12a6af11df6827eb1a660e856',1,'UnregisterInterruptHandler(uint8_t interrupt):&#160;idt.cpp'],['../idt_8h.html#a99d7c2a12a6af11df6827eb1a660e856',1,'UnregisterInterruptHandler(uint8_t interrupt):&#160;idt.cpp']]]
 ];

@@ -28,5 +28,8 @@ var searchData=
   ['framebuffer_25',['framebuffer',['../structKRenderer.html#a112c6929c80173fbe5f4c268f309a805',1,'KRenderer']]],
   ['framebuffer_5fcount_26',['framebuffer_count',['../structlimine__framebuffer__response.html#a13bb5cf3dc1eebe8500f1ebfee5694e9',1,'limine_framebuffer_response']]],
   ['framebuffer_5frequest_27',['framebuffer_request',['../group__Limine__Anchors.html#gaf4cd2863ab76bfaf5ff461d7245aa4ca',1,'limine_headers.h']]],
-  ['frequency_28',['frequency',['../structlimine__tsc__frequency__response.html#ab98334ba617d03eb83f60b82b8e0a37a',1,'limine_tsc_frequency_response::frequency'],['../pit_8cpp.html#ab632fb0b4d5156ea4df0b1e15410e913',1,'frequency:&#160;pit.cpp']]]
+  ['free_28',['Free',['../structBuddyAllocator.html#a53b723096b1e9510c0e4ee7ac213267b',1,'BuddyAllocator']]],
+  ['free_5fpages_29',['free_pages',['../structBuddyAllocator.html#a71599eb47ef0b32305f43ea839223ba3',1,'BuddyAllocator']]],
+  ['freelist_30',['FreeList',['../structFreeList.html',1,'']]],
+  ['frequency_31',['frequency',['../structlimine__tsc__frequency__response.html#ab98334ba617d03eb83f60b82b8e0a37a',1,'limine_tsc_frequency_response::frequency'],['../pit_8cpp.html#ab632fb0b4d5156ea4df0b1e15410e913',1,'frequency:&#160;pit.cpp']]]
 ];

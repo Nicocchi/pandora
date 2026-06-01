@@ -1,4 +1,5 @@
 var searchData=
 [
-  ['gdtdescriptor_0',['GDTDescriptor',['../structGDTDescriptor.html',1,'']]]
+  ['buddyallocator_0',['BuddyAllocator',['../structBuddyAllocator.html',1,'']]],
+  ['buddyblock_1',['BuddyBlock',['../structBuddyBlock.html',1,'']]]
 ];

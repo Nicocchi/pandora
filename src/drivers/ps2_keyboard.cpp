@@ -17,7 +17,7 @@
 
 #include "ps2_keyboard.h"
 #include "common.h"
-#include "boot/limine_vga.h"
+#include "lib/stdio.h"
 #include "drivers/serial_port.h"
 
 /**

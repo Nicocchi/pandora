@@ -1,8 +1,6 @@
 var searchData=
 [
-  ['madtentry_0',['MADTEntry',['../structMADTEntry.html',1,'']]],
-  ['madtheader_1',['MADTHeader',['../structMADTHeader.html',1,'']]],
-  ['madtioapic_2',['MADTIOApic',['../structMADTIOApic.html',1,'']]],
-  ['madtiso_3',['MADTIso',['../structMADTIso.html',1,'']]],
-  ['madtlocalapic_4',['MADTLocalAPIC',['../structMADTLocalAPIC.html',1,'']]]
+  ['keyevent_0',['KeyEvent',['../structKeyEvent.html',1,'']]],
+  ['kframebuffer_1',['KFramebuffer',['../structKFramebuffer.html',1,'']]],
+  ['krenderer_2',['KRenderer',['../structKRenderer.html',1,'']]]
 ];

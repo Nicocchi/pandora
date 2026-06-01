@@ -1,6 +1,9 @@
 var annotated_dup =
 [
     [ "ACPISDTHeader", "structACPISDTHeader.html", "structACPISDTHeader" ],
+    [ "BuddyAllocator", "structBuddyAllocator.html", "structBuddyAllocator" ],
+    [ "BuddyBlock", "structBuddyBlock.html", "structBuddyBlock" ],
+    [ "FreeList", "structFreeList.html", "structFreeList" ],
     [ "GDTDescriptor", "structGDTDescriptor.html", "structGDTDescriptor" ],
     [ "IDTEntry", "structIDTEntry.html", "structIDTEntry" ],
     [ "IDTPtr", "structIDTPtr.html", "structIDTPtr" ],

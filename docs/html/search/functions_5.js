@@ -1,4 +1,4 @@
 var searchData=
 [
-  ['hcf_0',['hcf',['../common_8h.html#aedf4780efccd3a32bf75b0d9f08b2f47',1,'common.h']]]
+  ['free_0',['Free',['../structBuddyAllocator.html#a53b723096b1e9510c0e4ee7ac213267b',1,'BuddyAllocator']]]
 ];

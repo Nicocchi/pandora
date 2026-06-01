@@ -39,6 +39,7 @@
 
 #include "boot/limine.h"
 
+
 #define MADT_LOCAL_APIC     0 /**< @brief MADT entry type: Processor Local APIC */
 #define MADT_IO_APIC        1 /**< @brief MADT entry type: I/O APIC */
 #define MADT_ISO            2 /**< @brief MADT entry type: Interrupt Source Override */

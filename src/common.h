@@ -28,7 +28,7 @@
 #include <stdint.h>
 #include <stddef.h>
 #include "drivers/serial_port.h"
-#include "boot/limine_vga.h"
+#include "lib/stdio.h"
 
 /**
  * @brief Kernel-mode GDT segment selectors.
@@ -111,4 +111,14 @@ static void KernelPanic(const char *str)
     kprintf("Kernel Panic: ");
     kprintf(str);
     hcf();
+}
+
+extern uint64_t g_hhdm_offset;
+
+inline void* PhysToVirt(uint64_t phys) {
+    return (void*)(phys + g_hhdm_offset);
+}
+
+inline uint64_t VirtToPhys(void* virt) {
+    return (uint64_t)(virt) - g_hhdm_offset;
 }
