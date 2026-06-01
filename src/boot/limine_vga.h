@@ -62,6 +62,17 @@
 /** @} */
 
 /**
+ * @defgroup    Console_Dimensions Cell buffer grid size limits
+ * @brief       Maximum terminal grid dimensions. Sized for 1920x1080 with a 16px-tall
+ *              PSF1 font (8x16 glyphs = 240 columns x 67 rows). Increase if using a
+ *              higher resolution framebuffer or smaller font.
+ * @{
+ */
+#define CONSOLE_MAX_COLS  256   /**< Maximum supported terminal column count */
+#define CONSOLE_MAX_ROWS  128   /**< Maximum supported terminal row count */
+/** @} */
+
+/**
  * @struct PSF1_Header
  * @brief Binary header layout located at the start of a `.psf` font file.
  * 
@@ -100,6 +111,12 @@ typedef struct KFramebuffer
     uint64_t pixelsPerScanLine; /**< Effective horizontal scanline offset length, defined natively as `pitch / 4` */
 } KFramebuffer;
 
+typedef struct ConsoleCell
+{
+    char c;
+    uint32_t color;
+} ConsoleCell;
+
 /**
  * @struct KRenderer
  * @brief Core software rendering state machine controlling standard console tracking and styling
@@ -107,11 +124,24 @@ typedef struct KFramebuffer
  */
 typedef struct KRenderer
 {
-    KFramebuffer framebuffer;   /**< Target graphics framebuffer layout configurations */
-    uint64_t x;                 /**< Active tracking state of terminal cursor's horizontal pixel column coordinate */
-    uint64_t y;                 /**< Active tracking state of the terminal cursor's vertical pixel row coordinate */
-    PSF1_Font font;             /**< Active font configuration mapping applied to standard character processing operations */
-    uint32_t color;             /**< Active target foreground color mapping (ARGB format) */
+    KFramebuffer framebuffer;
+    PSF1_Font font;
+    uint32_t color;
+    uint32_t bg_color;
+
+    int cols;
+    int rows;
+    int cursor_col;
+    int cursor_row;
+    bool dirty;
+
+    ConsoleCell cells[CONSOLE_MAX_ROWS][CONSOLE_MAX_COLS];
+
+    // KFramebuffer framebuffer;   /**< Target graphics framebuffer layout configurations */
+    // uint64_t x;                 /**< Active tracking state of terminal cursor's horizontal pixel column coordinate */
+    // uint64_t y;                 /**< Active tracking state of the terminal cursor's vertical pixel row coordinate */
+    // PSF1_Font font;             /**< Active font configuration mapping applied to standard character processing operations */
+    // uint32_t color;             /**< Active target foreground color mapping (ARGB format) */
 
 } KRenderer;
 
@@ -130,6 +160,8 @@ void ConsoleLock();
 void ConsoleUnlock();
 
 void DrawChar(char c);
+
+void FlushConsole();
 
 /**
  * @brief Fills the entirety of the graphic display memory address range with a single uniform color state

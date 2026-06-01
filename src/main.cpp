@@ -66,7 +66,7 @@ uint64_t g_hhdm_offset = 0;
 // Test task functions
 static void TaskA(void*)
 {
-    for (int i = 0; i < 5; i++)
+    for (int i = 0; i < 10; i++)
     {
         kprintf("[TaskA] tick %d\n", i);
         KSleep(100); // sleep ~1 second (100 ticks at 100Hz)
@@ -75,7 +75,7 @@ static void TaskA(void*)
 }
 static void TaskB(void*)
 {
-    for (int i = 0; i < 5; i++)
+    for (int i = 0; i < 10; i++)
     {
         kprintf("[TaskB] tick %d\n", i);
         KSleep(150); // sleep ~1.5 second
@@ -85,7 +85,7 @@ static void TaskB(void*)
 static void TaskC(void*)
 {
     // High priority - should preempt A and B regularly
-    for (int i = 0; i < 8; i++)
+    for (int i = 0; i < 13; i++)
     {
         kprintf("[TaskC-HIGH] tick %d\n", i);
         KSleep(50);
@@ -154,8 +154,9 @@ extern "C" void kmain(void)
 
     // Setup kernel renderer
     kRenderer.color = WHITE;
-    kRenderer.x = 0;
-    kRenderer.y = 0;
+    kRenderer.bg_color = BLACK;
+    kRenderer.cursor_col = 0;
+    kRenderer.cursor_row = 0;
     kRenderer.font = font;
     kRenderer.framebuffer.address = framebuffer->address;
     kRenderer.framebuffer.width = framebuffer->width;
@@ -163,7 +164,7 @@ extern "C" void kmain(void)
     kRenderer.framebuffer.pitch = framebuffer->pitch;
     kRenderer.framebuffer.pixelsPerScanLine = framebuffer->pitch / 4;
 
-    ClearScreen(BLUE, true);
+    ClearScreen(BLACK, true);
 
     struct limine_memmap_response *memmap_response = memmap_request.response;
     if (memmap_response == NULL)
@@ -285,14 +286,12 @@ extern "C" void kmain(void)
     kprintf("Initializing IRQs...\n");
     InitPit();
     kprintf("[OK] Pit initialized\n");
-    // InitKeyboard();
+    InitKeyboard();
     
-    // kprintf("[OK] Keyboard initialized\n");
+    kprintf("[OK] Keyboard initialized\n");
     
     EnableInterrupts();
     kprintf("[OK] Interrupts enabled, scheduler running\n");
-    
-    // kprintf("\n");
 
     // while (true)
     // {
@@ -307,8 +306,5 @@ extern "C" void kmain(void)
     // }
 
 
-    while (true)
-    {
-        asm volatile("hlt");
-    }
+    hcf();
 }

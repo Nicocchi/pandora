@@ -18,137 +18,185 @@ void ConsoleUnlock()
 {
     if (console_lock_depth > 0 && --console_lock_depth == 0)
     {
+        FlushConsole();
         asm volatile("push %0; popfq" :: "r"(console_lock_flags) : "memory", "cc");
     }
 }
 
-static void ScrollScreen()
+static void ConsoleComputeDimensions()
 {
-    uint64_t font_height = kRenderer.font.psf1_Header->characterSize;
-    uint64_t bytes_per_pixel = 4; // 32-bit ARGB
+    uint64_t fw = 8;
+    uint64_t fh = kRenderer.font.psf1_Header->characterSize;
 
-    uint64_t row_bytes = kRenderer.framebuffer.pitch * font_height;
+    int cols = (int)(kRenderer.framebuffer.width / fw);
+    int rows = (int)(kRenderer.framebuffer.height / fh);
 
-    uint64_t shift_height = kRenderer.framebuffer.height - font_height;
-    uint64_t shift_bytes = kRenderer.framebuffer.pitch * shift_height;
+    if (cols > CONSOLE_MAX_COLS) cols = CONSOLE_MAX_COLS;
+    if (rows > CONSOLE_MAX_ROWS) rows = CONSOLE_MAX_ROWS;
 
-    memmove(kRenderer.framebuffer.address, (void*)((uintptr_t)kRenderer.framebuffer.address + row_bytes),
-            shift_bytes);
+    kRenderer.cols = cols;
+    kRenderer.rows = rows;
+}
+
+static void ScrollCells()
+{
+    int cols = kRenderer.cols;
+    int rows = kRenderer.rows;
+
+    memmove(&kRenderer.cells[0][0],
+            &kRenderer.cells[1][0],
+            sizeof(ConsoleCell) * CONSOLE_MAX_COLS * (rows - 1));
     
-    uint32_t *bottom_row_ptr = (uint32_t*)((uintptr_t)kRenderer.framebuffer.address + shift_bytes);
-    uint64_t remaining_pixels = (kRenderer.framebuffer.pitch / bytes_per_pixel) * font_height;
-
-    for (uint64_t i = 0; i < remaining_pixels; i++)
+    ConsoleCell blank = { 0, kRenderer.color };
+    for (int c = 0; c < cols; c++)
     {
-        bottom_row_ptr[i] = BLACK;
+        kRenderer.cells[rows - 1][c] = blank;
     }
 
-    kRenderer.y -= font_height;
+    kRenderer.dirty = true;
 }
 
 void DrawChar(char c)
 {
-    uint64_t font_height = kRenderer.font.psf1_Header->characterSize;
-    uint64_t font_width = 8;
+    if (kRenderer.cols == 0 || kRenderer.rows == 0)
+    {
+        ConsoleComputeDimensions();
+    }
+
+    int cols = kRenderer.cols;
+    int rows = kRenderer.rows;
 
     if (c == '\b')
     {
-        if (kRenderer.x >= font_width)
+        if (kRenderer.cursor_col > 0)
         {
-            kRenderer.x -= font_width;  // Step the horizontal cursor backward
-        } else if (kRenderer.y >= font_height)
-        {
-            // Wrap backward to the previous screen line if at the left margin
-            kRenderer.x = (kRenderer.framebuffer.width / font_width) * font_width - font_width;
-            kRenderer.y -= font_height;
+            --kRenderer.cursor_col;
         }
-
-        // Wipe the previous character with a blank block of the background color
-        uintptr_t base_address = (uintptr_t)(kRenderer.framebuffer.address);
-        for (uint64_t py = 0; py < font_height; py++)
+        else if (kRenderer.cursor_row > 0)
         {
-            for (uint64_t px = 0; px < font_width; px++)
-            {
-                uint32_t *pixel_address = (uint32_t*)(base_address
-                                            + (kRenderer.y + py) * kRenderer.framebuffer.pitch
-                                            + (kRenderer.x + px) * 4);
-                *pixel_address = BLACK;
-            }
+            --kRenderer.cursor_row;
+            kRenderer.cursor_col = cols - 1;
         }
-
-        return;
-    }
-
-    if (c == '\n')
-    {
-        kRenderer.x = 0;
-        kRenderer.y += font_height;
-
-        if (kRenderer.y + font_height > kRenderer.framebuffer.height)
-        {
-            ScrollScreen();
-        }
+        kRenderer.cells[kRenderer.cursor_row][kRenderer.cursor_col] = { 0, kRenderer.color };
+        kRenderer.dirty = true;
         return;
     }
 
     if (c == '\r')
     {
-        kRenderer.x = 0;
+        kRenderer.cursor_col = 0;
         return;
     }
 
     if (c == '\t')
     {
-        kRenderer.x += font_width * 4;
+        kRenderer.cursor_col = (kRenderer.cursor_col + 4) & ~3;
+        if (kRenderer.cursor_col >= cols)
+        {
+            kRenderer.cursor_col = 0;
+            ++kRenderer.cursor_row;
+            if (kRenderer.cursor_row >= rows)
+            {
+                ScrollCells();
+                kRenderer.cursor_row = rows - 1;
+            }
+        }
         return;
     }
 
-    if (kRenderer.x + font_width > kRenderer.framebuffer.width)
+    if (c == '\n')
     {
-        kRenderer.x = 0;
-        kRenderer.y += font_height;
-    }
-
-    if (kRenderer.y + font_height > kRenderer.framebuffer.height)
-    {
-        ScrollScreen();
-    }
-
-    uint8_t *glyph = (uint8_t*)kRenderer.font.glyphBuffer + ((uint8_t)c * font_height);
-    for (uint64_t py = 0; py < font_height; py++)
-    {
-        for (uint64_t px = 0; px < font_width; px++)
+        kRenderer.cursor_col = 0;
+        ++kRenderer.cursor_row;
+        if (kRenderer.cursor_row >= rows)
         {
-            if (glyph[py] & (0x80 >> px))
-            {
-                uint32_t *pixel_address = (uint32_t*)((uintptr_t)kRenderer.framebuffer.address
-                                            + (kRenderer.y + py) * kRenderer.framebuffer.pitch
-                                            + (kRenderer.x + px) * 4);
-                *pixel_address = kRenderer.color;
-            }
+            ScrollCells();
+            kRenderer.cursor_row = rows - 1;
+        }
+        return;
+    }
+
+    if (kRenderer.cursor_col >= cols)
+    {
+        kRenderer.cursor_col = 0;
+        ++kRenderer.cursor_row;
+        if (kRenderer.cursor_row >= rows)
+        {
+            ScrollCells();
+            kRenderer.cursor_row = rows - 1;
         }
     }
 
-    kRenderer.x += font_width;
+    kRenderer.cells[kRenderer.cursor_row][kRenderer.cursor_col] = { c, kRenderer.color };
+    ++kRenderer.cursor_col;
+    kRenderer.dirty = true;
+}
+
+void FlushConsole()
+{
+    if (!kRenderer.dirty) return;
+    kRenderer.dirty = false;
+
+    uint64_t fw = 8;
+    uint64_t fh = kRenderer.font.psf1_Header->characterSize;
+    int cols = kRenderer.cols;
+    int rows = kRenderer.rows;
+    uint32_t bg = kRenderer.bg_color;
+
+    for (int row = 0; row < rows; row++)
+    {
+        for (int col = 0; col < cols; col++)
+        {
+            ConsoleCell &cell = kRenderer.cells[row][col];
+            
+            uint8_t *glyph = cell.c ? 
+                (uint8_t*)kRenderer.font.glyphBuffer + ((uint8_t)cell.c * fh) : nullptr;
+            for (uint64_t py = 0; py < fh; py++)
+            {
+                uint32_t *dst = (uint32_t*)((uintptr_t)kRenderer.framebuffer.address
+                + (row * fh + py) * kRenderer.framebuffer.pitch)
+                + col * fw;
+                
+                uint8_t row_bits = glyph ? glyph[py] : 0;
+                for (uint64_t px = 0; px < fw; px++)
+                {
+                    dst[px] = (row_bits & (0x80 >> px)) ? cell.color : bg;
+                }
+            }
+        }
+    }
 }
 
 void ClearScreen(uint32_t color, bool reset)
 {
-    uint64_t ppl = kRenderer.framebuffer.pitch / sizeof(uint32_t);
+    int cols = kRenderer.cols ? kRenderer.cols : CONSOLE_MAX_COLS;
+    int rows = kRenderer.rows ? kRenderer.rows : CONSOLE_MAX_ROWS;
 
-    for (uint64_t y = 0; y < kRenderer.framebuffer.height; y++)
+    ConsoleCell blank = { 0, kRenderer.color };
+    for (int r = 0; r < rows; r++)
     {
-        uint32_t *row = (uint32_t*)((uintptr_t)kRenderer.framebuffer.address
-                                    + y * kRenderer.framebuffer.pitch);
-        for (uint64_t x = 0; x < ppl; x++)
+        for (int c = 0; c < cols; c++)
         {
-            row[x] = color;
+            kRenderer.cells[r][c] = blank;
         }
     }
 
+    uint64_t ppl = kRenderer.framebuffer.pitch / sizeof(uint32_t);
+    for (uint64_t y = 0; y < kRenderer.framebuffer.height; y++)
+    {
+        uint32_t *row_ptr = (uint32_t*)((uintptr_t)kRenderer.framebuffer.address
+                            + y * kRenderer.framebuffer.pitch);
+
+        for (uint64_t x = 0; x < ppl; x++) row_ptr[x] = color;
+    }
+
+    kRenderer.bg_color = color;
+
     if (reset)
     {
-        kRenderer.x = 0;
-        kRenderer.y = 0;
+        kRenderer.cursor_col = 0;
+        kRenderer.cursor_row = 0;
     }
+
+    kRenderer.dirty = false;
 }
