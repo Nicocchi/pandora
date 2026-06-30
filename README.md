@@ -1,63 +1,34 @@
 # Pandora OS
 
-> A modern 64-bit hobby operating system written in C++ focused on low-level systems programming, multitasking, and hardware abstraction.
-
----
+![alt text](assets/ss1.png)
 
 ![Architecture](https://img.shields.io/badge/arch-x86__64-blue)
 ![Language](https://img.shields.io/badge/language-C%2B%2B-orange)
 ![Bootloader](https://img.shields.io/badge/bootloader-Limine-green)
 ![Status](https://img.shields.io/badge/status-WIP-yellow)
 
-## Overview
-
-**Pandora OS** is a custom 64-bit operating system designed for x86_64 systems.
-The project focuses on building a modular kernel architecture while exploring concepts such as:
-
-* Bootloading
-* Memory management
-* Multitasking
-* Hardware drivers
-* Filesystems
-* Graphics and UI systems
-
-The operating system currently boots using the **Limine Bootloader** and is being developed as an educational and hobby systems programming project.
-
----
+A modern 64-bit hobby operating system written in C++ focused on low-level systems programming, multitasking, and hardware abstraction.
 
 ## Table of Contents
 
-* [Overview](#overview)
-* [Current Status](#current-status)
-* [Why Pandora OS?](#why-pandora-os)
 * [Features](#features)
 
   * [Implemented](#implemented)
   * [In Progress](#in-progress)
   * [Planned](#planned)
-* [Roadmap](#roadmap)
-
-  * [Boot Phase](#boot-phase)
-  * [Core Kernel](#core-kernel)
-  * [Multitasking](#multitasking)
-  * [Userspace](#userspace)
-  * [Graphics](#graphics)
 * [Building Pandora OS](#building-pandora-os)
 
   * [Requirements](#requirements)
   * [Building the Cross Compiler](#building-the-cross-compiler)
-* [Kernel Development](#kernel-development)
-
-  * [Required Software](#required-software)
-  * [Building the Kernel](#building-the-kernel)
+* [Building the Kernel](#building-the-kernel)
+  * [Build tools](#build-tools)
   * [Make Targets](#make-targets)
   * [Build Flags](#build-flags)
 * [Running Pandora OS](#running-pandora-os)
-
   * [QEMU](#qemu)
   * [VirtualBox](#virtualbox)
+  * [Bochs](#bochs)
 * [Documentation](#documentation)
-* [Project Structure](#project-structure)
 * [Contributing](#contributing)
 * [Console Font](#console-font)
 * [License](#license)
@@ -115,47 +86,19 @@ The goal is to better understand how modern operating systems function internall
 * [x] Paging and virtual memory
 * [x] Kernel heap allocator
 * [x] Preemptive multitasking
+* [x] Basic terminal / console
+* [x] Filesystem support
+* [x] User mode support
+* [x] Syscall interface
+* [x] Flat Binary executable loading
 
 ### In Progress
-* [ ] User mode support
 * [ ] ELF executable loading
-* [ ] Syscall interface
-* [ ] Basic terminal / console
-
 
 ### Planned
 
-* [ ] Filesystem support
 * [ ] Graphics subsystem
 * [ ] Networking
-
----
-
-## Roadmap
-
-### Boot Phase
-- [x] Limine boot support
-- [x] VGA initialization
-- [x] Memory map parsing
-
-### Core Kernel
-- [x] GDT/IDT
-- [x] Interrupt handling
-- [x] Paging
-- [x] Heap allocator
-
-### Multitasking
-- [ ] Scheduler
-- [ ] Context switching
-- [ ] User mode
-
-### Userspace
-- [ ] Shell
-
-### Graphics
-- [ ] Windowing system
-
----
 
 # Building Pandora OS
 
@@ -214,9 +157,7 @@ Example:
 
 ---
 
-# Kernel Development
-
-## Required Software
+## Building the Kernel
 
 ### Build Tools
 
@@ -235,8 +176,6 @@ Official project links:
 * VirtualBox: https://www.virtualbox.org/
 
 ---
-
-## Building the Kernel
 
 To compile the kernel:
 
@@ -323,31 +262,6 @@ make doxygen
 ```
 
 Generated documentation will be placed inside the `docs` directory.
-
----
-
-# Project Structure
-```text
-pandora/
-├── src/
-│   ├── boot/              # Bootloader interfaces and VGA initialization
-│   ├── drivers/           # Hardware drivers
-│   ├── interrupts/        # Interrupt interfaces and initialization
-│   ├── lib/               # Minimal standard library replacements
-│   └── main.cpp           # Kernel entry point
-│
-├── toolchain/             # Cross-compiler installation output
-├── docs/                  # Documentation and generated docs
-├── assets/                # Fonts, images, and additional resources
-│
-├── build_disk.sh          # HDD image generation script
-├── build_iso.sh           # ISO generation script
-├── limine.conf            # Limine bootloader configuration
-├── linker.lds             # Kernel linker script
-├── Makefile               # Main build system
-├── README.md
-└── toolchain.sh           # GCC/binutils cross-compiler setup script
-```
 
 ---
 

@@ -99,7 +99,7 @@ static const char scancode_ascii_lower[128] =
     /*06*/'5',  /*07*/'6',  /*08*/'7',  /*09*/'8',  /*0A*/'9',  /*0B*/'0',
     /*0C*/'-',  /*0D*/'=',  /*0E*/'\b', /*0F*/'\t', /*10*/'q',  /*11*/'w',
     /*12*/'e',  /*13*/'r',  /*14*/'t',  /*15*/'y',  /*16*/'u',  /*17*/'i',
-    /*18*/'o',  /*19*/'p',  /*1A*/'[',  /*1B*/']',  /*1C*/'\n', /*1D*/'\0',
+    /*18*/'o',  /*19*/'p',  /*1A*/'[',  /*1B*/']',  /*1C*/'\0', /*1D*/'\0',
     /*1E*/'a',  /*1F*/'s',  /*20*/'d',  /*21*/'f',  /*22*/'g',  /*23*/'h',
     /*24*/'j',  /*25*/'k',  /*26*/'l',  /*27*/';',  /*28*/'\'', /*29*/'`',
     /*2A*/'\0', /*2B*/'\\', /*2C*/'z',  /*2D*/'x',  /*2E*/'c',  /*2F*/'v',
@@ -148,8 +148,10 @@ static bool ctrl_held = false;
 static bool alt_held = false;
 
 static KeyEvent key_buffer[KEYBOARD_BUFFER_SIZE];
-static uint32_t buf_head = 0;
-static uint32_t buf_tail = 0;
+static volatile uint32_t buf_head = 0;
+static volatile uint32_t buf_tail = 0;
+
+static Task* keyboard_waiter = nullptr;
 
 static void PushKeyEvent(KeyEvent event)
 {
@@ -157,6 +159,14 @@ static void PushKeyEvent(KeyEvent event)
     if (next == buf_tail) return;
     key_buffer[buf_head] = event;
     buf_head = next;
+
+    // Wake any task blocked waiting for keyboard event
+    if (keyboard_waiter)
+    {
+        Task* waiter = keyboard_waiter;
+        keyboard_waiter = nullptr;
+        scheduler.Wake(waiter);
+    }
 }
 
 bool PopKeyEvent(KeyEvent* out)
@@ -165,6 +175,48 @@ bool PopKeyEvent(KeyEvent* out)
     *out = key_buffer[buf_tail];
     buf_tail = (buf_tail + 1) % KEYBOARD_BUFFER_SIZE;
     return true;
+}
+
+static void WaitInputBuffer()
+{
+    for (int i = 0; i < 100000; i++)
+    {
+        if ((InPortB(0x64) & 0x02) == 0) return;
+    }
+}
+
+static void WaitOutputBuffer()
+{
+    for (int i = 0; i < 100000; i++)
+    {
+        if (InPortB(0x64) & 0x01) return;
+    }
+}
+
+static void PS2WriteCommand(uint8_t cmd)
+{
+    WaitInputBuffer();
+    OutPortB(0x64, cmd);
+}
+
+static void PS2WriteData(uint8_t data)
+{
+    WaitInputBuffer();
+    OutPortB(0x60, data);
+}
+
+static uint8_t PS2ReadData()
+{
+    WaitOutputBuffer();
+    return InPortB(0x60);
+}
+
+static void PS2FlushOutput()
+{
+    while (InPortB(0x64) & 0x01)
+    {
+        (void)InPortB(0x60);
+    }
 }
 
 void InitKeyboard()
@@ -179,10 +231,8 @@ void InitKeyboard()
     RegisterInterruptHandler(33, KeyboardHandler);
 }
 
-void KeyboardHandler(InterruptFrame* frame)
+static void ProcessScancode(uint8_t raw)
 {
-    (void)frame;
-    uint8_t raw = InPortB(0x60);
     uint8_t scancode = raw & 0x7F;
     bool pressed = !(raw & 0x80);
 
@@ -223,15 +273,8 @@ void KeyboardHandler(InterruptFrame* frame)
         }
     }
 
-    // Determine ASCII value
     bool use_upper = shift_held ^ caps_lock;
     char ascii = use_upper ? scancode_ascii_upper[scancode] : scancode_ascii_lower[scancode];
-
-    // If keycode is still unknown but have an ascii char, promote it
-    if (kc == KeyCode::Unknown && ascii != '\0')
-    {
-        kc = KeyCode::Unknown;
-    }
 
     KeyEvent event;
     event.keycode = kc;
@@ -243,4 +286,55 @@ void KeyboardHandler(InterruptFrame* frame)
     event.caps_lock = caps_lock;
 
     PushKeyEvent(event);
+}
+
+void KeyboardHandler(InterruptFrame* frame)
+{
+    (void)frame;
+
+    ProcessScancode(InPortB(0x60));
+    OutPortB(0x20, 0x20);
+}
+
+void KeyboardPoll()
+{
+    while (InPortB(0x64) & 0x01)
+    {
+        ProcessScancode(InPortB(0x60));
+    }
+}
+
+void KeyboardSetWaiter(Task* task)
+{
+    keyboard_waiter = task;
+}
+void KeyboardClearWaiter()
+{
+    keyboard_waiter = nullptr;
+}
+
+bool KeyboardHasEvent()
+{
+    return buf_head != buf_tail;
+}
+
+char KeyboardReadChar()
+{
+    for (;;)
+    {
+        KeyboardPoll();
+
+        KeyEvent ev;
+        if (!PopKeyEvent(&ev))
+            continue;
+
+        if (!ev.pressed)
+            continue;
+
+        if (ev.ascii != '\0')
+            return ev.ascii;
+
+        if (ev.keycode == KeyCode::Enter)
+            return '\n';
+    }
 }

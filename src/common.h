@@ -29,6 +29,7 @@
 #include <stddef.h>
 #include "drivers/serial_port.h"
 #include "lib/stdio.h"
+#include "boot/limine_vga.h"
 
 /**
  * @brief Kernel-mode GDT segment selectors.
@@ -39,14 +40,6 @@
 constexpr uint16_t GDT_KERNEL_CODE = 0x08;
 constexpr uint16_t GDT_KERNEL_DATA = 0x10;
 
-/**
- * @brief User-mode GDT segment selectors.
- *
- * These selectors reference ring 3 descriptors installed in the
- * Global Descriptor Table.
- */
-constexpr uint16_t GDT_USER_DATA = 0x18;
-constexpr uint16_t GDT_USER_CODE = 0x20;
 
 /**
  * @brief User-mode selectors with Requested Privilege Level (RPL) set.
@@ -55,8 +48,8 @@ constexpr uint16_t GDT_USER_CODE = 0x20;
  * by software. Ring 3 selectors are required during transitions
  * into userspace execution.
  */
-constexpr uint16_t GDT_USER_DATA_RING3 = 0x1B;
-constexpr uint16_t GDT_USER_CODE_RING3 = 0x23;
+constexpr uint16_t GDT_USER_DATA = 0x1B;
+constexpr uint16_t GDT_USER_CODE = 0x23;
 
 struct InterruptRegisters
 {
@@ -98,16 +91,47 @@ static void IOWait()
     OutPortB(0x80, 0);
 }
 
-/**
- * @brief       Triggers a critical system breakdown state, piping messages across diagnostic outputs.
- * @details     Simultaneously dumps failure summaries across the serial COM1 port interface 
- *              and onto the active linear graphical display before hanging the CPU execution chain.
- * @param[in]   str Null-terminated ASCII error diagnostic summary string describing the system failure.
- */
-static void KernelPanic(const char *str)
+struct PanicContext
 {
-    SerialWriteString(COM1_PORT, "Kernel Panic: %s", str);
-    kprintf("Kernel Panic: %s\n", str);
+    const char* message;
+
+    uint64_t interrupt_number;
+    uint64_t error_code;
+
+    uint64_t rip;
+    uint64_t rsp;
+    uint64_t rbp;
+
+    uint64_t cs;
+    uint64_t ss;
+    uint64_t rflags;
+};
+
+static void KernelPanic(const PanicContext& ctx)
+{
+    ClearScreen(BLUE, true);
+    kprintf("\n=== KERNEL PANIC ===\n\n");
+    kprintf("Reason: %s\n", ctx.message);
+
+    kprintf("Interrupt #: %llu\n", ctx.interrupt_number);
+    kprintf("Error Code: %llu\n", ctx.error_code);
+    kprintf("RIP: %016llX\n", ctx.rip);
+    kprintf("RSP: %016llX\n", ctx.rsp);
+    kprintf("RBP: %016llX\n", ctx.rbp);
+    kprintf("CS: %016llX\n", ctx.cs);
+    kprintf("SS: %016llX\n", ctx.ss);
+    kprintf("RFLAGS: %016llX\n", ctx.rflags);
+
+    SerialWriteString(COM1_PORT, "=== KERNEL PANIC ===\n");
+    SerialWriteString(COM1_PORT, "Reason: %s\n", ctx.message);
+    SerialWriteString(COM1_PORT, "Interrupt #: %llu\n", ctx.interrupt_number);
+    SerialWriteString(COM1_PORT, "Error Code: %llu\n", ctx.error_code);
+    SerialWriteString(COM1_PORT, "RIP: %016llX\n", ctx.rip);
+    SerialWriteString(COM1_PORT, "RSP: %016llX\n", ctx.rsp);
+    SerialWriteString(COM1_PORT, "RBP: %016llX\n", ctx.rbp);
+    SerialWriteString(COM1_PORT, "CS: %016llX\n", ctx.cs);
+    SerialWriteString(COM1_PORT, "SS: %016llX\n", ctx.ss);
+    SerialWriteString(COM1_PORT, "RFLAGS: %016llX\n", ctx.rflags);
     hcf();
 }
 

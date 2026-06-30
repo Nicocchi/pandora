@@ -53,7 +53,9 @@ uint64_t KernelHeap::MapHeapPages(uint32_t pages, uint64_t *phys_out, uint8_t pm
     uint64_t virt = heap_virt_next;
     if (virt + (uint64_t)pages * PAGE_SIZE > HEAP_END)
     {
-        KernelPanic("KernelHeap: virtual address space exhausted\n");
+        PanicContext ctx = {};
+        ctx.message = "KernelHeap:: virtual address space exhausted";
+        KernelPanic(ctx);
         return 0;
     }
 
@@ -156,7 +158,9 @@ void KernelHeap::Free(void *ptr)
     if (addr < HEAP_BASE || addr >= HEAP_END)
     {
         HeapUnlock();
-        KernelPanic("KernelHeap::Free: pointer outside heap range\n");
+        PanicContext ctx = {};
+        ctx.message = "KernelHeap::Free: pointer outside heap range";
+        KernelPanic(ctx);
         return;
     }
 
@@ -189,7 +193,9 @@ void KernelHeap::Free(void *ptr)
         if (idx >= SLAB_CLASS_COUNT)
         {
             HeapUnlock();
-            KernelPanic("KernelHeap::Free: corrupted slab header or double-free\n");
+            PanicContext ctx = {};
+            ctx.message = "KernelHeap::Free: corrupted slab header or double-free";
+            KernelPanic(ctx);
             return;
         }
 

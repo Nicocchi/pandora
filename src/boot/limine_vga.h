@@ -135,6 +135,13 @@ typedef struct KRenderer
     int cursor_row;
     bool dirty;
 
+    // ANSI/VT100 escape-sequence parser state. Sequences (e.g. ESC[2J, ESC[H)
+    // arrive one byte at a time through DrawChar, so the parse must persist
+    // across calls. esc_state: 0=normal, 1=saw ESC, 2=inside CSI ("ESC[").
+    int esc_state;
+    int esc_params[2];
+    int esc_nparams;
+
     ConsoleCell cells[CONSOLE_MAX_ROWS][CONSOLE_MAX_COLS];
 
     // KFramebuffer framebuffer;   /**< Target graphics framebuffer layout configurations */

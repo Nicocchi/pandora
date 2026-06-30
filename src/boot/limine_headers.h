@@ -82,32 +82,8 @@ volatile uint64_t limine_requests_end_marker[] = LIMINE_REQUESTS_END_MARKER;
 
 /** @} */
 
-/**
- * @brief   Scans loaded bootloader modules to locate an asset file matching a specific name suffix
- *
- * Iterates over the raw memory pointers populated by the Limine bootloader's module response block.
- * Uses path suffix matching to locate assets independently of full physical device directory prefixes.
- *
- * @param[in]   name The target filename or trailing file path segment to match (e.g., "zap-light16.psf")
- *
- * @return      struct limine_file* Pointer to the matching Limine file structure holding memory
- *              addresses and sizing limits, or `nullptr` if the asset could not be located.
- */
-static inline struct limine_file *GetFileLimine(const char *name)
-{
-    struct limine_module_response *module_response = module_request.response;
-    if (module_response == NULL) return NULL;
-
-    for (size_t i = 0; i < module_response->module_count; i++)
-    {
-        struct limine_file *f = module_response->modules[i];
-        if (f && f->path)
-        {
-            if (CheckStringEndsWith(f->path, name)) return f;
-        }
-    }
-    return nullptr;
-}
+/** @brief Find a Limine-loaded module by path suffix (e.g. "terminal.bin"). */
+struct limine_file *GetFileLimine(const char *name);
 
 #ifdef __cplusplus
 }

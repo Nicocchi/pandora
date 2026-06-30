@@ -16,6 +16,7 @@
 #include "lib/string.h"
 #include "boot/limine_vga.h"
 #include "memory/vmm.h"
+#include "idt.h"
 
 
 
@@ -81,11 +82,14 @@ static void IOAPICWrite(uint8_t reg, uint32_t value)
 // Each redirection entry is 64 bits split across two 32-bit registers
 void IOAPICSetRedirect(uint8_t irq, uint8_t vector, uint8_t apic_id, bool mask)
 {
+    uint8_t reg_low = IOAPIC_REDTBL + irq * 2;
+    uint8_t reg_high = IOAPIC_REDTBL + irq * 2 + 1;
+
     uint32_t low = vector | (mask ? (1 << 16) : 0);
     uint32_t high = ((uint32_t)apic_id << 24);
 
-    IOAPICWrite(IOAPIC_REDTBL + irq * 2, low);
-    IOAPICWrite(IOAPIC_REDTBL + irq * 2+1, high);
+    IOAPICWrite(reg_low, low);
+    IOAPICWrite(reg_high, high);
 }
 
 static ISOEntry isos[16];
@@ -109,6 +113,11 @@ static void IOAPICRouteIRQ(uint8_t irq, uint8_t vector, uint8_t apic_id)
 
 void InitIOAPIC()
 {
+    SerialWriteString(COM1_PORT, "ISO count: %d\n", iso_count);
+    for (uint8_t i = 0; i < iso_count; i++)
+    {
+        SerialWriteString(COM1_PORT, "  ISO: irq=%d gsi=%d flags=%d\n", isos[i].irq, isos[i].gsi, isos[i].flags);
+    }
     IOAPICRouteIRQ(0, 32, 0);
     IOAPICRouteIRQ(1, 33, 0);
 }
@@ -124,17 +133,7 @@ static uint64_t kernel_phys_base = 0;
 
 alignas(4096) static uint8_t mmio_page_tables[4096 * 4]; // 4 pages for PT allocation
 static uint64_t mmio_pt_alloc_offset = 0;
-// static uint64_t hhdm_offset = 0;
 
-// static uint64_t VirtToPhys(uint64_t virt)
-// {
-//     // For addresses in the kernel image
-//     if (virt >= kernel_virt_base)
-//         return virt - kernel_virt_base + kernel_phys_base;
-    
-//     // For addresses in the HHDM region
-//     return virt - hhdm_offset;
-// }
 static uint64_t APICVirtToPhys(uint64_t virt)
 {
     // For addresses in the kernel image
@@ -149,7 +148,9 @@ static uint64_t AllocPageTable()
 {
     if (mmio_pt_alloc_offset + 4096 > sizeof(mmio_page_tables))
     {
-        KernelPanic("MapMMIO: out of page table space\n");
+        PanicContext ctx = {};
+        ctx.message = "MapMMIO: out of page table space";
+        KernelPanic(ctx);
     }
 
     uint64_t virt = (uint64_t)(mmio_page_tables + mmio_pt_alloc_offset);
@@ -158,62 +159,77 @@ static uint64_t AllocPageTable()
     return virt;
 }
 
-// static void MapMMIO(uint64_t phys, uint64_t virt)
-// {
-//     uint64_t cr3;
-//     asm volatile("mov %%cr3, %0" : "=r"(cr3));
+static void MapMMIO(uint64_t phys, uint64_t virt)
+{
+    uint64_t cr3;
+    asm volatile("mov %%cr3, %0" : "=r"(cr3));
 
-//     uint64_t* pml4 = (uint64_t*)((cr3 & ~0xFFFULL) + g_hhdm_offset);
+    uint64_t* pml4 = (uint64_t*)((cr3 & ~0xFFFULL) + g_hhdm_offset);
 
-//     uint64_t pml4_idx = (virt >> 39) & 0x1FF;
-//     uint64_t pdpt_idx = (virt >> 30) & 0x1FF;
-//     uint64_t pd_idx   = (virt >> 21) & 0x1FF;
-//     uint64_t pt_idx   = (virt >> 12) & 0x1FF;
+    uint64_t pml4_idx = (virt >> 39) & 0x1FF;
+    uint64_t pdpt_idx = (virt >> 30) & 0x1FF;
+    uint64_t pd_idx   = (virt >> 21) & 0x1FF;
+    uint64_t pt_idx   = (virt >> 12) & 0x1FF;
 
-//     if (!(pml4[pml4_idx] & 1))
-//     {
-//         uint64_t pt_virt = AllocPageTable();
-//         pml4[pml4_idx] = APICVirtToPhys(pt_virt) | 0x03;
-//     }
-//     uint64_t* pdpt = (uint64_t*)((pml4[pml4_idx] & ~0xFFFULL) + g_hhdm_offset);
+    if (!(pml4[pml4_idx] & 1))
+    {
+        uint64_t pt_virt = AllocPageTable();
+        pml4[pml4_idx] = APICVirtToPhys(pt_virt) | 0x03;
+    }
+    uint64_t* pdpt = (uint64_t*)((pml4[pml4_idx] & ~0xFFFULL) + g_hhdm_offset);
 
-//     if (!(pdpt[pdpt_idx] & 1))
-//     {
-//         uint64_t pt_virt = AllocPageTable();
-//         pdpt[pdpt_idx] = APICVirtToPhys(pt_virt) | 0x03;
-//     }
-//     uint64_t* pd = (uint64_t*)((pdpt[pdpt_idx] & ~0xFFFULL) + g_hhdm_offset);
+    if (!(pdpt[pdpt_idx] & 1))
+    {
+        uint64_t pt_virt = AllocPageTable();
+        pdpt[pdpt_idx] = APICVirtToPhys(pt_virt) | 0x03;
+    }
+    uint64_t* pd = (uint64_t*)((pdpt[pdpt_idx] & ~0xFFFULL) + g_hhdm_offset);
 
-//     if (pd[pd_idx] & (1 << 7))
-//     {
-//         // Split 2MB huge page into 512 x 4KB pages
-//         uint64_t huge_phys  = pd[pd_idx] & ~0x1FFFFFULL;
-//         uint64_t huge_flags = pd[pd_idx] & 0xFFF & ~(1 << 7);
+    if (pd[pd_idx] & (1 << 7))
+    {
+        // Split 2MB huge page into 512 x 4KB pages
+        uint64_t huge_phys  = pd[pd_idx] & ~0x1FFFFFULL;
+        uint64_t huge_flags = pd[pd_idx] & 0xFFF & ~(1 << 7);
 
-//         uint64_t new_pt_virt = AllocPageTable();
-//         uint64_t* new_pt = (uint64_t*)new_pt_virt;
+        uint64_t new_pt_virt = AllocPageTable();
+        uint64_t* new_pt = (uint64_t*)new_pt_virt;
 
-//         for (int i = 0; i < 512; i++)
-//             new_pt[i] = (huge_phys + i * 4096) | huge_flags;
+        for (int i = 0; i < 512; i++)
+            new_pt[i] = (huge_phys + i * 4096) | huge_flags;
 
-//         pd[pd_idx] = APICVirtToPhys(new_pt_virt) | 0x03;
+        pd[pd_idx] = APICVirtToPhys(new_pt_virt) | 0x03;
 
-//         uint64_t base = virt & ~0x1FFFFFULL;
-//         for (int i = 0; i < 512; i++)
-//             asm volatile("invlpg (%0)" : : "r"(base + i * 4096) : "memory");
-//     }
-//     else if (!(pd[pd_idx] & 1))
-//     {
-//         uint64_t pt_virt = AllocPageTable();
-//         pd[pd_idx] = APICVirtToPhys(pt_virt) | 0x03;
-//     }
+        uint64_t base = virt & ~0x1FFFFFULL;
+        for (int i = 0; i < 512; i++)
+            asm volatile("invlpg (%0)" : : "r"(base + i * 4096) : "memory");
+    }
+    else if (!(pd[pd_idx] & 1))
+    {
+        uint64_t pt_virt = AllocPageTable();
+        pd[pd_idx] = APICVirtToPhys(pt_virt) | 0x03;
+    }
 
-//     uint64_t* pt = (uint64_t*)((pd[pd_idx] & ~0xFFFULL) + g_hhdm_offset);
-//     pt[pt_idx] = phys | 0x13;
+    uint64_t* pt = (uint64_t*)((pd[pd_idx] & ~0xFFFULL) + g_hhdm_offset);
+    pt[pt_idx] = phys | 0x13;
 
-//     asm volatile("invlpg (%0)" : : "r"(virt) : "memory");
-// }
+    asm volatile("invlpg (%0)" : : "r"(virt) : "memory");
+}
 
+void DumpIOAPICRedirect(uint8_t irq)
+{
+    uint8_t reg_low  = 0x10 + irq * 2;
+    uint8_t reg_high = 0x10 + irq * 2 + 1;
+
+    uint32_t low  = IOAPICRead(reg_low);
+    uint32_t high = IOAPICRead(reg_high);
+
+    uint8_t  vector  = low & 0xFF;
+    bool     masked  = (low >> 16) & 1;
+    uint8_t  dest    = (high >> 24) & 0xFF;
+
+    SerialWriteString(COM1_PORT, "IOAPIC IRQ%d: vector=%d masked=%d dest=%d raw=%08x %08x\n",
+        irq, vector, masked, dest, high, low);
+}
 
 void InitAPIC()
 {
@@ -221,14 +237,10 @@ void InitAPIC()
     // Get RSDP from Limine
     if (rsdp_request.response == nullptr)
     {
-        KernelPanic("RSDP not found\n");
+        PanicContext ctx = {};
+        ctx.message = "RSDP not found";
+        KernelPanic(ctx);
     }
-
-    // if (hhdm_request.response == nullptr)
-    // {
-    //     KernelPanic("HHDM not found\n");
-    // }
-    // hhdm_offset = hhdm_request.response->offset;
 
     void* rsdp_addr = rsdp_request.response->address;
 
@@ -278,7 +290,9 @@ void InitAPIC()
 
     if (madt == nullptr)
     {
-        KernelPanic("MADT not found\n");
+        PanicContext ctx = {};
+        ctx.message = "MADT not found";
+        KernelPanic(ctx);
     }
 
     // Parse MADT
@@ -331,19 +345,25 @@ void InitAPIC()
     uint64_t lapic_phys = madt_header->local_apic_addr;
     if (ioapic_phys == 0)
     {
-        KernelPanic("I/O APIC not found\n");
+        PanicContext ctx = {};
+        ctx.message = "I/O APIC not found";
+        KernelPanic(ctx);
     }
 
     if (exe_addr_request.response == nullptr)
-        KernelPanic("exe_addr_request not found\n");
+    {
+        PanicContext ctx = {};
+        ctx.message = "exe_addr_request not found";
+        KernelPanic(ctx);
+    }
     
     kernel_virt_base = exe_addr_request.response->virtual_base;
     kernel_phys_base = exe_addr_request.response->physical_base;
 
-    // MapMMIO(lapic_phys, lapic_phys + g_hhdm_offset);
-    // MapMMIO(ioapic_phys, ioapic_phys + g_hhdm_offset);
-
     virtualMemoryManager.MapPage(lapic_phys + g_hhdm_offset, lapic_phys, VMM_FLAGS_MMIO);
     virtualMemoryManager.MapPage(ioapic_phys + g_hhdm_offset, ioapic_phys, VMM_FLAGS_MMIO);
-
+    
+    DisablePIC();
+    InitLAPIC();
+    InitIOAPIC();
 }

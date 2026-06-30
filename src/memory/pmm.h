@@ -104,6 +104,7 @@ struct BuddyAllocator
     FreeList lists[MAX_ORDER];  /**< Array of free lists tracking blocks sorted by size order. */
     uint8_t *bitmap;            /**< Allocation metadata bitmap mapping bit status per page block. */
     uint64_t bitmap_size;       /**< Total size of the tracking bitmap in bytes. */
+    uint64_t order_bit_offset[MAX_ORDER]; /**< Starting bit index of each order's buddy-pair region in the bitmap. Prevents cross-order index aliasing. */
     uint64_t base;              /**< Base physical address of the managed memory pool region. */
     uint64_t total_pages;       /**< Cumulative page frames assigned to the allocator instance. */
     uint64_t free_pages;        /**< Total counts of volatile unallocated page frames remaining. */

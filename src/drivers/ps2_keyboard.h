@@ -15,6 +15,7 @@
 #pragma once
 
 #include "interrupts/idt.h"
+#include "processes/scheduler.h"
 
  /**
  * @brief Hardware-independent key identifiers.
@@ -101,3 +102,14 @@ void KeyboardHandler(InterruptFrame* frame);
  * @return false If the queue was empty.
  */
 bool PopKeyEvent(KeyEvent* out);
+
+void KeyboardSetWaiter(Task* task);
+void KeyboardClearWaiter();
+
+bool KeyboardHasEvent();
+
+// Drain any pending scancodes from the PS/2 data port (IRQ fallback).
+void KeyboardPoll();
+
+// Block until a key press is available (same wait model as KTerminal).
+char KeyboardReadChar();

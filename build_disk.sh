@@ -24,11 +24,11 @@ PATH=$PATH:/usr/sbin:/sbin sgdisk $BUILD_PATH/$TARGET.hdd -n 1:2048 -t 1:ef00 -m
 # # Install the Limine BIOS stages onto the image.
 $LIMINE_PATH/limine bios-install $BUILD_PATH/$TARGET.hdd
 
-# Format the image as fat32.
-mformat -i $BUILD_PATH/$TARGET.hdd@@1M
+# Format the partition as FAT32 (-F flag; default mformat picks FAT16 on small images).
+mformat -F -i $BUILD_PATH/$TARGET.hdd@@1M
 
 # Make relevant subdirectories.
-mmd -i $BUILD_PATH/$TARGET.hdd@@1M ::/EFI ::/EFI/BOOT ::/boot ::/boot/limine
+mmd -i $BUILD_PATH/$TARGET.hdd@@1M ::/EFI ::/EFI/BOOT ::/boot ::/boot/limine ::/bin
 
 # Copy over the relevant files.
 mcopy -i build/$TARGET.hdd@@1M $BUILD_PATH/bin/$TARGET ::/boot
@@ -36,3 +36,17 @@ mcopy -i build/$TARGET.hdd@@1M limine.conf $LIMINE_PATH/limine-bios.sys ::/boot/
 mcopy -i build/$TARGET.hdd@@1M $LIMINE_PATH/BOOTX64.EFI ::/EFI/BOOT
 mcopy -i build/$TARGET.hdd@@1M $LIMINE_PATH/BOOTIA32.EFI ::/EFI/BOOT
 mcopy -i build/$TARGET.hdd@@1M  assets/zap-light16.psf ::/boot
+mcopy -i build/$TARGET.hdd@@1M  programs/terminal/build/bin/terminal.bin ::/bin
+mcopy -i build/$TARGET.hdd@@1M  programs/ls/build/bin/ls.bin ::/bin
+
+
+
+# Create a 128M blank image
+# dd if=/dev/zero bs=1M count=128 of=assets/blank.hdd
+
+# # Write an MBR partition table with one FAT32 partition starting at LBA 2048
+# parted -s assets/blank.hdd mklabel msdos
+# parted -s assets/blank.hdd mkpart primary fat32 1MiB 100%
+
+# # Format the partition (offset 2048 sectors * 512 bytes = 1048576 bytes)
+# mformat -F -i assets/blank.hdd@@1M

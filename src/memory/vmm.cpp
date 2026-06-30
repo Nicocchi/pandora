@@ -29,12 +29,19 @@ static uint64_t PTIndex(uint64_t v)
 static uint64_t AllocZeroedPage()
 {
     uint64_t phys = PMMAlloc(&g_pmm, 0);
-    if (!phys) KernelPanic("VMM: PMM exhausted allocating page table\n");
+    if (!phys)
+    {
+        PanicContext ctx = {};
+        ctx.message = "VMM: PMM exhausted allocating page table";
+        KernelPanic(ctx);
+    }
 
     // Sanity check: phys must be within HHDM range
     if (phys + g_hhdm_offset < 0xFFFF800000000000ULL)
     {
-        KernelPanic("VMM: bad physical address from PMM\n");
+        PanicContext ctx = {};
+        ctx.message = "VMM: bad physical address from PMM";
+        KernelPanic(ctx);
     }
 
     // Zero through HHDM before handing off
@@ -331,6 +338,138 @@ bool AddressSpace::Fork(AddressSpace *dst) const
     }
 
     return true;
+}
+
+// True fork: like Fork() above, but every present 4 KiB user PTE gets a brand
+// new physical frame whose contents are copied from the parent. Parent and
+// child therefore share NO user memory. All frames and intermediate tables are
+// allocated order-0 so DestroyUser() can reclaim them page-by-page.
+bool AddressSpace::ForkDeep(AddressSpace *dst) const
+{
+    dst->pml4_phys = AllocZeroedPage();
+
+    const uint64_t *src_pml4 = PhysToTable(pml4_phys);
+    uint64_t *dst_pml4 = PhysToTable(dst->pml4_phys);
+
+    // Share kernel half
+    for (int i = 256; i < 512; i++)
+    {
+        dst_pml4[i] = src_pml4[i];
+    }
+
+    // Deep-copy user half (entries 0-255)
+    for (int pml4i = 0; pml4i < 256; pml4i++)
+    {
+        if (!(src_pml4[pml4i] & PTE_PRESENT)) continue;
+
+        uint64_t dst_pdpt_phys = AllocZeroedPage();
+        dst_pml4[pml4i] = dst_pdpt_phys | (src_pml4[pml4i] & ~PTE_ADDR_MASK);
+
+        const uint64_t *src_pdpt = PhysToTable(src_pml4[pml4i] & PTE_ADDR_MASK);
+        uint64_t *dst_pdpt = PhysToTable(dst_pdpt_phys);
+
+        for (int pdpti = 0; pdpti < 512; pdpti++)
+        {
+            if (!(src_pdpt[pdpti] & PTE_PRESENT)) continue;
+            if (src_pdpt[pdpti] & PTE_HUGE)
+            {
+                dst_pdpt[pdpti] = src_pdpt[pdpti];
+                continue;
+            }
+
+            uint64_t dst_pd_phys = AllocZeroedPage();
+            dst_pdpt[pdpti] = dst_pd_phys | (src_pdpt[pdpti] & ~PTE_ADDR_MASK);
+
+            const uint64_t *src_pd = PhysToTable(src_pdpt[pdpti] & PTE_ADDR_MASK);
+            uint64_t *dst_pd = PhysToTable(dst_pd_phys);
+
+            for (int pdi = 0; pdi < 512; pdi++)
+            {
+                if (!(src_pd[pdi] & PTE_PRESENT)) continue;
+                if (src_pd[pdi] & PTE_HUGE)
+                {
+                    dst_pd[pdi] = src_pd[pdi];
+                    continue;
+                }
+
+                uint64_t dst_pt_phys = AllocZeroedPage();
+                dst_pd[pdi] = dst_pt_phys | (src_pd[pdi] & ~PTE_ADDR_MASK);
+
+                const uint64_t *src_pt = PhysToTable(src_pd[pdi] & PTE_ADDR_MASK);
+                uint64_t *dst_pt = PhysToTable(dst_pt_phys);
+
+                for (int pti = 0; pti < 512; pti++)
+                {
+                    if (!(src_pt[pti] & PTE_PRESENT))
+                    {
+                        dst_pt[pti] = 0;
+                        continue;
+                    }
+
+                    // Allocate a fresh frame and copy the parent page into it.
+                    uint64_t new_frame = PMMAlloc(&g_pmm, 0);
+                    if (!new_frame) return false;
+
+                    const uint8_t *src_page =
+                        (const uint8_t*)PhysToVirt(src_pt[pti] & PTE_ADDR_MASK);
+                    uint8_t *dst_page = (uint8_t*)PhysToVirt(new_frame);
+                    for (int b = 0; b < (int)PAGE_SIZE; b++) dst_page[b] = src_page[b];
+
+                    dst_pt[pti] = new_frame | (src_pt[pti] & ~PTE_ADDR_MASK);
+                }
+            }
+        }
+    }
+
+    return true;
+}
+
+void AddressSpace::DestroyUser()
+{
+    if (!pml4_phys) return;
+
+    uint64_t *pml4 = PhysToTable(pml4_phys);
+
+    for (int pml4i = 0; pml4i < 256; pml4i++)
+    {
+        if (!(pml4[pml4i] & PTE_PRESENT)) continue;
+
+        uint64_t pdpt_phys = pml4[pml4i] & PTE_ADDR_MASK;
+        uint64_t *pdpt = PhysToTable(pdpt_phys);
+
+        for (int pdpti = 0; pdpti < 512; pdpti++)
+        {
+            if (!(pdpt[pdpti] & PTE_PRESENT)) continue;
+            if (pdpt[pdpti] & PTE_HUGE) continue; // not allocated by us
+
+            uint64_t pd_phys = pdpt[pdpti] & PTE_ADDR_MASK;
+            uint64_t *pd = PhysToTable(pd_phys);
+
+            for (int pdi = 0; pdi < 512; pdi++)
+            {
+                if (!(pd[pdi] & PTE_PRESENT)) continue;
+                if (pd[pdi] & PTE_HUGE) continue;
+
+                uint64_t pt_phys = pd[pdi] & PTE_ADDR_MASK;
+                uint64_t *pt = PhysToTable(pt_phys);
+
+                for (int pti = 0; pti < 512; pti++)
+                {
+                    if (!(pt[pti] & PTE_PRESENT)) continue;
+                    PMMFree(&g_pmm, pt[pti] & PTE_ADDR_MASK, 0); // data frame
+                }
+
+                PMMFree(&g_pmm, pt_phys, 0); // page table
+            }
+
+            PMMFree(&g_pmm, pd_phys, 0); // page directory
+        }
+
+        PMMFree(&g_pmm, pdpt_phys, 0); // PDPT
+    }
+
+    PMMFree(&g_pmm, pml4_phys, 0); // PML4
+    pml4_phys = 0;
 }
 
 void VirtualMemoryManager::Init(uint64_t kernel_phys, uint64_t kernel_virt, uint64_t kernel_size)

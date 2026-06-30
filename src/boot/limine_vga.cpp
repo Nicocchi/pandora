@@ -66,6 +66,72 @@ void DrawChar(char c)
     int cols = kRenderer.cols;
     int rows = kRenderer.rows;
 
+    // ----- ANSI/VT100 escape-sequence parsing -------------------------------
+    // Handles CSI sequences delivered one byte at a time (e.g. "\033[2J\033[H").
+    if (kRenderer.esc_state == 1)
+    {
+        // Just saw ESC: a CSI must follow with '['. Anything else aborts.
+        if (c == '[')
+        {
+            kRenderer.esc_state = 2;
+            kRenderer.esc_nparams = 0;
+            kRenderer.esc_params[0] = 0;
+            kRenderer.esc_params[1] = 0;
+        }
+        else
+        {
+            kRenderer.esc_state = 0;
+        }
+        return;
+    }
+
+    if (kRenderer.esc_state == 2)
+    {
+        if (c >= '0' && c <= '9')
+        {
+            if (kRenderer.esc_nparams == 0) kRenderer.esc_nparams = 1;
+            int i = kRenderer.esc_nparams - 1;
+            kRenderer.esc_params[i] = kRenderer.esc_params[i] * 10 + (c - '0');
+            return;
+        }
+        if (c == ';')
+        {
+            if (kRenderer.esc_nparams == 0) kRenderer.esc_nparams = 1;
+            if (kRenderer.esc_nparams < 2) kRenderer.esc_nparams++;
+            return;
+        }
+
+        // Final byte: dispatch the command.
+        kRenderer.esc_state = 0;
+
+        if (c == 'J')
+        {
+            // Erase in display. We support the common "clear whole screen"
+            // (ESC[2J); other variants also clear fully for simplicity.
+            ClearScreen(kRenderer.bg_color, false);
+        }
+        else if (c == 'H' || c == 'f')
+        {
+            // Cursor position (1-based row;col). No params => home.
+            int row = (kRenderer.esc_nparams >= 1 && kRenderer.esc_params[0] > 0)
+                          ? kRenderer.esc_params[0] - 1 : 0;
+            int col = (kRenderer.esc_nparams >= 2 && kRenderer.esc_params[1] > 0)
+                          ? kRenderer.esc_params[1] - 1 : 0;
+            if (row >= rows) row = rows - 1;
+            if (col >= cols) col = cols - 1;
+            kRenderer.cursor_row = row;
+            kRenderer.cursor_col = col;
+        }
+        // Unknown final bytes are ignored.
+        return;
+    }
+
+    if (c == 0x1B) // ESC: begin an escape sequence
+    {
+        kRenderer.esc_state = 1;
+        return;
+    }
+
     if (c == '\b')
     {
         if (kRenderer.cursor_col > 0)

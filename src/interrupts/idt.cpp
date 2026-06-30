@@ -297,14 +297,16 @@ extern "C" void interrupt_dispatch(InterruptFrame* frame)
     // CPU Exceptions
     if (interrupt < 32)
     {
-        kprintf("Exception: %s\n", exception_messages[interrupt]);
-        kprintf("Interrupt #: %d\n", interrupt);
-        kprintf("Error Code: %d\n", frame->error_code);
-        kprintf("RIP: %llx\n", frame->rip);
-        // kprintf("RSP: %p\n", (void*)frame->rsp);
-        kprintf("CS: %llx\n", frame->cs);
-        kprintf("RFLAGS: %llx\n", frame->rflags);
-        hcf();
+        PanicContext ctx = {};
+        ctx.message = exception_messages[interrupt];
+        ctx.interrupt_number = interrupt;
+        ctx.error_code = frame->error_code;
+        ctx.rip = frame->rip;
+        ctx.rsp = frame->rsp;
+        ctx.cs = frame->cs;
+        ctx.ss = frame->ss;
+        ctx.rflags = frame->rflags;
+        KernelPanic(ctx);
     }
 
     // Register handler

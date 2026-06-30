@@ -84,7 +84,7 @@ static inline uint8_t* BitmapVirt(BuddyAllocator* ba)
  */
 void BuddyBitFlip(BuddyAllocator* ba, uint64_t pfn, uint8_t order)
 {
-    uint64_t idx = pfn >> (order + 1);
+    uint64_t idx = ba->order_bit_offset[order] + (pfn >> (order + 1));
     BitmapVirt(ba)[idx >> 3] ^= (1u << (idx & 7));
 }
 
@@ -97,7 +97,7 @@ void BuddyBitFlip(BuddyAllocator* ba, uint64_t pfn, uint8_t order)
  */
 bool BuddyBitTest(BuddyAllocator* ba, uint64_t pfn, uint8_t order)
 {
-    uint64_t idx = pfn >> (order + 1);
+    uint64_t idx = ba->order_bit_offset[order] + (pfn >> (order + 1));
     return (BitmapVirt(ba)[idx >> 3] >> (idx & 7)) & 1;
 }
 
@@ -201,10 +201,24 @@ void BuddyAllocator::Init(limine_memmap_response *mmap)
         total_pages += e->length >> PAGE_SHIFT;
     }
 
-    // Carve bitmap storage from the first large-enough usable region
-    // Bitmap size: (total_pages / 2) bitgs, one per buddy pair, rounded up
-    // to the next page so the first managed page is page-aligned
-    bitmap_size = ((total_pages / 2) + 7) / 8;                          // bytes needed
+    // Carve bitmap storage. Each order needs its OWN region of buddy-pair bits;
+    // sharing a single index space across orders aliases bits and corrupts
+    // coalescing. Pair indices are derived from the page-frame number, which
+    // spans the whole base..top range (including gaps), so size each order by
+    // the full span rather than just the count of usable pages.
+    uint64_t span_pages = (top - base) >> PAGE_SHIFT;
+
+    uint64_t total_bits = 0;
+    for (uint8_t o = 0; o < MAX_ORDER; ++o)
+    {
+        order_bit_offset[o] = total_bits;
+        // Number of buddy pairs at this order across the span (+1 guards the
+        // partial pair at the tail / rounding).
+        uint64_t pairs = (span_pages >> (o + 1)) + 1;
+        total_bits += pairs;
+    }
+
+    bitmap_size = (total_bits + 7) / 8;                                // bytes needed
     bitmap_size = (bitmap_size + PAGE_SIZE - 1) & ~(PAGE_SIZE - 1);     // round up
 
     bitmap = nullptr;
@@ -223,7 +237,9 @@ void BuddyAllocator::Init(limine_memmap_response *mmap)
     // Halt if couldn't place the bitmap
     if (!bitmap)
     {
-        KernelPanic("Could not place bitmap\n");
+        PanicContext ctx = {};
+        ctx.message = "Could not place bitmap";
+        KernelPanic(ctx);
     }
 
     uint8_t *bitmap_virt = (uint8_t*)PhysToVirt((uint64_t)bitmap);
@@ -338,6 +354,15 @@ void BuddyAllocator::Free(uintptr_t addr, uint8_t order)
         // Remove buddy from its free list and merge
         // BuddyBlock *buddy_blk = (BuddyBlock*)buddy_addr;
         BuddyBlock *buddy_blk = (BuddyBlock*)PhysToVirt(buddy_addr);
+
+        // Safety: the XOR buddy-pair bitmap can, around region boundaries,
+        // signal "coalesce" when the buddy is not actually a free-list node.
+        // Removing a non-node would write through stale data and corrupt the
+        // heap, so verify membership first and stop coalescing if it is absent.
+        if (!lists[order].contains(buddy_blk))
+        {
+            break;
+        }
         lists[order].remove(buddy_blk);
 
         // Merged block starts at the lower address
@@ -350,19 +375,3 @@ void BuddyAllocator::Free(uintptr_t addr, uint8_t order)
     BuddyBlock *blk = (BuddyBlock*)PhysToVirt(addr);
     lists[order].push(blk);
 }
-
-
-// Bitmap helpers (one bit per page; set = block at this pfn is the 
-// *merged* / free representative at its current order)
-// void BitmapSet(BuddyAllocator* ba, uint64_t pfn)
-// {
-//     BitmapVirt(ba)[pfn >> 3] |=  (1u << (pfn & 7));
-// }
-// void BitmapClear(BuddyAllocator* ba, uint64_t pfn)
-// {
-//     BitmapVirt(ba)[pfn >> 3] &= ~(1u << (pfn & 7));
-// }
-// bool BitmapTest(BuddyAllocator* ba, uint64_t pfn)
-// {
-//     return (BitmapVirt(ba)[pfn >> 3] >> (pfn & 7)) & 1;
-// }

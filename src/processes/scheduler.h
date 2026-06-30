@@ -60,6 +60,7 @@ struct Process
     Task *threads;
     uint32_t thread_count;
     bool is_kernel_process;
+    char cwd[256];
 
     static Process *CreateKernelProcess();
     static Process *CreateUserProcess();
@@ -96,6 +97,14 @@ struct Task
     // Thread entry point (for initial setup only)
     void (*entry)(void *arg);
     void *arg;
+
+    // Process hierarchy (fork/wait). Single foreground child is enough for the
+    // shell use-case; generalize to a child list later if needed.
+    Task *parent;       // task to notify on exit (set at fork)
+    Task *child;        // most recent child created via fork
+    long exit_code;     // value passed to exit(); valid once `exited` is true
+    bool exited;        // true once this task has called Exit()
+    bool waiting;       // true while blocked inside wait()
 };
 
 // Scheduler
@@ -117,9 +126,23 @@ struct Scheduler
     void Tick();
     void Yield();
     void Sleep(uint64_t ticks);
-    void Exit();
-    Task *PickNext();
+    void Exit(long code = 0);
+    Task *PickNext(bool skip_current = false);
     void SwitchTo(Task *next);
+    void Block(Task* waiter); // block current task
+    void Wake(Task* task);  // wake a specific task
+
+    // Block the current task until its child exits; returns the child's exit
+    // code and reaps the child's resources. Returns -1 if there is no child.
+    long Wait();
+
+    // Free a finished (Zombie) child's address space, kernel stack and structs.
+    void Reap(Task* child);
+
+    // Fork the current user task: deep-copy its address space and build a child
+    // task that returns to the same user RIP with rax=0. Returns the child Task
+    // (whose process->pid is the fork return value), or nullptr on failure.
+    Task* Fork(struct SyscallFrame* frame);
 };
 
 extern Scheduler scheduler;

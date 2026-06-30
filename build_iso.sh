@@ -24,6 +24,10 @@ mkdir -p $BUILD_PATH/iso_root/boot/limine
 cp -v limine.conf $LIMINE_PATH/limine-bios.sys $LIMINE_PATH/limine-bios-cd.bin \
       $LIMINE_PATH/limine-uefi-cd.bin $BUILD_PATH/iso_root/boot/limine/
 
+mkdir -p $BUILD_PATH/iso_root/bin
+cp -v programs/terminal/build/bin/terminal.bin $BUILD_PATH/iso_root/bin/
+cp -v programs/ls/build/bin/ls.bin $BUILD_PATH/iso_root/bin/
+
 # Create the EFI boot tree and copy Limine's EFI executables over.
 mkdir -p $BUILD_PATH/iso_root/EFI/BOOT
 cp -v $LIMINE_PATH/BOOTX64.EFI $BUILD_PATH/iso_root/EFI/BOOT/

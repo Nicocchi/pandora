@@ -32,8 +32,9 @@ static constexpr uint64_t PTE_NX = (1ULL << 63);     // No-execute (requires EFE
 static constexpr uint64_t VMM_FLAGS_KERNEL_RW = PTE_PRESENT | PTE_WRITABLE | PTE_GLOBAL;
 static constexpr uint64_t VMM_FLAGS_KERNEL_RO = PTE_PRESENT | PTE_GLOBAL | PTE_NX;
 static constexpr uint64_t VMM_FLAGS_KERNEL_EX = PTE_PRESENT | PTE_GLOBAL;
-static constexpr uint64_t VMM_FLAGS_USER_RW = PTE_PRESENT | PTE_WRITABLE | PTE_USER;
+static constexpr uint64_t VMM_FLAGS_USER_RW = PTE_PRESENT | PTE_WRITABLE | PTE_USER | PTE_NX;
 static constexpr uint64_t VMM_FLAGS_USER_RO = PTE_PRESENT | PTE_USER | PTE_NX;
+static constexpr uint64_t VMM_FLAGS_USER_RX = PTE_PRESENT | PTE_USER;
 static constexpr uint64_t VMM_FLAGS_MMIO = PTE_PRESENT | PTE_WRITABLE | PTE_PCD | PTE_PWT | PTE_GLOBAL;
 
 extern BuddyAllocator g_pmm;
@@ -87,6 +88,19 @@ struct AddressSpace
     // (kernel entries are shared, user entries are deep-copied).
     // Returns false on PMM exhaustion
     bool Fork(AddressSpace *dst) const;
+
+    // Like Fork(), but ALSO deep-copies the underlying physical frames of every
+    // present 4 KiB user page (true fork semantics — parent and child no longer
+    // share memory). Every frame and intermediate table is allocated order-0 so
+    // DestroyUser() can free them uniformly. Returns false on PMM exhaustion.
+    bool ForkDeep(AddressSpace *dst) const;
+
+    // Tear down the user half (PML4 entries 0-255): free every present PTE
+    // frame and intermediate table (order-0), then free the PML4 itself. The
+    // shared kernel half (256-511) is left untouched. Only safe for spaces
+    // whose user frames/tables were all allocated order-0 (ForkDeep / the
+    // per-page loader).
+    void DestroyUser();
 
 };
 
